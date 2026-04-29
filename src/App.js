@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { tg, tgUser } from './telegram';
@@ -27,6 +27,7 @@ function App() {
             : currentUser.displayName || 'User',
           telegramId: tgUser?.id || null,
           photo: tgUser?.photo_url || '',
+          level: 'B1 – Intermediate',
           online: true,
           lastSeen: serverTimestamp(),
         }, { merge: true });
@@ -41,11 +42,6 @@ function App() {
       setUser(currentUser);
       setLoading(false);
     });
-
-    // Telegram-dan açılırsa avtomatik anonim login
-    if (tgUser && !auth.currentUser) {
-      signInAnonymously(auth);
-    }
 
     return unsub;
   }, []);

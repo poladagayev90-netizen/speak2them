@@ -17,20 +17,19 @@ export default function Chat({ user }) {
   const [peer, setPeer] = useState(null);
   const [inCall, setInCall] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [callStatus, setCallStatus] = useState('');
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
 
   const chatId = [user.uid, peerId].sort().join('_');
 
-  // Peer məlumatlarını gətir
   useEffect(() => {
     getDoc(doc(db, 'users', peerId)).then(d => {
       if (d.exists()) setPeer(d.data());
     });
   }, [peerId]);
 
-  // Mesajları dinlə
   useEffect(() => {
     const q = query(
       collection(db, 'chats', chatId, 'messages'),
@@ -43,43 +42,60 @@ export default function Chat({ user }) {
     return unsub;
   }, [chatId]);
 
-  // Mesaj göndər
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
     await addDoc(collection(db, 'chats', chatId, 'messages'), {
       text,
       senderId: user.uid,
-      senderName: user.displayName,
+      senderName: user.displayName || 'User',
       createdAt: serverTimestamp(),
     });
     setText('');
   };
 
-  // Audio zəng başlat
   const startCall = async () => {
-    const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-    clientRef.current = client;
-    await client.join(APP_ID, chatId, null, user.uid);
-    const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    localTrackRef.current = localTrack;
-    await client.publish(localTrack);
-    client.on('user-published', async (remoteUser, mediaType) => {
-      await client.subscribe(remoteUser, mediaType);
-      if (mediaType === 'audio') remoteUser.audioTrack.play();
-    });
-    setInCall(true);
+    try {
+      setCallStatus('Connecting...');
+      
+      // Mikrofon icazəsi əvvəlcədən al
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+      clientRef.current = client;
+
+      client.on('user-published', async (remoteUser, mediaType) => {
+        await client.subscribe(remoteUser, mediaType);
+        if (mediaType === 'audio') {
+          remoteUser.audioTrack.play();
+          setCallStatus('Connected ✅');
+        }
+      });
+
+      client.on('user-unpublished', () => {
+        setCallStatus('Partner left the call');
+      });
+
+      await client.join(APP_ID, chatId, null, user.uid);
+      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      localTrackRef.current = localTrack;
+      await client.publish(localTrack);
+      setInCall(true);
+      setCallStatus('Waiting for partner... 🎙️');
+    } catch (err) {
+      console.error(err);
+      setCallStatus('❌ Microphone access denied!');
+    }
   };
 
-  // Zəngi bitir
   const endCall = async () => {
     localTrackRef.current?.stop();
     localTrackRef.current?.close();
     await clientRef.current?.leave();
     setInCall(false);
+    setCallStatus('');
   };
 
-  // Mikrofonu sustur
   const toggleMute = async () => {
     if (localTrackRef.current) {
       await localTrackRef.current.setMuted(!muted);
@@ -92,48 +108,17 @@ export default function Chat({ user }) {
       <div className="chat-header">
         <button className="btn-back" onClick={() => { endCall(); navigate('/'); }}>← Back</button>
         <div className="chat-peer-info">
-          <div className="chat-avatar">{peer?.name?.charAt(0).toUpperCase()}</div>
+          <div className="chat-avatar">
+            {peer?.photo
+              ? <img src={peer.photo} alt={peer.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+              : peer?.name?.charAt(0).toUpperCase()
+            }
+          </div>
           <div>
             <h3>{peer?.name}</h3>
-            <span>{peer?.level}</span>
+            <span>{peer?.level || 'English Speaker'}</span>
           </div>
         </div>
         <div className="call-controls">
           {!inCall ? (
-            <button className="btn-call" onClick={startCall}>🎙️ Start Call</button>
-          ) : (
-            <>
-              <button className="btn-mute" onClick={toggleMute}>
-                {muted ? '🔇 Unmute' : '🎤 Mute'}
-              </button>
-              <button className="btn-end" onClick={endCall}>📵 End Call</button>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="chat-messages">
-        {messages.map(m => (
-          <div
-            key={m.id}
-            className={`message ${m.senderId === user.uid ? 'mine' : 'theirs'}`}
-          >
-            <span className="message-sender">{m.senderName}</span>
-            <p>{m.text}</p>
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-
-      <form className="chat-input" onSubmit={sendMessage}>
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <button type="submit">Send ➤</button>
-      </form>
-    </div>
-  );
-}
+            <button class
