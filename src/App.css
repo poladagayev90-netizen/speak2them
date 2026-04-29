@@ -458,3 +458,19 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.btn-random {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-random:hover {
+  opacity: 0.9;
+}
