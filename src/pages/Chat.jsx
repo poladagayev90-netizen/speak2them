@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
-  query, orderBy, serverTimestamp, doc, getDoc, setDoc
+  query, orderBy, serverTimestamp,
+  doc, getDoc, setDoc, deleteDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
@@ -24,7 +25,7 @@ export default function Chat({ user }) {
   const bottomRef = useRef(null);
 
   const chatId = [user.uid, peerId].sort().join('_');
-  const callRef = doc(db, 'calls', chatId);
+  const callDocId = `call_${chatId}`;
 
   useEffect(() => {
     getDoc(doc(db, 'users', peerId)).then(d => {
@@ -44,24 +45,100 @@ export default function Chat({ user }) {
     return unsub;
   }, [chatId]);
 
-  // Zəng bildirişini dinlə
   useEffect(() => {
-    const unsub = onSnapshot(callRef, (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      // Qarşı tərəf zəng edirsə və mən hələ zənqdə deyiləmsə
-      if (data.callerId === peerId && data.status === 'calling' && !inCall) {
-        setIncomingCall(true);
-        setCallStatus('📞 Incoming call...');
+    const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
+      if (!snap.exists()) {
+        setIncomingCall(false);
+        return;
       }
-      // Qarşı tərəf zəngi bitirdisə
+      const data = snap.data();
+      if (data.callerId !== user.uid && data.status === 'calling') {
+        setIncomingCall(true);
+      }
+      if (data.status === 'accepted' && data.callerId === user.uid) {
+        setIncomingCall(false);
+        joinCall();
+      }
       if (data.status === 'ended') {
         setIncomingCall(false);
-        if (inCall) endCall();
+        endCall();
       }
     });
     return unsub;
-  }, [peerId, inCall]);
+  }, [chatId, user.uid]);
+
+  const startCall = async () => {
+    await setDoc(doc(db, 'calls', callDocId), {
+      callerId: user.uid,
+      callerName: user.displayName || 'User',
+      status: 'calling',
+      createdAt: serverTimestamp(),
+    });
+    setCallStatus('📞 Calling...');
+  };
+
+  const acceptCall = async () => {
+    setIncomingCall(false);
+    await setDoc(doc(db, 'calls', callDocId), {
+      status: 'accepted',
+    }, { merge: true });
+    await joinCall();
+  };
+
+  const rejectCall = async () => {
+    setIncomingCall(false);
+    await deleteDoc(doc(db, 'calls', callDocId));
+    setCallStatus('');
+  };
+
+  const joinCall = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+      clientRef.current = client;
+
+      client.on('user-published', async (remoteUser, mediaType) => {
+        await client.subscribe(remoteUser, mediaType);
+        if (mediaType === 'audio') {
+          remoteUser.audioTrack.play();
+          setCallStatus('🟢 Connected');
+        }
+      });
+
+      client.on('user-unpublished', () => {
+        setCallStatus('Partner left the call');
+      });
+
+      await client.join(APP_ID, chatId, null, user.uid);
+      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      localTrackRef.current = localTrack;
+      await client.publish(localTrack);
+      setInCall(true);
+      setCallStatus('🟢 Connected');
+    } catch (err) {
+      console.error(err);
+      setCallStatus('Microphone access denied!');
+    }
+  };
+
+  const endCall = async () => {
+    localTrackRef.current?.stop();
+    localTrackRef.current?.close();
+    await clientRef.current?.leave();
+    setInCall(false);
+    setCallStatus('');
+    try {
+      await setDoc(doc(db, 'calls', callDocId), { status: 'ended' }, { merge: true });
+      setTimeout(() => deleteDoc(doc(db, 'calls', callDocId)), 2000);
+    } catch (e) {}
+  };
+
+  const toggleMute = async () => {
+    if (localTrackRef.current) {
+      await localTrackRef.current.setMuted(!muted);
+      setMuted(!muted);
+    }
+  };
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -75,80 +152,18 @@ export default function Chat({ user }) {
     setText('');
   };
 
-  const joinAgoraCall = async () => {
-    const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-    clientRef.current = client;
-
-    client.on('user-published', async (remoteUser, mediaType) => {
-      await client.subscribe(remoteUser, mediaType);
-      if (mediaType === 'audio') {
-        remoteUser.audioTrack.play();
-        setCallStatus('Connected ✅');
-      }
-    });
-
-    client.on('user-unpublished', () => {
-      setCallStatus('Partner left the call');
-    });
-
-    await client.join(APP_ID, chatId, null, user.uid);
-    const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    localTrackRef.current = localTrack;
-    await client.publish(localTrack);
-    setInCall(true);
-    setIncomingCall(false);
-  };
-
-  const startCall = async () => {
-    try {
-      setCallStatus('Calling...');
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // Firestore-da zəng statusu yaz
-      await setDoc(callRef, {
-        callerId: user.uid,
-        receiverId: peerId,
-        status: 'calling',
-        startedAt: serverTimestamp(),
-      });
-
-      await joinAgoraCall();
-      setCallStatus('Waiting for partner... 🎙️');
-    } catch (err) {
-      console.error(err);
-      setCallStatus('❌ Microphone access denied!');
-    }
-  };
-
-  const acceptCall = async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      await setDoc(callRef, { status: 'accepted' }, { merge: true });
-      await joinAgoraCall();
-    } catch (err) {
-      setCallStatus('❌ Microphone access denied!');
-    }
-  };
-
-  const endCall = async () => {
-    localTrackRef.current?.stop();
-    localTrackRef.current?.close();
-    await clientRef.current?.leave();
-    await setDoc(callRef, { status: 'ended' }, { merge: true });
-    setInCall(false);
-    setIncomingCall(false);
-    setCallStatus('');
-  };
-
-  const toggleMute = async () => {
-    if (localTrackRef.current) {
-      await localTrackRef.current.setMuted(!muted);
-      setMuted(!muted);
-    }
-  };
-
   return (
     <div className="chat-page">
+      {incomingCall && (
+        <div className="incoming-call">
+          <p>📞 {peer?.name} sizi zəng edir...</p>
+          <div className="incoming-call-buttons">
+            <button className="btn-accept" onClick={acceptCall}>Qəbul et</button>
+            <button className="btn-reject" onClick={rejectCall}>Rədd et</button>
+          </div>
+        </div>
+      )}
+
       <div className="chat-header">
         <button className="btn-back" onClick={() => { endCall(); navigate('/'); }}>← Back</button>
         <div className="chat-peer-info">
@@ -163,16 +178,51 @@ export default function Chat({ user }) {
             <span>{peer?.level || 'English Speaker'}</span>
           </div>
         </div>
-
         <div className="call-controls">
-          {incomingCall && !inCall && (
-            <button className="btn-accept" onClick={acceptCall}>
-              📞 Accept
-            </button>
-          )}
-          {!inCall && !incomingCall && (
-            <button className="btn-call" onClick={startCall}>📞</button>
-          )}
-          {inCall && (
+          {!inCall ? (
+            <button className="btn-call" onClick={startCall}>🎙️ Call</button>
+          ) : (
             <>
-              <button cla
+              <button className="btn-mute" onClick={toggleMute}>
+                {muted ? '🔇 Unmute' : '🎤 Mute'}
+              </button>
+              <button className="btn-end" onClick={endCall}>📵 End</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {callStatus && (
+        <div style={{
+          textAlign: 'center',
+          padding: '8px',
+          background: '#1e1e30',
+          color: '#7c6ff7',
+          fontSize: '14px'
+        }}>
+          {callStatus}
+        </div>
+      )}
+
+      <div className="chat-messages">
+        {messages.map(m => (
+          <div key={m.id} className={`message ${m.senderId === user.uid ? 'mine' : 'theirs'}`}>
+            <span className="message-sender">{m.senderName}</span>
+            <p>{m.text}</p>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      <form className="chat-input" onSubmit={sendMessage}>
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={text}
+          onChange={e => setText(e.target.value)}
+        />
+        <button type="submit">Send ➤</button>
+      </form>
+    </div>
+  );
+}

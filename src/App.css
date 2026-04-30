@@ -246,6 +246,7 @@ body {
   justify-content: center;
   font-size: 22px;
   font-weight: 700;
+  overflow: hidden;
 }
 
 .user-info h3 {
@@ -283,6 +284,23 @@ body {
 }
 
 .btn-chat:hover {
+  opacity: 0.9;
+}
+
+.btn-random {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-random:hover {
   opacity: 0.9;
 }
 
@@ -326,6 +344,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  overflow: hidden;
 }
 
 .chat-peer-info h3 {
@@ -458,19 +477,51 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
-.btn-random {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s;
+
+.incoming-call {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e30;
+  border: 2px solid #7c6ff7;
+  border-radius: 16px;
+  padding: 20px 28px;
+  text-align: center;
+  z-index: 999;
+  box-shadow: 0 8px 32px rgba(124, 111, 247, 0.3);
 }
 
-.btn-random:hover {
-  opacity: 0.9;
+.incoming-call p {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.incoming-call-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-accept {
+  padding: 10px 24px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-reject {
+  padding: 10px 24px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
 }
