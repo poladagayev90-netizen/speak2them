@@ -60,6 +60,7 @@ export default function Chat({ user }) {
       }
     });
     return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, user.uid]);
 
   const startCall = async () => {
