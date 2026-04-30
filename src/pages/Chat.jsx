@@ -5,10 +5,13 @@ import {
   query, orderBy, serverTimestamp,
   doc, getDoc, setDoc, deleteDoc
 } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
+const functionsInstance = getFunctions();
+const getAgoraToken = httpsCallable(functionsInstance, 'getAgoraToken');
 
 export default function Chat({ user }) {
   const { peerId } = useParams();
@@ -109,7 +112,10 @@ export default function Chat({ user }) {
         setCallStatus('Partner left the call');
       });
 
-      await client.join(APP_ID, chatId, null, user.uid);
+      const tokenResult = await getAgoraToken({ channelName: chatId });
+      const token = tokenResult.data.token;
+
+      await client.join(APP_ID, chatId, token, user.uid);
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
       localTrackRef.current = localTrack;
       await client.publish(localTrack);
@@ -117,7 +123,7 @@ export default function Chat({ user }) {
       setCallStatus('🟢 Connected');
     } catch (err) {
       console.error(err);
-      setCallStatus('Microphone access denied!');
+      setCallStatus('❌ Xəta baş verdi!');
     }
   };
 
@@ -158,8 +164,8 @@ export default function Chat({ user }) {
         <div className="incoming-call">
           <p>📞 {peer?.name} sizi zəng edir...</p>
           <div className="incoming-call-buttons">
-            <button className="btn-accept" onClick={acceptCall}>Qəbul et</button>
-            <button className="btn-reject" onClick={rejectCall}>Rədd et</button>
+            <button className="btn-accept" onClick={acceptCall}>✅ Qəbul et</button>
+            <button className="btn-reject" onClick={rejectCall}>❌ Rədd et</button>
           </div>
         </div>
       )}
