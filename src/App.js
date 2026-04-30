@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { tg, tgUser } from './telegram';
 import Login from './pages/Login';
@@ -20,33 +20,52 @@ function App() {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const uid = tgUser ? String(tgUser.id) : currentUser.uid;
-        const userDoc = await getDoc(doc(db, 'users', uid));
 
-        if (!userDoc.exists()) {
-          await setDoc(doc(db, 'users', uid), {
-            uid,
-            name: tgUser
-              ? tgUser.first_name + ' ' + (tgUser.last_name || '')
-              : currentUser.displayName || 'User',
-            telegramId: tgUser?.id || null,
-            photo: tgUser?.photo_url || '',
-            isNewUser: true,
-            online: true,
-            lastSeen: serverTimestamp(),
-          });
-        } else {
-          await setDoc(doc(db, 'users', uid), {
-            online: true,
-            lastSeen: serverTimestamp(),
-          }, { merge: true });
-        }
+        await setDoc(doc(db, 'users', uid), {
+          uid,
+          name: tgUser
+            ? tgUser.first_name + ' ' + (tgUser.last_name || '')
+            : currentUser.displayName || 'User',
+          telegramId: tgUser?.id || null,
+          photo: tgUser?.photo_url || '',
+          level: 'B1 – Intermediate',
+          online: true,
+          lastSeen: serverTimestamp(),
+        }, { merge: true });
 
-        window.addEventListener('beforeunload', () => {
+        // Heartbeat — hər 30 saniyədə online statusu yenilə
+        const heartbeat = setInterval(async () => {
+          try {
+            await setDoc(doc(db, 'users', uid), {
+              online: true,
+              lastSeen: serverTimestamp(),
+            }, { merge: true });
+          } catch (e) {}
+        }, 30000);
+
+        // Səhifə bağlananda offline et
+        const goOffline = () => {
           setDoc(doc(db, 'users', uid), {
             online: false,
             lastSeen: serverTimestamp(),
           }, { merge: true });
+        };
+
+        window.addEventListener('beforeunload', goOffline);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') goOffline();
+          if (document.visibilityState === 'visible') {
+            setDoc(doc(db, 'users', uid), {
+              online: true,
+              lastSeen: serverTimestamp(),
+            }, { merge: true });
+          }
         });
+
+        return () => {
+          clearInterval(heartbeat);
+          window.removeEventListener('beforeunload', goOffline);
+        };
       }
       setUser(currentUser);
       setLoading(false);

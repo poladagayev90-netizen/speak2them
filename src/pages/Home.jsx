@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -11,11 +11,18 @@ export default function Home({ user }) {
   const [tab, setTab] = useState('online');
   const navigate = useNavigate();
 
-  // Online istifadəçiləri dinlə
+  // Online istifadəçiləri dinlə — lastSeen 90 saniyədən az olanlar
   useEffect(() => {
-    const q = query(collection(db, 'users'), where('online', '==', true));
-    const unsub = onSnapshot(q, (snap) => {
-      const list = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
+    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
+      const now = Date.now();
+      const list = snap.docs
+        .map(d => d.data())
+        .filter(u => {
+          if (u.uid === user.uid) return false;
+          if (!u.lastSeen) return false;
+          const lastSeen = u.lastSeen.toMillis?.() || 0;
+          return (now - lastSeen) < 90000; // 90 saniyə
+        });
       setOnlineUsers(list);
     });
     return unsub;
@@ -52,7 +59,6 @@ export default function Home({ user }) {
   const acceptCall = async () => {
     const callerId = incomingCall.callerId;
     const callDocId = incomingCall.callDocId;
-    const { setDoc } = await import('firebase/firestore');
     await setDoc(doc(db, 'calls', callDocId), {
       status: 'accepted',
     }, { merge: true });
@@ -73,7 +79,14 @@ export default function Home({ user }) {
   const findRandomPartner = async () => {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const snapshot = await getDocs(q);
-    const list = snapshot.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
+    const now = Date.now();
+    const list = snapshot.docs
+      .map(d => d.data())
+      .filter(u => {
+        if (u.uid === user.uid) return false;
+        const lastSeen = u.lastSeen?.toMillis?.() || 0;
+        return (now - lastSeen) < 90000;
+      });
     if (list.length === 0) {
       alert('No one online right now. Try again!');
       return;
@@ -86,7 +99,6 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
-
       {incomingCall && (
         <div className="incoming-call">
           <p>📞 {incomingCall.callerName} sizi zəng edir...</p>
@@ -146,8 +158,8 @@ export default function Home({ user }) {
                   <h3>{u.name}</h3>
                   <span className="user-level">{u.level || 'English Speaker'}</span>
                   {u.bio && <p className="user-bio">{u.bio}</p>}
-                  <span className={`online-badge ${u.online ? 'online' : 'offline'}`}>
-                    {u.online ? '🟢 Online' : '⚫ Offline'}
+                  <span className={`online-badge ${tab === 'online' || u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
+                    {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
                   </span>
                 </div>
                 <button className="btn-chat" onClick={() => navigate(`/chat/${u.uid}`)}>
