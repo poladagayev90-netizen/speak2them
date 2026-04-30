@@ -49,15 +49,14 @@ export default function Chat({ user }) {
     return unsub;
   }, [chatId]);
 
-  // Qəbul edən tərəf səhifəyə gəldikdə avtomatik qoşul
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
       joinCall();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
-  // Zəng statusunu dinlə
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
       if (!snap.exists()) return;
