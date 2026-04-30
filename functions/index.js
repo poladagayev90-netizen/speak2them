@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
+const cors = require("cors")({ origin: true });
 
 const APP_ID = "98299e33a32f4137a94daacc5422c92e";
 const APP_CERTIFICATE = "ea7ad2e0c0bc4a98a35f3617931fa7ac";
