@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, serverTimestamp,
@@ -16,6 +16,7 @@ const getAgoraToken = httpsCallable(functionsInstance, 'getAgoraToken');
 export default function Chat({ user }) {
   const { peerId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [peer, setPeer] = useState(null);
@@ -25,6 +26,7 @@ export default function Chat({ user }) {
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
+  const joinedRef = useRef(false);
 
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
@@ -47,12 +49,21 @@ export default function Chat({ user }) {
     return unsub;
   }, [chatId]);
 
+  // Qəbul edən tərəf səhifəyə gəldikdə avtomatik qoşul
+  useEffect(() => {
+    if (location.state?.acceptedCall && !joinedRef.current) {
+      joinedRef.current = true;
+      joinCall();
+    }
+  }, [location.state]);
+
   // Zəng statusunu dinlə
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
       if (!snap.exists()) return;
       const data = snap.data();
-      if (data.status === 'accepted' && data.callerId === user.uid) {
+      if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
+        joinedRef.current = true;
         joinCall();
       }
       if (data.status === 'ended') {
@@ -60,7 +71,7 @@ export default function Chat({ user }) {
       }
     });
     return unsub;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, user.uid]);
 
   const startCall = async () => {
@@ -108,6 +119,7 @@ export default function Chat({ user }) {
   };
 
   const endCall = async () => {
+    joinedRef.current = false;
     localTrackRef.current?.stop();
     localTrackRef.current?.close();
     await clientRef.current?.leave();

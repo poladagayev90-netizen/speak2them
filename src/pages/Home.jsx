@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, where, getDocs, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home({ user }) {
-  const [users, setUsers] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [incomingCall, setIncomingCall] = useState(null);
+  const [tab, setTab] = useState('online');
   const navigate = useNavigate();
 
   // Online istifadəçiləri dinlə
@@ -14,7 +16,16 @@ export default function Home({ user }) {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const unsub = onSnapshot(q, (snap) => {
       const list = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
-      setUsers(list);
+      setOnlineUsers(list);
+    });
+    return unsub;
+  }, [user]);
+
+  // Bütün istifadəçiləri dinlə
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
+      const list = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
+      setAllUsers(list);
     });
     return unsub;
   }, [user]);
@@ -38,13 +49,18 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
-  const acceptCall = () => {
-    navigate(`/chat/${incomingCall.callerId}`);
+  const acceptCall = async () => {
+    const callerId = incomingCall.callerId;
+    const callDocId = incomingCall.callDocId;
+    const { setDoc } = await import('firebase/firestore');
+    await setDoc(doc(db, 'calls', callDocId), {
+      status: 'accepted',
+    }, { merge: true });
     setIncomingCall(null);
+    navigate(`/chat/${callerId}`, { state: { acceptedCall: true } });
   };
 
   const rejectCall = async () => {
-    const { deleteDoc } = await import('firebase/firestore');
     await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
     setIncomingCall(null);
   };
@@ -66,10 +82,11 @@ export default function Home({ user }) {
     navigate(`/chat/${random.uid}`);
   };
 
+  const displayUsers = tab === 'online' ? onlineUsers : allUsers;
+
   return (
     <div className="home-page">
 
-      {/* Gələn zəng bildirişi */}
       {incomingCall && (
         <div className="incoming-call">
           <p>📞 {incomingCall.callerName} sizi zəng edir...</p>
@@ -93,18 +110,30 @@ export default function Home({ user }) {
           🎲 Find Random Partner
         </button>
 
-        <h2 style={{ marginTop: '32px' }}>🟢 Online Speakers ({users.length})</h2>
-        <p className="home-sub">Choose someone to practice English with!</p>
+        <div className="tabs">
+          <button
+            className={`tab ${tab === 'online' ? 'active' : ''}`}
+            onClick={() => setTab('online')}
+          >
+            🟢 Online ({onlineUsers.length})
+          </button>
+          <button
+            className={`tab ${tab === 'all' ? 'active' : ''}`}
+            onClick={() => setTab('all')}
+          >
+            👥 All Users ({allUsers.length})
+          </button>
+        </div>
 
-        {users.length === 0 ? (
+        {displayUsers.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">😴</div>
-            <p>No one is online right now.</p>
+            <p>{tab === 'online' ? 'No one is online right now.' : 'No users yet.'}</p>
             <p>Share the app with friends!</p>
           </div>
         ) : (
           <div className="users-grid">
-            {users.map(u => (
+            {displayUsers.map(u => (
               <div key={u.uid} className="user-card">
                 <div className="user-avatar">
                   {u.photo ? (
@@ -117,6 +146,9 @@ export default function Home({ user }) {
                   <h3>{u.name}</h3>
                   <span className="user-level">{u.level || 'English Speaker'}</span>
                   {u.bio && <p className="user-bio">{u.bio}</p>}
+                  <span className={`online-badge ${u.online ? 'online' : 'offline'}`}>
+                    {u.online ? '🟢 Online' : '⚫ Offline'}
+                  </span>
                 </div>
                 <button className="btn-chat" onClick={() => navigate(`/chat/${u.uid}`)}>
                   💬 Chat & Call

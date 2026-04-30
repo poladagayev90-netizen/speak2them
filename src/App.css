@@ -525,3 +525,40 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0 20px 0;
+}
+
+.tab {
+  padding: 10px 24px;
+  background: #1e1e30;
+  border: 1px solid #2e2e50;
+  border-radius: 20px;
+  color: #aaa;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #7c6ff7, #5b4de8);
+  border-color: transparent;
+  color: white;
+}
+
+.online-badge {
+  font-size: 11px;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.online-badge.online {
+  color: #22c55e;
+}
+
+.online-badge.offline {
+  color: #666;
+}
