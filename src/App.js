@@ -17,6 +17,8 @@ function App() {
     tg.ready();
     tg.expand();
 
+    let heartbeatInterval = null;
+
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const uid = tgUser ? String(tgUser.id) : currentUser.uid;
@@ -33,8 +35,9 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        // Heartbeat — hər 30 saniyədə online statusu yenilə
-        const heartbeat = setInterval(async () => {
+        // Heartbeat
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        heartbeatInterval = setInterval(async () => {
           try {
             await setDoc(doc(db, 'users', uid), {
               online: true,
@@ -43,7 +46,6 @@ function App() {
           } catch (e) {}
         }, 30000);
 
-        // Səhifə bağlananda offline et
         const goOffline = () => {
           setDoc(doc(db, 'users', uid), {
             online: false,
@@ -61,17 +63,18 @@ function App() {
             }, { merge: true });
           }
         });
-
-        return () => {
-          clearInterval(heartbeat);
-          window.removeEventListener('beforeunload', goOffline);
-        };
+      } else {
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
       }
+
       setUser(currentUser);
       setLoading(false);
     });
 
-    return unsub;
+    return () => {
+      unsub();
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+    };
   }, []);
 
   if (loading) {
