@@ -5,13 +5,11 @@ import {
   query, orderBy, serverTimestamp,
   doc, getDoc, setDoc, deleteDoc
 } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
-const functionsInstance = getFunctions();
-const getAgoraToken = httpsCallable(functionsInstance, 'getAgoraToken');
+const TOKEN_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/getAgoraToken';
 
 export default function Chat({ user }) {
   const { peerId } = useParams();
@@ -102,8 +100,13 @@ export default function Chat({ user }) {
         setCallStatus('Partner left the call');
       });
 
-      const tokenResult = await getAgoraToken({ channelName: chatId });
-      const token = tokenResult.data.token;
+      const res = await fetch(TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channelName: chatId }),
+      });
+      const data = await res.json();
+      const token = data.token;
 
       await client.join(APP_ID, chatId, token, user.uid);
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();

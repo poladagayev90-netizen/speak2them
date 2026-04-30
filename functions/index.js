@@ -1,17 +1,26 @@
 const functions = require("firebase-functions");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
-const cors = require("cors")({ origin: true });
 
 const APP_ID = "98299e33a32f4137a94daacc5422c92e";
 const APP_CERTIFICATE = "ea7ad2e0c0bc4a98a35f3617931fa7ac";
 
-exports.getAgoraToken = functions.https.onCall((data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError("unauthenticated", "Login required");
+exports.getAgoraToken = functions.https.onRequest((req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, POST");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    res.status(204).send("");
+    return;
   }
 
-  const channelName = data.channelName;
-  const uid = context.auth.uid;
+  const channelName = req.body.channelName || req.query.channelName;
+
+  if (!channelName) {
+    res.status(400).json({ error: "channelName required" });
+    return;
+  }
+
   const role = RtcRole.PUBLISHER;
   const expireTime = 3600;
   const currentTime = Math.floor(Date.now() / 1000);
@@ -21,10 +30,10 @@ exports.getAgoraToken = functions.https.onCall((data, context) => {
     APP_ID,
     APP_CERTIFICATE,
     channelName,
-    uid,
+    0,
     role,
     privilegeExpireTime
   );
 
-  return { token };
+  res.status(200).json({ token });
 });
