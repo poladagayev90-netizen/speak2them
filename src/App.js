@@ -1,60 +1,79 @@
-import { useEffect, useState } from "react";
-import { auth, db } from "./firebase";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
-import IncomingCallModal from "./components/IncomingCallModal"; // Yeni yaradacağın komponent
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from './firebase';
+import { tg, tgUser } from './telegram';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Home from './pages/Home';
+import Chat from './pages/Chat';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [incomingCall, setIncomingCall] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. İstifadəçinin daxil olub-olmadığını yoxla
-    const unsubscribeAuth = auth.onAuthStateChanged((loggedInUser) => {
-      if (loggedInUser) {
-        setUser(loggedInUser);
-        const userRef = doc(db, "users", loggedInUser.uid);
+    tg.ready();
+    tg.expand();
 
-        // --- ONLINE STATUS MƏNTİQİ ---
-        updateDoc(userRef, { status: "online" });
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const uid = tgUser ? String(tgUser.id) : currentUser.uid;
+        const userDoc = await getDoc(doc(db, 'users', uid));
 
-        const handleOffline = () => updateDoc(userRef, { status: "offline" });
-        window.addEventListener("beforeunload", handleOffline);
+        if (!userDoc.exists()) {
+          await setDoc(doc(db, 'users', uid), {
+            uid,
+            name: tgUser
+              ? tgUser.first_name + ' ' + (tgUser.last_name || '')
+              : currentUser.displayName || 'User',
+            telegramId: tgUser?.id || null,
+            photo: tgUser?.photo_url || '',
+            isNewUser: true,
+            online: true,
+            lastSeen: serverTimestamp(),
+          });
+        } else {
+          await setDoc(doc(db, 'users', uid), {
+            online: true,
+            lastSeen: serverTimestamp(),
+          }, { merge: true });
+        }
 
-        // --- CANLI ZƏNG VƏ MESAJ DİNLƏYİCİSİ ---
-        const unsubscribeUserDoc = onSnapshot(userRef, (snapshot) => {
-          const userData = snapshot.data();
-          if (userData?.incomingCall) {
-            // Əgər bazada gələn zəng məlumatı varsa, modalı aç
-            setIncomingCall(userData.incomingCall);
-          } else {
-            setIncomingCall(null);
-          }
+        window.addEventListener('beforeunload', () => {
+          setDoc(doc(db, 'users', uid), {
+            online: false,
+            lastSeen: serverTimestamp(),
+          }, { merge: true });
         });
-
-        return () => {
-          handleOffline();
-          window.removeEventListener("beforeunload", handleOffline);
-          unsubscribeUserDoc();
-        };
-      } else {
-        setUser(null);
       }
+      setUser(currentUser);
+      setLoading(false);
     });
 
-    return () => unsubscribeAuth();
+    return unsub;
   }, []);
 
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-logo">🎙️</div>
+        <p>Loading Speak2Them...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
-      {/* Əgər zəng varsa, modalı göstər */}
-      {incomingCall && (
-        <IncomingCallModal 
-          callData={incomingCall} 
-          onReject={() => {/* Bazada incomingCall-u sil */}}
-        />
-      )}
-      
-      {/* Səhifələrin (Routing) */}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login"        element={!user ? <Login />    : <Navigate to="/" />} />
+        <Route path="/register"     element={!user ? <Register /> : <Navigate to="/" />} />
+        <Route path="/"             element={user  ? <Home user={user} /> : <Navigate to="/login" />} />
+        <Route path="/chat/:peerId" element={user  ? <Chat user={user} /> : <Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
+
+export default App;
