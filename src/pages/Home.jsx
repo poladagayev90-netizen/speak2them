@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, where, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs, doc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home({ user }) {
   const [users, setUsers] = useState([]);
+  const [incomingCall, setIncomingCall] = useState(null);
   const navigate = useNavigate();
 
+  // Online istifadəçiləri dinlə
   useEffect(() => {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const unsub = onSnapshot(q, (snap) => {
@@ -16,6 +18,36 @@ export default function Home({ user }) {
     });
     return unsub;
   }, [user]);
+
+  // Gələn zəngləri dinlə
+  useEffect(() => {
+    const q = query(
+      collection(db, 'calls'),
+      where('receiverId', '==', user.uid),
+      where('status', '==', 'calling')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      if (!snap.empty) {
+        const callData = snap.docs[0].data();
+        callData.callDocId = snap.docs[0].id;
+        setIncomingCall(callData);
+      } else {
+        setIncomingCall(null);
+      }
+    });
+    return unsub;
+  }, [user]);
+
+  const acceptCall = () => {
+    navigate(`/chat/${incomingCall.callerId}`);
+    setIncomingCall(null);
+  };
+
+  const rejectCall = async () => {
+    const { deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
+    setIncomingCall(null);
+  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -36,6 +68,18 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
+
+      {/* Gələn zəng bildirişi */}
+      {incomingCall && (
+        <div className="incoming-call">
+          <p>📞 {incomingCall.callerName} sizi zəng edir...</p>
+          <div className="incoming-call-buttons">
+            <button className="btn-accept" onClick={acceptCall}>✅ Qəbul et</button>
+            <button className="btn-reject" onClick={rejectCall}>❌ Rədd et</button>
+          </div>
+        </div>
+      )}
+
       <div className="home-header">
         <div className="home-logo">🎙️ Speak2Them</div>
         <div className="home-header-right">

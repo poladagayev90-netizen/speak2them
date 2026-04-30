@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
@@ -22,11 +22,9 @@ export default function Chat({ user }) {
   const [inCall, setInCall] = useState(false);
   const [muted, setMuted] = useState(false);
   const [callStatus, setCallStatus] = useState('');
-  const [incomingCall, setIncomingCall] = useState(false);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
-  const inCallRef = useRef(false);
 
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
@@ -49,16 +47,38 @@ export default function Chat({ user }) {
     return unsub;
   }, [chatId]);
 
-  // Agora-ya qoşul — HƏR İKİ TƏRƏF üçün eyni funksiya
-  const joinAgoraChannel = useCallback(async () => {
-    if (inCallRef.current) return; // artıq qoşulubsa keç
+  // Zəng statusunu dinlə
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.status === 'accepted' && data.callerId === user.uid) {
+        joinCall();
+      }
+      if (data.status === 'ended') {
+        endCall();
+      }
+    });
+    return unsub;
+  }, [chatId, user.uid]);
+
+  const startCall = async () => {
+    await setDoc(doc(db, 'calls', callDocId), {
+      callerId: user.uid,
+      callerName: user.displayName || 'User',
+      receiverId: peerId,
+      status: 'calling',
+      createdAt: serverTimestamp(),
+    });
+    setCallStatus('📞 Calling...');
+  };
+
+  const joinCall = async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
 
-      // Qarşı tərəf yayım başladıqda dinlə
       client.on('user-published', async (remoteUser, mediaType) => {
         await client.subscribe(remoteUser, mediaType);
         if (mediaType === 'audio') {
@@ -68,100 +88,30 @@ export default function Chat({ user }) {
       });
 
       client.on('user-unpublished', () => {
-        setCallStatus('⚠️ Partner left the call');
+        setCallStatus('Partner left the call');
       });
 
-      // Token al
       const tokenResult = await getAgoraToken({ channelName: chatId });
       const token = tokenResult.data.token;
 
-      // Kanala qoşul
       await client.join(APP_ID, chatId, token, user.uid);
-
-      // Mikrofonu aç və yayımla
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
       localTrackRef.current = localTrack;
       await client.publish(localTrack);
-
-      inCallRef.current = true;
       setInCall(true);
       setCallStatus('🟢 Connected');
     } catch (err) {
-      console.error('Agora error:', err);
-      setCallStatus('❌ Xəta: ' + err.message);
+      console.error(err);
+      setCallStatus('❌ Xəta baş verdi!');
     }
-  }, [chatId, user.uid]);
-
-  // Zəng sənədini dinlə
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
-      if (!snap.exists()) {
-        setIncomingCall(false);
-        return;
-      }
-      const data = snap.data();
-
-      // Zəng gəldi — qəbul et düyməsi göstər
-      if (data.callerId !== user.uid && data.status === 'calling') {
-        setIncomingCall(true);
-        setCallStatus('📞 Incoming call...');
-      }
-
-      // Qarşı tərəf qəbul etdi — zəng edən də kanala qoşsun
-      if (data.status === 'accepted' && data.callerId === user.uid && !inCallRef.current) {
-        setCallStatus('Connecting...');
-        joinAgoraChannel();
-      }
-
-      // Zəng bitdi
-      if (data.status === 'ended') {
-        setIncomingCall(false);
-        handleEndCall();
-      }
-    });
-    return unsub;
-  }, [callDocId, user.uid, joinAgoraChannel]);
-
-  const startCall = async () => {
-    setCallStatus('📞 Calling...');
-    await setDoc(doc(db, 'calls', callDocId), {
-      callerId: user.uid,
-      callerName: user.displayName || 'User',
-      status: 'calling',
-      createdAt: serverTimestamp(),
-    });
-    // Zəng edən HƏLƏ kanala qoşmur — qəbul edildikdə qoşacaq
-  };
-
-  const acceptCall = async () => {
-    setIncomingCall(false);
-    // Əvvəlcə özü kanala qoşur
-    await joinAgoraChannel();
-    // Sonra Firestore-a "accepted" yazır ki, zəng edən də qoşsun
-    await setDoc(doc(db, 'calls', callDocId), {
-      status: 'accepted',
-    }, { merge: true });
-  };
-
-  const rejectCall = async () => {
-    setIncomingCall(false);
-    await deleteDoc(doc(db, 'calls', callDocId));
-    setCallStatus('');
-  };
-
-  const handleEndCall = async () => {
-    localTrackRef.current?.stop();
-    localTrackRef.current?.close();
-    await clientRef.current?.leave();
-    clientRef.current = null;
-    localTrackRef.current = null;
-    inCallRef.current = false;
-    setInCall(false);
-    setCallStatus('');
   };
 
   const endCall = async () => {
-    await handleEndCall();
+    localTrackRef.current?.stop();
+    localTrackRef.current?.close();
+    await clientRef.current?.leave();
+    setInCall(false);
+    setCallStatus('');
     try {
       await setDoc(doc(db, 'calls', callDocId), { status: 'ended' }, { merge: true });
       setTimeout(() => deleteDoc(doc(db, 'calls', callDocId)), 2000);
@@ -189,16 +139,6 @@ export default function Chat({ user }) {
 
   return (
     <div className="chat-page">
-      {incomingCall && (
-        <div className="incoming-call">
-          <p>📞 {peer?.name} sizi zəng edir...</p>
-          <div className="incoming-call-buttons">
-            <button className="btn-accept" onClick={acceptCall}>✅ Qəbul et</button>
-            <button className="btn-reject" onClick={rejectCall}>❌ Rədd et</button>
-          </div>
-        </div>
-      )}
-
       <div className="chat-header">
         <button className="btn-back" onClick={() => { endCall(); navigate('/'); }}>← Back</button>
         <div className="chat-peer-info">
