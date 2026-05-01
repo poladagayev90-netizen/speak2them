@@ -11,7 +11,6 @@ export default function Home({ user }) {
   const [tab, setTab] = useState('online');
   const navigate = useNavigate();
 
-  // Online istifadəçiləri dinlə — lastSeen 90 saniyədən az olanlar
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       const now = Date.now();
@@ -21,14 +20,13 @@ export default function Home({ user }) {
           if (u.uid === user.uid) return false;
           if (!u.lastSeen) return false;
           const lastSeen = u.lastSeen.toMillis?.() || 0;
-          return (now - lastSeen) < 90000; // 90 saniyə
+          return (now - lastSeen) < 90000;
         });
       setOnlineUsers(list);
     });
     return unsub;
   }, [user]);
 
-  // Bütün istifadəçiləri dinlə
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       const list = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
@@ -37,7 +35,6 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
-  // Gələn zəngləri dinlə
   useEffect(() => {
     const q = query(
       collection(db, 'calls'),
@@ -59,9 +56,7 @@ export default function Home({ user }) {
   const acceptCall = async () => {
     const callerId = incomingCall.callerId;
     const callDocId = incomingCall.callDocId;
-    await setDoc(doc(db, 'calls', callDocId), {
-      status: 'accepted',
-    }, { merge: true });
+    await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
     setIncomingCall(null);
     navigate(`/chat/${callerId}`, { state: { acceptedCall: true } });
   };
@@ -109,12 +104,16 @@ export default function Home({ user }) {
         </div>
       )}
 
-     <div className="home-header-right">
-  <button className="btn-profile" onClick={() => navigate('/profile')}>
-    👤 {user.displayName || 'User'}
-  </button>
-  <button className="btn-logout" onClick={handleLogout}>Logout</button>
-</div>
+      <div className="home-header">
+        <div className="home-logo">🎙️ Speak2Them</div>
+        <div className="home-header-right">
+          <button className="btn-profile" onClick={() => navigate('/daily')}>
+            📅 Daily
+          </button>
+          <span className="home-username">👤 {user.displayName || 'User'}</span>
+          <button className="btn-logout" onClick={handleLogout}>Logout</button>
+        </div>
+      </div>
 
       <div className="home-body">
         <button className="btn-random" onClick={findRandomPartner}>
@@ -157,7 +156,7 @@ export default function Home({ user }) {
                   <h3>{u.name}</h3>
                   <span className="user-level">{u.level || 'English Speaker'}</span>
                   {u.bio && <p className="user-bio">{u.bio}</p>}
-                  <span className={`online-badge ${tab === 'online' || u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
+                  <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
                     {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
                   </span>
                 </div>

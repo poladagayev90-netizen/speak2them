@@ -701,3 +701,31 @@ body {
 .btn-forgot:hover {
   text-decoration: underline;
 }
+.hub-page { min-height: 100vh; display: flex; flex-direction: column; }
+.hub-header { display: flex; align-items: center; gap: 16px; padding: 20px 32px; background: #1e1e30; border-bottom: 1px solid #2e2e50; }
+.hub-topic { font-size: 24px; font-weight: 800; color: #7c6ff7; }
+.hub-tabs { display: flex; gap: 8px; padding: 20px 32px 0; }
+.hub-tab { padding: 10px 20px; background: #1e1e30; border: 1px solid #2e2e50; border-radius: 20px; color: #aaa; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.hub-tab.active { background: linear-gradient(135deg, #7c6ff7, #5b4de8); border-color: transparent; color: white; }
+.hub-body { padding: 24px 32px; flex: 1; }
+.difficulty-toggle { display: flex; gap: 12px; margin-bottom: 20px; }
+.diff-btn { padding: 10px 24px; background: #1e1e30; border: 1px solid #2e2e50; border-radius: 20px; color: #aaa; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.diff-btn.active { background: linear-gradient(135deg, #7c6ff7, #5b4de8); border-color: transparent; color: white; }
+.questions-list { display: flex; flex-direction: column; gap: 12px; }
+.question-card { background: #1e1e30; border: 1px solid #2e2e50; border-radius: 14px; padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; }
+.question-number { background: #7c6ff7; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.question-card p { font-size: 15px; line-height: 1.5; margin: 0; }
+.vocab-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.vocab-card { background: #1e1e30; border: 1px solid #2e2e50; border-radius: 16px; padding: 24px; cursor: pointer; min-height: 120px; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; }
+.vocab-card:hover { border-color: #7c6ff7; }
+.vocab-front { text-align: center; }
+.vocab-front h3 { font-size: 20px; font-weight: 700; color: #7c6ff7; }
+.tap-hint { font-size: 12px; color: #666; margin-top: 8px; display: block; }
+.vocab-back { text-align: center; }
+.vocab-meaning { font-size: 14px; color: #fff; margin-bottom: 8px; }
+.vocab-example { font-size: 13px; color: #7c6ff7; font-style: italic; }
+.idioms-list { display: flex; flex-direction: column; gap: 16px; }
+.idiom-card { background: #1e1e30; border: 1px solid #2e2e50; border-radius: 16px; padding: 20px 24px; }
+.idiom-card h3 { font-size: 18px; font-weight: 700; color: #7c6ff7; margin-bottom: 10px; }
+.idiom-meaning { font-size: 14px; color: #aaa; margin-bottom: 6px; }
+.idiom-example { font-size: 14px; color: #fff; font-style: italic; }
