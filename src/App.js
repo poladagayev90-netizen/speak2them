@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Chat from './pages/Chat';
+import Profile from './pages/Profile';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -35,7 +36,6 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        // Heartbeat
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
           try {
@@ -93,6 +93,7 @@ function App() {
         <Route path="/register"     element={!user ? <Register /> : <Navigate to="/" />} />
         <Route path="/"             element={user  ? <Home user={user} /> : <Navigate to="/login" />} />
         <Route path="/chat/:peerId" element={user  ? <Chat user={user} /> : <Navigate to="/login" />} />
+        <Route path="/profile"      element={user  ? <Profile user={user} /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

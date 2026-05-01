@@ -109,13 +109,12 @@ export default function Home({ user }) {
         </div>
       )}
 
-      <div className="home-header">
-        <div className="home-logo">🎙️ Speak2Them</div>
-        <div className="home-header-right">
-          <span className="home-username">👤 {user.displayName || 'User'}</span>
-          <button className="btn-logout" onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
+     <div className="home-header-right">
+  <button className="btn-profile" onClick={() => navigate('/profile')}>
+    👤 {user.displayName || 'User'}
+  </button>
+  <button className="btn-logout" onClick={handleLogout}>Logout</button>
+</div>
 
       <div className="home-body">
         <button className="btn-random" onClick={findRandomPartner}>
