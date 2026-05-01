@@ -679,3 +679,25 @@ body {
   border-color: #7c6ff7;
   color: #7c6ff7;
 }
+.success-box {
+  background: #22c55e22;
+  border: 1px solid #22c55e55;
+  color: #22c55e;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.btn-forgot {
+  background: transparent;
+  border: none;
+  color: #7c6ff7;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-forgot:hover {
+  text-decoration: underline;
+}

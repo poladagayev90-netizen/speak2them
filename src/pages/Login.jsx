@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -23,6 +24,20 @@ export default function Login() {
     setLoading(false);
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email first.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetSent(true);
+      setError('');
+    } catch {
+      setError('Could not send reset email. Check your email address.');
+    }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -31,6 +46,11 @@ export default function Login() {
         <p className="auth-sub">Practice English with real people around the world</p>
 
         {error && <div className="error-box">{error}</div>}
+        {resetSent && (
+          <div className="success-box">
+            ✅ Password reset email sent! Check your inbox.
+          </div>
+        )}
 
         <form onSubmit={handleLogin}>
           <label>Email</label>
@@ -49,6 +69,15 @@ export default function Login() {
             onChange={e => setPassword(e.target.value)}
             required
           />
+          <div style={{ textAlign: 'right', marginTop: '8px' }}>
+            <button
+              type="button"
+              className="btn-forgot"
+              onClick={handleForgotPassword}
+            >
+              Forgot password?
+            </button>
+          </div>
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
