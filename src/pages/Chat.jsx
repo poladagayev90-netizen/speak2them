@@ -33,7 +33,7 @@ export default function Chat({ user }) {
   const callDocId = `call_${chatId}`;
 
   useEffect(() => {
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
     audio.loop = true;
     ringtoneRef.current = audio;
     return () => { audio.pause(); };
@@ -111,7 +111,7 @@ export default function Chat({ user }) {
       status: 'calling',
       createdAt: serverTimestamp(),
     });
-    try { ringtoneRef.current?.play(); } catch (e) {}
+    
     setCallStatus('calling');
   };
 
