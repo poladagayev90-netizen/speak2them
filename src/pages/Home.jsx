@@ -4,11 +4,15 @@ import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
+const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
+                'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
+
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [incomingCall, setIncomingCall] = useState(null);
   const [tab, setTab] = useState('online');
+  const [levelFilter, setLevelFilter] = useState('All');
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
 
@@ -85,20 +89,26 @@ export default function Home({ user }) {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const snapshot = await getDocs(q);
     const now = Date.now();
-    const list = snapshot.docs.map(d => d.data()).filter(u => {
+    let list = snapshot.docs.map(d => d.data()).filter(u => {
       if (u.uid === user.uid) return false;
       const lastSeen = u.lastSeen?.toMillis?.() || 0;
       return (now - lastSeen) < 90000;
     });
+    if (levelFilter !== 'All') {
+      list = list.filter(u => u.level === levelFilter);
+    }
     if (list.length === 0) {
-      alert('No one online right now. Try again!');
+      alert('No one online with this level. Try another filter!');
       return;
     }
     const random = list[Math.floor(Math.random() * list.length)];
     navigate(`/chat/${random.uid}`);
   };
 
-  const displayUsers = tab === 'online' ? onlineUsers : allUsers;
+  const baseList = tab === 'online' ? onlineUsers : allUsers;
+  const displayUsers = levelFilter === 'All'
+    ? baseList
+    : baseList.filter(u => u.level === levelFilter);
 
   return (
     <div className="home-page">
@@ -135,11 +145,24 @@ export default function Home({ user }) {
           </button>
         </div>
 
+        {/* SEVİYYƏ FİLTRİ */}
+        <div className="level-filter">
+          {LEVELS.map(l => (
+            <button
+              key={l}
+              className={`level-btn ${levelFilter === l ? 'active' : ''}`}
+              onClick={() => setLevelFilter(l)}
+            >
+              {l === 'All' ? '🌐 All' : l.split(' – ')[0]}
+            </button>
+          ))}
+        </div>
+
         {displayUsers.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">😴</div>
-            <p>{tab === 'online' ? 'No one is online right now.' : 'No users yet.'}</p>
-            <p>Share the app with friends!</p>
+            <p>{tab === 'online' ? 'No one online with this level.' : 'No users with this level.'}</p>
+            <p>Try another filter!</p>
           </div>
         ) : (
           <div className="users-grid">

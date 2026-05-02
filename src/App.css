@@ -936,3 +936,27 @@ body {
   opacity: 0.85;
   transform: scale(1.05);
 }
+.level-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.level-btn {
+  padding: 6px 14px;
+  background: #1e1e30;
+  border: 1px solid #2e2e50;
+  border-radius: 20px;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.level-btn.active {
+  background: linear-gradient(135deg, #7c6ff7, #5b4de8);
+  border-color: transparent;
+  color: white;
+}
