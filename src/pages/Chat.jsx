@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
+import { getTodayContent } from '../dailyContent';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/getAgoraToken';
@@ -22,6 +23,10 @@ export default function Chat({ user }) {
   const [muted, setMuted] = useState(false);
   const [callStatus, setCallStatus] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
+  const [showDaily, setShowDaily] = useState(false);
+  const [dailyTab, setDailyTab] = useState('questions');
+  const [difficulty, setDifficulty] = useState('easy');
+  const [flipped, setFlipped] = useState({});
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
@@ -31,6 +36,7 @@ export default function Chat({ user }) {
 
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
+  const content = getTodayContent();
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -83,13 +89,10 @@ export default function Chat({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, user.uid]);
 
-  // Zəng sayacı
   useEffect(() => {
     if (inCall) {
       setCallSeconds(0);
-      timerRef.current = setInterval(() => {
-        setCallSeconds(s => s + 1);
-      }, 1000);
+      timerRef.current = setInterval(() => setCallSeconds(s => s + 1), 1000);
     } else {
       clearInterval(timerRef.current);
       setCallSeconds(0);
@@ -111,7 +114,6 @@ export default function Chat({ user }) {
       status: 'calling',
       createdAt: serverTimestamp(),
     });
-    
     setCallStatus('calling');
   };
 
@@ -131,9 +133,7 @@ export default function Chat({ user }) {
         }
       });
 
-      client.on('user-unpublished', () => {
-        setCallStatus('left');
-      });
+      client.on('user-unpublished', () => setCallStatus('left'));
 
       const res = await fetch(TOKEN_URL, {
         method: 'POST',
@@ -190,7 +190,7 @@ export default function Chat({ user }) {
   return (
     <div className="chat-page">
 
-      {/* TAM EKRAN ZƏNG İNTERFEYSİ */}
+      {/* TAM EKRAN ZƏNG */}
       {(inCall || callStatus === 'calling') && (
         <div className="fullscreen-call">
           <div className="call-avatar-big">
@@ -206,21 +206,88 @@ export default function Chat({ user }) {
             {callStatus === 'left' && '⚠️ Partner left'}
             {callStatus === 'error' && '❌ Error'}
           </p>
-
           <div className="fullscreen-call-buttons">
             {inCall && (
-              <button
-                className={`call-btn-big ${muted ? 'active-mute' : ''}`}
-                onClick={toggleMute}
-              >
-                {muted ? '🔇' : '🎤'}
-                <span>{muted ? 'Unmute' : 'Mute'}</span>
-              </button>
+              <>
+                <button className={`call-btn-big ${muted ? 'active-mute' : ''}`} onClick={toggleMute}>
+                  {muted ? '🔇' : '🎤'}
+                  <span>{muted ? 'Unmute' : 'Mute'}</span>
+                </button>
+                <button className="call-btn-big daily-btn" onClick={() => { setShowDaily(true); }}>
+                  📅
+                  <span>Daily</span>
+                </button>
+              </>
             )}
             <button className="call-btn-big end" onClick={endCall}>
               📵
               <span>End</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* DAILY HUB PANELİ — zəng davam edir! */}
+      {showDaily && (
+        <div className="daily-panel">
+          <div className="daily-panel-header">
+            <h3>📅 {content.topic}</h3>
+            <button className="daily-close" onClick={() => setShowDaily(false)}>✕</button>
+          </div>
+
+          <div className="daily-panel-tabs">
+            <button className={`dp-tab ${dailyTab === 'questions' ? 'active' : ''}`} onClick={() => setDailyTab('questions')}>🗣️ Questions</button>
+            <button className={`dp-tab ${dailyTab === 'vocabulary' ? 'active' : ''}`} onClick={() => setDailyTab('vocabulary')}>📚 Vocab</button>
+            <button className={`dp-tab ${dailyTab === 'idioms' ? 'active' : ''}`} onClick={() => setDailyTab('idioms')}>💬 Idioms</button>
+          </div>
+
+          <div className="daily-panel-body">
+            {dailyTab === 'questions' && (
+              <div>
+                <div className="difficulty-toggle" style={{ marginBottom: 12 }}>
+                  <button className={`diff-btn ${difficulty === 'easy' ? 'active' : ''}`} onClick={() => setDifficulty('easy')}>🟢 Easy</button>
+                  <button className={`diff-btn ${difficulty === 'hard' ? 'active' : ''}`} onClick={() => setDifficulty('hard')}>🔴 Hard</button>
+                </div>
+                {content.questions[difficulty].map((q, i) => (
+                  <div key={i} className="question-card" style={{ marginBottom: 10 }}>
+                    <span className="question-number">{i + 1}</span>
+                    <p>{q}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {dailyTab === 'vocabulary' && (
+              <div className="vocab-list">
+                {content.vocabulary.map((v, i) => (
+                  <div key={i} className="vocab-card" onClick={() => setFlipped(p => ({ ...p, [i]: !p[i] }))}>
+                    {!flipped[i] ? (
+                      <div className="vocab-front">
+                        <h3>{v.word}</h3>
+                        <span className="tap-hint">Tap to see meaning</span>
+                      </div>
+                    ) : (
+                      <div className="vocab-back">
+                        <p className="vocab-meaning">{v.meaning}</p>
+                        <p className="vocab-example">"{v.example}"</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {dailyTab === 'idioms' && (
+              <div className="idioms-list">
+                {content.idioms.map((idiom, i) => (
+                  <div key={i} className="idiom-card">
+                    <h3>"{idiom.phrase}"</h3>
+                    <p className="idiom-meaning">📌 {idiom.meaning}</p>
+                    <p className="idiom-example">💡 "{idiom.example}"</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -243,6 +310,7 @@ export default function Chat({ user }) {
           {!inCall && callStatus !== 'calling' && (
             <button className="btn-call" onClick={startCall}>🎙️ Call</button>
           )}
+          <button className="btn-daily-chat" onClick={() => setShowDaily(!showDaily)}>📅</button>
         </div>
       </div>
 
