@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
@@ -10,6 +10,14 @@ export default function Home({ user }) {
   const [incomingCall, setIncomingCall] = useState(null);
   const [tab, setTab] = useState('online');
   const navigate = useNavigate();
+  const ringtoneRef = useRef(null);
+
+  useEffect(() => {
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audio.loop = true;
+    ringtoneRef.current = audio;
+    return () => { audio.pause(); };
+  }, []);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
@@ -44,14 +52,17 @@ export default function Home({ user }) {
         const callData = snap.docs[0].data();
         callData.callDocId = snap.docs[0].id;
         setIncomingCall(callData);
+        try { ringtoneRef.current?.play(); } catch (e) {}
       } else {
         setIncomingCall(null);
+        ringtoneRef.current?.pause();
       }
     });
     return unsub;
   }, [user]);
 
   const acceptCall = async () => {
+    ringtoneRef.current?.pause();
     const callerId = incomingCall.callerId;
     const callDocId = incomingCall.callDocId;
     await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
@@ -60,6 +71,7 @@ export default function Home({ user }) {
   };
 
   const rejectCall = async () => {
+    ringtoneRef.current?.pause();
     await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
     setIncomingCall(null);
   };

@@ -21,13 +21,23 @@ export default function Chat({ user }) {
   const [inCall, setInCall] = useState(false);
   const [muted, setMuted] = useState(false);
   const [callStatus, setCallStatus] = useState('');
+  const [callSeconds, setCallSeconds] = useState(0);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
   const joinedRef = useRef(false);
+  const ringtoneRef = useRef(null);
+  const timerRef = useRef(null);
 
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
+
+  useEffect(() => {
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audio.loop = true;
+    ringtoneRef.current = audio;
+    return () => { audio.pause(); };
+  }, []);
 
   useEffect(() => {
     getDoc(doc(db, 'users', peerId)).then(d => {
@@ -61,15 +71,37 @@ export default function Chat({ user }) {
       const data = snap.data();
       if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
         joinedRef.current = true;
+        ringtoneRef.current?.pause();
         joinCall();
       }
       if (data.status === 'ended') {
+        ringtoneRef.current?.pause();
         endCall();
       }
     });
     return unsub;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, user.uid]);
+
+  // Zəng sayacı
+  useEffect(() => {
+    if (inCall) {
+      setCallSeconds(0);
+      timerRef.current = setInterval(() => {
+        setCallSeconds(s => s + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+      setCallSeconds(0);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [inCall]);
+
+  const formatTime = (s) => {
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  };
 
   const startCall = async () => {
     await setDoc(doc(db, 'calls', callDocId), {
@@ -79,10 +111,12 @@ export default function Chat({ user }) {
       status: 'calling',
       createdAt: serverTimestamp(),
     });
-    setCallStatus('📞 Calling...');
+    try { ringtoneRef.current?.play(); } catch (e) {}
+    setCallStatus('calling');
   };
 
   const joinCall = async () => {
+    ringtoneRef.current?.pause();
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -91,13 +125,14 @@ export default function Chat({ user }) {
       client.on('user-published', async (remoteUser, mediaType) => {
         await client.subscribe(remoteUser, mediaType);
         if (mediaType === 'audio') {
+          remoteUser.audioTrack.setPlaybackDevice('default').catch(() => {});
           remoteUser.audioTrack.play();
-          setCallStatus('🟢 Connected');
+          setCallStatus('connected');
         }
       });
 
       client.on('user-unpublished', () => {
-        setCallStatus('Partner left the call');
+        setCallStatus('left');
       });
 
       const res = await fetch(TOKEN_URL, {
@@ -106,22 +141,22 @@ export default function Chat({ user }) {
         body: JSON.stringify({ channelName: chatId }),
       });
       const data = await res.json();
-      const token = data.token;
-
-      await client.join(APP_ID, chatId, token, user.uid);
+      await client.join(APP_ID, chatId, data.token, user.uid);
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
       localTrackRef.current = localTrack;
       await client.publish(localTrack);
       setInCall(true);
-      setCallStatus('🟢 Connected');
+      setCallStatus('connected');
     } catch (err) {
       console.error(err);
-      setCallStatus('❌ Xəta baş verdi!');
+      setCallStatus('error');
     }
   };
 
   const endCall = async () => {
     joinedRef.current = false;
+    ringtoneRef.current?.pause();
+    clearInterval(timerRef.current);
     localTrackRef.current?.stop();
     localTrackRef.current?.close();
     await clientRef.current?.leave();
@@ -154,6 +189,42 @@ export default function Chat({ user }) {
 
   return (
     <div className="chat-page">
+
+      {/* TAM EKRAN ZƏNG İNTERFEYSİ */}
+      {(inCall || callStatus === 'calling') && (
+        <div className="fullscreen-call">
+          <div className="call-avatar-big">
+            {peer?.photo
+              ? <img src={peer.photo} alt={peer.name} />
+              : peer?.name?.charAt(0).toUpperCase()
+            }
+          </div>
+          <h2 className="call-peer-name">{peer?.name}</h2>
+          <p className="call-status-text">
+            {callStatus === 'calling' && '📞 Calling...'}
+            {callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
+            {callStatus === 'left' && '⚠️ Partner left'}
+            {callStatus === 'error' && '❌ Error'}
+          </p>
+
+          <div className="fullscreen-call-buttons">
+            {inCall && (
+              <button
+                className={`call-btn-big ${muted ? 'active-mute' : ''}`}
+                onClick={toggleMute}
+              >
+                {muted ? '🔇' : '🎤'}
+                <span>{muted ? 'Unmute' : 'Mute'}</span>
+              </button>
+            )}
+            <button className="call-btn-big end" onClick={endCall}>
+              📵
+              <span>End</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="chat-header">
         <button className="btn-back" onClick={() => { endCall(); navigate('/'); }}>← Back</button>
         <div className="chat-peer-info">
@@ -169,30 +240,11 @@ export default function Chat({ user }) {
           </div>
         </div>
         <div className="call-controls">
-          {!inCall ? (
+          {!inCall && callStatus !== 'calling' && (
             <button className="btn-call" onClick={startCall}>🎙️ Call</button>
-          ) : (
-            <>
-              <button className="btn-mute" onClick={toggleMute}>
-                {muted ? '🔇 Unmute' : '🎤 Mute'}
-              </button>
-              <button className="btn-end" onClick={endCall}>📵 End</button>
-            </>
           )}
         </div>
       </div>
-
-      {callStatus && (
-        <div style={{
-          textAlign: 'center',
-          padding: '8px',
-          background: '#1e1e30',
-          color: '#7c6ff7',
-          fontSize: '14px'
-        }}>
-          {callStatus}
-        </div>
-      )}
 
       <div className="chat-messages">
         {messages.map(m => (
