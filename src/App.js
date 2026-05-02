@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { tg, tgUser } from './telegram';
 import Login from './pages/Login';
@@ -25,17 +25,20 @@ function App() {
       if (currentUser) {
         const uid = tgUser ? String(tgUser.id) : currentUser.uid;
 
-        await setDoc(doc(db, 'users', uid), {
-          uid,
-          name: tgUser
-            ? tgUser.first_name + ' ' + (tgUser.last_name || '')
-            : currentUser.displayName || 'User',
-          telegramId: tgUser?.id || null,
-          photo: tgUser?.photo_url || '',
-          level: 'B1 – Intermediate',
-          online: true,
-          lastSeen: serverTimestamp(),
-        }, { merge: true });
+        const userRef = doc(db, 'users', uid);
+const userSnap = await getDoc(userRef);
+
+await setDoc(userRef, {
+  uid,
+  name: userSnap.exists() ? userSnap.data().name : (tgUser
+    ? tgUser.first_name + ' ' + (tgUser.last_name || '')
+    : currentUser.displayName || 'User'),
+  telegramId: tgUser?.id || null,
+  photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (tgUser?.photo_url || ''),
+  level: userSnap.exists() ? userSnap.data().level : 'B1 – Intermediate',
+  online: true,
+  lastSeen: serverTimestamp(),
+}, { merge: true });
 
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
