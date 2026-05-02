@@ -14,14 +14,12 @@ export default function Home({ user }) {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       const now = Date.now();
-      const list = snap.docs
-        .map(d => d.data())
-        .filter(u => {
-          if (u.uid === user.uid) return false;
-          if (!u.lastSeen) return false;
-          const lastSeen = u.lastSeen.toMillis?.() || 0;
-          return (now - lastSeen) < 90000;
-        });
+      const list = snap.docs.map(d => d.data()).filter(u => {
+        if (u.uid === user.uid) return false;
+        if (!u.lastSeen) return false;
+        const lastSeen = u.lastSeen.toMillis?.() || 0;
+        return (now - lastSeen) < 90000;
+      });
       setOnlineUsers(list);
     });
     return unsub;
@@ -75,13 +73,11 @@ export default function Home({ user }) {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const snapshot = await getDocs(q);
     const now = Date.now();
-    const list = snapshot.docs
-      .map(d => d.data())
-      .filter(u => {
-        if (u.uid === user.uid) return false;
-        const lastSeen = u.lastSeen?.toMillis?.() || 0;
-        return (now - lastSeen) < 90000;
-      });
+    const list = snapshot.docs.map(d => d.data()).filter(u => {
+      if (u.uid === user.uid) return false;
+      const lastSeen = u.lastSeen?.toMillis?.() || 0;
+      return (now - lastSeen) < 90000;
+    });
     if (list.length === 0) {
       alert('No one online right now. Try again!');
       return;
@@ -107,10 +103,8 @@ export default function Home({ user }) {
       <div className="home-header">
         <div className="home-logo">🎙️ Speak2Them</div>
         <div className="home-header-right">
-          <button className="btn-profile" onClick={() => navigate('/daily')}>
-            📅 Daily
-          </button>
-          <span className="home-username">👤 {user.displayName || 'User'}</span>
+          <button className="btn-profile" onClick={() => navigate('/daily')}>📅 Daily</button>
+          <button className="btn-profile" onClick={() => navigate('/profile')}>👤 Profile</button>
           <button className="btn-logout" onClick={handleLogout}>Logout</button>
         </div>
       </div>
@@ -121,16 +115,10 @@ export default function Home({ user }) {
         </button>
 
         <div className="tabs">
-          <button
-            className={`tab ${tab === 'online' ? 'active' : ''}`}
-            onClick={() => setTab('online')}
-          >
+          <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
             🟢 Online ({onlineUsers.length})
           </button>
-          <button
-            className={`tab ${tab === 'all' ? 'active' : ''}`}
-            onClick={() => setTab('all')}
-          >
+          <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
             👥 All Users ({allUsers.length})
           </button>
         </div>

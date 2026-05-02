@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
+import DailyHub from './pages/DailyHub';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -94,6 +95,7 @@ function App() {
         <Route path="/"             element={user  ? <Home user={user} /> : <Navigate to="/login" />} />
         <Route path="/chat/:peerId" element={user  ? <Chat user={user} /> : <Navigate to="/login" />} />
         <Route path="/profile"      element={user  ? <Profile user={user} /> : <Navigate to="/login" />} />
+        <Route path="/daily"        element={user  ? <DailyHub /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
