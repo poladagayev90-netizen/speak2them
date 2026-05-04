@@ -85,6 +85,17 @@ export default function Home({ user }) {
     navigate('/login');
   };
 
+  const handleShare = () => {
+    const text = `🎙️ Speak2Them — İngiliscəni real insanlarla məşq et!\n\n✅ Online partnyor tap\n✅ Audio zəng et\n✅ Gündəlik mövzular\n✅ Tamamilə pulsuz\n\n👉 t.me/Speak2them_bot/app`;
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.openTelegramLink(
+        `https://t.me/share/url?url=https://t.me/Speak2them_bot/app&text=${encodeURIComponent(text)}`
+      );
+    } else {
+      navigator.clipboard.writeText(text).then(() => alert('Link kopyalandı!')).catch(() => alert(text));
+    }
+  };
+
   const findRandomPartner = async () => {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const snapshot = await getDocs(q);
@@ -127,11 +138,43 @@ export default function Home({ user }) {
         <div className="home-header-right">
           <button className="btn-profile" onClick={() => navigate('/daily')}>📅 Daily</button>
           <button className="btn-profile" onClick={() => navigate('/profile')}>👤 Profile</button>
+          <button className="btn-profile" onClick={handleShare}>📢 Share</button>
           <button className="btn-logout" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
       <div className="home-body">
+
+        {/* TƏŞVİQ BANNER */}
+        <div style={{
+          background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
+          border: '1px solid #7c6ff755',
+          borderRadius: '16px',
+          padding: '20px 24px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          flexWrap: 'wrap',
+        }}>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>
+              👥 Dostlarını dəvət et!
+            </p>
+            <p style={{ color: '#aaa', fontSize: '13px' }}>
+              Hər gün 15:00 və 21:00 — toplu qoşulma vaxtları 🕒
+            </p>
+          </div>
+          <button
+            className="btn-chat"
+            style={{ whiteSpace: 'nowrap', padding: '12px 20px' }}
+            onClick={handleShare}
+          >
+            📢 Paylaş
+          </button>
+        </div>
+
         <button className="btn-random" onClick={findRandomPartner}>
           🎲 Find Random Partner
         </button>
@@ -145,7 +188,6 @@ export default function Home({ user }) {
           </button>
         </div>
 
-        {/* SEVİYYƏ FİLTRİ */}
         <div className="level-filter">
           {LEVELS.map(l => (
             <button
