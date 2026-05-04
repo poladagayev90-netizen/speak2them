@@ -81,9 +81,16 @@ function App() {
 
   if (loading) {
     return (
-      <div className="loading-screen">
-        <div className="loading-logo">🎙️</div>
-        <p>Loading Speak2Them...</p>
+      <div className="splash-screen">
+        <div className="splash-content">
+          <div className="splash-logo">🎙️</div>
+          <h1 className="splash-title">Speak2Them</h1>
+        </div>
+        <div className="splash-quote">
+          <p className="splash-motto">"The limits of my language are the limits of my world."</p>
+          <span className="splash-by">— Ludwig Wittgenstein</span>
+        </div>
+        <p className="splash-credit">Built by Polad 🚀</p>
       </div>
     );
   }
