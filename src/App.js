@@ -23,22 +23,20 @@ function App() {
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const uid = tgUser ? String(tgUser.id) : currentUser.uid;
-
+        // Telegram ilə girəndə UID email hesabı ilə eyni olsun
+        const uid = currentUser.uid;
         const userRef = doc(db, 'users', uid);
-const userSnap = await getDoc(userRef);
+        const userSnap = await getDoc(userRef);
 
-await setDoc(userRef, {
-  uid,
-  name: userSnap.exists() ? userSnap.data().name : (tgUser
-    ? tgUser.first_name + ' ' + (tgUser.last_name || '')
-    : currentUser.displayName || 'User'),
-  telegramId: tgUser?.id || null,
-  photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (tgUser?.photo_url || ''),
-  level: userSnap.exists() ? userSnap.data().level : 'B1 – Intermediate',
-  online: true,
-  lastSeen: serverTimestamp(),
-}, { merge: true });
+        await setDoc(userRef, {
+          uid,
+          name: userSnap.exists() ? userSnap.data().name : (currentUser.displayName || 'User'),
+          email: currentUser.email || userSnap.data()?.email || '',
+          photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (tgUser?.photo_url || ''),
+          level: userSnap.exists() ? userSnap.data().level : 'B1 – Intermediate',
+          online: true,
+          lastSeen: serverTimestamp(),
+        }, { merge: true });
 
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
