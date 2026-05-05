@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, serverTimestamp,
-  doc, getDoc, setDoc, deleteDoc
+  doc, getDoc, setDoc, deleteDoc, updateDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
@@ -24,6 +24,8 @@ export default function Chat({ user }) {
   const [callStatus, setCallStatus] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
   const [showDaily, setShowDaily] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [selectedStar, setSelectedStar] = useState(0);
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
@@ -52,10 +54,7 @@ export default function Chat({ user }) {
   }, [peerId]);
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'chats', chatId, 'messages'),
-      orderBy('createdAt')
-    );
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt'));
     const unsub = onSnapshot(q, snap => {
       setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -68,7 +67,6 @@ export default function Chat({ user }) {
       joinedRef.current = true;
       joinCall();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
   useEffect(() => {
@@ -86,7 +84,6 @@ export default function Chat({ user }) {
       }
     });
     return unsub;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, user.uid]);
 
   useEffect(() => {
@@ -154,18 +151,31 @@ export default function Chat({ user }) {
   };
 
   const endCall = async () => {
-    joinedRef.current = false;
-    ringtoneRef.current?.pause();
-    clearInterval(timerRef.current);
     localTrackRef.current?.stop();
     localTrackRef.current?.close();
     await clientRef.current?.leave();
-    setInCall(false);
-    setCallStatus('');
     try {
       await setDoc(doc(db, 'calls', callDocId), { status: 'ended' }, { merge: true });
-      setTimeout(() => deleteDoc(doc(db, 'calls', callDocId)), 2000);
     } catch (e) {}
+    setInCall(false);
+    setCallStatus('');
+    setShowRating(true);
+  };
+
+  const submitRating = async (stars) => {
+    try {
+      const peerDoc = await getDoc(doc(db, 'users', peerId));
+      if (peerDoc.exists()) {
+        const peerData = peerDoc.data();
+        const newCount = (peerData.ratingCount || 0) + 1;
+        const newTotal = (peerData.rating || 0) + stars;
+        await updateDoc(doc(db, 'users', peerId), {
+          rating: newTotal,
+          ratingCount: newCount,
+        });
+      }
+    } catch (e) {}
+    setShowRating(false);
   };
 
   const toggleMute = async () => {
@@ -190,6 +200,66 @@ export default function Chat({ user }) {
   return (
     <div className="chat-page">
 
+      {/* RATING MODALI */}
+      {showRating && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: '#0f0f1aee', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 9999,
+        }}>
+          <div style={{
+            background: '#1e1e30', border: '1px solid #2e2e50',
+            borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>
+              {peer?.photo
+                ? <img src={peer.photo} alt={peer.name} style={{ width: '72px', height: '72px', borderRadius: '50%' }} />
+                : <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 700, margin: '0 auto' }}>{peer?.name?.charAt(0)}</div>
+              }
+            </div>
+            <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
+              Zəng necə getdi?
+            </p>
+            <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
+              {peer?.name}-i qiymətləndir
+            </p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '24px' }}>
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  onClick={() => setSelectedStar(star)}
+                  style={{
+                    fontSize: '36px', background: 'none', border: 'none',
+                    cursor: 'pointer', opacity: star <= selectedStar ? 1 : 0.3,
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  ⭐
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => selectedStar > 0 && submitRating(selectedStar)}
+              style={{
+                width: '100%', padding: '14px',
+                background: selectedStar > 0 ? 'linear-gradient(135deg, #7c6ff7, #5b4de8)' : '#2e2e50',
+                color: 'white', border: 'none', borderRadius: '12px',
+                fontSize: '16px', fontWeight: 700, cursor: selectedStar > 0 ? 'pointer' : 'not-allowed',
+                marginBottom: '12px',
+              }}
+            >
+              Göndər
+            </button>
+            <button onClick={() => setShowRating(false)} style={{
+              background: 'transparent', border: 'none', color: '#888',
+              fontSize: '13px', cursor: 'pointer',
+            }}>
+              Keç
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TAM EKRAN ZƏNG */}
       {(inCall || callStatus === 'calling') && (
         <div className="fullscreen-call">
@@ -213,7 +283,7 @@ export default function Chat({ user }) {
                   {muted ? '🔇' : '🎤'}
                   <span>{muted ? 'Unmute' : 'Mute'}</span>
                 </button>
-                <button className="call-btn-big daily-btn" onClick={() => { setShowDaily(true); }}>
+                <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
                   📅
                   <span>Daily</span>
                 </button>
@@ -227,20 +297,18 @@ export default function Chat({ user }) {
         </div>
       )}
 
-      {/* DAILY HUB PANELİ — zəng davam edir! */}
+      {/* DAILY PANEL */}
       {showDaily && (
         <div className="daily-panel">
           <div className="daily-panel-header">
             <h3>📅 {content.topic}</h3>
             <button className="daily-close" onClick={() => setShowDaily(false)}>✕</button>
           </div>
-
           <div className="daily-panel-tabs">
             <button className={`dp-tab ${dailyTab === 'questions' ? 'active' : ''}`} onClick={() => setDailyTab('questions')}>🗣️ Questions</button>
             <button className={`dp-tab ${dailyTab === 'vocabulary' ? 'active' : ''}`} onClick={() => setDailyTab('vocabulary')}>📚 Vocab</button>
             <button className={`dp-tab ${dailyTab === 'idioms' ? 'active' : ''}`} onClick={() => setDailyTab('idioms')}>💬 Idioms</button>
           </div>
-
           <div className="daily-panel-body">
             {dailyTab === 'questions' && (
               <div>
@@ -256,27 +324,19 @@ export default function Chat({ user }) {
                 ))}
               </div>
             )}
-
             {dailyTab === 'vocabulary' && (
               <div className="vocab-list">
                 {content.vocabulary.map((v, i) => (
                   <div key={i} className="vocab-card" onClick={() => setFlipped(p => ({ ...p, [i]: !p[i] }))}>
                     {!flipped[i] ? (
-                      <div className="vocab-front">
-                        <h3>{v.word}</h3>
-                        <span className="tap-hint">Tap to see meaning</span>
-                      </div>
+                      <div className="vocab-front"><h3>{v.word}</h3><span className="tap-hint">Tap to see meaning</span></div>
                     ) : (
-                      <div className="vocab-back">
-                        <p className="vocab-meaning">{v.meaning}</p>
-                        <p className="vocab-example">"{v.example}"</p>
-                      </div>
+                      <div className="vocab-back"><p className="vocab-meaning">{v.meaning}</p><p className="vocab-example">"{v.example}"</p></div>
                     )}
                   </div>
                 ))}
               </div>
             )}
-
             {dailyTab === 'idioms' && (
               <div className="idioms-list">
                 {content.idioms.map((idiom, i) => (
