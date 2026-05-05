@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, serverTimestamp,
-  doc, getDoc, setDoc, deleteDoc, updateDoc
+  doc, getDoc, setDoc, updateDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
@@ -67,7 +67,8 @@ export default function Chat({ user }) {
       joinedRef.current = true;
       joinCall();
     }
-  }, [location.state]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
@@ -84,7 +85,8 @@ export default function Chat({ user }) {
       }
     });
     return unsub;
-  }, [chatId, user.uid]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (inCall) {
@@ -200,7 +202,6 @@ export default function Chat({ user }) {
   return (
     <div className="chat-page">
 
-      {/* RATING MODALI */}
       {showRating && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -211,63 +212,39 @@ export default function Chat({ user }) {
             background: '#1e1e30', border: '1px solid #2e2e50',
             borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>
+            <div style={{ marginBottom: '12px' }}>
               {peer?.photo
                 ? <img src={peer.photo} alt={peer.name} style={{ width: '72px', height: '72px', borderRadius: '50%' }} />
                 : <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 700, margin: '0 auto' }}>{peer?.name?.charAt(0)}</div>
               }
             </div>
-            <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
-              Zəng necə getdi?
-            </p>
-            <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
-              {peer?.name}-i qiymətləndir
-            </p>
+            <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>Zəng necə getdi?</p>
+            <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>{peer?.name}-i qiymətləndir</p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '24px' }}>
               {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  onClick={() => setSelectedStar(star)}
-                  style={{
-                    fontSize: '36px', background: 'none', border: 'none',
-                    cursor: 'pointer', opacity: star <= selectedStar ? 1 : 0.3,
-                    transition: 'opacity 0.2s',
-                  }}
-                >
-                  ⭐
-                </button>
+                <button key={star} onClick={() => setSelectedStar(star)} style={{
+                  fontSize: '36px', background: 'none', border: 'none',
+                  cursor: 'pointer', opacity: star <= selectedStar ? 1 : 0.3, transition: 'opacity 0.2s',
+                }}>⭐</button>
               ))}
             </div>
-            <button
-              onClick={() => selectedStar > 0 && submitRating(selectedStar)}
-              style={{
-                width: '100%', padding: '14px',
-                background: selectedStar > 0 ? 'linear-gradient(135deg, #7c6ff7, #5b4de8)' : '#2e2e50',
-                color: 'white', border: 'none', borderRadius: '12px',
-                fontSize: '16px', fontWeight: 700, cursor: selectedStar > 0 ? 'pointer' : 'not-allowed',
-                marginBottom: '12px',
-              }}
-            >
-              Göndər
-            </button>
+            <button onClick={() => selectedStar > 0 && submitRating(selectedStar)} style={{
+              width: '100%', padding: '14px',
+              background: selectedStar > 0 ? 'linear-gradient(135deg, #7c6ff7, #5b4de8)' : '#2e2e50',
+              color: 'white', border: 'none', borderRadius: '12px',
+              fontSize: '16px', fontWeight: 700, cursor: selectedStar > 0 ? 'pointer' : 'not-allowed', marginBottom: '12px',
+            }}>Göndər</button>
             <button onClick={() => setShowRating(false)} style={{
-              background: 'transparent', border: 'none', color: '#888',
-              fontSize: '13px', cursor: 'pointer',
-            }}>
-              Keç
-            </button>
+              background: 'transparent', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer',
+            }}>Keç</button>
           </div>
         </div>
       )}
 
-      {/* TAM EKRAN ZƏNG */}
       {(inCall || callStatus === 'calling') && (
         <div className="fullscreen-call">
           <div className="call-avatar-big">
-            {peer?.photo
-              ? <img src={peer.photo} alt={peer.name} />
-              : peer?.name?.charAt(0).toUpperCase()
-            }
+            {peer?.photo ? <img src={peer.photo} alt={peer.name} /> : peer?.name?.charAt(0).toUpperCase()}
           </div>
           <h2 className="call-peer-name">{peer?.name}</h2>
           <p className="call-status-text">
@@ -280,24 +257,18 @@ export default function Chat({ user }) {
             {inCall && (
               <>
                 <button className={`call-btn-big ${muted ? 'active-mute' : ''}`} onClick={toggleMute}>
-                  {muted ? '🔇' : '🎤'}
-                  <span>{muted ? 'Unmute' : 'Mute'}</span>
+                  {muted ? '🔇' : '🎤'}<span>{muted ? 'Unmute' : 'Mute'}</span>
                 </button>
                 <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
-                  📅
-                  <span>Daily</span>
+                  📅<span>Daily</span>
                 </button>
               </>
             )}
-            <button className="call-btn-big end" onClick={endCall}>
-              📵
-              <span>End</span>
-            </button>
+            <button className="call-btn-big end" onClick={endCall}>📵<span>End</span></button>
           </div>
         </div>
       )}
 
-      {/* DAILY PANEL */}
       {showDaily && (
         <div className="daily-panel">
           <div className="daily-panel-header">
@@ -328,11 +299,10 @@ export default function Chat({ user }) {
               <div className="vocab-list">
                 {content.vocabulary.map((v, i) => (
                   <div key={i} className="vocab-card" onClick={() => setFlipped(p => ({ ...p, [i]: !p[i] }))}>
-                    {!flipped[i] ? (
-                      <div className="vocab-front"><h3>{v.word}</h3><span className="tap-hint">Tap to see meaning</span></div>
-                    ) : (
-                      <div className="vocab-back"><p className="vocab-meaning">{v.meaning}</p><p className="vocab-example">"{v.example}"</p></div>
-                    )}
+                    {!flipped[i]
+                      ? <div className="vocab-front"><h3>{v.word}</h3><span className="tap-hint">Tap to see meaning</span></div>
+                      : <div className="vocab-back"><p className="vocab-meaning">{v.meaning}</p><p className="vocab-example">"{v.example}"</p></div>
+                    }
                   </div>
                 ))}
               </div>
