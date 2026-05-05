@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -12,8 +12,10 @@ export default function Home({ user }) {
   const [allUsers, setAllUsers] = useState([]);
   const [incomingCall, setIncomingCall] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [connections, setConnections] = useState([]);
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
+  const [sentRequests, setSentRequests] = useState([]);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
 
@@ -30,8 +32,7 @@ export default function Home({ user }) {
       const list = snap.docs.map(d => d.data()).filter(u => {
         if (u.uid === user.uid) return false;
         if (!u.lastSeen) return false;
-        const lastSeen = u.lastSeen.toMillis?.() || 0;
-        return (now - lastSeen) < 90000;
+        return (now - u.lastSeen.toMillis?.()) < 90000;
       });
       setOnlineUsers(list);
     });
@@ -40,22 +41,17 @@ export default function Home({ user }) {
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
-      const list = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
-      setAllUsers(list);
+      setAllUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
     });
     return unsub;
   }, [user]);
 
+  // Gələn zənglər
   useEffect(() => {
-    const q = query(
-      collection(db, 'calls'),
-      where('receiverId', '==', user.uid),
-      where('status', '==', 'calling')
-    );
+    const q = query(collection(db, 'calls'), where('receiverId', '==', user.uid), where('status', '==', 'calling'));
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {
-        const callData = snap.docs[0].data();
-        callData.callDocId = snap.docs[0].id;
+        const callData = { ...snap.docs[0].data(), callDocId: snap.docs[0].id };
         setIncomingCall(callData);
         try { ringtoneRef.current?.play(); } catch (e) {}
       } else {
@@ -66,43 +62,94 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
+  // Gələn sorğular (mənə gələnlər)
   useEffect(() => {
-    const q = query(
-      collection(db, 'requests'),
-      where('toUid', '==', user.uid),
-      where('status', '==', 'pending')
-    );
+    const q = query(collection(db, 'requests'), where('toUid', '==', user.uid), where('status', '==', 'pending'));
     const unsub = onSnapshot(q, (snap) => {
       setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     return unsub;
   }, [user]);
 
+  // Mənim göndərdiyim sorğular
+  useEffect(() => {
+    const q = query(collection(db, 'requests'), where('fromUid', '==', user.uid));
+    const unsub = onSnapshot(q, (snap) => {
+      setSentRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return unsub;
+  }, [user]);
+
+  // Qəbul edilmiş bağlantılar
+  useEffect(() => {
+    const q = query(collection(db, 'connections'), where('users', 'array-contains', user.uid));
+    const unsub = onSnapshot(q, (snap) => {
+      setConnections(snap.docs.map(d => d.data()));
+    });
+    return unsub;
+  }, [user]);
+
+  // İki user arasında bağlantı varmı?
+  const isConnected = (otherUid) => {
+    return connections.some(c => c.users.includes(otherUid));
+  };
+
+  // Sorğu göndərilibmi?
+  const requestSent = (otherUid) => {
+    return sentRequests.some(r => r.toUid === otherUid && r.status === 'pending');
+  };
+
+  const handleChatClick = async (targetUser) => {
+    // Artıq bağlıdırlarsa birbaşa chat aç
+    if (isConnected(targetUser.uid)) {
+      navigate(`/chat/${targetUser.uid}`);
+      return;
+    }
+    // Artıq sorğu göndərilibsə
+    if (requestSent(targetUser.uid)) {
+      alert('Sorğu artıq göndərilib, cavab gözlənilir...');
+      return;
+    }
+    // Yeni sorğu göndər
+    const requestId = `${user.uid}_${targetUser.uid}`;
+    await setDoc(doc(db, 'requests', requestId), {
+      fromUid: user.uid,
+      fromName: user.displayName || 'User',
+      toUid: targetUser.uid,
+      toName: targetUser.name,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    });
+    alert(`📨 Sorğu göndərildi → ${targetUser.name}`);
+  };
+
+  const acceptRequest = async (req) => {
+    // Sorğunu qəbul et
+    await setDoc(doc(db, 'requests', req.id), { status: 'accepted' }, { merge: true });
+    // Connection yarat
+    const connId = [req.fromUid, req.toUid].sort().join('_');
+    await setDoc(doc(db, 'connections', connId), {
+      users: [req.fromUid, req.toUid],
+      createdAt: serverTimestamp(),
+    });
+    navigate(`/chat/${req.fromUid}`);
+  };
+
+  const rejectRequest = async (req) => {
+    await setDoc(doc(db, 'requests', req.id), { status: 'rejected' }, { merge: true });
+  };
+
   const acceptCall = async () => {
     ringtoneRef.current?.pause();
-    const callerId = incomingCall.callerId;
-    const callDocId = incomingCall.callDocId;
-    await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
+    await setDoc(doc(db, 'calls', incomingCall.callDocId), { status: 'accepted' }, { merge: true });
     setIncomingCall(null);
-    navigate(`/chat/${callerId}`, { state: { acceptedCall: true } });
+    navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
   };
 
   const rejectCall = async () => {
     ringtoneRef.current?.pause();
     await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
     setIncomingCall(null);
-  };
-
-  const sendRequest = async (targetUser) => {
-    const requestId = `${user.uid}_${targetUser.uid}`;
-    await setDoc(doc(db, 'requests', requestId), {
-      fromUid: user.uid,
-      fromName: user.displayName || 'User',
-      toUid: targetUser.uid,
-      status: 'pending',
-      createdAt: serverTimestamp(),
-    });
-    alert(`Sorğu göndərildi → ${targetUser.name}`);
   };
 
   const handleLogout = async () => {
@@ -113,42 +160,31 @@ export default function Home({ user }) {
   const handleShare = () => {
     const text = `🎙️ Speak2Them — İngiliscəni real insanlarla məşq et!\n\n✅ Online partnyor tap\n✅ Audio zəng et\n✅ Gündəlik mövzular\n✅ Tamamilə pulsuz\n\n👉 t.me/Speak2them_bot/app`;
     if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.openTelegramLink(
-        `https://t.me/share/url?url=https://t.me/Speak2them_bot/app&text=${encodeURIComponent(text)}`
-      );
+      window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=https://t.me/Speak2them_bot/app&text=${encodeURIComponent(text)}`);
     } else {
-      navigator.clipboard.writeText(text).then(() => alert('Link kopyalandı!')).catch(() => alert(text));
+      navigator.clipboard.writeText(text).then(() => alert('Link kopyalandı!'));
     }
   };
 
   const findRandomPartner = async () => {
-    const q = query(collection(db, 'users'), where('online', '==', true));
-    const snapshot = await getDocs(q);
     const now = Date.now();
-    let list = snapshot.docs.map(d => d.data()).filter(u => {
-      if (u.uid === user.uid) return false;
+    let list = onlineUsers.filter(u => {
       const lastSeen = u.lastSeen?.toMillis?.() || 0;
       return (now - lastSeen) < 90000;
     });
-    if (levelFilter !== 'All') {
-      list = list.filter(u => u.level === levelFilter);
-    }
-    if (list.length === 0) {
-      alert('No one online with this level. Try another filter!');
-      return;
-    }
+    if (levelFilter !== 'All') list = list.filter(u => u.level === levelFilter);
+    if (list.length === 0) { alert('No one online with this level!'); return; }
     const random = list[Math.floor(Math.random() * list.length)];
-    await sendRequest(random);
+    handleChatClick(random);
   };
 
   const baseList = tab === 'online' ? onlineUsers : allUsers;
-  const displayUsers = levelFilter === 'All'
-    ? baseList
-    : baseList.filter(u => u.level === levelFilter);
+  const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
   return (
     <div className="home-page">
 
+      {/* Zəng bildirişi */}
       {incomingCall && (
         <div className="incoming-call">
           <p>📞 {incomingCall.callerName} sizi zəng edir...</p>
@@ -158,21 +194,6 @@ export default function Home({ user }) {
           </div>
         </div>
       )}
-
-      {requests.map(req => (
-        <div key={req.id} className="incoming-call">
-          <p>💬 <strong>{req.fromName}</strong> sizinlə danışmaq istəyir</p>
-          <div className="incoming-call-buttons">
-            <button className="btn-accept" onClick={async () => {
-              await setDoc(doc(db, 'requests', req.id), { status: 'accepted' }, { merge: true });
-              navigate(`/chat/${req.fromUid}`);
-            }}>✅ Qəbul et</button>
-            <button className="btn-reject" onClick={async () => {
-              await deleteDoc(doc(db, 'requests', req.id));
-            }}>❌ Rədd et</button>
-          </div>
-        </div>
-      ))}
 
       <div className="home-header">
         <div className="home-logo">🎙️ Speak2Them</div>
@@ -185,6 +206,43 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
+
+        {/* Mesaj sorğuları — Instagram kimi */}
+        {requests.length > 0 && (
+          <div style={{
+            background: '#1e1e30',
+            border: '1px solid #7c6ff755',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+          }}>
+            <p style={{ fontWeight: 700, marginBottom: '12px', color: '#7c6ff7' }}>
+              📨 Mesaj Sorğuları ({requests.length})
+            </p>
+            {requests.map(req => (
+              <div key={req.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: '1px solid #2e2e50',
+                gap: '12px',
+                flexWrap: 'wrap',
+              }}>
+                <div>
+                  <p style={{ fontWeight: 600 }}>{req.fromName}</p>
+                  <p style={{ fontSize: '13px', color: '#888' }}>sizinlə danışmaq istəyir</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-accept" onClick={() => acceptRequest(req)}>✅ Qəbul</button>
+                  <button className="btn-reject" onClick={() => rejectRequest(req)}>❌ Rədd</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Təşviq banner */}
         <div style={{
           background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
           border: '1px solid #7c6ff755',
@@ -206,9 +264,7 @@ export default function Home({ user }) {
           </button>
         </div>
 
-        <button className="btn-random" onClick={findRandomPartner}>
-          🎲 Find Random Partner
-        </button>
+        <button className="btn-random" onClick={findRandomPartner}>🎲 Find Random Partner</button>
 
         <div className="tabs">
           <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
@@ -221,11 +277,7 @@ export default function Home({ user }) {
 
         <div className="level-filter">
           {LEVELS.map(l => (
-            <button
-              key={l}
-              className={`level-btn ${levelFilter === l ? 'active' : ''}`}
-              onClick={() => setLevelFilter(l)}
-            >
+            <button key={l} className={`level-btn ${levelFilter === l ? 'active' : ''}`} onClick={() => setLevelFilter(l)}>
               {l === 'All' ? '🌐 All' : l.split(' – ')[0]}
             </button>
           ))}
@@ -234,19 +286,17 @@ export default function Home({ user }) {
         {displayUsers.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">😴</div>
-            <p>{tab === 'online' ? 'No one online with this level.' : 'No users with this level.'}</p>
-            <p>Try another filter!</p>
+            <p>{tab === 'online' ? 'No one online with this level.' : 'No users yet.'}</p>
           </div>
         ) : (
           <div className="users-grid">
             {displayUsers.map(u => (
               <div key={u.uid} className="user-card">
                 <div className="user-avatar">
-                  {u.photo ? (
-                    <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                  ) : (
-                    u.name?.charAt(0).toUpperCase()
-                  )}
+                  {u.photo
+                    ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                    : u.name?.charAt(0).toUpperCase()
+                  }
                 </div>
                 <div className="user-info">
                   <h3>{u.name}</h3>
@@ -255,9 +305,16 @@ export default function Home({ user }) {
                   <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
                     {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
                   </span>
+                  {isConnected(u.uid) && (
+                    <span style={{ fontSize: '11px', color: '#22c55e', display: 'block', marginTop: '4px' }}>✅ Bağlısınız</span>
+                  )}
                 </div>
-                <button className="btn-chat" onClick={() => sendRequest(u)}>
-                  💬 Chat & Call
+                <button
+                  className="btn-chat"
+                  onClick={() => handleChatClick(u)}
+                  style={{ opacity: requestSent(u.uid) ? 0.6 : 1 }}
+                >
+                  {isConnected(u.uid) ? '💬 Yaz / Zəng et' : requestSent(u.uid) ? '⏳ Sorğu gözlənilir' : '💬 Sorğu göndər'}
                 </button>
               </div>
             ))}
