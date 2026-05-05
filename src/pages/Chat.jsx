@@ -177,7 +177,7 @@ export default function Chat({ user }) {
         });
       }
     } catch (e) {}
-    setShowRating(false);
+    if (callSeconds >= 180) setShowRating(true); // yalnız 3 dəqiqədən artıq olduqda
   };
 
   const toggleMute = async () => {
