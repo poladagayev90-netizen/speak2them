@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs, doc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [incomingCall, setIncomingCall] = useState(null);
+  const [requests, setRequests] = useState([]);
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
   const navigate = useNavigate();
@@ -65,6 +66,18 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
+  useEffect(() => {
+    const q = query(
+      collection(db, 'requests'),
+      where('toUid', '==', user.uid),
+      where('status', '==', 'pending')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return unsub;
+  }, [user]);
+
   const acceptCall = async () => {
     ringtoneRef.current?.pause();
     const callerId = incomingCall.callerId;
@@ -78,6 +91,18 @@ export default function Home({ user }) {
     ringtoneRef.current?.pause();
     await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
     setIncomingCall(null);
+  };
+
+  const sendRequest = async (targetUser) => {
+    const requestId = `${user.uid}_${targetUser.uid}`;
+    await setDoc(doc(db, 'requests', requestId), {
+      fromUid: user.uid,
+      fromName: user.displayName || 'User',
+      toUid: targetUser.uid,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    });
+    alert(`Sorğu göndərildi → ${targetUser.name}`);
   };
 
   const handleLogout = async () => {
@@ -113,7 +138,7 @@ export default function Home({ user }) {
       return;
     }
     const random = list[Math.floor(Math.random() * list.length)];
-    navigate(`/chat/${random.uid}`);
+    await sendRequest(random);
   };
 
   const baseList = tab === 'online' ? onlineUsers : allUsers;
@@ -123,6 +148,7 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
+
       {incomingCall && (
         <div className="incoming-call">
           <p>📞 {incomingCall.callerName} sizi zəng edir...</p>
@@ -132,6 +158,21 @@ export default function Home({ user }) {
           </div>
         </div>
       )}
+
+      {requests.map(req => (
+        <div key={req.id} className="incoming-call">
+          <p>💬 <strong>{req.fromName}</strong> sizinlə danışmaq istəyir</p>
+          <div className="incoming-call-buttons">
+            <button className="btn-accept" onClick={async () => {
+              await setDoc(doc(db, 'requests', req.id), { status: 'accepted' }, { merge: true });
+              navigate(`/chat/${req.fromUid}`);
+            }}>✅ Qəbul et</button>
+            <button className="btn-reject" onClick={async () => {
+              await deleteDoc(doc(db, 'requests', req.id));
+            }}>❌ Rədd et</button>
+          </div>
+        </div>
+      ))}
 
       <div className="home-header">
         <div className="home-logo">🎙️ Speak2Them</div>
@@ -144,8 +185,6 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
-
-        {/* TƏŞVİQ BANNER */}
         <div style={{
           background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
           border: '1px solid #7c6ff755',
@@ -159,18 +198,10 @@ export default function Home({ user }) {
           flexWrap: 'wrap',
         }}>
           <div>
-            <p style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>
-              👥 Dostlarını dəvət et!
-            </p>
-            <p style={{ color: '#aaa', fontSize: '13px' }}>
-              Hər gün 15:00 və 21:00 — toplu qoşulma vaxtları 🕒
-            </p>
+            <p style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>👥 Dostlarını dəvət et!</p>
+            <p style={{ color: '#aaa', fontSize: '13px' }}>Hər gün 15:00 və 21:00 — toplu qoşulma vaxtları 🕒</p>
           </div>
-          <button
-            className="btn-chat"
-            style={{ whiteSpace: 'nowrap', padding: '12px 20px' }}
-            onClick={handleShare}
-          >
+          <button className="btn-chat" style={{ whiteSpace: 'nowrap', padding: '12px 20px' }} onClick={handleShare}>
             📢 Paylaş
           </button>
         </div>
@@ -225,7 +256,7 @@ export default function Home({ user }) {
                     {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
                   </span>
                 </div>
-                <button className="btn-chat" onClick={() => navigate(`/chat/${u.uid}`)}>
+                <button className="btn-chat" onClick={() => sendRequest(u)}>
                   💬 Chat & Call
                 </button>
               </div>
