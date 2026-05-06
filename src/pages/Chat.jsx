@@ -190,25 +190,55 @@ export default function Chat({ user }) {
       }
     } catch (e) {}
 
-    // 4. Statistika yaz (ref-dən oxu, state-dən yox)
+    // 4. Statistika + Streak yaz
     try {
       if (callSecondsRef.current > 5) {
         const minutes = Math.ceil(callSecondsRef.current / 60);
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
 
+        // Öz statistikan
         const myRef = doc(db, 'users', user.uid);
         const mySnap = await getDoc(myRef);
         const myData = mySnap.data() || {};
+        const myLastCallDate = myData.lastCallDate || '';
+        let myStreak = myData.streak || 0;
+
+        if (myLastCallDate === today) {
+          // Bu gün artıq zəng etmişdi
+        } else if (myLastCallDate === yesterday) {
+          myStreak = myStreak + 1;
+        } else {
+          myStreak = 1;
+        }
+
         await setDoc(myRef, {
           totalMinutes: (myData.totalMinutes || 0) + minutes,
           callCount: (myData.callCount || 0) + 1,
+          streak: myStreak,
+          lastCallDate: today,
         }, { merge: true });
 
+        // Partnerin statistikası
         const peerRef = doc(db, 'users', peerId);
         const peerSnap = await getDoc(peerRef);
         const peerData = peerSnap.data() || {};
+        const peerLastCallDate = peerData.lastCallDate || '';
+        let peerStreak = peerData.streak || 0;
+
+        if (peerLastCallDate === today) {
+          // Bu gün artıq zəng etmişdi
+        } else if (peerLastCallDate === yesterday) {
+          peerStreak = peerStreak + 1;
+        } else {
+          peerStreak = 1;
+        }
+
         await setDoc(peerRef, {
           totalMinutes: (peerData.totalMinutes || 0) + minutes,
           callCount: (peerData.callCount || 0) + 1,
+          streak: peerStreak,
+          lastCallDate: today,
         }, { merge: true });
       }
       if (callSecondsRef.current >= 180) setShowRating(true);
