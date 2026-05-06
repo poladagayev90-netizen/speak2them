@@ -153,32 +153,31 @@ export default function Chat({ user }) {
   };
 
   const endCall = async () => {
-    joinedRef.current = false;
-    ringtoneRef.current?.pause();
-    clearInterval(timerRef.current);
-    localTrackRef.current?.stop();
-    localTrackRef.current?.close();
-    await clientRef.current?.leave();
-
-    // Statistika yaz
-    if (callSeconds > 5) {
-      const minutes = Math.ceil(callSeconds / 60);
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      const prev = userSnap.data() || {};
-      await setDoc(userRef, {
-        totalMinutes: (prev.totalMinutes || 0) + minutes,
-        callCount: (prev.callCount || 0) + 1,
-      }, { merge: true });
-    }
-
-    setInCall(false);
-    setCallStatus('');
     try {
-      await setDoc(doc(db, 'calls', callDocId), { status: 'ended' }, { merge: true });
-      setTimeout(() => deleteDoc(doc(db, 'calls', callDocId)), 2000);
+      // Statistika yaz — HƏR İKİ TƏRƏFİN
+      if (callSeconds > 5) {
+        const minutes = Math.ceil(callSeconds / 60);
+        
+        // Öz statistikan
+        const myRef = doc(db, 'users', user.uid);
+        const mySnap = await getDoc(myRef);
+        const myData = mySnap.data() || {};
+        await setDoc(myRef, {
+          totalMinutes: (myData.totalMinutes || 0) + minutes,
+          callCount: (myData.callCount || 0) + 1,
+        }, { merge: true });
+
+        // Partnerin statistikası
+        const peerRef = doc(db, 'users', peerId);
+        const peerSnap = await getDoc(peerRef);
+        const peerData = peerSnap.data() || {};
+        await setDoc(peerRef, {
+          totalMinutes: (peerData.totalMinutes || 0) + minutes,
+          callCount: (peerData.callCount || 0) + 1,
+        }, { merge: true });
+      }
+      if (callSeconds >= 180) setShowRating(true);
     } catch (e) {}
-    if (callSeconds >= 180) setShowRating(true);
   };
 
   const submitRating = async (stars) => {
