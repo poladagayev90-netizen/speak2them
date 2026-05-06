@@ -1126,3 +1126,16 @@ body {
   border-color: transparent;
   color: white;
 }
+.user-stats-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.user-stat {
+  font-size: 12px;
+  color: #7c6ff7;
+  background: #7c6ff711;
+  padding: 3px 8px;
+  border-radius: 10px;
+}

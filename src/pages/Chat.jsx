@@ -153,15 +153,32 @@ export default function Chat({ user }) {
   };
 
   const endCall = async () => {
+    joinedRef.current = false;
+    ringtoneRef.current?.pause();
+    clearInterval(timerRef.current);
     localTrackRef.current?.stop();
     localTrackRef.current?.close();
     await clientRef.current?.leave();
-    try {
-      await setDoc(doc(db, 'calls', callDocId), { status: 'ended' }, { merge: true });
-    } catch (e) {}
+
+    // Statistika yaz
+    if (callSeconds > 5) {
+      const minutes = Math.ceil(callSeconds / 60);
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const prev = userSnap.data() || {};
+      await setDoc(userRef, {
+        totalMinutes: (prev.totalMinutes || 0) + minutes,
+        callCount: (prev.callCount || 0) + 1,
+      }, { merge: true });
+    }
+
     setInCall(false);
     setCallStatus('');
-    setShowRating(true);
+    try {
+      await setDoc(doc(db, 'calls', callDocId), { status: 'ended' }, { merge: true });
+      setTimeout(() => deleteDoc(doc(db, 'calls', callDocId)), 2000);
+    } catch (e) {}
+    if (callSeconds >= 180) setShowRating(true);
   };
 
   const submitRating = async (stars) => {
@@ -177,7 +194,7 @@ export default function Chat({ user }) {
         });
       }
     } catch (e) {}
-    if (callSeconds >= 180) setShowRating(true); // yalnız 3 dəqiqədən artıq olduqda
+    setShowRating(false);
   };
 
   const toggleMute = async () => {

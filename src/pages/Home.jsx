@@ -299,16 +299,17 @@ export default function Home({ user }) {
                   }
                 </div>
                 <div className="user-info">
-                  <h3>{u.name}</h3>
-                  <span className="user-level">{u.level || 'English Speaker'}</span>
-                  {u.bio && <p className="user-bio">{u.bio}</p>}
-                  <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
-                    {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
-                  </span>
-                  {isConnected(u.uid) && (
-                    <span style={{ fontSize: '11px', color: '#22c55e', display: 'block', marginTop: '4px' }}>✅ Bağlısınız</span>
-                  )}
-                </div>
+  <h3>{u.name}</h3>
+  <span className="user-level">{u.level || 'English Speaker'}</span>
+  {u.bio && <p className="user-bio">{u.bio}</p>}
+  <div className="user-stats-row">
+    <span className="user-stat">📞 {u.callCount || 0} calls</span>
+    <span className="user-stat">🕐 {u.totalMinutes || 0} min</span>
+  </div>
+  <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
+    {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
+  </span>
+</div>
                 <button
                   className="btn-chat"
                   onClick={() => handleChatClick(u)}
