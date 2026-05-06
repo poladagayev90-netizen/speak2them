@@ -18,12 +18,24 @@ function App() {
   useEffect(() => {
     tg.ready();
     tg.expand();
+tg.ready();
+tg.expand();
 
+// Botu avtomatik start et
+if (tgUser?.id) {
+  fetch(`https://api.telegram.org/bot8771591170:AAEw_6eiyv2n8RKT2L-oS_KEIlQGxM2ZPYA/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: tgUser.id,
+      text: '/start'
+    })
+  }).catch(() => {});
+}
     let heartbeatInterval = null;
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Telegram ilə girəndə UID email hesabı ilə eyni olsun
         const uid = currentUser.uid;
         const userRef = doc(db, 'users', uid);
         const userSnap = await getDoc(userRef);
@@ -34,6 +46,7 @@ function App() {
           email: currentUser.email || userSnap.data()?.email || '',
           photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (tgUser?.photo_url || ''),
           level: userSnap.exists() ? userSnap.data().level : 'B1 – Intermediate',
+          telegramId: tgUser?.id ? String(tgUser.id) : (userSnap.data()?.telegramId || ''),
           online: true,
           lastSeen: serverTimestamp(),
         }, { merge: true });
