@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, serverTimestamp,
-  doc, getDoc, setDoc, deleteDoc, updateDoc
+  doc, getDoc, setDoc, updateDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
