@@ -29,6 +29,8 @@ export default function Chat({ user }) {
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
+
+  const callSecondsRef = useRef(0);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
@@ -91,10 +93,15 @@ export default function Chat({ user }) {
   useEffect(() => {
     if (inCall) {
       setCallSeconds(0);
-      timerRef.current = setInterval(() => setCallSeconds(s => s + 1), 1000);
+      callSecondsRef.current = 0;
+      timerRef.current = setInterval(() => {
+        callSecondsRef.current += 1;
+        setCallSeconds(callSecondsRef.current);
+      }, 1000);
     } else {
       clearInterval(timerRef.current);
       setCallSeconds(0);
+      callSecondsRef.current = 0;
     }
     return () => clearInterval(timerRef.current);
   }, [inCall]);
@@ -153,12 +160,41 @@ export default function Chat({ user }) {
   };
 
   const endCall = async () => {
+    // 1. Agora-dan çıx
     try {
-      // Statistika yaz — HƏR İKİ TƏRƏFİN
-      if (callSeconds > 5) {
-        const minutes = Math.ceil(callSeconds / 60);
-        
-        // Öz statistikan
+      if (localTrackRef.current) {
+        localTrackRef.current.stop();
+        localTrackRef.current.close();
+        localTrackRef.current = null;
+      }
+      if (clientRef.current) {
+        await clientRef.current.leave();
+        clientRef.current = null;
+      }
+    } catch (e) {
+      console.error('Agora leave error:', e);
+    }
+
+    // 2. UI state-i sıfırla
+    setInCall(false);
+    setCallStatus('');
+    setMuted(false);
+    joinedRef.current = false;
+    ringtoneRef.current?.pause();
+
+    // 3. Firestore-da zəngi "ended" et
+    try {
+      const callSnap = await getDoc(doc(db, 'calls', callDocId));
+      if (callSnap.exists() && callSnap.data().status !== 'ended') {
+        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended' });
+      }
+    } catch (e) {}
+
+    // 4. Statistika yaz (ref-dən oxu, state-dən yox)
+    try {
+      if (callSecondsRef.current > 5) {
+        const minutes = Math.ceil(callSecondsRef.current / 60);
+
         const myRef = doc(db, 'users', user.uid);
         const mySnap = await getDoc(myRef);
         const myData = mySnap.data() || {};
@@ -167,7 +203,6 @@ export default function Chat({ user }) {
           callCount: (myData.callCount || 0) + 1,
         }, { merge: true });
 
-        // Partnerin statistikası
         const peerRef = doc(db, 'users', peerId);
         const peerSnap = await getDoc(peerRef);
         const peerData = peerSnap.data() || {};
@@ -176,7 +211,7 @@ export default function Chat({ user }) {
           callCount: (peerData.callCount || 0) + 1,
         }, { merge: true });
       }
-      if (callSeconds >= 180) setShowRating(true);
+      if (callSecondsRef.current >= 180) setShowRating(true);
     } catch (e) {}
   };
 
