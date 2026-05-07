@@ -29,7 +29,8 @@ export default function Chat({ user }) {
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
-
+const [incomingCallData, setIncomingCallData] = useState(null);
+const prevCallStatus = useRef('');
   const callSecondsRef = useRef(0);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
@@ -73,22 +74,43 @@ export default function Chat({ user }) {
   }, []);
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
-        joinedRef.current = true;
-        ringtoneRef.current?.pause();
-        joinCall();
+  const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
+    if (!snap.exists()) {
+      // Doc silindi — rədd edildi
+      if (prevCallStatus.current === 'calling') {
+        setCallStatus('rejected');
+        setTimeout(() => setCallStatus(''), 3000);
       }
-      if (data.status === 'ended') {
-        ringtoneRef.current?.pause();
-        endCall();
-      }
-    });
-    return unsub;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      setIncomingCallData(null);
+      prevCallStatus.current = '';
+      return;
+    }
+    const data = snap.data();
+    prevCallStatus.current = data.status;
+
+    // Mənə zəng gəldi (chat-da olarkən)
+    if (data.callerId === peerId && data.status === 'calling') {
+      setIncomingCallData(data);
+    }
+
+    // Qarşı tərəf qəbul etdi — caller qoşulsun
+    if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
+      joinedRef.current = true;
+      setIncomingCallData(null);
+      ringtoneRef.current?.pause();
+      joinCall();
+    }
+
+    // Zəng bitdi
+    if (data.status === 'ended') {
+      ringtoneRef.current?.pause();
+      setIncomingCallData(null);
+      endCall();
+    }
+  });
+  return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   useEffect(() => {
     if (inCall) {
@@ -279,9 +301,49 @@ export default function Chat({ user }) {
     });
     setText('');
   };
+{/* CHAT-DA OLARKƏN GƏLƏN ZƏNG */}
+{incomingCallData && !inCall && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: '#0f0f1aee', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', zIndex: 9998,
+  }}>
+    <div style={{
+      background: '#1e1e30', border: '2px solid #7c6ff7',
+      borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
+    }}>
+      <div style={{ fontSize: '48px', marginBottom: '12px' }}>📞</div>
+      <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>
+        {peer?.name} sizi zəng edir...
+      </p>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
+        <button className="btn-accept" onClick={async () => {
+          setIncomingCallData(null);
+          await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
+          joinedRef.current = true;
+          joinCall();
+        }}>✅ Qəbul et</button>
+        <button className="btn-reject" onClick={async () => {
+          setIncomingCallData(null);
+          await updateDoc(doc(db, 'calls', callDocId), { status: 'rejected' });
+        }}>❌ Rədd et</button>
+      </div>
+    </div>
+  </div>
+)}
 
+{/* RƏD EDİLDİ BİLDİRİŞİ */}
+{callStatus === 'rejected' && (
+  <div style={{
+    position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+    background: '#ef4444', color: 'white', padding: '12px 24px',
+    borderRadius: '12px', fontWeight: 600, zIndex: 9999,
+  }}>
+    ❌ Zəng rədd edildi
+  </div>
+)}
   return (
-    <div className="chat-page">
+   <div className="chat-page">
 
       {showRating && (
         <div style={{
@@ -330,9 +392,10 @@ export default function Chat({ user }) {
           <h2 className="call-peer-name">{peer?.name}</h2>
           <p className="call-status-text">
             {callStatus === 'calling' && '📞 Calling...'}
-            {callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
-            {callStatus === 'left' && '⚠️ Partner left'}
-            {callStatus === 'error' && '❌ Error'}
+{callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
+{callStatus === 'left' && '⚠️ Partner left'}
+{callStatus === 'rejected' && '❌ Rədd edildi'}
+{callStatus === 'error' && '❌ Error'}
           </p>
           <div className="fullscreen-call-buttons">
             {inCall && (
