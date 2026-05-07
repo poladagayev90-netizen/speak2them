@@ -301,49 +301,55 @@ const prevCallStatus = useRef('');
     });
     setText('');
   };
-{/* CHAT-DA OLARKƏN GƏLƏN ZƏNG */}
-{incomingCallData && !inCall && (
-  <div style={{
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    background: '#0f0f1aee', display: 'flex', alignItems: 'center',
-    justifyContent: 'center', zIndex: 9998,
-  }}>
-    <div style={{
-      background: '#1e1e30', border: '2px solid #7c6ff7',
-      borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
-    }}>
-      <div style={{ fontSize: '48px', marginBottom: '12px' }}>📞</div>
-      <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>
-        {peer?.name} sizi zəng edir...
-      </p>
-      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
-        <button className="btn-accept" onClick={async () => {
-          setIncomingCallData(null);
-          await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
-          joinedRef.current = true;
-          joinCall();
-        }}>✅ Qəbul et</button>
-        <button className="btn-reject" onClick={async () => {
-          setIncomingCallData(null);
-          await updateDoc(doc(db, 'calls', callDocId), { status: 'rejected' });
-        }}>❌ Rədd et</button>
-      </div>
-    </div>
-  </div>
-)}
 
-{/* RƏD EDİLDİ BİLDİRİŞİ */}
-{callStatus === 'rejected' && (
-  <div style={{
-    position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
-    background: '#ef4444', color: 'white', padding: '12px 24px',
-    borderRadius: '12px', fontWeight: 600, zIndex: 9999,
-  }}>
-    ❌ Zəng rədd edildi
-  </div>
-)}
   return (
    <div className="chat-page">
+
+      {/* ✅ BURAYA KÖÇÜRÜLDÜ */}
+
+      {/* CHAT-DA OLARKƏN GƏLƏN ZƏNG */}
+      {incomingCallData && !inCall && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: '#0f0f1aee', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 9998,
+        }}>
+          <div style={{
+            background: '#1e1e30', border: '2px solid #7c6ff7',
+            borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>📞</div>
+            <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>
+              {peer?.name} sizi zəng edir...
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
+              <button className="btn-accept" onClick={async () => {
+                setIncomingCallData(null);
+                await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
+                joinedRef.current = true;
+                joinCall();
+              }}>✅ Qəbul et</button>
+              <button className="btn-reject" onClick={async () => {
+                setIncomingCallData(null);
+                await updateDoc(doc(db, 'calls', callDocId), { status: 'rejected' });
+              }}>❌ Rədd et</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RƏD EDİLDİ BİLDİRİŞİ */}
+      {callStatus === 'rejected' && (
+        <div style={{
+          position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+          background: '#ef4444', color: 'white', padding: '12px 24px',
+          borderRadius: '12px', fontWeight: 600, zIndex: 9999,
+        }}>
+          ❌ Zəng rədd edildi
+        </div>
+      )}
+
+      {/* QALAN KODUN DƏYİŞMƏYİB */}
 
       {showRating && (
         <div style={{
