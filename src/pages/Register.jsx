@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { tgUser } from '../telegram';
 import { Link, useNavigate } from 'react-router-dom';
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -30,6 +31,7 @@ export default function Register() {
         email,
         level,
         bio,
+        telegramId: tgUser?.id ? String(tgUser.id) : '',
         online: true,
         rating: 0,
         ratingCount: 0,
