@@ -54,6 +54,7 @@ exports.telegramWebhook = onRequest(async (req, res) => {
   const text = message.text;
 
   if (text === "/start") {
+    // Yalnız chatId saxla, mesaj göndərmə
     await admin.firestore().collection("telegramUsers").doc(String(chatId)).set({
       chatId,
       joinedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -66,7 +67,7 @@ exports.telegramWebhook = onRequest(async (req, res) => {
         chat_id: chatId,
         text: `🎙️ Speak2Them-ə xoş gəldin!\n\nKanalımıza qoşul: ${CHANNEL_LINK}\n\nTətbiqi aç: https://t.me/Speak2them_bot/app`,
         reply_markup: {
-          inline_keywords: [[
+          inline_keyboard: [[
             { text: "📢 Kanala qoşul", url: CHANNEL_LINK },
             { text: "🚀 Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" },
           ]],
