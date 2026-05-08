@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, onSnapshot, query, where, doc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, deleteDoc, setDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -16,8 +16,10 @@ export default function Home({ user }) {
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
   const [sentRequests, setSentRequests] = useState([]);
+  const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
+  const searchUnsubRef = useRef(null);
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -85,8 +87,81 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
+  // Səhifədən çıxanda sırayı təmizlə
+  useEffect(() => {
+    return () => {
+      cancelSearch();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const isConnected = (otherUid) => connections.some(c => c.users.includes(otherUid));
   const requestSent = (otherUid) => sentRequests.some(r => r.toUid === otherUid && r.status === 'pending');
+
+  const cancelSearch = async () => {
+    setSearching(false);
+    if (searchUnsubRef.current) {
+      searchUnsubRef.current();
+      searchUnsubRef.current = null;
+    }
+    try { await deleteDoc(doc(db, 'matchQueue', user.uid)); } catch (e) {}
+  };
+
+  const findRandomPartner = async () => {
+    if (searching) {
+      await cancelSearch();
+      return;
+    }
+
+    setSearching(true);
+
+    // Sırada gözləyən varmı?
+    const queueSnap = await getDocs(
+      query(collection(db, 'matchQueue'), where('status', '==', 'waiting'), where('uid', '!=', user.uid))
+    );
+
+    let candidates = queueSnap.docs.map(d => d.data());
+    if (levelFilter !== 'All') {
+      const sameLevelCandidates = candidates.filter(c => c.level === levelFilter);
+      if (sameLevelCandidates.length > 0) candidates = sameLevelCandidates;
+    }
+
+    if (candidates.length > 0) {
+      const match = candidates[Math.floor(Math.random() * candidates.length)];
+      await setDoc(doc(db, 'matchQueue', match.uid), {
+        status: 'matched',
+        matchedWith: user.uid,
+      }, { merge: true });
+      setSearching(false);
+      navigate(`/chat/${match.uid}`);
+      return;
+    }
+
+    // Sıraya özünü əlavə et
+    await setDoc(doc(db, 'matchQueue', user.uid), {
+      uid: user.uid,
+      name: user.displayName || 'User',
+      level: levelFilter !== 'All' ? levelFilter : 'Any',
+      status: 'waiting',
+      joinedAt: serverTimestamp(),
+    });
+
+    // Match gözlə
+    const unsub = onSnapshot(doc(db, 'matchQueue', user.uid), async (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.status === 'matched' && data.matchedWith) {
+        setSearching(false);
+        if (searchUnsubRef.current) {
+          searchUnsubRef.current();
+          searchUnsubRef.current = null;
+        }
+        await deleteDoc(doc(db, 'matchQueue', user.uid));
+        navigate(`/chat/${data.matchedWith}`);
+      }
+    });
+    searchUnsubRef.current = unsub;
+  };
 
   const handleChatClick = async (targetUser) => {
     if (isConnected(targetUser.uid)) {
@@ -137,6 +212,7 @@ export default function Home({ user }) {
   };
 
   const handleLogout = async () => {
+    await cancelSearch();
     await signOut(auth);
     navigate('/login');
   };
@@ -148,15 +224,6 @@ export default function Home({ user }) {
     } else {
       navigator.clipboard.writeText(text).then(() => alert('Link kopyalandı!'));
     }
-  };
-
-  const findRandomPartner = async () => {
-    const now = Date.now();
-    let list = onlineUsers.filter(u => (now - (u.lastSeen?.toMillis?.() || 0)) < 90000);
-    if (levelFilter !== 'All') list = list.filter(u => u.level === levelFilter);
-    if (list.length === 0) { alert('No one online with this level!'); return; }
-    const random = list[Math.floor(Math.random() * list.length)];
-    handleChatClick(random);
   };
 
   const baseList = tab === 'online' ? onlineUsers : allUsers;
@@ -229,9 +296,39 @@ export default function Home({ user }) {
           </button>
         </div>
 
-        <button className="btn-random" onClick={findRandomPartner}>🎲 Find Random Partner</button>
+        {/* RANDOM PARTNER DÜYMƏSI */}
+        <button
+          className="btn-random"
+          onClick={findRandomPartner}
+          style={{
+            background: searching
+              ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+              : undefined,
+          }}
+        >
+          {searching ? '⏳ Partnyor axtarılır... (ləğv et)' : '🎲 Find Random Partner'}
+        </button>
 
-        <div className="tabs">
+        {/* AXTARIŞ ANİMASİYASI */}
+        {searching && (
+          <div style={{
+            background: '#1e1e30', border: '1px solid #7c6ff755',
+            borderRadius: '16px', padding: '20px', marginTop: '12px',
+            textAlign: 'center',
+          }}>
+            <p style={{ color: '#7c6ff7', fontWeight: 600, marginBottom: '8px' }}>
+              🔍 Uyğun partnyor axtarılır...
+            </p>
+            <p style={{ color: '#888', fontSize: '13px' }}>
+              {levelFilter !== 'All' ? `Səviyyə: ${levelFilter}` : 'Bütün səviyyələr'}
+            </p>
+            <p style={{ color: '#666', fontSize: '12px', marginTop: '8px' }}>
+              Birisi sizi tapanda avtomatik qoşulacaqsınız
+            </p>
+          </div>
+        )}
+
+        <div className="tabs" style={{ marginTop: '24px' }}>
           <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
             🟢 Online ({onlineUsers.length})
           </button>
@@ -281,13 +378,9 @@ export default function Home({ user }) {
                     <p style={{ fontSize: '12px', color: '#888' }}>{u.level || 'English Speaker'}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '16px' }}>
-                      {u.totalMinutes || 0} dəq
-                    </p>
+                    <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '16px' }}>{u.totalMinutes || 0} dəq</p>
                     <p style={{ fontSize: '12px', color: '#888' }}>{u.callCount || 0} zəng</p>
-                    {u.streak > 0 && (
-                      <p style={{ fontSize: '12px', color: '#f59e0b' }}>🔥 {u.streak} gün</p>
-                    )}
+                    {u.streak > 0 && <p style={{ fontSize: '12px', color: '#f59e0b' }}>🔥 {u.streak} gün</p>}
                   </div>
                 </div>
               ))
