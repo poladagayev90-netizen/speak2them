@@ -12,6 +12,16 @@ import { getTodayContent } from '../dailyContent';
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/getAgoraToken';
 
+const PremiumBadge = () => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center', gap: '3px',
+    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#1a1000', fontSize: '10px', fontWeight: 700,
+    padding: '2px 7px', borderRadius: '20px', marginLeft: '6px',
+    boxShadow: '0 0 8px #f59e0b55',
+  }}>👑 Premium</span>
+);
+
 export default function Chat({ user }) {
   const { peerId } = useParams();
   const navigate = useNavigate();
@@ -92,14 +102,12 @@ export default function Chat({ user }) {
       if (data.callerId === peerId && data.status === 'calling') {
         setIncomingCallData(data);
       }
-
       if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
         joinedRef.current = true;
         setIncomingCallData(null);
         ringtoneRef.current?.pause();
         joinCall();
       }
-
       if (data.status === 'ended') {
         ringtoneRef.current?.pause();
         setIncomingCallData(null);
@@ -181,7 +189,6 @@ export default function Chat({ user }) {
   const endCall = async () => {
     const secondsTalked = callSecondsRef.current;
 
-    // 1. Agora-dan çıx
     try {
       if (localTrackRef.current) {
         localTrackRef.current.stop();
@@ -194,14 +201,12 @@ export default function Chat({ user }) {
       }
     } catch (e) {}
 
-    // 2. UI sıfırla
     setInCall(false);
     setCallStatus('');
     setMuted(false);
     joinedRef.current = false;
     ringtoneRef.current?.pause();
 
-    // 3. Firestore-da ended et
     try {
       const callSnap = await getDoc(doc(db, 'calls', callDocId));
       if (callSnap.exists() && callSnap.data().status !== 'ended') {
@@ -209,7 +214,6 @@ export default function Chat({ user }) {
       }
     } catch (e) {}
 
-    // 4. Statistika yaz
     try {
       if (secondsTalked > 5) {
         const minutes = Math.ceil(secondsTalked / 60);
@@ -246,12 +250,10 @@ export default function Chat({ user }) {
           lastCallDate: today,
         }, { merge: true });
       }
-
       if (secondsTalked >= 180) setShowRating(true);
     } catch (e) {}
   };
 
-  // endCallRef-i həmişə yenilə
   endCallRef.current = endCall;
 
   const submitRating = async (stars) => {
@@ -374,7 +376,10 @@ export default function Chat({ user }) {
           <div className="call-avatar-big">
             {peer?.photo ? <img src={peer.photo} alt={peer.name} /> : peer?.name?.charAt(0).toUpperCase()}
           </div>
-          <h2 className="call-peer-name">{peer?.name}</h2>
+          <h2 className="call-peer-name">
+            {peer?.name}
+            {peer?.isPremium && <PremiumBadge />}
+          </h2>
           <p className="call-status-text">
             {callStatus === 'calling' && '📞 Calling...'}
             {callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
@@ -461,7 +466,10 @@ export default function Chat({ user }) {
             }
           </div>
           <div>
-            <h3>{peer?.name}</h3>
+            <h3 style={{ display: 'flex', alignItems: 'center' }}>
+              {peer?.name}
+              {peer?.isPremium && <PremiumBadge />}
+            </h3>
             <span>{peer?.level || 'English Speaker'}</span>
           </div>
         </div>

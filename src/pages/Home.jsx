@@ -7,6 +7,16 @@ import { useNavigate } from 'react-router-dom';
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
+const PremiumBadge = () => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center', gap: '3px',
+    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#1a1000', fontSize: '10px', fontWeight: 700,
+    padding: '2px 7px', borderRadius: '20px', marginLeft: '6px',
+    boxShadow: '0 0 8px #f59e0b55',
+  }}>👑 Premium</span>
+);
+
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -87,12 +97,9 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
-  // Səhifədən çıxanda sırayı təmizlə
   useEffect(() => {
-    return () => {
-      cancelSearch();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => { cancelSearch(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isConnected = (otherUid) => connections.some(c => c.users.includes(otherUid));
@@ -108,36 +115,27 @@ export default function Home({ user }) {
   };
 
   const findRandomPartner = async () => {
-    if (searching) {
-      await cancelSearch();
-      return;
-    }
-
+    if (searching) { await cancelSearch(); return; }
     setSearching(true);
 
-    // Sırada gözləyən varmı?
     const queueSnap = await getDocs(
       query(collection(db, 'matchQueue'), where('status', '==', 'waiting'), where('uid', '!=', user.uid))
     );
 
     let candidates = queueSnap.docs.map(d => d.data());
     if (levelFilter !== 'All') {
-      const sameLevelCandidates = candidates.filter(c => c.level === levelFilter);
-      if (sameLevelCandidates.length > 0) candidates = sameLevelCandidates;
+      const same = candidates.filter(c => c.level === levelFilter);
+      if (same.length > 0) candidates = same;
     }
 
     if (candidates.length > 0) {
       const match = candidates[Math.floor(Math.random() * candidates.length)];
-      await setDoc(doc(db, 'matchQueue', match.uid), {
-        status: 'matched',
-        matchedWith: user.uid,
-      }, { merge: true });
+      await setDoc(doc(db, 'matchQueue', match.uid), { status: 'matched', matchedWith: user.uid }, { merge: true });
       setSearching(false);
       navigate(`/chat/${match.uid}`);
       return;
     }
 
-    // Sıraya özünü əlavə et
     await setDoc(doc(db, 'matchQueue', user.uid), {
       uid: user.uid,
       name: user.displayName || 'User',
@@ -146,16 +144,12 @@ export default function Home({ user }) {
       joinedAt: serverTimestamp(),
     });
 
-    // Match gözlə
     const unsub = onSnapshot(doc(db, 'matchQueue', user.uid), async (snap) => {
       if (!snap.exists()) return;
       const data = snap.data();
       if (data.status === 'matched' && data.matchedWith) {
         setSearching(false);
-        if (searchUnsubRef.current) {
-          searchUnsubRef.current();
-          searchUnsubRef.current = null;
-        }
+        if (searchUnsubRef.current) { searchUnsubRef.current(); searchUnsubRef.current = null; }
         await deleteDoc(doc(db, 'matchQueue', user.uid));
         navigate(`/chat/${data.matchedWith}`);
       }
@@ -164,14 +158,8 @@ export default function Home({ user }) {
   };
 
   const handleChatClick = async (targetUser) => {
-    if (isConnected(targetUser.uid)) {
-      navigate(`/chat/${targetUser.uid}`);
-      return;
-    }
-    if (requestSent(targetUser.uid)) {
-      alert('Sorğu artıq göndərilib, cavab gözlənilir...');
-      return;
-    }
+    if (isConnected(targetUser.uid)) { navigate(`/chat/${targetUser.uid}`); return; }
+    if (requestSent(targetUser.uid)) { alert('Sorğu artıq göndərilib, cavab gözlənilir...'); return; }
     const requestId = `${user.uid}_${targetUser.uid}`;
     await setDoc(doc(db, 'requests', requestId), {
       fromUid: user.uid,
@@ -187,10 +175,7 @@ export default function Home({ user }) {
   const acceptRequest = async (req) => {
     await setDoc(doc(db, 'requests', req.id), { status: 'accepted' }, { merge: true });
     const connId = [req.fromUid, req.toUid].sort().join('_');
-    await setDoc(doc(db, 'connections', connId), {
-      users: [req.fromUid, req.toUid],
-      createdAt: serverTimestamp(),
-    });
+    await setDoc(doc(db, 'connections', connId), { users: [req.fromUid, req.toUid], createdAt: serverTimestamp() });
     navigate(`/chat/${req.fromUid}`);
   };
 
@@ -296,35 +281,22 @@ export default function Home({ user }) {
           </button>
         </div>
 
-        {/* RANDOM PARTNER DÜYMƏSI */}
         <button
           className="btn-random"
           onClick={findRandomPartner}
-          style={{
-            background: searching
-              ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-              : undefined,
-          }}
+          style={{ background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined }}
         >
           {searching ? '⏳ Partnyor axtarılır... (ləğv et)' : '🎲 Find Random Partner'}
         </button>
 
-        {/* AXTARIŞ ANİMASİYASI */}
         {searching && (
           <div style={{
             background: '#1e1e30', border: '1px solid #7c6ff755',
-            borderRadius: '16px', padding: '20px', marginTop: '12px',
-            textAlign: 'center',
+            borderRadius: '16px', padding: '20px', marginTop: '12px', textAlign: 'center',
           }}>
-            <p style={{ color: '#7c6ff7', fontWeight: 600, marginBottom: '8px' }}>
-              🔍 Uyğun partnyor axtarılır...
-            </p>
-            <p style={{ color: '#888', fontSize: '13px' }}>
-              {levelFilter !== 'All' ? `Səviyyə: ${levelFilter}` : 'Bütün səviyyələr'}
-            </p>
-            <p style={{ color: '#666', fontSize: '12px', marginTop: '8px' }}>
-              Birisi sizi tapanda avtomatik qoşulacaqsınız
-            </p>
+            <p style={{ color: '#7c6ff7', fontWeight: 600, marginBottom: '8px' }}>🔍 Uyğun partnyor axtarılır...</p>
+            <p style={{ color: '#888', fontSize: '13px' }}>{levelFilter !== 'All' ? `Səviyyə: ${levelFilter}` : 'Bütün səviyyələr'}</p>
+            <p style={{ color: '#666', fontSize: '12px', marginTop: '8px' }}>Birisi sizi tapanda avtomatik qoşulacaqsınız</p>
           </div>
         )}
 
@@ -374,7 +346,10 @@ export default function Home({ user }) {
                     }
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: 700, fontSize: '15px' }}>{u.name}</p>
+                    <p style={{ fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center' }}>
+                      {u.name}
+                      {u.isPremium && <PremiumBadge />}
+                    </p>
                     <p style={{ fontSize: '12px', color: '#888' }}>{u.level || 'English Speaker'}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -398,15 +373,22 @@ export default function Home({ user }) {
             ) : (
               <div className="users-grid">
                 {displayUsers.map(u => (
-                  <div key={u.uid} className="user-card">
-                    <div className="user-avatar">
+                  <div key={u.uid} className="user-card" style={{
+                    border: u.isPremium ? '1px solid #f59e0b55' : undefined,
+                  }}>
+                    <div className="user-avatar" style={{
+                      boxShadow: u.isPremium ? '0 0 12px #f59e0b66' : undefined,
+                    }}>
                       {u.photo
                         ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
                         : u.name?.charAt(0).toUpperCase()
                       }
                     </div>
                     <div className="user-info">
-                      <h3>{u.name}</h3>
+                      <h3 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {u.name}
+                        {u.isPremium && <PremiumBadge />}
+                      </h3>
                       <span className="user-level">{u.level || 'English Speaker'}</span>
                       {u.bio && <p className="user-bio">{u.bio}</p>}
                       <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>

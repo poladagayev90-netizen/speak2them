@@ -13,6 +13,7 @@ export default function Profile({ user }) {
   const [level, setLevel] = useState('B1 – Intermediate');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [stats, setStats] = useState({ calls: 0, totalMinutes: 0, streak: 0 });
   const [docId, setDocId] = useState(null);
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ export default function Profile({ user }) {
           setName(userData.name || '');
           setBio(userData.bio || '');
           setLevel(userData.level || 'B1 – Intermediate');
+          setIsPremium(userData.isPremium || false);
           setStats({
             calls: userData.callCount || 0,
             totalMinutes: userData.totalMinutes || 0,
@@ -57,7 +59,6 @@ export default function Profile({ user }) {
         console.error(e);
       }
     };
-
     fetchProfile();
   }, [user]);
 
@@ -85,9 +86,35 @@ export default function Profile({ user }) {
       </div>
 
       <div className="profile-body">
-        <div className="profile-avatar-big">
-          {name?.charAt(0).toUpperCase() || '?'}
+
+        <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 8px' }}>
+          <div className="profile-avatar-big">
+            {name?.charAt(0).toUpperCase() || '?'}
+          </div>
+          {isPremium && (
+            <div style={{
+              position: 'absolute', bottom: '-4px', right: '-4px',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              borderRadius: '50%', width: '28px', height: '28px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '16px', boxShadow: '0 0 10px #f59e0b88',
+            }}>👑</div>
+          )}
         </div>
+
+        {isPremium && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '6px', marginBottom: '16px',
+          }}>
+            <span style={{
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: '#1a1000', fontSize: '12px', fontWeight: 700,
+              padding: '4px 14px', borderRadius: '20px',
+              boxShadow: '0 0 12px #f59e0b55',
+            }}>✨ Premium Member</span>
+          </div>
+        )}
 
         <div className="profile-stats">
           <div className="stat-card">
