@@ -29,9 +29,11 @@ export default function Chat({ user }) {
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
-const [incomingCallData, setIncomingCallData] = useState(null);
-const prevCallStatus = useRef('');
+  const [incomingCallData, setIncomingCallData] = useState(null);
+
+  const prevCallStatus = useRef('');
   const callSecondsRef = useRef(0);
+  const endCallRef = useRef(null);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
@@ -74,43 +76,39 @@ const prevCallStatus = useRef('');
   }, []);
 
   useEffect(() => {
-  const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
-    if (!snap.exists()) {
-      // Doc silindi — rədd edildi
-      if (prevCallStatus.current === 'calling') {
-        setCallStatus('rejected');
-        setTimeout(() => setCallStatus(''), 3000);
+    const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
+      if (!snap.exists()) {
+        if (prevCallStatus.current === 'calling') {
+          setCallStatus('rejected');
+          setTimeout(() => setCallStatus(''), 3000);
+        }
+        setIncomingCallData(null);
+        prevCallStatus.current = '';
+        return;
       }
-      setIncomingCallData(null);
-      prevCallStatus.current = '';
-      return;
-    }
-    const data = snap.data();
-    prevCallStatus.current = data.status;
+      const data = snap.data();
+      prevCallStatus.current = data.status;
 
-    // Mənə zəng gəldi (chat-da olarkən)
-    if (data.callerId === peerId && data.status === 'calling') {
-      setIncomingCallData(data);
-    }
+      if (data.callerId === peerId && data.status === 'calling') {
+        setIncomingCallData(data);
+      }
 
-    // Qarşı tərəf qəbul etdi — caller qoşulsun
-    if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
-      joinedRef.current = true;
-      setIncomingCallData(null);
-      ringtoneRef.current?.pause();
-      joinCall();
-    }
+      if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
+        joinedRef.current = true;
+        setIncomingCallData(null);
+        ringtoneRef.current?.pause();
+        joinCall();
+      }
 
-    // Zəng bitdi
-    if (data.status === 'ended') {
-      ringtoneRef.current?.pause();
-      setIncomingCallData(null);
-      endCall();
-    }
-  });
-  return unsub;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+      if (data.status === 'ended') {
+        ringtoneRef.current?.pause();
+        setIncomingCallData(null);
+        endCallRef.current?.();
+      }
+    });
+    return unsub;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (inCall) {
@@ -123,7 +121,6 @@ const prevCallStatus = useRef('');
     } else {
       clearInterval(timerRef.current);
       setCallSeconds(0);
-      callSecondsRef.current = 0;
     }
     return () => clearInterval(timerRef.current);
   }, [inCall]);
@@ -182,6 +179,8 @@ const prevCallStatus = useRef('');
   };
 
   const endCall = async () => {
+    const secondsTalked = callSecondsRef.current;
+
     // 1. Agora-dan çıx
     try {
       if (localTrackRef.current) {
@@ -193,18 +192,16 @@ const prevCallStatus = useRef('');
         await clientRef.current.leave();
         clientRef.current = null;
       }
-    } catch (e) {
-      console.error('Agora leave error:', e);
-    }
+    } catch (e) {}
 
-    // 2. UI state-i sıfırla
+    // 2. UI sıfırla
     setInCall(false);
     setCallStatus('');
     setMuted(false);
     joinedRef.current = false;
     ringtoneRef.current?.pause();
 
-    // 3. Firestore-da zəngi "ended" et
+    // 3. Firestore-da ended et
     try {
       const callSnap = await getDoc(doc(db, 'calls', callDocId));
       if (callSnap.exists() && callSnap.data().status !== 'ended') {
@@ -212,27 +209,20 @@ const prevCallStatus = useRef('');
       }
     } catch (e) {}
 
-    // 4. Statistika + Streak yaz
+    // 4. Statistika yaz
     try {
-      if (callSecondsRef.current > 5) {
-        const minutes = Math.ceil(callSecondsRef.current / 60);
+      if (secondsTalked > 5) {
+        const minutes = Math.ceil(secondsTalked / 60);
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
 
-        // Öz statistikan
         const myRef = doc(db, 'users', user.uid);
         const mySnap = await getDoc(myRef);
         const myData = mySnap.data() || {};
-        const myLastCallDate = myData.lastCallDate || '';
         let myStreak = myData.streak || 0;
-
-        if (myLastCallDate === today) {
-          // Bu gün artıq zəng etmişdi
-        } else if (myLastCallDate === yesterday) {
-          myStreak = myStreak + 1;
-        } else {
-          myStreak = 1;
-        }
+        if (myData.lastCallDate === today) {}
+        else if (myData.lastCallDate === yesterday) myStreak += 1;
+        else myStreak = 1;
 
         await setDoc(myRef, {
           totalMinutes: (myData.totalMinutes || 0) + minutes,
@@ -241,20 +231,13 @@ const prevCallStatus = useRef('');
           lastCallDate: today,
         }, { merge: true });
 
-        // Partnerin statistikası
         const peerRef = doc(db, 'users', peerId);
         const peerSnap = await getDoc(peerRef);
         const peerData = peerSnap.data() || {};
-        const peerLastCallDate = peerData.lastCallDate || '';
         let peerStreak = peerData.streak || 0;
-
-        if (peerLastCallDate === today) {
-          // Bu gün artıq zəng etmişdi
-        } else if (peerLastCallDate === yesterday) {
-          peerStreak = peerStreak + 1;
-        } else {
-          peerStreak = 1;
-        }
+        if (peerData.lastCallDate === today) {}
+        else if (peerData.lastCallDate === yesterday) peerStreak += 1;
+        else peerStreak = 1;
 
         await setDoc(peerRef, {
           totalMinutes: (peerData.totalMinutes || 0) + minutes,
@@ -263,20 +246,22 @@ const prevCallStatus = useRef('');
           lastCallDate: today,
         }, { merge: true });
       }
-      if (callSecondsRef.current >= 180) setShowRating(true);
+
+      if (secondsTalked >= 180) setShowRating(true);
     } catch (e) {}
   };
+
+  // endCallRef-i həmişə yenilə
+  endCallRef.current = endCall;
 
   const submitRating = async (stars) => {
     try {
       const peerDoc = await getDoc(doc(db, 'users', peerId));
       if (peerDoc.exists()) {
         const peerData = peerDoc.data();
-        const newCount = (peerData.ratingCount || 0) + 1;
-        const newTotal = (peerData.rating || 0) + stars;
         await updateDoc(doc(db, 'users', peerId), {
-          rating: newTotal,
-          ratingCount: newCount,
+          rating: (peerData.rating || 0) + stars,
+          ratingCount: (peerData.ratingCount || 0) + 1,
         });
       }
     } catch (e) {}
@@ -303,11 +288,8 @@ const prevCallStatus = useRef('');
   };
 
   return (
-   <div className="chat-page">
+    <div className="chat-page">
 
-      {/* ✅ BURAYA KÖÇÜRÜLDÜ */}
-
-      {/* CHAT-DA OLARKƏN GƏLƏN ZƏNG */}
       {incomingCallData && !inCall && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -338,7 +320,6 @@ const prevCallStatus = useRef('');
         </div>
       )}
 
-      {/* RƏD EDİLDİ BİLDİRİŞİ */}
       {callStatus === 'rejected' && (
         <div style={{
           position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
@@ -348,8 +329,6 @@ const prevCallStatus = useRef('');
           ❌ Zəng rədd edildi
         </div>
       )}
-
-      {/* QALAN KODUN DƏYİŞMƏYİB */}
 
       {showRating && (
         <div style={{
@@ -398,10 +377,10 @@ const prevCallStatus = useRef('');
           <h2 className="call-peer-name">{peer?.name}</h2>
           <p className="call-status-text">
             {callStatus === 'calling' && '📞 Calling...'}
-{callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
-{callStatus === 'left' && '⚠️ Partner left'}
-{callStatus === 'rejected' && '❌ Rədd edildi'}
-{callStatus === 'error' && '❌ Error'}
+            {callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
+            {callStatus === 'left' && '⚠️ Partner left'}
+            {callStatus === 'rejected' && '❌ Rədd edildi'}
+            {callStatus === 'error' && '❌ Error'}
           </p>
           <div className="fullscreen-call-buttons">
             {inCall && (
