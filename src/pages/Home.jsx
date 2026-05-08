@@ -85,13 +85,8 @@ export default function Home({ user }) {
     return unsub;
   }, [user]);
 
-  const isConnected = (otherUid) => {
-    return connections.some(c => c.users.includes(otherUid));
-  };
-
-  const requestSent = (otherUid) => {
-    return sentRequests.some(r => r.toUid === otherUid && r.status === 'pending');
-  };
+  const isConnected = (otherUid) => connections.some(c => c.users.includes(otherUid));
+  const requestSent = (otherUid) => sentRequests.some(r => r.toUid === otherUid && r.status === 'pending');
 
   const handleChatClick = async (targetUser) => {
     if (isConnected(targetUser.uid)) {
@@ -157,10 +152,7 @@ export default function Home({ user }) {
 
   const findRandomPartner = async () => {
     const now = Date.now();
-    let list = onlineUsers.filter(u => {
-      const lastSeen = u.lastSeen?.toMillis?.() || 0;
-      return (now - lastSeen) < 90000;
-    });
+    let list = onlineUsers.filter(u => (now - (u.lastSeen?.toMillis?.() || 0)) < 90000);
     if (levelFilter !== 'All') list = list.filter(u => u.level === levelFilter);
     if (list.length === 0) { alert('No one online with this level!'); return; }
     const random = list[Math.floor(Math.random() * list.length)];
@@ -197,24 +189,16 @@ export default function Home({ user }) {
 
         {requests.length > 0 && (
           <div style={{
-            background: '#1e1e30',
-            border: '1px solid #7c6ff755',
-            borderRadius: '16px',
-            padding: '16px 20px',
-            marginBottom: '24px',
+            background: '#1e1e30', border: '1px solid #7c6ff755',
+            borderRadius: '16px', padding: '16px 20px', marginBottom: '24px',
           }}>
             <p style={{ fontWeight: 700, marginBottom: '12px', color: '#7c6ff7' }}>
               📨 Mesaj Sorğuları ({requests.length})
             </p>
             {requests.map(req => (
               <div key={req.id} style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 0',
-                borderBottom: '1px solid #2e2e50',
-                gap: '12px',
-                flexWrap: 'wrap',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 0', borderBottom: '1px solid #2e2e50', gap: '12px', flexWrap: 'wrap',
               }}>
                 <div>
                   <p style={{ fontWeight: 600 }}>{req.fromName}</p>
@@ -231,15 +215,10 @@ export default function Home({ user }) {
 
         <div style={{
           background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-          border: '1px solid #7c6ff755',
-          borderRadius: '16px',
-          padding: '20px 24px',
-          marginBottom: '24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          flexWrap: 'wrap',
+          border: '1px solid #7c6ff755', borderRadius: '16px',
+          padding: '20px 24px', marginBottom: '24px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: '16px', flexWrap: 'wrap',
         }}>
           <div>
             <p style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>👥 Dostlarını dəvət et!</p>
@@ -259,54 +238,109 @@ export default function Home({ user }) {
           <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
             👥 All Users ({allUsers.length})
           </button>
+          <button className={`tab ${tab === 'ranking' ? 'active' : ''}`} onClick={() => setTab('ranking')}>
+            🏆 Rankings
+          </button>
         </div>
 
-        <div className="level-filter">
-          {LEVELS.map(l => (
-            <button key={l} className={`level-btn ${levelFilter === l ? 'active' : ''}`} onClick={() => setLevelFilter(l)}>
-              {l === 'All' ? '🌐 All' : l.split(' – ')[0]}
-            </button>
-          ))}
-        </div>
-
-        {displayUsers.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">😴</div>
-            <p>{tab === 'online' ? 'No one online with this level.' : 'No users yet.'}</p>
-          </div>
-        ) : (
-          <div className="users-grid">
-            {displayUsers.map(u => (
-              <div key={u.uid} className="user-card">
-                <div className="user-avatar">
-                  {u.photo
-                    ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                    : u.name?.charAt(0).toUpperCase()
-                  }
-                </div>
-                <div className="user-info">
-                  <h3>{u.name}</h3>
-                  <span className="user-level">{u.level || 'English Speaker'}</span>
-                  {u.bio && <p className="user-bio">{u.bio}</p>}
-                  <div className="user-stats-row">
-                    <span className="user-stat">📞 {u.callCount || 0} calls</span>
-                    <span className="user-stat">🕐 {u.totalMinutes || 0} min</span>
-                    <span className="user-stat">🔥 {u.streak || 0} streak</span>
-                  </div>
-                  <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
-                    {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
-                  </span>
-                </div>
-                <button
-                  className="btn-chat"
-                  onClick={() => handleChatClick(u)}
-                  style={{ opacity: requestSent(u.uid) ? 0.6 : 1 }}
-                >
-                  {isConnected(u.uid) ? '💬 Yaz / Zəng et' : requestSent(u.uid) ? '⏳ Sorğu gözlənilir' : '💬 Sorğu göndər'}
-                </button>
-              </div>
+        {tab !== 'ranking' && (
+          <div className="level-filter">
+            {LEVELS.map(l => (
+              <button key={l} className={`level-btn ${levelFilter === l ? 'active' : ''}`} onClick={() => setLevelFilter(l)}>
+                {l === 'All' ? '🌐 All' : l.split(' – ')[0]}
+              </button>
             ))}
           </div>
+        )}
+
+        {tab === 'ranking' && (
+          <div style={{ marginTop: '20px' }}>
+            {[...allUsers]
+              .sort((a, b) => (b.totalMinutes || 0) - (a.totalMinutes || 0))
+              .map((u, i) => (
+                <div key={u.uid} style={{
+                  background: '#1e1e30',
+                  border: `1px solid ${i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#2e2e50'}`,
+                  borderRadius: '14px', padding: '16px 20px', marginBottom: '12px',
+                  display: 'flex', alignItems: 'center', gap: '16px',
+                }}>
+                  <div style={{
+                    fontSize: '24px', fontWeight: 800, minWidth: '40px', textAlign: 'center',
+                    color: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#666',
+                  }}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
+                  </div>
+                  <div className="user-avatar" style={{ width: '44px', height: '44px', flexShrink: 0 }}>
+                    {u.photo
+                      ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                      : u.name?.charAt(0).toUpperCase()
+                    }
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, fontSize: '15px' }}>{u.name}</p>
+                    <p style={{ fontSize: '12px', color: '#888' }}>{u.level || 'English Speaker'}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '16px' }}>
+                      {u.totalMinutes || 0} dəq
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#888' }}>{u.callCount || 0} zəng</p>
+                    {u.streak > 0 && (
+                      <p style={{ fontSize: '12px', color: '#f59e0b' }}>🔥 {u.streak} gün</p>
+                    )}
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        )}
+
+        {tab !== 'ranking' && (
+          <>
+            {displayUsers.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">😴</div>
+                <p>{tab === 'online' ? 'No one online with this level.' : 'No users yet.'}</p>
+              </div>
+            ) : (
+              <div className="users-grid">
+                {displayUsers.map(u => (
+                  <div key={u.uid} className="user-card">
+                    <div className="user-avatar">
+                      {u.photo
+                        ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                        : u.name?.charAt(0).toUpperCase()
+                      }
+                    </div>
+                    <div className="user-info">
+                      <h3>{u.name}</h3>
+                      <span className="user-level">{u.level || 'English Speaker'}</span>
+                      {u.bio && <p className="user-bio">{u.bio}</p>}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '11px', color: '#888' }}>📞 {u.callCount || 0}</span>
+                        <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} dəq</span>
+                        {u.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</span>}
+                        {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
+                      </div>
+                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
+                        {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
+                      </span>
+                      {isConnected(u.uid) && (
+                        <span style={{ fontSize: '11px', color: '#22c55e', display: 'block', marginTop: '4px' }}>✅ Bağlısınız</span>
+                      )}
+                    </div>
+                    <button
+                      className="btn-chat"
+                      onClick={() => handleChatClick(u)}
+                      style={{ opacity: requestSent(u.uid) ? 0.6 : 1 }}
+                    >
+                      {isConnected(u.uid) ? '💬 Yaz / Zəng et' : requestSent(u.uid) ? '⏳ Sorğu gözlənilir' : '💬 Sorğu göndər'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
