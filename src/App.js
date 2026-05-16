@@ -19,9 +19,6 @@ function App() {
     tg.ready();
     tg.expand();
 
-    console.log("tgUser:", tgUser);
-    console.log("telegramId:", tgUser?.id);
-
     let heartbeatInterval = null;
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
@@ -34,8 +31,6 @@ function App() {
           ? String(tgUser.id)
           : (userSnap.exists() ? (userSnap.data()?.telegramId || '') : '');
 
-        console.log("Firestore-a yazilan telegramId:", telegramId);
-
         await setDoc(userRef, {
           uid,
           name: userSnap.exists() ? userSnap.data().name : (currentUser.displayName || 'User'),
@@ -46,6 +41,17 @@ function App() {
           online: true,
           lastSeen: serverTimestamp(),
         }, { merge: true });
+
+        // ✅ Streak yoxla — 2+ gün zəng etməyibsə sıfırla
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          const lastCallDate = data.lastCallDate || '';
+          if (lastCallDate !== today && lastCallDate !== yesterday && (data.streak || 0) > 0) {
+            await setDoc(userRef, { streak: 0 }, { merge: true });
+          }
+        }
 
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
