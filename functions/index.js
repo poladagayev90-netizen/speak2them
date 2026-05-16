@@ -144,3 +144,34 @@ exports.broadcastMessage = onRequest(async (req, res) => {
   await Promise.allSettled(promises);
   res.send({ sent: chatIds.size + 1 }); // +1 kanal üçün
 });
+// ─── Zəng Bildirişi ───────────────────────────────────────────
+exports.sendCallNotification = onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  const { telegramId, callerName } = req.body;
+  if (!telegramId) return res.status(400).json({ error: "telegramId required" });
+
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: telegramId,
+        text: `📞 *${callerName}* sizi Speak2Them-də zəng edir!\n\nQəbul etmək üçün tətbiqi açın 👇`,
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [[
+            { text: "🎙️ Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" }
+          ]]
+        }
+      }),
+    });
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});

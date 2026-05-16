@@ -148,7 +148,25 @@ export default function Chat({ user }) {
       createdAt: serverTimestamp(),
     });
     setCallStatus('calling');
-  };
+
+    // Telegram bildirişi göndər
+    try {
+      const peerSnap = await getDoc(doc(db, 'users', peerId));
+      const peerTgId = peerSnap.data()?.telegramId;
+      if (peerTgId) {
+        await fetch('https://us-central1-speak2them-64f2b.cloudfunctions.net/sendCallNotification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            telegramId: peerTgId,
+            callerName: user.displayName || 'User',
+          }),
+        });
+      }
+    } catch (e) {
+      console.error('Telegram notification error:', e);
+    }
+  }
 
   const joinCall = async () => {
     ringtoneRef.current?.pause();
