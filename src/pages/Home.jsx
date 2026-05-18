@@ -114,7 +114,8 @@ export default function Home({ user }) {
     try { await deleteDoc(doc(db, 'matchQueue', user.uid)); } catch (e) {}
   };
 
-  const findRandomPartner = async () => {
+  // eslint-disable-next-line no-unused-vars
+const findRandomPartner = async () => {
     if (searching) { await cancelSearch(); return; }
     setSearching(true);
 

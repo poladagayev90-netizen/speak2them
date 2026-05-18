@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 export default function MatchMaking({ user }) {
   const [candidates, setCandidates] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const matchScore = (me, other) => {
@@ -30,6 +31,8 @@ export default function MatchMaking({ user }) {
   };
 
   const loadCandidates = async () => {
+    setLoading(true);
+
     const snap = await getDocs(
       query(collection(db, 'users'), where('online', '==', true))
     );
@@ -46,10 +49,12 @@ export default function MatchMaking({ user }) {
     scored.sort((a, b) => b.score - a.score);
 
     setCandidates(scored);
+    setLoading(false);
   };
 
   useEffect(() => {
     loadCandidates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSkip = () => {
@@ -59,6 +64,14 @@ export default function MatchMaking({ user }) {
   const handleAccept = (target) => {
     navigate(`/chat/${target.uid}`);
   };
+
+  if (loading) {
+    return (
+      <div className="home-page">
+        <h2>Loading users...</h2>
+      </div>
+    );
+  }
 
   if (candidates.length === 0) {
     return (
@@ -91,12 +104,16 @@ export default function MatchMaking({ user }) {
       }}>
 
         <div className="user-avatar" style={{ margin: '0 auto 12px' }}>
-  {currentUserCard.photo ? (
-    {currentUserCard.photo}
-  ) : (
-    currentUserCard.name?.charAt(0).toUpperCase()
-  )}
-</div>
+          {currentUserCard.photo ? (
+            <img
+              src={currentUserCard.photo}
+              alt={currentUserCard.name}
+              style={{ width: '100%', borderRadius: '50%' }}
+            />
+          ) : (
+            currentUserCard.name?.charAt(0).toUpperCase()
+          )}
+        </div>
 
         <h2>{currentUserCard.name}</h2>
         <p>{currentUserCard.level}</p>
