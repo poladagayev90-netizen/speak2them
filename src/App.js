@@ -11,6 +11,7 @@ import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 import DailyHub from './pages/DailyHub';
 import Survey from './pages/Survey';
+import MatchMaking from './pages/MatchMaking'; // ✅ NEW
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,7 +44,7 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        // ✅ Streak yoxla — 2+ gün zəng etməyibsə sıfırla
+        // ✅ Streak yoxla
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         if (userSnap.exists()) {
@@ -130,7 +131,12 @@ function App() {
         <Route path="/login"        element={!user ? <Login />    : <Navigate to="/" />} />
         <Route path="/register"     element={!user ? <Register /> : <Navigate to="/" />} />
         <Route path="/survey"       element={user  ? <Survey user={user} /> : <Navigate to="/login" />} />
+
         <Route path="/"             element={user  ? <Home user={user} /> : <Navigate to="/login" />} />
+
+        {/* ✅ NEW MATCH PAGE */}
+        <Route path="/match"        element={user  ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+
         <Route path="/chat/:peerId" element={user  ? <Chat user={user} /> : <Navigate to="/login" />} />
         <Route path="/profile"      element={user  ? <Profile user={user} /> : <Navigate to="/login" />} />
         <Route path="/daily"        element={user  ? <DailyHub /> : <Navigate to="/login" />} />

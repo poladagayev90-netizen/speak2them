@@ -283,7 +283,7 @@ export default function Home({ user }) {
 
         <button
           className="btn-random"
-          onClick={findRandomPartner}
+          onClick={() => navigate('/match')}
           style={{ background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined }}
         >
           {searching ? '⏳ Partnyor axtarılır... (ləğv et)' : '🎲 Find Random Partner'}
