@@ -22,9 +22,12 @@ export default function Register() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
+
       await updateProfile(user, { displayName: name });
+
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         name,
@@ -35,13 +38,16 @@ export default function Register() {
         online: true,
         rating: 0,
         ratingCount: 0,
+        surveyDone: false,
         createdAt: serverTimestamp(),
         lastSeen: serverTimestamp(),
       });
-      navigate('/');
+
+      navigate('/survey');
     } catch (err) {
       setError(err.message);
     }
+
     setLoading(false);
   };
 
@@ -63,6 +69,7 @@ export default function Register() {
             onChange={e => setName(e.target.value)}
             required
           />
+
           <label>Email</label>
           <input
             type="email"
@@ -71,6 +78,7 @@ export default function Register() {
             onChange={e => setEmail(e.target.value)}
             required
           />
+
           <label>Password</label>
           <input
             type="password"
@@ -80,10 +88,12 @@ export default function Register() {
             minLength={6}
             required
           />
+
           <label>English Level</label>
           <select value={level} onChange={e => setLevel(e.target.value)}>
             {LEVELS.map(l => <option key={l}>{l}</option>)}
           </select>
+
           <label>Short Bio <span className="optional">(optional)</span></label>
           <textarea
             placeholder="Tell others about yourself..."
@@ -91,6 +101,7 @@ export default function Register() {
             onChange={e => setBio(e.target.value)}
             rows={3}
           />
+
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Creating account...' : 'Get Started'}
           </button>

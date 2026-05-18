@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 import DailyHub from './pages/DailyHub';
+import Survey from './pages/Survey';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -80,11 +81,24 @@ function App() {
             }, { merge: true });
           }
         });
+
+        const freshUserSnap = await getDoc(userRef);
+        const freshUserData = freshUserSnap.exists() ? freshUserSnap.data() : {};
+
+        const appUser = {
+          ...currentUser,
+          ...freshUserData,
+          uid,
+          email: currentUser.email || freshUserData.email || '',
+          displayName: currentUser.displayName || freshUserData.name || 'User',
+        };
+
+        setUser(appUser);
       } else {
         if (heartbeatInterval) clearInterval(heartbeatInterval);
+        setUser(null);
       }
 
-      setUser(currentUser);
       setLoading(false);
     });
 
@@ -115,6 +129,7 @@ function App() {
       <Routes>
         <Route path="/login"        element={!user ? <Login />    : <Navigate to="/" />} />
         <Route path="/register"     element={!user ? <Register /> : <Navigate to="/" />} />
+        <Route path="/survey"       element={user  ? <Survey user={user} /> : <Navigate to="/login" />} />
         <Route path="/"             element={user  ? <Home user={user} /> : <Navigate to="/login" />} />
         <Route path="/chat/:peerId" element={user  ? <Chat user={user} /> : <Navigate to="/login" />} />
         <Route path="/profile"      element={user  ? <Profile user={user} /> : <Navigate to="/login" />} />
