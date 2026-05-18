@@ -91,10 +91,15 @@ export default function MatchMaking({ user }) {
       }}>
 
         <div className="user-avatar" style={{ margin: '0 auto 12px' }}>
-          {currentUserCard.photo
-            ? currentUserCard.photo} alt="" style={{ width: '100%', borderRadius: '50%' }} />
-            : currentUserCard.name?.charAt(0).toUpperCase()
-          }
+          {currentUserCard.photo ? (
+            <img
+              src={currentUserCard.photo}
+              alt=""
+              style={{ width: '100%', borderRadius: '50%' }}
+            />
+          ) : (
+            currentUserCard.name?.charAt(0).toUpperCase()
+          )}
         </div>
 
         <h2>{currentUserCard.name}</h2>
