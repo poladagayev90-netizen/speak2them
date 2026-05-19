@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -19,47 +19,49 @@ export default function Profile({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    let unsub = null;
+
+    const setup = async () => {
       try {
         const email = user.email || auth.currentUser?.email;
-        let userData = null;
         let foundDocId = null;
 
         if (email) {
           const q = query(collection(db, 'users'), where('email', '==', email));
           const snap = await getDocs(q);
-          if (!snap.empty) {
-            userData = snap.docs[0].data();
-            foundDocId = snap.docs[0].id;
-          }
+          if (!snap.empty) foundDocId = snap.docs[0].id;
         }
 
-        if (!userData) {
+        if (!foundDocId) {
           const q2 = query(collection(db, 'users'), where('uid', '==', user.uid));
           const snap2 = await getDocs(q2);
-          if (!snap2.empty) {
-            userData = snap2.docs[0].data();
-            foundDocId = snap2.docs[0].id;
-          }
+          if (!snap2.empty) foundDocId = snap2.docs[0].id;
         }
 
-        if (userData) {
-          setName(userData.name || '');
-          setBio(userData.bio || '');
-          setLevel(userData.level || 'B1 – Intermediate');
-          setIsPremium(userData.isPremium || false);
-          setStats({
-            calls: userData.callCount || 0,
-            totalMinutes: userData.totalMinutes || 0,
-            streak: userData.streak || 0,
-          });
+        if (foundDocId) {
           setDocId(foundDocId);
+          unsub = onSnapshot(doc(db, 'users', foundDocId), (snap) => {
+            if (snap.exists()) {
+              const userData = snap.data();
+              setName(userData.name || '');
+              setBio(userData.bio || '');
+              setLevel(userData.level || 'B1 – Intermediate');
+              setIsPremium(userData.isPremium || false);
+              setStats({
+                calls: userData.callCount || 0,
+                totalMinutes: userData.totalMinutes || 0,
+                streak: userData.streak || 0,
+              });
+            }
+          });
         }
       } catch (e) {
         console.error(e);
       }
     };
-    fetchProfile();
+
+    setup();
+    return () => unsub?.();
   }, [user]);
 
   const handleSave = async () => {
