@@ -1,0 +1,10 @@
+[33m1bf7b18[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Update UI + survey + matchmaking
+[33mc4739ab[m fix: add proper header structure with logo to home page
+[33m53bda67[m style: adjust header layout and profile button sizing
+[33m2baaa76[m feat: premium and admin buttons in header
+[33m0a6ebb9[m fix: remove unused import
+[33macd27b0[m feat: premium system + admin panel
+[33mfaca65c[m fix: always mark call as ended regardless of duration
+[33m7a327d9[m fix: prevent double-counting stats if endCall triggered twice
+[33m0813e25[m fix: use real-time listener for profile stats to keep data in sync
+[33m4973404[m fix: only call initiator updates call stats to prevent race condition
