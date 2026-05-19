@@ -228,26 +228,29 @@ const findRandomPartner = async () => {
         </div>
       )}
 
-     <div className="home-header-right">
-  <button className="btn-profile" onClick={() => navigate('/daily')}>📅 Daily</button>
-  <button className="btn-profile" onClick={() => navigate('/profile')}>👤 Profile</button>
-  {!user.isPremium && (
-    <button onClick={() => navigate('/premium')} style={{
-      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-      color: '#1a1000', border: 'none', borderRadius: '10px',
-      padding: '8px 14px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
-    }}>👑 Premium</button>
-  )}
-  {user.uid === '6Djehd9KB8dTZUgVwVJfLoPI5dF3' && (
-    <button onClick={() => navigate('/admin')} style={{
-      background: '#2e2e50', color: '#7c6ff7', border: '1px solid #7c6ff755',
-      borderRadius: '10px', padding: '8px 14px', fontWeight: 700,
-      fontSize: '13px', cursor: 'pointer',
-    }}>🛡️ Admin</button>
-  )}
-  <button className="btn-profile" onClick={handleShare}>📢 Share</button>
-  <button className="btn-logout" onClick={handleLogout}>Logout</button>
-</div>
+      <div className="home-header">
+        <div className="home-logo">speak2them</div>
+        <div className="home-header-right">
+          <button className="btn-profile" onClick={() => navigate('/daily')}>📅 Daily</button>
+          <button className="btn-profile" onClick={() => navigate('/profile')}>👤 Profile</button>
+          {!user.isPremium && (
+            <button onClick={() => navigate('/premium')} style={{
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: '#1a1000', border: 'none', borderRadius: '10px',
+              padding: '8px 14px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+            }}>👑 Premium</button>
+          )}
+          {user.uid === '6Djehd9KB8dTZUgVwVJfLoPI5dF3' && (
+            <button onClick={() => navigate('/admin')} style={{
+              background: '#2e2e50', color: '#7c6ff7', border: '1px solid #7c6ff755',
+              borderRadius: '10px', padding: '8px 14px', fontWeight: 700,
+              fontSize: '13px', cursor: 'pointer',
+            }}>🛡️ Admin</button>
+          )}
+          <button className="btn-profile" onClick={handleShare}>📢 Share</button>
+          <button className="btn-logout" onClick={handleLogout}>Logout</button>
+        </div>
+      </div>
 
       <div className="home-body">
 
