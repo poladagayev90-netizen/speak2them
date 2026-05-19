@@ -10,7 +10,7 @@ const APP_CERTIFICATE = "ea7ad2e0c0bc4a98a35f3617931fa7ac";
 const BOT_TOKEN = "8771591170:AAEw_6eiyv2n8RKT2L-oS_KEIlQGxM2ZPYA";
 const CHANNEL_LINK = "https://t.me/speak2them";
 const CHANNEL_ID = "@speak2them";
-const ADMIN_TELEGRAM_ID = "YOUR_TELEGRAM_ID"; // öz telegram id-ni yaz
+const ADMIN_TELEGRAM_ID = "5134853364"; // öz telegram id-ni yaz
 
 // ─── Agora Token ───────────────────────────────────────────────
 exports.getAgoraToken = functions.https.onRequest((req, res) => {
