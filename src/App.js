@@ -11,7 +11,11 @@ import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 import DailyHub from './pages/DailyHub';
 import Survey from './pages/Survey';
-import MatchMaking from './pages/MatchMaking'; // ✅ NEW
+import MatchMaking from './pages/MatchMaking';
+import Premium from './pages/Premium';
+import Admin from './pages/Admin';
+
+const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3'; // sənin uid-in
 
 function App() {
   const [user, setUser] = useState(null);
@@ -44,7 +48,7 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        // ✅ Streak yoxla
+        // Streak yoxla
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         if (userSnap.exists()) {
@@ -128,22 +132,20 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login"        element={!user ? <Login />    : <Navigate to="/" />} />
-        <Route path="/register"     element={!user ? <Register /> : <Navigate to="/" />} />
-        <Route path="/survey"       element={user  ? <Survey user={user} /> : <Navigate to="/login" />} />
-
-       <Route path="/" element={
-  user
-    ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
-    : <Navigate to="/login" />
-} />
-
-        {/* ✅ NEW MATCH PAGE */}
-        <Route path="/match"        element={user  ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
-
-        <Route path="/chat/:peerId" element={user  ? <Chat user={user} /> : <Navigate to="/login" />} />
-        <Route path="/profile"      element={user  ? <Profile user={user} /> : <Navigate to="/login" />} />
-        <Route path="/daily"        element={user  ? <DailyHub /> : <Navigate to="/login" />} />
+        <Route path="/login"    element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+        <Route path="/survey"   element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+        <Route path="/" element={
+          user
+            ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
+            : <Navigate to="/login" />
+        } />
+        <Route path="/match"        element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+        <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+        <Route path="/profile"      element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+        <Route path="/daily"        element={user ? <DailyHub /> : <Navigate to="/login" />} />
+        <Route path="/premium"      element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
+        <Route path="/admin"        element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
