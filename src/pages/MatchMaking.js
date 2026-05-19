@@ -1,175 +1,200 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
 export default function MatchMaking({ user }) {
   const [candidates, setCandidates] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [pos, setPos] = useState({ x: 0 });
   const [dragging, setDragging] = useState(false);
+  const startX = useRef(0);
   const navigate = useNavigate();
 
-  const startX = useRef(0);
-
-  const matchScore = (me, other) => {
-    let score = 0;
-
-    const overlap = (me.availableTimes || []).filter(t =>
-      (other.availableTimes || []).includes(t)
-    ).length;
-
-    score += overlap * 40;
-    if (me.goal === other.goal) score += 30;
-    if (me.level === other.level) score += 20;
-
-    const topicMatch = (me.topics || []).filter(t =>
-      (other.topics || []).includes(t)
-    ).length;
-
-    score += topicMatch * 10;
-
-    return Math.min(score, 100);
-  };
-
-  const loadCandidates = async () => {
-    const snap = await getDocs(
-      query(collection(db, 'users'), where('online', '==', true))
-    );
-
-    const list = snap.docs
-      .map(d => d.data())
-      .filter(u => u.uid !== auth.currentUser.uid);
-
-    const scored = list.map(u => ({
-      ...u,
-      score: matchScore(user, u)
-    }));
-
-    scored.sort((a, b) => b.score - a.score);
-    setCandidates(scored);
-  };
-
   useEffect(() => {
-    loadCandidates();
-    // eslint-disable-next-line
-  }, []);
+    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
+      const now = Date.now();
+      const list = snap.docs
+        .map(d => d.data())
+        .filter(u => {
+          if (u.uid === user.uid) return false;
+          const lastSeen = u.lastSeen?.toMillis?.() || 0;
+          return (now - lastSeen) < 90000;
+        });
+      setCandidates(list);
+    });
+    return unsub;
+  }, [user]);
 
-  // 🖱️ MOUSE
-  const handleMouseDown = (e) => {
+  const handleStart = (x) => {
     setDragging(true);
-    startX.current = e.clientX;
+    startX.current = x;
   };
 
-  const handleMouseMove = (e) => {
+  const handleMove = (x) => {
     if (!dragging) return;
-    const dx = e.clientX - startX.current;
-    setPos({ x: dx, y: 0 });
+    setPos({ x: x - startX.current });
   };
 
-  const handleMouseUp = () => {
+  const handleEnd = () => {
     setDragging(false);
-
-    if (pos.x > 120) handleAccept(currentUserCard);
-    if (pos.x < -120) handleSkip();
-
-    setPos({ x: 0, y: 0 });
+    const current = candidates[currentIndex];
+    if (pos.x > 120 && current) {
+      navigate(`/chat/${current.uid}`);
+    } else if (pos.x < -120) {
+      setCurrentIndex(prev => prev + 1);
+    }
+    setPos({ x: 0 });
   };
 
-  // 📱 TOUCH
-  const handleTouchStart = (e) => {
-    setDragging(true);
-    startX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    if (!dragging) return;
-    const dx = e.touches[0].clientX - startX.current;
-    setPos({ x: dx, y: 0 });
-  };
-
-  const handleTouchEnd = () => {
-    setDragging(false);
-
-    if (pos.x > 120) handleAccept(currentUserCard);
-    if (pos.x < -120) handleSkip();
-
-    setPos({ x: 0, y: 0 });
-  };
-
-  const handleSkip = () => {
-    setCurrentIndex(prev => prev + 1);
-  };
-
-  const handleAccept = (target) => {
-    navigate(`/chat/${target.uid}`);
-  };
+  const current = candidates[currentIndex];
 
   if (candidates.length === 0) {
-    return <div className="home-page"><h2>No users 😴</h2></div>;
+    return (
+      <div className="home-page">
+        <div className="home-header">
+          <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
+          <div className="home-logo">🎙️ Find Partner</div>
+        </div>
+        <div className="empty-state" style={{ marginTop: '80px' }}>
+          <div className="empty-icon">😴</div>
+          <p>No one is online right now.</p>
+          <p>Try again later!</p>
+        </div>
+      </div>
+    );
   }
 
-  const currentUserCard = candidates[currentIndex];
-
-  if (!currentUserCard) {
-    return <div className="home-page"><h2>No more 😴</h2></div>;
+  if (!current) {
+    return (
+      <div className="home-page">
+        <div className="home-header">
+          <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
+          <div className="home-logo">🎙️ Find Partner</div>
+        </div>
+        <div className="empty-state" style={{ marginTop: '80px' }}>
+          <div className="empty-icon">🔄</div>
+          <p>You've seen everyone!</p>
+          <button className="btn-primary" style={{ marginTop: '16px' }} onClick={() => setCurrentIndex(0)}>
+            Start Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="home-page">
+      <div className="home-header">
+        <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
+        <div className="home-logo">🎙️ Find Partner</div>
+        <span style={{ fontSize: '13px', color: '#888' }}>{currentIndex + 1}/{candidates.length}</span>
+      </div>
 
-      <div
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        style={{
-          maxWidth: '400px',
-          margin: '40px auto',
-          background: '#1e1e30',
-          borderRadius: '20px',
-          padding: '24px',
-          textAlign: 'center',
+      <div style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-          transform: `translateX(${pos.x}px) rotate(${pos.x / 15}deg)`,
-          transition: dragging ? 'none' : 'all 0.3s ease',
-          cursor: 'grab'
-        }}
-      >
+        {/* Swipe card */}
+        <div
+          onMouseDown={e => handleStart(e.clientX)}
+          onMouseMove={e => handleMove(e.clientX)}
+          onMouseUp={handleEnd}
+          onTouchStart={e => handleStart(e.touches[0].clientX)}
+          onTouchMove={e => handleMove(e.touches[0].clientX)}
+          onTouchEnd={handleEnd}
+          style={{
+            width: '100%',
+            maxWidth: '360px',
+            background: '#1e1e30',
+            border: '1px solid #2e2e50',
+            borderRadius: '24px',
+            padding: '32px 24px',
+            textAlign: 'center',
+            transform: `translateX(${pos.x}px) rotate(${pos.x / 20}deg)`,
+            transition: dragging ? 'none' : 'all 0.3s ease',
+            cursor: 'grab',
+            userSelect: 'none',
+            position: 'relative',
+          }}
+        >
+          {/* LIKE / NOPE overlay */}
+          {pos.x > 60 && (
+            <div style={{
+              position: 'absolute', top: '20px', left: '20px',
+              color: '#22c55e', fontWeight: 900, fontSize: '22px',
+              border: '3px solid #22c55e', padding: '4px 12px',
+              borderRadius: '8px', transform: 'rotate(-15deg)',
+            }}>CHAT ✅</div>
+          )}
+          {pos.x < -60 && (
+            <div style={{
+              position: 'absolute', top: '20px', right: '20px',
+              color: '#ef4444', fontWeight: 900, fontSize: '22px',
+              border: '3px solid #ef4444', padding: '4px 12px',
+              borderRadius: '8px', transform: 'rotate(15deg)',
+            }}>SKIP ❌</div>
+          )}
 
-        {/* ✅ LIKE / NOPE */}
-        {pos.x > 80 && (
-          <div style={{ color: '#22c55e', fontWeight: 800 }}>
-            ✅ LIKE
+          {/* Avatar */}
+          <div style={{
+            width: '90px', height: '90px',
+            background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+            borderRadius: '50%', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: '36px', fontWeight: 700,
+            margin: '0 auto 16px', overflow: 'hidden',
+          }}>
+            {current.photo
+              ? <img src={current.photo} alt={current.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+              : current.name?.charAt(0).toUpperCase()
+            }
           </div>
-        )}
 
-        {pos.x < -80 && (
-          <div style={{ color: '#ef4444', fontWeight: 800 }}>
-            ❌ NOPE
+          <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '6px' }}>{current.name}</h2>
+          <span className="user-level">{current.level || 'English Speaker'}</span>
+
+          {current.bio && (
+            <p style={{ color: '#aaa', fontSize: '14px', marginTop: '12px', lineHeight: 1.5 }}>
+              {current.bio}
+            </p>
+          )}
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
+            <span style={{ fontSize: '12px', color: '#7c6ff7' }}>📞 {current.callCount || 0} calls</span>
+            <span style={{ fontSize: '12px', color: '#7c6ff7' }}>🕐 {current.totalMinutes || 0} min</span>
+            {current.streak > 0 && <span style={{ fontSize: '12px', color: '#f59e0b' }}>🔥 {current.streak}</span>}
           </div>
-        )}
 
-        <div className="user-avatar" style={{ marginBottom: '12px' }}>
-          {currentUserCard.photo
-            ? <img src={currentUserCard.photo} alt="" style={{ width: '100%', borderRadius: '50%' }} />
-            : currentUserCard.name?.charAt(0).toUpperCase()
-          }
+          <div style={{ marginTop: '8px' }}>
+            <span style={{ color: '#22c55e', fontSize: '13px', fontWeight: 600 }}>🟢 Online</span>
+          </div>
         </div>
 
-        <h2>{currentUserCard.name}</h2>
-        <p>{currentUserCard.level}</p>
-
-        <p style={{ color: '#7c6ff7', fontWeight: 700 }}>
-          Match: {currentUserCard.score}%
+        {/* Hint */}
+        <p style={{ color: '#555', fontSize: '13px', marginTop: '20px' }}>
+          👉 Sağa sürüşdür — Chat & Call
+        </p>
+        <p style={{ color: '#555', fontSize: '13px' }}>
+          👈 Sola sürüşdür — Keç
         </p>
 
-        <p style={{ fontSize: '13px', color: '#aaa' }}>
-          {currentUserCard.goal}
-        </p>
-
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+          <button
+            onClick={() => setCurrentIndex(prev => prev + 1)}
+            style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: '#1e1e30', border: '2px solid #ef4444',
+              fontSize: '28px', cursor: 'pointer',
+            }}
+          >❌</button>
+          <button
+            onClick={() => navigate(`/chat/${current.uid}`)}
+            style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              border: 'none', fontSize: '28px', cursor: 'pointer',
+            }}
+          >✅</button>
+        </div>
       </div>
     </div>
   );
