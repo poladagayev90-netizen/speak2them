@@ -228,45 +228,51 @@ export default function Chat({ user }) {
     try {
       const callSnap = await getDoc(doc(db, 'calls', callDocId));
       if (callSnap.exists() && callSnap.data().status !== 'ended') {
-        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended' });
+        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
       }
     } catch (e) {}
 
     try {
       if (secondsTalked > 5) {
-        const minutes = Math.ceil(secondsTalked / 60);
-        const today = new Date().toDateString();
-        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const callSnap = await getDoc(doc(db, 'calls', callDocId));
+        const callData = callSnap.data() || {};
+        const isInitiator = callData.callerId === user.uid;
 
-        const myRef = doc(db, 'users', user.uid);
-        const mySnap = await getDoc(myRef);
-        const myData = mySnap.data() || {};
-        let myStreak = myData.streak || 0;
-        if (myData.lastCallDate === today) {}
-        else if (myData.lastCallDate === yesterday) myStreak += 1;
-        else myStreak = 1;
+        if (isInitiator) {
+          const minutes = Math.ceil(secondsTalked / 60);
+          const today = new Date().toDateString();
+          const yesterday = new Date(Date.now() - 86400000).toDateString();
 
-        await setDoc(myRef, {
-          totalMinutes: (myData.totalMinutes || 0) + minutes,
-          callCount: (myData.callCount || 0) + 1,
-          streak: myStreak,
-          lastCallDate: today,
-        }, { merge: true });
+          const myRef = doc(db, 'users', user.uid);
+          const mySnap = await getDoc(myRef);
+          const myData = mySnap.data() || {};
+          let myStreak = myData.streak || 0;
+          if (myData.lastCallDate === today) {}
+          else if (myData.lastCallDate === yesterday) myStreak += 1;
+          else myStreak = 1;
 
-        const peerRef = doc(db, 'users', peerId);
-        const peerSnap = await getDoc(peerRef);
-        const peerData = peerSnap.data() || {};
-        let peerStreak = peerData.streak || 0;
-        if (peerData.lastCallDate === today) {}
-        else if (peerData.lastCallDate === yesterday) peerStreak += 1;
-        else peerStreak = 1;
+          await setDoc(myRef, {
+            totalMinutes: (myData.totalMinutes || 0) + minutes,
+            callCount: (myData.callCount || 0) + 1,
+            streak: myStreak,
+            lastCallDate: today,
+          }, { merge: true });
 
-        await setDoc(peerRef, {
-          totalMinutes: (peerData.totalMinutes || 0) + minutes,
-          callCount: (peerData.callCount || 0) + 1,
-          streak: peerStreak,
-          lastCallDate: today,
-        }, { merge: true });
+          const peerRef = doc(db, 'users', peerId);
+          const peerSnap = await getDoc(peerRef);
+          const peerData = peerSnap.data() || {};
+          let peerStreak = peerData.streak || 0;
+          if (peerData.lastCallDate === today) {}
+          else if (peerData.lastCallDate === yesterday) peerStreak += 1;
+          else peerStreak = 1;
+
+          await setDoc(peerRef, {
+            totalMinutes: (peerData.totalMinutes || 0) + minutes,
+            callCount: (peerData.callCount || 0) + 1,
+            streak: peerStreak,
+            lastCallDate: today,
+          }, { merge: true });
+        }
       }
       if (secondsTalked >= 180) setShowRating(true);
     } catch (e) {}
