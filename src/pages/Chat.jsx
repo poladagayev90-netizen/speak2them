@@ -226,19 +226,13 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      const callSnap = await getDoc(doc(db, 'calls', callDocId));
-      if (callSnap.exists() && callSnap.data().status !== 'ended') {
-        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
-      }
-    } catch (e) {}
-
-    try {
       if (secondsTalked > 5) {
         const callSnap = await getDoc(doc(db, 'calls', callDocId));
         const callData = callSnap.data() || {};
+        const wasAlreadyEnded = callData.status === 'ended';
         const isInitiator = callData.callerId === user.uid;
 
-        if (isInitiator) {
+        if (isInitiator && !wasAlreadyEnded) {
           const minutes = Math.ceil(secondsTalked / 60);
           const today = new Date().toDateString();
           const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -272,6 +266,10 @@ export default function Chat({ user }) {
             streak: peerStreak,
             lastCallDate: today,
           }, { merge: true });
+        }
+
+        if (!wasAlreadyEnded && callSnap.exists()) {
+          await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
         }
       }
       if (secondsTalked >= 180) setShowRating(true);
