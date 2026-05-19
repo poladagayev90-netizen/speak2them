@@ -132,7 +132,11 @@ function App() {
         <Route path="/register"     element={!user ? <Register /> : <Navigate to="/" />} />
         <Route path="/survey"       element={user  ? <Survey user={user} /> : <Navigate to="/login" />} />
 
-        <Route path="/"             element={user  ? <Home user={user} /> : <Navigate to="/login" />} />
+       <Route path="/" element={
+  user
+    ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
+    : <Navigate to="/login" />
+} />
 
         {/* ✅ NEW MATCH PAGE */}
         <Route path="/match"        element={user  ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
