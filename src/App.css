@@ -183,16 +183,18 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .btn-profile {
   background: #12121f;
   border: 1px solid #2e2e50;
   color: #fff;
-  padding: 6px 10px;
+  padding: 6px 8px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   transition: all 0.2s;
 }
 
