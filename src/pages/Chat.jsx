@@ -226,17 +226,17 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      if (secondsTalked > 5) {
-        const callSnap = await getDoc(doc(db, 'calls', callDocId));
-        const callData = callSnap.data() || {};
-        const wasAlreadyEnded = callData.status === 'ended';
+      const callSnap = await getDoc(doc(db, 'calls', callDocId));
+      const callData = callSnap.data() || {};
+      const wasAlreadyEnded = callData.status === 'ended';
+
+      if (secondsTalked > 5 && !wasAlreadyEnded) {
+        const minutes = Math.ceil(secondsTalked / 60);
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
         const isInitiator = callData.callerId === user.uid;
 
-        if (isInitiator && !wasAlreadyEnded) {
-          const minutes = Math.ceil(secondsTalked / 60);
-          const today = new Date().toDateString();
-          const yesterday = new Date(Date.now() - 86400000).toDateString();
-
+        if (isInitiator) {
           const myRef = doc(db, 'users', user.uid);
           const mySnap = await getDoc(myRef);
           const myData = mySnap.data() || {};
@@ -267,11 +267,12 @@ export default function Chat({ user }) {
             lastCallDate: today,
           }, { merge: true });
         }
-
-        if (!wasAlreadyEnded && callSnap.exists()) {
-          await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
-        }
       }
+
+      if (!wasAlreadyEnded && callSnap.exists()) {
+        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
+      }
+
       if (secondsTalked >= 180) setShowRating(true);
     } catch (e) {}
   };
