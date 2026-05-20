@@ -14,6 +14,7 @@ import Survey from './pages/Survey';
 import MatchMaking from './pages/MatchMaking';
 import Premium from './pages/Premium';
 import Admin from './pages/Admin';
+import BottomNav from './components/BottomNav';
 
 const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3'; // sənin uid-in
 
@@ -147,6 +148,7 @@ function App() {
         <Route path="/premium"      element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
         <Route path="/admin"        element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
       </Routes>
+      {user && <BottomNav user={user} />}
     </BrowserRouter>
   );
 }
