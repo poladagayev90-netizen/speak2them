@@ -106,7 +106,7 @@ export default function Chat({ user }) {
       return;
     }
 
-    const joinCallRef = joinCall; // Capture to avoid dependency warning
+   const joinCallRef = useRef(null);
     console.log('[Chat] Setting up call listener for:', callDocId);
     try {
       const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
@@ -151,6 +151,7 @@ export default function Chat({ user }) {
     }
   }, [callDocId, user.uid, peerId]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  
 
   useEffect(() => {
     if (inCall) {
