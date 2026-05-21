@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
@@ -60,98 +60,111 @@ export default function Chat({ user }) {
   }, [peerId]);
 
   useEffect(() => {
-    if (!chatId || !user.uid || !peerId) {
-      console.warn('[Chat] Missing required IDs:', { chatId, userId: user.uid, peerId });
-      return;
-    }
-    
-    console.log('[Chat] Setting up message listener for chatId:', chatId);
-    try {
-      const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-      const unsub = onSnapshot(q, (snap) => {
-        console.log('[Chat] Messages updated:', snap.size);
-        const msgs = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            ...data,
-            createdAt: data.createdAt?.toDate?.() || new Date()
-          };
-        });
-        setMessages(msgs);
-        setTimeout(() => {
-          bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 50);
-      }, (error) => {
-        console.error('[Chat] Message listener error:', error);
+    if (!chatId || !user.uid || !peerId) return;
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+    const unsub = onSnapshot(q, (snap) => {
+      const msgs = snap.docs.map(d => {
+        const data = d.data();
+        return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || new Date() };
       });
-      return unsub;
-    } catch (error) {
-      console.error('[Chat] Failed to setup message listener:', error);
-    }
+      setMessages(msgs);
+      setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
+    }, (error) => {
+      console.error('[Chat] Message listener error:', error);
+    });
+    return unsub;
   }, [chatId, user.uid, peerId]);
+
+  const joinCall = useCallback(async () => {
+    if (!user.uid || !chatId) return;
+    try {
+      ringtoneRef.current?.pause();
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+      clientRef.current = client;
+
+      client.on('user-published', async (remoteUser, mediaType) => {
+        try {
+          await client.subscribe(remoteUser, mediaType);
+          if (mediaType === 'audio') {
+            remoteUser.audioTrack.setPlaybackDevice('default').catch(() => {});
+            remoteUser.audioTrack.play();
+            setCallStatus('connected');
+          }
+        } catch (e) {
+          console.error('[Chat] Subscribe error:', e);
+        }
+      });
+
+      client.on('user-unpublished', () => setCallStatus('left'));
+
+      const tokenRes = await fetch(TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channelName: chatId }),
+      });
+
+      if (!tokenRes.ok) throw new Error('Failed to get Agora token: ' + tokenRes.status);
+      const tokenData = await tokenRes.json();
+      if (!tokenData.token) throw new Error('No token received from Agora');
+
+      await client.join(APP_ID, chatId, tokenData.token, user.uid);
+      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      localTrackRef.current = localTrack;
+      await client.publish(localTrack);
+
+      setInCall(true);
+      setCallStatus('connected');
+    } catch (err) {
+      console.error('[Chat] Error joining call:', err);
+      setCallStatus('error');
+    }
+  }, [user.uid, chatId]);
 
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current && user.uid && peerId) {
-      console.log('[Chat] Auto-joining call from location state');
       joinedRef.current = true;
       joinCall();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.uid, peerId]);
+  }, [user.uid, peerId, location.state, joinCall]);
 
   useEffect(() => {
-    if (!callDocId || !user.uid || !peerId) {
-      console.warn('[Chat] Missing call data:', { callDocId, userId: user.uid, peerId });
-      return;
-    }
+    if (!callDocId || !user.uid || !peerId) return;
 
-   const joinCallRef = useRef(null);
-    console.log('[Chat] Setting up call listener for:', callDocId);
-    try {
-      const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
-        if (!snap.exists()) {
-          console.log('[Chat] Call document does not exist');
-          if (prevCallStatus.current === 'calling') {
-            setCallStatus('rejected');
-            setTimeout(() => setCallStatus(''), 3000);
-          }
-          setIncomingCallData(null);
-          prevCallStatus.current = '';
-          return;
+    const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
+      if (!snap.exists()) {
+        if (prevCallStatus.current === 'calling') {
+          setCallStatus('rejected');
+          setTimeout(() => setCallStatus(''), 3000);
         }
+        setIncomingCallData(null);
+        prevCallStatus.current = '';
+        return;
+      }
 
-        const data = snap.data();
-        console.log('[Chat] Call status:', data.status);
-        prevCallStatus.current = data.status;
+      const data = snap.data();
+      prevCallStatus.current = data.status;
 
-        if (data.callerId === peerId && data.status === 'calling') {
-          console.log('[Chat] Incoming call from peer');
-          setIncomingCallData(data);
-        }
-        if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
-          console.log('[Chat] Call accepted, joining');
-          joinedRef.current = true;
-          setIncomingCallData(null);
-          ringtoneRef.current?.pause();
-          joinCall();
-        }
-        if (data.status === 'ended') {
-          console.log('[Chat] Call ended');
-          ringtoneRef.current?.pause();
-          setIncomingCallData(null);
-          endCallRef.current?.();
-        }
-      }, (error) => {
-        console.error('[Chat] Call listener error:', error);
-      });
-      return unsub;
-    } catch (error) {
-      console.error('[Chat] Failed to setup call listener:', error);
-    }
-  }, [callDocId, user.uid, peerId]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  
+      if (data.callerId === peerId && data.status === 'calling') {
+        setIncomingCallData(data);
+      }
+      if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
+        joinedRef.current = true;
+        setIncomingCallData(null);
+        ringtoneRef.current?.pause();
+        joinCall();
+      }
+      if (data.status === 'ended') {
+        ringtoneRef.current?.pause();
+        setIncomingCallData(null);
+        endCallRef.current?.();
+      }
+    }, (error) => {
+      console.error('[Chat] Call listener error:', error);
+    });
+    return unsub;
+  }, [callDocId, user.uid, peerId, joinCall]);
 
   useEffect(() => {
     if (inCall) {
@@ -175,13 +188,8 @@ export default function Chat({ user }) {
   };
 
   const startCall = async () => {
+    if (!user.uid || !peerId) return;
     try {
-      if (!user.uid || !peerId) {
-        console.error('[Chat] Cannot start call - missing user data');
-        return;
-      }
-
-      console.log('[Chat] Starting call with:', peerId);
       await setDoc(doc(db, 'calls', callDocId), {
         callerId: user.uid,
         callerName: user.displayName || 'User',
@@ -190,24 +198,16 @@ export default function Chat({ user }) {
         createdAt: serverTimestamp(),
       });
       setCallStatus('calling');
-      console.log('[Chat] Call initiated, status set to calling');
 
-      // Telegram bildirişi göndər
       try {
         const peerSnap = await getDoc(doc(db, 'users', peerId));
         const peerData = peerSnap.data();
-        if (!peerData) {
-          console.warn('[Chat] Peer data not found');
-          return;
-        }
-        const peerTgId = peerData.telegramId;
-        if (peerTgId) {
-          console.log('[Chat] Sending Telegram notification');
+        if (peerData?.telegramId) {
           await fetch('https://us-central1-speak2them-64f2b.cloudfunctions.net/sendCallNotification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              telegramId: peerTgId,
+              telegramId: peerData.telegramId,
               callerName: user.displayName || 'User',
             }),
           });
@@ -218,158 +218,83 @@ export default function Chat({ user }) {
     } catch (error) {
       console.error('[Chat] Failed to start call:', error);
       setCallStatus('error');
-      alert('Failed to start call: ' + error.message);
-    }
-  }
-
-  const joinCall = async () => {
-    if (!user.uid || !chatId) {
-      console.error('[Chat] Cannot join call - missing required data');
-      return;
-    }
-
-    try {
-      console.log('[Chat] Joining call...');
-      ringtoneRef.current?.pause();
-      
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      // eslint-disable-next-line no-unused-vars
-      
-      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-      clientRef.current = client;
-
-      client.on('user-published', async (remoteUser, mediaType) => {
-        console.log('[Chat] User published:', mediaType);
-        try {
-          await client.subscribe(remoteUser, mediaType);
-          if (mediaType === 'audio') {
-            remoteUser.audioTrack.setPlaybackDevice('default').catch(() => {});
-            remoteUser.audioTrack.play();
-            setCallStatus('connected');
-          }
-        } catch (e) {
-          console.error('[Chat] Subscribe error:', e);
-        }
-      });
-
-      client.on('user-unpublished', (remoteUser) => {
-        console.log('[Chat] User unpublished');
-        setCallStatus('left');
-      });
-
-      console.log('[Chat] Fetching Agora token...');
-      const tokenRes = await fetch(TOKEN_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channelName: chatId }),
-      });
-      
-      if (!tokenRes.ok) {
-        throw new Error('Failed to get Agora token: ' + tokenRes.status);
-      }
-      
-      const tokenData = await tokenRes.json();
-      if (!tokenData.token) {
-        throw new Error('No token received from Agora');
-      }
-
-      console.log('[Chat] Joining Agora channel:', chatId);
-      await client.join(APP_ID, chatId, tokenData.token, user.uid);
-      
-      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      localTrackRef.current = localTrack;
-      
-      console.log('[Chat] Publishing local audio');
-      await client.publish(localTrack);
-      
-      setInCall(true);
-      setCallStatus('connected');
-      console.log('[Chat] Successfully joined call');
-    } catch (err) {
-      console.error('[Chat] Error joining call:', err);
-      setCallStatus('error');
-      alert('Failed to join call: ' + err.message);
     }
   };
 
   const endCall = async () => {
+    const secondsTalked = callSecondsRef.current;
+
     try {
-      const secondsTalked = callSecondsRef.current;
-
-      try {
-        if (localTrackRef.current) {
-          localTrackRef.current.stop();
-          localTrackRef.current.close();
-          localTrackRef.current = null;
-        }
-        if (clientRef.current) {
-          await clientRef.current.leave();
-          clientRef.current = null;
-        }
-      } catch (e) {
-        console.error('[Chat] Error cleaning up tracks:', e);
+      if (localTrackRef.current) {
+        localTrackRef.current.stop();
+        localTrackRef.current.close();
+        localTrackRef.current = null;
       }
-
-      setInCall(false);
-      setCallStatus('');
-      setMuted(false);
-      joinedRef.current = false;
-      ringtoneRef.current?.pause();
-
-      try {
-        const callSnap = await getDoc(doc(db, 'calls', callDocId));
-        const callData = callSnap.data() || {};
-        const wasAlreadyEnded = callData.status === 'ended';
-
-        if (secondsTalked > 5 && !wasAlreadyEnded) {
-          const minutes = Math.ceil(secondsTalked / 60);
-          const today = new Date().toDateString();
-          const yesterday = new Date(Date.now() - 86400000).toDateString();
-          const isInitiator = callData.callerId === user.uid;
-
-          if (isInitiator) {
-            const myRef = doc(db, 'users', user.uid);
-            const mySnap = await getDoc(myRef);
-            const myData = mySnap.data() || {};
-            let myStreak = myData.streak || 0;
-            if (myData.lastCallDate === today) {}
-            else if (myData.lastCallDate === yesterday) myStreak += 1;
-            else myStreak = 1;
-
-            await setDoc(myRef, {
-              totalMinutes: (myData.totalMinutes || 0) + minutes,
-              callCount: (myData.callCount || 0) + 1,
-              streak: myStreak,
-              lastCallDate: today,
-            }, { merge: true });
-
-            const peerRef = doc(db, 'users', peerId);
-            const peerSnap = await getDoc(peerRef);
-            const peerData = peerSnap.data() || {};
-            let peerStreak = peerData.streak || 0;
-            if (peerData.lastCallDate === today) {}
-            else if (peerData.lastCallDate === yesterday) peerStreak += 1;
-            else peerStreak = 1;
-
-            await setDoc(peerRef, {
-              totalMinutes: (peerData.totalMinutes || 0) + minutes,
-              callCount: (peerData.callCount || 0) + 1,
-              streak: peerStreak,
-              lastCallDate: today,
-            }, { merge: true });
-          }
-        }
-
-        if (!wasAlreadyEnded && callSnap.exists()) {
-          await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
-        }
-
-        if (secondsTalked >= 180) setShowRating(true);
-      } catch (e) {
-        console.error('[Chat] Error ending call:', e);
+      if (clientRef.current) {
+        await clientRef.current.leave();
+        clientRef.current = null;
       }
     } catch (e) {
-      console.error('[Chat] Unexpected error in endCall:', e);
+      console.error('[Chat] Error cleaning up tracks:', e);
+    }
+
+    setInCall(false);
+    setCallStatus('');
+    setMuted(false);
+    joinedRef.current = false;
+    ringtoneRef.current?.pause();
+
+    try {
+      const callSnap = await getDoc(doc(db, 'calls', callDocId));
+      const callData = callSnap.data() || {};
+      const wasAlreadyEnded = callData.status === 'ended';
+
+      if (secondsTalked > 5 && !wasAlreadyEnded) {
+        const minutes = Math.ceil(secondsTalked / 60);
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const isInitiator = callData.callerId === user.uid;
+
+        if (isInitiator) {
+          const myRef = doc(db, 'users', user.uid);
+          const mySnap = await getDoc(myRef);
+          const myData = mySnap.data() || {};
+          let myStreak = myData.streak || 0;
+          if (myData.lastCallDate === today) {}
+          else if (myData.lastCallDate === yesterday) myStreak += 1;
+          else myStreak = 1;
+
+          await setDoc(myRef, {
+            totalMinutes: (myData.totalMinutes || 0) + minutes,
+            callCount: (myData.callCount || 0) + 1,
+            streak: myStreak,
+            lastCallDate: today,
+          }, { merge: true });
+
+          const peerRef = doc(db, 'users', peerId);
+          const peerSnap = await getDoc(peerRef);
+          const peerData = peerSnap.data() || {};
+          let peerStreak = peerData.streak || 0;
+          if (peerData.lastCallDate === today) {}
+          else if (peerData.lastCallDate === yesterday) peerStreak += 1;
+          else peerStreak = 1;
+
+          await setDoc(peerRef, {
+            totalMinutes: (peerData.totalMinutes || 0) + minutes,
+            callCount: (peerData.callCount || 0) + 1,
+            streak: peerStreak,
+            lastCallDate: today,
+          }, { merge: true });
+        }
+      }
+
+      if (!wasAlreadyEnded && callSnap.exists()) {
+        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
+      }
+
+      if (secondsTalked >= 180) setShowRating(true);
+    } catch (e) {
+      console.error('[Chat] Error ending call:', e);
     }
   };
 
@@ -398,27 +323,10 @@ export default function Chat({ user }) {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    
-    // Validate required data
-    if (!user.uid || !chatId || !peerId) {
-      console.error('[Chat] Cannot send message - missing required data:', { userId: user.uid, chatId, peerId });
-      alert('Error: User data missing. Please refresh.');
-      return;
-    }
+    if (!text.trim() || !user.uid || !chatId || !peerId) return;
 
     const messageText = text.trim();
-    const messageData = {
-      text: messageText,
-      senderId: user.uid,
-      senderName: user.displayName || 'User',
-      createdAt: serverTimestamp(),
-    };
-
     try {
-      console.log('[Chat] Sending message to:', chatId);
-      
-      // Ensure chat document exists
       const chatRef = doc(db, 'chats', chatId);
       await setDoc(chatRef, {
         participants: [user.uid, peerId],
@@ -426,13 +334,15 @@ export default function Chat({ user }) {
         lastMessage: messageText,
       }, { merge: true });
 
-      // Add message
-      await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
-      console.log('[Chat] Message sent successfully');
+      await addDoc(collection(db, 'chats', chatId, 'messages'), {
+        text: messageText,
+        senderId: user.uid,
+        senderName: user.displayName || 'User',
+        createdAt: serverTimestamp(),
+      });
       setText('');
     } catch (error) {
       console.error('[Chat] Failed to send message:', error);
-      alert('Failed to send message: ' + error.message);
     }
   };
 
