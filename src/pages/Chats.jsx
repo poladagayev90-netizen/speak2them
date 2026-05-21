@@ -9,69 +9,110 @@ export default function Chats({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user || !user.uid) {
+      console.error('[Chats] User data missing');
+      setLoading(false);
+      return;
+    }
+
     const loadChats = async () => {
       try {
+        console.log('[Chats] Loading chats for user:', user.uid);
         const chatsSnapshot = await getDocs(collection(db, 'chats'));
+        console.log('[Chats] Found', chatsSnapshot.size, 'chat documents');
         const chatsList = [];
 
         for (const chatDoc of chatsSnapshot.docs) {
-          const chatId = chatDoc.id;
-          if (!chatId.includes(user.uid)) continue;
+          try {
+            const chatId = chatDoc.id;
+            // Verify current user is participant
+            if (!chatId.includes(user.uid)) {
+              continue;
+            }
 
-          const uids = chatId.split('_');
-          const peerId = uids[0] === user.uid ? uids[1] : uids[0];
+            const uids = chatId.split('_');
+            if (uids.length !== 2) {
+              console.warn('[Chats] Invalid chatId format:', chatId);
+              continue;
+            }
 
-          const peerDoc = await getDoc(doc(db, 'users', peerId));
-          if (!peerDoc.exists()) continue;
+            const peerId = uids[0] === user.uid ? uids[1] : uids[0];
+            console.log('[Chats] Processing chat with peer:', peerId);
 
-          const peerData = peerDoc.data();
+            const peerDoc = await getDoc(doc(db, 'users', peerId));
+            if (!peerDoc.exists()) {
+              console.warn('[Chats] Peer document not found:', peerId);
+              continue;
+            }
 
-          const messagesSnapshot = await getDocs(
-            query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'desc'), limit(1))
-          );
+            const peerData = peerDoc.data();
 
-          const lastMessage = messagesSnapshot.empty ? null : messagesSnapshot.docs[0].data();
+            // Get last message
+            let lastMessage = null;
+            try {
+              const messagesSnapshot = await getDocs(
+                query(
+                  collection(db, 'chats', chatId, 'messages'),
+                  orderBy('createdAt', 'desc'),
+                  limit(1)
+                )
+              );
+              lastMessage = messagesSnapshot.empty ? null : messagesSnapshot.docs[0].data();
+            } catch (msgErr) {
+              console.warn('[Chats] Error loading messages for', chatId, msgErr);
+            }
 
-          chatsList.push({
-            chatId,
-            peerId,
-            peerData,
-            lastMessage,
-            timestamp: lastMessage?.createdAt,
-          });
+            chatsList.push({
+              chatId,
+              peerId,
+              peerData,
+              lastMessage,
+              timestamp: lastMessage?.createdAt,
+            });
+          } catch (chatError) {
+            console.error('[Chats] Error processing chat:', chatError);
+            continue;
+          }
         }
 
+        // Sort by timestamp
         chatsList.sort((a, b) => {
           const aTime = a.timestamp?.toMillis?.() || 0;
           const bTime = b.timestamp?.toMillis?.() || 0;
           return bTime - aTime;
         });
 
+        console.log('[Chats] Loaded', chatsList.length, 'chats');
         setChats(chatsList);
       } catch (error) {
-        console.error('Error loading chats:', error);
+        console.error('[Chats] Error loading chats:', error);
       } finally {
         setLoading(false);
       }
     };
 
     loadChats();
-  }, [user]);
+  }, [user, user.uid]);
 
   const formatTime = (timestamp) => {
-    if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    try {
+      if (!timestamp) return '';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString();
+    } catch (e) {
+      console.error('[Chats] Error formatting time:', e);
+      return 'unknown';
+    }
   };
 
   return (

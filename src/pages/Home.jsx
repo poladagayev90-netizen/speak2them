@@ -33,14 +33,21 @@ export default function Home({ user }) {
       const list = snap.docs
         .map(d => d.data())
         .filter(u => u.uid !== user.uid);
+      console.log('[Home] Online users updated:', list.length);
       setOnlineUsers(list);
+    }, (error) => {
+      console.error('[Home] Online users listener error:', error);
     });
     return unsub;
   }, [user.uid]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
-      setAllUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
+      const allUsers = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
+      console.log('[Home] All users updated:', allUsers.length);
+      setAllUsers(allUsers);
+    }, (error) => {
+      console.error('[Home] All users listener error:', error);
     });
     return unsub;
   }, [user.uid]);
@@ -50,84 +57,210 @@ export default function Home({ user }) {
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {
         const callData = { ...snap.docs[0].data(), callDocId: snap.docs[0].id };
+        console.log('[Home] Incoming call received');
         setIncomingCall(callData);
-        try { ringtoneRef.current?.play(); } catch (e) {}
+        try { ringtoneRef.current?.play(); } catch (e) {
+          console.error('[Home] Audio play error:', e);
+        }
       } else {
         setIncomingCall(null);
         ringtoneRef.current?.pause();
       }
+    }, (error) => {
+      console.error('[Home] Call listener error:', error);
     });
     return unsub;
   }, [user.uid]);
 
   const cancelSearch = useCallback(async () => {
+    console.log('[Home] Canceling search');
     setSearching(false);
     if (searchUnsubRef.current) {
       searchUnsubRef.current();
       searchUnsubRef.current = null;
     }
-    try { await deleteDoc(doc(db, 'matchQueue', user.uid)); } catch (e) {}
+    try {
+      await deleteDoc(doc(db, 'matchQueue', user.uid));
+      console.log('[Home] Removed from queue');
+    } catch (e) {
+      console.error('[Home] Error removing from queue:', e);
+    }
   }, [user.uid]);
 
   const findRandomPartner = useCallback(async () => {
-    if (searching) { await cancelSearch(); return; }
-    setSearching(true);
-
-    const queueSnap = await getDocs(
-      query(collection(db, 'matchQueue'), where('status', '==', 'waiting'), where('uid', '!=', user.uid))
-    );
-
-    let candidates = queueSnap.docs.map(d => d.data());
-    if (levelFilter !== 'All') {
-      const same = candidates.filter(c => c.level === levelFilter);
-      if (same.length > 0) candidates = same;
-    }
-
-    if (candidates.length > 0) {
-      const match = candidates[Math.floor(Math.random() * candidates.length)];
-      await setDoc(doc(db, 'matchQueue', match.uid), { status: 'matched', matchedWith: user.uid }, { merge: true });
-      setSearching(false);
-      navigate(`/chat/${match.uid}`);
+    if (!user.uid) {
+      console.error('[Home] Cannot search - user.uid is missing');
+      alert('User ID missing. Please refresh the page.');
       return;
     }
 
-    await setDoc(doc(db, 'matchQueue', user.uid), {
-      uid: user.uid,
-      name: user.displayName || 'User',
-      level: levelFilter !== 'All' ? levelFilter : 'Any',
-      status: 'waiting',
-      joinedAt: serverTimestamp(),
-    });
+    if (searching) {
+      console.log('[Home] Already searching, canceling...');
+      await cancelSearch();
+      return;
+    }
 
-    const unsub = onSnapshot(doc(db, 'matchQueue', user.uid), async (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      if (data.status === 'matched' && data.matchedWith) {
-        setSearching(false);
-        if (searchUnsubRef.current) { searchUnsubRef.current(); searchUnsubRef.current = null; }
-        await deleteDoc(doc(db, 'matchQueue', user.uid));
-        navigate(`/chat/${data.matchedWith}`);
+    console.log('[Home] Starting partner search for user:', user.uid);
+    setSearching(true);
+
+    try {
+      // First, check if there are any waiting users
+      const queueSnap = await getDocs(
+        query(collection(db, 'matchQueue'), where('status', '==', 'waiting'), where('uid', '!=', user.uid))
+      );
+
+      console.log('[Home] Found', queueSnap.size, 'waiting candidates');
+      let candidates = queueSnap.docs.map(d => d.data());
+
+      // Filter by level if specified
+      if (levelFilter !== 'All') {
+        const filtered = candidates.filter(c => c.level === levelFilter);
+        if (filtered.length > 0) {
+          candidates = filtered;
+          console.log('[Home] Filtered to', candidates.length, 'by level:', levelFilter);
+        }
       }
-    });
-    searchUnsubRef.current = unsub;
+
+      if (candidates.length > 0) {
+        // Pick a random candidate
+        const match = candidates[Math.floor(Math.random() * candidates.length)];
+        console.log('[Home] Found match:', match.uid);
+
+        try {
+          // Atomic match: Update the matched user first
+          await setDoc(
+            doc(db, 'matchQueue', match.uid),
+            {
+              status: 'matched',
+              matchedWith: user.uid,
+              matchedAt: serverTimestamp(),
+              matchedBy: user.uid,
+            },
+            { merge: true }
+          );
+          console.log('[Home] Updated match queue for:', match.uid);
+
+          // Then update current user
+          await setDoc(
+            doc(db, 'matchQueue', user.uid),
+            {
+              status: 'matched',
+              matchedWith: match.uid,
+              matchedAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+          console.log('[Home] Updated match queue for current user');
+
+          setSearching(false);
+          console.log('[Home] Navigating to chat with:', match.uid);
+          navigate(`/chat/${match.uid}`);
+          return;
+        } catch (e) {
+          console.error('[Home] Error in atomic match:', e);
+          // Don't fail - continue to queue
+        }
+      }
+
+      // No candidates found - add current user to queue
+      console.log('[Home] No candidates found, adding to queue');
+      await setDoc(
+        doc(db, 'matchQueue', user.uid),
+        {
+          uid: user.uid,
+          name: user.displayName || 'User',
+          level: levelFilter !== 'All' ? levelFilter : 'Any',
+          status: 'waiting',
+          joinedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+      console.log('[Home] Added to queue, waiting for match...');
+
+      // Listen for match
+      const unsub = onSnapshot(doc(db, 'matchQueue', user.uid), async (snap) => {
+        if (!snap.exists()) {
+          console.log('[Home] Queue doc deleted');
+          return;
+        }
+
+        const data = snap.data();
+        console.log('[Home] Queue status:', data.status);
+
+        if (data.status === 'matched' && data.matchedWith) {
+          console.log('[Home] Match found! Connecting with:', data.matchedWith);
+          setSearching(false);
+          if (searchUnsubRef.current) {
+            searchUnsubRef.current();
+            searchUnsubRef.current = null;
+          }
+          try {
+            await deleteDoc(doc(db, 'matchQueue', user.uid));
+          } catch (e) {
+            console.error('[Home] Error deleting from queue:', e);
+          }
+          navigate(`/chat/${data.matchedWith}`);
+        }
+      }, (error) => {
+        console.error('[Home] Queue listener error:', error);
+      });
+
+      searchUnsubRef.current = unsub;
+    } catch (error) {
+      console.error('[Home] Error finding partner:', error);
+      setSearching(false);
+      alert('Error searching for partner: ' + error.message);
+    }
   }, [searching, levelFilter, user.uid, user.displayName, navigate, cancelSearch]);
 
   useEffect(() => {
-    return () => { cancelSearch(); };
+    return () => {
+      console.log('[Home] Cleanup: canceling search');
+      cancelSearch();
+    };
   }, [cancelSearch]);
 
   const acceptCall = useCallback(async () => {
-    ringtoneRef.current?.pause();
-    await setDoc(doc(db, 'calls', incomingCall.callDocId), { status: 'accepted' }, { merge: true });
-    setIncomingCall(null);
-    navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
+    if (!incomingCall) return;
+    
+    if (!incomingCall.callDocId || !incomingCall.callerId) {
+      console.error('[Home] Invalid incoming call data');
+      return;
+    }
+
+    try {
+      console.log('[Home] Accepting call from:', incomingCall.callerId);
+      ringtoneRef.current?.pause();
+      await setDoc(
+        doc(db, 'calls', incomingCall.callDocId),
+        { status: 'accepted' },
+        { merge: true }
+      );
+      console.log('[Home] Call accepted');
+      setIncomingCall(null);
+      navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
+    } catch (error) {
+      console.error('[Home] Error accepting call:', error);
+      alert('Failed to accept call: ' + error.message);
+    }
   }, [incomingCall, navigate]);
 
   const rejectCall = useCallback(async () => {
-    if (!incomingCall) return;
-    ringtoneRef.current?.pause();
-    await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
-    setIncomingCall(null);
+    if (!incomingCall || !incomingCall.callDocId) {
+      console.warn('[Home] No incoming call to reject');
+      return;
+    }
+
+    try {
+      console.log('[Home] Rejecting call');
+      ringtoneRef.current?.pause();
+      await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
+      console.log('[Home] Call rejected');
+      setIncomingCall(null);
+    } catch (error) {
+      console.error('[Home] Error rejecting call:', error);
+      alert('Failed to reject call: ' + error.message);
+    }
   }, [incomingCall]);
 
   const baseList = tab === 'online' ? onlineUsers : allUsers;
