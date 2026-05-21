@@ -16,7 +16,7 @@ import Premium from './pages/Premium';
 import Admin from './pages/Admin';
 import BottomNav from './components/BottomNav';
 
-const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3'; // sənin uid-in
+const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -49,7 +49,6 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        // Streak yoxla
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         if (userSnap.exists()) {
@@ -70,18 +69,18 @@ function App() {
           } catch (e) {}
         }, 30000);
 
-        const goOffline = () => {
-          setDoc(doc(db, 'users', uid), {
+        const goOffline = async () => {
+          await setDoc(doc(db, 'users', uid), {
             online: false,
             lastSeen: serverTimestamp(),
           }, { merge: true });
         };
 
         window.addEventListener('beforeunload', goOffline);
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'hidden') goOffline();
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'hidden') await goOffline();
           if (document.visibilityState === 'visible') {
-            setDoc(doc(db, 'users', uid), {
+            await setDoc(doc(db, 'users', uid), {
               online: true,
               lastSeen: serverTimestamp(),
             }, { merge: true });

@@ -197,7 +197,8 @@ const findRandomPartner = async () => {
     setIncomingCall(null);
   };
 
-  const handleLogout = async () => {
+ // eslint-disable-next-line no-unused-vars
+const handleLogout = async () => {
     await cancelSearch();
     await signOut(auth);
     navigate('/login');
