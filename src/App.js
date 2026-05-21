@@ -7,6 +7,7 @@ import { tg, tgUser } from './telegram';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import Chats from './pages/Chats';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 import DailyHub from './pages/DailyHub';
@@ -140,6 +141,7 @@ function App() {
             ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
             : <Navigate to="/login" />
         } />
+        <Route path="/chats"        element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
         <Route path="/match"        element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
         <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
         <Route path="/profile"      element={user ? <Profile user={user} /> : <Navigate to="/login" />} />

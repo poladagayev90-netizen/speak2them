@@ -23,6 +23,7 @@ export default function Home({ user }) {
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
   const [searching, setSearching] = useState(false);
+  const [loadingRankings, setLoadingRankings] = useState(true);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
   const searchUnsubRef = useRef(null);
@@ -50,6 +51,7 @@ export default function Home({ user }) {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       setAllUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
+      setLoadingRankings(false);
     });
     return unsub;
   }, [user]);
@@ -214,41 +216,52 @@ export default function Home({ user }) {
 
         {tab === 'ranking' && (
           <div style={{ marginTop: '16px' }}>
-            {[...allUsers]
-              .sort((a, b) => (b.totalMinutes || 0) - (a.totalMinutes || 0))
-              .map((u, i) => (
-                <div key={u.uid} style={{
-                  background: '#1e1e30',
-                  border: `1px solid ${i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#2e2e50'}`,
-                  borderRadius: '14px', padding: '14px 16px', marginBottom: '10px',
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                }}>
-                  <div style={{
-                    fontSize: '22px', fontWeight: 800, minWidth: '36px', textAlign: 'center',
-                    color: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#666',
+            {loadingRankings ? (
+              <div className="empty-state">
+                <div className="empty-icon">⏳</div>
+                <p>Loading rankings...</p>
+              </div>
+            ) : allUsers.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">🏆</div>
+                <p>No users found yet.</p>
+              </div>
+            ) : (
+              [...allUsers]
+                .sort((a, b) => (b.totalMinutes || 0) - (a.totalMinutes || 0))
+                .map((u, i) => (
+                  <div key={u.uid} style={{
+                    background: '#1e1e30',
+                    border: `1px solid ${i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#2e2e50'}`,
+                    borderRadius: '14px', padding: '14px 16px', marginBottom: '10px',
+                    display: 'flex', alignItems: 'center', gap: '12px',
                   }}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
+                    <div style={{
+                      fontSize: '22px', fontWeight: 800, minWidth: '36px', textAlign: 'center',
+                      color: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#666',
+                    }}>
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
+                    </div>
+                    <div className="user-avatar" style={{ width: '40px', height: '40px', minWidth: '40px' }}>
+                      {u.photo
+                        ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                        : u.name?.charAt(0).toUpperCase()
+                      }
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
+                        {u.name}{u.isPremium && <PremiumBadge />}
+                      </p>
+                      <p style={{ fontSize: '11px', color: '#888' }}>{u.level || 'English Speaker'}</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '15px' }}>{u.totalMinutes || 0} dəq</p>
+                      <p style={{ fontSize: '11px', color: '#888' }}>{u.callCount || 0} zəng</p>
+                      {u.streak > 0 && <p style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</p>}
+                    </div>
                   </div>
-                  <div className="user-avatar" style={{ width: '40px', height: '40px', minWidth: '40px' }}>
-                    {u.photo
-                      ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                      : u.name?.charAt(0).toUpperCase()
-                    }
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
-                      {u.name}{u.isPremium && <PremiumBadge />}
-                    </p>
-                    <p style={{ fontSize: '11px', color: '#888' }}>{u.level || 'English Speaker'}</p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '15px' }}>{u.totalMinutes || 0} dəq</p>
-                    <p style={{ fontSize: '11px', color: '#888' }}>{u.callCount || 0} zəng</p>
-                    {u.streak > 0 && <p style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</p>}
-                  </div>
-                </div>
-              ))
-            }
+                ))
+            )}
           </div>
         )}
 
