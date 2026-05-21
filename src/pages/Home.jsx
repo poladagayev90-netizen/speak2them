@@ -1,20 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { collection, onSnapshot, query, where, doc, deleteDoc, setDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import IncomingCallModal from '../components/IncomingCallModal';
+import UserCard from '../components/UserCard';
+import HomeRanking from '../components/HomeRanking';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
-
-const PremiumBadge = () => (
-  <span style={{
-    display: 'inline-flex', alignItems: 'center', gap: '3px',
-    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    color: '#1a1000', fontSize: '10px', fontWeight: 700,
-    padding: '2px 7px', borderRadius: '20px', marginLeft: '6px',
-    boxShadow: '0 0 8px #f59e0b55',
-  }}>👑 Premium</span>
-);
 
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -23,7 +16,6 @@ export default function Home({ user }) {
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
   const [searching, setSearching] = useState(false);
-  const [loadingRankings, setLoadingRankings] = useState(true);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
   const searchUnsubRef = useRef(null);
@@ -36,25 +28,22 @@ export default function Home({ user }) {
   }, []);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
-      const now = Date.now();
-      const list = snap.docs.map(d => d.data()).filter(u => {
-        if (u.uid === user.uid) return false;
-        if (!u.lastSeen) return false;
-        return (now - u.lastSeen.toMillis?.()) < 90000;
-      });
+    const q = query(collection(db, 'users'), where('online', '==', true));
+    const unsub = onSnapshot(q, (snap) => {
+      const list = snap.docs
+        .map(d => d.data())
+        .filter(u => u.uid !== user.uid);
       setOnlineUsers(list);
     });
     return unsub;
-  }, [user]);
+  }, [user.uid]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
       setAllUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
-      setLoadingRankings(false);
     });
     return unsub;
-  }, [user]);
+  }, [user.uid]);
 
   useEffect(() => {
     const q = query(collection(db, 'calls'), where('receiverId', '==', user.uid), where('status', '==', 'calling'));
@@ -69,23 +58,18 @@ export default function Home({ user }) {
       }
     });
     return unsub;
-  }, [user]);
+  }, [user.uid]);
 
-  useEffect(() => {
-    return () => { cancelSearch(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const cancelSearch = async () => {
+  const cancelSearch = useCallback(async () => {
     setSearching(false);
     if (searchUnsubRef.current) {
       searchUnsubRef.current();
       searchUnsubRef.current = null;
     }
     try { await deleteDoc(doc(db, 'matchQueue', user.uid)); } catch (e) {}
-  };
+  }, [user.uid]);
 
-  const findRandomPartner = async () => {
+  const findRandomPartner = useCallback(async () => {
     if (searching) { await cancelSearch(); return; }
     setSearching(true);
 
@@ -126,36 +110,32 @@ export default function Home({ user }) {
       }
     });
     searchUnsubRef.current = unsub;
-  };
+  }, [searching, levelFilter, user.uid, user.displayName, navigate, cancelSearch]);
 
-  const acceptCall = async () => {
+  useEffect(() => {
+    return () => { cancelSearch(); };
+  }, [cancelSearch]);
+
+  const acceptCall = useCallback(async () => {
     ringtoneRef.current?.pause();
     await setDoc(doc(db, 'calls', incomingCall.callDocId), { status: 'accepted' }, { merge: true });
     setIncomingCall(null);
     navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
-  };
+  }, [incomingCall, navigate]);
 
-  const rejectCall = async () => {
+  const rejectCall = useCallback(async () => {
+    if (!incomingCall) return;
     ringtoneRef.current?.pause();
     await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
     setIncomingCall(null);
-  };
+  }, [incomingCall]);
 
   const baseList = tab === 'online' ? onlineUsers : allUsers;
   const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
   return (
     <div className="home-page">
-
-      {incomingCall && (
-        <div className="incoming-call">
-          <p>📞 {incomingCall.callerName} sizi zəng edir...</p>
-          <div className="incoming-call-buttons">
-            <button className="btn-accept" onClick={acceptCall}>✅ Qəbul et</button>
-            <button className="btn-reject" onClick={rejectCall}>❌ Rədd et</button>
-          </div>
-        </div>
-      )}
+      <IncomingCallModal call={incomingCall} onAccept={acceptCall} onReject={rejectCall} />
 
       <div className="home-header">
         <div className="home-logo">🎙️ Speak2Them</div>
@@ -216,47 +196,7 @@ export default function Home({ user }) {
 
         {tab === 'ranking' && (
           <div style={{ marginTop: '16px' }}>
-            {allUsers.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">🏆</div>
-                <p>No rankings yet.</p>
-              </div>
-            ) : (
-              [...allUsers]
-                .sort((a, b) => (b.totalMinutes || 0) - (a.totalMinutes || 0))
-                .map((u, i) => (
-                  <div key={u.uid} style={{
-                    background: '#1e1e30',
-                    border: `1px solid ${i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#2e2e50'}`,
-                    borderRadius: '14px', padding: '14px 16px', marginBottom: '10px',
-                    display: 'flex', alignItems: 'center', gap: '12px',
-                  }}>
-                    <div style={{
-                      fontSize: '22px', fontWeight: 800, minWidth: '36px', textAlign: 'center',
-                      color: i === 0 ? '#f59e0b' : i === 1 ? '#9ca3af' : i === 2 ? '#b45309' : '#666',
-                    }}>
-                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
-                    </div>
-                    <div className="user-avatar" style={{ width: '40px', height: '40px', minWidth: '40px' }}>
-                      {u.photo
-                        ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                        : u.name?.charAt(0).toUpperCase()
-                      }
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
-                        {u.name}{u.isPremium && <PremiumBadge />}
-                      </p>
-                      <p style={{ fontSize: '11px', color: '#888' }}>{u.level || 'English Speaker'}</p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '15px' }}>{u.totalMinutes || 0} dəq</p>
-                      <p style={{ fontSize: '11px', color: '#888' }}>{u.callCount || 0} zəng</p>
-                      {u.streak > 0 && <p style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</p>}
-                    </div>
-                  </div>
-                ))
-            )}
+            <HomeRanking users={allUsers} />
           </div>
         )}
 
@@ -270,37 +210,7 @@ export default function Home({ user }) {
             ) : (
               <div className="users-grid">
                 {displayUsers.map(u => (
-                  <div key={u.uid} className="user-card" style={{
-                    border: u.isPremium ? '1px solid #f59e0b55' : undefined,
-                  }}>
-                    <div className="user-avatar" style={{
-                      boxShadow: u.isPremium ? '0 0 12px #f59e0b66' : undefined,
-                    }}>
-                      {u.photo
-                        ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                        : u.name?.charAt(0).toUpperCase()
-                      }
-                    </div>
-                    <div className="user-info">
-                      <h3 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                        {u.name}{u.isPremium && <PremiumBadge />}
-                      </h3>
-                      <span className="user-level">{u.level || 'English Speaker'}</span>
-                      {u.bio && <p className="user-bio">{u.bio}</p>}
-                      <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '11px', color: '#888' }}>📞 {u.callCount || 0}</span>
-                        <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} dəq</span>
-                        {u.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</span>}
-                        {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
-                      </div>
-                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
-                        {u.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
-                      </span>
-                    </div>
-                    <button className="btn-chat" onClick={() => navigate(`/chat/${u.uid}`)}>
-                      💬 Chat & Call
-                    </button>
-                  </div>
+                  <UserCard key={u.uid} user={u} onChat={(uid) => navigate(`/chat/${uid}`)} />
                 ))}
               </div>
             )}

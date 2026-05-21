@@ -8,19 +8,10 @@ import {
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../dailyContent';
+import PremiumBadge from '../components/PremiumBadge';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/getAgoraToken';
-
-const PremiumBadge = () => (
-  <span style={{
-    display: 'inline-flex', alignItems: 'center', gap: '3px',
-    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    color: '#1a1000', fontSize: '10px', fontWeight: 700,
-    padding: '2px 7px', borderRadius: '20px', marginLeft: '6px',
-    boxShadow: '0 0 8px #f59e0b55',
-  }}>👑 Premium</span>
-);
 
 export default function Chat({ user }) {
   const { peerId } = useParams();

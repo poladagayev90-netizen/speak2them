@@ -1,21 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { tg, tgUser } from './telegram';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Home from './pages/Home';
-import Chats from './pages/Chats';
-import Chat from './pages/Chat';
-import Profile from './pages/Profile';
-import DailyHub from './pages/DailyHub';
-import Survey from './pages/Survey';
-import MatchMaking from './pages/MatchMaking';
-import Premium from './pages/Premium';
-import Admin from './pages/Admin';
 import BottomNav from './components/BottomNav';
+
+// Code splitting with React.lazy
+const Login = React.lazy(() => import('./pages/Login'));
+const Register = React.lazy(() => import('./pages/Register'));
+const Home = React.lazy(() => import('./pages/Home'));
+const Chats = React.lazy(() => import('./pages/Chats'));
+const Chat = React.lazy(() => import('./pages/Chat'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const DailyHub = React.lazy(() => import('./pages/DailyHub'));
+const Survey = React.lazy(() => import('./pages/Survey'));
+const MatchMaking = React.lazy(() => import('./pages/MatchMaking'));
+const Premium = React.lazy(() => import('./pages/Premium'));
+const Admin = React.lazy(() => import('./pages/Admin'));
+
+const LoadingFallback = () => (
+  <div className="loading-screen">
+    <div className="loading-logo">🎙️</div>
+    <p>Loading...</p>
+  </div>
+);
 
 const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
 
@@ -132,24 +141,26 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login"    element={!user ? <Login /> : <Navigate to="/" />} />
-        <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-        <Route path="/survey"   element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-        <Route path="/" element={
-          user
-            ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
-            : <Navigate to="/login" />
-        } />
-        <Route path="/chats"        element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-        <Route path="/match"        element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
-        <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-        <Route path="/profile"      element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-        <Route path="/daily"        element={user ? <DailyHub /> : <Navigate to="/login" />} />
-        <Route path="/premium"      element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
-        <Route path="/admin"        element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-      </Routes>
-      {user && <BottomNav user={user} />}
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/login"    element={!user ? <Login /> : <Navigate to="/" />} />
+          <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+          <Route path="/survey"   element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+          <Route path="/" element={
+            user
+              ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
+              : <Navigate to="/login" />
+          } />
+          <Route path="/chats"        element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+          <Route path="/match"        element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+          <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+          <Route path="/profile"      element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+          <Route path="/daily"        element={user ? <DailyHub /> : <Navigate to="/login" />} />
+          <Route path="/premium"      element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
+          <Route path="/admin"        element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+        </Routes>
+        {user && <BottomNav user={user} />}
+      </Suspense>
     </BrowserRouter>
   );
 }
