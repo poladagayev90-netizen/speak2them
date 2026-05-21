@@ -11,7 +11,37 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Validate Firebase configuration
+const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
+const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key]);
+
+if (missingKeys.length > 0) {
+  console.error('[Firebase] Missing configuration keys:', missingKeys);
+  console.error('[Firebase] Environment variables loaded:', {
+    apiKey: !!firebaseConfig.apiKey,
+    authDomain: !!firebaseConfig.authDomain,
+    projectId: !!firebaseConfig.projectId,
+    storageBucket: !!firebaseConfig.storageBucket,
+    messagingSenderId: !!firebaseConfig.messagingSenderId,
+    appId: !!firebaseConfig.appId,
+  });
+}
+
+console.log('[Firebase] Initializing Firebase app with projectId:', firebaseConfig.projectId);
+
+let app;
+let auth;
+let db;
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  console.log('[Firebase] Firebase initialized successfully');
+} catch (error) {
+  console.error('[Firebase] Failed to initialize Firebase:', error);
+  throw error;
+}
+
+export { auth, db };
 export default app;

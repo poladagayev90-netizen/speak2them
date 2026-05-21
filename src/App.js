@@ -5,6 +5,7 @@ import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { tg, tgUser } from './telegram';
 import BottomNav from './components/BottomNav';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Code splitting with React.lazy
 const Login = React.lazy(() => import('./pages/Login'));
@@ -140,8 +141,9 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Suspense fallback={<LoadingFallback />}>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/login"    element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
@@ -162,6 +164,7 @@ function App() {
         {user && <BottomNav user={user} />}
       </Suspense>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
