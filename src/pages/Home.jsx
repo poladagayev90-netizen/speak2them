@@ -216,15 +216,10 @@ export default function Home({ user }) {
 
         {tab === 'ranking' && (
           <div style={{ marginTop: '16px' }}>
-            {loadingRankings ? (
-              <div className="empty-state">
-                <div className="empty-icon">⏳</div>
-                <p>Loading rankings...</p>
-              </div>
-            ) : allUsers.length === 0 ? (
+            {allUsers.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">🏆</div>
-                <p>No users found yet.</p>
+                <p>No rankings yet.</p>
               </div>
             ) : (
               [...allUsers]
