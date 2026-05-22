@@ -28,17 +28,22 @@ export default function Home({ user }) {
     return () => { audio.pause(); };
   }, []);
 
-  useEffect(() => {
-    const q = query(collection(db, 'users'), where('online', '==', true));
-    const unsub = onSnapshot(q, (snap) => {
-      setOnlineUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
-    });
-    return unsub;
-  }, [user.uid]);
-
+  // ✅ YALNIZ BU useEffect — lastSeen ilə online yoxla
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
-      setAllUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
+      const now = Date.now();
+      const online = [];
+      const all = [];
+      snap.docs.forEach(d => {
+        const u = d.data();
+        if (u.uid === user.uid) return;
+        all.push(u);
+        if (!u.lastSeen) return;
+        const lastSeen = u.lastSeen.toMillis?.() || 0;
+        if (now - lastSeen < 180000) online.push(u); // 3 dəqiqə
+      });
+      setOnlineUsers(online);
+      setAllUsers(all);
     });
     return unsub;
   }, [user.uid]);
@@ -156,7 +161,6 @@ export default function Home({ user }) {
 
       <div className="home-body">
 
-        {/* RANDOM PARTNER DÜYMƏSI */}
         <button
           className="btn-random"
           onClick={searching ? cancelSearch : findRandomPartner}
@@ -184,7 +188,6 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {/* TABLAR */}
         <div className="tabs" style={{ marginTop: '16px' }}>
           <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -200,7 +203,6 @@ export default function Home({ user }) {
           </button>
         </div>
 
-        {/* SEVİYYƏ FİLTRİ */}
         {tab !== 'ranking' && (
           <div className="level-filter">
             {LEVELS.map(l => (
@@ -211,14 +213,12 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {/* RANKİNG */}
         {tab === 'ranking' && (
           <div style={{ marginTop: '16px' }}>
             <HomeRanking users={allUsers} />
           </div>
         )}
 
-        {/* USER LİSTİ */}
         {tab !== 'ranking' && (
           <>
             {displayUsers.length === 0 ? (

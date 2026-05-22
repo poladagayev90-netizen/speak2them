@@ -72,13 +72,11 @@ function App() {
 
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
-          try {
-            await setDoc(doc(db, 'users', uid), {
-              online: true,
-              lastSeen: serverTimestamp(),
-            }, { merge: true });
-          } catch (e) {}
-        }, 30000);
+  await setDoc(doc(db, 'users', uid), {
+    online: true,
+    lastSeen: serverTimestamp(),
+  }, { merge: true });
+}, 60000); // hər 60 saniyə
 
         const goOffline = async () => {
           await setDoc(doc(db, 'users', uid), {
