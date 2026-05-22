@@ -19,7 +19,7 @@ export default function MatchMaking({ user }) {
         .filter(u => {
           if (u.uid === user.uid) return false;
           const lastSeen = u.lastSeen?.toMillis?.() || 0;
-          return (now - lastSeen) < 90000;
+          return (now - lastSeen) < 15000;
         });
       setCandidates(list);
     });

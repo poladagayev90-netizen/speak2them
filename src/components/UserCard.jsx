@@ -26,8 +26,8 @@ export default function UserCard({ user, onChat }) {
           {user.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {user.streak}</span>}
           {user.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(user.rating / user.ratingCount).toFixed(1)}</span>}
         </div>
-        <span className={`online-badge ${user.lastSeen?.toMillis?.() > Date.now() - 90000 ? 'online' : 'offline'}`}>
-          {user.lastSeen?.toMillis?.() > Date.now() - 90000 ? '🟢 Online' : '⚫ Offline'}
+        <span className={`online-badge ${user.lastSeen?.toMillis?.() > Date.now() - 15000 ? 'online' : 'offline'}`}>
+          {user.lastSeen?.toMillis?.() > Date.now() - 15000 ? '🟢 Online' : '⚫ Offline'}
         </span>
       </div>
       <button className="btn-chat" onClick={() => onChat(user.uid)}>
