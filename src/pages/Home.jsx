@@ -40,7 +40,8 @@ export default function Home({ user }) {
         all.push(u);
         if (!u.lastSeen) return;
         const lastSeen = u.lastSeen.toMillis?.() || 0;
-        if (now - lastSeen < 180000) online.push(u); // 3 dəqiqə
+const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
+if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
       });
       setOnlineUsers(online);
       setAllUsers(all);
