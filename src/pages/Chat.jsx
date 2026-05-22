@@ -253,28 +253,33 @@ export default function Chat({ user }) {
         const minutes = Math.ceil(secondsTalked / 60);
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
-        const isInitiator = callData.callerId === user.uid;
 
-        if (isInitiator) {
-          const myRef = doc(db, 'users', user.uid);
-          const mySnap = await getDoc(myRef);
-          const myData = mySnap.data() || {};
-          let myStreak = myData.streak || 0;
-          if (myData.lastCallDate === today) {}
-          else if (myData.lastCallDate === yesterday) myStreak += 1;
-          else myStreak = 1;
+        // Always update current user
+        const myRef = doc(db, 'users', user.uid);
+        const mySnap = await getDoc(myRef);
+        const myData = mySnap.data() || {};
+        let myStreak = myData.streak || 0;
 
-          await setDoc(myRef, {
-            totalMinutes: (myData.totalMinutes || 0) + minutes,
-            callCount: (myData.callCount || 0) + 1,
-            streak: myStreak,
-            lastCallDate: today,
-          }, { merge: true });
+        if (myData.lastCallDate === today) {}
+        else if (myData.lastCallDate === yesterday) myStreak += 1;
+        else myStreak = 1;
 
+        await setDoc(myRef, {
+          totalMinutes: (myData.totalMinutes || 0) + minutes,
+          callCount: (myData.callCount || 0) + 1,
+          streak: myStreak,
+          lastCallDate: today,
+        }, { merge: true });
+
+        // Only initiator updates peer (prevent duplicate writes)
+        const callData2 = (await getDoc(doc(db, 'calls', callDocId))).data() || {};
+
+        if (callData2.callerId === user.uid) {
           const peerRef = doc(db, 'users', peerId);
           const peerSnap = await getDoc(peerRef);
           const peerData = peerSnap.data() || {};
           let peerStreak = peerData.streak || 0;
+
           if (peerData.lastCallDate === today) {}
           else if (peerData.lastCallDate === yesterday) peerStreak += 1;
           else peerStreak = 1;

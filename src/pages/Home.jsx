@@ -216,7 +216,14 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
 
         {tab === 'ranking' && (
           <div style={{ marginTop: '16px' }}>
-            <HomeRanking users={allUsers} />
+            {allUsers.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">⏳</div>
+                <p>Loading rankings...</p>
+              </div>
+            ) : (
+              <HomeRanking users={allUsers} />
+            )}
           </div>
         )}
 
