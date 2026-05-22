@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
 import UserCard from '../components/UserCard';
 import HomeRanking from '../components/HomeRanking';
+import { Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
@@ -30,24 +31,14 @@ export default function Home({ user }) {
   useEffect(() => {
     const q = query(collection(db, 'users'), where('online', '==', true));
     const unsub = onSnapshot(q, (snap) => {
-      const list = snap.docs
-        .map(d => d.data())
-        .filter(u => u.uid !== user.uid);
-      console.log('[Home] Online users updated:', list.length);
-      setOnlineUsers(list);
-    }, (error) => {
-      console.error('[Home] Online users listener error:', error);
+      setOnlineUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
     });
     return unsub;
   }, [user.uid]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), (snap) => {
-      const allUsers = snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid);
-      console.log('[Home] All users updated:', allUsers.length);
-      setAllUsers(allUsers);
-    }, (error) => {
-      console.error('[Home] All users listener error:', error);
+      setAllUsers(snap.docs.map(d => d.data()).filter(u => u.uid !== user.uid));
     });
     return unsub;
   }, [user.uid]);
@@ -57,210 +48,87 @@ export default function Home({ user }) {
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {
         const callData = { ...snap.docs[0].data(), callDocId: snap.docs[0].id };
-        console.log('[Home] Incoming call received');
         setIncomingCall(callData);
-        try { ringtoneRef.current?.play(); } catch (e) {
-          console.error('[Home] Audio play error:', e);
-        }
+        try { ringtoneRef.current?.play(); } catch (e) {}
       } else {
         setIncomingCall(null);
         ringtoneRef.current?.pause();
       }
-    }, (error) => {
-      console.error('[Home] Call listener error:', error);
     });
     return unsub;
   }, [user.uid]);
 
   const cancelSearch = useCallback(async () => {
-    console.log('[Home] Canceling search');
     setSearching(false);
     if (searchUnsubRef.current) {
       searchUnsubRef.current();
       searchUnsubRef.current = null;
     }
-    try {
-      await deleteDoc(doc(db, 'matchQueue', user.uid));
-      console.log('[Home] Removed from queue');
-    } catch (e) {
-      console.error('[Home] Error removing from queue:', e);
-    }
+    try { await deleteDoc(doc(db, 'matchQueue', user.uid)); } catch (e) {}
   }, [user.uid]);
 
   const findRandomPartner = useCallback(async () => {
-    if (!user.uid) {
-      console.error('[Home] Cannot search - user.uid is missing');
-      alert('User ID missing. Please refresh the page.');
-      return;
-    }
-
-    if (searching) {
-      console.log('[Home] Already searching, canceling...');
-      await cancelSearch();
-      return;
-    }
-
-    console.log('[Home] Starting partner search for user:', user.uid);
+    if (!user.uid) return;
+    if (searching) { await cancelSearch(); return; }
     setSearching(true);
-
     try {
-      // First, check if there are any waiting users
       const queueSnap = await getDocs(
         query(collection(db, 'matchQueue'), where('status', '==', 'waiting'), where('uid', '!=', user.uid))
       );
-
-      console.log('[Home] Found', queueSnap.size, 'waiting candidates');
       let candidates = queueSnap.docs.map(d => d.data());
-
-      // Filter by level if specified
       if (levelFilter !== 'All') {
         const filtered = candidates.filter(c => c.level === levelFilter);
-        if (filtered.length > 0) {
-          candidates = filtered;
-          console.log('[Home] Filtered to', candidates.length, 'by level:', levelFilter);
-        }
+        if (filtered.length > 0) candidates = filtered;
       }
-
       if (candidates.length > 0) {
-        // Pick a random candidate
         const match = candidates[Math.floor(Math.random() * candidates.length)];
-        console.log('[Home] Found match:', match.uid);
-
-        try {
-          // Atomic match: Update the matched user first
-          await setDoc(
-            doc(db, 'matchQueue', match.uid),
-            {
-              status: 'matched',
-              matchedWith: user.uid,
-              matchedAt: serverTimestamp(),
-              matchedBy: user.uid,
-            },
-            { merge: true }
-          );
-          console.log('[Home] Updated match queue for:', match.uid);
-
-          // Then update current user
-          await setDoc(
-            doc(db, 'matchQueue', user.uid),
-            {
-              status: 'matched',
-              matchedWith: match.uid,
-              matchedAt: serverTimestamp(),
-            },
-            { merge: true }
-          );
-          console.log('[Home] Updated match queue for current user');
-
-          setSearching(false);
-          console.log('[Home] Navigating to chat with:', match.uid);
-          navigate(`/chat/${match.uid}`);
-          return;
-        } catch (e) {
-          console.error('[Home] Error in atomic match:', e);
-          // Don't fail - continue to queue
-        }
+        await setDoc(doc(db, 'matchQueue', match.uid), { status: 'matched', matchedWith: user.uid, matchedAt: serverTimestamp() }, { merge: true });
+        await setDoc(doc(db, 'matchQueue', user.uid), { status: 'matched', matchedWith: match.uid, matchedAt: serverTimestamp() }, { merge: true });
+        setSearching(false);
+        navigate(`/chat/${match.uid}`);
+        return;
       }
-
-      // No candidates found - add current user to queue
-      console.log('[Home] No candidates found, adding to queue');
-      await setDoc(
-        doc(db, 'matchQueue', user.uid),
-        {
-          uid: user.uid,
-          name: user.displayName || 'User',
-          level: levelFilter !== 'All' ? levelFilter : 'Any',
-          status: 'waiting',
-          joinedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-      console.log('[Home] Added to queue, waiting for match...');
-
-      // Listen for match
+      await setDoc(doc(db, 'matchQueue', user.uid), {
+        uid: user.uid,
+        name: user.displayName || 'User',
+        level: levelFilter !== 'All' ? levelFilter : 'Any',
+        status: 'waiting',
+        joinedAt: serverTimestamp(),
+      }, { merge: true });
       const unsub = onSnapshot(doc(db, 'matchQueue', user.uid), async (snap) => {
-        if (!snap.exists()) {
-          console.log('[Home] Queue doc deleted');
-          return;
-        }
-
+        if (!snap.exists()) return;
         const data = snap.data();
-        console.log('[Home] Queue status:', data.status);
-
         if (data.status === 'matched' && data.matchedWith) {
-          console.log('[Home] Match found! Connecting with:', data.matchedWith);
           setSearching(false);
-          if (searchUnsubRef.current) {
-            searchUnsubRef.current();
-            searchUnsubRef.current = null;
-          }
-          try {
-            await deleteDoc(doc(db, 'matchQueue', user.uid));
-          } catch (e) {
-            console.error('[Home] Error deleting from queue:', e);
-          }
+          if (searchUnsubRef.current) { searchUnsubRef.current(); searchUnsubRef.current = null; }
+          try { await deleteDoc(doc(db, 'matchQueue', user.uid)); } catch (e) {}
           navigate(`/chat/${data.matchedWith}`);
         }
-      }, (error) => {
-        console.error('[Home] Queue listener error:', error);
       });
-
       searchUnsubRef.current = unsub;
     } catch (error) {
-      console.error('[Home] Error finding partner:', error);
       setSearching(false);
-      alert('Error searching for partner: ' + error.message);
+      alert('Error: ' + error.message);
     }
   }, [searching, levelFilter, user.uid, user.displayName, navigate, cancelSearch]);
 
   useEffect(() => {
-    return () => {
-      console.log('[Home] Cleanup: canceling search');
-      cancelSearch();
-    };
+    return () => { cancelSearch(); };
   }, [cancelSearch]);
 
   const acceptCall = useCallback(async () => {
-    if (!incomingCall) return;
-    
-    if (!incomingCall.callDocId || !incomingCall.callerId) {
-      console.error('[Home] Invalid incoming call data');
-      return;
-    }
-
-    try {
-      console.log('[Home] Accepting call from:', incomingCall.callerId);
-      ringtoneRef.current?.pause();
-      await setDoc(
-        doc(db, 'calls', incomingCall.callDocId),
-        { status: 'accepted' },
-        { merge: true }
-      );
-      console.log('[Home] Call accepted');
-      setIncomingCall(null);
-      navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
-    } catch (error) {
-      console.error('[Home] Error accepting call:', error);
-      alert('Failed to accept call: ' + error.message);
-    }
+    if (!incomingCall?.callDocId) return;
+    ringtoneRef.current?.pause();
+    await setDoc(doc(db, 'calls', incomingCall.callDocId), { status: 'accepted' }, { merge: true });
+    setIncomingCall(null);
+    navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
   }, [incomingCall, navigate]);
 
   const rejectCall = useCallback(async () => {
-    if (!incomingCall || !incomingCall.callDocId) {
-      console.warn('[Home] No incoming call to reject');
-      return;
-    }
-
-    try {
-      console.log('[Home] Rejecting call');
-      ringtoneRef.current?.pause();
-      await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
-      console.log('[Home] Call rejected');
-      setIncomingCall(null);
-    } catch (error) {
-      console.error('[Home] Error rejecting call:', error);
-      alert('Failed to reject call: ' + error.message);
-    }
+    if (!incomingCall?.callDocId) return;
+    ringtoneRef.current?.pause();
+    await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
+    setIncomingCall(null);
   }, [incomingCall]);
 
   const baseList = tab === 'online' ? onlineUsers : allUsers;
@@ -271,24 +139,36 @@ export default function Home({ user }) {
       <IncomingCallModal call={incomingCall} onAccept={acceptCall} onReject={rejectCall} />
 
       <div className="home-header">
-        <div className="home-logo">🎙️ Speak2Them</div>
+        <div className="home-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Mic size={18} color="#7c6ff7" strokeWidth={2.5} />
+          Speak2Them
+        </div>
         {user.uid === '6Djehd9KB8dTZUgVwVJfLoPI5dF3' && (
           <button onClick={() => navigate('/admin')} style={{
             background: '#2e2e50', color: '#7c6ff7', border: '1px solid #7c6ff755',
             borderRadius: '10px', padding: '6px 12px', fontWeight: 700,
-            fontSize: '12px', cursor: 'pointer',
-          }}>🛡️ Admin</button>
+            fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+          }}>
+            <Shield size={12} /> Admin
+          </button>
         )}
       </div>
 
       <div className="home-body">
 
+        {/* RANDOM PARTNER DÜYMƏSI */}
         <button
           className="btn-random"
           onClick={searching ? cancelSearch : findRandomPartner}
-          style={{ background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined }}
+          style={{
+            background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+          }}
         >
-          {searching ? '⏳ Axtarılır... (ləğv et)' : '🎲 Find Random Partner'}
+          {searching
+            ? <><X size={20} /> Axtarılır... (ləğv et)</>
+            : <><Shuffle size={20} /> Find Random Partner</>
+          }
         </button>
 
         {searching && (
@@ -296,43 +176,49 @@ export default function Home({ user }) {
             background: '#1e1e30', border: '1px solid #7c6ff755',
             borderRadius: '16px', padding: '16px', marginTop: '10px', textAlign: 'center',
           }}>
-            <p style={{ color: '#7c6ff7', fontWeight: 600, fontSize: '14px' }}>
-              🔍 Uyğun partnyor axtarılır...
-            </p>
-            <p style={{ color: '#666', fontSize: '12px', marginTop: '6px' }}>
-              Birisi sizi tapanda avtomatik qoşulacaqsınız
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+              <Search size={16} color="#7c6ff7" />
+              <p style={{ color: '#7c6ff7', fontWeight: 600, fontSize: '14px' }}>Uyğun partnyor axtarılır...</p>
+            </div>
+            <p style={{ color: '#666', fontSize: '12px' }}>Birisi sizi tapanda avtomatik qoşulacaqsınız</p>
           </div>
         )}
 
+        {/* TABLAR */}
         <div className="tabs" style={{ marginTop: '16px' }}>
           <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
-            🟢 Online ({onlineUsers.length})
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: tab === 'online' ? '#fff' : '#22c55e', display: 'inline-block' }} />
+              Online ({onlineUsers.length})
+            </span>
           </button>
           <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-            👥 All ({allUsers.length})
+            All ({allUsers.length})
           </button>
           <button className={`tab ${tab === 'ranking' ? 'active' : ''}`} onClick={() => setTab('ranking')}>
             🏆 Rankings
           </button>
         </div>
 
+        {/* SEVİYYƏ FİLTRİ */}
         {tab !== 'ranking' && (
           <div className="level-filter">
             {LEVELS.map(l => (
               <button key={l} className={`level-btn ${levelFilter === l ? 'active' : ''}`} onClick={() => setLevelFilter(l)}>
-                {l === 'All' ? '🌐 All' : l.split(' – ')[0]}
+                {l === 'All' ? <><Globe size={12} style={{ marginRight: 4 }} />All</> : l.split(' – ')[0]}
               </button>
             ))}
           </div>
         )}
 
+        {/* RANKİNG */}
         {tab === 'ranking' && (
           <div style={{ marginTop: '16px' }}>
             <HomeRanking users={allUsers} />
           </div>
         )}
 
+        {/* USER LİSTİ */}
         {tab !== 'ranking' && (
           <>
             {displayUsers.length === 0 ? (

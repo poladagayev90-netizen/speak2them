@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, MessageCircle, Trophy, User } from 'lucide-react';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
@@ -7,24 +8,32 @@ export default function BottomNav({ user }) {
   const path = location.pathname;
 
   const tabs = [
-    { icon: '🏠', label: 'Lobby', route: '/' },
-    { icon: '💬', label: 'Chats', route: '/chats' },
-    { icon: '🏆', label: 'Ranking', route: '/ranking' },
-    { icon: '👤', label: 'Profile', route: '/profile' },
+    { icon: Home, label: 'Lobby', route: '/' },
+    { icon: MessageCircle, label: 'Chats', route: '/chats' },
+    { icon: Trophy, label: 'Ranking', route: '/ranking' },
+    { icon: User, label: 'Profile', route: '/profile' },
   ];
 
   return (
     <div className="bottom-nav">
-      {tabs.map(tab => (
-        <button
-          key={tab.route}
-          className={`bottom-nav-btn ${path === tab.route ? 'active' : ''}`}
-          onClick={() => navigate(tab.route)}
-        >
-          <span className="bottom-nav-icon">{tab.icon}</span>
-          <span className="bottom-nav-label">{tab.label}</span>
-        </button>
-      ))}
+      {tabs.map(tab => {
+        const Icon = tab.icon;
+        const isActive = path === tab.route;
+        return (
+          <button
+            key={tab.route}
+            className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
+            onClick={() => navigate(tab.route)}
+          >
+            <Icon
+              size={22}
+              color={isActive ? '#7c6ff7' : '#555'}
+              strokeWidth={isActive ? 2.5 : 1.8}
+            />
+            <span className="bottom-nav-label">{tab.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
