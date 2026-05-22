@@ -198,6 +198,7 @@ body {
 .home-body {
   padding: 16px;
   flex: 1;
+  padding-bottom: 90px;
 }
 
 .users-grid {

@@ -155,11 +155,11 @@ export default function Chat({ user }) {
         ringtoneRef.current?.pause();
         joinCall();
       }
-      if (data.status === 'ended') {
-        ringtoneRef.current?.pause();
-        setIncomingCallData(null);
-        endCallRef.current?.();
-      }
+      if (data.status === 'rejected' && data.callerId === user.uid) {
+  setCallStatus('rejected');
+  ringtoneRef.current?.pause();
+  setTimeout(() => setCallStatus(''), 3000);
+}
     }, (error) => {
       console.error('[Chat] Call listener error:', error);
     });

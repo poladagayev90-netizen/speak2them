@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { updateProfile } from 'firebase/auth';
+import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,46 +20,33 @@ export default function Profile({ user }) {
 
   useEffect(() => {
     let unsub = null;
-
     const setup = async () => {
       try {
         const email = user.email || auth.currentUser?.email;
         let foundDocId = null;
-
         if (email) {
-          const q = query(collection(db, 'users'), where('email', '==', email));
-          const snap = await getDocs(q);
+          const snap = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
           if (!snap.empty) foundDocId = snap.docs[0].id;
         }
-
         if (!foundDocId) {
-          const q2 = query(collection(db, 'users'), where('uid', '==', user.uid));
-          const snap2 = await getDocs(q2);
+          const snap2 = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)));
           if (!snap2.empty) foundDocId = snap2.docs[0].id;
         }
-
         if (foundDocId) {
           setDocId(foundDocId);
           unsub = onSnapshot(doc(db, 'users', foundDocId), (snap) => {
             if (snap.exists()) {
-              const userData = snap.data();
-              setName(userData.name || '');
-              setBio(userData.bio || '');
-              setLevel(userData.level || 'B1 – Intermediate');
-              setIsPremium(userData.isPremium || false);
-              setStats({
-                calls: userData.callCount || 0,
-                totalMinutes: userData.totalMinutes || 0,
-                streak: userData.streak || 0,
-              });
+              const d = snap.data();
+              setName(d.name || '');
+              setBio(d.bio || '');
+              setLevel(d.level || 'B1 – Intermediate');
+              setIsPremium(d.isPremium || false);
+              setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0 });
             }
           });
         }
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) { console.error(e); }
     };
-
     setup();
     return () => unsub?.();
   }, [user]);
@@ -69,54 +56,42 @@ export default function Profile({ user }) {
     setLoading(true);
     try {
       await updateDoc(doc(db, 'users', docId), { name, bio, level });
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { displayName: name });
-      }
+      if (auth.currentUser) await updateProfile(auth.currentUser, { displayName: name });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
     setLoading(false);
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/login');
   };
 
   return (
     <div className="profile-page">
       <div className="profile-header">
-        <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
         <h2>My Profile</h2>
+        <button onClick={handleLogout} style={{
+          background: 'transparent', border: '1px solid #ff4d4d55',
+          color: '#ff6b6b', padding: '6px 14px', borderRadius: '8px',
+          cursor: 'pointer', fontSize: '13px', fontWeight: 600,
+        }}>Logout</button>
       </div>
 
-      <div className="profile-body">
-
-        <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 8px' }}>
-          <div className="profile-avatar-big">
+      <div className="profile-body" style={{ paddingBottom: '90px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <div className="profile-avatar-big" style={{ margin: '0 auto 8px' }}>
             {name?.charAt(0).toUpperCase() || '?'}
           </div>
           {isPremium && (
-            <div style={{
-              position: 'absolute', bottom: '-4px', right: '-4px',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              borderRadius: '50%', width: '28px', height: '28px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', boxShadow: '0 0 10px #f59e0b88',
-            }}>👑</div>
-          )}
-        </div>
-
-        {isPremium && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: '6px', marginBottom: '16px',
-          }}>
             <span style={{
               background: 'linear-gradient(135deg, #f59e0b, #d97706)',
               color: '#1a1000', fontSize: '12px', fontWeight: 700,
               padding: '4px 14px', borderRadius: '20px',
-              boxShadow: '0 0 12px #f59e0b55',
             }}>✨ Premium Member</span>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="profile-stats">
           <div className="stat-card">
@@ -125,7 +100,7 @@ export default function Profile({ user }) {
           </div>
           <div className="stat-card">
             <span className="stat-number">{stats.totalMinutes}</span>
-            <span className="stat-label">🕐 Minutes</span>
+            <span className="stat-label">🕐 Min</span>
           </div>
           <div className="stat-card">
             <span className="stat-number">{stats.streak}</span>
@@ -135,26 +110,13 @@ export default function Profile({ user }) {
 
         <div className="profile-form">
           <label>Full Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Your name"
-          />
-
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
           <label>English Level</label>
           <select value={level} onChange={e => setLevel(e.target.value)}>
             {LEVELS.map(l => <option key={l}>{l}</option>)}
           </select>
-
           <label>Bio</label>
-          <textarea
-            value={bio}
-            onChange={e => setBio(e.target.value)}
-            placeholder="Tell others about yourself..."
-            rows={3}
-          />
-
+          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself..." rows={3} />
           <button className="btn-primary" onClick={handleSave} disabled={loading}>
             {saved ? '✅ Saved!' : loading ? 'Saving...' : 'Save Changes'}
           </button>
