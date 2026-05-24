@@ -31,34 +31,31 @@ export default function Chat({ user }) {
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
-  const [joinAttempt, setJoinAttempt] = useState(0);
 
-  const prevCallStatus = useRef('');
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);
   const bottomRef = useRef(null);
   const joinedRef = useRef(false);
-  const joiningRef = useRef(false);
   const endingRef = useRef(false);
-  const inCallRef = useRef(false);
-  const userUidRef = useRef(user.uid);
   const ringtoneRef = useRef(null);
   const timerRef = useRef(null);
+  const prevCallStatus = useRef('');
 
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
+  const content = getTodayContent();
+
+  // Refs for stable access inside callbacks
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
   const peerIdRef = useRef(peerId);
-  const content = getTodayContent();
-
-  userUidRef.current = user.uid;
+  const userUidRef = useRef(user.uid);
   chatIdRef.current = chatId;
   callDocIdRef.current = callDocId;
   peerIdRef.current = peerId;
-  inCallRef.current = inCall;
+  userUidRef.current = user.uid;
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -83,39 +80,32 @@ export default function Chat({ user }) {
       });
       setMessages(msgs);
       setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
-    }, (error) => {
-      console.error('[Chat] Message listener error:', error);
     });
     return unsub;
   }, [chatId, user.uid, peerId]);
 
-  const joinCall = useCallback(async (reason = 'manual') => {
-    const currentUserUid = userUidRef.current;
-    const currentChatId = chatIdRef.current;
-    const currentCallDocId = callDocIdRef.current;
-    const currentPeerId = peerIdRef.current;
+  // Əsas joinCall — heç bir guard yoxdur, çağıran tərəf özü yoxlayır
+  const joinCall = useCallback(async () => {
+    const uid = userUidRef.current;
+    const cId = chatIdRef.current;
 
-    if (!currentUserUid || !currentPeerId || !currentCallDocId || !currentChatId) return;
-    console.log('[Chat] joinCall requested:', { callDocId: currentCallDocId, peerId: currentPeerId, reason });
-
-    if (joiningRef.current || clientRef.current) {
-      console.log('[Chat] joinCall skipped:', {
-        callDocId: currentCallDocId,
-        peerId: currentPeerId,
-        joined: joinedRef.current,
-        joining: joiningRef.current,
-        hasClient: !!clientRef.current,
-      });
-      return;
-    }
-
-    joiningRef.current = true;
-    joinedRef.current = true;
-    setJoinAttempt(prev => prev + 1);
+    ringtoneRef.current?.pause();
 
     try {
-      ringtoneRef.current?.pause();
       await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Əvvəlki client varsa təmizlə
+      if (clientRef.current) {
+        try {
+          await clientRef.current.leave();
+        } catch (e) {}
+        clientRef.current = null;
+      }
+      if (localTrackRef.current) {
+        localTrackRef.current.stop();
+        localTrackRef.current.close();
+        localTrackRef.current = null;
+      }
 
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
@@ -138,78 +128,41 @@ export default function Chat({ user }) {
       const tokenRes = await fetch(TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channelName: currentChatId }),
+        body: JSON.stringify({ channelName: cId }),
       });
 
-      if (!tokenRes.ok) throw new Error('Failed to get Agora token: ' + tokenRes.status);
+      if (!tokenRes.ok) throw new Error('Token error: ' + tokenRes.status);
       const tokenData = await tokenRes.json();
-      if (!tokenData.token) throw new Error('No token received from Agora');
+      if (!tokenData.token) throw new Error('No token');
 
-      await client.join(APP_ID, currentChatId, tokenData.token, currentUserUid);
+      await client.join(APP_ID, cId, tokenData.token, uid);
+
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
       localTrackRef.current = localTrack;
       await client.publish(localTrack);
 
       setInCall(true);
       setCallStatus('connected');
+      joinedRef.current = true;
     } catch (err) {
-      console.error('[Chat] Error joining call:', err);
-      try {
-        if (localTrackRef.current) {
-          localTrackRef.current.stop();
-          localTrackRef.current.close();
-          localTrackRef.current = null;
-        }
-        if (clientRef.current) {
-          await clientRef.current.leave();
-          clientRef.current = null;
-        }
-      } catch (cleanupError) {
-        console.error('[Chat] Error cleaning failed join:', cleanupError);
-      }
+      console.error('[Chat] joinCall error:', err);
       joinedRef.current = false;
+      clientRef.current = null;
+      localTrackRef.current = null;
       setCallStatus('error');
-    } finally {
-      joiningRef.current = false;
     }
   }, []);
 
+  // Location state — caller qəbul alandan sonra
   useEffect(() => {
-    if (location.state?.acceptedCall && user.uid && peerId && callDocId) {
-      joinCall('accepted-route-state');
+    if (location.state?.acceptedCall && !joinedRef.current) {
+      joinedRef.current = true;
+      joinCall();
     }
-  }, [callDocId, user.uid, peerId, location.state?.acceptedCall, joinCall]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  useEffect(() => {
-    if (inCall || joinAttempt === 0) return undefined;
-
-    const timeoutId = setTimeout(() => {
-      if (!inCallRef.current) {
-        console.warn('[Chat] joinCall did not enter inCall within 5s, resetting joinedRef:', {
-          callDocId: callDocIdRef.current,
-          peerId: peerIdRef.current,
-        });
-        try {
-          if (localTrackRef.current) {
-            localTrackRef.current.stop();
-            localTrackRef.current.close();
-            localTrackRef.current = null;
-          }
-          if (clientRef.current) {
-            clientRef.current.leave().catch(() => {});
-            clientRef.current = null;
-          }
-        } catch (cleanupError) {
-          console.error('[Chat] Error cleaning stalled join:', cleanupError);
-        }
-        joinedRef.current = false;
-        joiningRef.current = false;
-      }
-    }, 5000);
-
-    return () => clearTimeout(timeoutId);
-  }, [inCall, joinAttempt]);
-
+  // Firestore call listener
   useEffect(() => {
     if (!callDocId || !user.uid || !peerId) return;
 
@@ -225,30 +178,41 @@ export default function Chat({ user }) {
       }
 
       const data = snap.data();
+      const prevStatus = prevCallStatus.current;
       prevCallStatus.current = data.status;
 
+      // Gələn zəng
       if (data.callerId === peerId && data.status === 'calling') {
         setIncomingCallData(data);
       }
-      if (data.status === 'accepted' && data.callerId === user.uid) {
-        joinedRef.current = false;
-        if (!joiningRef.current && !clientRef.current) {
+
+      // Caller tərəfi — qəbul edildi
+      if (data.status === 'accepted' && data.callerId === user.uid && prevStatus !== 'accepted') {
+        if (!joinedRef.current) {
           joinedRef.current = true;
           setIncomingCallData(null);
           ringtoneRef.current?.pause();
-          joinCall('call-doc-accepted');
+          joinCall();
         }
       }
+
+      // Rədd edildi
       if (data.status === 'rejected' && data.callerId === user.uid) {
-  setCallStatus('rejected');
-  ringtoneRef.current?.pause();
-  setTimeout(() => setCallStatus(''), 3000);
-}
-    }, (error) => {
-      console.error('[Chat] Call listener error:', error);
+        setCallStatus('rejected');
+        ringtoneRef.current?.pause();
+        setTimeout(() => setCallStatus(''), 3000);
+      }
+
+      // Bitdi
+      if (data.status === 'ended') {
+        ringtoneRef.current?.pause();
+        setIncomingCallData(null);
+        endCallRef.current?.();
+      }
     });
     return unsub;
-  }, [callDocId, user.uid, peerId, joinCall]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callDocId, user.uid, peerId]);
 
   useEffect(() => {
     if (inCall) {
@@ -273,7 +237,6 @@ export default function Chat({ user }) {
 
   const startCall = async () => {
     if (!user.uid || !peerId) return;
-    console.log('[Chat] startCall requested:', { callDocId, peerId });
     try {
       await setDoc(doc(db, 'calls', callDocId), {
         callerId: user.uid,
@@ -297,23 +260,16 @@ export default function Chat({ user }) {
             }),
           });
         }
-      } catch (e) {
-        console.error('[Chat] Telegram notification error:', e);
-      }
+      } catch (e) {}
     } catch (error) {
-      console.error('[Chat] Failed to start call:', error);
+      console.error('[Chat] startCall error:', error);
       setCallStatus('error');
     }
   };
 
   const endCall = useCallback(async () => {
-    if (endingRef.current) {
-      console.log('[Chat] endCall skipped:', { callDocId, peerId });
-      return;
-    }
-
+    if (endingRef.current) return;
     endingRef.current = true;
-    console.log('[Chat] endCall requested:', { callDocId, peerId });
 
     const secondsTalked = callSecondsRef.current;
 
@@ -327,9 +283,7 @@ export default function Chat({ user }) {
         await clientRef.current.leave();
         clientRef.current = null;
       }
-    } catch (e) {
-      console.error('[Chat] Error cleaning up tracks:', e);
-    }
+    } catch (e) {}
 
     setInCall(false);
     setCallStatus('');
@@ -347,12 +301,10 @@ export default function Chat({ user }) {
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
 
-        // Always update current user
         const myRef = doc(db, 'users', user.uid);
         const mySnap = await getDoc(myRef);
         const myData = mySnap.data() || {};
         let myStreak = myData.streak || 0;
-
         if (myData.lastCallDate === today) {}
         else if (myData.lastCallDate === yesterday) myStreak += 1;
         else myStreak = 1;
@@ -364,15 +316,11 @@ export default function Chat({ user }) {
           lastCallDate: today,
         }, { merge: true });
 
-        // Only initiator updates peer (prevent duplicate writes)
-        const callData2 = (await getDoc(doc(db, 'calls', callDocId))).data() || {};
-
-        if (callData2.callerId === user.uid) {
+        if (callData.callerId === user.uid) {
           const peerRef = doc(db, 'users', peerId);
           const peerSnap = await getDoc(peerRef);
           const peerData = peerSnap.data() || {};
           let peerStreak = peerData.streak || 0;
-
           if (peerData.lastCallDate === today) {}
           else if (peerData.lastCallDate === yesterday) peerStreak += 1;
           else peerStreak = 1;
@@ -392,7 +340,7 @@ export default function Chat({ user }) {
 
       if (secondsTalked >= 180) setShowRating(true);
     } catch (e) {
-      console.error('[Chat] Error ending call:', e);
+      console.error('[Chat] endCall error:', e);
     } finally {
       endingRef.current = false;
     }
@@ -424,16 +372,13 @@ export default function Chat({ user }) {
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() || !user.uid || !chatId || !peerId) return;
-
     const messageText = text.trim();
     try {
-      const chatRef = doc(db, 'chats', chatId);
-      await setDoc(chatRef, {
+      await setDoc(doc(db, 'chats', chatId), {
         participants: [user.uid, peerId],
         updatedAt: serverTimestamp(),
         lastMessage: messageText,
       }, { merge: true });
-
       await addDoc(collection(db, 'chats', chatId, 'messages'), {
         text: messageText,
         senderId: user.uid,
@@ -442,7 +387,7 @@ export default function Chat({ user }) {
       });
       setText('');
     } catch (error) {
-      console.error('[Chat] Failed to send message:', error);
+      console.error('[Chat] sendMessage error:', error);
     }
   };
 
@@ -468,7 +413,7 @@ export default function Chat({ user }) {
                 setIncomingCallData(null);
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
-                joinCall('receiver-accepted-modal');
+                joinCall();
               }}>✅ Qəbul et</button>
               <button className="btn-reject" onClick={async () => {
                 setIncomingCallData(null);
