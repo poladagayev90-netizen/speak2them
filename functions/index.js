@@ -1,4 +1,5 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const admin = require("firebase-admin");
@@ -26,6 +27,7 @@ const TELEGRAM_APP_URL = defineString("TELEGRAM_APP_URL", {
 });
 
 const telegramApiUrl = () => `https://api.telegram.org/bot${BOT_TOKEN.value()}/sendMessage`;
+const DAILY_REMINDER_BATCH_SIZE = 500;
 
 // ─── Agora Token ───────────────────────────────────────────────
 exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, (req, res) => {
@@ -221,4 +223,59 @@ exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req,
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ─── Daily Practice Reminder ──────────────────────────────────
+exports.dailyReminder = onSchedule({
+  schedule: "0 21 * * *",
+  timeZone: "Asia/Baku",
+}, async () => {
+  const usersSnap = await admin.firestore().collection("users").get();
+  const usersWithTokens = usersSnap.docs
+    .map(docSnap => ({ ref: docSnap.ref, ...docSnap.data() }))
+    .filter(user => typeof user.fcmToken === "string" && user.fcmToken.trim());
+
+  let sent = 0;
+  let failed = 0;
+  const invalidTokenRefs = [];
+
+  for (let i = 0; i < usersWithTokens.length; i += DAILY_REMINDER_BATCH_SIZE) {
+    const batch = usersWithTokens.slice(i, i + DAILY_REMINDER_BATCH_SIZE);
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens: batch.map(user => user.fcmToken),
+      notification: {
+        title: "Speak2Them practice time",
+        body: "Come practice English with someone today.",
+      },
+      data: {
+        type: "daily_reminder",
+        url: "/",
+      },
+    });
+
+    sent += response.successCount;
+    failed += response.failureCount;
+
+    response.responses.forEach((result, index) => {
+      const code = result.error?.code;
+      if (
+        code === "messaging/invalid-registration-token" ||
+        code === "messaging/registration-token-not-registered"
+      ) {
+        invalidTokenRefs.push(batch[index].ref);
+      }
+    });
+  }
+
+  await Promise.all(invalidTokenRefs.map(ref => ref.update({
+    fcmToken: admin.firestore.FieldValue.delete(),
+  }).catch(() => null)));
+
+  console.log("Daily reminder complete", {
+    users: usersSnap.size,
+    tokens: usersWithTokens.length,
+    sent,
+    failed,
+    invalidTokensRemoved: invalidTokenRefs.length,
+  });
 });

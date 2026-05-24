@@ -294,7 +294,7 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
                 <p>Loading rankings...</p>
               </div>
             ) : (
-              <HomeRanking users={allUsers} />
+              <HomeRanking users={allUsers} currentUserId={user.uid} />
             )}
           </div>
         )}
