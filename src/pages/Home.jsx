@@ -10,6 +10,71 @@ import { Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
+const LEVEL_MATCHING_MIN_USERS = 10;
+const LEVEL_RANK = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
+
+const getLevelCode = (level = '') => {
+  const match = String(level).match(/^(A1|A2|B1|B2|C1|C2)\b/);
+  return match ? match[1] : null;
+};
+
+const getLevelRank = (level) => {
+  const code = getLevelCode(level);
+  return code ? LEVEL_RANK[code] : null;
+};
+
+const levelDistance = (a, b) => {
+  const rankA = getLevelRank(a);
+  const rankB = getLevelRank(b);
+  if (rankA === null || rankB === null) return 99;
+  return Math.abs(rankA - rankB);
+};
+
+const targetAllowsLevel = (targetLevel, candidateLevel) => {
+  if (!targetLevel || targetLevel === 'All' || targetLevel === 'Any') return true;
+  return getLevelCode(targetLevel) === getLevelCode(candidateLevel);
+};
+
+const preferenceAllowsLevel = (ownerLevel, partnerLevel, preference = 'Any') => {
+  const ownerRank = getLevelRank(ownerLevel);
+  const partnerRank = getLevelRank(partnerLevel);
+  if (ownerRank === null || partnerRank === null) return true;
+  if (preference === 'Same') return ownerRank === partnerRank;
+  if (preference === 'Higher') return partnerRank > ownerRank;
+  return true;
+};
+
+const scoreCandidate = (candidate, currentUser, requestedLevel) => {
+  const distance = levelDistance(currentUser.level, candidate.level);
+  const distanceScore = distance === 99 ? 5 : Math.max(0, 80 - distance * 25);
+  const exactRequestedBonus = requestedLevel !== 'All' && targetAllowsLevel(requestedLevel, candidate.level) ? 35 : 0;
+  const mutualTargetBonus = targetAllowsLevel(candidate.desiredLevel, currentUser.level) ? 20 : 0;
+  const joinedAt = candidate.joinedAt?.toMillis?.() || 0;
+  const waitBonus = joinedAt ? Math.min(15, Math.floor((Date.now() - joinedAt) / 60000)) : 0;
+
+  return distanceScore + exactRequestedBonus + mutualTargetBonus + waitBonus + Math.random();
+};
+
+const pickBestLevelMatch = (candidates, currentUser, requestedLevel) => {
+  const strictMatches = candidates.filter(candidate =>
+    targetAllowsLevel(requestedLevel, candidate.level) &&
+    targetAllowsLevel(candidate.desiredLevel, currentUser.level) &&
+    preferenceAllowsLevel(currentUser.level, candidate.level, currentUser.partnerPreference) &&
+    preferenceAllowsLevel(candidate.level, currentUser.level, candidate.partnerPreference)
+  );
+
+  const fallbackMatches = candidates.filter(candidate =>
+    targetAllowsLevel(requestedLevel, candidate.level) &&
+    targetAllowsLevel(candidate.desiredLevel, currentUser.level)
+  );
+
+  const pool = strictMatches.length > 0 ? strictMatches : fallbackMatches;
+  if (pool.length === 0) return null;
+
+  return [...pool]
+    .sort((a, b) => scoreCandidate(b, currentUser, requestedLevel) - scoreCandidate(a, currentUser, requestedLevel))[0];
+};
+
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -20,6 +85,9 @@ export default function Home({ user }) {
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
   const searchUnsubRef = useRef(null);
+  const userLevel = user.level || 'Any';
+  const userName = user.displayName || user.name || 'User';
+  const userPartnerPreference = user.partnerPreference || 'Any';
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -81,13 +149,15 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
       const queueSnap = await getDocs(
         query(collection(db, 'matchQueue'), where('status', '==', 'waiting'), where('uid', '!=', user.uid))
       );
-      let candidates = queueSnap.docs.map(d => d.data());
-      if (levelFilter !== 'All') {
-        const filtered = candidates.filter(c => c.level === levelFilter);
-        if (filtered.length > 0) candidates = filtered;
-      }
-      if (candidates.length > 0) {
-        const match = candidates[Math.floor(Math.random() * candidates.length)];
+      const candidates = queueSnap.docs.map(d => d.data());
+      const useLevelMatching = allUsers.length >= LEVEL_MATCHING_MIN_USERS;
+      const match = useLevelMatching
+        ? pickBestLevelMatch(candidates, {
+            level: userLevel,
+            partnerPreference: userPartnerPreference,
+          }, levelFilter)
+        : candidates[Math.floor(Math.random() * candidates.length)];
+      if (match) {
         await setDoc(doc(db, 'matchQueue', match.uid), { status: 'matched', matchedWith: user.uid, matchedAt: serverTimestamp() }, { merge: true });
         await setDoc(doc(db, 'matchQueue', user.uid), { status: 'matched', matchedWith: match.uid, matchedAt: serverTimestamp() }, { merge: true });
         setSearching(false);
@@ -96,8 +166,10 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
       }
       await setDoc(doc(db, 'matchQueue', user.uid), {
         uid: user.uid,
-        name: user.displayName || 'User',
-        level: levelFilter !== 'All' ? levelFilter : 'Any',
+        name: userName,
+        level: userLevel,
+        desiredLevel: allUsers.length >= LEVEL_MATCHING_MIN_USERS ? levelFilter : 'Any',
+        partnerPreference: allUsers.length >= LEVEL_MATCHING_MIN_USERS ? userPartnerPreference : 'Any',
         status: 'waiting',
         joinedAt: serverTimestamp(),
       }, { merge: true });
@@ -116,7 +188,7 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
       setSearching(false);
       alert('Error: ' + error.message);
     }
-  }, [searching, levelFilter, user.uid, user.displayName, navigate, cancelSearch]);
+  }, [allUsers.length, searching, levelFilter, user.uid, userName, userLevel, userPartnerPreference, navigate, cancelSearch]);
 
   useEffect(() => {
     return () => { cancelSearch(); };

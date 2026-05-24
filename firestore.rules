@@ -1,9 +1,48 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.uid == '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
+    }
+
+    function isOwnDoc(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isNotChangingPremiumFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['isPremium', 'premiumSince']);
+    }
+
+    function isNotCreatingPremiumFields() {
+      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince']);
+    }
+
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth.uid == userId;
+      allow create: if isOwnDoc(userId) && isNotCreatingPremiumFields();
+      allow update: if isAdmin() || (isOwnDoc(userId) && isNotChangingPremiumFields());
+      allow delete: if isAdmin();
+    }
+
+    match /premiumRequests/{userId} {
+      allow read: if isAdmin() || isOwnDoc(userId);
+      allow create: if isOwnDoc(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin() || (
+        isOwnDoc(userId)
+        && resource.data.status == 'pending'
+        && request.resource.data.uid == userId
+        && request.resource.data.status == 'pending'
+        && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['activatedAt', 'activatedBy'])
+      );
+      allow delete: if isAdmin();
     }
 
     match /chats/{chatId} {
@@ -40,4 +79,3 @@ service cloud.firestore {
     }
   }
 }
-

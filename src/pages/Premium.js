@@ -21,6 +21,7 @@ const features = [
 export default function Premium({ user }) {
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleCopy = () => {
@@ -30,6 +31,7 @@ export default function Premium({ user }) {
   };
 
   const handleNotify = async () => {
+    setError('');
     try {
       // Firestore-a premium sorğusu yaz
       await setDoc(doc(db, 'premiumRequests', user.uid), {
@@ -53,7 +55,10 @@ export default function Premium({ user }) {
       }).catch(() => {});
 
       setSent(true);
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to send premium request:', e);
+      setError(e.message || 'Premium request could not be sent.');
+    }
   };
 
   if (user?.isPremium) {
@@ -83,6 +88,19 @@ export default function Premium({ user }) {
       </div>
 
       <div style={{ padding: '0 16px 40px' }}>
+        {error && (
+          <div style={{
+            background: '#ef444422',
+            border: '1px solid #ef444455',
+            color: '#fecaca',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            marginBottom: '16px',
+            fontSize: '13px',
+          }}>
+            {error}
+          </div>
+        )}
 
         {/* Header */}
         <div style={{

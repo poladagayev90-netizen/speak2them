@@ -11,6 +11,7 @@ export default function Admin({ user }) {
   const [tab, setTab] = useState('requests');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState({});
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function Admin({ user }) {
   }, []);
 
   const setPremium = async (u, value) => {
+    setError('');
     setLoading(prev => ({ ...prev, [u.uid]: true }));
     try {
       await setDoc(doc(db, 'users', u.uid), {
@@ -51,7 +53,10 @@ export default function Admin({ user }) {
           }).catch(() => {});
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to update premium status:', e);
+      setError(e.message || 'Premium status could not be updated.');
+    }
     setLoading(prev => ({ ...prev, [u.uid]: false }));
   };
 
@@ -69,6 +74,19 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '0 16px 40px' }}>
+        {error && (
+          <div style={{
+            background: '#ef444422',
+            border: '1px solid #ef444455',
+            color: '#fecaca',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            marginBottom: '16px',
+            fontSize: '13px',
+          }}>
+            {error}
+          </div>
+        )}
 
         {/* Stats */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>

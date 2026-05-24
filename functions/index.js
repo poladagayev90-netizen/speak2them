@@ -1,19 +1,34 @@
-const functions = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
+const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
 
-const APP_ID = "98299e33a32f4137a94daacc5422c92e";
-const APP_CERTIFICATE = "ea7ad2e0c0bc4a98a35f3617931fa7ac";
-const BOT_TOKEN = "8771591170:AAEw_6eiyv2n8RKT2L-oS_KEIlQGxM2ZPYA";
-const CHANNEL_LINK = "https://t.me/speak2them";
-const CHANNEL_ID = "@speak2them";
-const ADMIN_TELEGRAM_ID = "5134853364"; // öz telegram id-ni yaz
+const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
+const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
+const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
+
+const AGORA_APP_ID = defineString("AGORA_APP_ID", {
+  default: "98299e33a32f4137a94daacc5422c92e",
+});
+const CHANNEL_LINK = defineString("TELEGRAM_CHANNEL_LINK", {
+  default: "https://t.me/speak2them",
+});
+const CHANNEL_ID = defineString("TELEGRAM_CHANNEL_ID", {
+  default: "@speak2them",
+});
+const ADMIN_TELEGRAM_ID = defineString("ADMIN_TELEGRAM_ID", {
+  default: "5134853364",
+});
+const TELEGRAM_APP_URL = defineString("TELEGRAM_APP_URL", {
+  default: "https://t.me/Speak2them_bot/app",
+});
+
+const telegramApiUrl = () => `https://api.telegram.org/bot${BOT_TOKEN.value()}/sendMessage`;
 
 // ─── Agora Token ───────────────────────────────────────────────
-exports.getAgoraToken = functions.https.onRequest((req, res) => {
+exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "GET, POST");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -29,14 +44,14 @@ exports.getAgoraToken = functions.https.onRequest((req, res) => {
   const privilegeExpireTime = currentTime + expireTime;
 
   const token = RtcTokenBuilder.buildTokenWithUid(
-    APP_ID, APP_CERTIFICATE, channelName, 0, role, privilegeExpireTime
+    AGORA_APP_ID.value(), AGORA_APP_CERTIFICATE.value(), channelName, 0, role, privilegeExpireTime
   );
 
   res.status(200).json({ token });
 });
 
 // ─── Telegram Webhook ─────────────────────────────────────────
-exports.telegramWebhook = onRequest(async (req, res) => {
+exports.telegramWebhook = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
   const { message } = req.body;
   if (!message) return res.send("ok");
 
@@ -49,16 +64,16 @@ exports.telegramWebhook = onRequest(async (req, res) => {
       joinedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    await fetch(telegramApiUrl(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        text: `🎙️ Speak2Them-ə xoş gəldin!\n\nKanalımıza qoşul: ${CHANNEL_LINK}\n\nTətbiqi aç: https://t.me/Speak2them_bot/app`,
+        text: `🎙️ Speak2Them-ə xoş gəldin!\n\nKanalımıza qoşul: ${CHANNEL_LINK.value()}\n\nTətbiqi aç: ${TELEGRAM_APP_URL.value()}`,
         reply_markup: {
           inline_keyboard: [[
-            { text: "📢 Kanala qoşul", url: CHANNEL_LINK },
-            { text: "🚀 Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" },
+            { text: "📢 Kanala qoşul", url: CHANNEL_LINK.value() },
+            { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() },
           ]],
         },
       }),
@@ -69,25 +84,25 @@ exports.telegramWebhook = onRequest(async (req, res) => {
 });
 
 // ─── Broadcast ────────────────────────────────────────────────
-exports.broadcastMessage = onRequest(async (req, res) => {
+exports.broadcastMessage = onRequest({ secrets: [BOT_TOKEN, BROADCAST_ADMIN_KEY] }, async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST");
   res.set("Access-Control-Allow-Headers", "Content-Type, x-admin-key");
 
   if (req.method === "OPTIONS") return res.status(204).send("");
-  if (req.headers["x-admin-key"] !== "speak2them2024") return res.status(403).send("Forbidden");
+  if (req.headers["x-admin-key"] !== BROADCAST_ADMIN_KEY.value()) return res.status(403).send("Forbidden");
 
   const { text } = req.body;
   if (!text) return res.status(400).send("text required");
 
-  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+  await fetch(telegramApiUrl(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      chat_id: CHANNEL_ID, text,
+      chat_id: CHANNEL_ID.value(), text,
       reply_markup: { inline_keyboard: [[
-        { text: "🚀 Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" },
-        { text: "📢 Kanala qoşul", url: CHANNEL_LINK },
+        { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() },
+        { text: "📢 Kanala qoşul", url: CHANNEL_LINK.value() },
       ]]},
     }),
   }).catch(() => {});
@@ -102,14 +117,14 @@ exports.broadcastMessage = onRequest(async (req, res) => {
   appUsers.docs.forEach(d => { if (d.data().telegramId) chatIds.add(String(d.data().telegramId)); });
 
   const promises = [...chatIds].map(chatId =>
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    fetch(telegramApiUrl(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId, text,
         reply_markup: { inline_keyboard: [[
-          { text: "🚀 Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" },
-          { text: "📢 Kanala qoşul", url: CHANNEL_LINK },
+          { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() },
+          { text: "📢 Kanala qoşul", url: CHANNEL_LINK.value() },
         ]]},
       }),
     }).catch(() => {})
@@ -120,7 +135,7 @@ exports.broadcastMessage = onRequest(async (req, res) => {
 });
 
 // ─── Zəng Bildirişi ───────────────────────────────────────────
-exports.sendCallNotification = onRequest(async (req, res) => {
+exports.sendCallNotification = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST");
   res.set("Access-Control-Allow-Headers", "Content-Type");
@@ -131,7 +146,7 @@ exports.sendCallNotification = onRequest(async (req, res) => {
   if (!telegramId) return res.status(400).json({ error: "telegramId required" });
 
   try {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    await fetch(telegramApiUrl(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -139,7 +154,7 @@ exports.sendCallNotification = onRequest(async (req, res) => {
         text: `📞 *${callerName}* sizi Speak2Them-də zəng edir!\n\nQəbul etmək üçün tətbiqi açın 👇`,
         parse_mode: "Markdown",
         reply_markup: { inline_keyboard: [[
-          { text: "🎙️ Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" }
+          { text: "🎙️ Tətbiqi aç", url: TELEGRAM_APP_URL.value() }
         ]]},
       }),
     });
@@ -150,7 +165,7 @@ exports.sendCallNotification = onRequest(async (req, res) => {
 });
 
 // ─── Premium Sorğusu — adminə xəbər ver ──────────────────────
-exports.notifyPremiumRequest = onRequest(async (req, res) => {
+exports.notifyPremiumRequest = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST");
   res.set("Access-Control-Allow-Headers", "Content-Type");
@@ -160,15 +175,15 @@ exports.notifyPremiumRequest = onRequest(async (req, res) => {
   const { userName, userEmail, userId } = req.body;
 
   try {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    await fetch(telegramApiUrl(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: ADMIN_TELEGRAM_ID,
+        chat_id: ADMIN_TELEGRAM_ID.value(),
         text: `💰 *Yeni Premium Sorğusu!*\n\n👤 Ad: ${userName}\n📧 Email: ${userEmail}\n🆔 UID: ${userId}\n\nAdmin paneldən aktivləşdir 👇`,
         parse_mode: "Markdown",
         reply_markup: { inline_keyboard: [[
-          { text: "🛡️ Admin Panel", url: "https://t.me/Speak2them_bot/app/admin" }
+          { text: "🛡️ Admin Panel", url: `${TELEGRAM_APP_URL.value()}/admin` }
         ]]},
       }),
     });
@@ -179,7 +194,7 @@ exports.notifyPremiumRequest = onRequest(async (req, res) => {
 });
 
 // ─── Premium Aktivləşdi — istifadəçiyə xəbər ver ─────────────
-exports.notifyPremiumActivated = onRequest(async (req, res) => {
+exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST");
   res.set("Access-Control-Allow-Headers", "Content-Type");
@@ -190,7 +205,7 @@ exports.notifyPremiumActivated = onRequest(async (req, res) => {
   if (!telegramId) return res.status(400).json({ error: "telegramId required" });
 
   try {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    await fetch(telegramApiUrl(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -198,7 +213,7 @@ exports.notifyPremiumActivated = onRequest(async (req, res) => {
         text: `👑 *${userName}*, Premium üzvlüyünüz aktivləşdirildi!\n\n✅ Bütün premium xüsusiyyətlər indi sizin üçün açıqdır.\n\nTətbiqi açın və zövq alın 🎙️`,
         parse_mode: "Markdown",
         reply_markup: { inline_keyboard: [[
-          { text: "🚀 Tətbiqi aç", url: "https://t.me/Speak2them_bot/app" }
+          { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() }
         ]]},
       }),
     });
