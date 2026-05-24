@@ -31,6 +31,7 @@ export default function Chat({ user }) {
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
+  const [joinAttempt, setJoinAttempt] = useState(0);
 
   const prevCallStatus = useRef('');
   const callSecondsRef = useRef(0);
@@ -41,12 +42,23 @@ export default function Chat({ user }) {
   const joinedRef = useRef(false);
   const joiningRef = useRef(false);
   const endingRef = useRef(false);
+  const inCallRef = useRef(false);
+  const userUidRef = useRef(user.uid);
   const ringtoneRef = useRef(null);
   const timerRef = useRef(null);
 
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
+  const chatIdRef = useRef(chatId);
+  const callDocIdRef = useRef(callDocId);
+  const peerIdRef = useRef(peerId);
   const content = getTodayContent();
+
+  userUidRef.current = user.uid;
+  chatIdRef.current = chatId;
+  callDocIdRef.current = callDocId;
+  peerIdRef.current = peerId;
+  inCallRef.current = inCall;
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -78,16 +90,28 @@ export default function Chat({ user }) {
   }, [chatId, user.uid, peerId]);
 
   const joinCall = useCallback(async (reason = 'manual') => {
-    if (!user.uid || !peerId || !callDocId || !chatId) return;
-    console.log('[Chat] joinCall requested:', { callDocId, peerId, reason });
+    const currentUserUid = userUidRef.current;
+    const currentChatId = chatIdRef.current;
+    const currentCallDocId = callDocIdRef.current;
+    const currentPeerId = peerIdRef.current;
 
-    if (joinedRef.current || joiningRef.current) {
-      console.log('[Chat] joinCall skipped:', { callDocId, peerId, joined: joinedRef.current, joining: joiningRef.current });
+    if (!currentUserUid || !currentPeerId || !currentCallDocId || !currentChatId) return;
+    console.log('[Chat] joinCall requested:', { callDocId: currentCallDocId, peerId: currentPeerId, reason });
+
+    if (joiningRef.current || clientRef.current) {
+      console.log('[Chat] joinCall skipped:', {
+        callDocId: currentCallDocId,
+        peerId: currentPeerId,
+        joined: joinedRef.current,
+        joining: joiningRef.current,
+        hasClient: !!clientRef.current,
+      });
       return;
     }
 
     joiningRef.current = true;
     joinedRef.current = true;
+    setJoinAttempt(prev => prev + 1);
 
     try {
       ringtoneRef.current?.pause();
@@ -114,14 +138,14 @@ export default function Chat({ user }) {
       const tokenRes = await fetch(TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channelName: chatId }),
+        body: JSON.stringify({ channelName: currentChatId }),
       });
 
       if (!tokenRes.ok) throw new Error('Failed to get Agora token: ' + tokenRes.status);
       const tokenData = await tokenRes.json();
       if (!tokenData.token) throw new Error('No token received from Agora');
 
-      await client.join(APP_ID, chatId, tokenData.token, user.uid);
+      await client.join(APP_ID, currentChatId, tokenData.token, currentUserUid);
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
       localTrackRef.current = localTrack;
       await client.publish(localTrack);
@@ -130,18 +154,61 @@ export default function Chat({ user }) {
       setCallStatus('connected');
     } catch (err) {
       console.error('[Chat] Error joining call:', err);
+      try {
+        if (localTrackRef.current) {
+          localTrackRef.current.stop();
+          localTrackRef.current.close();
+          localTrackRef.current = null;
+        }
+        if (clientRef.current) {
+          await clientRef.current.leave();
+          clientRef.current = null;
+        }
+      } catch (cleanupError) {
+        console.error('[Chat] Error cleaning failed join:', cleanupError);
+      }
       joinedRef.current = false;
       setCallStatus('error');
     } finally {
       joiningRef.current = false;
     }
-  }, [user.uid, peerId, callDocId, chatId]);
+  }, []);
 
   useEffect(() => {
     if (location.state?.acceptedCall && user.uid && peerId && callDocId) {
       joinCall('accepted-route-state');
     }
   }, [callDocId, user.uid, peerId, location.state?.acceptedCall, joinCall]);
+
+  useEffect(() => {
+    if (inCall || joinAttempt === 0) return undefined;
+
+    const timeoutId = setTimeout(() => {
+      if (!inCallRef.current) {
+        console.warn('[Chat] joinCall did not enter inCall within 5s, resetting joinedRef:', {
+          callDocId: callDocIdRef.current,
+          peerId: peerIdRef.current,
+        });
+        try {
+          if (localTrackRef.current) {
+            localTrackRef.current.stop();
+            localTrackRef.current.close();
+            localTrackRef.current = null;
+          }
+          if (clientRef.current) {
+            clientRef.current.leave().catch(() => {});
+            clientRef.current = null;
+          }
+        } catch (cleanupError) {
+          console.error('[Chat] Error cleaning stalled join:', cleanupError);
+        }
+        joinedRef.current = false;
+        joiningRef.current = false;
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [inCall, joinAttempt]);
 
   useEffect(() => {
     if (!callDocId || !user.uid || !peerId) return;
@@ -163,10 +230,14 @@ export default function Chat({ user }) {
       if (data.callerId === peerId && data.status === 'calling') {
         setIncomingCallData(data);
       }
-      if (data.status === 'accepted' && data.callerId === user.uid && !joinedRef.current) {
-        setIncomingCallData(null);
-        ringtoneRef.current?.pause();
-        joinCall('call-doc-accepted');
+      if (data.status === 'accepted' && data.callerId === user.uid) {
+        joinedRef.current = false;
+        if (!joiningRef.current && !clientRef.current) {
+          joinedRef.current = true;
+          setIncomingCallData(null);
+          ringtoneRef.current?.pause();
+          joinCall('call-doc-accepted');
+        }
       }
       if (data.status === 'rejected' && data.callerId === user.uid) {
   setCallStatus('rejected');
@@ -396,6 +467,7 @@ export default function Chat({ user }) {
               <button className="btn-accept" onClick={async () => {
                 setIncomingCallData(null);
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
+                joinedRef.current = false;
                 joinCall('receiver-accepted-modal');
               }}>✅ Qəbul et</button>
               <button className="btn-reject" onClick={async () => {
