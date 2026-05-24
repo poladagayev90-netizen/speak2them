@@ -42,11 +42,15 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, (req, re
 
   const role = RtcRole.PUBLISHER;
   const expireTime = 3600;
-  const currentTime = Math.floor(Date.now() / 1000);
-  const privilegeExpireTime = currentTime + expireTime;
 
   const token = RtcTokenBuilder.buildTokenWithUid(
-    AGORA_APP_ID.value(), AGORA_APP_CERTIFICATE.value(), channelName, 0, role, privilegeExpireTime
+    AGORA_APP_ID.value(),
+    AGORA_APP_CERTIFICATE.value().trim(),
+    channelName,
+    0,
+    role,
+    expireTime,
+    expireTime
   );
 
   res.status(200).json({ token });
