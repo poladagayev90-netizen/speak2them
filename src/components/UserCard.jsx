@@ -30,7 +30,7 @@ export default function UserCard({ user, onChat }) {
           {user.lastSeen?.toMillis?.() > Date.now() - 15000 ? '🟢 Online' : '⚫ Offline'}
         </span>
       </div>
-      <button className="btn-chat" onClick={() => onChat(user.uid)}>
+      <button className="btn-chat" onClick={() => onChat(user.uid || user.id)}>
         💬 Chat & Call
       </button>
     </div>

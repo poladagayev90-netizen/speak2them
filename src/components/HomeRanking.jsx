@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import RankingCard from './RankingCard';
 
 export default function HomeRanking({ users, currentUserId }) {
-  const sorted = useMemo(() => {
+  const sortedUsers = useMemo(() => {
     return users
       .map((user, index) => ({ user, index }))
       .sort((a, b) => {
@@ -12,12 +12,12 @@ export default function HomeRanking({ users, currentUserId }) {
         const nameDiff = (a.user.name || '').localeCompare(b.user.name || '');
         if (nameDiff !== 0) return nameDiff;
 
-        return (a.user.uid || '').localeCompare(b.user.uid || '') || a.index - b.index;
+        return (a.user.uid || a.user.id || '').localeCompare(b.user.uid || b.user.id || '') || a.index - b.index;
       })
       .map(({ user }) => user);
   }, [users]);
 
-  const myRank = sorted.findIndex(u => u.uid === currentUserId) + 1;
+  const myRank = sortedUsers.findIndex(u => u.uid === currentUserId || u.id === currentUserId) + 1;
 
   if (users.length === 0) {
     return (
@@ -44,12 +44,12 @@ export default function HomeRanking({ users, currentUserId }) {
           Your rank: #{myRank}
         </div>
       )}
-      {sorted.map((u, i) => (
+      {sortedUsers.map((u, i) => (
         <RankingCard
-          key={u.uid}
+          key={u.id || u.uid}
           user={u}
           rank={i + 1}
-          isCurrentUser={u.uid === currentUserId}
+          isCurrentUser={u.uid === currentUserId || u.id === currentUserId}
         />
       ))}
     </div>

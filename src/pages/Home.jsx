@@ -103,9 +103,10 @@ export default function Home({ user }) {
       const online = [];
       const all = [];
       snap.docs.forEach(d => {
-        const u = d.data();
-        if (u.uid === user.uid) return;
+        const data = d.data();
+        const u = { id: d.id, ...data, uid: data.uid || d.id };
         all.push(u);
+        if (u.uid === user.uid || u.id === user.uid) return;
         if (!u.lastSeen) return;
         const lastSeen = u.lastSeen.toMillis?.() || 0;
 const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
@@ -209,7 +210,8 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
     setIncomingCall(null);
   }, [incomingCall]);
 
-  const baseList = tab === 'online' ? onlineUsers : allUsers;
+  const browsableUsers = allUsers.filter(u => u.uid !== user.uid && u.id !== user.uid);
+  const baseList = tab === 'online' ? onlineUsers : browsableUsers;
   const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
   return (
@@ -269,7 +271,7 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
             </span>
           </button>
           <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-            All ({allUsers.length})
+            All ({browsableUsers.length})
           </button>
           <button className={`tab ${tab === 'ranking' ? 'active' : ''}`} onClick={() => setTab('ranking')}>
             🏆 Rankings
@@ -309,7 +311,7 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
             ) : (
               <div className="users-grid">
                 {displayUsers.map(u => (
-                  <UserCard key={u.uid} user={u} onChat={(uid) => navigate(`/chat/${uid}`)} />
+                  <UserCard key={u.id || u.uid} user={u} onChat={(uid) => navigate(`/chat/${uid}`)} />
                 ))}
               </div>
             )}
