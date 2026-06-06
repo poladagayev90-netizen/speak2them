@@ -3,9 +3,9 @@ import { collection, onSnapshot, query, where, doc, deleteDoc, setDoc, getDocs, 
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
-import UserCard from '../components/UserCard';
 import HomeRanking from '../components/HomeRanking';
 import { Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
+import PremiumBadge from '../components/PremiumBadge';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
@@ -311,7 +311,68 @@ if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
             ) : (
               <div className="users-grid">
                 {displayUsers.map(u => (
-                  <UserCard key={u.id || u.uid} user={u} onChat={(uid) => navigate(`/chat/${uid}`)} />
+                  <div key={u.id || u.uid} className="user-card" style={{
+                    border: u.isPremium ? '1px solid #f59e0b55' : '1px solid #2e2e50',
+                    opacity: !user.isPremium && !u.isPremium ? 0.7 : 1,
+                  }}>
+                    <div className="user-avatar" style={{
+                      boxShadow: u.isPremium ? '0 0 12px #f59e0b66' : undefined,
+                    }}>
+                      {!user.isPremium ? (
+                        <div style={{
+                          width: '100%', height: '100%', borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #2e2e50, #1e1e30)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '20px',
+                        }}>🔒</div>
+                      ) : (
+                        u.photo
+                          ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                          : u.name?.charAt(0).toUpperCase()
+                      )}
+                    </div>
+
+                    <div className="user-info">
+                      <h3>{user.isPremium ? u.name : '🔒 Premium ilə gör'}</h3>
+                      <span className="user-level">
+                        {user.isPremium ? (u.level || 'English Speaker') : '???'}
+                      </span>
+                      {user.isPremium && u.bio && <p className="user-bio">{u.bio}</p>}
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
+                        {user.isPremium ? (
+                          <>
+                            <span style={{ fontSize: '11px', color: '#888' }}>📞 {u.callCount || 0}</span>
+                            <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} dəq</span>
+                            {u.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</span>}
+                            {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
+                          </>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: '#7c6ff7' }}>👑 Premium al — tam gör</span>
+                        )}
+                      </div>
+                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 15000 ? 'online' : 'offline'}`}>
+                        {u.lastSeen?.toMillis?.() > Date.now() - 15000 ? '🟢 Online' : '⚫ Offline'}
+                      </span>
+                    </div>
+
+                    <button
+                      className="btn-chat"
+                      onClick={() => {
+                        if (!user.isPremium) {
+                          alert('👑 Bu xüsusiyyət Premium üçündür!\n\nPremium al və bütün istifadəçilərlə danış!');
+                          return;
+                        }
+                        navigate(`/chat/${u.uid || u.id}`);
+                      }}
+                      style={{
+                        background: !user.isPremium
+                          ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                          : undefined,
+                      }}
+                    >
+                      {user.isPremium ? '💬 Chat & Call' : '👑 Premium Al'}
+                    </button>
+                  </div>
                 ))}
               </div>
             )}

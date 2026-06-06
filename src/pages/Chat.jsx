@@ -224,13 +224,22 @@ export default function Chat({ user }) {
       timerRef.current = setInterval(() => {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
+
+        if (!user.isPremium && callSecondsRef.current >= 900) {
+          endCall();
+          alert('⏰ 15 dəqiqəlik limit doldu!\n\nYeni zəng başlatmaq üçün bir az gözlə.\n\n👑 Premium al — limitsiz danış!');
+        }
+
+        if (!user.isPremium && callSecondsRef.current === 780) {
+          alert('⚠️ 2 dəqiqə qaldı! Premium al — limitsiz danış!');
+        }
       }, 1000);
     } else {
       clearInterval(timerRef.current);
       setCallSeconds(0);
     }
     return () => clearInterval(timerRef.current);
-  }, [inCall]);
+  }, [inCall, user.isPremium, endCall]);
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -569,6 +578,16 @@ export default function Chat({ user }) {
             {callStatus === 'rejected' && '❌ Rədd edildi'}
             {callStatus === 'error' && '❌ Error'}
           </p>
+          {inCall && !user.isPremium && (
+            <div style={{
+              marginTop: '8px',
+              color: callSeconds > 780 ? '#ef4444' : '#f59e0b',
+              fontSize: '13px', fontWeight: 600,
+            }}>
+              ⏰ {formatTime(Math.max(0, 900 - callSeconds))} qaldı
+              {callSeconds > 780 && ' — Premium al!'}
+            </div>
+          )}
           <div className="fullscreen-call-buttons">
             {inCall && (
               <>
