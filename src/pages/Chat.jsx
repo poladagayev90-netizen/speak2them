@@ -226,7 +226,7 @@ export default function Chat({ user }) {
         setCallSeconds(callSecondsRef.current);
 
         if (!user.isPremium && callSecondsRef.current >= 900) {
-          endCall();
+          endCallRef.current?.();
           alert('⏰ 15 dəqiqəlik limit doldu!\n\nYeni zəng başlatmaq üçün bir az gözlə.\n\n👑 Premium al — limitsiz danış!');
         }
 
@@ -239,7 +239,7 @@ export default function Chat({ user }) {
       setCallSeconds(0);
     }
     return () => clearInterval(timerRef.current);
-  }, [inCall, user.isPremium, endCall]);
+  }, [inCall, user.isPremium]);
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -383,7 +383,7 @@ export default function Chat({ user }) {
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user.uid, peer]);
+  }, [callDocId, peerId, user.uid, user.displayName, peer]);
 
   endCallRef.current = endCall;
 

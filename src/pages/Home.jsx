@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
 import HomeRanking from '../components/HomeRanking';
 import { Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
-import PremiumBadge from '../components/PremiumBadge';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
