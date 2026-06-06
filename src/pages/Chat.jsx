@@ -373,7 +373,7 @@ export default function Chat({ user }) {
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user.uid]);
+  }, [callDocId, peerId, user.uid, messages, user.displayName]);
 
   endCallRef.current = endCall;
 
