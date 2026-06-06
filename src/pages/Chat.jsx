@@ -343,8 +343,8 @@ export default function Chat({ user }) {
 
       if (secondsTalked >= 180) setShowRating(true);
 
-      // AI analizi — ən azı 3 mesaj varsa
-      if (messages.length >= 3) {
+      // AI analizi — çağrı müddəti 30+ saniyədirsə
+      if (secondsTalked >= 30) {
         setLoadingFeedback(true);
         try {
           const res = await fetch(
@@ -353,8 +353,9 @@ export default function Chat({ user }) {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                messages: messages.slice(-20), // Son 20 mesaj
+                callDuration: secondsTalked,
                 callerName: user.displayName || 'User',
+                peerName: peer?.name || 'Partner',
               }),
             }
           );
@@ -373,7 +374,7 @@ export default function Chat({ user }) {
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user.uid, messages, user.displayName]);
+  }, [callDocId, peerId, user.uid, peer]);
 
   endCallRef.current = endCall;
 
