@@ -2,12 +2,12 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db, registerFcmToken } from './firebase';
 import { tg, tgUser } from './telegram';
 import BottomNav from './components/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ADMIN_UID, LAUNCH_DATE } from './constants';
 
-// Code splitting with React.lazy
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
 const Home = React.lazy(() => import('./pages/Home'));
@@ -19,6 +19,8 @@ const Survey = React.lazy(() => import('./pages/Survey'));
 const MatchMaking = React.lazy(() => import('./pages/MatchMaking'));
 const Premium = React.lazy(() => import('./pages/Premium'));
 const Admin = React.lazy(() => import('./pages/Admin'));
+const Ranking = React.lazy(() => import('./pages/Ranking'));
+const CountdownPage = React.lazy(() => import('./components/CountdownPage'));
 
 const LoadingFallback = () => (
   <div className="loading-screen">
@@ -27,7 +29,7 @@ const LoadingFallback = () => (
   </div>
 );
 
-const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
+const isPreLaunch = Date.now() < LAUNCH_DATE;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -60,6 +62,8 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
+        registerFcmToken(uid).catch(() => {});
+
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         if (userSnap.exists()) {
@@ -72,11 +76,11 @@ function App() {
 
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
-  await setDoc(doc(db, 'users', uid), {
-    online: true,
-    lastSeen: serverTimestamp(),
-  }, { merge: true });
-}, 60000); // hər 60 saniyə
+          await setDoc(doc(db, 'users', uid), {
+            online: true,
+            lastSeen: serverTimestamp(),
+          }, { merge: true });
+        }, 60000);
 
         const goOffline = async () => {
           await setDoc(doc(db, 'users', uid), {
@@ -138,30 +142,31 @@ function App() {
     );
   }
 
+  const homeElement = user
+    ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
+    : (isPreLaunch ? <CountdownPage /> : <Navigate to="/login" />);
+
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          <Route path="/login"    element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-          <Route path="/survey"   element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-          <Route path="/" element={
-            user
-              ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
-              : <Navigate to="/login" />
-          } />
-          <Route path="/chats"        element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-          <Route path="/match"        element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
-          <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-          <Route path="/profile"      element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-          <Route path="/daily"        element={user ? <DailyHub /> : <Navigate to="/login" />} />
-          <Route path="/premium"      element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
-          <Route path="/admin"        element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-        </Routes>
-        {user && <BottomNav user={user} />}
-      </Suspense>
-    </BrowserRouter>
+          <Routes>
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+            <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+            <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+            <Route path="/" element={homeElement} />
+            <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+            <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+            <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+            <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+            <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
+            <Route path="/premium" element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
+            <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+            <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+          </Routes>
+          {user && <BottomNav user={user} />}
+        </Suspense>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }

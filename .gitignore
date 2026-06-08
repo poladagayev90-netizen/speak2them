@@ -16,6 +16,7 @@
 .env
 functions/.env
 .env.local
+public/firebase-sw-config.js
 .env.development.local
 .env.test.local
 .env.production.local

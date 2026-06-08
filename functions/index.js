@@ -29,14 +29,33 @@ const TELEGRAM_APP_URL = defineString("TELEGRAM_APP_URL", {
 
 const telegramApiUrl = () => `https://api.telegram.org/bot${BOT_TOKEN.value()}/sendMessage`;
 const DAILY_REMINDER_BATCH_SIZE = 500;
+const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
+
+function setCors(res, methods = "POST") {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", methods);
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+async function verifyAuth(req) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) throw new Error("unauthorized");
+  return admin.auth().verifyIdToken(token);
+}
 
 // ─── Agora Token ───────────────────────────────────────────────
-exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "GET, POST");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (req, res) => {
+  setCors(res, "GET, POST");
 
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  try {
+    await verifyAuth(req);
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
   const channelName = req.body.channelName || req.query.channelName;
   if (!channelName) { res.status(400).json({ error: "channelName required" }); return; }
@@ -143,14 +162,21 @@ exports.broadcastMessage = onRequest({ secrets: [BOT_TOKEN, BROADCAST_ADMIN_KEY]
 
 // ─── Zəng Bildirişi ───────────────────────────────────────────
 exports.sendCallNotification = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+  setCors(res);
 
   if (req.method === "OPTIONS") return res.status(204).send("");
 
-  const { telegramId, callerName } = req.body;
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { telegramId, callerName, callerId, receiverId } = req.body;
   if (!telegramId) return res.status(400).json({ error: "telegramId required" });
+  if (!callerId || !receiverId) return res.status(400).json({ error: "callerId and receiverId required" });
+  if (decoded.uid !== callerId) return res.status(403).json({ error: "Forbidden" });
 
   try {
     await fetch(telegramApiUrl(), {
@@ -173,13 +199,20 @@ exports.sendCallNotification = onRequest({ secrets: [BOT_TOKEN] }, async (req, r
 
 // ─── Premium Sorğusu — adminə xəbər ver ──────────────────────
 exports.notifyPremiumRequest = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+  setCors(res);
 
   if (req.method === "OPTIONS") return res.status(204).send("");
 
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   const { userName, userEmail, userId } = req.body;
+  if (!userId) return res.status(400).json({ error: "userId required" });
+  if (decoded.uid !== userId) return res.status(403).json({ error: "Forbidden" });
 
   try {
     await fetch(telegramApiUrl(), {
@@ -202,11 +235,17 @@ exports.notifyPremiumRequest = onRequest({ secrets: [BOT_TOKEN] }, async (req, r
 
 // ─── Premium Aktivləşdi — istifadəçiyə xəbər ver ─────────────
 exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+  setCors(res);
 
   if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
 
   const { telegramId, userName } = req.body;
   if (!telegramId) return res.status(400).json({ error: "telegramId required" });
@@ -232,11 +271,15 @@ exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req,
 
 // ─── AI Call Analysis ──────────────────────────────────────────
 exports.analyzeCall = onRequest({ secrets: [OPENAI_KEY] }, async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+  setCors(res);
 
   if (req.method === "OPTIONS") return res.status(204).send("");
+
+  try {
+    await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   const { callDuration, callerName, peerName } = req.body;
   if (!callDuration) {

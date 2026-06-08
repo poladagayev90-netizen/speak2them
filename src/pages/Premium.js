@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { authedFetch } from '../api';
+import { FUNCTIONS_BASE } from '../constants';
 
 const CARD_NUMBER = '4169 7388 XXXX XXXX'; // öz kart nömrəni yaz
 const CARD_NAME = 'Polad Agayev';
 const PRICE = '3 AZN / ay';
 const BOT_LINK = 'https://t.me/Speak2them_bot';
-const NOTIFY_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/notifyPremiumRequest';
+const NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumRequest`;
 
 const features = [
   { icon: '⚡', title: 'Faster Matches', desc: 'Priority queue — daha tez partnyor tapırsan' },
@@ -44,9 +46,8 @@ export default function Premium({ user }) {
       });
 
       // Admin-ə bot vasitəsilə xəbər ver
-      await fetch(NOTIFY_URL, {
+      await authedFetch(NOTIFY_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userName: user.displayName || user.name || 'User',
           userEmail: user.email || '',

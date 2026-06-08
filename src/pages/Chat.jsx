@@ -9,9 +9,11 @@ import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../dailyContent';
 import PremiumBadge from '../components/PremiumBadge';
+import { authedFetch } from '../api';
+import { FUNCTIONS_BASE } from '../constants';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
-const TOKEN_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/getAgoraToken';
+const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
 
 export default function Chat({ user }) {
   const { peerId } = useParams();
@@ -75,15 +77,41 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (!chatId || !user.uid || !peerId) return;
-    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-    const unsub = onSnapshot(q, (snap) => {
-      const msgs = snap.docs.map(d => {
-        const data = d.data();
-        return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || new Date() };
-      });
-      setMessages(msgs);
-      setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
+
+    const participants = [user.uid, peerId].sort();
+    setDoc(doc(db, 'chats', chatId), {
+      participants,
+      updatedAt: serverTimestamp(),
+    }, { merge: true }).catch((err) => {
+      console.error('[Chat] ensure chat doc error:', err);
     });
+
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const msgs = snap.docs
+          .map((d) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.() || null,
+            };
+          })
+          .sort((a, b) => {
+            if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
+            if (a.createdAt) return -1;
+            if (b.createdAt) return 1;
+            return 0;
+          });
+        setMessages(msgs);
+        setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
+      },
+      (err) => {
+        console.error('[Chat] messages listener error:', err);
+      }
+    );
     return unsub;
   }, [chatId, user.uid, peerId]);
 
@@ -128,9 +156,8 @@ export default function Chat({ user }) {
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      const tokenRes = await fetch(TOKEN_URL, {
+      const tokenRes = await authedFetch(TOKEN_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channelName: cId }),
       });
 
@@ -263,12 +290,13 @@ export default function Chat({ user }) {
         const peerSnap = await getDoc(doc(db, 'users', peerId));
         const peerData = peerSnap.data();
         if (peerData?.telegramId) {
-          await fetch('https://us-central1-speak2them-64f2b.cloudfunctions.net/sendCallNotification', {
+          await authedFetch(`${FUNCTIONS_BASE}/sendCallNotification`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               telegramId: peerData.telegramId,
               callerName: user.displayName || 'User',
+              callerId: user.uid,
+              receiverId: peerId,
             }),
           });
         }
@@ -356,18 +384,14 @@ export default function Chat({ user }) {
       if (secondsTalked >= 30) {
         setLoadingFeedback(true);
         try {
-          const res = await fetch(
-            'https://us-central1-speak2them-64f2b.cloudfunctions.net/analyzeCall',
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                callDuration: secondsTalked,
-                callerName: user.displayName || 'User',
-                peerName: peer?.name || 'Partner',
-              }),
-            }
-          );
+          const res = await authedFetch(`${FUNCTIONS_BASE}/analyzeCall`, {
+            method: 'POST',
+            body: JSON.stringify({
+              callDuration: secondsTalked,
+              callerName: user.displayName || 'User',
+              peerName: peer?.name || 'Partner',
+            }),
+          });
           const data = await res.json();
           if (data.feedback) {
             setAiFeedback(data.feedback);
@@ -412,21 +436,25 @@ export default function Chat({ user }) {
     e.preventDefault();
     if (!text.trim() || !user.uid || !chatId || !peerId) return;
     const messageText = text.trim();
+    const senderName = user.displayName || user.name || 'User';
+    setText('');
+
     try {
       await setDoc(doc(db, 'chats', chatId), {
-        participants: [user.uid, peerId],
+        participants: [user.uid, peerId].sort(),
         updatedAt: serverTimestamp(),
         lastMessage: messageText,
+        lastSenderId: user.uid,
       }, { merge: true });
       await addDoc(collection(db, 'chats', chatId, 'messages'), {
         text: messageText,
         senderId: user.uid,
-        senderName: user.displayName || 'User',
+        senderName,
         createdAt: serverTimestamp(),
       });
-      setText('');
     } catch (error) {
       console.error('[Chat] sendMessage error:', error);
+      setText(messageText);
     }
   };
 
@@ -683,12 +711,18 @@ export default function Chat({ user }) {
       </div>
 
       <div className="chat-messages">
-        {messages.map(m => (
-          <div key={m.id} className={`message ${m.senderId === user.uid ? 'mine' : 'theirs'}`}>
-            <span className="message-sender">{m.senderName}</span>
-            <p>{m.text}</p>
+        {messages.length === 0 ? (
+          <div className="chat-empty-hint">
+            <p>👋 Say hello and start practicing!</p>
           </div>
-        ))}
+        ) : (
+          messages.map(m => (
+            <div key={m.id} className={`message ${m.senderId === user.uid ? 'mine' : 'theirs'}`}>
+              {m.senderId !== user.uid && <span className="message-sender">{m.senderName}</span>}
+              <p>{m.text}</p>
+            </div>
+          ))
+        )}
         <div ref={bottomRef} />
       </div>
 

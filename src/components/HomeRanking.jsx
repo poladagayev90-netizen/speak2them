@@ -1,57 +1,92 @@
 import React, { useMemo } from 'react';
 import RankingCard from './RankingCard';
+import { getUserRank, sortUsersForRanking } from '../utils/ranking';
+
+function PodiumCard({ user, rank, isCurrentUser }) {
+  const heights = { 1: 88, 2: 68, 3: 56 };
+  const emojis = { 1: '🥇', 2: '🥈', 3: '🥉' };
+
+  return (
+    <div className={`ranking-podium-slot rank-${rank}`}>
+      <div className="ranking-podium-avatar">
+        {user.photo
+          ? <img src={user.photo} alt={user.name} />
+          : user.name?.charAt(0).toUpperCase()}
+      </div>
+      <p className="ranking-podium-name">
+        {user.name}{isCurrentUser && ' (you)'}
+      </p>
+      <p className="ranking-podium-minutes">{user.totalMinutes || 0} min</p>
+      <div className="ranking-podium-bar" style={{ height: heights[rank] }}>
+        <span>{emojis[rank]}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function HomeRanking({ users, currentUserId }) {
-  const sortedUsers = useMemo(() => {
-    return users
-      .map((user, index) => ({ user, index }))
-      .sort((a, b) => {
-        const minutesDiff = (b.user.totalMinutes || 0) - (a.user.totalMinutes || 0);
-        if (minutesDiff !== 0) return minutesDiff;
+  const sortedUsers = useMemo(() => sortUsersForRanking(users), [users]);
+  const myRank = useMemo(() => getUserRank(sortedUsers, currentUserId), [sortedUsers, currentUserId]);
+  const currentUser = sortedUsers.find((u) => (u.uid || u.id) === currentUserId);
+  const topThree = sortedUsers.slice(0, 3);
+  const rest = sortedUsers.slice(3);
+  const podiumOrder = topThree.length >= 3
+    ? [topThree[1], topThree[0], topThree[2]]
+    : topThree;
 
-        const nameDiff = (a.user.name || '').localeCompare(b.user.name || '');
-        if (nameDiff !== 0) return nameDiff;
-
-        return (a.user.uid || a.user.id || '').localeCompare(b.user.uid || b.user.id || '') || a.index - b.index;
-      })
-      .map(({ user }) => user);
-  }, [users]);
-
-  const myRank = sortedUsers.findIndex(u => u.uid === currentUserId || u.id === currentUserId) + 1;
-
-  if (users.length === 0) {
+  if (sortedUsers.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-icon">🏆</div>
         <p>No rankings yet.</p>
+        <p style={{ color: '#888', fontSize: 13, marginTop: 8 }}>Complete a call to appear on the board.</p>
       </div>
     );
   }
 
   return (
-    <div>
-      {myRank > 0 && (
-        <div style={{
-          background: '#7c6ff722',
-          border: '1px solid #7c6ff755',
-          color: '#d8d4ff',
-          borderRadius: '12px',
-          padding: '10px 14px',
-          marginBottom: '12px',
-          fontSize: '13px',
-          fontWeight: 700,
-        }}>
-          Your rank: #{myRank}
+    <div className="ranking-board">
+      {myRank !== null && (
+        <div className="ranking-you-card">
+          <div>
+            <p className="ranking-you-label">Your position</p>
+            <p className="ranking-you-rank">#{myRank}</p>
+          </div>
+          <div className="ranking-you-stats">
+            <span>🕐 {currentUser?.totalMinutes || 0} min</span>
+            <span>📞 {currentUser?.callCount || 0} calls</span>
+            {(currentUser?.streak || 0) > 0 && <span className="streak-pill">🔥 {currentUser.streak}</span>}
+          </div>
         </div>
       )}
-      {sortedUsers.map((u, i) => (
-        <RankingCard
-          key={u.id || u.uid}
-          user={u}
-          rank={i + 1}
-          isCurrentUser={u.uid === currentUserId || u.id === currentUserId}
-        />
-      ))}
+
+      {topThree.length > 0 && (
+        <div className="ranking-podium">
+          {podiumOrder.map((user) => {
+            const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
+            return (
+              <PodiumCard
+                key={user.uid || user.id}
+                user={user}
+                rank={rank}
+                isCurrentUser={(user.uid || user.id) === currentUserId}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {rest.map((user) => {
+        const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
+        return (
+          <RankingCard
+            key={user.uid || user.id}
+            user={user}
+            rank={rank}
+            isCurrentUser={(user.uid || user.id) === currentUserId}
+          />
+        );
+      })}
     </div>
   );
 }

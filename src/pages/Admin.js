@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { authedFetch } from '../api';
+import { FUNCTIONS_BASE } from '../constants';
 
-const BOT_NOTIFY_URL = 'https://us-central1-speak2them-64f2b.cloudfunctions.net/notifyPremiumActivated';
+const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
 
 export default function Admin({ user }) {
   const [users, setUsers] = useState([]);
@@ -46,9 +48,8 @@ export default function Admin({ user }) {
 
         // İstifadəçiyə bot bildirişi göndər
         if (u.telegramId) {
-          await fetch(BOT_NOTIFY_URL, {
+          await authedFetch(BOT_NOTIFY_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ telegramId: u.telegramId, userName: u.name }),
           }).catch(() => {});
         }

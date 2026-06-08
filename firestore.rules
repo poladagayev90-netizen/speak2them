@@ -71,7 +71,19 @@ service cloud.firestore {
     }
 
     match /matchQueue/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        resource.data.status == 'searching'
+      );
+      allow create, update, delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /waitlist/{docId} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt'])
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 5
+        && request.resource.data.email.size() < 200;
+      allow read, update, delete: if isAdmin();
     }
 
     match /{document=**} {

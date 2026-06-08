@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getMessaging, getToken, isSupported } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,23 +12,12 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-// Validate Firebase configuration
 const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
 const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key]);
 
 if (missingKeys.length > 0) {
   console.error('[Firebase] Missing configuration keys:', missingKeys);
-  console.error('[Firebase] Environment variables loaded:', {
-    apiKey: !!firebaseConfig.apiKey,
-    authDomain: !!firebaseConfig.authDomain,
-    projectId: !!firebaseConfig.projectId,
-    storageBucket: !!firebaseConfig.storageBucket,
-    messagingSenderId: !!firebaseConfig.messagingSenderId,
-    appId: !!firebaseConfig.appId,
-  });
 }
-
-console.log('[Firebase] Initializing Firebase app with projectId:', firebaseConfig.projectId);
 
 let app;
 let auth;
@@ -37,10 +27,34 @@ try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  console.log('[Firebase] Firebase initialized successfully');
 } catch (error) {
   console.error('[Firebase] Failed to initialize Firebase:', error);
   throw error;
+}
+
+export async function registerFcmToken(uid) {
+  if (!uid || !process.env.REACT_APP_FIREBASE_VAPID_KEY) return;
+
+  try {
+    if (!(await isSupported())) return;
+    if (Notification.permission === 'denied') return;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const messaging = getMessaging(app);
+    const token = await getToken(messaging, {
+      vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration,
+    });
+
+    if (token) {
+      await setDoc(doc(db, 'users', uid), { fcmToken: token }, { merge: true });
+    }
+  } catch (error) {
+    console.warn('[Firebase] FCM registration skipped:', error.message);
+  }
 }
 
 export { auth, db };
