@@ -7,6 +7,9 @@ import { useNavigate } from 'react-router-dom';
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
+                import { BadgeGrid } from '../components/BadgeSystem';
+// profile body-də:
+<BadgeGrid earnedBadges={userData.badges || []} />
 export default function Profile({ user }) {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');

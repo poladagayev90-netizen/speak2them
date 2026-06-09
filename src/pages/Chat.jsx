@@ -410,6 +410,16 @@ export default function Chat({ user }) {
   }, [callDocId, peerId, user.uid, user.displayName, peer]);
 
   endCallRef.current = endCall;
+  import { checkNewBadges, BadgeUnlockModal } from '../components/BadgeSystem';
+
+// endCall içində, statistika yazıldıqdan sonra:
+const newBadges = checkNewBadges(myData);
+if (newBadges.length > 0) {
+  await updateDoc(myRef, {
+    badges: [...(myData.badges || []), ...newBadges]
+  });
+  setNewBadge(newBadges[0]); // birincisini göstər
+}
 
   const submitRating = async (stars) => {
     try {
