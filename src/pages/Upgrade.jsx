@@ -1,0 +1,199 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    mins: '30 dəq / həftə',
+    price: 0,
+    priceLabel: 'Pulsuz',
+    icon: '👤',
+    color: '#2e2e50',
+    features: ['Random partnyor matching', 'Gündəlik mövzular', '—  Priority queue yoxdur'],
+  },
+  {
+    id: 'basic',
+    name: 'Basic',
+    mins: '120 dəq / ay',
+    price: 2.49,
+    priceLabel: '2.49 ₼/ay',
+    icon: '🔥',
+    color: '#185FA5',
+    features: ['Free-dəki hər şey', 'Priority queue', 'Səviyyəyə görə match'],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    mins: '500 dəq / ay',
+    price: 5.99,
+    priceLabel: '5.99 ₼/ay',
+    icon: '🚀',
+    color: '#7c6ff7',
+    popular: true,
+    features: ['Basic-dəki hər şey', 'AI söhbət analizi', 'Pro badge profildə', 'Kim baxdı göstər'],
+  },
+  {
+    id: 'unlimited',
+    name: 'Unlimited',
+    mins: 'Limitsiz',
+    price: 10.99,
+    priceLabel: '10.99 ₼/ay',
+    icon: '♾️',
+    color: '#22c55e',
+    features: ['Pro-dakı hər şey', 'Limitsiz zəng müddəti', 'Prioritet boost', 'Qızıl badge + erkən xüsusiyyətlər'],
+  },
+];
+
+const COMPARE = [
+  { feature: 'Dəqiqə', values: ['30/həftə', '120/ay', '500/ay', '∞'] },
+  { feature: 'Priority queue', values: [false, true, true, true] },
+  { feature: 'AI analiz', values: [false, false, true, true] },
+  { feature: 'Badge', values: [false, false, true, true] },
+  { feature: 'Profile boost', values: [false, false, false, true] },
+];
+
+export default function Upgrade({ user }) {
+  const [selected, setSelected] = useState('pro');
+  const navigate = useNavigate();
+  const plan = PLANS.find(p => p.id === selected);
+
+  const handleContinue = () => {
+    if (selected === 'free') { navigate('/'); return; }
+    alert(`Telegram Stars ödəniş sistemi tezliklə! Plan: ${plan.name} — ${plan.priceLabel}`);
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0f0f1a', color: '#fff', fontFamily: 'inherit', paddingBottom: 40 }}>
+
+      {/* Header */}
+      <div style={{ padding: '20px 20px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#7c6ff7', fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>← Geri</button>
+      </div>
+
+      {/* Hero */}
+      <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
+        <div style={{ fontSize: 40, marginBottom: 8 }}>🎙️</div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Premium Seç</h2>
+        <p style={{ fontSize: 13, color: '#888', margin: 0 }}>Daha çox dəqiqə, daha yaxşı partnyor, limitsiz təcrübə</p>
+      </div>
+
+      {/* Plans */}
+      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {PLANS.map(p => (
+          <div
+            key={p.id}
+            onClick={() => setSelected(p.id)}
+            style={{
+              background: '#1e1e30',
+              border: selected === p.id ? `2px solid ${p.color}` : '1px solid #2e2e50',
+              borderRadius: 16,
+              padding: '14px 16px',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'border-color .15s',
+            }}
+          >
+            {p.popular && (
+              <div style={{
+                position: 'absolute', top: -1, right: 14,
+                background: '#7c6ff722', border: '1px solid #7c6ff755',
+                color: '#7c6ff7', fontSize: 10, fontWeight: 700,
+                padding: '3px 10px', borderRadius: '0 0 8px 8px', letterSpacing: '1px',
+              }}>ƏN POPULYAR</div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {/* Radio */}
+                <div style={{
+                  width: 18, height: 18, borderRadius: '50%',
+                  border: `2px solid ${selected === p.id ? p.color : '#3e3e60'}`,
+                  background: selected === p.id ? p.color : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  {selected === p.id && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />}
+                </div>
+
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: `${p.color}22`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                }}>{p.icon}</div>
+
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>{p.name}</div>
+                  <div style={{ fontSize: 12, color: '#888' }}>{p.mins}</div>
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: p.id === 'free' ? '#888' : '#fff' }}>{p.priceLabel}</div>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid #2e2e50', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {p.features.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: f.startsWith('—') ? '#555' : '#aaa' }}>
+                  <span style={{ color: f.startsWith('—') ? '#3e3e50' : '#22c55e', fontSize: 14 }}>
+                    {f.startsWith('—') ? '✕' : '✓'}
+                  </span>
+                  {f.startsWith('—') ? f.slice(2) : f}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div style={{ padding: '16px 16px 0' }}>
+        <button onClick={handleContinue} style={{
+          width: '100%', padding: 14,
+          background: plan.id === 'free' ? '#2e2e50' : `linear-gradient(135deg, ${plan.color}, ${plan.color}cc)`,
+          border: 'none', borderRadius: 14,
+          color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+        }}>
+          {plan.id === 'free' ? 'Pulsuz davam et' : `${plan.name} al — ${plan.priceLabel}`}
+        </button>
+        <p style={{ textAlign: 'center', fontSize: 11, color: '#555', margin: '10px 0 0' }}>
+          İstənilən vaxt ləğv et · Telegram Stars ilə ödəniş
+        </p>
+      </div>
+
+      {/* Compare table */}
+      <div style={{ padding: '24px 16px 0' }}>
+        <p style={{ fontSize: 13, color: '#666', textAlign: 'center', marginBottom: 12 }}>Plan müqayisəsi</p>
+        <div style={{ background: '#1e1e30', borderRadius: 14, overflow: 'hidden', border: '1px solid #2e2e50' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #2e2e50' }}>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Xüsusiyyət</th>
+                {PLANS.map(p => (
+                  <th key={p.id} style={{ padding: '10px 6px', textAlign: 'center', color: selected === p.id ? p.color : '#555', fontWeight: 600 }}>
+                    {p.name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARE.map((row, i) => (
+                <tr key={i} style={{ borderBottom: i < COMPARE.length - 1 ? '1px solid #2e2e5033' : 'none' }}>
+                  <td style={{ padding: '9px 12px', color: '#aaa' }}>{row.feature}</td>
+                  {row.values.map((v, j) => (
+                    <td key={j} style={{ padding: '9px 6px', textAlign: 'center' }}>
+                      {typeof v === 'boolean'
+                        ? <span style={{ color: v ? '#22c55e' : '#3e3e50', fontSize: 14 }}>{v ? '✓' : '—'}</span>
+                        : <span style={{ color: '#888' }}>{v}</span>
+                      }
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

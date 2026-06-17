@@ -3,13 +3,11 @@ import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'f
 import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { BadgeGrid } from '../components/BadgeSystem';
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
-                import { BadgeGrid } from '../components/BadgeSystem';
-// profile body-də:
-<BadgeGrid earnedBadges={userData.badges || []} />
 export default function Profile({ user }) {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -17,6 +15,7 @@ export default function Profile({ user }) {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [badges, setBadges] = useState([]);
   const [stats, setStats] = useState({ calls: 0, totalMinutes: 0, streak: 0 });
   const [docId, setDocId] = useState(null);
   const navigate = useNavigate();
@@ -44,6 +43,7 @@ export default function Profile({ user }) {
               setBio(d.bio || '');
               setLevel(d.level || 'B1 – Intermediate');
               setIsPremium(d.isPremium || false);
+              setBadges(d.badges || []);
               setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0 });
             }
           });
@@ -87,12 +87,18 @@ export default function Profile({ user }) {
           <div className="profile-avatar-big" style={{ margin: '0 auto 8px' }}>
             {name?.charAt(0).toUpperCase() || '?'}
           </div>
-          {isPremium && (
+          {isPremium ? (
             <span style={{
               background: 'linear-gradient(135deg, #f59e0b, #d97706)',
               color: '#1a1000', fontSize: '12px', fontWeight: 700,
               padding: '4px 14px', borderRadius: '20px',
             }}>✨ Premium Member</span>
+          ) : (
+            <button onClick={() => navigate('/upgrade')} style={{
+              background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+              border: 'none', color: '#fff', fontSize: '12px', fontWeight: 700,
+              padding: '6px 18px', borderRadius: '20px', cursor: 'pointer',
+            }}>✨ Premium Al</button>
           )}
         </div>
 
@@ -109,6 +115,10 @@ export default function Profile({ user }) {
             <span className="stat-number">{stats.streak}</span>
             <span className="stat-label">🔥 Streak</span>
           </div>
+        </div>
+
+        <div style={{ marginBottom: '24px' }}>
+          <BadgeGrid earnedBadges={badges} />
         </div>
 
         <div className="profile-form">
