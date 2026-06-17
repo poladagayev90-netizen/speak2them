@@ -407,7 +407,7 @@ export function BadgeCard({ badgeId, earned=true }) {
       border:`1px solid ${earned ? t.border+'55' : '#1e1e30'}`,
       borderRadius:16, padding:'14px 10px',
       textAlign:'center', position:'relative', overflow:'hidden',
-      filter: earned ? 'none' : 'grayscale(1) opacity(.35)',
+      opacity: earned ? 1 : 0.72,
       transition:'transform .2s, box-shadow .2s', cursor:'default',
     }}
       onMouseEnter={e=>{
@@ -420,10 +420,19 @@ export function BadgeCard({ badgeId, earned=true }) {
         e.currentTarget.style.boxShadow='none';
       }}
     >
-      <div style={{width:44,height:44,margin:'0 auto 8px', filter:earned?`drop-shadow(0 0 8px ${b.glow}88)`:'none'}}>
+      <div style={{width:44,height:44,margin:'0 auto 8px', filter:earned?`drop-shadow(0 0 8px ${b.glow}88)`:'grayscale(1)'}}>
         <b.Icon/>
       </div>
-      <div style={{fontSize:11,fontWeight:700,color:earned?'#fff':'#444',lineHeight:1.3}}>{b.label}</div>
+      <div style={{fontSize:11,fontWeight:700,color:earned?'#fff':'#d1d5db',lineHeight:1.3}}>{b.label}</div>
+      <div style={{
+        fontSize:9,
+        fontWeight:600,
+        color:earned?'#9ca3af':'#8b93a3',
+        lineHeight:1.35,
+        marginTop:6,
+      }}>
+        Qazanmaq üçün: {b.desc}
+      </div>
       {earned && (
         <div style={{
           position:'absolute',top:6,right:6,
@@ -438,10 +447,13 @@ export function BadgeCard({ badgeId, earned=true }) {
 export function BadgeGrid({ earnedBadges=[] }) {
   return (
     <div>
-      <div style={{fontSize:11,fontWeight:800,color:'#555',marginBottom:12,letterSpacing:'2px',textTransform:'uppercase'}}>
+      <div style={{fontSize:11,fontWeight:800,color:'#555',marginBottom:6,letterSpacing:'2px',textTransform:'uppercase'}}>
         Badges · {earnedBadges.length}/{Object.keys(BADGES).length}
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
+      <div style={{fontSize:11,color:'#888',lineHeight:1.4,marginBottom:12}}>
+        Hər badge-in altında onu necə qazanmaq lazım olduğu yazılıb.
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(98px,1fr))',gap:10}}>
         {Object.keys(BADGES).map(id=>(
           <BadgeCard key={id} badgeId={id} earned={earnedBadges.includes(id)}/>
         ))}

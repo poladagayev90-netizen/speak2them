@@ -211,7 +211,12 @@ export default function Home({ user }) {
                     </div>
 
                     <div className="user-info">
-                      <h3>{user.isPremium ? u.name : '🔒 Premium ilə gör'}</h3>
+                      <h3>{u.name || 'User'}</h3>
+                      {!user.isPremium && (
+                        <div style={{ fontSize: '11px', color: '#7c6ff7', fontWeight: 700, marginTop: '2px' }}>
+                          Premium ilə tam profil
+                        </div>
+                      )}
                       <span className="user-level">
                         {user.isPremium ? (u.level || 'English Speaker') : '???'}
                       </span>
