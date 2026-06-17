@@ -9,6 +9,7 @@ import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../dailyContent';
 import PremiumBadge from '../components/PremiumBadge';
+import { checkNewBadges, BadgeUnlockModal } from '../components/BadgeSystem';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 
@@ -36,6 +37,7 @@ export default function Chat({ user }) {
   const [aiFeedback, setAiFeedback] = useState('');
   const [showAiFeedback, setShowAiFeedback] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [newBadge, setNewBadge] = useState(null);
 
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
@@ -349,12 +351,28 @@ export default function Chat({ user }) {
         else if (myData.lastCallDate === yesterday) myStreak += 1;
         else myStreak = 1;
 
-        await setDoc(myRef, {
+        const updatedMyData = {
+          ...myData,
           totalMinutes: (myData.totalMinutes || 0) + minutes,
           callCount: (myData.callCount || 0) + 1,
           streak: myStreak,
           lastCallDate: today,
+        };
+
+        const newBadges = checkNewBadges(updatedMyData);
+        const nextBadges = [...(myData.badges || []), ...newBadges];
+
+        await setDoc(myRef, {
+          totalMinutes: updatedMyData.totalMinutes,
+          callCount: updatedMyData.callCount,
+          streak: updatedMyData.streak,
+          lastCallDate: updatedMyData.lastCallDate,
+          ...(newBadges.length > 0 ? { badges: nextBadges } : {}),
         }, { merge: true });
+
+        if (newBadges.length > 0) {
+          setNewBadge(newBadges[0]);
+        }
 
         if (callData.callerId === user.uid) {
           const peerRef = doc(db, 'users', peerId);
@@ -410,16 +428,6 @@ export default function Chat({ user }) {
   }, [callDocId, peerId, user.uid, user.displayName, peer]);
 
   endCallRef.current = endCall;
-  import { checkNewBadges, BadgeUnlockModal } from '../components/BadgeSystem';
-
-// endCall içində, statistika yazıldıqdan sonra:
-const newBadges = checkNewBadges(myData);
-if (newBadges.length > 0) {
-  await updateDoc(myRef, {
-    badges: [...(myData.badges || []), ...newBadges]
-  });
-  setNewBadge(newBadges[0]); // birincisini göstər
-}
 
   const submitRating = async (stars) => {
     try {
@@ -470,6 +478,7 @@ if (newBadges.length > 0) {
 
   return (
     <div className="chat-page">
+      <BadgeUnlockModal badge={newBadge} onClose={() => setNewBadge(null)} />
 
       {incomingCallData && !inCall && (
         <div style={{
