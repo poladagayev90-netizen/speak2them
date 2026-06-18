@@ -41,6 +41,7 @@ export default function Chat({ user }) {
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
+  const [, setBadgeQueue] = useState([]);
   const [bonusMinutes, setBonusMinutes] = useState(user.bonusMinutes || 0);
 
   const callSecondsRef = useRef(0);
@@ -345,7 +346,7 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      let currentUserUnlock = null;
+      let currentUserUnlocks = [];
 
       await runTransaction(db, async (transaction) => {
         const callRef = doc(db, 'calls', callDocId);
@@ -400,7 +401,12 @@ export default function Chat({ user }) {
             streak,
             lastCallDate: today,
           };
-          const newBadges = checkNewBadges(updatedStats, userData.badges || []);
+          const badgeCallData = {
+            duration: secondsTalked,
+            matchTime: callData.matchTimeSeconds || callData.matchTime || 999,
+            hour: new Date().getHours(),
+          };
+          const newBadges = checkNewBadges(updatedStats, badgeCallData);
           const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
 
           transaction.set(userRef, {
@@ -413,11 +419,11 @@ export default function Chat({ user }) {
           }, { merge: true });
 
           if (participantId === user.uid && newBadges.length > 0) {
-            currentUserUnlock = {
-              badge: newBadges[0],
-              rewardMessage: rewardResult.rewardMessages.join(', '),
+            currentUserUnlocks = newBadges.map((badgeId, badgeIndex) => ({
+              badge: badgeId,
+              rewardMessage: rewardResult.rewardMessages[badgeIndex] || '',
               bonusMinutes: rewardResult.updates.bonusMinutes,
-            };
+            }));
           }
         });
 
@@ -428,11 +434,13 @@ export default function Chat({ user }) {
         }, { merge: true });
       });
 
-      if (currentUserUnlock) {
-        setNewBadge(currentUserUnlock.badge);
-        setNewBadgeReward(currentUserUnlock.rewardMessage);
-        if (typeof currentUserUnlock.bonusMinutes === 'number') {
-          setBonusMinutes(currentUserUnlock.bonusMinutes);
+      if (currentUserUnlocks.length > 0) {
+        const [firstUnlock, ...remainingUnlocks] = currentUserUnlocks;
+        setNewBadge(firstUnlock.badge);
+        setNewBadgeReward(firstUnlock.rewardMessage);
+        setBadgeQueue(remainingUnlocks);
+        if (typeof firstUnlock.bonusMinutes === 'number') {
+          setBonusMinutes(firstUnlock.bonusMinutes);
         }
       }
 
@@ -471,14 +479,29 @@ export default function Chat({ user }) {
 
   const submitRating = async (stars) => {
     try {
-      const peerDoc = await getDoc(doc(db, 'users', peerId));
-      if (peerDoc.exists()) {
+      await runTransaction(db, async (transaction) => {
+        const peerRef = doc(db, 'users', peerId);
+        const peerDoc = await transaction.get(peerRef);
+        if (!peerDoc.exists()) return;
+
         const peerData = peerDoc.data();
-        await updateDoc(doc(db, 'users', peerId), {
+        const updatedPeerData = {
+          ...peerData,
           rating: (peerData.rating || 0) + stars,
           ratingCount: (peerData.ratingCount || 0) + 1,
-        });
-      }
+          ...(stars === 5 ? { receivedFiveStar: true } : {}),
+        };
+        const newBadges = checkNewBadges(updatedPeerData);
+        const rewardResult = applyBadgeRewardsToData(updatedPeerData, newBadges);
+
+        transaction.set(peerRef, {
+          rating: updatedPeerData.rating,
+          ratingCount: updatedPeerData.ratingCount,
+          ...(stars === 5 ? { receivedFiveStar: true } : {}),
+          ...(newBadges.length > 0 ? rewardResult.updates : {}),
+          ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
+        }, { merge: true });
+      });
     } catch (e) {}
     setShowRating(false);
   };
@@ -522,8 +545,21 @@ export default function Chat({ user }) {
         badge={newBadge}
         rewardMessage={newBadgeReward}
         onClose={() => {
-          setNewBadge(null);
-          setNewBadgeReward('');
+          setBadgeQueue((queue) => {
+            const [nextUnlock, ...rest] = queue;
+            if (nextUnlock) {
+              setNewBadge(nextUnlock.badge);
+              setNewBadgeReward(nextUnlock.rewardMessage);
+              if (typeof nextUnlock.bonusMinutes === 'number') {
+                setBonusMinutes(nextUnlock.bonusMinutes);
+              }
+              return rest;
+            }
+
+            setNewBadge(null);
+            setNewBadgeReward('');
+            return [];
+          });
         }}
       />
 

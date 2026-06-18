@@ -3,7 +3,57 @@
 
 import React, { useEffect, useState } from 'react';
 import { BADGE_DEFINITIONS, BADGE_ORDER } from '../badges/config';
-import { checkNewBadges } from '../badges/checker';
+import { checkNewBadges as checkBadgeUnlocks } from '../badges/checker';
+
+function SimpleBadgeIcon({ colors, motif = 'star' }) {
+  const [start, mid, end] = colors;
+  const gradientId = `badge-${motif}-${start.replace('#', '')}`;
+
+  return (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id={gradientId} cx="50%" cy="28%" r="72%">
+          <stop offset="0%" stopColor={mid}/>
+          <stop offset="100%" stopColor={end}/>
+        </radialGradient>
+      </defs>
+      <circle cx="24" cy="24" r="22" fill={`url(#${gradientId})`}/>
+      <circle cx="24" cy="24" r="22" fill="none" stroke={mid} strokeWidth="1.5" strokeOpacity=".55"/>
+      {motif === 'moon' && (
+        <>
+          <path d="M30 12c-6 1.5-10 6-10 12s4 10.5 10 12c-8 2-16-4-16-12s8-14 16-12Z" fill="white" fillOpacity=".92"/>
+          <circle cx="32" cy="16" r="2" fill="white" fillOpacity=".8"/>
+          <circle cx="35" cy="25" r="1.5" fill="white" fillOpacity=".65"/>
+        </>
+      )}
+      {motif === 'bolt' && (
+        <path d="M27 9 15 27h8l-2 12 12-18h-8l2-12Z" fill="white" fillOpacity=".92"/>
+      )}
+      {motif === 'spark' && (
+        <>
+          <path d="M24 9l3.4 10.2H38l-8.6 6.2 3.3 10.1L24 29.3l-8.7 6.2 3.3-10.1L10 19.2h10.6L24 9Z" fill="white" fillOpacity=".92"/>
+          <circle cx="36" cy="12" r="2" fill="white" fillOpacity=".75"/>
+          <circle cx="12" cy="35" r="1.8" fill="white" fillOpacity=".6"/>
+        </>
+      )}
+      {motif === 'person' && (
+        <>
+          <circle cx="24" cy="18" r="6" fill="white" fillOpacity=".92"/>
+          <path d="M13 36c1.8-7 7-10 11-10s9.2 3 11 10" fill="white" fillOpacity=".85"/>
+        </>
+      )}
+      {motif === 'clock' && (
+        <>
+          <circle cx="24" cy="24" r="12" stroke="white" strokeWidth="3" fill="none"/>
+          <path d="M24 17v8l6 3" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        </>
+      )}
+      {motif === 'crown' && (
+        <path d="M12 32h24l2-15-8 6-6-10-6 10-8-6 2 15Z" fill="white" fillOpacity=".92"/>
+      )}
+    </svg>
+  );
+}
 
 export const BADGES = {
   first_call: {
@@ -200,6 +250,86 @@ export const BADGES = {
         <circle cx="24" cy="11" r="1.5" fill="white" fillOpacity=".6"/>
       </svg>
     ),
+  },
+  night_owl: {
+    id: 'night_owl', label: 'Night Owl',
+    desc: 'Made a call between 22:00-02:00',
+    tier: 'silver', glow: '#6366f1',
+    colors: ['#6366f1', '#a5b4fc', '#4338ca'],
+    reward: { type: 'bonusMinutes', value: 10 },
+    Icon: () => <SimpleBadgeIcon colors={['#6366f1', '#a5b4fc', '#4338ca']} motif="moon"/>,
+  },
+  marathon: {
+    id: 'marathon', label: 'Marathon Speaker',
+    desc: 'Single call over 45 minutes',
+    tier: 'gold', glow: '#f59e0b',
+    colors: ['#f59e0b', '#fde68a', '#d97706'],
+    reward: { type: 'bonusMinutes', value: 20 },
+    Icon: () => <SimpleBadgeIcon colors={['#f59e0b', '#fde68a', '#d97706']} motif="clock"/>,
+  },
+  comeback: {
+    id: 'comeback', label: 'Comeback Kid',
+    desc: 'Returned after 7+ days absence',
+    tier: 'fire', glow: '#ef4444',
+    colors: ['#ef4444', '#fca5a5', '#dc2626'],
+    reward: { type: 'trialPremium', value: 1 },
+    Icon: () => <SimpleBadgeIcon colors={['#ef4444', '#fca5a5', '#dc2626']} motif="bolt"/>,
+  },
+  ai_explorer: {
+    id: 'ai_explorer', label: 'AI Explorer',
+    desc: 'Used AI feedback 3 times',
+    tier: 'diamond', glow: '#06b6d4',
+    colors: ['#06b6d4', '#a5f3fc', '#0e7490'],
+    reward: { type: 'unlockFeature', value: 'priority_match' },
+    Icon: () => <SimpleBadgeIcon colors={['#06b6d4', '#a5f3fc', '#0e7490']} motif="spark"/>,
+  },
+  profile_pro: {
+    id: 'profile_pro', label: 'Profile Pro',
+    desc: 'Filled bio, set level and photo',
+    tier: 'bronze', glow: '#cd7f32',
+    colors: ['#cd7f32', '#e8a96b', '#9c5a1d'],
+    reward: { type: 'bonusMinutes', value: 5 },
+    Icon: () => <SimpleBadgeIcon colors={['#cd7f32', '#e8a96b', '#9c5a1d']} motif="person"/>,
+  },
+  century: {
+    id: 'century', label: 'Century Club',
+    desc: '100 total calls completed',
+    tier: 'platinum', glow: '#8b5cf6',
+    colors: ['#8b5cf6', '#c4b5fd', '#6d28d9'],
+    reward: { type: 'discountPremium', value: 30 },
+    Icon: () => <SimpleBadgeIcon colors={['#8b5cf6', '#c4b5fd', '#6d28d9']} motif="spark"/>,
+  },
+  daily_devotee: {
+    id: 'daily_devotee', label: 'Daily Devotee',
+    desc: '14-day streak',
+    tier: 'fire', glow: '#f97316',
+    colors: ['#f97316', '#fbbf24', '#ea580c'],
+    reward: { type: 'trialPremium', value: 3 },
+    Icon: () => <SimpleBadgeIcon colors={['#f97316', '#fbbf24', '#ea580c']} motif="bolt"/>,
+  },
+  speed_connector: {
+    id: 'speed_connector', label: 'Speed Connector',
+    desc: 'Found a match in under 30 seconds',
+    tier: 'silver', glow: '#22c55e',
+    colors: ['#22c55e', '#86efac', '#16a34a'],
+    reward: { type: 'bonusMinutes', value: 5 },
+    Icon: () => <SimpleBadgeIcon colors={['#22c55e', '#86efac', '#16a34a']} motif="bolt"/>,
+  },
+  premium_curious: {
+    id: 'premium_curious', label: 'Premium Curious',
+    desc: 'Visited the Premium page',
+    tier: 'gold', glow: '#f59e0b',
+    colors: ['#f59e0b', '#fde68a', '#d97706'],
+    reward: { type: 'discountPremium', value: 10 },
+    Icon: () => <SimpleBadgeIcon colors={['#f59e0b', '#fde68a', '#d97706']} motif="crown"/>,
+  },
+  five_star: {
+    id: 'five_star', label: 'Five Star',
+    desc: 'Received a 5-star rating',
+    tier: 'legend', glow: '#f59e0b',
+    colors: ['#fef3c7', '#f59e0b', '#92400e'],
+    reward: { type: 'bonusMinutes', value: 15 },
+    Icon: () => <SimpleBadgeIcon colors={['#fef3c7', '#f59e0b', '#92400e']} motif="spark"/>,
   },
 };
 
@@ -514,7 +644,9 @@ export function BadgeGrid({ earnedBadges=[] }) {
   );
 }
 
-export { checkNewBadges };
+export function checkNewBadges(userData, callData = {}) {
+  return checkBadgeUnlocks(userData, callData);
+}
 
 export default function BadgeDemo() {
   const [showing, setShowing] = useState(null);

@@ -62,6 +62,7 @@ export default function Upgrade({ user }) {
   const [selected, setSelected] = useState('pro');
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
+  const [, setBadgeQueue] = useState([]);
   const [premiumDiscount, setPremiumDiscount] = useState(user?.premiumDiscountPercent || 0);
   const navigate = useNavigate();
   const plan = PLANS.find(p => p.id === selected);
@@ -79,29 +80,32 @@ export default function Upgrade({ user }) {
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await transaction.get(userRef);
           const userData = userSnap.data() || {};
-          const updatedStats = { ...userData, hasVisitedPremium: true };
-          const newBadges = checkNewBadges(updatedStats, userData.badges || []);
+          const updatedStats = { ...userData, hasVisitedPremium: true, visitedPremium: true };
+          const newBadges = checkNewBadges(updatedStats);
           const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
           nextDiscount = rewardResult.updates.premiumDiscountPercent || userData.premiumDiscountPercent || 0;
 
           transaction.set(userRef, {
             hasVisitedPremium: true,
+            visitedPremium: true,
             premiumVisitedAt: serverTimestamp(),
             ...(newBadges.length > 0 ? rewardResult.updates : {}),
             ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
           }, { merge: true });
 
           if (newBadges.length > 0) {
-            unlock = {
-              badge: newBadges[0],
-              rewardMessage: rewardResult.rewardMessages.join(', '),
-            };
+            unlock = newBadges.map((badgeId, badgeIndex) => ({
+              badge: badgeId,
+              rewardMessage: rewardResult.rewardMessages[badgeIndex] || '',
+            }));
           }
         });
 
-        if (active && unlock) {
-          setNewBadge(unlock.badge);
-          setNewBadgeReward(unlock.rewardMessage);
+        if (active && unlock?.length) {
+          const [firstUnlock, ...remainingUnlocks] = unlock;
+          setNewBadge(firstUnlock.badge);
+          setNewBadgeReward(firstUnlock.rewardMessage);
+          setBadgeQueue(remainingUnlocks);
         }
 
         if (active) {
@@ -130,8 +134,18 @@ export default function Upgrade({ user }) {
         badge={newBadge}
         rewardMessage={newBadgeReward}
         onClose={() => {
-          setNewBadge(null);
-          setNewBadgeReward('');
+          setBadgeQueue((queue) => {
+            const [nextUnlock, ...rest] = queue;
+            if (nextUnlock) {
+              setNewBadge(nextUnlock.badge);
+              setNewBadgeReward(nextUnlock.rewardMessage);
+              return rest;
+            }
+
+            setNewBadge(null);
+            setNewBadgeReward('');
+            return [];
+          });
         }}
       />
 

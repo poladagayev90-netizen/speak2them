@@ -12,6 +12,7 @@ export function applyBadgeRewardsToData(userData = {}, badgeIds = []) {
   const features = new Set(userData.featuresUnlocked || []);
   let bonusMinutes = userData.bonusMinutes || 0;
   let premiumDiscountPercent = userData.premiumDiscountPercent || 0;
+  let trialPremiumDays = userData.trialPremiumDays || 0;
   const rewardMessages = [];
 
   badgeIds.forEach((badgeId) => {
@@ -22,16 +23,24 @@ export function applyBadgeRewardsToData(userData = {}, badgeIds = []) {
 
     nextBadges.push(badgeId);
 
-    if (badge.reward?.bonusMinutes) {
-      bonusMinutes += badge.reward.bonusMinutes;
+    const reward = badge.reward || {};
+    const rewardType = reward.type;
+    const rewardValue = reward.value;
+
+    if (reward.bonusMinutes || rewardType === 'bonusMinutes') {
+      bonusMinutes += reward.bonusMinutes || rewardValue || 0;
     }
 
-    if (badge.reward?.unlockFeature) {
-      features.add(badge.reward.unlockFeature);
+    if (reward.unlockFeature || rewardType === 'unlockFeature') {
+      features.add(reward.unlockFeature || rewardValue);
     }
 
-    if (badge.reward?.discountPremium) {
-      premiumDiscountPercent = Math.max(premiumDiscountPercent, badge.reward.discountPremium);
+    if (reward.discountPremium || rewardType === 'discountPremium') {
+      premiumDiscountPercent = Math.max(premiumDiscountPercent, reward.discountPremium || rewardValue || 0);
+    }
+
+    if (rewardType === 'trialPremium') {
+      trialPremiumDays += rewardValue || 0;
     }
 
     if (badge.rewardText) {
@@ -49,6 +58,7 @@ export function applyBadgeRewardsToData(userData = {}, badgeIds = []) {
       bonusMinutes,
       featuresUnlocked: Array.from(features),
       premiumDiscountPercent,
+      trialPremiumDays,
     },
     rewardMessages,
   };
