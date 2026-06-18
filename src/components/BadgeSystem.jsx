@@ -2,6 +2,8 @@
 // Place in src/components/BadgeSystem.jsx
 
 import React, { useEffect, useState } from 'react';
+import { BADGE_DEFINITIONS, BADGE_ORDER } from '../badges/config';
+import { checkNewBadges } from '../badges/checker';
 
 export const BADGES = {
   first_call: {
@@ -211,6 +213,28 @@ const TIER_STYLES = {
   legend:   { bg: '#1a0e00', border: '#f59e0b', shine: '#fef3c7' },
 };
 
+const BADGE_VISUALS = {
+  ...BADGES,
+  ten_minutes: { ...BADGES.beginner, id: 'ten_minutes', tier: 'bronze' },
+  streak_3: { ...BADGES.week_warrior, id: 'streak_3', tier: 'fire' },
+  ten_calls: { ...BADGES.chatterbox, id: 'ten_calls', tier: 'silver' },
+  explorer: { ...BADGES.monthly_master, id: 'explorer', tier: 'platinum' },
+};
+
+function getBadgeVisual(badgeId) {
+  const visual = BADGE_VISUALS[badgeId];
+  const definition = BADGE_DEFINITIONS[badgeId];
+  if (!visual) return null;
+
+  return {
+    ...visual,
+    label: definition?.label || visual.label,
+    desc: definition?.description || visual.desc,
+    conditionText: definition?.conditionText,
+    rewardText: definition?.rewardText,
+  };
+}
+
 function Confetti({ color, x }) {
   const size = 6 + Math.random() * 6;
   const dur = 1.5 + Math.random();
@@ -227,7 +251,7 @@ function Confetti({ color, x }) {
   );
 }
 
-export function BadgeUnlockModal({ badge, onClose }) {
+export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
@@ -238,7 +262,7 @@ export function BadgeUnlockModal({ badge, onClose }) {
   }, [badge]);
 
   if (!badge) return null;
-  const b = BADGES[badge];
+  const b = getBadgeVisual(badge);
   if (!b) return null;
   const t = TIER_STYLES[b.tier];
 
@@ -356,7 +380,7 @@ export function BadgeUnlockModal({ badge, onClose }) {
           {/* name */}
           <div style={{
             fontSize:22, fontWeight:800, color:'#fff',
-            letterSpacing: b.tier==='legend'?'4px':'-0.3px',
+            letterSpacing: b.tier==='legend'?'4px':'0',
             marginBottom:6,
             animation:'bdText .4s ease .8s both',
           }}>{b.label}</div>
@@ -366,6 +390,23 @@ export function BadgeUnlockModal({ badge, onClose }) {
             fontSize:13, color:'#888', marginBottom:10,
             animation:'bdText .4s ease .92s both',
           }}>{b.desc}</div>
+
+          {(rewardMessage || b.rewardText) && (
+            <div style={{
+              background:`${t.border}18`,
+              border:`1px solid ${t.border}45`,
+              borderRadius:12,
+              padding:'10px 12px',
+              color:'#fff',
+              fontSize:12,
+              fontWeight:700,
+              lineHeight:1.4,
+              marginBottom:14,
+              animation:'bdText .4s ease 1s both',
+            }}>
+              You earned: {rewardMessage || b.rewardText}
+            </div>
+          )}
 
           {/* tier pill */}
           <div style={{
@@ -398,7 +439,7 @@ export function BadgeUnlockModal({ badge, onClose }) {
 }
 
 export function BadgeCard({ badgeId, earned=true }) {
-  const b = BADGES[badgeId];
+  const b = getBadgeVisual(badgeId);
   if (!b) return null;
   const t = TIER_STYLES[b.tier];
   return (
@@ -431,8 +472,19 @@ export function BadgeCard({ badgeId, earned=true }) {
         lineHeight:1.35,
         marginTop:6,
       }}>
-        Qazanmaq üçün: {b.desc}
+        Qazanmaq üçün: {b.conditionText || b.desc}
       </div>
+      {b.rewardText && (
+        <div style={{
+          fontSize:9,
+          fontWeight:700,
+          color:earned?t.border:'#7c8597',
+          lineHeight:1.35,
+          marginTop:5,
+        }}>
+          Hədiyyə: {b.rewardText}
+        </div>
+      )}
       {earned && (
         <div style={{
           position:'absolute',top:6,right:6,
@@ -448,13 +500,13 @@ export function BadgeGrid({ earnedBadges=[] }) {
   return (
     <div>
       <div style={{fontSize:11,fontWeight:800,color:'#555',marginBottom:6,letterSpacing:'2px',textTransform:'uppercase'}}>
-        Badges · {earnedBadges.length}/{Object.keys(BADGES).length}
+        Badges · {earnedBadges.filter(id => BADGE_ORDER.includes(id)).length}/{BADGE_ORDER.length}
       </div>
       <div style={{fontSize:11,color:'#888',lineHeight:1.4,marginBottom:12}}>
         Hər badge-in altında onu necə qazanmaq lazım olduğu yazılıb.
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(98px,1fr))',gap:10}}>
-        {Object.keys(BADGES).map(id=>(
+        {BADGE_ORDER.map(id=>(
           <BadgeCard key={id} badgeId={id} earned={earnedBadges.includes(id)}/>
         ))}
       </div>
@@ -462,21 +514,7 @@ export function BadgeGrid({ earnedBadges=[] }) {
   );
 }
 
-export function checkNewBadges(userData) {
-  const earned = userData.badges || [];
-  const add = (id, cond) => cond && !earned.includes(id) ? [id] : [];
-  return [
-    ...add('first_call',       userData.callCount >= 1),
-    ...add('chatterbox',       userData.callCount >= 10),
-    ...add('social_butterfly', userData.callCount >= 50),
-    ...add('beginner',         userData.totalMinutes >= 60),
-    ...add('expert',           userData.totalMinutes >= 1000),
-    ...add('legend',           userData.totalMinutes >= 5000),
-    ...add('week_warrior',     userData.streak >= 7),
-    ...add('monthly_master',   userData.streak >= 30),
-    ...add('well_rated',       userData.ratingCount >= 5 && userData.rating/userData.ratingCount >= 4.5),
-  ];
-}
+export { checkNewBadges };
 
 export default function BadgeDemo() {
   const [showing, setShowing] = useState(null);
@@ -485,7 +523,7 @@ export default function BadgeDemo() {
       <div style={{marginBottom:8,fontSize:22,fontWeight:800}}>🏅 Badge System</div>
       <div style={{color:'#555',fontSize:12,marginBottom:28}}>Tap any badge to preview unlock animation</div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,maxWidth:340}}>
-        {Object.keys(BADGES).map(id=>(
+        {BADGE_ORDER.map(id=>(
           <div key={id} onClick={()=>setShowing(id)} style={{cursor:'pointer'}}>
             <BadgeCard badgeId={id} earned/>
           </div>

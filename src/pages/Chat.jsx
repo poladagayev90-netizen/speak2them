@@ -3,13 +3,15 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, serverTimestamp,
-  doc, getDoc, setDoc, updateDoc
+  doc, getDoc, setDoc, updateDoc, runTransaction
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../dailyContent';
 import PremiumBadge from '../components/PremiumBadge';
-import { checkNewBadges, BadgeUnlockModal } from '../components/BadgeSystem';
+import { BadgeUnlockModal } from '../components/BadgeSystem';
+import { checkNewBadges } from '../badges/checker';
+import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 
@@ -38,6 +40,8 @@ export default function Chat({ user }) {
   const [showAiFeedback, setShowAiFeedback] = useState(false);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
+  const [newBadgeReward, setNewBadgeReward] = useState('');
+  const [bonusMinutes, setBonusMinutes] = useState(user.bonusMinutes || 0);
 
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
@@ -53,6 +57,7 @@ export default function Chat({ user }) {
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = `call_${chatId}`;
   const content = getTodayContent();
+  const freeCallLimitSeconds = (15 + bonusMinutes) * 60;
 
   // Refs for stable access inside callbacks
   const chatIdRef = useRef(chatId);
@@ -63,6 +68,10 @@ export default function Chat({ user }) {
   callDocIdRef.current = callDocId;
   peerIdRef.current = peerId;
   userUidRef.current = user.uid;
+
+  useEffect(() => {
+    setBonusMinutes(user.bonusMinutes || 0);
+  }, [user.bonusMinutes]);
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -254,12 +263,12 @@ export default function Chat({ user }) {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
 
-        if (!user.isPremium && callSecondsRef.current >= 900) {
+        if (!user.isPremium && callSecondsRef.current >= freeCallLimitSeconds) {
           endCallRef.current?.();
-          alert('⏰ 15 dəqiqəlik limit doldu!\n\nYeni zəng başlatmaq üçün bir az gözlə.\n\n👑 Premium al — limitsiz danış!');
+          alert('⏰ Pulsuz danışıq limitin doldu!\n\nBonus dəqiqələrin varsa limitə əlavə olunur.\n\n👑 Premium al — limitsiz danış!');
         }
 
-        if (!user.isPremium && callSecondsRef.current === 780) {
+        if (!user.isPremium && callSecondsRef.current === Math.max(0, freeCallLimitSeconds - 120)) {
           alert('⚠️ 2 dəqiqə qaldı! Premium al — limitsiz danış!');
         }
       }, 1000);
@@ -268,7 +277,7 @@ export default function Chat({ user }) {
       setCallSeconds(0);
     }
     return () => clearInterval(timerRef.current);
-  }, [inCall, user.isPremium]);
+  }, [freeCallLimitSeconds, inCall, user.isPremium]);
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -280,6 +289,8 @@ export default function Chat({ user }) {
     if (!user.uid || !peerId) return;
     try {
       await setDoc(doc(db, 'calls', callDocId), {
+        userA: user.uid,
+        userB: peerId,
         callerId: user.uid,
         callerName: user.displayName || 'User',
         receiverId: peerId,
@@ -334,66 +345,95 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      const callSnap = await getDoc(doc(db, 'calls', callDocId));
-      const callData = callSnap.data() || {};
-      const wasAlreadyEnded = callData.status === 'ended';
+      let currentUserUnlock = null;
 
-      if (secondsTalked > 5 && !wasAlreadyEnded) {
-        const minutes = Math.ceil(secondsTalked / 60);
-        const today = new Date().toDateString();
-        const yesterday = new Date(Date.now() - 86400000).toDateString();
+      await runTransaction(db, async (transaction) => {
+        const callRef = doc(db, 'calls', callDocId);
+        const callSnap = await transaction.get(callRef);
+        if (!callSnap.exists()) return;
 
-        const myRef = doc(db, 'users', user.uid);
-        const mySnap = await getDoc(myRef);
-        const myData = mySnap.data() || {};
-        let myStreak = myData.streak || 0;
-        if (myData.lastCallDate === today) {}
-        else if (myData.lastCallDate === yesterday) myStreak += 1;
-        else myStreak = 1;
+        const callData = callSnap.data() || {};
+        const participants = [
+          callData.userA || callData.callerId || user.uid,
+          callData.userB || callData.receiverId || peerId,
+        ].filter(Boolean);
+        const uniqueParticipants = Array.from(new Set(participants));
+        const durationMinutes = Math.ceil(secondsTalked / 60);
+        const shouldApplyStats = secondsTalked > 5 && !callData.statsApplied && uniqueParticipants.length === 2;
 
-        const updatedMyData = {
-          ...myData,
-          totalMinutes: (myData.totalMinutes || 0) + minutes,
-          callCount: (myData.callCount || 0) + 1,
-          streak: myStreak,
-          lastCallDate: today,
+        const callSessionUpdate = {
+          userA: uniqueParticipants[0] || user.uid,
+          userB: uniqueParticipants[1] || peerId,
+          duration: secondsTalked,
+          durationMinutes,
+          timestamp: callData.timestamp || serverTimestamp(),
+          endedAt: serverTimestamp(),
+          status: 'ended',
         };
 
-        const newBadges = checkNewBadges(updatedMyData);
-        const nextBadges = [...(myData.badges || []), ...newBadges];
-
-        await setDoc(myRef, {
-          totalMinutes: updatedMyData.totalMinutes,
-          callCount: updatedMyData.callCount,
-          streak: updatedMyData.streak,
-          lastCallDate: updatedMyData.lastCallDate,
-          ...(newBadges.length > 0 ? { badges: nextBadges } : {}),
-        }, { merge: true });
-
-        if (newBadges.length > 0) {
-          setNewBadge(newBadges[0]);
+        if (!shouldApplyStats) {
+          if (callData.status !== 'ended') {
+            transaction.set(callRef, callSessionUpdate, { merge: true });
+          }
+          return;
         }
 
-        if (callData.callerId === user.uid) {
-          const peerRef = doc(db, 'users', peerId);
-          const peerSnap = await getDoc(peerRef);
-          const peerData = peerSnap.data() || {};
-          let peerStreak = peerData.streak || 0;
-          if (peerData.lastCallDate === today) {}
-          else if (peerData.lastCallDate === yesterday) peerStreak += 1;
-          else peerStreak = 1;
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        const userRefs = uniqueParticipants.map((uid) => doc(db, 'users', uid));
+        const userSnaps = await Promise.all(userRefs.map((userRef) => transaction.get(userRef)));
 
-          await setDoc(peerRef, {
-            totalMinutes: (peerData.totalMinutes || 0) + minutes,
-            callCount: (peerData.callCount || 0) + 1,
-            streak: peerStreak,
+        userSnaps.forEach((userSnap, index) => {
+          const participantId = uniqueParticipants[index];
+          const userRef = userRefs[index];
+          const userData = userSnap.data() || {};
+          let streak = userData.streak || 0;
+
+          if (userData.lastCallDate === today) {}
+          else if (userData.lastCallDate === yesterday) streak += 1;
+          else streak = 1;
+
+          const updatedStats = {
+            ...userData,
+            callCount: (userData.callCount || 0) + 1,
+            totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
+            streak,
             lastCallDate: today,
-          }, { merge: true });
-        }
-      }
+          };
+          const newBadges = checkNewBadges(updatedStats, userData.badges || []);
+          const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
 
-      if (!wasAlreadyEnded && callSnap.exists()) {
-        await updateDoc(doc(db, 'calls', callDocId), { status: 'ended', duration: secondsTalked });
+          transaction.set(userRef, {
+            callCount: updatedStats.callCount,
+            totalMinutes: updatedStats.totalMinutes,
+            streak: updatedStats.streak,
+            lastCallDate: updatedStats.lastCallDate,
+            ...(newBadges.length > 0 ? rewardResult.updates : {}),
+            ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
+          }, { merge: true });
+
+          if (participantId === user.uid && newBadges.length > 0) {
+            currentUserUnlock = {
+              badge: newBadges[0],
+              rewardMessage: rewardResult.rewardMessages.join(', '),
+              bonusMinutes: rewardResult.updates.bonusMinutes,
+            };
+          }
+        });
+
+        transaction.set(callRef, {
+          ...callSessionUpdate,
+          statsApplied: true,
+          statsAppliedAt: serverTimestamp(),
+        }, { merge: true });
+      });
+
+      if (currentUserUnlock) {
+        setNewBadge(currentUserUnlock.badge);
+        setNewBadgeReward(currentUserUnlock.rewardMessage);
+        if (typeof currentUserUnlock.bonusMinutes === 'number') {
+          setBonusMinutes(currentUserUnlock.bonusMinutes);
+        }
       }
 
       if (secondsTalked >= 180) setShowRating(true);
@@ -478,7 +518,14 @@ export default function Chat({ user }) {
 
   return (
     <div className="chat-page">
-      <BadgeUnlockModal badge={newBadge} onClose={() => setNewBadge(null)} />
+      <BadgeUnlockModal
+        badge={newBadge}
+        rewardMessage={newBadgeReward}
+        onClose={() => {
+          setNewBadge(null);
+          setNewBadgeReward('');
+        }}
+      />
 
       {incomingCallData && !inCall && (
         <div style={{
@@ -631,7 +678,7 @@ export default function Chat({ user }) {
               color: callSeconds > 780 ? '#ef4444' : '#f59e0b',
               fontSize: '13px', fontWeight: 600,
             }}>
-              ⏰ {formatTime(Math.max(0, 900 - callSeconds))} qaldı
+              ⏰ {formatTime(Math.max(0, freeCallLimitSeconds - callSeconds))} qaldı
               {callSeconds > 780 && ' — Premium al!'}
             </div>
           )}

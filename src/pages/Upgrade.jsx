@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import { BadgeUnlockModal } from '../components/BadgeSystem';
+import { checkNewBadges } from '../badges/checker';
+import { applyBadgeRewardsToData } from '../badges/rewards';
 
 const PLANS = [
   {
@@ -55,8 +60,64 @@ const COMPARE = [
 
 export default function Upgrade({ user }) {
   const [selected, setSelected] = useState('pro');
+  const [newBadge, setNewBadge] = useState(null);
+  const [newBadgeReward, setNewBadgeReward] = useState('');
+  const [premiumDiscount, setPremiumDiscount] = useState(user?.premiumDiscountPercent || 0);
   const navigate = useNavigate();
   const plan = PLANS.find(p => p.id === selected);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    let active = true;
+
+    const grantExplorerBadge = async () => {
+      let unlock = null;
+      let nextDiscount = user?.premiumDiscountPercent || 0;
+
+      try {
+        await runTransaction(db, async (transaction) => {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await transaction.get(userRef);
+          const userData = userSnap.data() || {};
+          const updatedStats = { ...userData, hasVisitedPremium: true };
+          const newBadges = checkNewBadges(updatedStats, userData.badges || []);
+          const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
+          nextDiscount = rewardResult.updates.premiumDiscountPercent || userData.premiumDiscountPercent || 0;
+
+          transaction.set(userRef, {
+            hasVisitedPremium: true,
+            premiumVisitedAt: serverTimestamp(),
+            ...(newBadges.length > 0 ? rewardResult.updates : {}),
+            ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
+          }, { merge: true });
+
+          if (newBadges.length > 0) {
+            unlock = {
+              badge: newBadges[0],
+              rewardMessage: rewardResult.rewardMessages.join(', '),
+            };
+          }
+        });
+
+        if (active && unlock) {
+          setNewBadge(unlock.badge);
+          setNewBadgeReward(unlock.rewardMessage);
+        }
+
+        if (active) {
+          setPremiumDiscount(nextDiscount);
+        }
+      } catch (e) {
+        console.error('Explorer badge error:', e);
+      }
+    };
+
+    grantExplorerBadge();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.uid, user?.premiumDiscountPercent]);
 
   const handleContinue = () => {
     if (selected === 'free') { navigate('/'); return; }
@@ -65,6 +126,14 @@ export default function Upgrade({ user }) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f0f1a', color: '#fff', fontFamily: 'inherit', paddingBottom: 40 }}>
+      <BadgeUnlockModal
+        badge={newBadge}
+        rewardMessage={newBadgeReward}
+        onClose={() => {
+          setNewBadge(null);
+          setNewBadgeReward('');
+        }}
+      />
 
       {/* Header */}
       <div style={{ padding: '20px 20px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -77,6 +146,22 @@ export default function Upgrade({ user }) {
         <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Premium Seç</h2>
         <p style={{ fontSize: 13, color: '#888', margin: 0 }}>Daha çox dəqiqə, daha yaxşı partnyor, limitsiz təcrübə</p>
       </div>
+
+      {premiumDiscount > 0 && (
+        <div style={{
+          margin: '0 16px 14px',
+          background: '#22c55e18',
+          border: '1px solid #22c55e55',
+          color: '#bbf7d0',
+          borderRadius: 14,
+          padding: '12px 14px',
+          fontSize: 13,
+          fontWeight: 700,
+          textAlign: 'center',
+        }}>
+          Explorer endirimi aktivdir: Premium üçün {premiumDiscount}% endirim
+        </div>
+      )}
 
       {/* Plans */}
       <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>

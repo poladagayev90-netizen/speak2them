@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, runTransaction, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
+import { BadgeUnlockModal } from '../components/BadgeSystem';
+import { checkNewBadges } from '../badges/checker';
+import { applyBadgeRewardsToData } from '../badges/rewards';
 
 const CARD_NUMBER = '4169 7388 XXXX XXXX'; // öz kart nömrəni yaz
 const CARD_NAME = 'Polad Agayev';
@@ -24,7 +27,56 @@ export default function Premium({ user }) {
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [newBadge, setNewBadge] = useState(null);
+  const [newBadgeReward, setNewBadgeReward] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    let active = true;
+
+    const grantExplorerBadge = async () => {
+      let unlock = null;
+
+      try {
+        await runTransaction(db, async (transaction) => {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await transaction.get(userRef);
+          const userData = userSnap.data() || {};
+          const updatedStats = { ...userData, hasVisitedPremium: true };
+          const newBadges = checkNewBadges(updatedStats, userData.badges || []);
+          const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
+
+          transaction.set(userRef, {
+            hasVisitedPremium: true,
+            premiumVisitedAt: serverTimestamp(),
+            ...(newBadges.length > 0 ? rewardResult.updates : {}),
+            ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
+          }, { merge: true });
+
+          if (newBadges.length > 0) {
+            unlock = {
+              badge: newBadges[0],
+              rewardMessage: rewardResult.rewardMessages.join(', '),
+            };
+          }
+        });
+
+        if (active && unlock) {
+          setNewBadge(unlock.badge);
+          setNewBadgeReward(unlock.rewardMessage);
+        }
+      } catch (e) {
+        console.error('Explorer badge error:', e);
+      }
+    };
+
+    grantExplorerBadge();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.uid]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(CARD_NUMBER.replace(/\s/g, ''));
@@ -65,6 +117,14 @@ export default function Premium({ user }) {
   if (user?.isPremium) {
     return (
       <div className="profile-page">
+        <BadgeUnlockModal
+          badge={newBadge}
+          rewardMessage={newBadgeReward}
+          onClose={() => {
+            setNewBadge(null);
+            setNewBadgeReward('');
+          }}
+        />
         <div className="profile-header">
           <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
           <h2>Premium</h2>
@@ -83,6 +143,14 @@ export default function Premium({ user }) {
 
   return (
     <div className="profile-page">
+      <BadgeUnlockModal
+        badge={newBadge}
+        rewardMessage={newBadgeReward}
+        onClose={() => {
+          setNewBadge(null);
+          setNewBadgeReward('');
+        }}
+      />
       <div className="profile-header">
         <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
         <h2>Premium</h2>
