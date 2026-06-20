@@ -24,7 +24,7 @@ export default function Home({ user }) {
     navigate(`/chat/${partnerUid}`);
   }, [navigate]);
 
-  const { searching, startSearch, cancelSearch } = useMatchmaking({
+  const { searching, startSearch, cancelSearch, compensationMsg } = useMatchmaking({
     user,
     levelFilter,
     totalUsers: allUsers.length,
@@ -138,6 +138,22 @@ export default function Home({ user }) {
               <p style={{ color: '#7c6ff7', fontWeight: 600, fontSize: '14px' }}>Uyğun partnyor axtarılır...</p>
             </div>
             <p style={{ color: '#666', fontSize: '12px' }}>Birisi sizi tapanda avtomatik qoşulacaqsınız</p>
+          </div>
+        )}
+
+        {compensationMsg && (
+          <div style={{
+            background: 'linear-gradient(135deg, #065f46, #047857)',
+            border: '1px solid #10b98155',
+            borderRadius: '14px',
+            padding: '14px 18px',
+            marginTop: '10px',
+            textAlign: 'center',
+            animation: 'fadeInUp 0.4s ease',
+          }}>
+            <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px', margin: 0 }}>
+              🎁 {compensationMsg}
+            </p>
           </div>
         )}
 

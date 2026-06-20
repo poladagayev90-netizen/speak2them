@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 import {
   MATCH_STATUS,
   commitMatch,
@@ -11,6 +12,8 @@ import {
 } from '../utils/matchmaking';
 
 const LEVEL_MATCHING_MIN_USERS = 10;
+const SEARCH_TIMEOUT_MS = 15000;
+const COMPENSATION_MINUTES = 5;
 
 export function useMatchmaking({
   user,
@@ -19,10 +22,12 @@ export function useMatchmaking({
   onMatched,
 }) {
   const [searching, setSearching] = useState(false);
+  const [compensationMsg, setCompensationMsg] = useState('');
   const searchingRef = useRef(false);
   const matchingRef = useRef(false);
   const ownUnsubRef = useRef(null);
   const queueUnsubRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     searchingRef.current = searching;
@@ -41,6 +46,10 @@ export function useMatchmaking({
     if (queueUnsubRef.current) {
       queueUnsubRef.current();
       queueUnsubRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   }, []);
 
@@ -73,6 +82,22 @@ export function useMatchmaking({
     cleanupListeners,
     onMatched,
   ]);
+
+  const giveCompensation = useCallback(async () => {
+    if (!user.uid) return;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const currentBalance = userSnap.exists() ? (userSnap.data().minutesBalance || 0) : 0;
+      await setDoc(userRef, {
+        minutesBalance: currentBalance + COMPENSATION_MINUTES,
+      }, { merge: true });
+      setCompensationMsg('Partnyor tapılmadı, 5 dəqiqə hədiyyə edildi!');
+      setTimeout(() => setCompensationMsg(''), 5000);
+    } catch (e) {
+      console.error('[Matchmaking] Compensation write error:', e);
+    }
+  }, [user.uid]);
 
   const cancelSearch = useCallback(async () => {
     setSearching(false);
@@ -113,6 +138,17 @@ export function useMatchmaking({
         onMatched(data.matchedWith);
       }
     });
+
+    // 15-saniyəlik timeout — partner tapılmasa kompensasiya ver
+    timeoutRef.current = setTimeout(async () => {
+      if (searchingRef.current) {
+        await giveCompensation();
+        setSearching(false);
+        matchingRef.current = false;
+        cleanupListeners();
+        await leaveSearchQueue(user.uid);
+      }
+    }, SEARCH_TIMEOUT_MS);
   }, [
     user.uid,
     searching,
@@ -125,11 +161,12 @@ export function useMatchmaking({
     tryMatchWithCandidates,
     cleanupListeners,
     onMatched,
+    giveCompensation,
   ]);
 
   useEffect(() => () => {
     cleanupListeners();
   }, [cleanupListeners]);
 
-  return { searching, startSearch, cancelSearch };
+  return { searching, startSearch, cancelSearch, compensationMsg };
 }
