@@ -84,20 +84,20 @@ export function useMatchmaking({
   ]);
 
   const giveCompensation = useCallback(async () => {
-    if (!user.uid) return;
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      const currentBalance = userSnap.exists() ? (userSnap.data().minutesBalance || 0) : 0;
-      await setDoc(userRef, {
-        minutesBalance: currentBalance + COMPENSATION_MINUTES,
-      }, { merge: true });
-      setCompensationMsg('Partnyor tapılmadı, 5 dəqiqə hədiyyə edildi!');
-      setTimeout(() => setCompensationMsg(''), 5000);
-    } catch (e) {
-      console.error('[Matchmaking] Compensation write error:', e);
-    }
-  }, [user.uid]);
+  if (!user.uid) return;
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    const currentBonus = userSnap.exists() ? (userSnap.data().bonusMinutes || 0) : 0;
+    await setDoc(userRef, {
+      bonusMinutes: currentBonus + COMPENSATION_MINUTES,
+    }, { merge: true });
+    setCompensationMsg(`Partnyor tapılmadı, ${COMPENSATION_MINUTES} dəqiqə hədiyyə edildi!`);
+    setTimeout(() => setCompensationMsg(''), 5000);
+  } catch (e) {
+    console.error('[Matchmaking] Compensation write error:', e);
+  }
+}, [user.uid]);
 
   const cancelSearch = useCallback(async () => {
     setSearching(false);
