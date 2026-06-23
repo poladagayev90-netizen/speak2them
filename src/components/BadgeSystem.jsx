@@ -267,25 +267,10 @@ export const BADGES = {
     reward: { type: 'bonusMinutes', value: 20 },
     Icon: () => <SimpleBadgeIcon colors={['#f59e0b', '#fde68a', '#d97706']} motif="clock"/>,
   },
-  comeback: {
-    id: 'comeback', label: 'Comeback Kid',
-    desc: 'Returned after 7+ days absence',
-    tier: 'fire', glow: '#ef4444',
-    colors: ['#ef4444', '#fca5a5', '#dc2626'],
-    reward: { type: 'trialPremium', value: 1 },
-    Icon: () => <SimpleBadgeIcon colors={['#ef4444', '#fca5a5', '#dc2626']} motif="bolt"/>,
-  },
-  ai_explorer: {
-    id: 'ai_explorer', label: 'AI Explorer',
-    desc: 'Used AI feedback 3 times',
-    tier: 'diamond', glow: '#06b6d4',
-    colors: ['#06b6d4', '#a5f3fc', '#0e7490'],
-    reward: { type: 'unlockFeature', value: 'priority_match' },
-    Icon: () => <SimpleBadgeIcon colors={['#06b6d4', '#a5f3fc', '#0e7490']} motif="spark"/>,
-  },
+
   profile_pro: {
     id: 'profile_pro', label: 'Profile Pro',
-    desc: 'Filled bio, set level and photo',
+    desc: 'Filled bio and set level',
     tier: 'bronze', glow: '#cd7f32',
     colors: ['#cd7f32', '#e8a96b', '#9c5a1d'],
     reward: { type: 'bonusMinutes', value: 5 },
