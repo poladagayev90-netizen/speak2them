@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
@@ -38,17 +38,23 @@ export default function Home({ user }) {
     return () => { audio.pause(); };
   }, []);
 
-  // ✅ YALNIZ BU useEffect — lastSeen ilə online yoxla
+  // ✅ Optimized — yalnız son 3 dəqiqədə aktiv olan 50 user
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
+    const cutoff = new Date(Date.now() - 180000);
+    const q = query(
+      collection(db, 'users'),
+      where('lastSeen', '>', cutoff),
+      limit(50)
+    );
+    const unsub = onSnapshot(q, (snap) => {
       const now = Date.now();
       const online = [];
       const all = [];
       snap.docs.forEach(d => {
         const data = d.data();
         const u = { id: d.id, ...data, uid: data.uid || d.id };
-        all.push(u);
         if (u.uid === user.uid || u.id === user.uid) return;
+        all.push(u);
         if (!u.lastSeen) return;
         const lastSeen = u.lastSeen.toMillis?.() || 0;
         if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
@@ -60,7 +66,11 @@ export default function Home({ user }) {
   }, [user.uid]);
 
   useEffect(() => {
-    const q = query(collection(db, 'calls'), where('receiverId', '==', user.uid), where('status', '==', 'calling'));
+    const q = query(
+      collection(db, 'calls'),
+      where('receiverId', '==', user.uid),
+      where('status', '==', 'calling')
+    );
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {
         const callData = { ...snap.docs[0].data(), callDocId: snap.docs[0].id };
