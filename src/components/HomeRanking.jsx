@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import RankingCard from './RankingCard';
 import { getUserRank, sortUsersForRanking } from '../utils/ranking';
+import './Ranking.css';
 
 function PodiumCard({ user, rank, isCurrentUser }) {
-  const heights = { 1: 88, 2: 68, 3: 56 };
+  const heights = { 1: 120, 2: 90, 3: 70 };
   const emojis = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
   return (
