@@ -125,7 +125,9 @@ export default function Upgrade({ user }) {
 
   const handleContinue = () => {
     if (selected === 'free') { navigate('/'); return; }
-    alert(`Telegram Stars ödəniş sistemi tezliklə! Plan: ${plan.name} — ${plan.priceLabel}`);
+    const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). Speak2Them tətbiqində ${plan.name} planına keçmək istəyirəm.`;
+    const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
+    window.location.href = whatsappUrl;
   };
 
   return (
@@ -157,7 +159,7 @@ export default function Upgrade({ user }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>🎙️</div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Premium Seç</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Pro Seç</h2>
         <p style={{ fontSize: 13, color: '#888', margin: 0 }}>Daha çox dəqiqə, daha yaxşı partnyor, limitsiz təcrübə</p>
       </div>
 
@@ -173,7 +175,7 @@ export default function Upgrade({ user }) {
           fontWeight: 700,
           textAlign: 'center',
         }}>
-          Explorer endirimi aktivdir: Premium üçün {premiumDiscount}% endirim
+          Explorer endirimi aktivdir: Pro üçün {premiumDiscount}% endirim
         </div>
       )}
 
@@ -256,7 +258,7 @@ export default function Upgrade({ user }) {
           {plan.id === 'free' ? 'Pulsuz davam et' : `${plan.name} al — ${plan.priceLabel}`}
         </button>
         <p style={{ textAlign: 'center', fontSize: 11, color: '#555', margin: '10px 0 0' }}>
-          İstənilən vaxt ləğv et · Telegram Stars ilə ödəniş
+          Keyfiyyəti qorumaq üçün Pro hesablara WhatsApp vasitəsilə təsdiqlə baxılır
         </p>
       </div>
 

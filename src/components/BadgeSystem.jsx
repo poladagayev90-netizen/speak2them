@@ -316,8 +316,8 @@ export const BADGES = {
     Icon: () => <SimpleBadgeIcon colors={['#22c55e', '#86efac', '#16a34a']} motif="bolt"/>,
   },
   premium_curious: {
-    id: 'premium_curious', label: 'Premium Curious',
-    desc: 'Visited the Premium page',
+    id: 'premium_curious', label: 'Pro Curious',
+    desc: 'Visited the Pro page',
     tier: 'gold', glow: '#f59e0b',
     colors: ['#f59e0b', '#fde68a', '#d97706'],
     reward: { type: 'discountPremium', value: 10 },

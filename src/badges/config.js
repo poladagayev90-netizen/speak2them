@@ -2,8 +2,8 @@ const rewardText = (reward) => {
   if (!reward) return '';
   if (reward.type === 'bonusMinutes') return `${reward.value} bonus minutes`;
   if (reward.type === 'unlockFeature') return `${reward.value} unlocked`;
-  if (reward.type === 'discountPremium') return `${reward.value}% premium discount`;
-  if (reward.type === 'trialPremium') return `${reward.value} day premium trial`;
+  if (reward.type === 'discountPremium') return `${reward.value}% Pro discount`;
+  if (reward.type === 'trialPremium') return `${reward.value} day Pro pass`;
   return '';
 };
 
@@ -159,9 +159,9 @@ export const BADGE_DEFINITIONS = {
   }),
   premium_curious: badge({
     id: 'premium_curious',
-    label: 'Premium Curious',
-    description: 'Visited the Premium page',
-    conditionText: 'Visit the Premium page',
+    label: 'Pro Curious',
+    description: 'Visited the Pro page',
+    conditionText: 'Visit the Pro page',
     reward: { type: 'discountPremium', value: 10 },
     condition: (userData) => userData.visitedPremium === true,
   }),

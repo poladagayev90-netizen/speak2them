@@ -15,7 +15,7 @@ export default function PremiumBadge() {
       marginLeft: '6px',
       boxShadow: '0 0 8px #f59e0b55',
     }}>
-      👑 Premium
+      ⭐ Pro
     </span>
   );
 }

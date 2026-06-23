@@ -17,7 +17,6 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Survey = React.lazy(() => import('./pages/Survey'));
 const MatchMaking = React.lazy(() => import('./pages/MatchMaking'));
-const Premium = React.lazy(() => import('./pages/Premium'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(() => import('./pages/Ranking'));
@@ -161,7 +160,7 @@ function App() {
             <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
             <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
             <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-            <Route path="/premium" element={user ? <Premium user={user} /> : <Navigate to="/login" />} />
+            <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
             <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
             <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
             <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
