@@ -240,7 +240,7 @@ export default function Home({ user }) {
                       <h3>{u.name || 'User'}</h3>
                       {!user.isPremium && (
                         <div style={{ fontSize: '11px', color: '#7c6ff7', fontWeight: 700, marginTop: '2px' }}>
-                          Premium ilə tam profil
+                          Pro ilə tam profil
                         </div>
                       )}
                       <span className="user-level">
@@ -256,7 +256,7 @@ export default function Home({ user }) {
                             {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
                           </>
                         ) : (
-                          <span style={{ fontSize: '11px', color: '#7c6ff7' }}>👑 Premium al — tam gör</span>
+                          <span style={{ fontSize: '11px', color: '#7c6ff7' }}>⭐ Pro al — tam gör</span>
                         )}
                       </div>
                       <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 15000 ? 'online' : 'offline'}`}>
@@ -268,18 +268,24 @@ export default function Home({ user }) {
                       className="btn-chat"
                       onClick={() => {
                         if (!user.isPremium) {
-                          alert('👑 Bu xüsusiyyət Premium üçündür!\n\nPremium al və bütün istifadəçilərlə danış!');
+                          const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). Speak2Them tətbiqində Pro planına keçmək istəyirəm.`;
+                          const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
+                          if (window.Telegram?.WebApp?.openLink) {
+                            window.Telegram.WebApp.openLink(whatsappUrl);
+                          } else {
+                            window.open(whatsappUrl, '_blank');
+                          }
                           return;
                         }
                         navigate(`/chat/${u.uid || u.id}`);
                       }}
                       style={{
                         background: !user.isPremium
-                          ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                          ? 'linear-gradient(135deg, #7c6ff7, #5a4de3)'
                           : undefined,
                       }}
                     >
-                      {user.isPremium ? '💬 Chat & Call' : '👑 Premium Al'}
+                      {user.isPremium ? '💬 Chat & Call' : '⭐ Get Pro'}
                     </button>
                   </div>
                 ))}

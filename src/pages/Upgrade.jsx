@@ -127,7 +127,11 @@ export default function Upgrade({ user }) {
     if (selected === 'free') { navigate('/'); return; }
     const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). Speak2Them tətbiqində ${plan.name} planına keçmək istəyirəm.`;
     const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
-    window.location.href = whatsappUrl;
+    if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink(whatsappUrl);
+    } else {
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   return (
