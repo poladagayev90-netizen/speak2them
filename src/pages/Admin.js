@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../api';
@@ -31,36 +31,71 @@ export default function Admin({ user }) {
   }, []);
 
   const setPremium = async (u, value) => {
+    const userId = u.uid || u.id;
+
+    if (!userId) {
+      setError('User id is missing. Premium status could not be updated.');
+      return;
+    }
+
     setError('');
-    setLoading(prev => ({ ...prev, [u.uid]: true }));
+    setLoading(prev => ({ ...prev, [userId]: true }));
+
     try {
-      await setDoc(doc(db, 'users', u.uid), {
+      const userRef = doc(db, 'users', userId);
+      const premiumRequestRef = doc(db, 'premiumRequests', userId);
+
+      await updateDoc(userRef, {
         isPremium: value,
-        premiumSince: value ? new Date().toISOString() : null,
-      }, { merge: true });
+        premiumSince: value ? serverTimestamp() : null,
+      });
 
-      // Premium sorğusunu tamamla
+      const requestSnap = await getDoc(premiumRequestRef);
+
       if (value) {
-        await setDoc(doc(db, 'premiumRequests', u.uid), {
-          status: 'activated',
-          activatedAt: new Date().toISOString(),
-        }, { merge: true });
+        const requestUpdate = {
+          uid: userId,
+          status: 'active',
+          activatedAt: serverTimestamp(),
+          activatedBy: user.uid,
+        };
 
-        // İstifadəçiyə bot bildirişi göndər
+        if (requestSnap.exists()) {
+          await updateDoc(premiumRequestRef, requestUpdate);
+        } else {
+          await setDoc(premiumRequestRef, {
+            ...requestUpdate,
+            name: u.name || '',
+            email: u.email || '',
+            requestedAt: serverTimestamp(),
+          });
+        }
+
         if (u.telegramId) {
           await authedFetch(BOT_NOTIFY_URL, {
             method: 'POST',
             body: JSON.stringify({ telegramId: u.telegramId, userName: u.name }),
           }).catch(() => {});
         }
+      } else if (requestSnap.exists()) {
+        await updateDoc(premiumRequestRef, {
+          status: 'revoked',
+          revokedAt: serverTimestamp(),
+          revokedBy: user.uid,
+        });
       }
     } catch (e) {
-      console.error('Failed to update premium status:', e);
+      console.error('[Admin] Failed to update premium status:', {
+        targetUserId: userId,
+        adminUid: user?.uid,
+        value,
+        error: e,
+      });
       setError(e.message || 'Premium status could not be updated.');
+    } finally {
+      setLoading(prev => ({ ...prev, [userId]: false }));
     }
-    setLoading(prev => ({ ...prev, [u.uid]: false }));
   };
-
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const filteredUsers = users.filter(u =>
     u.name?.toLowerCase().includes(search.toLowerCase()) ||

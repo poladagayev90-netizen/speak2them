@@ -31,9 +31,11 @@ service cloud.firestore {
 
     match /premiumRequests/{userId} {
       allow read: if isAdmin() || isOwnDoc(userId);
-      allow create: if isOwnDoc(userId)
+      allow create: if isAdmin() || (
+        isOwnDoc(userId)
         && request.resource.data.uid == userId
-        && request.resource.data.status == 'pending';
+        && request.resource.data.status == 'pending'
+      );
       allow update: if isAdmin() || (
         isOwnDoc(userId)
         && resource.data.status == 'pending'
@@ -75,7 +77,20 @@ service cloud.firestore {
         request.auth.uid == userId ||
         resource.data.status == 'searching'
       );
-      allow create, update, delete: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isOwnDoc(userId);
+      allow update: if isOwnDoc(userId) || (
+        isSignedIn()
+        && request.auth.uid != userId
+        && exists(/databases/$(database)/documents/matchQueue/$(request.auth.uid))
+        && get(/databases/$(database)/documents/matchQueue/$(request.auth.uid)).data.status == 'searching'
+        && resource.data.status == 'searching'
+        && request.resource.data.status == 'matched'
+        && request.resource.data.matchedWith == request.auth.uid
+        && request.resource.data.callId is string
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'matchedWith', 'matchedAt', 'callId'])
+      );
+      allow delete: if isOwnDoc(userId);
     }
 
     match /waitlist/{docId} {

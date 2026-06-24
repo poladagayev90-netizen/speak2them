@@ -35,6 +35,24 @@ const levelDistance = (a, b) => {
   return Math.abs(rankA - rankB);
 };
 
+export const getMatchCallId = (uidA, uidB) => `call_${[uidA, uidB].sort().join('_')}`;
+
+const queueJoinedAt = (entry = {}) => {
+  if (typeof entry.joinedAtMs === 'number') return entry.joinedAtMs;
+  return entry.joinedAt?.toMillis?.() || 0;
+};
+
+const isLaterQueueEntry = (mine, partner, myUid, partnerUid) => {
+  const myJoinedAt = queueJoinedAt(mine);
+  const partnerJoinedAt = queueJoinedAt(partner);
+
+  if (myJoinedAt !== partnerJoinedAt) {
+    return myJoinedAt > partnerJoinedAt;
+  }
+
+  return myUid > partnerUid;
+};
+
 const targetAllowsLevel = (targetLevel, candidateLevel) => {
   if (!targetLevel || targetLevel === 'All' || targetLevel === 'Any') return true;
   return getLevelCode(targetLevel) === getLevelCode(candidateLevel);
@@ -101,11 +119,12 @@ export async function leaveSearchQueue(uid) {
 }
 
 export async function commitMatch(myUid, partnerUid) {
-  if (!myUid || !partnerUid || myUid === partnerUid) return false;
-  if (myUid > partnerUid) return false;
+  if (!myUid || !partnerUid || myUid === partnerUid) return null;
 
   const myRef = doc(db, 'matchQueue', myUid);
   const partnerRef = doc(db, 'matchQueue', partnerUid);
+  const callId = getMatchCallId(myUid, partnerUid);
+  const callRef = doc(db, 'calls', callId);
 
   try {
     await runTransaction(db, async (transaction) => {
@@ -119,20 +138,41 @@ export async function commitMatch(myUid, partnerUid) {
         throw new Error('partner-not-searching');
       }
 
+      const myData = mySnap.data();
+      const partnerData = partnerSnap.data();
+
+      if (!isLaterQueueEntry(myData, partnerData, myUid, partnerUid)) {
+        throw new Error('not-later-queue-entry');
+      }
+
+      transaction.set(callRef, {
+        userA: myUid,
+        userB: partnerUid,
+        callerId: myUid,
+        callerName: myData.name || 'User',
+        receiverId: partnerUid,
+        status: 'accepted',
+        source: 'random_match',
+        createdAt: serverTimestamp(),
+        matchedAt: serverTimestamp(),
+      }, { merge: true });
+
       transaction.update(myRef, {
         status: MATCH_STATUS.MATCHED,
         matchedWith: partnerUid,
+        callId,
         matchedAt: serverTimestamp(),
       });
       transaction.update(partnerRef, {
         status: MATCH_STATUS.MATCHED,
         matchedWith: myUid,
+        callId,
         matchedAt: serverTimestamp(),
       });
     });
-    return true;
+    return { matchedWith: partnerUid, callId };
   } catch {
-    return false;
+    return null;
   }
 }
 

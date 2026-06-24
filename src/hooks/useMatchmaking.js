@@ -11,14 +11,13 @@ import {
   subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-const LEVEL_MATCHING_MIN_USERS = 10;
+const LEVEL_MATCHING_MIN_SEARCHING_USERS = 50;
 const SEARCH_TIMEOUT_MS = 15000;
 const COMPENSATION_MINUTES = 5;
 
 export function useMatchmaking({
   user,
   levelFilter,
-  totalUsers,
   onMatched,
 }) {
   const [searching, setSearching] = useState(false);
@@ -36,7 +35,6 @@ export function useMatchmaking({
   const userLevel = user.level || 'Any';
   const userName = user.displayName || user.name || 'User';
   const userPartnerPreference = user.partnerPreference || 'Any';
-  const useLevelMatching = totalUsers >= LEVEL_MATCHING_MIN_USERS;
 
   const cleanupListeners = useCallback(() => {
     if (ownUnsubRef.current) {
@@ -56,6 +54,11 @@ export function useMatchmaking({
   const tryMatchWithCandidates = useCallback(async (candidates) => {
     if (!searchingRef.current || matchingRef.current || !user.uid) return;
 
+    const searchingCount = candidates.filter((candidate) => (
+      candidate.status === MATCH_STATUS.SEARCHING
+    )).length;
+    const useLevelMatching = searchingCount >= LEVEL_MATCHING_MIN_SEARCHING_USERS;
+
     const best = pickBestMatch(
       candidates,
       { uid: user.uid, level: userLevel, partnerPreference: userPartnerPreference },
@@ -65,22 +68,13 @@ export function useMatchmaking({
     if (!best?.uid) return;
 
     matchingRef.current = true;
-    const matched = await commitMatch(user.uid, best.uid);
+    await commitMatch(user.uid, best.uid);
     matchingRef.current = false;
-
-    if (matched) {
-      cleanupListeners();
-      setSearching(false);
-      onMatched(best.uid);
-    }
   }, [
     user.uid,
     userLevel,
     userPartnerPreference,
     levelFilter,
-    useLevelMatching,
-    cleanupListeners,
-    onMatched,
   ]);
 
   const giveCompensation = useCallback(async () => {
@@ -120,9 +114,10 @@ export function useMatchmaking({
       uid: user.uid,
       name: userName,
       level: userLevel,
-      desiredLevel: useLevelMatching ? levelFilter : 'Any',
-      partnerPreference: useLevelMatching ? userPartnerPreference : 'Any',
+      desiredLevel: levelFilter || 'Any',
+      partnerPreference: userPartnerPreference,
       status: MATCH_STATUS.SEARCHING,
+      joinedAtMs: Date.now(),
       joinedAt: serverTimestamp(),
     });
 
@@ -135,7 +130,7 @@ export function useMatchmaking({
         cleanupListeners();
         setSearching(false);
         await leaveSearchQueue(user.uid);
-        onMatched(data.matchedWith);
+        onMatched(data.matchedWith, data.callId);
       }
     });
 
@@ -156,7 +151,6 @@ export function useMatchmaking({
     userName,
     userLevel,
     levelFilter,
-    useLevelMatching,
     userPartnerPreference,
     tryMatchWithCandidates,
     cleanupListeners,
@@ -166,7 +160,10 @@ export function useMatchmaking({
 
   useEffect(() => () => {
     cleanupListeners();
-  }, [cleanupListeners]);
+    if (searchingRef.current) {
+      leaveSearchQueue(user.uid);
+    }
+  }, [cleanupListeners, user.uid]);
 
   return { searching, startSearch, cancelSearch, compensationMsg };
 }

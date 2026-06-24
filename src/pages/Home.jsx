@@ -21,14 +21,15 @@ export default function Home({ user }) {
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
 
-  const handleMatched = useCallback((partnerUid) => {
-    navigate(`/chat/${partnerUid}`);
+  const handleMatched = useCallback((partnerUid, callId) => {
+    navigate(`/chat/${partnerUid}`, {
+      state: { acceptedCall: true, callId, matchedCall: true },
+    });
   }, [navigate]);
 
   const { searching, startSearch, cancelSearch, compensationMsg } = useMatchmaking({
     user,
     levelFilter,
-    totalUsers: allUsers.length,
     onMatched: handleMatched,
   });
 
