@@ -3,10 +3,10 @@ import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, limit } f
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
-import HomeRanking from '../components/HomeRanking';
+import { AchievementsPanel } from '../components/BadgeSystem';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
-import { Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
+import { Award, Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
@@ -17,6 +17,7 @@ export default function Home({ user }) {
   const [incomingCall, setIncomingCall] = useState(null);
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
+  const [userBadges, setUserBadges] = useState(user.badges || []);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
 
@@ -86,6 +87,13 @@ export default function Home({ user }) {
 
   useEffect(() => () => { cancelSearch(); }, [cancelSearch]);
 
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
+      setUserBadges(snap.exists() ? (snap.data().badges || []) : []);
+    });
+    return unsub;
+  }, [user.uid]);
+
   const acceptCall = useCallback(async () => {
     if (!incomingCall?.callDocId) return;
     ringtoneRef.current?.pause();
@@ -102,6 +110,7 @@ export default function Home({ user }) {
   }, [incomingCall]);
 
   const browsableUsers = allUsers.filter(u => u.uid !== user.uid && u.id !== user.uid);
+  const isPeopleTab = tab === 'online' || tab === 'all';
   const baseList = tab === 'online' ? onlineUsers : browsableUsers;
   const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
@@ -177,12 +186,15 @@ export default function Home({ user }) {
           <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
             All ({browsableUsers.length})
           </button>
-          <button className={`tab ${tab === 'ranking' ? 'active' : ''}`} onClick={() => setTab('ranking')}>
-            🏆 Rankings
+          <button className={`tab ${tab === 'achievements' ? 'active' : ''}`} onClick={() => setTab('achievements')}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Award size={14} />
+              Achievements
+            </span>
           </button>
         </div>
 
-        {tab !== 'ranking' && (
+        {isPeopleTab && (
           <div className="level-filter">
             {LEVELS.map(l => (
               <button key={l} className={`level-btn ${levelFilter === l ? 'active' : ''}`} onClick={() => setLevelFilter(l)}>
@@ -192,20 +204,11 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {tab === 'ranking' && (
-          <div style={{ marginTop: '16px' }}>
-            {allUsers.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">⏳</div>
-                <p>Loading rankings...</p>
-              </div>
-            ) : (
-              <HomeRanking users={allUsers} currentUserId={user.uid} />
-            )}
-          </div>
+        {tab === 'achievements' && (
+          <AchievementsPanel earnedBadges={userBadges} />
         )}
 
-        {tab !== 'ranking' && (
+        {isPeopleTab && (
           <>
             {displayUsers.length === 0 ? (
               <div className="empty-state">

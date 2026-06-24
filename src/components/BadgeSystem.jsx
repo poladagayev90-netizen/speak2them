@@ -629,6 +629,223 @@ export function BadgeGrid({ earnedBadges=[] }) {
   );
 }
 
+function AchievementTile({ badgeId, earned, onPreview }) {
+  const b = getBadgeVisual(badgeId);
+  if (!b) return null;
+  const t = TIER_STYLES[b.tier];
+
+  return (
+    <button
+      type="button"
+      onClick={earned ? undefined : onPreview}
+      aria-label={`${b.label}${earned ? '' : ' locked'}`}
+      style={{
+        width:'100%',
+        minHeight:112,
+        borderRadius:16,
+        border:`1px solid ${earned ? t.border+'55' : '#262638'}`,
+        background: earned ? `radial-gradient(ellipse at 50% 0%, ${t.border}16 0%, ${t.bg} 72%)` : '#12121f',
+        color:'#fff',
+        padding:'16px 8px 14px',
+        position:'relative',
+        overflow:'hidden',
+        textAlign:'center',
+        fontFamily:'inherit',
+        cursor:earned?'default':'pointer',
+        opacity:earned?1:.74,
+        transition:'transform .2s ease, box-shadow .2s ease, opacity .2s ease',
+      }}
+      onMouseEnter={e=>{
+        e.currentTarget.style.transform='translateY(-4px) scale(1.02)';
+        e.currentTarget.style.boxShadow=earned ? `0 10px 26px ${b.glow}50` : '0 10px 24px rgba(0,0,0,.38)';
+      }}
+      onMouseLeave={e=>{
+        e.currentTarget.style.transform='translateY(0) scale(1)';
+        e.currentTarget.style.boxShadow='none';
+      }}
+    >
+      <div style={{
+        width:54,
+        height:54,
+        margin:'0 auto 9px',
+        opacity:earned?1:.48,
+        filter:earned ? `drop-shadow(0 0 10px ${b.glow}88)` : 'grayscale(1)',
+      }}>
+        <b.Icon/>
+      </div>
+      <div style={{fontSize:11,fontWeight:800,lineHeight:1.25,color:earned?'#fff':'#c6c9d3'}}>
+        {b.label}
+      </div>
+      {earned && (
+        <div style={{
+          position:'absolute',
+          top:8,
+          right:8,
+          width:7,
+          height:7,
+          borderRadius:'50%',
+          background:t.border,
+          boxShadow:`0 0 8px ${t.border}`,
+        }}/>
+      )}
+    </button>
+  );
+}
+
+function LockedBadgePreview({ badgeId, onClose }) {
+  if (!badgeId) return null;
+  const b = getBadgeVisual(badgeId);
+  if (!b) return null;
+  const t = TIER_STYLES[b.tier];
+
+  return (
+    <>
+      <style>{`
+        @keyframes achievementBackdropIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes achievementModalIn {
+          from { opacity:0; transform:scale(.92) translateY(10px) }
+          to { opacity:1; transform:scale(1) translateY(0) }
+        }
+        @keyframes achievementBadgeIn {
+          from { opacity:0; transform:scale(.78) }
+          to { opacity:1; transform:scale(1) }
+        }
+      `}</style>
+      <div
+        onClick={onClose}
+        style={{
+          position:'fixed',
+          inset:0,
+          zIndex:99999,
+          display:'flex',
+          alignItems:'center',
+          justifyContent:'center',
+          padding:24,
+          background:'rgba(4,4,12,.88)',
+          backdropFilter:'blur(10px)',
+          animation:'achievementBackdropIn .2s ease both',
+        }}
+      >
+        <div
+          onClick={e=>e.stopPropagation()}
+          style={{
+            width:'min(320px, 100%)',
+            padding:'30px 24px 24px',
+            borderRadius:22,
+            textAlign:'center',
+            background:`radial-gradient(ellipse at 50% 0%, ${t.border}22 0%, #10101c 58%, #0b0b14 100%)`,
+            border:`1px solid ${t.border}42`,
+            boxShadow:'0 24px 70px rgba(0,0,0,.62)',
+            animation:'achievementModalIn .28s cubic-bezier(.2,.9,.2,1) both',
+          }}
+        >
+          <div style={{
+            width:112,
+            height:112,
+            margin:'0 auto 18px',
+            borderRadius:'50%',
+            display:'flex',
+            alignItems:'center',
+            justifyContent:'center',
+            background:`radial-gradient(circle, ${b.glow}36 0%, transparent 68%)`,
+            animation:'achievementBadgeIn .32s cubic-bezier(.2,.9,.2,1) .06s both',
+          }}>
+            <div style={{width:82,height:82,filter:'grayscale(1) drop-shadow(0 14px 28px rgba(0,0,0,.35))',opacity:.68}}>
+              <b.Icon/>
+            </div>
+          </div>
+          <div style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:10}}>{b.label}</div>
+          <div style={{display:'grid',gap:8,textAlign:'left'}}>
+            <div style={{background:'#ffffff08',border:'1px solid #ffffff10',borderRadius:12,padding:'10px 12px'}}>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:'1.8px',textTransform:'uppercase',color:'#71717a',marginBottom:4}}>Requirement</div>
+              <div style={{fontSize:13,fontWeight:700,color:'#e5e7eb',lineHeight:1.35}}>{b.conditionText || b.desc}</div>
+            </div>
+            {b.rewardText && (
+              <div style={{background:`${t.border}12`,border:`1px solid ${t.border}35`,borderRadius:12,padding:'10px 12px'}}>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:'1.8px',textTransform:'uppercase',color:t.border,marginBottom:4}}>Reward</div>
+                <div style={{fontSize:13,fontWeight:700,color:'#fff',lineHeight:1.35}}>{b.rewardText}</div>
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              width:'100%',
+              marginTop:18,
+              padding:'12px 14px',
+              borderRadius:12,
+              border:'1px solid #ffffff14',
+              background:'#ffffff0d',
+              color:'#fff',
+              fontSize:14,
+              fontWeight:700,
+              cursor:'pointer',
+              transition:'transform .18s ease, background .18s ease',
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.02)';e.currentTarget.style.background='#ffffff14';}}
+            onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.background='#ffffff0d';}}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export function AchievementsPanel({ earnedBadges=[] }) {
+  const [previewBadge, setPreviewBadge] = useState(null);
+  const earnedSet = new Set(earnedBadges);
+  const earnedCount = BADGE_ORDER.filter(id => earnedSet.has(id)).length;
+
+  return (
+    <div style={{marginTop:16, animation:'fadeInUp .28s ease both'}}>
+      <div style={{
+        display:'flex',
+        alignItems:'center',
+        justifyContent:'space-between',
+        marginBottom:14,
+      }}>
+        <div>
+          <div style={{fontSize:18,fontWeight:800,color:'#fff',lineHeight:1.2}}>Achievements</div>
+          <div style={{fontSize:12,fontWeight:700,color:'#7c8597',marginTop:4}}>{earnedCount}/{BADGE_ORDER.length} unlocked</div>
+        </div>
+        <div style={{
+          minWidth:58,
+          padding:'8px 10px',
+          border:'1px solid #2e2e50',
+          borderRadius:14,
+          background:'#151522',
+          color:'#d8d7ff',
+          fontSize:13,
+          fontWeight:800,
+          textAlign:'center',
+        }}>
+          {Math.round((earnedCount / BADGE_ORDER.length) * 100)}%
+        </div>
+      </div>
+
+      <div style={{
+        display:'grid',
+        gridTemplateColumns:'repeat(auto-fit,minmax(92px,1fr))',
+        gap:10,
+      }}>
+        {BADGE_ORDER.map(id => (
+          <AchievementTile
+            key={id}
+            badgeId={id}
+            earned={earnedSet.has(id)}
+            onPreview={() => setPreviewBadge(id)}
+          />
+        ))}
+      </div>
+
+      <LockedBadgePreview badgeId={previewBadge} onClose={()=>setPreviewBadge(null)} />
+    </div>
+  );
+}
+
 export function checkNewBadges(userData, callData = {}) {
   return checkBadgeUnlocks(userData, callData);
 }
