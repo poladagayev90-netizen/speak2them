@@ -4,9 +4,10 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f0f1a" />
+    <meta name="theme-color" content="#0f0f0f" />
     
-    <!-- iOS Native App Meta Tags -->
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Speak2Them" />
@@ -18,6 +19,15 @@
         document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
       }
     </script>
+    <style>
+      html, body {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
