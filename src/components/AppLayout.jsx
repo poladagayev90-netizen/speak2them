@@ -13,7 +13,8 @@ export default function AppLayout({ children, user }) {
   useEffect(() => {
     const checkLayout = () => {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
-      const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+      // Improve PWA check to cover iOS navigator.standalone
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
       const isTelegram = document.body.classList.contains('is-telegram');
       
       const mobileMode = isMobile || isPWA || isTelegram;
@@ -36,27 +37,37 @@ export default function AppLayout({ children, user }) {
     return <>{children}</>;
   }
 
-  return (
-    <div className={`app-layout ${forceMobile ? 'force-mobile' : ''}`}>
-      {/* Desktop Sidebar (Settings) - Hidden on mobile by default CSS, and now via JS */}
-      {!forceMobile && (
-        <div className="desktop-sidebar">
-          <SettingsPanel open={true} onClose={() => {}} isDesktop={true} />
+  // -------------------------
+  // 1. MOBILE / PWA LAYOUT
+  // -------------------------
+  if (forceMobile) {
+    return (
+      <div className="mobile-layout">
+        <div className="main-content">
+          <SettingsButton onClick={() => setSettingsOpen(true)} />
+          {children}
+          <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />
+          <InstallPrompt />
         </div>
-      )}
+        <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} isDesktop={false} />
+      </div>
+    );
+  }
 
-      {/* Main Content Area */}
-      <div className="main-content">
-        <SettingsButton onClick={() => setSettingsOpen(true)} />
-        {children}
-        <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />
-        <InstallPrompt />
+  // -------------------------
+  // 2. DESKTOP LAYOUT
+  // -------------------------
+  return (
+    <div className="desktop-layout">
+      <div className="desktop-sidebar">
+        <SettingsPanel open={true} onClose={() => {}} isDesktop={true} />
       </div>
 
-      {/* Mobile Settings Drawer - Overlays on mobile */}
-      {forceMobile && (
-        <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} isDesktop={false} />
-      )}
+      <div className="main-content">
+        {children}
+        {/* On desktop, settings sidebar is always visible, no bottom nav, no settings button overlay */}
+        <InstallPrompt />
+      </div>
     </div>
   );
 }

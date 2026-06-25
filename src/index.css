@@ -266,7 +266,7 @@ code {
 }
 
 /* Layout Architecture */
-.app-layout {
+.mobile-layout, .desktop-layout {
   display: flex;
   width: 100vw;
   min-height: 100vh;
@@ -275,8 +275,22 @@ code {
   background: var(--bg-primary);
 }
 
+.mobile-layout {
+  max-width: 100vw;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.desktop-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+
 .desktop-sidebar {
-  display: none;
   width: 300px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
@@ -293,33 +307,6 @@ code {
   -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 768px) {
-  .desktop-sidebar {
-    display: block;
-  }
-  
-  .app-layout {
-    max-width: 1200px;
-    margin: 0 auto;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
-  }
-}
-
-/* Override desktop layout if force-mobile is active */
-.app-layout.force-mobile {
-  max-width: 100vw !important;
-  margin: 0 !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.app-layout.force-mobile .settings-button {
-  display: inline-flex !important;
-}
-
-
 /* Desktop Sidebar Settings */
 .settings-sidebar {
   width: 100%;
@@ -327,13 +314,6 @@ code {
   padding: 0;
   display: flex;
   flex-direction: column;
-}
-
-@media (min-width: 768px) {
-  /* Hide the settings button on desktop since we have the sidebar */
-  .settings-button {
-    display: none !important;
-  }
 }
 
 /* On mobile, ensure settings-panel is fixed for drawer behavior */
