@@ -6,6 +6,8 @@ import { auth, db, registerFcmToken } from './firebase';
 import { tg, tgUser } from './telegram';
 import BottomNav from './components/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
+import SettingsButton from './components/SettingsButton';
+import SettingsPanel from './components/SettingsPanel';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
 
 const Login = React.lazy(() => import('./pages/Login'));
@@ -34,6 +36,7 @@ const isPreLaunch = Date.now() < LAUNCH_DATE;
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     tg.ready();
@@ -128,47 +131,54 @@ function App() {
 
   if (loading) {
     return (
-      <div className="splash-screen">
-        <div className="splash-content">
-          <div className="splash-logo">🎙️</div>
-          <h1 className="splash-title">Speak2Them</h1>
+      <>
+        <div className="splash-screen">
+          <div className="splash-content">
+            <div className="splash-logo">S2T</div>
+            <h1 className="splash-title">Speak2Them</h1>
+          </div>
+          <div className="splash-quote">
+            <p className="splash-motto">"The limits of my language are the limits of my world."</p>
+            <span className="splash-by">- Ludwig Wittgenstein</span>
+          </div>
+          <p className="splash-credit">Built by Polad</p>
         </div>
-        <div className="splash-quote">
-          <p className="splash-motto">"The limits of my language are the limits of my world."</p>
-          <span className="splash-by">— Ludwig Wittgenstein</span>
-        </div>
-        <p className="splash-credit">Built by Polad 🚀</p>
-      </div>
+        <SettingsButton onClick={() => setSettingsOpen(true)} />
+        <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      </>
     );
   }
-
   const homeElement = user
     ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
     : (isPreLaunch ? <CountdownPage /> : <Navigate to="/login" />);
 
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-            <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-            <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-            <Route path="/" element={homeElement} />
-            <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-            <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
-            <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-            <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-            <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-            <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
-            <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
-            <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
-            <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-          </Routes>
-          {user && <BottomNav user={user} />}
-        </Suspense>
-      </BrowserRouter>
-    </ErrorBoundary>
+    <>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+              <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+              <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+              <Route path="/" element={homeElement} />
+              <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+              <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+              <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+              <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+              <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
+              <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
+              <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
+              <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+              <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+            </Routes>
+            {user && <BottomNav user={user} />}
+          </Suspense>
+        </BrowserRouter>
+      </ErrorBoundary>
+      <SettingsButton onClick={() => setSettingsOpen(true)} />
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </>
   );
 }
 

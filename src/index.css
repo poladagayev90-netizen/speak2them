@@ -1,3 +1,42 @@
+[data-theme="dark"] {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --accent: #6c63ff;
+  --border: #333333;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --bg-input: #151515;
+  --accent-strong: #554cf0;
+  --text-muted: #777777;
+  --text-on-accent: #ffffff;
+  --overlay: rgba(0, 0, 0, 0.48);
+}
+
+[data-theme="light"] {
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f0ede8;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --accent: #6c63ff;
+  --border: #e0dbd3;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --bg-input: #ffffff;
+  --accent-strong: #554cf0;
+  --text-muted: #8a8177;
+  --text-on-accent: #ffffff;
+  --overlay: rgba(0, 0, 0, 0.32);
+}
+
+html,
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +49,182 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.btn-primary,
+.btn-chat,
+.btn-random,
+.chat-input button,
+.tab.active,
+.hub-tab.active,
+.diff-btn.active,
+.level-btn.active,
+.dp-tab.active,
+.message.mine p,
+.question-number,
+.call-btn-big,
+.btn-call,
+.btn-mute,
+.btn-end,
+.btn-accept,
+.btn-reject {
+  color: var(--text-on-accent);
+}
+
+.settings-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: 0 12px 30px var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.settings-button:hover {
+  transform: translateY(-2px) scale(1.04);
+  border-color: var(--accent);
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  border: 0;
+  background: var(--overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.settings-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 999;
+  width: 300px;
+  max-width: 100%;
+  height: 100vh;
+  padding: 20px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-left: 1px solid var(--border);
+  box-shadow: -20px 0 40px var(--shadow);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+.settings-panel-header,
+.settings-row,
+.settings-title,
+.settings-row-label {
+  display: flex;
+  align-items: center;
+}
+
+.settings-panel-header {
+  justify-content: space-between;
+}
+
+.settings-title {
+  gap: 8px;
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.settings-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.settings-close:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.04);
+}
+
+.settings-divider {
+  height: 1px;
+  margin: 18px 0;
+  background: var(--border);
+}
+
+.settings-row {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-row-label {
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.theme-switch {
+  width: 58px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-card);
+  padding: 3px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.theme-switch.dark {
+  background: color-mix(in srgb, var(--accent) 24%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+
+.theme-switch-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(0);
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.theme-switch.dark .theme-switch-thumb {
+  transform: translateX(26px);
+}
+
+@media (max-width: 520px) {
+  .settings-panel {
+    width: 100%;
+  }
 }
