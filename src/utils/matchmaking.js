@@ -82,24 +82,37 @@ export function pickBestMatch(candidates, currentUser, requestedLevel, useLevelM
   const pool = candidates.filter((c) => c.uid && c.uid !== currentUser.uid);
   if (pool.length === 0) return null;
 
+  // Under 20 searching users — match with anyone
   if (!useLevelMatching) {
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  const strictMatches = pool.filter((candidate) =>
-    targetAllowsLevel(requestedLevel, candidate.level) &&
-    targetAllowsLevel(candidate.desiredLevel, currentUser.level) &&
-    preferenceAllowsLevel(currentUser.level, candidate.level, currentUser.partnerPreference) &&
-    preferenceAllowsLevel(candidate.level, currentUser.level, candidate.partnerPreference)
-  );
+  // Neighbor level map — each level can match with adjacent levels
+  const ALLOWED_NEIGHBORS = {
+    A1: ['A1', 'A2'],
+    A2: ['A1', 'A2', 'B1'],
+    B1: ['A2', 'B1', 'B2'],
+    B2: ['B1', 'B2', 'C1'],
+    C1: ['B1', 'B2', 'C1', 'C2'],
+    C2: ['C1', 'C2'],
+  };
 
-  const fallbackMatches = pool.filter((candidate) =>
-    targetAllowsLevel(requestedLevel, candidate.level) &&
-    targetAllowsLevel(candidate.desiredLevel, currentUser.level)
-  );
+  const myCode = getLevelCode(currentUser.level);
+  const allowedForMe = myCode ? (ALLOWED_NEIGHBORS[myCode] || [myCode]) : null;
 
-  const finalPool = strictMatches.length > 0 ? strictMatches : fallbackMatches;
-  if (finalPool.length === 0) return null;
+  const neighborMatches = allowedForMe
+    ? pool.filter((c) => {
+        const cCode = getLevelCode(c.level);
+        const allowedForCandidate = cCode ? (ALLOWED_NEIGHBORS[cCode] || [cCode]) : null;
+        // Both must accept each other's level
+        return (
+          allowedForMe.includes(cCode) &&
+          (allowedForCandidate ? allowedForCandidate.includes(myCode) : true)
+        );
+      })
+    : pool;
+
+  const finalPool = neighborMatches.length > 0 ? neighborMatches : pool;
 
   return [...finalPool].sort(
     (a, b) => scoreCandidate(b, currentUser, requestedLevel) - scoreCandidate(a, currentUser, requestedLevel)
