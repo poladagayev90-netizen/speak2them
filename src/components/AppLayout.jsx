@@ -68,7 +68,6 @@ export default function AppLayout({ children, user }) {
     return (
       <div className="mobile-layout">
         <div className="main-content">
-          <SettingsButton onClick={() => setSettingsOpen(true)} />
           {children}
           <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />
           <InstallPrompt />

@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'f
 import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { BadgeGrid } from '../components/BadgeSystem';
+
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
@@ -197,9 +197,7 @@ export default function Profile({ user }) {
           </div>
         )}
 
-        <div style={{ marginBottom: '24px' }}>
-          <BadgeGrid earnedBadges={badges} />
-        </div>
+        {/* Badges removed from here as they exist in achievements */}
 
         <div className="profile-form">
           <label>Full Name</label>

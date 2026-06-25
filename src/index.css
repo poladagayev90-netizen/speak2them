@@ -269,8 +269,8 @@ code {
 .mobile-layout, .desktop-layout {
   display: flex;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: var(--bg-primary);
 }
