@@ -980,25 +980,28 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-card);
+  height: 64px;
+  background: var(--bg-secondary);
   border-top: 1px solid var(--border);
   display: flex;
+  align-items: center;
   justify-content: space-around;
-  padding: 8px 0 20px 0;
   z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .bottom-nav-btn {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 3px;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 6px 16px;
-  border-radius: 12px;
-  transition: all 0.2s;
+  padding: 8px 0;
+  height: 100%;
 }
 
 .bottom-nav-icon {
@@ -1006,13 +1009,14 @@ body {
 }
 
 .bottom-nav-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .bottom-nav-btn.active .bottom-nav-label {
-  color: var(--accent);
+  color: #7c6ff7;
+  font-weight: 700;
 }
 
 .bottom-nav-btn.active .bottom-nav-icon {
