@@ -55,8 +55,10 @@ export default function Chat({ user }) {
   const timerRef = useRef(null);
   const prevCallStatus = useRef('');
 
+  const stateCallId = location.state?.callId;
+  const isMatchedCall = location.state?.matchedCall === true;
   const chatId = [user.uid, peerId].sort().join('_');
-  const callDocId = `call_${chatId}`;
+  const callDocId = stateCallId || `call_${chatId}`;
   const content = getTodayContent();
   const freeCallLimitSeconds = (15 + bonusMinutes) * 60;
 
@@ -199,9 +201,26 @@ export default function Chat({ user }) {
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
-      joinCall();
+      // Small stagger for matched calls to prevent Agora collision
+      const delay = isMatchedCall ? (user.uid < peerId ? 0 : 1200) : 0;
+      const timer = setTimeout(() => { joinCall(); }, delay);
+      return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!isMatchedCall || !stateCallId) return;
+    // Ensure call doc exists with correct structure for matched calls
+    setDoc(doc(db, 'calls', stateCallId), {
+      userA: [user.uid, peerId].sort()[0],
+      userB: [user.uid, peerId].sort()[1],
+      callerId: user.uid,
+      receiverId: peerId,
+      status: 'accepted',
+      source: 'random_match',
+    }, { merge: true }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Firestore call listener
@@ -348,17 +367,35 @@ export default function Chat({ user }) {
     try {
       let currentUserUnlocks = [];
 
+      // If call doc doesn't exist, still do local cleanup
+      const callDocSnap = await getDoc(doc(db, 'calls', callDocId)).catch(() => null);
+      if (!callDocSnap?.exists()) {
+        setInCall(false);
+        setCallStatus('');
+        setMuted(false);
+        joinedRef.current = false;
+        endingRef.current = false;
+        return;
+      }
+
       await runTransaction(db, async (transaction) => {
         const callRef = doc(db, 'calls', callDocId);
         const callSnap = await transaction.get(callRef);
         if (!callSnap.exists()) return;
 
         const callData = callSnap.data() || {};
-        const participants = [
-          callData.userA || callData.callerId || user.uid,
-          callData.userB || callData.receiverId || peerId,
-        ].filter(Boolean);
-        const uniqueParticipants = Array.from(new Set(participants));
+        
+        // Gather all possible participant UIDs robustly
+        const participantSet = new Set([
+          callData.userA,
+          callData.userB, 
+          callData.callerId,
+          callData.receiverId,
+          user.uid,
+          peerId,
+        ].filter(Boolean));
+        const participants = Array.from(participantSet).slice(0, 2);
+        const uniqueParticipants = participants;
         const durationMinutes = Math.ceil(secondsTalked / 60);
         const shouldApplyStats = secondsTalked > 5 && !callData.statsApplied && uniqueParticipants.length === 2;
 
