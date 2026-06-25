@@ -58,14 +58,7 @@ const targetAllowsLevel = (targetLevel, candidateLevel) => {
   return getLevelCode(targetLevel) === getLevelCode(candidateLevel);
 };
 
-const preferenceAllowsLevel = (ownerLevel, partnerLevel, preference = 'Any') => {
-  const ownerRank = getLevelRank(ownerLevel);
-  const partnerRank = getLevelRank(partnerLevel);
-  if (ownerRank === null || partnerRank === null) return true;
-  if (preference === 'Same') return ownerRank === partnerRank;
-  if (preference === 'Higher') return partnerRank > ownerRank;
-  return true;
-};
+
 
 const scoreCandidate = (candidate, currentUser, requestedLevel) => {
   const distance = levelDistance(currentUser.level, candidate.level);
