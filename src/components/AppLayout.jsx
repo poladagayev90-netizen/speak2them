@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BottomNav from './BottomNav';
 import SettingsPanel from './SettingsPanel';
 import SettingsButton from './SettingsButton';
@@ -7,7 +7,28 @@ import { useLocation } from 'react-router-dom';
 
 export default function AppLayout({ children, user }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [forceMobile, setForceMobile] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const checkLayout = () => {
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+      const isTelegram = document.body.classList.contains('is-telegram');
+      
+      const mobileMode = isMobile || isPWA || isTelegram;
+      setForceMobile(mobileMode);
+      
+      // Close settings if switching to mobile
+      if (mobileMode) {
+        setSettingsOpen(false);
+      }
+    };
+    
+    checkLayout();
+    window.addEventListener('resize', checkLayout);
+    return () => window.removeEventListener('resize', checkLayout);
+  }, []);
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
@@ -16,11 +37,13 @@ export default function AppLayout({ children, user }) {
   }
 
   return (
-    <div className="app-layout">
-      {/* Desktop Sidebar (Settings) - Hidden on mobile by default CSS */}
-      <div className="desktop-sidebar">
-        <SettingsPanel open={true} onClose={() => {}} isDesktop={true} />
-      </div>
+    <div className={`app-layout ${forceMobile ? 'force-mobile' : ''}`}>
+      {/* Desktop Sidebar (Settings) - Hidden on mobile by default CSS, and now via JS */}
+      {!forceMobile && (
+        <div className="desktop-sidebar">
+          <SettingsPanel open={true} onClose={() => {}} isDesktop={true} />
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="main-content">
@@ -31,7 +54,9 @@ export default function AppLayout({ children, user }) {
       </div>
 
       {/* Mobile Settings Drawer - Overlays on mobile */}
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} isDesktop={false} />
+      {forceMobile && (
+        <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} isDesktop={false} />
+      )}
     </div>
   );
 }
