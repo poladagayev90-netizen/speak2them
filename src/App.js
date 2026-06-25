@@ -3,12 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db, registerFcmToken } from './firebase';
-import { tg, tgUser } from './telegram';
-import BottomNav from './components/BottomNav';
+import { tg, tgUser, isTelegramWebApp } from './telegram';
 import ErrorBoundary from './components/ErrorBoundary';
-import SettingsButton from './components/SettingsButton';
-import SettingsPanel from './components/SettingsPanel';
-import InstallPrompt from './components/InstallPrompt';
+import AppLayout from './components/AppLayout';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
 
 const Login = React.lazy(() => import('./pages/Login'));
@@ -37,12 +34,16 @@ const isPreLaunch = Date.now() < LAUNCH_DATE;
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
-    tg.ready();
-    tg.expand();
+    if (isTelegramWebApp && tg.ready) {
+      tg.ready();
+      tg.expand();
+      document.body.classList.add('is-telegram');
+    }
+  }, []);
 
+  useEffect(() => {
     let heartbeatInterval = null;
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
@@ -144,8 +145,6 @@ function App() {
           </div>
           <p className="splash-credit">Built by Polad</p>
         </div>
-        <SettingsButton onClick={() => setSettingsOpen(true)} />
-        <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       </>
     );
   }
@@ -158,27 +157,26 @@ function App() {
       <ErrorBoundary>
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-              <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-              <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-              <Route path="/" element={homeElement} />
-              <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-              <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
-              <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-              <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-              <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-              <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
-              <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
-              <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
-              <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-            </Routes>
-            {user && <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />}
-            <InstallPrompt />
+            <AppLayout user={user}>
+              <Routes>
+                <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+                <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+                <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+                <Route path="/" element={homeElement} />
+                <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+                <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+                <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+                <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
+                <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
+                <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
+                <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+                <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+              </Routes>
+            </AppLayout>
           </Suspense>
         </BrowserRouter>
       </ErrorBoundary>
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   );
 }

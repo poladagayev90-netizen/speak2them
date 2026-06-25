@@ -31,16 +31,16 @@
 }
 
 html {
-  background: #000;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  margin: 0 auto;
-  max-width: 480px;
-  position: relative;
-  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  min-height: 100vh;
   min-height: 100dvh;
+  position: relative;
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -263,3 +263,102 @@ code {
     width: 100%;
   }
 }
+
+/* Layout Architecture */
+.app-layout {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.desktop-sidebar {
+  display: none;
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .desktop-sidebar {
+    display: block;
+  }
+  
+  .app-layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  }
+}
+
+
+/* Desktop Sidebar Settings */
+.settings-sidebar {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  /* Hide the settings button on desktop since we have the sidebar */
+  .settings-button {
+    display: none !important;
+  }
+}
+
+/* On mobile, ensure settings-panel is fixed for drawer behavior */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  width: 280px;
+  max-width: 80vw;
+  height: 100dvh;
+  padding: 0;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px var(--shadow);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  border: 0;
+  background: var(--overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.settings-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+

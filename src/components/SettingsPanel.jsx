@@ -2,9 +2,39 @@ import React from 'react';
 import { Moon, Settings, Sun, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export default function SettingsPanel({ open, onClose }) {
+export default function SettingsPanel({ open, onClose, isDesktop }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
+
+  if (isDesktop) {
+    return (
+      <aside className="settings-sidebar">
+        <div className="settings-panel-header">
+          <div className="settings-title">
+            <Settings size={18} strokeWidth={2.2} />
+            <span>Settings</span>
+          </div>
+        </div>
+        <div className="settings-divider" />
+        <div className="settings-content">
+          <div className="settings-row" onClick={toggleTheme} style={{ cursor: 'pointer' }}>
+            <div className="settings-row-label">
+              {isDark ? <Moon size={18} strokeWidth={2.2} /> : <Sun size={18} strokeWidth={2.2} />}
+              <span>Dark Mode</span>
+            </div>
+            <button
+              type="button"
+              className={`theme-switch ${isDark ? 'dark' : 'light'}`}
+              aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              aria-pressed={isDark}
+            >
+              <span className="theme-switch-thumb"></span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <>
