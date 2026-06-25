@@ -147,7 +147,7 @@ export function useMatchmaking({
     userName,
     userLevel,
     levelFilter,
-
+    user.partnerPreference,
     tryMatchWithCandidates,
     cleanupListeners,
     onMatched,
