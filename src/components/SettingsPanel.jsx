@@ -31,6 +31,21 @@ export default function SettingsPanel({ open, onClose, isDesktop }) {
               <span className="theme-switch-thumb"></span>
             </button>
           </div>
+
+          <div className="settings-row" onClick={toggleManualMobileMode} style={{ cursor: 'pointer', marginTop: '8px' }}>
+            <div className="settings-row-label">
+              <Settings size={18} strokeWidth={2.2} />
+              <span>Force Mobile View</span>
+            </div>
+            <button
+              type="button"
+              className={`theme-switch ${manualMobileMode ? 'dark' : 'light'}`}
+              aria-label="Toggle Force Mobile View"
+              aria-pressed={manualMobileMode}
+            >
+              <span className="theme-switch-thumb"></span>
+            </button>
+          </div>
         </div>
       </aside>
     );
@@ -69,6 +84,21 @@ export default function SettingsPanel({ open, onClose, isDesktop }) {
               className={`theme-switch ${isDark ? 'dark' : 'light'}`}
               aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
               aria-pressed={isDark}
+            >
+              <span className="theme-switch-thumb"></span>
+            </button>
+          </div>
+
+          <div className="settings-row" onClick={toggleManualMobileMode} style={{ cursor: 'pointer', marginTop: '8px' }}>
+            <div className="settings-row-label">
+              <Settings size={18} strokeWidth={2.2} />
+              <span>Force Mobile View</span>
+            </div>
+            <button
+              type="button"
+              className={`theme-switch ${manualMobileMode ? 'dark' : 'light'}`}
+              aria-label="Toggle Force Mobile View"
+              aria-pressed={manualMobileMode}
             >
               <span className="theme-switch-thumb"></span>
             </button>
