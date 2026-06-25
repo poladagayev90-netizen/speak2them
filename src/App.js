@@ -41,6 +41,14 @@ function App() {
       tg.expand();
       document.body.classList.add('is-telegram');
     }
+
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = window.innerWidth <= 768;
+    if (isPWA || isMobile) {
+      document.documentElement.style.setProperty('--app-max-width', '100vw');
+      document.body.style.maxWidth = '100vw';
+      document.body.style.width = '100vw';
+    }
   }, []);
 
   useEffect(() => {
