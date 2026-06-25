@@ -26,28 +26,24 @@ export default function SettingsPanel({ open, onClose }) {
             <X size={20} />
           </button>
         </div>
-
         <div className="settings-divider" />
 
-        <div className="settings-row">
-          <div className="settings-row-label">
-            <Moon size={17} strokeWidth={2.2} />
-            <span>Dark Mode</span>
+        <div className="settings-content">
+          <div className="settings-row" onClick={toggleTheme} style={{ cursor: 'pointer' }}>
+            <div className="settings-row-label">
+              {isDark ? <Moon size={18} strokeWidth={2.2} /> : <Sun size={18} strokeWidth={2.2} />}
+              <span>Dark Mode</span>
+            </div>
+            <button
+              type="button"
+              className={`theme-switch ${isDark ? 'dark' : 'light'}`}
+              aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              aria-pressed={isDark}
+            >
+              <span className="theme-switch-thumb"></span>
+            </button>
           </div>
-          <button
-            type="button"
-            className={`theme-switch ${isDark ? 'dark' : 'light'}`}
-            onClick={toggleTheme}
-            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-            aria-pressed={isDark}
-          >
-            <span className="theme-switch-thumb">
-              {isDark ? <Moon size={14} /> : <Sun size={14} />}
-            </span>
-          </button>
         </div>
-
-        <div className="settings-divider" />
       </aside>
     </>
   );

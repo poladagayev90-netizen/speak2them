@@ -134,7 +134,7 @@ function App() {
       <>
         <div className="splash-screen">
           <div className="splash-content">
-            <div className="splash-logo">S2T</div>
+            <div className="splash-logo">🎙️</div>
             <h1 className="splash-title">Speak2Them</h1>
           </div>
           <div className="splash-quote">
