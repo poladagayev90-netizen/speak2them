@@ -2,7 +2,7 @@ import React from 'react';
 import { Moon, Settings, Sun, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export default function SettingsPanel({ open, onClose, isDesktop }) {
+export default function SettingsPanel({ open, onClose, isDesktop, manualMobileMode, toggleManualMobileMode }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
