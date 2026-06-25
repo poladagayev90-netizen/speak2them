@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, Trophy, User } from 'lucide-react';
+import { Home, MessageCircle, Trophy, User, Settings } from 'lucide-react';
 
-export default function BottomNav({ user }) {
+export default function BottomNav({ user, onOpenSettings }) {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -10,20 +10,21 @@ export default function BottomNav({ user }) {
   const tabs = [
     { icon: Home, label: 'Lobby', route: '/' },
     { icon: MessageCircle, label: 'Chats', route: '/chats' },
+    { icon: Settings, label: 'Ayarlar', action: onOpenSettings },
     { icon: Trophy, label: 'Ranking', route: '/ranking' },
     { icon: User, label: 'Profile', route: '/profile' },
   ];
 
   return (
     <div className="bottom-nav">
-      {tabs.map(tab => {
+      {tabs.map((tab, idx) => {
         const Icon = tab.icon;
         const isActive = path === tab.route;
         return (
           <button
-            key={tab.route}
+            key={tab.route || idx}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
-            onClick={() => navigate(tab.route)}
+            onClick={() => tab.action ? tab.action() : navigate(tab.route)}
           >
             <Icon
               size={22}

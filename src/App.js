@@ -172,11 +172,10 @@ function App() {
               <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
               <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
             </Routes>
-            {user && <BottomNav user={user} />}
+            {user && <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />}
           </Suspense>
         </BrowserRouter>
       </ErrorBoundary>
-      <SettingsButton onClick={() => setSettingsOpen(true)} />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   );
