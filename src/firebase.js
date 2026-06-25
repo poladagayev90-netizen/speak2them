@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 
@@ -57,5 +57,5 @@ export async function registerFcmToken(uid) {
   }
 }
 
-export { auth, db };
+export { auth, db, GoogleAuthProvider, signInWithPopup };
 export default app;

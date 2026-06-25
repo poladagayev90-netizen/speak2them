@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 import SettingsButton from './components/SettingsButton';
 import SettingsPanel from './components/SettingsPanel';
+import InstallPrompt from './components/InstallPrompt';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
 
 const Login = React.lazy(() => import('./pages/Login'));
@@ -173,6 +174,7 @@ function App() {
               <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
             </Routes>
             {user && <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />}
+            <InstallPrompt />
           </Suspense>
         </BrowserRouter>
       </ErrorBoundary>
