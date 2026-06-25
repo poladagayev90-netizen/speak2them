@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BottomNav from './BottomNav';
 import SettingsPanel from './SettingsPanel';
-import SettingsButton from './SettingsButton';
 import InstallPrompt from './InstallPrompt';
 import { useLocation } from 'react-router-dom';
 

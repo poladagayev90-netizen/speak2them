@@ -15,7 +15,6 @@ export default function Profile({ user }) {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-  const [badges, setBadges] = useState([]);
   const [stats, setStats] = useState({ calls: 0, totalMinutes: 0, streak: 0, rating: 0, ratingCount: 0 });
   const [bonusMinutes, setBonusMinutes] = useState(0);
   const [docId, setDocId] = useState(null);
@@ -44,7 +43,6 @@ export default function Profile({ user }) {
               setBio(d.bio || '');
               setLevel(d.level || 'B1 – Intermediate');
               setIsPremium(d.isPremium || false);
-              setBadges(d.badges || []);
               setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0, rating: d.rating || 0, ratingCount: d.ratingCount || 0 });
               setBonusMinutes(d.bonusMinutes || 0);
             }
