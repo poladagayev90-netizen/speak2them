@@ -8,7 +8,7 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .loading-screen {
@@ -16,7 +16,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: 100dvh;
   gap: 16px;
 }
 
@@ -28,7 +28,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 20px;
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
 }
@@ -143,7 +143,7 @@ body {
 }
 
 .home-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -269,7 +269,7 @@ body {
 .chat-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   padding-bottom: 70px;
 }
 
@@ -547,7 +547,7 @@ body {
 .btn-forgot:hover {
   text-decoration: underline;
 }
-.hub-page { min-height: 100vh; display: flex; flex-direction: column; }
+.hub-page { min-height: 100dvh; display: flex; flex-direction: column; }
 .hub-header { display: flex; align-items: center; gap: 16px; padding: 20px 32px; background: var(--bg-card); border-bottom: 1px solid var(--border); }
 .hub-topic { font-size: 24px; font-weight: 800; color: var(--accent); }
 .hub-tabs { display: flex; gap: 8px; padding: 20px 32px 0; }
@@ -576,7 +576,7 @@ body {
 .idiom-meaning { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
 .idiom-example { font-size: 14px; color: var(--text-primary); font-style: italic; }
 .profile-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -812,7 +812,7 @@ body {
   right: 0;
   width: 100%;
   max-width: 420px;
-  height: 100vh;
+  height: 100dvh;
   background: var(--bg-primary);
   border-left: 1px solid var(--border);
   z-index: 1001;
@@ -894,7 +894,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: 100dvh;
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   padding: 40px;
   position: relative;

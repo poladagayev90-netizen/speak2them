@@ -45,6 +45,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  
+  /* Native App Feel */
+  -webkit-touch-callout: none; /* Disable native popup on long press */
+  -webkit-user-select: none; /* Disable text selection */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */
+  overscroll-behavior-y: none; /* Disable pull-to-refresh & rubber-banding */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 code {
