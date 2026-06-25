@@ -50,7 +50,7 @@ export default function InstallPrompt() {
 
   return (
     <div style={{
-      position: 'fixed',
+      position: 'absolute',
       bottom: '80px', // Above bottom nav usually
       left: '16px',
       right: '16px',
