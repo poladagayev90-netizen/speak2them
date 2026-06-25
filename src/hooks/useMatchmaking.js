@@ -34,7 +34,6 @@ export function useMatchmaking({
 
   const userLevel = user.level || 'Any';
   const userName = user.displayName || user.name || 'User';
-  const userPartnerPreference = user.partnerPreference || 'Any';
 
   const cleanupListeners = useCallback(() => {
     if (ownUnsubRef.current) {
@@ -54,28 +53,25 @@ export function useMatchmaking({
   const tryMatchWithCandidates = useCallback(async (candidates) => {
     if (!searchingRef.current || matchingRef.current || !user.uid) return;
 
-    const searchingCount = candidates.filter((candidate) => (
-      candidate.status === MATCH_STATUS.SEARCHING
-    )).length;
+    const searchingCount = candidates.filter(
+      (c) => c.status === MATCH_STATUS.SEARCHING
+    ).length;
     const useLevelMatching = searchingCount >= LEVEL_MATCHING_MIN_SEARCHING_USERS;
 
     const best = pickBestMatch(
       candidates,
-      { uid: user.uid, level: userLevel, partnerPreference: userPartnerPreference },
-      levelFilter,
+      { uid: user.uid, level: userLevel },
       useLevelMatching
     );
     if (!best?.uid) return;
 
     matchingRef.current = true;
-    await commitMatch(user.uid, best.uid);
-    matchingRef.current = false;
-  }, [
-    user.uid,
-    userLevel,
-    userPartnerPreference,
-    levelFilter,
-  ]);
+    try {
+      await commitMatch(user.uid, best.uid);
+    } finally {
+      matchingRef.current = false; // ALWAYS reset, even on failure
+    }
+  }, [user.uid, userLevel]);
 
   const giveCompensation = useCallback(async () => {
   if (!user.uid) return;
@@ -115,7 +111,7 @@ export function useMatchmaking({
       name: userName,
       level: userLevel,
       desiredLevel: levelFilter || 'Any',
-      partnerPreference: userPartnerPreference,
+      partnerPreference: user.partnerPreference || 'Any',
       status: MATCH_STATUS.SEARCHING,
       joinedAtMs: Date.now(),
       joinedAt: serverTimestamp(),
@@ -151,7 +147,7 @@ export function useMatchmaking({
     userName,
     userLevel,
     levelFilter,
-    userPartnerPreference,
+
     tryMatchWithCandidates,
     cleanupListeners,
     onMatched,
