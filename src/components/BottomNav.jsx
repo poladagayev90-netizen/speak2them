@@ -1,30 +1,29 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, Trophy, User, Settings } from 'lucide-react';
+import { Home, MessageCircle, Trophy, User } from 'lucide-react';
 
-export default function BottomNav({ user, onOpenSettings }) {
+export default function BottomNav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
   const tabs = [
-    { icon: Home, label: 'Lobby', route: '/' },
-    { icon: MessageCircle, label: 'Chats', route: '/chats' },
-    { icon: Settings, label: 'Ayarlar', action: onOpenSettings },
-    { icon: Trophy, label: 'Ranking', route: '/ranking' },
-    { icon: User, label: 'Profile', route: '/profile' },
+    { icon: Home,          label: 'Lobby',   route: '/' },
+    { icon: MessageCircle, label: 'Chats',   route: '/chats' },
+    { icon: Trophy,        label: 'Ranking', route: '/ranking' },
+    { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
   return (
     <div className="bottom-nav">
-      {tabs.map((tab, idx) => {
+      {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = path === tab.route;
         return (
           <button
-            key={tab.route || idx}
+            key={tab.route}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
-            onClick={() => tab.action ? tab.action() : navigate(tab.route)}
+            onClick={() => navigate(tab.route)}
           >
             <Icon
               size={22}

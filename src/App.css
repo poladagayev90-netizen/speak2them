@@ -156,7 +156,7 @@ body {
 }
 
 .home-page {
-  min-height: 100dvh;
+  min-height: auto;
   display: flex;
   flex-direction: column;
 }
@@ -211,7 +211,7 @@ body {
 .home-body {
   padding: 16px;
   flex: 1;
-  padding-bottom: 90px;
+  padding-bottom: 80px;
 }
 
 .users-grid {
@@ -1041,8 +1041,4 @@ body {
 
 .bottom-nav-btn.active .bottom-nav-icon {
   transform: scale(1.15);
-}
-
-.home-body {
-  padding-bottom: 80px;
 }

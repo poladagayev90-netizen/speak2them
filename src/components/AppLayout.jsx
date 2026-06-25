@@ -68,7 +68,7 @@ export default function AppLayout({ children, user }) {
       <div className="mobile-layout">
         <div className="main-content">
           {children}
-          <BottomNav user={user} onOpenSettings={() => setSettingsOpen(true)} />
+          <BottomNav user={user} />
           <InstallPrompt />
         </div>
         <SettingsPanel 
