@@ -103,7 +103,7 @@ export default function Login() {
       navigate('/');
     } catch (err) {
       console.error('[GoogleLogin]', err);
-      setError('Google sign-in failed. Please try again.');
+      setError('Google auth error: ' + (err.message || 'Unknown error'));
     }
     setLoading(false);
   };

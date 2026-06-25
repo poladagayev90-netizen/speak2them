@@ -81,7 +81,7 @@ export default function Register() {
       navigate('/survey');
     } catch (err) {
       console.error('[GoogleRegister]', err);
-      setError('Google sign-in failed. Please try again.');
+      setError('Google auth error: ' + (err.message || 'Unknown error'));
     }
     setLoading(false);
   };
