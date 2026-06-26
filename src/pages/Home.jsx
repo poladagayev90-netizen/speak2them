@@ -179,38 +179,115 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {/* Action Row: Daily Topic + Tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
+        {/* Row 1: Daily Topic Button */}
+        <button
+          onClick={() => setDailyTopicOpen(true)}
+          style={{
+            width: '100%',
+            height: '44px',
+            borderRadius: '14px',
+            backgroundColor: '#6C3EF4',
+            color: '#ffffff',
+            fontSize: '15px',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '10px',
+            marginTop: '16px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <BookOpen size={18} /> Daily Topic
+        </button>
+
+        <style>{`
+          .filter-chip-wrapper::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
+        {/* Row 2: Filter Chips */}
+        <div 
+          className="filter-chip-wrapper"
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'row', 
+            overflowX: 'auto', 
+            gap: '8px', 
+            paddingBottom: '4px', 
+            marginBottom: '10px',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
+        >
           <button
-            onClick={() => setDailyTopicOpen(true)}
+            onClick={() => setTab('online')}
             style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'linear-gradient(135deg, #6c63ff, #554cf0)',
-              color: '#fff', border: 'none', borderRadius: '12px',
-              padding: '10px 14px', fontSize: '13px', fontWeight: 700,
-              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+              flexShrink: 0,
+              height: '36px',
+              padding: '0 14px',
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap',
+              border: tab === 'online' ? '1px solid #6C3EF4' : '1px solid rgba(255,255,255,0.15)',
+              cursor: 'pointer',
+              backgroundColor: tab === 'online' ? '#6C3EF4' : 'rgba(255,255,255,0.08)',
+              color: tab === 'online' ? '#ffffff' : 'rgba(255,255,255,0.7)',
             }}
           >
-            <BookOpen size={16} /> Daily Topic
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: tab === 'online' ? '#fff' : '#22c55e', display: 'inline-block' }} />
+            Online ({onlineUsers.length})
           </button>
-
-          <div className="tabs" style={{ marginTop: 0, flex: 1 }}>
-            <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: tab === 'online' ? '#fff' : '#22c55e', display: 'inline-block' }} />
-                Online ({onlineUsers.length})
-              </span>
-            </button>
-            <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-              All ({browsableUsers.length})
-            </button>
-            <button className={`tab ${tab === 'achievements' ? 'active' : ''}`} onClick={() => setTab('achievements')}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Award size={12} />
-                Badges
-              </span>
-            </button>
-          </div>
+          <button
+            onClick={() => setTab('all')}
+            style={{
+              flexShrink: 0,
+              height: '36px',
+              padding: '0 14px',
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap',
+              border: tab === 'all' ? '1px solid #6C3EF4' : '1px solid rgba(255,255,255,0.15)',
+              cursor: 'pointer',
+              backgroundColor: tab === 'all' ? '#6C3EF4' : 'rgba(255,255,255,0.08)',
+              color: tab === 'all' ? '#ffffff' : 'rgba(255,255,255,0.7)',
+            }}
+          >
+            All ({browsableUsers.length})
+          </button>
+          <button
+            onClick={() => setTab('achievements')}
+            style={{
+              flexShrink: 0,
+              height: '36px',
+              padding: '0 14px',
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap',
+              border: tab === 'achievements' ? '1px solid #6C3EF4' : '1px solid rgba(255,255,255,0.15)',
+              cursor: 'pointer',
+              backgroundColor: tab === 'achievements' ? '#6C3EF4' : 'rgba(255,255,255,0.08)',
+              color: tab === 'achievements' ? '#ffffff' : 'rgba(255,255,255,0.7)',
+            }}
+          >
+            <Award size={14} />
+            Badges
+          </button>
         </div>
 
         {isPeopleTab && (
