@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
-import { weeklyContent, getTodayContent } from '../data/weeklyContent';
+import { getTodayContent } from '../data/weeklyContent';
 
 export default function DailyTopicModal({ open, onClose }) {
   const [content, setContent] = useState(null);
