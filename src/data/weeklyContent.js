@@ -898,10 +898,8 @@ export const weeklyContent = [
 ];
 
 export function getTodayContent() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now - start;
-  const dayOfYear = Math.floor(diff / 86400000);
-  return weeklyContent[(dayOfYear - 1) % weeklyContent.length];
+  // Use global timestamp so users in different timezones always see the exact same topic in a call
+  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+  return weeklyContent[daysSinceEpoch % weeklyContent.length];
 }
 
