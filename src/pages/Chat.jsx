@@ -141,9 +141,6 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      startLocalRecording(stream);
-
       // Əvvəlki client varsa təmizlə
       if (clientRef.current) {
         try {
@@ -189,6 +186,11 @@ export default function Chat({ user }) {
       const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
       localTrackRef.current = localTrack;
       await client.publish(localTrack);
+
+      // Extract stream from Agora to prevent double microphone permission lock
+      const nativeTrack = localTrack.getMediaStreamTrack();
+      const stream = new MediaStream([nativeTrack]);
+      startLocalRecording(stream);
 
       setInCall(true);
       setCallStatus('connected');
