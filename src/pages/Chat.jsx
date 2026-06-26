@@ -40,9 +40,7 @@ export default function Chat({ user }) {
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
-  const [aiFeedback, setAiFeedback] = useState('');
-  const [showAiFeedback, setShowAiFeedback] = useState(false);
-  const [loadingFeedback, setLoadingFeedback] = useState(false);
+
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
@@ -354,9 +352,9 @@ export default function Chat({ user }) {
     const secondsTalked = callSecondsRef.current;
 
     // Trigger recording stop asynchronously without blocking endCall
-    stopLocalRecording().then((audioBlob) => {
+    stopLocalRecording().then(async (audioBlob) => {
       if (audioBlob && user && secondsTalked >= 10) {
-        analyzeCallAudio(audioBlob, user.uid, callDocId);
+        await analyzeCallAudio(audioBlob, user.uid, callDocId);
         setShowInsights(true);
       }
     }).catch(console.error);
@@ -498,34 +496,13 @@ export default function Chat({ user }) {
 
       if (secondsTalked >= 180) setShowRating(true);
 
-      // AI analizi — çağrı müddəti 30+ saniyədirsə
-      if (secondsTalked >= 30) {
-        setLoadingFeedback(true);
-        try {
-          const res = await authedFetch(`${FUNCTIONS_BASE}/analyzeCall`, {
-            method: 'POST',
-            body: JSON.stringify({
-              callDuration: secondsTalked,
-              callerName: user.displayName || 'User',
-              peerName: peer?.name || 'Partner',
-            }),
-          });
-          const data = await res.json();
-          if (data.feedback) {
-            setAiFeedback(data.feedback);
-            setShowAiFeedback(true);
-          }
-        } catch (e) {
-          console.error('AI feedback error:', e);
-        }
-        setLoadingFeedback(false);
-      }
+
     } catch (e) {
       console.error('[Chat] endCall error:', e);
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user, peer]);
+  }, [callDocId, peerId, user]);
 
   endCallRef.current = endCall;
 
@@ -694,55 +671,9 @@ export default function Chat({ user }) {
         </div>
       )}
 
-      {showAiFeedback && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: '#0f0f1aee', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 9999, padding: '20px',
-        }}>
-          <div style={{
-            background: '#1e1e30', border: '1px solid #7c6ff7',
-            borderRadius: '20px', padding: '24px', maxWidth: '400px',
-            width: '100%', maxHeight: '80vh', overflowY: 'auto',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ color: '#7c6ff7', fontSize: '18px', fontWeight: 700 }}>
-                🤖 AI Feedback
-              </h3>
-              <button onClick={() => setShowAiFeedback(false)} style={{
-                background: 'transparent', border: 'none',
-                color: '#aaa', fontSize: '20px', cursor: 'pointer',
-              }}>✕</button>
-            </div>
-            <div style={{
-              fontSize: '14px', lineHeight: '1.7', color: '#ddd',
-              whiteSpace: 'pre-wrap',
-            }}>
-              {aiFeedback}
-            </div>
-            <button
-              className="btn-primary"
-              onClick={() => setShowAiFeedback(false)}
-              style={{ marginTop: '16px', width: '100%' }}
-            >
-              Bağla
-            </button>
-          </div>
-        </div>
-      )}
 
-      {loadingFeedback && (
-        <div style={{
-          position: 'fixed', bottom: '90px', left: '50%',
-          transform: 'translateX(-50%)',
-          background: '#1e1e30', border: '1px solid #7c6ff7',
-          borderRadius: '12px', padding: '12px 20px',
-          color: '#7c6ff7', fontSize: '14px', fontWeight: 600,
-          zIndex: 999,
-        }}>
-          🤖 AI analiz edir...
-        </div>
-      )}
+
+
 
       {(inCall || callStatus === 'calling') && (
         <div className="fullscreen-call">
