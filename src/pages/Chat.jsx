@@ -139,17 +139,22 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      // Əvvəlki client varsa təmizlə
+      if (localTrackRef.current) {
+        localTrackRef.current.stop();
+        localTrackRef.current.close();
+        localTrackRef.current = null;
+      }
+
+      // 1. Dərhal mikrofona icazə istə (user gesture itməməsi üçün network request-dən əvvəl olmalıdır)
+      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      localTrackRef.current = localTrack;
+
+      // 2. Əvvəlki client varsa təmizlə
       if (clientRef.current) {
         try {
           await clientRef.current.leave();
         } catch (e) {}
         clientRef.current = null;
-      }
-      if (localTrackRef.current) {
-        localTrackRef.current.stop();
-        localTrackRef.current.close();
-        localTrackRef.current = null;
       }
 
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -181,12 +186,10 @@ export default function Chat({ user }) {
 
       await client.join(APP_ID, cId, tokenData.token, uid);
 
-      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      localTrackRef.current = localTrack;
-      await client.publish(localTrack);
+      await client.publish(localTrackRef.current);
 
       // Extract stream from Agora to prevent double microphone permission lock
-      const nativeTrack = localTrack.getMediaStreamTrack();
+      const nativeTrack = localTrackRef.current.getMediaStreamTrack();
       const stream = new MediaStream([nativeTrack]);
       startLocalRecording(stream);
 
