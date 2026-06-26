@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
-import { weeklyContent } from '../data/weeklyContent';
-
-function getTodayContent() {
-  const now = new Date();
-  // Use day-of-year so content cycles through all 28 days
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now - start;
-  const dayOfYear = Math.floor(diff / 86400000);
-  return weeklyContent[(dayOfYear - 1) % weeklyContent.length];
-}
+import { weeklyContent, getTodayContent } from '../data/weeklyContent';
 
 export default function DailyTopicModal({ open, onClose }) {
   const [content, setContent] = useState(null);

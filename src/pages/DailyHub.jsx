@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getTodayContent } from '../dailyContent';
+import { getTodayContent } from '../data/weeklyContent';
 
 export default function DailyHub() {
   const navigate = useNavigate();

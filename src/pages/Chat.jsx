@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import { getTodayContent } from '../dailyContent';
+import { getTodayContent } from '../data/weeklyContent';
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
