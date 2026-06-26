@@ -522,7 +522,7 @@ export default function Chat({ user }) {
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user, user.uid, user.displayName, peer]);
+  }, [callDocId, peerId, user, peer]);
 
   endCallRef.current = endCall;
 
