@@ -3,10 +3,11 @@ import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, limit } f
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
+import DailyTopicModal from '../components/DailyTopicModal';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
-import { Award, Mic, Shuffle, Search, X, Globe, Shield } from 'lucide-react';
+import { Award, Mic, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
@@ -18,6 +19,7 @@ export default function Home({ user }) {
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
   const [userBadges, setUserBadges] = useState(user.badges || []);
+  const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
 
@@ -177,22 +179,38 @@ export default function Home({ user }) {
           </div>
         )}
 
-        <div className="tabs" style={{ marginTop: '16px' }}>
-          <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: tab === 'online' ? '#fff' : '#22c55e', display: 'inline-block' }} />
-              Online ({onlineUsers.length})
-            </span>
+        {/* Action Row: Daily Topic + Tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
+          <button
+            onClick={() => setDailyTopicOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'linear-gradient(135deg, #6c63ff, #554cf0)',
+              color: '#fff', border: 'none', borderRadius: '12px',
+              padding: '10px 14px', fontSize: '13px', fontWeight: 700,
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >
+            <BookOpen size={16} /> Daily Topic
           </button>
-          <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-            All ({browsableUsers.length})
-          </button>
-          <button className={`tab ${tab === 'achievements' ? 'active' : ''}`} onClick={() => setTab('achievements')}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Award size={14} />
-              Achievements
-            </span>
-          </button>
+
+          <div className="tabs" style={{ marginTop: 0, flex: 1 }}>
+            <button className={`tab ${tab === 'online' ? 'active' : ''}`} onClick={() => setTab('online')}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: tab === 'online' ? '#fff' : '#22c55e', display: 'inline-block' }} />
+                Online ({onlineUsers.length})
+              </span>
+            </button>
+            <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
+              All ({browsableUsers.length})
+            </button>
+            <button className={`tab ${tab === 'achievements' ? 'active' : ''}`} onClick={() => setTab('achievements')}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Award size={12} />
+                Badges
+              </span>
+            </button>
+          </div>
         </div>
 
         {isPeopleTab && (
@@ -298,6 +316,7 @@ export default function Home({ user }) {
           </>
         )}
       </div>
+      <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} />
     </div>
   );
 }

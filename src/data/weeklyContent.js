@@ -1,7 +1,4 @@
 export const weeklyContent = [
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 1 — TRAVEL ✈️
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 1,
     topic: "Travel ✈️",
@@ -34,10 +31,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 2 — TECHNOLOGY 💻
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 2,
     topic: "Technology 💻",
@@ -70,10 +63,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 3 — FOOD & CULTURE 🍽️
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 3,
     topic: "Food & Culture 🍽️",
@@ -106,10 +95,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 4 — EDUCATION 📚
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 4,
     topic: "Education 📚",
@@ -142,10 +127,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 5 — HEALTH & WELLBEING 🏃
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 5,
     topic: "Health & Wellbeing 🏃",
@@ -178,10 +159,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 6 — ENVIRONMENT 🌍
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 6,
     topic: "Environment 🌍",
@@ -214,10 +191,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 7 — WORK & CAREER 💼
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 7,
     topic: "Work & Career 💼",
@@ -250,10 +223,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 8 — SOCIAL MEDIA 📱
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 8,
     topic: "Social Media 📱",
@@ -286,10 +255,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 9 — MONEY & FINANCES 💰
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 9,
     topic: "Money & Finances 💰",
@@ -322,10 +287,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 10 — FILMS & SERIES 🎬
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 10,
     topic: "Films & Series 🎬",
@@ -358,10 +319,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 11 — MUSIC 🎵
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 11,
     topic: "Music 🎵",
@@ -394,10 +351,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 12 — FAMOUS PEOPLE & CELEBRITIES ⭐
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 12,
     topic: "Famous People & Celebrities ⭐",
@@ -430,10 +383,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 13 — HOBBIES & FREE TIME 🎨
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 13,
     topic: "Hobbies & Free Time 🎨",
@@ -466,10 +415,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 14 — FASHION & STYLE 👗
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 14,
     topic: "Fashion & Style 👗",
@@ -502,10 +447,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 15 — CARTOONS & ANIMATION 🎭
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 15,
     topic: "Cartoons & Animation 🎭",
@@ -538,10 +479,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 16 — FEAR & PHOBIAS 😱
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 16,
     topic: "Fear & Phobias 😱",
@@ -574,10 +511,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 17 — RELATIONSHIPS & FRIENDSHIP ❤️
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 17,
     topic: "Relationships & Friendship ❤️",
@@ -610,10 +543,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 18 — SPORTS & COMPETITION 🏆
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 18,
     topic: "Sports & Competition 🏆",
@@ -646,10 +575,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 19 — ANIMALS & PETS 🐾
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 19,
     topic: "Animals & Pets 🐾",
@@ -682,10 +607,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 20 — CULTURE & TRADITIONS 🌐
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 20,
     topic: "Culture & Traditions 🌐",
@@ -718,10 +639,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 21 — SCIENCE & SPACE 🚀
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 21,
     topic: "Science & Space 🚀",
@@ -754,10 +671,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 22 — CITY VS COUNTRYSIDE 🏙️
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 22,
     topic: "City vs Countryside 🏙️",
@@ -790,10 +703,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 23 — BOOKS & READING 📖
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 23,
     topic: "Books & Reading 📖",
@@ -826,10 +735,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 24 — LANGUAGE & COMMUNICATION 🗣️
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 24,
     topic: "Language & Communication 🗣️",
@@ -862,10 +767,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 25 — SHOPPING & CONSUMERISM 🛍️
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 25,
     topic: "Shopping & Consumerism 🛍️",
@@ -898,10 +799,6 @@ export const weeklyContent = [
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 26 — DREAMS & AMBITIONS 🌟
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 26,
     topic: "Dreams & Ambitions 🌟",
@@ -928,164 +825,74 @@ export const weeklyContent = [
       hard: [
         "Is it better to have realistic goals or dream big?",
         "How much does luck play a role in achieving success?",
-        "Do social pressures affect people's personal ambitions?",
-        "Should parents push children toward certain careers?",
-        "Can you be successful without sacrificing your personal life?",
+        "Do social pressures influence people's ambitions?",
+        "Can ambition be harmful? When?",
+        "What advice would you give to someone who has lost motivation?",
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 27 — FOOD DELIVERY & RESTAURANTS 🍕
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 27,
-    topic: "Food Delivery & Restaurants 🍕",
+    topic: "History & Past Events 🏛️",
     vocabulary: [
-      { word: "Menu", meaning: "A list of available food and drink", example: "Can I see the menu, please?" },
-      { word: "Reservation", meaning: "Booking a table in advance", example: "I made a reservation for 7 pm." },
-      { word: "Takeaway", meaning: "Food bought to eat elsewhere", example: "Let's get a takeaway tonight." },
-      { word: "Review", meaning: "An opinion of a product or place", example: "The restaurant had great online reviews." },
-      { word: "Tip", meaning: "Extra money given to staff for good service", example: "It's polite to leave a tip after dining out." },
+      { word: "Revolution", meaning: "A major change in government or society", example: "The French Revolution changed Europe forever." },
+      { word: "Era", meaning: "A long period of time in history", example: "The Victorian era lasted over 60 years." },
+      { word: "Empire", meaning: "A large group of states ruled by one power", example: "The Roman Empire was vast and powerful." },
+      { word: "Artifact", meaning: "An object from a past period", example: "The museum displayed ancient artifacts." },
+      { word: "Colonisation", meaning: "Taking control of another country or territory", example: "Colonisation had lasting effects worldwide." },
     ],
     idioms: [
-      { phrase: "Eat out", meaning: "To have a meal at a restaurant", example: "We eat out every Friday evening." },
-      { phrase: "Wolf down", meaning: "To eat something very quickly", example: "He wolfed down his burger." },
-      { phrase: "Pick up the bill", meaning: "To pay for the meal", example: "He insisted on picking up the bill." },
+      { phrase: "Make history", meaning: "To do something important for the first time", example: "She made history as the first woman to lead the team." },
+      { phrase: "A blast from the past", meaning: "Something that reminds you of an earlier time", example: "That song is a real blast from the past." },
+      { phrase: "Go down in history", meaning: "To be remembered for a long time", example: "That speech will go down in history." },
     ],
     questions: {
       easy: [
-        "How often do you order food delivery?",
-        "What is your favourite type of restaurant?",
-        "Do you usually cook or eat out?",
-        "Have you ever worked in a café or restaurant?",
-        "What is the best meal you have had at a restaurant?",
+        "What is your favourite period in history?",
+        "Have you visited any historical places?",
+        "Who is a historical figure you admire?",
+        "Do you enjoy watching historical films or documentaries?",
+        "What event in history do you find most interesting?",
       ],
       hard: [
-        "How has food delivery affected the traditional restaurant industry?",
-        "Should restaurants be required to show calorie counts on menus?",
-        "Is tipping culture fair to workers?",
-        "How important are hygiene standards in food businesses?",
-        "Is fast food destroying food culture in your country?",
+        "Should countries apologise for historical wrongs?",
+        "How does understanding history help us today?",
+        "Do we learn enough history in schools?",
+        "Is it possible to view history objectively?",
+        "How should nations deal with controversial historical monuments?",
       ],
     },
   },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 28 — NEWS & MEDIA 📰
-  // ─────────────────────────────────────────────────────────────────────────────
   {
     day: 28,
-    topic: "News & Media 📰",
+    topic: "Future & Predictions 🔮",
     vocabulary: [
-      { word: "Bias", meaning: "Unfair preference for one side", example: "Some newspapers show political bias." },
-      { word: "Fake news", meaning: "False information presented as news", example: "Fake news spread rapidly online." },
-      { word: "Headline", meaning: "The title of a news article", example: "The headline was shocking and grabbed attention." },
-      { word: "Journalist", meaning: "A person who reports the news", example: "She works as a journalist for a TV channel." },
-      { word: "Press freedom", meaning: "The right of the media to report freely", example: "Press freedom is limited in some countries." },
+      { word: "Innovation", meaning: "A new idea, method, or product", example: "Innovation drives the tech industry." },
+      { word: "Forecast", meaning: "A prediction about the future", example: "The weather forecast says rain tomorrow." },
+      { word: "Sustainable", meaning: "Able to continue without causing harm", example: "We need sustainable solutions for energy." },
+      { word: "Utopia", meaning: "An imagined perfect society", example: "Some believe technology will create a utopia." },
+      { word: "Disruption", meaning: "A major change that alters how things work", example: "AI caused disruption in many industries." },
     ],
     idioms: [
-      { phrase: "Break a story", meaning: "To be the first to report news", example: "The BBC broke the story at midnight." },
-      { phrase: "Read between the lines", meaning: "To find hidden meaning in something", example: "You have to read between the lines with that statement." },
-      { phrase: "Sweep under the rug", meaning: "To hide something negative", example: "The company tried to sweep the scandal under the rug." },
+      { phrase: "Crystal ball", meaning: "A way to predict the future (often impossible)", example: "I don't have a crystal ball, but I think it will succeed." },
+      { phrase: "Shape the future", meaning: "To influence what happens next", example: "Young people will shape the future." },
+      { phrase: "A matter of time", meaning: "Something that will definitely happen eventually", example: "It's only a matter of time before everything goes digital." },
     ],
     questions: {
       easy: [
-        "Where do you usually get your news?",
-        "How often do you read or watch the news?",
-        "Do you prefer reading news online or on TV?",
-        "Have you ever shared a news story? What was it about?",
-        "What news story do you remember most clearly?",
+        "Where do you see yourself in five years?",
+        "What do you think the world will look like in 2050?",
+        "Would you like to live on another planet?",
+        "What invention do you hope will exist in the future?",
+        "Are you optimistic or pessimistic about the future?",
       ],
       hard: [
-        "How can you tell if a news source is reliable?",
-        "Is social media replacing traditional journalism?",
-        "Should governments be able to control what is reported in the news?",
-        "How does the media shape public opinion?",
-        "Is there such a thing as completely unbiased news?",
-      ],
-    },
-  },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 29 — PERSONALITY & CHARACTER 🧠
-  // ─────────────────────────────────────────────────────────────────────────────
-  {
-    day: 29,
-    topic: "Personality & Character 🧠",
-    vocabulary: [
-      { word: "Introvert", meaning: "A person who prefers quiet and solitude", example: "As an introvert, she recharges alone." },
-      { word: "Extrovert", meaning: "A person energised by being with others", example: "He's a natural extrovert — loves parties." },
-      { word: "Empathy", meaning: "The ability to understand others' feelings", example: "Good leaders show empathy to their teams." },
-      { word: "Resilience", meaning: "The ability to recover from difficulties", example: "Resilience is built through overcoming challenges." },
-      { word: "Confidence", meaning: "Belief in your own ability", example: "Public speaking requires confidence." },
-    ],
-    idioms: [
-      { phrase: "Wear your heart on your sleeve", meaning: "To show your emotions openly", example: "She wears her heart on her sleeve — very open." },
-      { phrase: "Thick-skinned", meaning: "Not easily upset by criticism", example: "You need to be thick-skinned in that job." },
-      { phrase: "Nerves of steel", meaning: "The ability to stay calm under pressure", example: "She has nerves of steel under pressure." },
-    ],
-    questions: {
-      easy: [
-        "How would you describe your personality?",
-        "Are you more of an introvert or extrovert?",
-        "What is your best personal quality?",
-        "What do you do when you are in a bad mood?",
-        "Do you think people's personalities change over time?",
-      ],
-      hard: [
-        "Is personality shaped more by genetics or environment?",
-        "Can people truly change their character?",
-        "What personality traits do you think are most valuable in a leader?",
-        "Are introverts at a disadvantage in modern workplaces?",
-        "How much does culture influence personality?",
-      ],
-    },
-  },
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // DAY 30 — MIX IT UP 🎲 (Random & Fun)
-  // ─────────────────────────────────────────────────────────────────────────────
-  {
-    day: 30,
-    topic: "Mix It Up! 🎲",
-    vocabulary: [
-      { word: "Spontaneous", meaning: "Done without planning, on impulse", example: "It was a spontaneous decision to drive to the coast." },
-      { word: "Debate", meaning: "A formal discussion of different opinions", example: "We had a lively debate about the topic." },
-      { word: "Dilemma", meaning: "A situation where a choice is difficult", example: "She faced a dilemma between two job offers." },
-      { word: "Perspective", meaning: "A particular way of thinking about something", example: "Travelling gives you a new perspective." },
-      { word: "Controversial", meaning: "Causing strong disagreement", example: "It was a controversial topic in class." },
-    ],
-    idioms: [
-      { phrase: "Think outside the box", meaning: "To think creatively and unconventionally", example: "We need to think outside the box on this." },
-      { phrase: "On the fence", meaning: "Unable to decide between two options", example: "I'm still on the fence about moving abroad." },
-      { phrase: "See eye to eye", meaning: "To agree with someone", example: "We don't always see eye to eye on politics." },
-    ],
-    questions: {
-      easy: [
-        "If you could live in any time period, which would you choose?",
-        "What is something you want to try but have not done yet?",
-        "Who knows you better than anyone else?",
-        "What would you do if you had one free day with no plans?",
-        "Would you rather be very intelligent or very funny? Why?",
-      ],
-      hard: [
-        "If you could change one thing about the world, what would it be?",
-        "Is it more important to be liked or respected? Why?",
-        "Should people always say what they really think?",
-        "Is living a comfortable life or a meaningful life more important?",
-        "What do you think the world will look like in 50 years?",
+        "Will humans ever live on Mars? Should we try?",
+        "How will climate change affect the world in 50 years?",
+        "Is technological progress always a good thing?",
+        "Will AI ever replace teachers, doctors, or lawyers?",
+        "What is the biggest challenge humanity will face in the future?",
       ],
     },
   },
 ];
-
-export function getTodayContent() {
-  const dayOfWeek = new Date().getDay(); // 0=Sunday, 6=Saturday
-  const index = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  return weeklyContent[index];
-}
-
-export function getContentByDay(dayNumber) {
-  return weeklyContent[(dayNumber - 1) % 30];
-}
