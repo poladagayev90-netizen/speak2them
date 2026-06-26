@@ -8,12 +8,15 @@ import {
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
+import CallInsights from '../components/CallInsights';
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
+import { startLocalRecording, stopLocalRecording } from '../utils/localRecorder';
+import { analyzeCallAudio } from '../utils/analyzeWithGemini';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
@@ -31,6 +34,7 @@ export default function Chat({ user }) {
   const [callSeconds, setCallSeconds] = useState(0);
   const [showDaily, setShowDaily] = useState(false);
   const [showRating, setShowRating] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
   const [selectedStar, setSelectedStar] = useState(0);
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
@@ -137,7 +141,8 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      startLocalRecording(stream);
 
       // Əvvəlki client varsa təmizlə
       if (clientRef.current) {
@@ -345,6 +350,13 @@ export default function Chat({ user }) {
     endingRef.current = true;
 
     const secondsTalked = callSecondsRef.current;
+
+    const audioBlob = await stopLocalRecording();
+    if (audioBlob && user) {
+      // fire and forget — don't await, let UI show loading state
+      analyzeCallAudio(audioBlob, user.uid, callDocId);
+      setShowInsights(true);
+    }
 
     try {
       if (localTrackRef.current) {
@@ -874,6 +886,14 @@ export default function Chat({ user }) {
         />
         <button type="submit">Send ➤</button>
       </form>
+
+      {showInsights && (
+        <CallInsights
+          userId={user.uid}
+          channelName={callDocId}
+          onClose={() => { setShowInsights(false); navigate('/'); }}
+        />
+      )}
     </div>
   );
 }
