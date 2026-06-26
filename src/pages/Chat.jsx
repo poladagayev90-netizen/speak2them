@@ -36,7 +36,6 @@ export default function Chat({ user }) {
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
-
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
@@ -60,7 +59,6 @@ export default function Chat({ user }) {
   const content = getTodayContent();
   const freeCallLimitSeconds = (15 + bonusMinutes) * 60;
 
-  // Refs for stable access inside callbacks
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
   const peerIdRef = useRef(peerId);
@@ -89,7 +87,6 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (!chatId || !user.uid || !peerId) return;
-
     const participants = [user.uid, peerId].sort();
     setDoc(doc(db, 'chats', chatId), {
       participants,
@@ -97,37 +94,25 @@ export default function Chat({ user }) {
     }, { merge: true }).catch((err) => {
       console.error('[Chat] ensure chat doc error:', err);
     });
-
     const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const msgs = snap.docs
-          .map((d) => {
-            const data = d.data();
-            return {
-              id: d.id,
-              ...data,
-              createdAt: data.createdAt?.toDate?.() || null,
-            };
-          })
-          .sort((a, b) => {
-            if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
-            if (a.createdAt) return -1;
-            if (b.createdAt) return 1;
-            return 0;
-          });
-        setMessages(msgs);
-        setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
-      },
-      (err) => {
-        console.error('[Chat] messages listener error:', err);
-      }
-    );
+    const unsub = onSnapshot(q, (snap) => {
+      const msgs = snap.docs
+        .map((d) => {
+          const data = d.data();
+          return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || null };
+        })
+        .sort((a, b) => {
+          if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
+          if (a.createdAt) return -1;
+          if (b.createdAt) return 1;
+          return 0;
+        });
+      setMessages(msgs);
+      setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
+    }, (err) => { console.error('[Chat] messages listener error:', err); });
     return unsub;
   }, [chatId, user.uid, peerId]);
 
-  // Əsas joinCall — heç bir guard yoxdur, çağıran tərəf özü yoxlayır
   const joinCall = useCallback(async () => {
     const uid = userUidRef.current;
     const cId = chatIdRef.current;
@@ -135,24 +120,26 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
+      // 1. Clean up any existing tracks/client first
       if (localTrackRef.current) {
-        localTrackRef.current.stop();
-        localTrackRef.current.close();
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
         localTrackRef.current = null;
       }
-
-      // 1. Dərhal mikrofona icazə istə (user gesture itməməsi üçün network request-dən əvvəl olmalıdır)
-      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      localTrackRef.current = localTrack;
-
-      // 2. Əvvəlki client varsa təmizlə
       if (clientRef.current) {
-        try {
-          await clientRef.current.leave();
-        } catch (e) {}
+        try { await clientRef.current.leave(); } catch (e) {}
         clientRef.current = null;
       }
 
+      // 2. Fetch token first (no mic permission yet)
+      const tokenRes = await authedFetch(TOKEN_URL, {
+        method: 'POST',
+        body: JSON.stringify({ channelName: cId }),
+      });
+      if (!tokenRes.ok) throw new Error('Token error: ' + tokenRes.status);
+      const tokenData = await tokenRes.json();
+      if (!tokenData.token) throw new Error('No token');
+
+      // 3. Create Agora client
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
 
@@ -164,43 +151,45 @@ export default function Chat({ user }) {
             remoteUser.audioTrack.play();
             setCallStatus('connected');
           }
-        } catch (e) {
-          console.error('[Chat] Subscribe error:', e);
-        }
+        } catch (e) { console.error('[Chat] Subscribe error:', e); }
       });
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      const tokenRes = await authedFetch(TOKEN_URL, {
-        method: 'POST',
-        body: JSON.stringify({ channelName: cId }),
-      });
-
-      if (!tokenRes.ok) throw new Error('Token error: ' + tokenRes.status);
-      const tokenData = await tokenRes.json();
-      if (!tokenData.token) throw new Error('No token');
-
+      // 4. Join channel
       await client.join(APP_ID, cId, tokenData.token, uid);
 
-      await client.publish(localTrackRef.current);
+      // 5. Request mic permission and create track (after join so user gesture context is fresh)
+      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      localTrackRef.current = localTrack;
 
+      // 6. Publish
+      await client.publish(localTrack);
+
+      // 7. Update UI
       setInCall(true);
       setCallStatus('connected');
       joinedRef.current = true;
+
     } catch (err) {
       console.error('[Chat] joinCall error:', err);
       joinedRef.current = false;
-      clientRef.current = null;
-      localTrackRef.current = null;
+      if (localTrackRef.current) {
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+        localTrackRef.current = null;
+      }
+      if (clientRef.current) {
+        try { await clientRef.current.leave(); } catch (e) {}
+        clientRef.current = null;
+      }
       setCallStatus('error');
     }
   }, []);
 
-  // Location state — caller qəbul alandan sonra
+  // Location state — caller joins after accepted
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
-      // Small stagger for matched calls to prevent Agora collision
       const delay = isMatchedCall ? (user.uid < peerId ? 0 : 1200) : 0;
       const timer = setTimeout(() => { joinCall(); }, delay);
       return () => clearTimeout(timer);
@@ -210,7 +199,6 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (!isMatchedCall || !stateCallId) return;
-    // Ensure call doc exists with correct structure for matched calls
     setDoc(doc(db, 'calls', stateCallId), {
       userA: [user.uid, peerId].sort()[0],
       userB: [user.uid, peerId].sort()[1],
@@ -241,12 +229,12 @@ export default function Chat({ user }) {
       const prevStatus = prevCallStatus.current;
       prevCallStatus.current = data.status;
 
-      // Gələn zəng
+      // Incoming call
       if (data.callerId === peerId && data.status === 'calling') {
         setIncomingCallData(data);
       }
 
-      // Caller tərəfi — qəbul edildi
+      // Caller side — accepted by receiver
       if (data.status === 'accepted' && data.callerId === user.uid && prevStatus !== 'accepted') {
         if (!joinedRef.current) {
           joinedRef.current = true;
@@ -256,14 +244,14 @@ export default function Chat({ user }) {
         }
       }
 
-      // Rədd edildi
+      // Rejected
       if (data.status === 'rejected' && data.callerId === user.uid) {
         setCallStatus('rejected');
         ringtoneRef.current?.pause();
         setTimeout(() => setCallStatus(''), 3000);
       }
 
-      // Bitdi
+      // Ended
       if (data.status === 'ended') {
         ringtoneRef.current?.pause();
         setIncomingCallData(null);
@@ -281,12 +269,10 @@ export default function Chat({ user }) {
       timerRef.current = setInterval(() => {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
-
         if (!user.isPremium && callSecondsRef.current >= freeCallLimitSeconds) {
           endCallRef.current?.();
           alert('⏰ Pulsuz danışıq limitin doldu!\n\nBonus dəqiqələrin varsa limitə əlavə olunur.\n\n👑 Premium al — limitsiz danış!');
         }
-
         if (!user.isPremium && callSecondsRef.current === Math.max(0, freeCallLimitSeconds - 120)) {
           alert('⚠️ 2 dəqiqə qaldı! Premium al — limitsiz danış!');
         }
@@ -317,7 +303,6 @@ export default function Chat({ user }) {
         createdAt: serverTimestamp(),
       });
       setCallStatus('calling');
-
       try {
         const peerSnap = await getDoc(doc(db, 'users', peerId));
         const peerData = peerSnap.data();
@@ -347,12 +332,11 @@ export default function Chat({ user }) {
 
     try {
       if (localTrackRef.current) {
-        localTrackRef.current.stop();
-        localTrackRef.current.close();
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
         localTrackRef.current = null;
       }
       if (clientRef.current) {
-        await clientRef.current.leave();
+        try { await clientRef.current.leave(); } catch (e) {}
         clientRef.current = null;
       }
     } catch (e) {}
@@ -366,13 +350,8 @@ export default function Chat({ user }) {
     try {
       let currentUserUnlocks = [];
 
-      // If call doc doesn't exist, still do local cleanup
       const callDocSnap = await getDoc(doc(db, 'calls', callDocId)).catch(() => null);
       if (!callDocSnap?.exists()) {
-        setInCall(false);
-        setCallStatus('');
-        setMuted(false);
-        joinedRef.current = false;
         endingRef.current = false;
         return;
       }
@@ -383,18 +362,12 @@ export default function Chat({ user }) {
         if (!callSnap.exists()) return;
 
         const callData = callSnap.data() || {};
-        
-        // Gather all possible participant UIDs robustly
         const participantSet = new Set([
-          callData.userA,
-          callData.userB, 
-          callData.callerId,
-          callData.receiverId,
-          user.uid,
-          peerId,
+          callData.userA, callData.userB,
+          callData.callerId, callData.receiverId,
+          user.uid, peerId,
         ].filter(Boolean));
-        const participants = Array.from(participantSet).slice(0, 2);
-        const uniqueParticipants = participants;
+        const uniqueParticipants = Array.from(participantSet).slice(0, 2);
         const durationMinutes = Math.ceil(secondsTalked / 60);
         const shouldApplyStats = secondsTalked > 5 && !callData.statsApplied && uniqueParticipants.length === 2;
 
@@ -418,7 +391,7 @@ export default function Chat({ user }) {
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         const userRefs = uniqueParticipants.map((uid) => doc(db, 'users', uid));
-        const userSnaps = await Promise.all(userRefs.map((userRef) => transaction.get(userRef)));
+        const userSnaps = await Promise.all(userRefs.map((ref) => transaction.get(ref)));
 
         userSnaps.forEach((userSnap, index) => {
           const participantId = uniqueParticipants[index];
@@ -482,7 +455,6 @@ export default function Chat({ user }) {
 
       if (secondsTalked >= 180) setShowRating(true);
 
-
     } catch (e) {
       console.error('[Chat] endCall error:', e);
     } finally {
@@ -498,7 +470,6 @@ export default function Chat({ user }) {
         const peerRef = doc(db, 'users', peerId);
         const peerDoc = await transaction.get(peerRef);
         if (!peerDoc.exists()) return;
-
         const peerData = peerDoc.data();
         const updatedPeerData = {
           ...peerData,
@@ -508,7 +479,6 @@ export default function Chat({ user }) {
         };
         const newBadges = checkNewBadges(updatedPeerData);
         const rewardResult = applyBadgeRewardsToData(updatedPeerData, newBadges);
-
         transaction.set(peerRef, {
           rating: updatedPeerData.rating,
           ratingCount: updatedPeerData.ratingCount,
@@ -534,7 +504,6 @@ export default function Chat({ user }) {
     const messageText = text.trim();
     const senderName = user.displayName || user.name || 'User';
     setText('');
-
     try {
       await setDoc(doc(db, 'chats', chatId), {
         participants: [user.uid, peerId].sort(),
@@ -565,12 +534,9 @@ export default function Chat({ user }) {
             if (nextUnlock) {
               setNewBadge(nextUnlock.badge);
               setNewBadgeReward(nextUnlock.rewardMessage);
-              if (typeof nextUnlock.bonusMinutes === 'number') {
-                setBonusMinutes(nextUnlock.bonusMinutes);
-              }
+              if (typeof nextUnlock.bonusMinutes === 'number') setBonusMinutes(nextUnlock.bonusMinutes);
               return rest;
             }
-
             setNewBadge(null);
             setNewBadgeReward('');
             return [];
@@ -656,10 +622,6 @@ export default function Chat({ user }) {
           </div>
         </div>
       )}
-
-
-
-
 
       {(inCall || callStatus === 'calling') && (
         <div className="fullscreen-call">
