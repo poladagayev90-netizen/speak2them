@@ -8,15 +8,12 @@ import {
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
-import CallInsights from '../components/CallInsights';
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
-import { startLocalRecording, stopLocalRecording } from '../utils/localRecorder';
-import { analyzeCallAudio } from '../utils/analyzeWithGemini';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
@@ -34,7 +31,6 @@ export default function Chat({ user }) {
   const [callSeconds, setCallSeconds] = useState(0);
   const [showDaily, setShowDaily] = useState(false);
   const [showRating, setShowRating] = useState(false);
-  const [showInsights, setShowInsights] = useState(false);
   const [selectedStar, setSelectedStar] = useState(0);
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
@@ -187,11 +183,6 @@ export default function Chat({ user }) {
       await client.join(APP_ID, cId, tokenData.token, uid);
 
       await client.publish(localTrackRef.current);
-
-      // Extract stream from Agora to prevent double microphone permission lock
-      const nativeTrack = localTrackRef.current.getMediaStreamTrack();
-      const stream = new MediaStream([nativeTrack]);
-      startLocalRecording(stream);
 
       setInCall(true);
       setCallStatus('connected');
@@ -353,14 +344,6 @@ export default function Chat({ user }) {
     endingRef.current = true;
 
     const secondsTalked = callSecondsRef.current;
-
-    // Trigger recording stop asynchronously without blocking endCall
-    stopLocalRecording().then(async (audioBlob) => {
-      if (audioBlob && user && secondsTalked >= 10) {
-        await analyzeCallAudio(audioBlob, user.uid, callDocId);
-        setShowInsights(true);
-      }
-    }).catch(console.error);
 
     try {
       if (localTrackRef.current) {
@@ -823,14 +806,6 @@ export default function Chat({ user }) {
         />
         <button type="submit">Send ➤</button>
       </form>
-
-      {showInsights && (
-        <CallInsights
-          userId={user.uid}
-          channelName={callDocId}
-          onClose={() => { setShowInsights(false); navigate('/'); }}
-        />
-      )}
     </div>
   );
 }
