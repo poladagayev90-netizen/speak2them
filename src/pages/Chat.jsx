@@ -351,12 +351,13 @@ export default function Chat({ user }) {
 
     const secondsTalked = callSecondsRef.current;
 
-    const audioBlob = await stopLocalRecording();
-    if (audioBlob && user) {
-      // fire and forget — don't await, let UI show loading state
-      analyzeCallAudio(audioBlob, user.uid, callDocId);
-      setShowInsights(true);
-    }
+    // Trigger recording stop asynchronously without blocking endCall
+    stopLocalRecording().then((audioBlob) => {
+      if (audioBlob && user && secondsTalked >= 10) {
+        analyzeCallAudio(audioBlob, user.uid, callDocId);
+        setShowInsights(true);
+      }
+    }).catch(console.error);
 
     try {
       if (localTrackRef.current) {
