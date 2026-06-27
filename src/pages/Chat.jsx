@@ -154,7 +154,8 @@ export default function Chat({ user }) {
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      await client.join(APP_ID, cId, tokenData.token, uid);
+      // Use null instead of string uid because token expects an integer uid
+      await client.join(APP_ID, cId, tokenData.token, null);
 
       // If mic track was pre-created on user gesture, use it.
       // If not (matched call / receiver path), create it now.
@@ -175,6 +176,7 @@ export default function Chat({ user }) {
 
     } catch (err) {
       console.error('[Chat] joinCall error:', err);
+      alert('Zəng qoşulma xətası: ' + err.message);
       joinedRef.current = false;
       if (localTrackRef.current) {
         try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
