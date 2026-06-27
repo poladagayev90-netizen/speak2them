@@ -36,9 +36,6 @@ export default function Chat({ user }) {
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
-  const [aiFeedback, setAiFeedback] = useState('');
-  const [showAiFeedback, setShowAiFeedback] = useState(false);
-  const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
@@ -47,7 +44,7 @@ export default function Chat({ user }) {
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
   const clientRef = useRef(null);
-  const localTrackRef = useRef(null);
+  const localTrackRef = useRef(null);  // mic track — created on user gesture
   const bottomRef = useRef(null);
   const joinedRef = useRef(false);
   const endingRef = useRef(false);
@@ -62,7 +59,6 @@ export default function Chat({ user }) {
   const content = getTodayContent();
   const freeCallLimitSeconds = (15 + bonusMinutes) * 60;
 
-  // Refs for stable access inside callbacks
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
   const peerIdRef = useRef(peerId);
@@ -91,45 +87,35 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (!chatId || !user.uid || !peerId) return;
-
     const participants = [user.uid, peerId].sort();
     setDoc(doc(db, 'chats', chatId), {
       participants,
       updatedAt: serverTimestamp(),
-    }, { merge: true }).catch((err) => {
-      console.error('[Chat] ensure chat doc error:', err);
-    });
+    }, { merge: true }).catch(console.error);
 
     const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const msgs = snap.docs
-          .map((d) => {
-            const data = d.data();
-            return {
-              id: d.id,
-              ...data,
-              createdAt: data.createdAt?.toDate?.() || null,
-            };
-          })
-          .sort((a, b) => {
-            if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
-            if (a.createdAt) return -1;
-            if (b.createdAt) return 1;
-            return 0;
-          });
-        setMessages(msgs);
-        setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
-      },
-      (err) => {
-        console.error('[Chat] messages listener error:', err);
-      }
-    );
+    const unsub = onSnapshot(q, (snap) => {
+      const msgs = snap.docs
+        .map((d) => {
+          const data = d.data();
+          return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || null };
+        })
+        .sort((a, b) => {
+          if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
+          if (a.createdAt) return -1;
+          if (b.createdAt) return 1;
+          return 0;
+        });
+      setMessages(msgs);
+      setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
+    }, console.error);
     return unsub;
   }, [chatId, user.uid, peerId]);
 
-  // Əsas joinCall — heç bir guard yoxdur, çağıran tərəf özü yoxlayır
+  // ─────────────────────────────────────────────────────────────
+  // joinCall — mic track already created on user gesture,
+  // just fetch token → join → publish existing track
+  // ─────────────────────────────────────────────────────────────
   const joinCall = useCallback(async () => {
     const uid = userUidRef.current;
     const cId = chatIdRef.current;
@@ -137,20 +123,20 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // Əvvəlki client varsa təmizlə
+      // Clean up previous client if any
       if (clientRef.current) {
-        try {
-          await clientRef.current.leave();
-        } catch (e) {}
+        try { await clientRef.current.leave(); } catch (e) {}
         clientRef.current = null;
       }
-      if (localTrackRef.current) {
-        localTrackRef.current.stop();
-        localTrackRef.current.close();
-        localTrackRef.current = null;
-      }
+
+      // Fetch token (no mic permission needed here)
+      const tokenRes = await authedFetch(TOKEN_URL, {
+        method: 'POST',
+        body: JSON.stringify({ channelName: cId }),
+      });
+      if (!tokenRes.ok) throw new Error('Token error: ' + tokenRes.status);
+      const tokenData = await tokenRes.json();
+      if (!tokenData.token) throw new Error('No token');
 
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
@@ -163,45 +149,44 @@ export default function Chat({ user }) {
             remoteUser.audioTrack.play();
             setCallStatus('connected');
           }
-        } catch (e) {
-          console.error('[Chat] Subscribe error:', e);
-        }
+        } catch (e) { console.error('[Chat] Subscribe error:', e); }
       });
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      const tokenRes = await authedFetch(TOKEN_URL, {
-        method: 'POST',
-        body: JSON.stringify({ channelName: cId }),
-      });
-
-      if (!tokenRes.ok) throw new Error('Token error: ' + tokenRes.status);
-      const tokenData = await tokenRes.json();
-      if (!tokenData.token) throw new Error('No token');
-
       await client.join(APP_ID, cId, tokenData.token, uid);
 
-      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      localTrackRef.current = localTrack;
-      await client.publish(localTrack);
+      // If mic track was pre-created on user gesture, use it.
+      // If not (matched call / receiver path), create it now.
+      if (!localTrackRef.current) {
+        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+      }
+
+      await client.publish(localTrackRef.current);
 
       setInCall(true);
       setCallStatus('connected');
       joinedRef.current = true;
+
     } catch (err) {
       console.error('[Chat] joinCall error:', err);
       joinedRef.current = false;
-      clientRef.current = null;
-      localTrackRef.current = null;
+      if (localTrackRef.current) {
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+        localTrackRef.current = null;
+      }
+      if (clientRef.current) {
+        try { await clientRef.current.leave(); } catch (e) {}
+        clientRef.current = null;
+      }
       setCallStatus('error');
     }
   }, []);
 
-  // Location state — caller qəbul alandan sonra
+  // Location state — caller joins after accepted (matched calls)
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
-      // Small stagger for matched calls to prevent Agora collision
       const delay = isMatchedCall ? (user.uid < peerId ? 0 : 1200) : 0;
       const timer = setTimeout(() => { joinCall(); }, delay);
       return () => clearTimeout(timer);
@@ -211,7 +196,6 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (!isMatchedCall || !stateCallId) return;
-    // Ensure call doc exists with correct structure for matched calls
     setDoc(doc(db, 'calls', stateCallId), {
       userA: [user.uid, peerId].sort()[0],
       userB: [user.uid, peerId].sort()[1],
@@ -242,12 +226,14 @@ export default function Chat({ user }) {
       const prevStatus = prevCallStatus.current;
       prevCallStatus.current = data.status;
 
-      // Gələn zəng
+      // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
         setIncomingCallData(data);
       }
 
-      // Caller tərəfi — qəbul edildi
+      // CALLER side: receiver accepted → join now
+      // Mic track was already created in startCall (user gesture),
+      // so joinCall can safely run from Firestore snapshot here
       if (data.status === 'accepted' && data.callerId === user.uid && prevStatus !== 'accepted') {
         if (!joinedRef.current) {
           joinedRef.current = true;
@@ -257,14 +243,17 @@ export default function Chat({ user }) {
         }
       }
 
-      // Rədd edildi
       if (data.status === 'rejected' && data.callerId === user.uid) {
         setCallStatus('rejected');
         ringtoneRef.current?.pause();
+        // Clean up pre-created mic track since call was rejected
+        if (localTrackRef.current) {
+          try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+          localTrackRef.current = null;
+        }
         setTimeout(() => setCallStatus(''), 3000);
       }
 
-      // Bitdi
       if (data.status === 'ended') {
         ringtoneRef.current?.pause();
         setIncomingCallData(null);
@@ -282,12 +271,10 @@ export default function Chat({ user }) {
       timerRef.current = setInterval(() => {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
-
         if (!user.isPremium && callSecondsRef.current >= freeCallLimitSeconds) {
           endCallRef.current?.();
           alert('⏰ Pulsuz danışıq limitin doldu!\n\nBonus dəqiqələrin varsa limitə əlavə olunur.\n\n👑 Premium al — limitsiz danış!');
         }
-
         if (!user.isPremium && callSecondsRef.current === Math.max(0, freeCallLimitSeconds - 120)) {
           alert('⚠️ 2 dəqiqə qaldı! Premium al — limitsiz danış!');
         }
@@ -305,9 +292,19 @@ export default function Chat({ user }) {
     return `${m}:${sec}`;
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // startCall — called on user gesture ("Call" button tap)
+  // Pre-create mic track HERE so iOS/Safari grants permission
+  // ─────────────────────────────────────────────────────────────
   const startCall = async () => {
     if (!user.uid || !peerId) return;
     try {
+      // Pre-create mic track while we have user gesture context
+      // This ensures iOS/Safari grants microphone permission
+      if (!localTrackRef.current) {
+        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+      }
+
       await setDoc(doc(db, 'calls', callDocId), {
         userA: user.uid,
         userB: peerId,
@@ -336,6 +333,10 @@ export default function Chat({ user }) {
       } catch (e) {}
     } catch (error) {
       console.error('[Chat] startCall error:', error);
+      if (localTrackRef.current) {
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+        localTrackRef.current = null;
+      }
       setCallStatus('error');
     }
   };
@@ -348,12 +349,11 @@ export default function Chat({ user }) {
 
     try {
       if (localTrackRef.current) {
-        localTrackRef.current.stop();
-        localTrackRef.current.close();
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
         localTrackRef.current = null;
       }
       if (clientRef.current) {
-        await clientRef.current.leave();
+        try { await clientRef.current.leave(); } catch (e) {}
         clientRef.current = null;
       }
     } catch (e) {}
@@ -367,13 +367,8 @@ export default function Chat({ user }) {
     try {
       let currentUserUnlocks = [];
 
-      // If call doc doesn't exist, still do local cleanup
       const callDocSnap = await getDoc(doc(db, 'calls', callDocId)).catch(() => null);
       if (!callDocSnap?.exists()) {
-        setInCall(false);
-        setCallStatus('');
-        setMuted(false);
-        joinedRef.current = false;
         endingRef.current = false;
         return;
       }
@@ -384,18 +379,12 @@ export default function Chat({ user }) {
         if (!callSnap.exists()) return;
 
         const callData = callSnap.data() || {};
-        
-        // Gather all possible participant UIDs robustly
         const participantSet = new Set([
-          callData.userA,
-          callData.userB, 
-          callData.callerId,
-          callData.receiverId,
-          user.uid,
-          peerId,
+          callData.userA, callData.userB,
+          callData.callerId, callData.receiverId,
+          user.uid, peerId,
         ].filter(Boolean));
-        const participants = Array.from(participantSet).slice(0, 2);
-        const uniqueParticipants = participants;
+        const uniqueParticipants = Array.from(participantSet).slice(0, 2);
         const durationMinutes = Math.ceil(secondsTalked / 60);
         const shouldApplyStats = secondsTalked > 5 && !callData.statsApplied && uniqueParticipants.length === 2;
 
@@ -419,7 +408,7 @@ export default function Chat({ user }) {
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         const userRefs = uniqueParticipants.map((uid) => doc(db, 'users', uid));
-        const userSnaps = await Promise.all(userRefs.map((userRef) => transaction.get(userRef)));
+        const userSnaps = await Promise.all(userRefs.map((ref) => transaction.get(ref)));
 
         userSnaps.forEach((userSnap, index) => {
           const participantId = uniqueParticipants[index];
@@ -476,41 +465,17 @@ export default function Chat({ user }) {
         setNewBadge(firstUnlock.badge);
         setNewBadgeReward(firstUnlock.rewardMessage);
         setBadgeQueue(remainingUnlocks);
-        if (typeof firstUnlock.bonusMinutes === 'number') {
-          setBonusMinutes(firstUnlock.bonusMinutes);
-        }
+        if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
       if (secondsTalked >= 180) setShowRating(true);
 
-      // AI analizi — çağrı müddəti 30+ saniyədirsə
-      if (secondsTalked >= 30) {
-        setLoadingFeedback(true);
-        try {
-          const res = await authedFetch(`${FUNCTIONS_BASE}/analyzeCall`, {
-            method: 'POST',
-            body: JSON.stringify({
-              callDuration: secondsTalked,
-              callerName: user.displayName || 'User',
-              peerName: peer?.name || 'Partner',
-            }),
-          });
-          const data = await res.json();
-          if (data.feedback) {
-            setAiFeedback(data.feedback);
-            setShowAiFeedback(true);
-          }
-        } catch (e) {
-          console.error('AI feedback error:', e);
-        }
-        setLoadingFeedback(false);
-      }
     } catch (e) {
       console.error('[Chat] endCall error:', e);
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user.uid, user.displayName, peer]);
+  }, [callDocId, peerId, user]);
 
   endCallRef.current = endCall;
 
@@ -520,7 +485,6 @@ export default function Chat({ user }) {
         const peerRef = doc(db, 'users', peerId);
         const peerDoc = await transaction.get(peerRef);
         if (!peerDoc.exists()) return;
-
         const peerData = peerDoc.data();
         const updatedPeerData = {
           ...peerData,
@@ -530,7 +494,6 @@ export default function Chat({ user }) {
         };
         const newBadges = checkNewBadges(updatedPeerData);
         const rewardResult = applyBadgeRewardsToData(updatedPeerData, newBadges);
-
         transaction.set(peerRef, {
           rating: updatedPeerData.rating,
           ratingCount: updatedPeerData.ratingCount,
@@ -556,7 +519,6 @@ export default function Chat({ user }) {
     const messageText = text.trim();
     const senderName = user.displayName || user.name || 'User';
     setText('');
-
     try {
       await setDoc(doc(db, 'chats', chatId), {
         participants: [user.uid, peerId].sort(),
@@ -587,12 +549,9 @@ export default function Chat({ user }) {
             if (nextUnlock) {
               setNewBadge(nextUnlock.badge);
               setNewBadgeReward(nextUnlock.rewardMessage);
-              if (typeof nextUnlock.bonusMinutes === 'number') {
-                setBonusMinutes(nextUnlock.bonusMinutes);
-              }
+              if (typeof nextUnlock.bonusMinutes === 'number') setBonusMinutes(nextUnlock.bonusMinutes);
               return rest;
             }
-
             setNewBadge(null);
             setNewBadgeReward('');
             return [];
@@ -617,6 +576,14 @@ export default function Chat({ user }) {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
               <button className="btn-accept" onClick={async () => {
                 setIncomingCallData(null);
+                // Receiver: get mic on button tap (user gesture) then join
+                if (!localTrackRef.current) {
+                  try {
+                    localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+                  } catch (e) {
+                    console.error('[Chat] Receiver mic error:', e);
+                  }
+                }
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
                 joinCall();
@@ -676,56 +643,6 @@ export default function Chat({ user }) {
               background: 'transparent', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer',
             }}>Keç</button>
           </div>
-        </div>
-      )}
-
-      {showAiFeedback && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: '#0f0f1aee', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 9999, padding: '20px',
-        }}>
-          <div style={{
-            background: '#1e1e30', border: '1px solid #7c6ff7',
-            borderRadius: '20px', padding: '24px', maxWidth: '400px',
-            width: '100%', maxHeight: '80vh', overflowY: 'auto',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ color: '#7c6ff7', fontSize: '18px', fontWeight: 700 }}>
-                🤖 AI Feedback
-              </h3>
-              <button onClick={() => setShowAiFeedback(false)} style={{
-                background: 'transparent', border: 'none',
-                color: '#aaa', fontSize: '20px', cursor: 'pointer',
-              }}>✕</button>
-            </div>
-            <div style={{
-              fontSize: '14px', lineHeight: '1.7', color: '#ddd',
-              whiteSpace: 'pre-wrap',
-            }}>
-              {aiFeedback}
-            </div>
-            <button
-              className="btn-primary"
-              onClick={() => setShowAiFeedback(false)}
-              style={{ marginTop: '16px', width: '100%' }}
-            >
-              Bağla
-            </button>
-          </div>
-        </div>
-      )}
-
-      {loadingFeedback && (
-        <div style={{
-          position: 'fixed', bottom: '90px', left: '50%',
-          transform: 'translateX(-50%)',
-          background: '#1e1e30', border: '1px solid #7c6ff7',
-          borderRadius: '12px', padding: '12px 20px',
-          color: '#7c6ff7', fontSize: '14px', fontWeight: 600,
-          zIndex: 999,
-        }}>
-          🤖 AI analiz edir...
         </div>
       )}
 

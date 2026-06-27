@@ -10,7 +10,6 @@ const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
 const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 
-const OPENAI_KEY = defineSecret("OPENAI_API_KEY");
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "ea7ad2e0c0bc4a98a35f3617931fa7ac",
 });
@@ -264,64 +263,6 @@ exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req,
       }),
     });
     res.status(200).json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ─── AI Call Analysis ──────────────────────────────────────────
-exports.analyzeCall = onRequest({ secrets: [OPENAI_KEY] }, async (req, res) => {
-  setCors(res);
-
-  if (req.method === "OPTIONS") return res.status(204).send("");
-
-  try {
-    await verifyAuth(req);
-  } catch {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const { callDuration, callerName, peerName } = req.body;
-  if (!callDuration) {
-    return res.status(400).json({ error: "callDuration required" });
-  }
-
-  const minutes = Math.floor(callDuration / 60);
-  const seconds = callDuration % 60;
-  const durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-
-  const prompt = `You are an English language coach. A user just finished a speaking practice call on Speak2Them app.
-
-Call Details:
-- Caller: ${callerName}
-- Partner: ${peerName}
-- Duration: ${durationText}
-
-Generate encouraging and constructive feedback for the user about their speaking practice session. Include:
-1. **Positive Feedback** - Encourage them to keep practicing
-2. **Next Steps** - Suggest what to focus on next
-3. **Streak Tip** - Short motivation for consistent practice
-
-Keep it concise (2-3 sentences) and friendly. Respond in English.`;
-
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_KEY.value()}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 300,
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await response.json();
-    const feedback = data.choices?.[0]?.message?.content || "Great practice session! Keep it up! 🎙️";
-    res.status(200).json({ feedback });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
