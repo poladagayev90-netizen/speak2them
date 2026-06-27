@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
+import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
 import DailyTopicModal from '../components/DailyTopicModal';
@@ -100,6 +101,16 @@ export default function Home({ user }) {
   const acceptCall = useCallback(async () => {
     if (!incomingCall?.callDocId) return;
     ringtoneRef.current?.pause();
+
+    // Fix Safari microphone blocking on receiver side
+    // We must request the mic within the onClick user gesture here
+    try {
+      const tempTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      window.tempGlobalMicTrack = tempTrack;
+    } catch (e) {
+      console.warn('[Home] Mic permission denied or failed:', e);
+    }
+
     await setDoc(doc(db, 'calls', incomingCall.callDocId), { status: 'accepted' }, { merge: true });
     setIncomingCall(null);
     navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });

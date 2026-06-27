@@ -159,7 +159,12 @@ export default function Chat({ user }) {
       // If mic track was pre-created on user gesture, use it.
       // If not (matched call / receiver path), create it now.
       if (!localTrackRef.current) {
-        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+        if (window.tempGlobalMicTrack) {
+          localTrackRef.current = window.tempGlobalMicTrack;
+          window.tempGlobalMicTrack = null; // Consume it
+        } else {
+          localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+        }
       }
 
       await client.publish(localTrackRef.current);
