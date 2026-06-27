@@ -44,7 +44,7 @@ export default function Chat({ user }) {
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
   const clientRef = useRef(null);
-  const localTrackRef = useRef(null);
+  const localTrackRef = useRef(null);  // mic track — created on user gesture
   const bottomRef = useRef(null);
   const joinedRef = useRef(false);
   const endingRef = useRef(false);
@@ -91,9 +91,8 @@ export default function Chat({ user }) {
     setDoc(doc(db, 'chats', chatId), {
       participants,
       updatedAt: serverTimestamp(),
-    }, { merge: true }).catch((err) => {
-      console.error('[Chat] ensure chat doc error:', err);
-    });
+    }, { merge: true }).catch(console.error);
+
     const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
     const unsub = onSnapshot(q, (snap) => {
       const msgs = snap.docs
@@ -109,10 +108,14 @@ export default function Chat({ user }) {
         });
       setMessages(msgs);
       setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
-    }, (err) => { console.error('[Chat] messages listener error:', err); });
+    }, console.error);
     return unsub;
   }, [chatId, user.uid, peerId]);
 
+  // ─────────────────────────────────────────────────────────────
+  // joinCall — mic track already created on user gesture,
+  // just fetch token → join → publish existing track
+  // ─────────────────────────────────────────────────────────────
   const joinCall = useCallback(async () => {
     const uid = userUidRef.current;
     const cId = chatIdRef.current;
@@ -120,17 +123,13 @@ export default function Chat({ user }) {
     ringtoneRef.current?.pause();
 
     try {
-      // 1. Clean up any existing tracks/client first
-      if (localTrackRef.current) {
-        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
-        localTrackRef.current = null;
-      }
+      // Clean up previous client if any
       if (clientRef.current) {
         try { await clientRef.current.leave(); } catch (e) {}
         clientRef.current = null;
       }
 
-      // 2. Fetch token first (no mic permission yet)
+      // Fetch token (no mic permission needed here)
       const tokenRes = await authedFetch(TOKEN_URL, {
         method: 'POST',
         body: JSON.stringify({ channelName: cId }),
@@ -139,7 +138,6 @@ export default function Chat({ user }) {
       const tokenData = await tokenRes.json();
       if (!tokenData.token) throw new Error('No token');
 
-      // 3. Create Agora client
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
 
@@ -156,17 +154,16 @@ export default function Chat({ user }) {
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      // 4. Join channel
       await client.join(APP_ID, cId, tokenData.token, uid);
 
-      // 5. Request mic permission and create track (after join so user gesture context is fresh)
-      const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      localTrackRef.current = localTrack;
+      // If mic track was pre-created on user gesture, use it.
+      // If not (matched call / receiver path), create it now.
+      if (!localTrackRef.current) {
+        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+      }
 
-      // 6. Publish
-      await client.publish(localTrack);
+      await client.publish(localTrackRef.current);
 
-      // 7. Update UI
       setInCall(true);
       setCallStatus('connected');
       joinedRef.current = true;
@@ -186,7 +183,7 @@ export default function Chat({ user }) {
     }
   }, []);
 
-  // Location state — caller joins after accepted
+  // Location state — caller joins after accepted (matched calls)
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
@@ -229,12 +226,14 @@ export default function Chat({ user }) {
       const prevStatus = prevCallStatus.current;
       prevCallStatus.current = data.status;
 
-      // Incoming call
+      // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
         setIncomingCallData(data);
       }
 
-      // Caller side — accepted by receiver
+      // CALLER side: receiver accepted → join now
+      // Mic track was already created in startCall (user gesture),
+      // so joinCall can safely run from Firestore snapshot here
       if (data.status === 'accepted' && data.callerId === user.uid && prevStatus !== 'accepted') {
         if (!joinedRef.current) {
           joinedRef.current = true;
@@ -244,14 +243,17 @@ export default function Chat({ user }) {
         }
       }
 
-      // Rejected
       if (data.status === 'rejected' && data.callerId === user.uid) {
         setCallStatus('rejected');
         ringtoneRef.current?.pause();
+        // Clean up pre-created mic track since call was rejected
+        if (localTrackRef.current) {
+          try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+          localTrackRef.current = null;
+        }
         setTimeout(() => setCallStatus(''), 3000);
       }
 
-      // Ended
       if (data.status === 'ended') {
         ringtoneRef.current?.pause();
         setIncomingCallData(null);
@@ -290,9 +292,19 @@ export default function Chat({ user }) {
     return `${m}:${sec}`;
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // startCall — called on user gesture ("Call" button tap)
+  // Pre-create mic track HERE so iOS/Safari grants permission
+  // ─────────────────────────────────────────────────────────────
   const startCall = async () => {
     if (!user.uid || !peerId) return;
     try {
+      // Pre-create mic track while we have user gesture context
+      // This ensures iOS/Safari grants microphone permission
+      if (!localTrackRef.current) {
+        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+      }
+
       await setDoc(doc(db, 'calls', callDocId), {
         userA: user.uid,
         userB: peerId,
@@ -303,6 +315,7 @@ export default function Chat({ user }) {
         createdAt: serverTimestamp(),
       });
       setCallStatus('calling');
+
       try {
         const peerSnap = await getDoc(doc(db, 'users', peerId));
         const peerData = peerSnap.data();
@@ -320,6 +333,10 @@ export default function Chat({ user }) {
       } catch (e) {}
     } catch (error) {
       console.error('[Chat] startCall error:', error);
+      if (localTrackRef.current) {
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+        localTrackRef.current = null;
+      }
       setCallStatus('error');
     }
   };
@@ -561,6 +578,14 @@ export default function Chat({ user }) {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
               <button className="btn-accept" onClick={async () => {
                 setIncomingCallData(null);
+                // Receiver: get mic on button tap (user gesture) then join
+                if (!localTrackRef.current) {
+                  try {
+                    localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+                  } catch (e) {
+                    console.error('[Chat] Receiver mic error:', e);
+                  }
+                }
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
                 joinCall();
