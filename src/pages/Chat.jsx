@@ -125,7 +125,6 @@ export default function Chat({ user }) {
   // just fetch token → join → publish existing track
   // ─────────────────────────────────────────────────────────────
   const joinCall = useCallback(async () => {
-    const uid = userUidRef.current;
     const cId = chatIdRef.current;
 
     ringtoneRef.current?.pause();
