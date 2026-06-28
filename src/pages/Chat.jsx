@@ -14,6 +14,9 @@ import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
+import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
+import { analyzeCallAudio } from '../utils/analyzeWithGemini';
+import CallInsights from '../components/CallInsights';
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
@@ -22,6 +25,13 @@ export default function Chat({ user }) {
   const { peerId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMatchedCall, setIsMatchedCall] = useState(false);
+  const [stateCallId, setStateCallId] = useState(null);
+
+  const audioBlobRef = useRef(null);
+  const [showInsights, setShowInsights] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [peer, setPeer] = useState(null);
@@ -147,6 +157,8 @@ export default function Chat({ user }) {
           if (mediaType === 'audio') {
             remoteUser.audioTrack.setPlaybackDevice('default').catch(() => {});
             remoteUser.audioTrack.play();
+            // Add remote audio to recording
+            addRemoteStream(remoteUser.audioTrack);
             setCallStatus('connected');
           }
         } catch (e) { console.error('[Chat] Subscribe error:', e); }
@@ -164,6 +176,9 @@ export default function Chat({ user }) {
       }
 
       await client.publish(localTrackRef.current);
+
+      // Start recording both sides
+      startLocalRecording(localTrackRef.current);
 
       setInCall(true);
       setCallStatus('connected');
@@ -345,6 +360,13 @@ export default function Chat({ user }) {
   const endCall = useCallback(async () => {
     if (endingRef.current) return;
     endingRef.current = true;
+
+    // Stop recording and store blob
+    const recordingBlob = await stopLocalRecording();
+    if (recordingBlob) {
+      audioBlobRef.current = recordingBlob;
+      console.log('[Chat] Recording stored, size:', recordingBlob.size);
+    }
 
     const secondsTalked = callSecondsRef.current;
 
@@ -643,6 +665,27 @@ export default function Chat({ user }) {
             <button onClick={() => setShowRating(false)} style={{
               background: 'transparent', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer',
             }}>Keç</button>
+
+            {audioBlobRef.current && !showInsights && (
+              <button
+                onClick={async () => {
+                  setShowRating(false);
+                  setAnalyzing(true);
+                  setShowInsights(true);
+                  await analyzeCallAudio(audioBlobRef.current, user.uid, stateCallId || peerId);
+                  setAnalyzing(false);
+                  audioBlobRef.current = null;
+                }}
+                style={{
+                  width: '100%', padding: '12px', marginTop: '8px',
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: 'white', border: 'none', borderRadius: '12px',
+                  fontSize: '15px', fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                {analyzing ? '🤖 Analiz edilir...' : '🤖 Analiz et'}
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -792,6 +835,40 @@ export default function Chat({ user }) {
         />
         <button type="submit">Send ➤</button>
       </form>
+
+      {audioBlobRef.current && !inCall && !showInsights && (
+        <div style={{
+          position: 'fixed', bottom: 100, left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 999
+        }}>
+          <button
+            onClick={async () => {
+              setAnalyzing(true);
+              setShowInsights(true);
+              await analyzeCallAudio(audioBlobRef.current, user.uid, stateCallId || peerId);
+              setAnalyzing(false);
+              audioBlobRef.current = null;
+            }}
+            style={{
+              padding: '12px 24px', borderRadius: 20, border: 'none',
+              background: 'linear-gradient(135deg, #059669, #10b981)',
+              color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(5,150,105,0.4)'
+            }}
+          >
+            🤖 Zəngi Analiz et
+          </button>
+        </div>
+      )}
+
+      {showInsights && (
+        <CallInsights
+          userId={user.uid}
+          channelName={stateCallId || peerId}
+          onClose={() => { setShowInsights(false); navigate('/'); }}
+        />
+      )}
     </div>
   );
 }

@@ -7,38 +7,41 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 export async function analyzeCallAudio(audioBlob, userId, channelName) {
   try {
-    // 1. Convert blob to base64
+    if (!audioBlob || audioBlob.size < 1000) {
+      console.warn('[Gemini] Audio blob too small, skipping analysis');
+      return null;
+    }
+
+    // Convert blob to base64
     const base64Audio = await blobToBase64(audioBlob);
 
-    // 2. Get today's vocab and idioms
+    // Get today's vocab and idioms
     const today = getTodayContent();
     const vocabList = today.vocabulary.map(v => v.word).join(', ');
     const idiomList = today.idioms.map(i => i.phrase).join(', ');
 
-    // 3. Build Gemini prompt
-    const prompt = `
-You are an EFL (English as a Foreign Language) tutor.
-Listen to this audio recording of an English speaking practice session.
+    const prompt = `You are an expert EFL (English as a Foreign Language) tutor.
+Listen to this audio recording of an English speaking practice conversation between two learners.
 
 Today's topic vocabulary words: ${vocabList}
 Today's idioms: ${idiomList}
 
-Analyze the speech and return ONLY a valid JSON object with NO extra text, NO markdown, NO backticks:
+Analyze the conversation and return ONLY a valid JSON object with NO extra text, NO markdown, NO backticks:
 {
-  "transcript": "full transcript of what was said",
+  "transcript": "brief summary of what was discussed (2-3 sentences)",
   "grammarFixes": [
-    { "original": "wrong phrase", "corrected": "correct phrase", "explanation": "brief reason" }
+    { "original": "exact wrong phrase heard", "corrected": "correct version", "explanation": "brief reason" }
   ],
-  "vocabularyUsed": ["list of topic words actually used from the provided list"],
+  "vocabularyUsed": ["list of today's topic words actually used in the conversation"],
   "idiomBonus": true or false,
-  "fluencyScore": number 0-100,
-  "talkRatio": number 0-100,
-  "overallScore": number 0-100,
-  "encouragement": "one specific positive sentence"
+  "fluencyScore": number 0-100 based on sentence completeness and flow,
+  "talkRatio": number 0-100 representing how much the main speaker talked,
+  "overallScore": number 0-100 weighted average,
+  "encouragement": "one specific encouraging sentence about what went well"
 }
+Limit grammarFixes to maximum 3 most important errors.
 Return only the JSON object. Nothing else.`;
 
-    // 4. Call Gemini API
     const response = await fetch(GEMINI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,29 +49,44 @@ Return only the JSON object. Nothing else.`;
         contents: [{
           parts: [
             { text: prompt },
-            { inline_data: { mime_type: 'audio/webm', data: base64Audio } }
+            {
+              inline_data: {
+                mime_type: 'audio/webm',
+                data: base64Audio
+              }
+            }
           ]
         }],
-        generationConfig: { temperature: 0.2 }
+        generationConfig: { temperature: 0.2, maxOutputTokens: 1000 }
       })
     });
 
-    const data = await response.json();
-    const rawText = data.candidates[0].content.parts[0].text;
-    const analysis = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error('Gemini API error: ' + err);
+    }
 
-    // 5. Save to Firestore
-    await setDoc(doc(db, 'callAnalysis', `${userId}_${channelName}`), {
+    const data = await response.json();
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) throw new Error('No response from Gemini');
+
+    const clean = rawText.replace(/```json|```/g, '').trim();
+    const analysis = JSON.parse(clean);
+
+    // Save to Firestore
+    const docId = `${userId}_${channelName}`;
+    await setDoc(doc(db, 'callAnalysis', docId), {
       ...analysis,
       userId,
       channelName,
       analyzedAt: serverTimestamp()
     });
 
+    console.log('[Gemini] Analysis saved to Firestore:', docId);
     return analysis;
 
   } catch (error) {
-    console.error('Gemini analysis failed:', error);
+    console.error('[Gemini] Analysis failed:', error);
     return null;
   }
 }
