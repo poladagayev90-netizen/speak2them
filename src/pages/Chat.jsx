@@ -25,8 +25,6 @@ export default function Chat({ user }) {
   const { peerId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMatchedCall, setIsMatchedCall] = useState(false);
-  const [stateCallId, setStateCallId] = useState(null);
 
   const audioBlobRef = useRef(null);
   const [showInsights, setShowInsights] = useState(false);
