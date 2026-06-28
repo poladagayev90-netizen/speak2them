@@ -51,7 +51,7 @@ Return only the JSON object. Nothing else.`;
             { text: prompt },
             {
               inline_data: {
-                mime_type: 'audio/webm',
+                mime_type: audioBlob.type || 'audio/webm',
                 data: base64Audio
               }
             }
