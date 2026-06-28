@@ -164,8 +164,9 @@ export default function Chat({ user }) {
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      // Use actual uid for Agora join
-      await client.join(APP_ID, cId, tokenData.token, uid);
+      // Reverting to null. Do NOT use string uid because the backend token is generated for integers (0).
+      // Agora will auto-generate unique IDs for both users automatically.
+      await client.join(APP_ID, cId, tokenData.token, null);
 
       // If mic track was pre-created on user gesture, use it.
       // If not (matched call / receiver path), create it now.
