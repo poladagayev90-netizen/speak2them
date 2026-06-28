@@ -107,7 +107,11 @@ service cloud.firestore {
     }
 
     match /callAnalysis/{docId} {
-      allow read, write: if isSignedIn() && (
+      allow read: if isSignedIn() && (
+        docId.split('_')[0] == request.auth.uid ||
+        (resource != null && resource.data.userId == request.auth.uid)
+      );
+      allow write: if isSignedIn() && (
         docId.split('_')[0] == request.auth.uid ||
         request.resource.data.userId == request.auth.uid
       );
