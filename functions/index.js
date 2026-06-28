@@ -11,7 +11,7 @@ const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
-  default: "ea7ad2e0c0bc4a98a35f3617931fa7ac",
+  default: "98299e33a32f4137a94daacc5422c92e",
 });
 const CHANNEL_LINK = defineString("TELEGRAM_CHANNEL_LINK", {
   default: "https://t.me/speak2them",
