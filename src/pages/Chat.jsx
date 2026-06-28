@@ -305,12 +305,6 @@ export default function Chat({ user }) {
   const startCall = async () => {
     if (!user.uid || !peerId) return;
     try {
-      // Pre-create mic track while we have user gesture context
-      // This ensures iOS/Safari grants microphone permission
-      if (!localTrackRef.current) {
-        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
-      }
-
       await setDoc(doc(db, 'calls', callDocId), {
         userA: user.uid,
         userB: peerId,
@@ -584,14 +578,6 @@ export default function Chat({ user }) {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
               <button className="btn-accept" onClick={async () => {
                 setIncomingCallData(null);
-                // Receiver: get mic on button tap (user gesture) then join
-                if (!localTrackRef.current) {
-                  try {
-                    localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
-                  } catch (e) {
-                    console.error('[Chat] Receiver mic error:', e);
-                  }
-                }
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
                 joinCall();
