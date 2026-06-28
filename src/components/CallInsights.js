@@ -62,6 +62,29 @@ export default function CallInsights({ userId, channelName, onClose }) {
     </div>
   );
 
+  if (analysis.error) return (
+    <div style={{
+      position: 'fixed', inset: 0,
+      background: 'var(--bg-primary)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      zIndex: 9999, padding: 20
+    }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>❌</div>
+      <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>
+        Sistem Xətası
+      </p>
+      <p style={{ color: '#ef4444', fontSize: 13, marginTop: 12, textAlign: 'center', background: '#fee2e2', padding: 12, borderRadius: 8, wordBreak: 'break-word', maxWidth: 300 }}>
+        {analysis.error}
+      </p>
+      <button onClick={onClose} style={{
+        marginTop: 24, width: '100%', maxWidth: 320, height: 52,
+        borderRadius: 16, border: 'none', background: 'var(--accent)',
+        color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer'
+      }}>Bağla</button>
+    </div>
+  );
+
   return (
     <div style={{
       position: 'fixed', inset: 0,

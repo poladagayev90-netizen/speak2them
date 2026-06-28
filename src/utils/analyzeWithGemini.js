@@ -87,6 +87,17 @@ Return only the JSON object. Nothing else.`;
 
   } catch (error) {
     console.error('[Gemini] Analysis failed:', error);
+    try {
+      const docId = `${userId}_${channelName}`;
+      await setDoc(doc(db, 'callAnalysis', docId), {
+        error: error.message || 'Unknown error occurred',
+        userId,
+        channelName,
+        analyzedAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error('[Gemini] Failed to save error to Firestore:', e);
+    }
     return null;
   }
 }
