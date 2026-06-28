@@ -9,6 +9,7 @@ admin.initializeApp();
 const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
 const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
@@ -321,4 +322,83 @@ exports.dailyReminder = onSchedule({
     failed,
     invalidTokensRemoved: invalidTokenRefs.length,
   });
+});
+
+// ─── OpenAI Audio Analysis Proxy ──────────────────────────────────
+exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { base64Audio, prompt } = req.body;
+  if (!base64Audio || !prompt) {
+    return res.status(400).json({ error: "base64Audio and prompt required" });
+  }
+
+  try {
+    const audioBuffer = Buffer.from(base64Audio, "base64");
+    const blob = new Blob([audioBuffer], { type: "audio/webm" });
+
+    const formData = new FormData();
+    formData.append("file", blob, "audio.webm");
+    formData.append("model", "whisper-1");
+    formData.append("language", "en");
+
+    // 1. Whisper API
+    const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${OPENAI_API_KEY.value()}` },
+      body: formData
+    });
+
+    if (!whisperRes.ok) {
+      const err = await whisperRes.text();
+      return res.status(500).json({ error: "Whisper error: " + err });
+    }
+
+    const whisperData = await whisperRes.json();
+    const transcript = whisperData.text;
+
+    if (!transcript || transcript.trim() === "") {
+      return res.status(400).json({ error: "Could not hear any speech in the audio." });
+    }
+
+    // 2. GPT-4o-mini
+    const fullPrompt = prompt.replace("{{TRANSCRIPT}}", transcript);
+
+    const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY.value()}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: fullPrompt }],
+        temperature: 0.2
+      })
+    });
+
+    if (!chatRes.ok) {
+      const err = await chatRes.text();
+      return res.status(500).json({ error: "GPT error: " + err });
+    }
+
+    const chatData = await chatRes.json();
+    const rawText = chatData.choices?.[0]?.message?.content;
+    if (!rawText) return res.status(500).json({ error: "No response from GPT" });
+
+    const clean = rawText.replace(/```json|```/g, "").trim();
+    res.status(200).json({ analysis: JSON.parse(clean) });
+
+  } catch (error) {
+    console.error("[OpenAI] Function error:", error);
+    res.status(500).json({ error: error.message });
+  }
 });

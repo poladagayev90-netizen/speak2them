@@ -1,8 +1,19 @@
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getTodayContent } from '../data/weeklyContent';
+import { FUNCTIONS_BASE } from '../constants';
 
-const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const b64 = reader.result.split(',')[1];
+      resolve(b64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 export async function analyzeCallAudio(audioBlob, userId, channelName) {
   try {
@@ -11,38 +22,12 @@ export async function analyzeCallAudio(audioBlob, userId, channelName) {
       return null;
     }
 
-    if (!OPENAI_API_KEY) {
-      throw new Error("OpenAI API Key is missing. Please add REACT_APP_OPENAI_API_KEY to Vercel.");
-    }
+    const user = auth.currentUser;
+    if (!user) throw new Error("İstifadəçi tapılmadı");
+    const token = await user.getIdToken();
 
-    // Step 1: Transcribe audio using Whisper
-    const formData = new FormData();
-    // OpenAI requires a filename with an extension they support (like .webm)
-    formData.append('file', audioBlob, 'audio.webm'); 
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'en'); // assuming English practice
+    const base64Audio = await blobToBase64(audioBlob);
 
-    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: formData
-    });
-
-    if (!whisperResponse.ok) {
-      const err = await whisperResponse.text();
-      throw new Error('Whisper API error: ' + err);
-    }
-
-    const whisperData = await whisperResponse.json();
-    const transcript = whisperData.text;
-
-    if (!transcript || transcript.trim() === '') {
-      throw new Error('Could not hear any speech in the audio.');
-    }
-
-    // Step 2: Analyze transcript using GPT-4o-mini
     const today = getTodayContent();
     const vocabList = today.vocabulary.map(v => v.word).join(', ');
     const idiomList = today.idioms.map(i => i.phrase).join(', ');
@@ -50,7 +35,7 @@ export async function analyzeCallAudio(audioBlob, userId, channelName) {
     const prompt = `You are an expert EFL (English as a Foreign Language) tutor.
 Analyze this transcript of an English speaking practice conversation between two learners.
 
-Transcript: "${transcript}"
+Transcript: "{{TRANSCRIPT}}"
 
 Today's topic vocabulary words: ${vocabList}
 Today's idioms: ${idiomList}
@@ -71,30 +56,22 @@ Analyze the conversation and return ONLY a valid JSON object with NO extra text,
 Limit grammarFixes to maximum 3 most important errors.
 Return only the JSON object. Nothing else.`;
 
-    const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2
-      })
+      body: JSON.stringify({ base64Audio, prompt })
     });
 
-    if (!chatResponse.ok) {
-      const err = await chatResponse.text();
-      throw new Error('GPT API error: ' + err);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Backend Xətası: ' + res.status);
     }
 
-    const chatData = await chatResponse.json();
-    const rawText = chatData.choices?.[0]?.message?.content;
-    if (!rawText) throw new Error('No response from GPT');
-
-    const clean = rawText.replace(/```json|```/g, '').trim();
-    const analysis = JSON.parse(clean);
+    const data = await res.json();
+    const analysis = data.analysis;
 
     // Save to Firestore
     const docId = `${userId}_${channelName}`;
