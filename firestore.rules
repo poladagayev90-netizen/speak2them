@@ -106,6 +106,13 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /callAnalysis/{docId} {
+      allow read, write: if isSignedIn() && (
+        docId.split('_')[0] == request.auth.uid ||
+        request.resource.data.userId == request.auth.uid
+      );
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
