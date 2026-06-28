@@ -117,6 +117,7 @@ export default function Chat({ user }) {
   // just fetch token → join → publish existing track
   // ─────────────────────────────────────────────────────────────
   const joinCall = useCallback(async () => {
+    const uid = userUidRef.current;
     const cId = chatIdRef.current;
 
     ringtoneRef.current?.pause();
@@ -153,18 +154,12 @@ export default function Chat({ user }) {
 
       client.on('user-unpublished', () => setCallStatus('left'));
 
-      // Use null instead of string uid because token expects an integer uid
-      await client.join(APP_ID, cId, tokenData.token, null);
+      await client.join(APP_ID, cId, tokenData.token, uid);
 
       // If mic track was pre-created on user gesture, use it.
       // If not (matched call / receiver path), create it now.
       if (!localTrackRef.current) {
-        if (window.tempGlobalMicTrack) {
-          localTrackRef.current = window.tempGlobalMicTrack;
-          window.tempGlobalMicTrack = null; // Consume it
-        } else {
-          localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
-        }
+        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
       }
 
       await client.publish(localTrackRef.current);
@@ -175,7 +170,6 @@ export default function Chat({ user }) {
 
     } catch (err) {
       console.error('[Chat] joinCall error:', err);
-      alert('Zəng qoşulma xətası: ' + err.message);
       joinedRef.current = false;
       if (localTrackRef.current) {
         try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
@@ -305,6 +299,12 @@ export default function Chat({ user }) {
   const startCall = async () => {
     if (!user.uid || !peerId) return;
     try {
+      // Pre-create mic track while we have user gesture context
+      // This ensures iOS/Safari grants microphone permission
+      if (!localTrackRef.current) {
+        localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+      }
+
       await setDoc(doc(db, 'calls', callDocId), {
         userA: user.uid,
         userB: peerId,
@@ -465,9 +465,7 @@ export default function Chat({ user }) {
         setNewBadge(firstUnlock.badge);
         setNewBadgeReward(firstUnlock.rewardMessage);
         setBadgeQueue(remainingUnlocks);
-        if (typeof firstUnlock.bonusMinutes === 'number') {
-          setBonusMinutes(firstUnlock.bonusMinutes);
-        }
+        if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
       if (secondsTalked >= 180) setShowRating(true);
@@ -578,6 +576,14 @@ export default function Chat({ user }) {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
               <button className="btn-accept" onClick={async () => {
                 setIncomingCallData(null);
+                // Receiver: get mic on button tap (user gesture) then join
+                if (!localTrackRef.current) {
+                  try {
+                    localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
+                  } catch (e) {
+                    console.error('[Chat] Receiver mic error:', e);
+                  }
+                }
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
                 joinCall();
