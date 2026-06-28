@@ -66,7 +66,7 @@ export function stopLocalRecording() {
       remoteGainNode = null;
       mediaRecorder = null;
       console.log('[Recorder] Stopped. Blob size:', blob.size);
-      resolve(blob.size > 1000 ? blob : null);
+      resolve(blob.size > 100 ? blob : null);
     };
     mediaRecorder.stop();
   });

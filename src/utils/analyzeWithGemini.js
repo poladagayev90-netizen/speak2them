@@ -7,7 +7,7 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 export async function analyzeCallAudio(audioBlob, userId, channelName) {
   try {
-    if (!audioBlob || audioBlob.size < 1000) {
+    if (!audioBlob || audioBlob.size < 100) {
       console.warn('[Gemini] Audio blob too small, skipping analysis');
       return null;
     }
