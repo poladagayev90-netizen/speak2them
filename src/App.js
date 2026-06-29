@@ -98,6 +98,7 @@ function App() {
         const goOffline = async () => {
           await setDoc(doc(db, 'users', uid), {
             online: false,
+            status: 'offline',
             lastSeen: serverTimestamp(),
           }, { merge: true });
         };
@@ -108,10 +109,18 @@ function App() {
           if (document.visibilityState === 'visible') {
             await setDoc(doc(db, 'users', uid), {
               online: true,
+              status: 'online',
               lastSeen: serverTimestamp(),
             }, { merge: true });
           }
         });
+
+        // Ensure user is online and available on initial load
+        await setDoc(doc(db, 'users', uid), {
+          online: true,
+          status: 'online',
+          lastSeen: serverTimestamp(),
+        }, { merge: true });
 
         const freshUserSnap = await getDoc(userRef);
         const freshUserData = freshUserSnap.exists() ? freshUserSnap.data() : {};

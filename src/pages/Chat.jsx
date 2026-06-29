@@ -197,6 +197,11 @@ export default function Chat({ user }) {
       setInCall(true);
       setCallStatus('connected');
       joinedRef.current = true;
+      
+      // Mark as busy
+      try {
+        await updateDoc(doc(db, 'users', userUidRef.current), { status: 'busy' });
+      } catch (e) {}
 
     } catch (err) {
       console.error('[Chat] joinCall error:', err);
@@ -210,6 +215,10 @@ export default function Chat({ user }) {
         clientRef.current = null;
       }
       setCallStatus('error');
+      
+      try {
+        await updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' });
+      } catch (e) {}
     }
   }, []);
 
@@ -335,6 +344,18 @@ export default function Chat({ user }) {
         localTrackRef.current = await AgoraRTC.createMicrophoneAudioTrack();
       }
 
+      // Check if peer is busy BEFORE creating the call document
+      const peerSnap = await getDoc(doc(db, 'users', peerId));
+      const peerData = peerSnap.data();
+      if (peerData?.status === 'busy') {
+        alert('Bu istifadəçi hazırda məşğuldur!');
+        if (localTrackRef.current) {
+          try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+          localTrackRef.current = null;
+        }
+        return;
+      }
+
       await setDoc(doc(db, 'calls', callDocId), {
         userA: user.uid,
         userB: peerId,
@@ -347,8 +368,6 @@ export default function Chat({ user }) {
       setCallStatus('calling');
 
       try {
-        const peerSnap = await getDoc(doc(db, 'users', peerId));
-        const peerData = peerSnap.data();
         if (peerData?.telegramId) {
           await authedFetch(`${FUNCTIONS_BASE}/sendCallNotification`, {
             method: 'POST',
@@ -400,6 +419,11 @@ export default function Chat({ user }) {
     setMuted(false);
     joinedRef.current = false;
     ringtoneRef.current?.pause();
+
+    // Mark as online
+    try {
+      await updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' });
+    } catch (e) {}
 
     try {
       let currentUserUnlocks = [];
