@@ -141,8 +141,8 @@ export default function Survey({ user }) {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
+    <div className="auth-page" style={{ alignItems: 'flex-start', padding: '40px 16px', overflowY: 'auto' }}>
+      <div className="auth-card" style={{ margin: '0 auto', maxWidth: '400px', width: '100%' }}>
         <div className="auth-logo">🎙️ Speak2Them</div>
 
         <h2>Quick Setup</h2>

@@ -149,8 +149,8 @@ export default function Profile({ user }) {
 
         {/* TASK 4: MINUTE BALANCE DISPLAY */}
         {(() => {
-          let displayedBalance = bonusMinutes;
-          let label = "Earned from badges & rewards";
+          let displayedBalance = 15 + bonusMinutes;
+          let label = `15 min / zəng (Limit) + ${bonusMinutes} min bonus (Hər zəng üçün)`;
           
           if (isPremium && user.premiumPlan !== 'unlimited') {
             const currentMonthStr = new Date().toISOString().slice(0, 7);
