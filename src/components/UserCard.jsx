@@ -19,7 +19,13 @@ export default function UserCard({ user, onChat }) {
           {user.name}{user.isPremium && <PremiumBadge />}
         </h3>
         <span className="user-level">{user.level || 'English Speaker'}</span>
-        {user.bio && <p className="user-bio">{user.bio}</p>}
+        {user.bio && (
+          <p className="user-bio">
+            {(user.uid || user.id) === '6Djehd9KB8dTZUgVwVJfLoPI5dF3'
+              ? user.bio
+              : user.bio.split(' ').slice(0, 2).join(' ') + (user.bio.split(' ').length > 2 ? '...' : '')}
+          </p>
+        )}
         <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', color: '#888' }}>📞 {user.callCount || 0}</span>
           <span style={{ fontSize: '11px', color: '#888' }}>🕐 {user.totalMinutes || 0} dəq</span>

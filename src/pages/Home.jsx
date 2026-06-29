@@ -356,7 +356,13 @@ export default function Home({ user }) {
                       <span className="user-level">
                         {user.isPremium ? (u.level || 'English Speaker') : '???'}
                       </span>
-                      {user.isPremium && u.bio && <p className="user-bio">{u.bio}</p>}
+                      {user.isPremium && u.bio && (
+                        <p className="user-bio">
+                          {(u.uid || u.id) === '6Djehd9KB8dTZUgVwVJfLoPI5dF3'
+                            ? u.bio
+                            : u.bio.split(' ').slice(0, 2).join(' ') + (u.bio.split(' ').length > 2 ? '...' : '')}
+                        </p>
+                      )}
                       <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
                         {user.isPremium ? (
                           <>
