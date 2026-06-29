@@ -80,156 +80,164 @@ export default function Profile({ user }) {
     pushMessage = `🕐 ${stats.totalMinutes} min spoken. Amazing!`;
   }
 
-  return (
-    <div className="profile-page">
-      <div className="profile-header">
-        <h2>My Profile</h2>
-        <button onClick={handleLogout} style={{
-          background: 'transparent', border: '1px solid #ff4d4d55',
-          color: '#ff6b6b', padding: '6px 14px', borderRadius: '8px',
-          cursor: 'pointer', fontSize: '13px', fontWeight: 600,
-        }}>Logout</button>
-      </div>
+  const [isEditing, setIsEditing] = useState(false);
 
-      <div className="profile-body" style={{ paddingBottom: '90px' }}>
-        
-        {/* TASK 1: PLAN INDICATOR */}
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div className="profile-avatar-big" style={{ margin: '0 auto 8px' }}>
-            {name?.charAt(0).toUpperCase() || '?'}
-          </div>
-          {isPremium ? (
-            <span style={{
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              color: '#1a1000', fontSize: '12px', fontWeight: 700,
-              padding: '4px 14px', borderRadius: '20px',
-              boxShadow: '0 0 12px #f59e0b55'
-            }}>⭐ {user.premiumPlan ? user.premiumPlan.charAt(0).toUpperCase() + user.premiumPlan.slice(1) : 'Pro'} Member</span>
-          ) : (
-            <span style={{
-              background: '#2a2a3b', color: '#a1a1aa',
-              fontSize: '12px', fontWeight: 600,
-              padding: '4px 14px', borderRadius: '20px',
-            }}>Free Plan</span>
-          )}
-        </div>
+  const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
 
-        {/* TASK 3: MOTIVATIONAL PUSH MESSAGE */}
-        <div style={{
-          background: '#1e1e30', borderLeft: '3px solid #7c6ff7',
-          padding: '12px 16px', borderRadius: '8px', marginBottom: '20px',
-          fontSize: '14px', fontWeight: 600, color: '#e2e8f0'
-        }}>
-          {pushMessage}
-        </div>
+  // Calculate Minute Balance
+  let displayedBalance = 15 + bonusMinutes;
+  let balanceLabel = `15 min limit + ${bonusMinutes} bonus / call`;
+  if (isPremium && user.premiumPlan !== 'unlimited') {
+    const currentMonthStr = new Date().toISOString().slice(0, 7);
+    let monthlyLimit = user.premiumPlan === 'basic' ? 120 : (user.premiumPlan === 'pro' ? 500 : 0);
+    const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
+    const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
+    displayedBalance = remainingMonthlyMinutes + bonusMinutes;
+    balanceLabel = `${remainingMonthlyMinutes} plan + ${bonusMinutes} bonus`;
+  } else if (isPremium && user.premiumPlan === 'unlimited') {
+    displayedBalance = '∞';
+    balanceLabel = `Unlimited plan active`;
+  }
 
-        {/* TASK 6: STATS SECTION CLEANUP */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px'
-        }}>
-          <div style={{ background: '#1e1e30', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>{stats.calls}</div>
-            <div style={{ fontSize: '12px', color: '#a1a1aa' }}>📞 Calls</div>
-          </div>
-          <div style={{ background: '#1e1e30', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>{stats.totalMinutes}</div>
-            <div style={{ fontSize: '12px', color: '#a1a1aa' }}>🕐 Min</div>
-          </div>
-          <div style={{ background: '#1e1e30', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>{stats.streak}</div>
-            <div style={{ fontSize: '12px', color: '#a1a1aa' }}>🔥 Streak days</div>
-          </div>
-          <div style={{ background: '#1e1e30', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
-            <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>
-              {stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—'}
-            </div>
-            <div style={{ fontSize: '12px', color: '#a1a1aa' }}>⭐ Rating</div>
-          </div>
-        </div>
-
-        {/* TASK 4: MINUTE BALANCE DISPLAY */}
-        {(() => {
-          let displayedBalance = 15 + bonusMinutes;
-          let label = `15 min / zəng (Limit) + ${bonusMinutes} min bonus (Hər zəng üçün)`;
-          
-          if (isPremium && user.premiumPlan !== 'unlimited') {
-            const currentMonthStr = new Date().toISOString().slice(0, 7);
-            let monthlyLimit = user.premiumPlan === 'basic' ? 120 : (user.premiumPlan === 'pro' ? 500 : 0);
-            const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
-            const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
-            displayedBalance = remainingMonthlyMinutes + bonusMinutes;
-            label = `Includes ${remainingMonthlyMinutes} plan minutes & ${bonusMinutes} bonus minutes`;
-          } else if (isPremium && user.premiumPlan === 'unlimited') {
-            displayedBalance = '∞';
-            label = `Unlimited plan active`;
-          }
-          
-          return (
-            <div style={{
-              background: 'linear-gradient(135deg, #1e1e30, #251e3f)',
-              border: '1px solid #7c6ff744', borderRadius: '12px', padding: '16px',
-              marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-            }}>
-              <div>
-                <div style={{ fontSize: '13px', color: '#fde68a', fontWeight: 700, marginBottom: '2px' }}>⚡ Minute Balance</div>
-                <div style={{ fontSize: '11px', color: '#a1a1aa' }}>
-                  {label}
-                </div>
-              </div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', textShadow: '0 0 10px rgba(124, 111, 247, 0.3)' }}>
-                {displayedBalance}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* TASK 2: PRO UPGRADE BUTTON */}
-        {!isPremium && (
-          <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-            <button
-              onClick={() => navigate('/upgrade')}
-              style={{
-                width: '100%', height: '52px', borderRadius: '26px', border: 'none',
-                background: 'linear-gradient(135deg, #f59e0b, #ff6b35)',
-                color: '#fff', fontSize: '16px', fontWeight: 700, cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.4)',
-                animation: 'pulse-glow 2s infinite',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-              }}
-            >
-              ⭐ Upgrade to Pro
-            </button>
-            <style>
-              {`
-                @keyframes pulse-glow {
-                  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-                  70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-                  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-                }
-              `}
-            </style>
-            <div style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '8px' }}>
-              Unlimited calls · Priority matching
-            </div>
-          </div>
-        )}
-
-        {/* Badges removed from here as they exist in achievements */}
-
-        <div className="profile-form">
-          <label>Full Name</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
-          <label>English Level</label>
-          <select value={level} onChange={e => setLevel(e.target.value)}>
-            {LEVELS.map(l => <option key={l}>{l}</option>)}
-          </select>
-          <label>Bio</label>
-          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself..." rows={3} />
-          <button className="btn-primary" onClick={handleSave} disabled={loading}>
-            {saved ? '✅ Saved!' : loading ? 'Saving...' : 'Save Changes'}
+  if (isEditing) {
+    return (
+      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100vh', padding: '16px', paddingBottom: '90px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
+          <h2 style={{ fontSize: '18px', margin: 0, color: '#fff' }}>Edit Profile</h2>
+          <button onClick={() => { handleSave(); setIsEditing(false); }} style={{ background: 'none', border: 'none', color: '#7c6ff7', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
+            {saved ? 'Saved' : loading ? '...' : 'Save'}
           </button>
         </div>
+        <div className="profile-form" style={{ background: '#1e1e30', padding: '20px', borderRadius: '16px' }}>
+          <label style={{ color: '#a1a1aa', fontSize: '12px' }}>Full Name</label>
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ background: '#151520', border: 'none', color: '#fff', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }} />
+          
+          <label style={{ color: '#a1a1aa', fontSize: '12px' }}>English Level</label>
+          <select value={level} onChange={e => setLevel(e.target.value)} style={{ background: '#151520', border: 'none', color: '#fff', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }}>
+            {LEVELS.map(l => <option key={l}>{l}</option>)}
+          </select>
+          
+          <label style={{ color: '#a1a1aa', fontSize: '12px' }}>Bio Status</label>
+          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself..." rows={3} style={{ background: '#151520', border: 'none', color: '#fff', padding: '12px', borderRadius: '8px', width: '100%' }} />
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100vh', padding: '16px', paddingBottom: '90px' }}>
+      
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Edit</button>
+        <button onClick={handleLogout} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>⚙️</button>
+      </div>
+
+      {/* TOP SECTION: AVATAR, NAME, STATS */}
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        
+        {/* Fake Topic Bubble */}
+        <div style={{ display: 'inline-block', background: '#2e2e50', color: '#a1a1aa', fontSize: '12px', padding: '6px 12px', borderRadius: '20px', marginBottom: '12px', position: 'relative' }}>
+          Set a topic...
+          <div style={{ position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid #2e2e50' }}></div>
+        </div>
+
+        {/* Avatar */}
+        <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 16px' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3a3a5a, #1e1e30)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+            {name?.charAt(0).toUpperCase() || '?'}
+          </div>
+          {/* Online Flag Indicator */}
+          <div style={{ position: 'absolute', bottom: '0', right: '0', width: '22px', height: '22px', borderRadius: '50%', background: '#10b981', border: '3px solid #0f0f0f' }}></div>
+        </div>
+
+        {/* Name & Bio */}
+        <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 4px 0' }}>{name || 'User'}</h2>
+        <p style={{ fontSize: '14px', color: '#a1a1aa', margin: '0 0 24px 0' }}>{bio || 'No time to die'}</p>
+
+        {/* Horizontal Stats */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid #1e1e30', paddingBottom: '24px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', marginBottom: '4px' }}>
+              <span>💬</span> Feedback
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{avgRating}</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', marginBottom: '4px' }}>
+              <span>📞</span> Talks
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{stats.calls}</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', marginBottom: '4px' }}>
+              <span>🕐</span> Mins
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{stats.totalMinutes}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* PLAN INDICATOR */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1e1e30', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ background: '#2e2e50', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>💎</div>
+          <div>
+            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>Current Plan</div>
+            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>
+              {isPremium ? (user.premiumPlan ? user.premiumPlan.charAt(0).toUpperCase() + user.premiumPlan.slice(1) : 'Pro') : 'Free Plan'}
+            </div>
+          </div>
+        </div>
+        {!isPremium && (
+          <button onClick={() => navigate('/upgrade')} style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#1a1000', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Upgrade</button>
+        )}
+      </div>
+
+      {/* INFORMATION SECTION */}
+      <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Information</h3>
+      <div style={{ background: '#1e1e30', borderRadius: '16px', padding: '8px 0' }}>
+        
+        {/* Level */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #2e2e50' }}>
+          <div style={{ background: '#7c6ff722', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>💬</div>
+          <div>
+            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>English level</div>
+            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>{level}</div>
+          </div>
+        </div>
+
+        {/* Email */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #2e2e50' }}>
+          <div style={{ background: '#10b98122', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>✉️</div>
+          <div>
+            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>Email Address</div>
+            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>{user.email || 'Hidden'}</div>
+          </div>
+        </div>
+
+        {/* Streak */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px' }}>
+          <div style={{ background: '#f59e0b22', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>🔥</div>
+          <div>
+            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
+            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>
+          </div>
+        </div>
+      </div>
+
+      {/* MINUTE BALANCE (Gifts Alternative) */}
+      <div style={{ background: '#1e1e30', borderRadius: '16px', padding: '16px', marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: 700, margin: '0 0 4px 0' }}>Minute Balance</h3>
+          <p style={{ color: '#a1a1aa', fontSize: '12px', margin: 0 }}>{balanceLabel}</p>
+        </div>
+        <div style={{ background: '#7c6ff722', padding: '8px 16px', borderRadius: '20px', color: '#7c6ff7', fontWeight: 700, fontSize: '16px' }}>
+          {displayedBalance}
+        </div>
+      </div>
+
     </div>
   );
 }
