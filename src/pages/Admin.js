@@ -10,6 +10,7 @@ const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
 export default function Admin({ user }) {
   const [users, setUsers] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [waitlist, setWaitlist] = useState([]);
   const [tab, setTab] = useState('requests');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState({});
@@ -26,6 +27,13 @@ export default function Admin({ user }) {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'premiumRequests'), snap => {
       setRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'waitlist'), snap => {
+      setWaitlist(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     return unsub;
   }, []);
@@ -130,6 +138,7 @@ export default function Admin({ user }) {
             { label: 'İstifadəçi', val: users.length },
             { label: 'Premium', val: users.filter(u => u.isPremium).length },
             { label: 'Sorğu', val: pendingRequests.length },
+            { label: 'Gözləyən', val: waitlist.length },
           ].map((s, i) => (
             <div key={i} style={{
               flex: 1, background: '#1e1e30', borderRadius: '12px',
@@ -143,14 +152,14 @@ export default function Admin({ user }) {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          {['requests', 'users'].map(t => (
+          {['requests', 'users', 'waitlist'].map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               flex: 1, padding: '10px',
               background: tab === t ? '#7c6ff7' : '#1e1e30',
               color: 'white', border: 'none', borderRadius: '10px',
               fontWeight: 600, cursor: 'pointer', fontSize: '13px',
             }}>
-              {t === 'requests' ? `📨 Sorğular (${pendingRequests.length})` : '👥 İstifadəçilər'}
+              {t === 'requests' ? `📨 Sorğular (${pendingRequests.length})` : t === 'waitlist' ? `⏳ Gözləyən (${waitlist.length})` : '👥 İstifadəçilər'}
             </button>
           ))}
         </div>
@@ -262,6 +271,43 @@ export default function Admin({ user }) {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Waitlist */}
+        {tab === 'waitlist' && (
+          <div>
+            {waitlist.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                Heç kim yoxdur
+              </div>
+            ) : (
+              waitlist.map(w => (
+                <div key={w.id} style={{
+                  background: '#1e1e30', borderRadius: '14px',
+                  padding: '14px 16px', marginBottom: '10px',
+                  border: '1px solid #2e2e50',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '16px', fontWeight: 700, color: 'white',
+                  }}>
+                    📧
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontWeight: 700, fontSize: '14px', margin: '0 0 4px 0' }}>
+                      {w.email}
+                    </p>
+                    <p style={{ fontSize: '11px', color: '#666', margin: 0 }}>
+                      {w.createdAt?.toDate?.()?.toLocaleString() || ''}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
