@@ -40,6 +40,7 @@ export default function MatchMaking({ user }) {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleStart = (x) => {
