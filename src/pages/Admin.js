@@ -38,7 +38,7 @@ export default function Admin({ user }) {
     return unsub;
   }, []);
 
-  const setPremium = async (u, value) => {
+  const setPremium = async (u, value, planType = 'pro') => {
     const userId = u.uid || u.id;
 
     if (!userId) {
@@ -56,6 +56,7 @@ export default function Admin({ user }) {
       await updateDoc(userRef, {
         isPremium: value,
         premiumSince: value ? serverTimestamp() : null,
+        premiumPlan: value ? planType : null,
       });
 
       const requestSnap = await getDoc(premiumRequestRef);
@@ -64,6 +65,7 @@ export default function Admin({ user }) {
         const requestUpdate = {
           uid: userId,
           status: 'active',
+          planGranted: planType,
           activatedAt: serverTimestamp(),
           activatedBy: user.uid,
         };
@@ -197,18 +199,41 @@ export default function Admin({ user }) {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setPremium(u, true)}
-                      disabled={loading[u.uid]}
-                      style={{
-                        width: '100%', padding: '12px',
-                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                        color: '#1a1000', border: 'none', borderRadius: '10px',
-                        fontWeight: 700, cursor: 'pointer', fontSize: '14px',
-                      }}
-                    >
-                      {loading[u.uid] ? '...' : '👑 Premium aktivləşdir'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                      <button
+                        onClick={() => setPremium(u, true, 'basic')}
+                        disabled={loading[u.uid]}
+                        style={{
+                          flex: 1, padding: '10px',
+                          background: '#185FA5', color: '#fff', border: 'none', borderRadius: '8px',
+                          fontWeight: 700, cursor: 'pointer', fontSize: '13px',
+                        }}
+                      >
+                        Basic
+                      </button>
+                      <button
+                        onClick={() => setPremium(u, true, 'pro')}
+                        disabled={loading[u.uid]}
+                        style={{
+                          flex: 1, padding: '10px',
+                          background: '#7c6ff7', color: '#fff', border: 'none', borderRadius: '8px',
+                          fontWeight: 700, cursor: 'pointer', fontSize: '13px',
+                        }}
+                      >
+                        Pro
+                      </button>
+                      <button
+                        onClick={() => setPremium(u, true, 'unlimited')}
+                        disabled={loading[u.uid]}
+                        style={{
+                          flex: 1, padding: '10px',
+                          background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px',
+                          fontWeight: 700, cursor: 'pointer', fontSize: '13px',
+                        }}
+                      >
+                        ∞
+                      </button>
+                    </div>
                   </div>
                 );
               })
@@ -255,20 +280,37 @@ export default function Admin({ user }) {
                     📞 {u.callCount || 0} · 🕐 {u.totalMinutes || 0} dəq
                   </p>
                 </div>
-                <button
-                  onClick={() => setPremium(u, !u.isPremium)}
-                  disabled={loading[u.uid]}
-                  style={{
-                    padding: '8px 12px', flexShrink: 0,
-                    background: u.isPremium ? '#ef444422' : 'linear-gradient(135deg, #f59e0b, #d97706)',
-                    color: u.isPremium ? '#ef4444' : '#1a1000',
-                    border: u.isPremium ? '1px solid #ef444444' : 'none',
-                    borderRadius: '8px', fontWeight: 700,
-                    cursor: 'pointer', fontSize: '12px',
-                  }}
-                >
-                  {loading[u.uid] ? '...' : u.isPremium ? 'Sil' : '👑 Ver'}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {u.isPremium ? (
+                    <button
+                      onClick={() => setPremium(u, false)}
+                      disabled={loading[u.uid]}
+                      style={{
+                        padding: '6px 12px', background: '#ef444422',
+                        color: '#ef4444', border: '1px solid #ef444444',
+                        borderRadius: '6px', fontWeight: 700,
+                        cursor: 'pointer', fontSize: '11px',
+                      }}
+                    >
+                      {loading[u.uid] ? '...' : 'Ləğv et'}
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => setPremium(u, true, 'basic')} disabled={loading[u.uid]}
+                        style={{ padding: '6px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '11px' }}>
+                        B
+                      </button>
+                      <button onClick={() => setPremium(u, true, 'pro')} disabled={loading[u.uid]}
+                        style={{ padding: '6px', background: '#7c6ff7', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '11px' }}>
+                        P
+                      </button>
+                      <button onClick={() => setPremium(u, true, 'unlimited')} disabled={loading[u.uid]}
+                        style={{ padding: '6px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '11px' }}>
+                        ∞
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

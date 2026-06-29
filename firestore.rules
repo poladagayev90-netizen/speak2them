@@ -15,11 +15,11 @@ service cloud.firestore {
 
     function isNotChangingPremiumFields() {
       return !request.resource.data.diff(resource.data).affectedKeys()
-        .hasAny(['isPremium', 'premiumSince']);
+        .hasAny(['isPremium', 'premiumSince', 'premiumPlan']);
     }
 
     function isNotCreatingPremiumFields() {
-      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince']);
+      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan']);
     }
 
     match /users/{userId} {

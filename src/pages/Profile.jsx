@@ -104,7 +104,7 @@ export default function Profile({ user }) {
               color: '#1a1000', fontSize: '12px', fontWeight: 700,
               padding: '4px 14px', borderRadius: '20px',
               boxShadow: '0 0 12px #f59e0b55'
-            }}>⭐ Pro Member</span>
+            }}>⭐ {user.premiumPlan ? user.premiumPlan.charAt(0).toUpperCase() + user.premiumPlan.slice(1) : 'Pro'} Member</span>
           ) : (
             <span style={{
               background: '#2a2a3b', color: '#a1a1aa',
@@ -148,21 +148,40 @@ export default function Profile({ user }) {
         </div>
 
         {/* TASK 4: MINUTE BALANCE DISPLAY */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1e1e30, #251e3f)',
-          border: '1px solid #7c6ff744', borderRadius: '12px', padding: '16px',
-          marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-        }}>
-          <div>
-            <div style={{ fontSize: '13px', color: '#fde68a', fontWeight: 700, marginBottom: '2px' }}>⚡ Minute Balance</div>
-            <div style={{ fontSize: '11px', color: '#a1a1aa' }}>
-              {bonusMinutes > 0 ? "Earned from badges & rewards" : "Earn minutes by unlocking badges"}
+        {(() => {
+          let displayedBalance = bonusMinutes;
+          let label = "Earned from badges & rewards";
+          
+          if (isPremium && user.premiumPlan !== 'unlimited') {
+            const currentMonthStr = new Date().toISOString().slice(0, 7);
+            let monthlyLimit = user.premiumPlan === 'basic' ? 120 : (user.premiumPlan === 'pro' ? 500 : 0);
+            const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
+            const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
+            displayedBalance = remainingMonthlyMinutes + bonusMinutes;
+            label = `Includes ${remainingMonthlyMinutes} plan minutes & ${bonusMinutes} bonus minutes`;
+          } else if (isPremium && user.premiumPlan === 'unlimited') {
+            displayedBalance = '∞';
+            label = `Unlimited plan active`;
+          }
+          
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg, #1e1e30, #251e3f)',
+              border: '1px solid #7c6ff744', borderRadius: '12px', padding: '16px',
+              marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <div>
+                <div style={{ fontSize: '13px', color: '#fde68a', fontWeight: 700, marginBottom: '2px' }}>⚡ Minute Balance</div>
+                <div style={{ fontSize: '11px', color: '#a1a1aa' }}>
+                  {label}
+                </div>
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', textShadow: '0 0 10px rgba(124, 111, 247, 0.3)' }}>
+                {displayedBalance}
+              </div>
             </div>
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', textShadow: '0 0 10px rgba(124, 111, 247, 0.3)' }}>
-            {bonusMinutes}
-          </div>
-        </div>
+          );
+        })()}
 
         {/* TASK 2: PRO UPGRADE BUTTON */}
         {!isPremium && (

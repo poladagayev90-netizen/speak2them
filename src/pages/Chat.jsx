@@ -65,7 +65,23 @@ export default function Chat({ user }) {
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = stateCallId || `call_${chatId}`;
   const content = getTodayContent();
-  const freeCallLimitSeconds = (15 + bonusMinutes) * 60;
+  
+  const currentMonthStr = new Date().toISOString().slice(0, 7);
+  let monthlyLimit = 0;
+  if (user.premiumPlan === 'basic') monthlyLimit = 120;
+  if (user.premiumPlan === 'pro') monthlyLimit = 500;
+  
+  const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
+  const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
+  
+  let maxCallSeconds = (15 + bonusMinutes) * 60;
+  if (user.isPremium) {
+    if (user.premiumPlan === 'unlimited' || !user.premiumPlan) {
+      maxCallSeconds = Infinity;
+    } else {
+      maxCallSeconds = (remainingMonthlyMinutes + bonusMinutes) * 60;
+    }
+  }
 
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
@@ -285,12 +301,12 @@ export default function Chat({ user }) {
       timerRef.current = setInterval(() => {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
-        if (!user.isPremium && callSecondsRef.current >= freeCallLimitSeconds) {
+        if (maxCallSeconds !== Infinity && callSecondsRef.current >= maxCallSeconds) {
           endCallRef.current?.();
-          alert('⏰ Pulsuz danışıq limitin doldu!\n\nBonus dəqiqələrin varsa limitə əlavə olunur.\n\n👑 Premium al — limitsiz danış!');
+          alert('⏰ Danışıq limitin doldu!\n\nLimitsiz danışmaq üçün paketinizi yeniləyin!');
         }
-        if (!user.isPremium && callSecondsRef.current === Math.max(0, freeCallLimitSeconds - 120)) {
-          alert('⚠️ 2 dəqiqə qaldı! Premium al — limitsiz danış!');
+        if (maxCallSeconds !== Infinity && callSecondsRef.current === Math.max(0, maxCallSeconds - 120)) {
+          alert('⚠️ 2 dəqiqə qaldı! Limitsiz danışmaq üçün paketinizi yeniləyin!');
         }
       }, 1000);
     } else {
@@ -298,7 +314,7 @@ export default function Chat({ user }) {
       setCallSeconds(0);
     }
     return () => clearInterval(timerRef.current);
-  }, [freeCallLimitSeconds, inCall, user.isPremium]);
+  }, [maxCallSeconds, inCall]);
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -438,12 +454,18 @@ export default function Chat({ user }) {
         else if (userData.lastCallDate === yesterday) streak += 1;
         else streak = 1;
 
+        const currentMonthStr = new Date().toISOString().slice(0, 7);
+        const isSameMonth = userData.currentMonth === currentMonthStr;
+        const newMonthMinutes = (isSameMonth ? (userData.currentMonthMinutes || 0) : 0) + durationMinutes;
+
         const updatedStats = {
           ...userData,
           callCount: (userData.callCount || 0) + 1,
           totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
           streak,
           lastCallDate: today,
+          currentMonth: currentMonthStr,
+          currentMonthMinutes: newMonthMinutes,
         };
         const badgeCallData = {
           duration: secondsTalked,
@@ -458,6 +480,8 @@ export default function Chat({ user }) {
           totalMinutes: updatedStats.totalMinutes,
           streak: updatedStats.streak,
           lastCallDate: updatedStats.lastCallDate,
+          currentMonth: updatedStats.currentMonth,
+          currentMonthMinutes: updatedStats.currentMonthMinutes,
           ...(newBadges.length > 0 ? rewardResult.updates : {}),
           ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
         }, { merge: true });
@@ -700,15 +724,17 @@ export default function Chat({ user }) {
             {callStatus === 'rejected' && '❌ Rədd edildi'}
             {callStatus === 'error' && '❌ Error'}
           </p>
-          {inCall && !user.isPremium && (
-            <div style={{
-              marginTop: '8px',
-              color: callSeconds > 780 ? '#ef4444' : '#f59e0b',
-              fontSize: '13px', fontWeight: 600,
-            }}>
-              ⏰ {formatTime(Math.max(0, freeCallLimitSeconds - callSeconds))} qaldı
-              {callSeconds > 780 && ' — Premium al!'}
-            </div>
+          {inCall && (
+            <>
+              {maxCallSeconds !== Infinity && (
+                <div style={{
+                  background: '#2e2e50', padding: '6px 12px', borderRadius: '20px',
+                  fontSize: '12px', color: '#a1a1aa', fontWeight: 600, marginTop: '8px'
+                }}>
+                  ⏰ {formatTime(Math.max(0, maxCallSeconds - callSeconds))} qaldı
+                </div>
+              )}
+            </>
           )}
           <div className="fullscreen-call-buttons">
             {inCall && (
