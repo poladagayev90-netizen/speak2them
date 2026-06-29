@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 // eslint-disable-next-line no-unused-vars
 const ignored = self.__WB_MANIFEST;
-const CACHE_NAME = 's2t-cache-v1';
+const CACHE_NAME = 's2t-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -21,28 +21,26 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Don't intercept API calls
+  if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('identitytoolkit')) {
+    return;
+  }
+
+  // Network First, fallback to cache
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        if (response) {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
-        return fetch(event.request).then(
-          function(response) {
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            var responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(function(cache) {
-                // don't cache firebase api calls
-                if (!event.request.url.includes('firestore.googleapis.com')) {
-                  cache.put(event.request, responseToCache);
-                }
-              });
-            return response;
-          }
-        );
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseToCache);
+        });
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
 });
