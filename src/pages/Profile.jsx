@@ -71,14 +71,6 @@ export default function Profile({ user }) {
     navigate('/login');
   };
 
-  let pushMessage = "💪 Make your first call today!";
-  if (stats.streak >= 7) {
-    pushMessage = `🔥 ${stats.streak} day streak! You're on fire!`;
-  } else if (stats.calls >= 10) {
-    pushMessage = `📞 ${stats.calls} calls done. Keep it up!`;
-  } else if (stats.totalMinutes >= 60) {
-    pushMessage = `🕐 ${stats.totalMinutes} min spoken. Amazing!`;
-  }
 
   const [isEditing, setIsEditing] = useState(false);
 
