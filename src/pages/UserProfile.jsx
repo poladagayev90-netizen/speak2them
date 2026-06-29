@@ -24,7 +24,7 @@ export default function UserProfile({ user: currentUser }) {
 
   if (loading) {
     return (
-      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#a1a1aa' }}>Loading profile...</p>
       </div>
     );
@@ -32,7 +32,7 @@ export default function UserProfile({ user: currentUser }) {
 
   if (!profileUser) {
     return (
-      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#a1a1aa', marginBottom: '16px' }}>User not found.</p>
         <button onClick={() => navigate(-1)} style={{ background: '#2e2e50', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>Go Back</button>
       </div>
@@ -57,7 +57,7 @@ export default function UserProfile({ user: currentUser }) {
   const isOnline = profileUser.online;
 
   return (
-    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', padding: '16px', paddingBottom: '90px' }}>
+    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', padding: '16px', paddingBottom: '120px' }}>
       
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>

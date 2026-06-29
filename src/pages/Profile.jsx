@@ -93,7 +93,7 @@ export default function Profile({ user }) {
 
   if (isEditing) {
     return (
-      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', padding: '16px', paddingBottom: '90px' }}>
+      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', padding: '16px', paddingBottom: '120px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
           <h2 style={{ fontSize: '18px', margin: 0, color: '#fff' }}>Edit Profile</h2>
@@ -124,7 +124,7 @@ export default function Profile({ user }) {
   };
 
   return (
-    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', padding: '16px', paddingBottom: '90px' }}>
+    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', padding: '16px', paddingBottom: '120px' }}>
       
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>

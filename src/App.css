@@ -39,11 +39,12 @@ body {
 
 .auth-page {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   min-height: 100dvh;
-  padding: 20px;
+  padding: 40px 20px;
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  overflow-y: auto;
 }
 
 .auth-card {
@@ -53,6 +54,7 @@ body {
   padding: 40px;
   width: 100%;
   max-width: 420px;
+  margin: auto;
 }
 
 .auth-logo {
