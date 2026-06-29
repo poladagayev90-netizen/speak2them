@@ -407,7 +407,7 @@ export default function Chat({ user }) {
         ].filter(Boolean));
         const uniqueParticipants = Array.from(participantSet).slice(0, 2);
         const durationMinutes = Math.ceil(secondsTalked / 60);
-        const shouldApplyStats = secondsTalked > 5 && !callData.statsApplied && uniqueParticipants.length === 2;
+        const shouldApplyStats = secondsTalked > 5 && !callData[`statsApplied_${user.uid}`] && uniqueParticipants.length === 2;
 
         const callSessionUpdate = {
           userA: uniqueParticipants[0] || user.uid,
@@ -428,56 +428,52 @@ export default function Chat({ user }) {
 
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
-        const userRefs = uniqueParticipants.map((uid) => doc(db, 'users', uid));
-        const userSnaps = await Promise.all(userRefs.map((ref) => transaction.get(ref)));
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await transaction.get(userRef);
 
-        userSnaps.forEach((userSnap, index) => {
-          const participantId = uniqueParticipants[index];
-          const userRef = userRefs[index];
-          const userData = userSnap.data() || {};
-          let streak = userData.streak || 0;
+        const userData = userSnap.data() || {};
+        let streak = userData.streak || 0;
 
-          if (userData.lastCallDate === today) {}
-          else if (userData.lastCallDate === yesterday) streak += 1;
-          else streak = 1;
+        if (userData.lastCallDate === today) {}
+        else if (userData.lastCallDate === yesterday) streak += 1;
+        else streak = 1;
 
-          const updatedStats = {
-            ...userData,
-            callCount: (userData.callCount || 0) + 1,
-            totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
-            streak,
-            lastCallDate: today,
-          };
-          const badgeCallData = {
-            duration: secondsTalked,
-            matchTime: callData.matchTimeSeconds || callData.matchTime || 999,
-            hour: new Date().getHours(),
-          };
-          const newBadges = checkNewBadges(updatedStats, badgeCallData);
-          const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
+        const updatedStats = {
+          ...userData,
+          callCount: (userData.callCount || 0) + 1,
+          totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
+          streak,
+          lastCallDate: today,
+        };
+        const badgeCallData = {
+          duration: secondsTalked,
+          matchTime: callData.matchTimeSeconds || callData.matchTime || 999,
+          hour: new Date().getHours(),
+        };
+        const newBadges = checkNewBadges(updatedStats, badgeCallData);
+        const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
 
-          transaction.set(userRef, {
-            callCount: updatedStats.callCount,
-            totalMinutes: updatedStats.totalMinutes,
-            streak: updatedStats.streak,
-            lastCallDate: updatedStats.lastCallDate,
-            ...(newBadges.length > 0 ? rewardResult.updates : {}),
-            ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
-          }, { merge: true });
+        transaction.set(userRef, {
+          callCount: updatedStats.callCount,
+          totalMinutes: updatedStats.totalMinutes,
+          streak: updatedStats.streak,
+          lastCallDate: updatedStats.lastCallDate,
+          ...(newBadges.length > 0 ? rewardResult.updates : {}),
+          ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
+        }, { merge: true });
 
-          if (participantId === user.uid && newBadges.length > 0) {
-            currentUserUnlocks = newBadges.map((badgeId, badgeIndex) => ({
-              badge: badgeId,
-              rewardMessage: rewardResult.rewardMessages[badgeIndex] || '',
-              bonusMinutes: rewardResult.updates.bonusMinutes,
-            }));
-          }
-        });
+        if (newBadges.length > 0) {
+          currentUserUnlocks = newBadges.map((badgeId, badgeIndex) => ({
+            badge: badgeId,
+            rewardMessage: rewardResult.rewardMessages[badgeIndex] || '',
+            bonusMinutes: rewardResult.updates.bonusMinutes,
+          }));
+        }
 
         transaction.set(callRef, {
           ...callSessionUpdate,
-          statsApplied: true,
-          statsAppliedAt: serverTimestamp(),
+          [`statsApplied_${user.uid}`]: true,
+          [`statsAppliedAt_${user.uid}`]: serverTimestamp(),
         }, { merge: true });
       });
 

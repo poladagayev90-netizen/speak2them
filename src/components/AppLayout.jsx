@@ -43,6 +43,9 @@ export default function AppLayout({ children, user }) {
       const mobileMode = isMobile || isPWA || isTelegram || manualMobileMode;
       setForceMobile(mobileMode);
       
+      // Update app height to prevent mobile browser URL bar scroll issues
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+      
       // Close settings if switching to mobile
       if (mobileMode) {
         setSettingsOpen(false);
