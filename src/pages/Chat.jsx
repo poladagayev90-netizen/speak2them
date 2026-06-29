@@ -16,7 +16,7 @@ import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
-import CallInsights from '../components/CallInsights';
+
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
