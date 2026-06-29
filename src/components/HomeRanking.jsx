@@ -1,14 +1,20 @@
 import React, { useMemo } from 'react';
 import RankingCard from './RankingCard';
 import { getUserRank, sortUsersForRanking } from '../utils/ranking';
+import { useNavigate } from 'react-router-dom';
 import './Ranking.css';
 
 function PodiumCard({ user, rank, isCurrentUser }) {
   const heights = { 1: 120, 2: 90, 3: 70 };
   const emojis = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const navigate = useNavigate();
 
   return (
-    <div className={`ranking-podium-slot rank-${rank}`}>
+    <div 
+      className={`ranking-podium-slot rank-${rank}`} 
+      onClick={() => navigate(`/user/${user.uid || user.id}`)}
+      style={{ cursor: 'pointer' }}
+    >
       <div className="ranking-podium-avatar">
         {user.photo
           ? <img src={user.photo} alt={user.name} />

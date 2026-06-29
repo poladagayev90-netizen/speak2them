@@ -1,21 +1,31 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserCard({ user, onChat }) {
+  const navigate = useNavigate();
+
   return (
     <div className="user-card" style={{
       border: user.isPremium ? '1px solid #f59e0b55' : undefined,
     }}>
-      <div className="user-avatar" style={{
-        boxShadow: user.isPremium ? '0 0 12px #f59e0b66' : undefined,
-      }}>
+      <div 
+        className="user-avatar" 
+        onClick={() => navigate(`/user/${user.uid || user.id}`)}
+        style={{
+          boxShadow: user.isPremium ? '0 0 12px #f59e0b66' : undefined,
+          cursor: 'pointer'
+        }}>
         {user.photo
           ? <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
           : user.name?.charAt(0).toUpperCase()
         }
       </div>
       <div className="user-info">
-        <h3 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+        <h3 
+          onClick={() => navigate(`/user/${user.uid || user.id}`)}
+          style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', cursor: 'pointer' }}
+        >
           {user.name}{user.isPremium && <PremiumBadge />}
         </h3>
         <span className="user-level">{user.level || 'English Speaker'}</span>
@@ -36,8 +46,8 @@ export default function UserCard({ user, onChat }) {
           {user.lastSeen?.toMillis?.() > Date.now() - 15000 ? '🟢 Online' : '⚫ Offline'}
         </span>
       </div>
-      <button className="btn-chat" onClick={() => onChat(user.uid || user.id)}>
-        💬 Chat & Call
+      <button className="btn-chat" onClick={() => navigate(`/user/${user.uid || user.id}`)}>
+        👀 View Profile
       </button>
     </div>
   );

@@ -1,7 +1,10 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
+import { useNavigate } from 'react-router-dom';
 
 export default function RankingCard({ user, rank, isCurrentUser = false }) {
+  const navigate = useNavigate();
+
   const getMedalEmoji = (rankNumber) => {
     if (rankNumber === 1) return '1st';
     if (rankNumber === 2) return '2nd';
@@ -17,17 +20,21 @@ export default function RankingCard({ user, rank, isCurrentUser = false }) {
   };
 
   return (
-    <div style={{
-      background: isCurrentUser ? '#7c6ff71f' : '#1e1e30',
-      border: `1px solid ${isCurrentUser ? '#7c6ff7' : rank === 1 ? '#f59e0b' : rank === 2 ? '#9ca3af' : rank === 3 ? '#b45309' : '#2e2e50'}`,
-      borderRadius: '14px',
-      padding: '14px 16px',
-      marginBottom: '10px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      boxShadow: isCurrentUser ? '0 0 0 1px #7c6ff733' : 'none',
-    }}>
+    <div 
+      onClick={() => navigate(`/user/${user.uid || user.id}`)}
+      style={{
+        background: isCurrentUser ? '#7c6ff71f' : '#1e1e30',
+        border: `1px solid ${isCurrentUser ? '#7c6ff7' : rank === 1 ? '#f59e0b' : rank === 2 ? '#9ca3af' : rank === 3 ? '#b45309' : '#2e2e50'}`,
+        borderRadius: '14px',
+        padding: '14px 16px',
+        marginBottom: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        boxShadow: isCurrentUser ? '0 0 0 1px #7c6ff733' : 'none',
+        cursor: 'pointer'
+      }}
+    >
       <div style={{
         fontSize: '16px',
         fontWeight: 800,

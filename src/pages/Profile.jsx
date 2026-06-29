@@ -93,7 +93,7 @@ export default function Profile({ user }) {
 
   if (isEditing) {
     return (
-      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100vh', padding: '16px', paddingBottom: '90px' }}>
+      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', padding: '16px', paddingBottom: '90px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
           <h2 style={{ fontSize: '18px', margin: 0, color: '#fff' }}>Edit Profile</h2>
@@ -117,13 +117,19 @@ export default function Profile({ user }) {
     );
   }
 
+  const handleSettingsClick = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      handleLogout();
+    }
+  };
+
   return (
-    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100vh', padding: '16px', paddingBottom: '90px' }}>
+    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', minHeight: '100%', padding: '16px', paddingBottom: '90px' }}>
       
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Edit</button>
-        <button onClick={handleLogout} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>⚙️</button>
+        <button onClick={handleSettingsClick} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>⚙️</button>
       </div>
 
       {/* TOP SECTION: AVATAR, NAME, STATS */}
