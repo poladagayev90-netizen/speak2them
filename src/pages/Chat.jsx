@@ -855,40 +855,6 @@ export default function Chat({ user }) {
         />
         <button type="submit">Send ➤</button>
       </form>
-
-      {audioBlobRef.current && !inCall && !showInsights && (
-        <div style={{
-          position: 'fixed', bottom: 100, left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 999
-        }}>
-          <button
-            onClick={async () => {
-              setAnalyzing(true);
-              setShowInsights(true);
-              await analyzeCallAudio(audioBlobRef.current, user.uid, stateCallId || peerId);
-              setAnalyzing(false);
-              audioBlobRef.current = null;
-            }}
-            style={{
-              padding: '12px 24px', borderRadius: 20, border: 'none',
-              background: 'linear-gradient(135deg, #059669, #10b981)',
-              color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(5,150,105,0.4)'
-            }}
-          >
-            🤖 Zəngi Analiz et
-          </button>
-        </div>
-      )}
-
-      {showInsights && (
-        <CallInsights
-          userId={user.uid}
-          channelName={stateCallId || peerId}
-          onClose={() => { setShowInsights(false); navigate('/'); }}
-        />
-      )}
     </div>
   );
 }

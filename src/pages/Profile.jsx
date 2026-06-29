@@ -209,7 +209,7 @@ export default function Profile({ user }) {
               `}
             </style>
             <div style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '8px' }}>
-              Unlimited calls · AI feedback · Priority matching
+              Unlimited calls · Priority matching
             </div>
           </div>
         )}

@@ -36,7 +36,7 @@ const PLANS = [
     icon: '🚀',
     color: '#7c6ff7',
     popular: true,
-    features: ['Basic-dəki hər şey', 'AI söhbət analizi', 'Pro badge profildə', 'Kim baxdı göstər'],
+    features: ['Basic-dəki hər şey', 'Pro badge profildə', 'Kim baxdı göstər', 'Sürətli dəstək'],
   },
   {
     id: 'unlimited',
@@ -53,7 +53,6 @@ const PLANS = [
 const COMPARE = [
   { feature: 'Dəqiqə', values: ['30/həftə', '120/ay', '500/ay', '∞'] },
   { feature: 'Priority queue', values: [false, true, true, true] },
-  { feature: 'AI analiz', values: [false, false, true, true] },
   { feature: 'Badge', values: [false, false, true, true] },
   { feature: 'Profile boost', values: [false, false, false, true] },
 ];
