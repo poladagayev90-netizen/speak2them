@@ -96,7 +96,6 @@ export default function Login() {
           name: user.displayName || 'User',
           email: user.email || '',
           photo: user.photoURL || '',
-          level: 'B1 – Intermediate',
           online: true,
           lastSeen: serverTimestamp()
         }, { merge: true });

@@ -3,6 +3,11 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
+const LEVELS = [
+  'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
+  'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'
+];
+
 const GOALS = [
   { value: 'Speaking', label: '🗣️ Speaking practice' },
   { value: 'Business', label: '💼 Business English' },
@@ -44,6 +49,7 @@ const PARTNERS = [
 export default function Survey({ user }) {
   const navigate = useNavigate();
 
+  const [level, setLevel] = useState('');
   const [goal, setGoal] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -78,6 +84,7 @@ export default function Survey({ user }) {
     try {
       const surveyData = skipAll
         ? {
+            level: 'B1 – Intermediate',
             goal: 'Speaking',
             availableTimes: ['Evening'],
             topics: ['General'],
@@ -88,6 +95,7 @@ export default function Survey({ user }) {
             surveyUpdatedAt: serverTimestamp(),
           }
         : {
+            level: level || 'B1 – Intermediate',
             goal: goal || 'Speaking',
             availableTimes: availableTimes.length > 0 ? availableTimes : ['Evening'],
             topics: topics.length > 0 ? topics : ['General'],
@@ -170,6 +178,20 @@ export default function Survey({ user }) {
         >
           {saving ? 'Saving...' : 'Skip All — later'}
         </button>
+
+        <div style={sectionStyle}>
+          <p style={sectionTitleStyle}>📈 What is your English level?</p>
+          {LEVELS.map(item => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setLevel(item)}
+              style={optionButtonStyle(level === item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
 
         <div style={sectionStyle}>
           <p style={sectionTitleStyle}>🎯 What is your main goal?</p>

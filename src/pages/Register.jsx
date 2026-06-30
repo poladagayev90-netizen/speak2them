@@ -5,14 +5,10 @@ import { auth, db } from '../firebase';
 import { tgUser, isTelegramWebApp } from '../telegram';
 import { Link, useNavigate } from 'react-router-dom';
 
-const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
-                'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
-
 export default function Register() {
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [level, setLevel]       = useState('B1 – Intermediate');
   const [bio, setBio]           = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
@@ -32,7 +28,6 @@ export default function Register() {
         uid: user.uid,
         name,
         email,
-        level,
         bio,
         telegramId: tgUser?.id ? String(tgUser.id) : '',
         online: true,
@@ -67,7 +62,6 @@ export default function Register() {
           name: user.displayName || 'User',
           email: user.email || '',
           photo: user.photoURL || '',
-          level: 'B1 – Intermediate',
           bio: '',
           telegramId: tgUser?.id ? String(tgUser.id) : '',
           online: true,
@@ -88,14 +82,27 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-logo">🎙️ Speak2Them</div>
-        <h2>Create Account</h2>
-        <p className="auth-sub">Join thousands of English speakers worldwide</p>
+      <div className="auth-card" style={{ padding: '40px 32px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute',
+          top: '-50px',
+          right: '-50px',
+          width: '150px',
+          height: '150px',
+          background: 'radial-gradient(circle, #7c6ff744 0%, transparent 70%)',
+          borderRadius: '50%',
+          zIndex: 0
+        }}></div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="auth-logo" style={{ fontSize: '28px', marginBottom: '8px' }}>
+            🎙️ Speak2Them
+          </div>
+          <h2 style={{ fontSize: '32px', marginBottom: '8px', lineHeight: '1.2' }}>Start Speaking <br/><span style={{ color: '#7c6ff7' }}>Today</span></h2>
+          <p className="auth-sub" style={{ fontSize: '15px', marginBottom: '32px' }}>Join the fastest growing English community.</p>
 
-        {error && <div className="error-box">{error}</div>}
+          {error && <div className="error-box">{error}</div>}
 
-        {!isTelegramWebApp && (
+          {!isTelegramWebApp && (
           <button 
             onClick={handleGoogleRegister} 
             disabled={loading}
@@ -159,11 +166,6 @@ export default function Register() {
             required
           />
 
-          <label>English Level</label>
-          <select value={level} onChange={e => setLevel(e.target.value)}>
-            {LEVELS.map(l => <option key={l}>{l}</option>)}
-          </select>
-
           <label>Short Bio <span className="optional">(optional)</span></label>
           <textarea
             placeholder="Tell others about yourself..."
@@ -180,6 +182,7 @@ export default function Register() {
         <p className="auth-footer">
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
+        </div>
       </div>
     </div>
   );

@@ -70,7 +70,6 @@ function App() {
           name: userSnap.exists() ? userSnap.data().name : (currentUser.displayName || 'User'),
           email: currentUser.email || userSnap.data()?.email || '',
           photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (tgUser?.photo_url || ''),
-          level: userSnap.exists() ? userSnap.data().level : 'B1 – Intermediate',
           telegramId,
           online: true,
           lastSeen: serverTimestamp(),
@@ -167,8 +166,8 @@ function App() {
     );
   }
   const homeElement = user
-    ? (user.surveyDone === false ? <Navigate to="/survey" /> : <Home user={user} />)
-    : (isPreLaunch ? <CountdownPage /> : <Navigate to="/login" />);
+    ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
+    : (isPreLaunch ? <CountdownPage /> : <Navigate to="/register" />);
 
   return (
     <>
