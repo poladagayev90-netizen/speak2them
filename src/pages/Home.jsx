@@ -33,11 +33,14 @@ export default function Home({ user }) {
     setTodayTopic(content);
     
     const todayDateStr = new Date().toDateString();
-    const lastSeenDate = localStorage.getItem('lastTopicIntroDate');
+    const lastSeenDate = localStorage.getItem('lastTopicIntroDate_v2');
     
+    // Yoxlama üçün müvəqqəti olaraq hər yeniləmədə açılsın deyə şərti ləğv etmək olar,
+    // lakin istifadəçiləri bezdirməmək üçün gündə 1 dəfə məntiqi vacibdir.
+    // 'lastTopicIntroDate_v2' edərək indi 1 dəfəlik açılmasını təmin etdim.
     if (lastSeenDate !== todayDateStr) {
       setShowTopicIntro(true);
-      localStorage.setItem('lastTopicIntroDate', todayDateStr);
+      localStorage.setItem('lastTopicIntroDate_v2', todayDateStr);
     }
   }, []);
 

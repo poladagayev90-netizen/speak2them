@@ -546,28 +546,38 @@ export default function Chat({ user }) {
 
   const submitRating = async (stars) => {
     try {
-      await runTransaction(db, async (transaction) => {
-        const peerRef = doc(db, 'users', peerId);
-        const peerDoc = await transaction.get(peerRef);
-        if (!peerDoc.exists()) return;
-        const peerData = peerDoc.data();
-        const updatedPeerData = {
-          ...peerData,
-          rating: (peerData.rating || 0) + stars,
-          ratingCount: (peerData.ratingCount || 0) + 1,
-          ...(stars === 5 ? { receivedFiveStar: true } : {}),
-        };
-        const newBadges = checkNewBadges(updatedPeerData);
-        const rewardResult = applyBadgeRewardsToData(updatedPeerData, newBadges);
-        transaction.set(peerRef, {
-          rating: updatedPeerData.rating,
-          ratingCount: updatedPeerData.ratingCount,
-          ...(stars === 5 ? { receivedFiveStar: true } : {}),
-          ...(newBadges.length > 0 ? rewardResult.updates : {}),
-          ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
-        }, { merge: true });
+      // First read the peer's document to calculate badge unlocks accurately
+      const peerRef = doc(db, 'users', peerId);
+      const peerDoc = await getDoc(peerRef);
+      if (!peerDoc.exists()) return;
+      
+      const peerData = peerDoc.data();
+      const updatedPeerData = {
+        ...peerData,
+        rating: (peerData.rating || 0) + stars,
+        ratingCount: (peerData.ratingCount || 0) + 1,
+        ...(stars === 5 ? { receivedFiveStar: true } : {}),
+      };
+      
+      const newBadges = checkNewBadges(updatedPeerData);
+      const rewardResult = applyBadgeRewardsToData(updatedPeerData, newBadges);
+      
+      // Send the computed updates securely to the backend
+      const updates = {
+        rating: updatedPeerData.rating,
+        ratingCount: updatedPeerData.ratingCount,
+        ...(stars === 5 ? { receivedFiveStar: true } : {}),
+        ...(newBadges.length > 0 ? rewardResult.updates : {}),
+        ...(newBadges.length > 0 ? { badgeUpdatedAt: "SERVER_TIMESTAMP" } : {}),
+      };
+
+      await authedFetch(`${FUNCTIONS_BASE}/updatePeerStats`, {
+        method: 'POST',
+        body: JSON.stringify({ peerId, updates })
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error('[Chat] Rating error:', e);
+    }
     setShowRating(false);
   };
 

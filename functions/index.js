@@ -402,3 +402,38 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY] }, async (req,
     res.status(500).json({ error: error.message });
   }
 });
+
+// ─── Peer Təhlükəsiz Yeniləmə (Rating & Badges) ─────────────
+exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { peerId, updates } = req.body;
+  if (!peerId || !updates) return res.status(400).json({ error: "peerId and updates required" });
+
+  // Yalnız icazə verilən sahələrin yenilənməsinə zəmanət veririk:
+  const allowedKeys = ["rating", "ratingCount", "receivedFiveStar", "badges", "bonusMinutes"];
+  const safeUpdates = {};
+  for (const key of allowedKeys) {
+    if (updates[key] !== undefined) {
+      safeUpdates[key] = updates[key];
+    }
+  }
+  if (updates.badgeUpdatedAt === "SERVER_TIMESTAMP") {
+    safeUpdates.badgeUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
+  }
+
+  try {
+    await admin.firestore().collection("users").doc(peerId).update(safeUpdates);
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
