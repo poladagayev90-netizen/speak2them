@@ -18,6 +18,7 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Survey = React.lazy(() => import('./pages/Survey'));
+const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const MatchMaking = React.lazy(() => import('./pages/MatchMaking'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
@@ -181,6 +182,7 @@ function App() {
                 <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
                 <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
                 <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+                <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
                 <Route path="/" element={homeElement} />
                 <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
                 <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />

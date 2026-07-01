@@ -181,6 +181,18 @@ export default function Survey({ user }) {
 
         <div style={sectionStyle}>
           <p style={sectionTitleStyle}>📈 What is your English level?</p>
+          
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => navigate('/placement')}
+            style={{ width: '100%', marginBottom: '16px', background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)' }}
+          >
+            🎯 Take a Quick Placement Test (Recommended)
+          </button>
+          
+          <p style={hintStyle}>Or select your level manually if you already know it:</p>
+
           {LEVELS.map(item => (
             <button
               key={item}
