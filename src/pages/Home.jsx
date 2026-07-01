@@ -3,7 +3,7 @@ import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, limit } f
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate } from 'react-router-dom';
-import IncomingCallModal from '../components/IncomingCallModal';
+
 import DailyTopicModal from '../components/DailyTopicModal';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
@@ -18,7 +18,7 @@ const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermedi
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
-  const [incomingCall, setIncomingCall] = useState(null);
+
   const [tab, setTab] = useState('online');
   const [levelFilter, setLevelFilter] = useState('All');
   const [userBadges, setUserBadges] = useState(user.badges || []);
@@ -26,7 +26,7 @@ export default function Home({ user }) {
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
   const navigate = useNavigate();
-  const ringtoneRef = useRef(null);
+
 
   useEffect(() => {
     const content = getTodayContent();
@@ -56,12 +56,7 @@ export default function Home({ user }) {
     onMatched: handleMatched,
   });
 
-  useEffect(() => {
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
-    audio.loop = true;
-    ringtoneRef.current = audio;
-    return () => { audio.pause(); };
-  }, []);
+
 
   // ✅ Optimized — yalnız son 3 dəqiqədə aktiv olan 50 user
   useEffect(() => {
@@ -90,24 +85,7 @@ export default function Home({ user }) {
     return unsub;
   }, [user.uid]);
 
-  useEffect(() => {
-    const q = query(
-      collection(db, 'calls'),
-      where('receiverId', '==', user.uid),
-      where('status', '==', 'calling')
-    );
-    const unsub = onSnapshot(q, (snap) => {
-      if (!snap.empty) {
-        const callData = { ...snap.docs[0].data(), callDocId: snap.docs[0].id };
-        setIncomingCall(callData);
-        try { ringtoneRef.current?.play(); } catch (e) {}
-      } else {
-        setIncomingCall(null);
-        ringtoneRef.current?.pause();
-      }
-    });
-    return unsub;
-  }, [user.uid]);
+
 
   useEffect(() => () => { cancelSearch(); }, [cancelSearch]);
 
@@ -118,30 +96,7 @@ export default function Home({ user }) {
     return unsub;
   }, [user.uid]);
 
-  const acceptCall = useCallback(async () => {
-    if (!incomingCall?.callDocId) return;
-    ringtoneRef.current?.pause();
 
-    // Fix Safari microphone blocking on receiver side
-    // We must request the mic within the onClick user gesture here
-    try {
-      const tempTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      window.tempGlobalMicTrack = tempTrack;
-    } catch (e) {
-      console.warn('[Home] Mic permission denied or failed:', e);
-    }
-
-    await setDoc(doc(db, 'calls', incomingCall.callDocId), { status: 'accepted' }, { merge: true });
-    setIncomingCall(null);
-    navigate(`/chat/${incomingCall.callerId}`, { state: { acceptedCall: true } });
-  }, [incomingCall, navigate]);
-
-  const rejectCall = useCallback(async () => {
-    if (!incomingCall?.callDocId) return;
-    ringtoneRef.current?.pause();
-    await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
-    setIncomingCall(null);
-  }, [incomingCall]);
 
   const browsableUsers = allUsers.filter(u => u.uid !== user.uid && u.id !== user.uid);
   const isPeopleTab = tab === 'online' || tab === 'all';
@@ -186,7 +141,7 @@ export default function Home({ user }) {
         </div>
       )}
 
-      <IncomingCallModal call={incomingCall} onAccept={acceptCall} onReject={rejectCall} />
+
 
       <div className="home-header">
         <div className="home-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

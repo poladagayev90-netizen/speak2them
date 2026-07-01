@@ -6,6 +6,7 @@ import { auth, db, registerFcmToken } from './firebase';
 import { tg, tgUser, isTelegramWebApp } from './telegram';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
+import GlobalCallListener from './components/GlobalCallListener';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
 
 const Login = React.lazy(() => import('./pages/Login'));
@@ -175,6 +176,7 @@ function App() {
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <AppLayout user={user}>
+              {user && <GlobalCallListener user={user} />}
               <Routes>
                 <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
                 <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
