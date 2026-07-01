@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -8,31 +8,39 @@ export default function Chats({ user }) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const userCacheRef = useRef({});
+
   useEffect(() => {
     const unsub = onSnapshot(
       query(collection(db, 'chats'), where('participants', 'array-contains', user.uid)),
       async (snap) => {
-        const chatList = [];
-        for (const docSnap of snap.docs) {
+        const promises = snap.docs.map(async (docSnap) => {
           const data = docSnap.data();
           const peerId = data.participants?.find(p => p !== user.uid);
-          if (!peerId) continue;
+          if (!peerId) return null;
 
-          const userSnap = await getDocs(
-            query(collection(db, 'users'), where('uid', '==', peerId))
-          );
-          const peerData = userSnap.docs[0]?.data();
+          let peerData = userCacheRef.current[peerId];
+          if (!peerData) {
+            const userSnap = await getDocs(
+              query(collection(db, 'users'), where('uid', '==', peerId))
+            );
+            peerData = userSnap.docs[0]?.data() || null;
+            userCacheRef.current[peerId] = peerData;
+          }
 
-          chatList.push({
+          return {
             chatId: docSnap.id,
             peerId,
             peerName: peerData?.name || 'User',
             peerPhoto: peerData?.photo || '',
             lastMessage: data.lastMessage || '',
             updatedAt: data.updatedAt,
-          });
-        }
+          };
+        });
+
+        const chatList = (await Promise.all(promises)).filter(Boolean);
         chatList.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+        
         setChats(chatList);
         setLoading(false);
       }
