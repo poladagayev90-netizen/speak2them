@@ -440,13 +440,7 @@ export default function Home({ user }) {
                       className="btn-chat"
                       onClick={() => {
                         if (!user.isPremium) {
-                          const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). Speak2Them tətbiqində Pro planına keçmək istəyirəm.`;
-                          const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
-                          if (window.Telegram?.WebApp?.openLink) {
-                            window.Telegram.WebApp.openLink(whatsappUrl);
-                          } else {
-                            window.open(whatsappUrl, '_blank');
-                          }
+                          navigate('/upgrade');
                           return;
                         }
                         navigate(`/chat/${u.uid || u.id}`);
