@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where, limit } from 'firebase/firestore';
+import React, { useEffect, useState, useCallback } from 'react';
+import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
-import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate } from 'react-router-dom';
 
 import DailyTopicModal from '../components/DailyTopicModal';
