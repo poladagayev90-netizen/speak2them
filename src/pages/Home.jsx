@@ -5,6 +5,8 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate } from 'react-router-dom';
 import IncomingCallModal from '../components/IncomingCallModal';
 import DailyTopicModal from '../components/DailyTopicModal';
+import TopicDecorations from '../components/TopicDecorations';
+import { getTodayContent } from '../data/weeklyContent';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
@@ -21,8 +23,23 @@ export default function Home({ user }) {
   const [levelFilter, setLevelFilter] = useState('All');
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
+  const [showTopicIntro, setShowTopicIntro] = useState(false);
+  const [todayTopic, setTodayTopic] = useState(null);
   const navigate = useNavigate();
   const ringtoneRef = useRef(null);
+
+  useEffect(() => {
+    const content = getTodayContent();
+    setTodayTopic(content);
+    
+    const todayDateStr = new Date().toDateString();
+    const lastSeenDate = localStorage.getItem('lastTopicIntroDate');
+    
+    if (lastSeenDate !== todayDateStr) {
+      setShowTopicIntro(true);
+      localStorage.setItem('lastTopicIntroDate', todayDateStr);
+    }
+  }, []);
 
   const handleMatched = useCallback((partnerUid, callId) => {
     navigate(`/chat/${partnerUid}`, {
@@ -130,6 +147,42 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
+      {todayTopic && (
+        <TopicDecorations 
+          topic={todayTopic.topic} 
+          intensity={showTopicIntro || dailyTopicOpen ? 'high' : 'low'} 
+        />
+      )}
+      
+      {showTopicIntro && todayTopic && (
+        <div className="topic-intro-overlay">
+          <div className="topic-intro-modal">
+            <h3 className="topic-intro-label">🌟 Bugünün Mövzusu</h3>
+            <h1 className="topic-intro-title">{todayTopic.topic}</h1>
+            <p className="topic-intro-desc">
+              Vocabulary, Idioms və suallara baxaraq mövzuya hazırlaşın!
+            </p>
+            <div className="topic-intro-actions">
+              <button 
+                className="topic-intro-btn-primary" 
+                onClick={() => {
+                  setShowTopicIntro(false);
+                  setDailyTopicOpen(true);
+                }}
+              >
+                <BookOpen size={18} /> Öyrənməyə Başla
+              </button>
+              <button 
+                className="topic-intro-btn-secondary" 
+                onClick={() => setShowTopicIntro(false)}
+              >
+                Ekrana Keç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <IncomingCallModal call={incomingCall} onAccept={acceptCall} onReject={rejectCall} />
 
       <div className="home-header">
