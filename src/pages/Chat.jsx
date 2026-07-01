@@ -58,6 +58,7 @@ export default function Chat({ user }) {
   const endingRef = useRef(false);
   const ringtoneRef = useRef(null);
   const timerRef = useRef(null);
+  const callTimeoutRef = useRef(null);
   const prevCallStatus = useRef('');
 
   const stateCallId = location.state?.callId;
@@ -365,6 +366,14 @@ export default function Chat({ user }) {
         status: 'calling',
         createdAt: serverTimestamp(),
       });
+          
+      callTimeoutRef.current = setTimeout(() => {
+        if (!joinedRef.current) {
+          setCallStatus('rejected');
+          endCallRef.current();
+          alert('İstifadəçi cavab vermir (Timeout).');
+        }
+      }, 30000);
       setCallStatus('calling');
 
       try {
@@ -393,6 +402,11 @@ export default function Chat({ user }) {
   const endCall = useCallback(async () => {
     if (endingRef.current) return;
     endingRef.current = true;
+
+    if (callTimeoutRef.current) {
+      clearTimeout(callTimeoutRef.current);
+      callTimeoutRef.current = null;
+    }
 
     // Stop recording and store blob
     const recordingBlob = await stopLocalRecording();
