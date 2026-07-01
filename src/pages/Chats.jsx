@@ -14,35 +14,45 @@ export default function Chats({ user }) {
     const unsub = onSnapshot(
       query(collection(db, 'chats'), where('participants', 'array-contains', user.uid)),
       async (snap) => {
-        const promises = snap.docs.map(async (docSnap) => {
-          const data = docSnap.data();
-          const peerId = data.participants?.find(p => p !== user.uid);
-          if (!peerId) return null;
+        try {
+          const promises = snap.docs.map(async (docSnap) => {
+            const data = docSnap.data();
+            const peerId = data.participants?.find(p => p !== user.uid);
+            if (!peerId) return null;
 
-          let peerData = userCacheRef.current[peerId];
-          if (!peerData) {
-            const userSnap = await getDocs(
-              query(collection(db, 'users'), where('uid', '==', peerId))
-            );
-            peerData = userSnap.docs[0]?.data() || null;
-            userCacheRef.current[peerId] = peerData;
-          }
+            let peerData = userCacheRef.current[peerId];
+            if (!peerData) {
+              try {
+                const userSnap = await getDocs(
+                  query(collection(db, 'users'), where('uid', '==', peerId))
+                );
+                peerData = userSnap.docs[0]?.data() || null;
+                userCacheRef.current[peerId] = peerData || { name: 'Unknown' };
+              } catch (err) {
+                console.error("Error fetching peer:", err);
+                peerData = { name: 'Unknown' };
+              }
+            }
 
-          return {
-            chatId: docSnap.id,
-            peerId,
-            peerName: peerData?.name || 'User',
-            peerPhoto: peerData?.photo || '',
-            lastMessage: data.lastMessage || '',
-            updatedAt: data.updatedAt,
-          };
-        });
+            return {
+              chatId: docSnap.id,
+              peerId,
+              peerName: peerData?.name || 'User',
+              peerPhoto: peerData?.photo || '',
+              lastMessage: data.lastMessage || '',
+              updatedAt: data.updatedAt,
+            };
+          });
 
-        const chatList = (await Promise.all(promises)).filter(Boolean);
-        chatList.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
-        
-        setChats(chatList);
-        setLoading(false);
+          const chatList = (await Promise.all(promises)).filter(Boolean);
+          chatList.sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+          
+          setChats(chatList);
+        } catch (error) {
+          console.error("Error in chats snapshot:", error);
+        } finally {
+          setLoading(false);
+        }
       }
     );
     return unsub;
