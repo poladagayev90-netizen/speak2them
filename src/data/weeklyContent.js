@@ -2,6 +2,14 @@ export const weeklyContent = [
   {
     day: 1,
     topic: "Travel ✈️",
+    imageKeywords: [
+      "person packing suitcase travel",
+      "airport departure board travelers",
+      "tourist map city street",
+      "family boarding airplane",
+      "backpacker hiking mountain trail"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Itinerary", meaning: "A detailed plan of a journey", example: "We stuck to our itinerary and saw everything." },
       { word: "Layover", meaning: "A stop between flights", example: "We had a 4-hour layover in Istanbul." },
@@ -34,6 +42,14 @@ export const weeklyContent = [
   {
     day: 2,
     topic: "Technology 💻",
+    imageKeywords: [
+      "person typing laptop modern office",
+      "smartphone app screen interaction",
+      "virtual reality headset gamer",
+      "server room technician working",
+      "smart home technology tablet"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Artificial Intelligence", meaning: "Machines that simulate human thinking", example: "AI is transforming healthcare." },
       { word: "Algorithm", meaning: "A set of rules for solving problems", example: "Instagram's algorithm decides what you see." },
@@ -66,6 +82,14 @@ export const weeklyContent = [
   {
     day: 3,
     topic: "Food & Culture 🍽️",
+    imageKeywords: [
+      "chef cooking busy kitchen",
+      "family eating dinner table dining",
+      "street food stall night market",
+      "person eating fresh salad healthy",
+      "waiter serving food restaurant"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Cuisine", meaning: "A style of cooking from a specific region", example: "Italian cuisine is loved worldwide." },
       { word: "Delicacy", meaning: "A rare or special food", example: "Caviar is considered a delicacy." },
@@ -98,6 +122,14 @@ export const weeklyContent = [
   {
     day: 4,
     topic: "Education 📚",
+    imageKeywords: [
+      "students classroom raising hands",
+      "teacher writing chalkboard school",
+      "university library studying books",
+      "graduation ceremony students throwing hats",
+      "person taking online course laptop"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Curriculum", meaning: "The subjects taught in a course of study", example: "The school updated its curriculum last year." },
       { word: "Scholarship", meaning: "Financial support given for education", example: "She won a scholarship to study in the UK." },
@@ -130,6 +162,14 @@ export const weeklyContent = [
   {
     day: 5,
     topic: "Health & Wellbeing 🏃",
+    imageKeywords: [
+      "person running park morning exercise",
+      "doctor examining patient stethoscope",
+      "yoga class meditation studio",
+      "healthy breakfast fresh fruit",
+      "therapist talking to patient clinic"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Nutrition", meaning: "Eating the right foods to stay healthy", example: "Good nutrition is key to a long life." },
       { word: "Mental health", meaning: "Emotional and psychological wellbeing", example: "Mental health is just as important as physical." },
@@ -162,6 +202,14 @@ export const weeklyContent = [
   {
     day: 6,
     topic: "Environment 🌍",
+    imageKeywords: [
+      "planting tree volunteer nature",
+      "recycling bin sorting plastic glass",
+      "solar panels roof sunlight",
+      "electric car charging station",
+      "cleaning beach volunteers trash"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Sustainability", meaning: "Using resources without damaging the future", example: "Sustainability is central to modern business." },
       { word: "Carbon footprint", meaning: "The CO2 produced by a person or activity", example: "Flying greatly increases your carbon footprint." },
@@ -194,6 +242,14 @@ export const weeklyContent = [
   {
     day: 7,
     topic: "Work & Career 💼",
+    imageKeywords: [
+      "business meeting office colleagues",
+      "person working from home laptop",
+      "job interview shaking hands professional",
+      "construction worker helmet building site",
+      "presentation whiteboard office team"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Entrepreneur", meaning: "Someone who starts their own business", example: "She became an entrepreneur at 25." },
       { word: "Networking", meaning: "Building professional relationships", example: "Networking helped him find a great job." },
@@ -226,6 +282,14 @@ export const weeklyContent = [
   {
     day: 8,
     topic: "Social Media 📱",
+    imageKeywords: [
+      "person scrolling smartphone social media",
+      "influencer recording video phone",
+      "friends taking selfie smiling",
+      "typing message phone texting",
+      "laptop showing social media feed"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Influencer", meaning: "Someone with a large online following who affects opinions", example: "She became an influencer after her videos went viral." },
       { word: "Viral", meaning: "Content that spreads very quickly online", example: "His post went viral overnight." },
@@ -258,6 +322,14 @@ export const weeklyContent = [
   {
     day: 9,
     topic: "Money & Finances 💰",
+    imageKeywords: [
+      "person paying card payment store",
+      "counting cash money hands",
+      "family budget planning table",
+      "online banking phone screen",
+      "piggy bank savings coins"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Budget", meaning: "A plan for how to spend money", example: "I made a monthly budget to save more." },
       { word: "Investment", meaning: "Spending money to earn more in the future", example: "He made a wise investment in property." },
@@ -290,6 +362,14 @@ export const weeklyContent = [
   {
     day: 10,
     topic: "Films & Series 🎬",
+    imageKeywords: [
+      "watching movie cinema popcorn",
+      "family watching tv living room",
+      "film set camera crew shooting",
+      "actor on stage theatre performing",
+      "streaming series laptop bed"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Plot", meaning: "The story or sequence of events in a film", example: "The plot had many unexpected twists." },
       { word: "Sequel", meaning: "A film that continues a previous story", example: "The sequel was better than the original." },
@@ -322,6 +402,14 @@ export const weeklyContent = [
   {
     day: 11,
     topic: "Music 🎵",
+    imageKeywords: [
+      "person playing guitar stage concert",
+      "band performing live music audience",
+      "listening music headphones smiling",
+      "dj playing music festival crowd",
+      "choir singing church school"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Genre", meaning: "A category of music with a shared style", example: "Hip-hop is the most popular genre today." },
       { word: "Lyrics", meaning: "The words of a song", example: "The lyrics of this song are very meaningful." },
@@ -354,6 +442,14 @@ export const weeklyContent = [
   {
     day: 12,
     topic: "Famous People & Celebrities ⭐",
+    imageKeywords: [
+      "paparazzi taking photos red carpet",
+      "celebrity signing autographs fans",
+      "famous actor interview microphone",
+      "award ceremony giving speech stage",
+      "fashion model runway walking"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Celebrity", meaning: "A person who is very famous", example: "She became a celebrity after her first film." },
       { word: "Role model", meaning: "A person whose behaviour others try to copy", example: "Athletes are role models for young people." },
@@ -386,6 +482,14 @@ export const weeklyContent = [
   {
     day: 13,
     topic: "Hobbies & Free Time 🎨",
+    imageKeywords: [
+      "person painting canvas studio art",
+      "gardening planting flowers backyard",
+      "playing chess board game friends",
+      "knitting sweater cozy armchair",
+      "pottery making clay wheel hands"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Pastime", meaning: "An activity done for enjoyment", example: "Reading is her favourite pastime." },
       { word: "Creative outlet", meaning: "A way to express thoughts or feelings", example: "Painting is a great creative outlet." },
@@ -418,6 +522,14 @@ export const weeklyContent = [
   {
     day: 14,
     topic: "Fashion & Style 👗",
+    imageKeywords: [
+      "shopping clothes store fitting room",
+      "fashion designer drawing sketches studio",
+      "sewing machine making clothes tailor",
+      "model wearing stylish outfit street",
+      "closet full of clothes choosing"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Trend", meaning: "A popular style at a particular time", example: "Wide trousers are a big trend this year." },
       { word: "Sustainable fashion", meaning: "Clothing made with less harm to the environment", example: "She only buys sustainable fashion brands." },
@@ -450,6 +562,14 @@ export const weeklyContent = [
   {
     day: 15,
     topic: "Cartoons & Animation 🎭",
+    imageKeywords: [
+      "animator drawing tablet computer screen",
+      "child watching cartoon tablet happy",
+      "voice actor recording studio microphone",
+      "colorful cartoon character illustration sketch",
+      "parents kids cinema animated film"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Animated", meaning: "Made using drawings or digital images that move", example: "The animated film won several awards." },
       { word: "Character", meaning: "A person or figure in a story", example: "My favourite character is Shrek." },
@@ -482,6 +602,14 @@ export const weeklyContent = [
   {
     day: 16,
     topic: "Fear & Phobias 😱",
+    imageKeywords: [
+      "person covering eyes scary movie",
+      "fear of heights looking down tall building",
+      "spider web close up scary",
+      "person speaking public audience nervous",
+      "scared face haunted house dark"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Phobia", meaning: "An extreme fear of something specific", example: "She has a phobia of spiders." },
       { word: "Anxiety", meaning: "A feeling of worry or nervousness", example: "He experiences anxiety in crowded places." },
@@ -514,6 +642,14 @@ export const weeklyContent = [
   {
     day: 17,
     topic: "Relationships & Friendship ❤️",
+    imageKeywords: [
+      "friends hugging laughing cafe",
+      "couple holding hands walking beach",
+      "family hugging reunion airport",
+      "friends drinking coffee chatting table",
+      "two people arguing hands gesture"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Loyalty", meaning: "Being faithful and supportive to someone", example: "Loyalty is the foundation of true friendship." },
       { word: "Trust", meaning: "A firm belief in someone's reliability", example: "It takes time to build trust." },
@@ -546,6 +682,14 @@ export const weeklyContent = [
   {
     day: 18,
     topic: "Sports & Competition 🏆",
+    imageKeywords: [
+      "football players match stadium",
+      "tennis player hitting ball court",
+      "runner crossing finish line marathon",
+      "swimmer diving pool competition",
+      "coach talking team locker room"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Athlete", meaning: "A person trained in sport", example: "She is a professional athlete." },
       { word: "Stamina", meaning: "The ability to keep going for a long time", example: "Running marathons requires great stamina." },
@@ -578,6 +722,14 @@ export const weeklyContent = [
   {
     day: 19,
     topic: "Animals & Pets 🐾",
+    imageKeywords: [
+      "person walking dog park playing",
+      "veterinarian checking cat clinic pet",
+      "feeding street animals cat dog",
+      "child holding puppy happy",
+      "cat sleeping on lap cozy"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Domesticated", meaning: "Adapted to live with humans", example: "Dogs were domesticated thousands of years ago." },
       { word: "Endangered", meaning: "At risk of becoming extinct", example: "Tigers are an endangered species." },
@@ -610,6 +762,14 @@ export const weeklyContent = [
   {
     day: 20,
     topic: "Culture & Traditions 🌐",
+    imageKeywords: [
+      "traditional dance festival colorful costumes",
+      "family celebrating holiday dinner table",
+      "wedding ceremony traditional dress bride",
+      "people praying temple church mosque",
+      "cooking traditional food grandmother"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Heritage", meaning: "Traditions and values passed down through generations", example: "She is proud of her cultural heritage." },
       { word: "Custom", meaning: "A traditional practice or behaviour", example: "It is a custom to bring a gift to a wedding." },
@@ -642,6 +802,14 @@ export const weeklyContent = [
   {
     day: 21,
     topic: "Science & Space 🚀",
+    imageKeywords: [
+      "telescope looking stars night sky",
+      "scientist laboratory microscope experiment",
+      "astronaut space suit floating rocket",
+      "rocket launch fire sky space",
+      "students science class chemistry experiment"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Galaxy", meaning: "A system of millions of stars", example: "Our solar system is inside the Milky Way galaxy." },
       { word: "Orbit", meaning: "The curved path of an object around another", example: "The Moon is in orbit around the Earth." },
@@ -674,6 +842,14 @@ export const weeklyContent = [
   {
     day: 22,
     topic: "City vs Countryside 🏙️",
+    imageKeywords: [
+      "busy city street traffic crowd",
+      "peaceful countryside farm village field",
+      "subway train commuters morning rush",
+      "farmer tractor green field working",
+      "city skyline night lights tall buildings"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Urban", meaning: "Relating to a city or town", example: "Urban life is fast and convenient." },
       { word: "Rural", meaning: "Relating to the countryside", example: "She grew up in a rural village." },
@@ -706,6 +882,14 @@ export const weeklyContent = [
   {
     day: 23,
     topic: "Books & Reading 📖",
+    imageKeywords: [
+      "reading book library quiet studying",
+      "person reading novel bed lamp",
+      "bookstore buying books shelves",
+      "reading e-book tablet cafe",
+      "child reading book parent bedtime"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Fiction", meaning: "Writing about imaginary events and people", example: "She reads fiction to relax." },
       { word: "Non-fiction", meaning: "Writing about real events or facts", example: "He prefers non-fiction about history." },
@@ -738,6 +922,14 @@ export const weeklyContent = [
   {
     day: 24,
     topic: "Language & Communication 🗣️",
+    imageKeywords: [
+      "people talking different languages speech bubbles",
+      "teacher teaching language classroom pointing",
+      "tourist asking directions map local",
+      "sign language hands interpreting",
+      "dictionary translation book study"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Fluency", meaning: "The ability to speak a language smoothly", example: "She has full fluency in four languages." },
       { word: "Dialect", meaning: "A regional variety of a language", example: "He speaks with a strong northern dialect." },
@@ -770,6 +962,14 @@ export const weeklyContent = [
   {
     day: 25,
     topic: "Shopping & Consumerism 🛍️",
+    imageKeywords: [
+      "shopping mall carrying bags happy",
+      "cashier scanning items supermarket checkout",
+      "online shopping laptop credit card",
+      "window shopping looking store display",
+      "customer trying shoes shop"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Consumer", meaning: "A person who buys goods or services", example: "Today's consumers care more about ethics." },
       { word: "Discount", meaning: "A reduction in the price of something", example: "She got a 30% discount on the jacket." },
@@ -802,6 +1002,14 @@ export const weeklyContent = [
   {
     day: 26,
     topic: "Dreams & Ambitions 🌟",
+    imageKeywords: [
+      "person writing goals notebook desk",
+      "graduating student looking future happy",
+      "entrepreneur standing new business shop",
+      "mountain climber reaching peak success",
+      "daydreaming thinking future window"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Ambition", meaning: "A strong desire to achieve something", example: "His ambition is to become a doctor." },
       { word: "Motivation", meaning: "The reason for doing something", example: "What is your motivation for learning English?" },
@@ -834,6 +1042,14 @@ export const weeklyContent = [
   {
     day: 27,
     topic: "History & Past Events 🏛️",
+    imageKeywords: [
+      "museum looking ancient artifacts history",
+      "archaeologist digging ruins ancient city",
+      "old historical photograph black and white",
+      "tourists visiting ancient monument ruins",
+      "teacher history class map world"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Revolution", meaning: "A major change in government or society", example: "The French Revolution changed Europe forever." },
       { word: "Era", meaning: "A long period of time in history", example: "The Victorian era lasted over 60 years." },
@@ -866,6 +1082,14 @@ export const weeklyContent = [
   {
     day: 28,
     topic: "Future & Predictions 🔮",
+    imageKeywords: [
+      "futuristic city flying cars concept",
+      "robot helping human artificial intelligence",
+      "vr headset virtual world future",
+      "hologram projection future technology",
+      "future space colony planet concept"
+    ],
+    manualImageUrls: [],
     vocabulary: [
       { word: "Innovation", meaning: "A new idea, method, or product", example: "Innovation drives the tech industry." },
       { word: "Forecast", meaning: "A prediction about the future", example: "The weather forecast says rain tomorrow." },

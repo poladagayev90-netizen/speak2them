@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
+import PictureDescribing from './PictureDescribing';
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
@@ -131,6 +132,7 @@ export default function DailyTopicModal({ open, onClose }) {
   const [activeSection, setActiveSection] = useState('vocabulary');
   const [difficulty, setDifficulty] = useState('easy');
   const [expandedVocab, setExpandedVocab] = useState(null);
+  const [showPictureDescribing, setShowPictureDescribing] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -182,6 +184,12 @@ export default function DailyTopicModal({ open, onClose }) {
             onClick={() => setActiveSection('quiz')}
           >
             <Brain size={14} /> Sınaq
+          </button>
+          <button
+            className={`dt-tab ${activeSection === 'pictures' ? 'active' : ''}`}
+            onClick={() => setActiveSection('pictures')}
+          >
+            🖼️ Şəkil
           </button>
         </div>
 
@@ -254,8 +262,37 @@ export default function DailyTopicModal({ open, onClose }) {
             </div>
           )}
 
+          {activeSection === 'pictures' && (
+            <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🖼️</div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+                5 mövzuya uyğun şəkil — danışıq bacarığını inkişaf etdirmək üçün
+              </p>
+              <button
+                onClick={() => setShowPictureDescribing(true)}
+                style={{
+                  padding: '12px 24px', borderRadius: 14, border: 'none',
+                  background: 'var(--accent)', color: '#fff',
+                  fontSize: 15, fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                Şəkillərə Bax
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
+
+      {showPictureDescribing && (
+        <PictureDescribing
+          topic={content.topic}
+          imageKeywords={content.imageKeywords}
+          manualImageUrls={content.manualImageUrls}
+          vocabulary={content.vocabulary}
+          onClose={() => setShowPictureDescribing(false)}
+        />
+      )}
     </div>
   );
 }

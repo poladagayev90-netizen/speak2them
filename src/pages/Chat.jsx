@@ -17,6 +17,7 @@ import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
 import TranslateWidget from '../components/TranslateWidget';
+import PictureDescribing from '../components/PictureDescribing';
 
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
@@ -39,6 +40,7 @@ export default function Chat({ user }) {
   const [callStatus, setCallStatus] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
   const [showDaily, setShowDaily] = useState(false);
+  const [showPictureDescribing, setShowPictureDescribing] = useState(false);
   const [showRating, setShowRating] = useState(false);
   const [selectedStar, setSelectedStar] = useState(0);
   const [dailyTab, setDailyTab] = useState('questions');
@@ -794,6 +796,9 @@ export default function Chat({ user }) {
                 <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
                   📅<span>Daily</span>
                 </button>
+                <button className="call-btn-big" onClick={() => setShowPictureDescribing(true)}>
+                  🖼️<span>Şəkil</span>
+                </button>
               </>
             )}
             <button className="call-btn-big end" onClick={endCall}>📵<span>End</span></button>
@@ -801,6 +806,16 @@ export default function Chat({ user }) {
         </div>
       )}
       {inCall && <TranslateWidget userId={user.uid} topic={content?.topic || 'General'} />}
+
+      {showPictureDescribing && (
+        <PictureDescribing
+          topic={content.topic}
+          imageKeywords={content.imageKeywords}
+          manualImageUrls={content.manualImageUrls}
+          vocabulary={content.vocabulary}
+          onClose={() => setShowPictureDescribing(false)}
+        />
+      )}
 
       {showDaily && (
         <div className="daily-panel">
