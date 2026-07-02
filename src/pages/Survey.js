@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 
 const LEVELS = [

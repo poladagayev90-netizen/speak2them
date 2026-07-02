@@ -10,7 +10,7 @@ import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
-import { Award, Mic, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
+import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
