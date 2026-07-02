@@ -229,11 +229,7 @@ export default function Chat({ user }) {
             callTranscriptRef.current += finalTranscript;
           };
 
-          recognitionRef.current.onend = () => {
-             if (inCallRef.current && recognitionRef.current) {
-                try { recognitionRef.current.start(); } catch (e) {}
-             }
-          };
+          // Removed onend auto-restart to prevent Android beeping sound
 
           recognitionRef.current.start();
         } catch(err) {

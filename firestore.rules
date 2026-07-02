@@ -86,10 +86,7 @@ service cloud.firestore {
     }
 
     match /matchQueue/{userId} {
-      allow read: if isSignedIn() && (
-        request.auth.uid == userId ||
-        resource.data.status == 'searching'
-      );
+      allow read: if isSignedIn();
       allow create: if isOwnDoc(userId);
       allow update: if isOwnDoc(userId) || (
         isSignedIn()
