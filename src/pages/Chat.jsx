@@ -564,7 +564,7 @@ export default function Chat({ user }) {
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user]);
+  }, [callDocId, peerId, user, callTranslations.length]);
 
   endCallRef.current = endCall;
 
