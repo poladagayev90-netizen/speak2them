@@ -1,22 +1,13 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey);
+const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
 
 export const generateQuizFromWords = async (translatedItems) => {
   if (!translatedItems || translatedItems.length === 0) return null;
   if (!apiKey) {
-    console.error("Gemini API key is missing");
-    return null;
+    console.error("OpenAI API key is missing");
+    return { error: "OpenAI API açarı tapılmadı." };
   }
 
   try {
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: { responseMimeType: "application/json" }
-    });
-
-    // Ensure we take up to 5 random words from the translated items
     const sampleSize = Math.min(translatedItems.length, 5);
     const shuffled = [...translatedItems].sort(() => 0.5 - Math.random());
     const selectedItems = shuffled.slice(0, sampleSize);
@@ -31,23 +22,56 @@ export const generateQuizFromWords = async (translatedItems) => {
       Generate a quick multiple-choice quiz (1 question per word) to test their memory.
       The questions must be in Azerbaijani. The options can be either in English or Azerbaijani depending on what is being asked.
       
-      Return ONLY a valid JSON array of objects with the following format (no markdown code blocks, just raw JSON):
-      [
-        {
-          "qText": "Question text in Azerbaijani",
-          "options": ["Option 1", "Option 2", "Option 3"],
-          "correctIdx": 0
-        }
-      ]
+      Return ONLY a valid JSON object with a "quiz" key containing an array of questions. Format:
+      {
+        "quiz": [
+          {
+            "qText": "Question text in Azerbaijani",
+            "options": ["Option 1", "Option 2", "Option 3"],
+            "correctIdx": 0
+          }
+        ]
+      }
     `;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" }
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      console.error("OpenAI API Error:", err);
+      return { error: "Süni İntellekt serverində xəta baş verdi (OpenAI)." };
+    }
+
+    const data = await res.json();
+    let responseText = data.choices[0].message.content;
     
-    // Clean up potential markdown formatting in case the model ignored instructions
+    // Fallback cleanup if OpenAI wrapped in markdown (though JSON mode usually prevents it)
     const cleanedText = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
     
-    return JSON.parse(cleanedText);
+    // GPT might return an object with a key like { "quiz": [...] } when forced to json_object
+    const parsed = JSON.parse(cleanedText);
+    
+    if (Array.isArray(parsed)) return parsed;
+    
+    // If it returned { "questions": [...] } or something similar
+    const keys = Object.keys(parsed);
+    if (keys.length === 1 && Array.isArray(parsed[keys[0]])) {
+      return parsed[keys[0]];
+    }
+
+    return { error: "Gözlənilməz cavab formatı." };
+
   } catch (error) {
     console.error("Error generating AI quiz:", error);
     return { error: error.message || "Tərcümə edilərkən xəta baş verdi" };
