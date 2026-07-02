@@ -19,6 +19,8 @@ import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
+import { Capacitor } from '@capacitor/core';
+import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
@@ -210,30 +212,57 @@ export default function Chat({ user }) {
       setCallStatus('connected');
       joinedRef.current = true;
       
-      // Start SpeechRecognition
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
+      if (Capacitor.isNativePlatform()) {
         try {
-          recognitionRef.current = new SpeechRecognition();
-          recognitionRef.current.lang = 'en-US';
-          recognitionRef.current.continuous = true;
-          recognitionRef.current.interimResults = false;
+          const hasPerm = await SpeechRecognition.checkPermissions();
+          if (hasPerm.speechRecognition !== 'granted') {
+            await SpeechRecognition.requestPermissions();
+          }
           
-          recognitionRef.current.onresult = (event) => {
-            let finalTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-              if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript + ' ';
-              }
+          SpeechRecognition.addListener('partialResults', (data) => {
+            if (data.matches && data.matches.length > 0) {
+              // Capacitor plugin usually returns full accumulated matches for the session
+              // We'll just keep the latest match as transcript for now, or append if it splits
+              callTranscriptRef.current += data.matches[0] + ' ';
             }
-            callTranscriptRef.current += finalTranscript;
-          };
+          });
 
-          // Removed onend auto-restart to prevent Android beeping sound
-
-          recognitionRef.current.start();
+          await SpeechRecognition.start({
+            language: 'en-US',
+            maxResults: 10,
+            prompt: 'Listening...',
+            partialResults: true,
+            popup: false,
+          });
         } catch(err) {
-          console.error('[Chat] SpeechRecognition start error', err);
+          console.error('[Chat] Native SpeechRecognition error', err);
+        }
+      } else {
+        // Start Web SpeechRecognition
+        const WebSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (WebSpeechRecognition) {
+          try {
+            recognitionRef.current = new WebSpeechRecognition();
+            recognitionRef.current.lang = 'en-US';
+            recognitionRef.current.continuous = true;
+            recognitionRef.current.interimResults = false;
+            
+            recognitionRef.current.onresult = (event) => {
+              let finalTranscript = '';
+              for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                  finalTranscript += event.results[i][0].transcript + ' ';
+                }
+              }
+              callTranscriptRef.current += finalTranscript;
+            };
+
+            // Removed onend auto-restart to prevent Android beeping sound
+
+            recognitionRef.current.start();
+          } catch(err) {
+            console.error('[Chat] Web SpeechRecognition start error', err);
+          }
         }
       }
 
@@ -469,9 +498,13 @@ export default function Chat({ user }) {
     setInCall(false);
     inCallRef.current = false;
     
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch(e) {}
-      recognitionRef.current = null;
+    if (Capacitor.isNativePlatform()) {
+      try { await SpeechRecognition.stop(); } catch(e) {}
+    } else {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch(e) {}
+        recognitionRef.current = null;
+      }
     }
     
     setCallStatus('');
