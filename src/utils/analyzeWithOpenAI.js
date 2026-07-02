@@ -15,10 +15,10 @@ function blobToBase64(blob) {
   });
 }
 
-export async function analyzeCallAudio(audioBlob, userId, channelName) {
+export async function analyzeCallAudio(transcript, userId, channelName) {
   try {
-    if (!audioBlob || audioBlob.size < 100) {
-      console.warn('[OpenAI] Audio blob too small, skipping analysis');
+    if (!transcript || transcript.trim().length < 10) {
+      console.warn('[DeepSeek] Transcript too short, skipping analysis');
       return null;
     }
 
@@ -26,43 +26,17 @@ export async function analyzeCallAudio(audioBlob, userId, channelName) {
     if (!user) throw new Error("İstifadəçi tapılmadı");
     const token = await user.getIdToken();
 
-    const base64Audio = await blobToBase64(audioBlob);
-
     const today = getTodayContent();
     const vocabList = today.vocabulary.map(v => v.word).join(', ');
     const idiomList = today.idioms.map(i => i.phrase).join(', ');
 
-    const prompt = `You are an expert EFL (English as a Foreign Language) tutor.
-Analyze this transcript of an English speaking practice conversation between two learners.
-
-Transcript: "{{TRANSCRIPT}}"
-
-Today's topic vocabulary words: ${vocabList}
-Today's idioms: ${idiomList}
-
-Analyze the conversation and return ONLY a valid JSON object with NO extra text, NO markdown, NO backticks:
-{
-  "transcript": "brief summary of what was discussed (2-3 sentences)",
-  "grammarFixes": [
-    { "original": "exact wrong phrase heard", "corrected": "correct version", "explanation": "brief reason" }
-  ],
-  "vocabularyUsed": ["list of today's topic words actually used in the conversation"],
-  "idiomBonus": true or false,
-  "fluencyScore": number 0-100 based on sentence completeness and flow,
-  "talkRatio": number 0-100 representing how much the main speaker talked,
-  "overallScore": number 0-100 weighted average,
-  "encouragement": "one specific encouraging sentence about what went well"
-}
-Limit grammarFixes to maximum 3 most important errors.
-Return only the JSON object. Nothing else.`;
-
-    const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
+    const res = await fetch(`/api/analyze-call`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ base64Audio, prompt })
+      body: JSON.stringify({ transcript, vocabList, idiomList })
     });
 
     if (!res.ok) {

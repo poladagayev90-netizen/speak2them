@@ -66,6 +66,10 @@ export default function Chat({ user }) {
   const timerRef = useRef(null);
   const callTimeoutRef = useRef(null);
   const prevCallStatus = useRef('');
+  
+  const callTranscriptRef = useRef('');
+  const recognitionRef = useRef(null);
+  const inCallRef = useRef(false);
 
   const stateCallId = location.state?.callId;
   const isMatchedCall = location.state?.matchedCall === true;
@@ -202,9 +206,41 @@ export default function Chat({ user }) {
       startLocalRecording(localTrackRef.current);
 
       setInCall(true);
+      inCallRef.current = true;
       setCallStatus('connected');
       joinedRef.current = true;
       
+      // Start SpeechRecognition
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          recognitionRef.current = new SpeechRecognition();
+          recognitionRef.current.lang = 'en-US';
+          recognitionRef.current.continuous = true;
+          recognitionRef.current.interimResults = false;
+          
+          recognitionRef.current.onresult = (event) => {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript + ' ';
+              }
+            }
+            callTranscriptRef.current += finalTranscript;
+          };
+
+          recognitionRef.current.onend = () => {
+             if (inCallRef.current && recognitionRef.current) {
+                try { recognitionRef.current.start(); } catch (e) {}
+             }
+          };
+
+          recognitionRef.current.start();
+        } catch(err) {
+          console.error('[Chat] SpeechRecognition start error', err);
+        }
+      }
+
       // Mark as busy
       try {
         await updateDoc(doc(db, 'users', userUidRef.current), { status: 'busy' });
@@ -435,6 +471,13 @@ export default function Chat({ user }) {
     } catch (e) {}
 
     setInCall(false);
+    inCallRef.current = false;
+    
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch(e) {}
+      recognitionRef.current = null;
+    }
+    
     setCallStatus('');
     setMuted(false);
     joinedRef.current = false;
@@ -751,7 +794,8 @@ export default function Chat({ user }) {
                   setShowRating(false);
                   setAnalyzing(true);
                   setShowInsights(true);
-                  await analyzeCallAudio(audioBlobRef.current, user.uid, stateCallId || peerId);
+                  // Pass the transcript instead of audioBlob
+                  await analyzeCallAudio(callTranscriptRef.current, user.uid, stateCallId || peerId);
                   setAnalyzing(false);
                   audioBlobRef.current = null;
                 }}
