@@ -38,7 +38,9 @@ export default function PictureDescribing({ topic, imageKeywords, manualImageUrl
   };
 
   return (
-    <div style={{
+    <div 
+      onClick={e => e.stopPropagation()}
+      style={{
       position: 'fixed', inset: 0, background: 'var(--bg-primary)',
       zIndex: 9999, display: 'flex', flexDirection: 'column'
     }}>

@@ -37,7 +37,7 @@ export default function TranslateWidget({ userId, topic }) {
           width: 52, height: 52, borderRadius: '50%',
           background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
           border: 'none', color: '#fff', fontSize: 22,
-          cursor: 'pointer', zIndex: 9997,
+          cursor: 'pointer', zIndex: 10005,
           boxShadow: '0 4px 12px rgba(124,111,247,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
@@ -52,7 +52,7 @@ export default function TranslateWidget({ userId, topic }) {
       position: 'fixed', bottom: 140, left: 16, right: 16,
       maxWidth: 400, margin: '0 auto',
       background: '#1e1e30', border: '1px solid #7c6ff7',
-      borderRadius: 16, padding: 14, zIndex: 9997,
+      borderRadius: 16, padding: 14, zIndex: 10005,
       boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
