@@ -209,6 +209,7 @@ export default function DailyTopicModal({ open, onClose }) {
                     {expandedVocab === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <p className="dt-vocab-meaning">{v.meaning}</p>
+                  {v.meaningAZ && <p className="dt-vocab-meaning" style={{color: '#a0a0b8', marginTop: '4px', fontSize: '12px'}}>{v.meaningAZ}</p>}
                   {expandedVocab === i && (
                     <p className="dt-vocab-example">"{v.example}"</p>
                   )}
@@ -223,6 +224,7 @@ export default function DailyTopicModal({ open, onClose }) {
                 <div key={i} className="dt-idiom-card">
                   <p className="dt-idiom-phrase">"{idm.phrase}"</p>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
+                  {idm.meaningAZ && <p className="dt-idiom-meaning" style={{color: '#a0a0b8', marginTop: '4px', fontSize: '12px'}}>{idm.meaningAZ}</p>}
                   <p className="dt-idiom-example">💬 {idm.example}</p>
                 </div>
               ))}
