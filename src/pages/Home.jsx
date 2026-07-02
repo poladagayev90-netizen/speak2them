@@ -7,6 +7,7 @@ import DailyTopicModal from '../components/DailyTopicModal';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
 import { AchievementsPanel } from '../components/BadgeSystem';
+import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
 import { Award, Mic, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
@@ -143,9 +144,8 @@ export default function Home({ user }) {
 
 
       <div className="home-header">
-        <div className="home-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Mic size={18} color="#7c6ff7" strokeWidth={2.5} />
-          Speak2Them
+        <div className="home-logo" style={{ display: 'flex', alignItems: 'center' }}>
+          <Logo width={120} />
         </div>
         {user.uid === ADMIN_UID && (
           <button onClick={() => navigate('/admin')} style={{

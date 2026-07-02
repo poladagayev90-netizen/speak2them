@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
+import Logo from './components/Logo';
 
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
@@ -154,9 +155,8 @@ function App() {
     return (
       <>
         <div className="splash-screen">
-          <div className="splash-content">
-            <div className="splash-logo">🎙️</div>
-            <h1 className="splash-title">Speak2Them</h1>
+          <div className="splash-content" style={{ display: 'flex', justifyContent: 'center' }}>
+            <Logo width={240} />
           </div>
           <div className="splash-quote">
             <p className="splash-motto">"The limits of my language are the limits of my world."</p>

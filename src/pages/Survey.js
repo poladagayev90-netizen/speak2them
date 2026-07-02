@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 const LEVELS = [
   'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -151,7 +152,9 @@ export default function Survey({ user }) {
   return (
     <div className="auth-page" style={{ alignItems: 'flex-start', padding: '40px 16px', overflowY: 'auto' }}>
       <div className="auth-card" style={{ margin: '0 auto', maxWidth: '400px', width: '100%' }}>
-        <div className="auth-logo">🎙️ Speak2Them</div>
+        <div className="auth-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <Logo width={160} />
+        </div>
 
         <h2>Quick Setup</h2>
         <p className="auth-sub">

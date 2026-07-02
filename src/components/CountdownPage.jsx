@@ -153,7 +153,7 @@ export default function CountdownPage() {
           marginBottom: '12px',
           fontFamily: 'Inter, sans-serif',
         }}>
-          Speak2Them opens July 5, 2026
+          SpeakLab opens July 5, 2026
         </p>
 
         <p style={{

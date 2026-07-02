@@ -4,6 +4,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { tgUser, isTelegramWebApp } from '../telegram';
 import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 export default function Register() {
   const [name, setName]         = useState('');
@@ -94,8 +95,8 @@ export default function Register() {
           zIndex: 0
         }}></div>
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div className="auth-logo" style={{ fontSize: '28px', marginBottom: '8px' }}>
-            🎙️ Speak2Them
+          <div className="auth-logo" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
+            <Logo width={160} />
           </div>
           <h2 style={{ fontSize: '32px', marginBottom: '8px', lineHeight: '1.2' }}>Start Speaking <br/><span style={{ color: '#7c6ff7' }}>Today</span></h2>
           <p className="auth-sub" style={{ fontSize: '15px', marginBottom: '32px' }}>Join the fastest growing English community.</p>

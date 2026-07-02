@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { isTelegramWebApp } from '../telegram';
+import Logo from '../components/Logo';
 
 function getResetPasswordErrorMessage(code) {
   switch (code) {
@@ -111,7 +112,9 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo">🎙️ Speak2Them</div>
+        <div className="auth-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          <Logo width={180} />
+        </div>
         <h2>Welcome back</h2>
         <p className="auth-sub">Practice English with real people around the world</p>
 
