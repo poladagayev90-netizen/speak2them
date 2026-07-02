@@ -1,10 +1,10 @@
-const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+const apiKey = process.env.REACT_APP_DEEPSEEK_API_KEY;
 
 export const generateQuizFromWords = async (translatedItems) => {
   if (!translatedItems || translatedItems.length === 0) return null;
   if (!apiKey) {
-    console.error("OpenAI API key is missing");
-    return { error: "OpenAI API açarı tapılmadı." };
+    console.error("DeepSeek API key is missing");
+    return { error: "DeepSeek API açarı tapılmadı." };
   }
 
   try {
@@ -34,14 +34,14 @@ export const generateQuizFromWords = async (translatedItems) => {
       }
     `;
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "deepseek-chat",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
@@ -49,8 +49,8 @@ export const generateQuizFromWords = async (translatedItems) => {
 
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
-      console.error("OpenAI API Error:", err);
-      return { error: "Süni İntellekt serverində xəta baş verdi (OpenAI)." };
+      console.error("DeepSeek API Error:", err);
+      return { error: \`Süni İntellekt serverində xəta baş verdi (DeepSeek: \${res.status})\` };
     }
 
     const data = await res.json();

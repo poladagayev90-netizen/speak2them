@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 // eslint-disable-next-line no-unused-vars
 const ignored = self.__WB_MANIFEST;
-const CACHE_NAME = 's2t-cache-v2';
+const CACHE_NAME = 's2t-cache-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -21,8 +21,14 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Don't intercept API calls
-  if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('identitytoolkit')) {
+  // Don't intercept POST requests or external API calls
+  if (
+    event.request.method !== 'GET' ||
+    event.request.url.includes('firestore.googleapis.com') || 
+    event.request.url.includes('identitytoolkit') ||
+    event.request.url.includes('api.openai.com') ||
+    event.request.url.includes('api.deepseek.com')
+  ) {
     return;
   }
 
