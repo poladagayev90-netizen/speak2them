@@ -65,8 +65,14 @@ export function pickBestMatch(candidates, currentUser, useLevelMatching) {
 
   // Deterministic role: only the lexicographically SMALLER uid initiates matching
   // The larger uid just waits — this prevents race conditions completely
-  const eligibleCandidates = pool.filter((c) => currentUser.uid < c.uid);
-  if (eligibleCandidates.length === 0) return null; // this user is the "waiter"
+  const eligibleCandidates = pool.filter((c) => {
+    if (currentUser.uid >= c.uid) return false;
+    // Exclude offline "ghosts" who closed the app abruptly while searching
+    const joinedAt = c.joinedAtMs || c.joinedAt?.toMillis?.() || 0;
+    if (Date.now() - joinedAt > 20000) return false; 
+    return true;
+  });
+  if (eligibleCandidates.length === 0) return null; // this user is the "waiter" or everyone is ghost
 
   const compatiblePool = useLevelMatching
     ? eligibleCandidates.filter((c) => levelsCompatible(currentUser.level, c.level))
