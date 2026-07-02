@@ -4,6 +4,7 @@ import { generateQuizFromWords } from '../utils/aiQuizGenerator';
 export default function PostCallQuizModal({ words, onClose }) {
   const [quizData, setQuizData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -16,8 +17,12 @@ export default function PostCallQuizModal({ words, onClose }) {
     }
     
     generateQuizFromWords(words).then(res => {
-      if (!res || !Array.isArray(res) || res.length === 0) {
-        onClose(); // Fail gracefully
+      if (res && res.error) {
+        setErrorMsg(res.error);
+        setLoading(false);
+      } else if (!res || !Array.isArray(res) || res.length === 0) {
+        setErrorMsg('Süni intellekt uyğun sual hazırlaya bilmədi.');
+        setLoading(false);
       } else {
         setQuizData(res);
         setLoading(false);
@@ -32,6 +37,18 @@ export default function PostCallQuizModal({ words, onClose }) {
           <div className="spinner" style={{ margin: '0 auto 20px', borderTopColor: '#7c6ff7' }}></div>
           <h3 style={{ color: '#fff' }}>Süni İntellekt Sınaq Hazırlayır...</h3>
           <p style={{ color: '#a0a0b8', fontSize: 14 }}>Söhbət zamanı öyrəndiyiniz sözlərdən ibarət kiçik sınaq yaradılır.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <div style={overlayStyle}>
+        <div style={modalStyle}>
+          <h3 style={{ color: '#ff4757', marginBottom: 10 }}>Xəta Baş Verdi</h3>
+          <p style={{ color: '#a0a0b8', fontSize: 14, marginBottom: 20 }}>{errorMsg}</p>
+          <button style={btnStyle} onClick={onClose}>Bağla</button>
         </div>
       </div>
     );

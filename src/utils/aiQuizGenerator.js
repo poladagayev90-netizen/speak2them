@@ -11,7 +11,10 @@ export const generateQuizFromWords = async (translatedItems) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      generationConfig: { responseMimeType: "application/json" }
+    });
 
     // Ensure we take up to 5 random words from the translated items
     const sampleSize = Math.min(translatedItems.length, 5);
@@ -47,6 +50,6 @@ export const generateQuizFromWords = async (translatedItems) => {
     return JSON.parse(cleanedText);
   } catch (error) {
     console.error("Error generating AI quiz:", error);
-    return null;
+    return { error: error.message || "Tərcümə edilərkən xəta baş verdi" };
   }
 };
