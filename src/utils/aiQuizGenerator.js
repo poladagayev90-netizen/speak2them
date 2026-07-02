@@ -50,7 +50,7 @@ export const generateQuizFromWords = async (translatedItems) => {
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
       console.error("DeepSeek API Error:", err);
-      return { error: \`Süni İntellekt serverində xəta baş verdi (DeepSeek: \${res.status})\` };
+      return { error: `Süni İntellekt serverində xəta baş verdi (DeepSeek: ${res.status})` };
     }
 
     const data = await res.json();
