@@ -16,6 +16,7 @@ import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
+import TranslateWidget from '../components/TranslateWidget';
 
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
@@ -799,6 +800,7 @@ export default function Chat({ user }) {
           </div>
         </div>
       )}
+      {inCall && <TranslateWidget userId={user.uid} />}
 
       {showDaily && (
         <div className="daily-panel">

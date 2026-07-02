@@ -118,6 +118,10 @@ service cloud.firestore {
       );
     }
 
+    match /wordHistory/{userId}/words/{wordId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

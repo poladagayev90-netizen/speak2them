@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'f
 import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import WordHistoryPanel from '../components/WordHistoryPanel';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -73,6 +74,7 @@ export default function Profile({ user }) {
 
 
   const [isEditing, setIsEditing] = useState(false);
+  const [showWordHistory, setShowWordHistory] = useState(false);
 
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
 
@@ -235,6 +237,15 @@ export default function Profile({ user }) {
           {displayedBalance}
         </div>
       </div>
+
+      {/* MY WORDS */}
+      <button onClick={() => setShowWordHistory(true)} style={{ width: '100%', background: '#1e1e30', border: 'none', color: '#fff', padding: '16px', borderRadius: '16px', marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+        📚 Mənim Sözlərim
+      </button>
+
+      {showWordHistory && (
+        <WordHistoryPanel userId={user.uid} onClose={() => setShowWordHistory(false)} />
+      )}
 
     </div>
   );
