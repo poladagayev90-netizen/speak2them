@@ -1,19 +1,6 @@
 import { db, auth } from '../firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getTodayContent } from '../data/weeklyContent';
-import { FUNCTIONS_BASE } from '../constants';
-
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const b64 = reader.result.split(',')[1];
-      resolve(b64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
 
 export async function analyzeCallAudio(transcript, userId, channelName) {
   try {
