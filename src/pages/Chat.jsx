@@ -18,6 +18,7 @@ import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../uti
 import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
+import PostCallQuizModal from '../components/PostCallQuizModal';
 
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
@@ -48,6 +49,8 @@ export default function Chat({ user }) {
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
   const [newBadge, setNewBadge] = useState(null);
+  const [callTranslations, setCallTranslations] = useState([]);
+  const [showPostQuiz, setShowPostQuiz] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
   const [bonusMinutes, setBonusMinutes] = useState(user.bonusMinutes || 0);
@@ -550,7 +553,11 @@ export default function Chat({ user }) {
         if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
-      if (secondsTalked >= 180) setShowRating(true);
+      if (secondsTalked >= 180) {
+        setShowRating(true);
+      } else if (callTranslations.length > 0) {
+        setShowPostQuiz(true);
+      }
 
     } catch (e) {
       console.error('[Chat] endCall error:', e);
@@ -596,6 +603,9 @@ export default function Chat({ user }) {
       console.error('[Chat] Rating error:', e);
     }
     setShowRating(false);
+    if (callTranslations.length > 0) {
+      setShowPostQuiz(true);
+    }
   };
 
   const toggleMute = async () => {
@@ -805,7 +815,13 @@ export default function Chat({ user }) {
           </div>
         </div>
       )}
-      {inCall && <TranslateWidget userId={user.uid} topic={content?.topic || 'General'} />}
+      {inCall && (
+        <TranslateWidget 
+          userId={user.uid} 
+          topic={content?.topic || 'General'} 
+          onTranslate={(t) => setCallTranslations(prev => [...prev, t])}
+        />
+      )}
 
       {showPictureDescribing && (
         <PictureDescribing
@@ -920,6 +936,13 @@ export default function Chat({ user }) {
         />
         <button type="submit">Send ➤</button>
       </form>
+      
+      {showPostQuiz && (
+        <PostCallQuizModal 
+          words={callTranslations} 
+          onClose={() => setShowPostQuiz(false)} 
+        />
+      )}
     </div>
   );
 }
