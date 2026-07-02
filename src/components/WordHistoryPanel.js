@@ -11,6 +11,13 @@ export default function WordHistoryPanel({ userId, onClose }) {
     return unsub;
   }, [userId]);
 
+  const groupedWords = words.reduce((acc, w) => {
+    const t = w.topic || 'General';
+    if (!acc[t]) acc[t] = [];
+    acc[t].push(w);
+    return acc;
+  }, {});
+
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'var(--bg-primary)',
@@ -35,44 +42,53 @@ export default function WordHistoryPanel({ userId, onClose }) {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {words.map(w => (
-            <div
-              key={w.id}
-              onClick={() => setFlipped(p => ({ ...p, [w.id]: !p[w.id] }))}
-              style={{
-                background: 'var(--bg-card)', borderRadius: 14,
-                padding: '16px 18px', border: '1px solid var(--border)',
-                cursor: 'pointer', position: 'relative'
-              }}
-            >
-              {!flipped[w.id] ? (
-                <div>
-                  <p style={{ color: 'var(--text-primary)', fontSize: 17, fontWeight: 700, margin: 0 }}>
-                    {w.original}
-                  </p>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 11, marginTop: 6 }}>
-                    Toxun — tərcüməni gör
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <p style={{ color: '#7c6ff7', fontSize: 17, fontWeight: 700, margin: 0 }}>
-                    {w.translated}
-                  </p>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
-                    {w.original}
-                  </p>
-                </div>
-              )}
-              <button
-                onClick={(e) => { e.stopPropagation(); deleteWordFromHistory(userId, w.id); }}
-                style={{
-                  position: 'absolute', top: 12, right: 12,
-                  background: 'transparent', border: 'none',
-                  color: 'var(--text-secondary)', fontSize: 16, cursor: 'pointer'
-                }}
-              >🗑️</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {Object.entries(groupedWords).map(([topicName, topicWords]) => (
+            <div key={topicName}>
+              <h4 style={{ color: 'var(--text-secondary)', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 12px 4px' }}>
+                📌 {topicName}
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {topicWords.map(w => (
+                  <div
+                    key={w.id}
+                    onClick={() => setFlipped(p => ({ ...p, [w.id]: !p[w.id] }))}
+                    style={{
+                      background: 'var(--bg-card)', borderRadius: 14,
+                      padding: '16px 18px', border: '1px solid var(--border)',
+                      cursor: 'pointer', position: 'relative'
+                    }}
+                  >
+                    {!flipped[w.id] ? (
+                      <div>
+                        <p style={{ color: 'var(--text-primary)', fontSize: 17, fontWeight: 700, margin: 0 }}>
+                          {w.original}
+                        </p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 11, marginTop: 6 }}>
+                          Toxun — tərcüməni gör
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{ color: '#7c6ff7', fontSize: 17, fontWeight: 700, margin: 0 }}>
+                          {w.translated}
+                        </p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
+                          {w.original}
+                        </p>
+                      </div>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteWordFromHistory(userId, w.id); }}
+                      style={{
+                        position: 'absolute', top: 12, right: 12,
+                        background: 'transparent', border: 'none',
+                        color: 'var(--text-secondary)', fontSize: 16, cursor: 'pointer'
+                      }}
+                    >🗑️</button>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>

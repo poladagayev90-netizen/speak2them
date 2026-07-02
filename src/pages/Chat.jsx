@@ -800,7 +800,7 @@ export default function Chat({ user }) {
           </div>
         </div>
       )}
-      {inCall && <TranslateWidget userId={user.uid} />}
+      {inCall && <TranslateWidget userId={user.uid} topic={content?.topic || 'General'} />}
 
       {showDaily && (
         <div className="daily-panel">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { translateText } from '../utils/translate';
 import { saveWordToHistory } from '../utils/wordHistory';
 
-export default function TranslateWidget({ userId }) {
+export default function TranslateWidget({ userId, topic }) {
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
@@ -17,7 +17,7 @@ export default function TranslateWidget({ userId }) {
     setLoading(false);
     if (translated) {
       setResult(translated);
-      saveWordToHistory(userId, input.trim(), translated);
+      saveWordToHistory(userId, input.trim(), translated, topic);
       setSaved(true);
     } else {
       setResult('Tərcümə alınmadı');

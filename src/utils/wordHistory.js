@@ -1,11 +1,12 @@
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 
-export function saveWordToHistory(userId, originalWord, translatedWord) {
+export function saveWordToHistory(userId, originalWord, translatedWord, topic = 'General') {
   if (!userId || !originalWord || !translatedWord) return;
   return addDoc(collection(db, 'wordHistory', userId, 'words'), {
     original: originalWord,
     translated: translatedWord,
+    topic: topic,
     createdAt: serverTimestamp(),
   }).catch(err => console.error('[WordHistory] Save failed:', err));
 }
