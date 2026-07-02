@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS setup if needed
   if (req.method === 'OPTIONS') {
     res.status(200).end();
