@@ -823,9 +823,12 @@ export default function Chat({ user }) {
                   setShowRating(false);
                   setAnalyzing(true);
                   setShowInsights(true);
-                  // Pass the transcript instead of audioBlob
-                  await analyzeCallAudio(callTranscriptRef.current, user.uid, stateCallId || peerId);
+                  const res = await analyzeCallAudio(callTranscriptRef.current, user.uid, stateCallId || peerId);
                   setAnalyzing(false);
+                  if (!res) {
+                    alert('Analiz üçün kifayət qədər nitq (səs) qeydə alınmadı. Zəhmət olmasa, gələn dəfə bir az daha çox danışın! 🎙️');
+                    setShowInsights(false);
+                  }
                   audioBlobRef.current = null;
                 }}
                 style={{
