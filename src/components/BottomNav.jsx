@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageCircle, Trophy, User } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
@@ -14,8 +15,10 @@ export default function BottomNav({ user }) {
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
+  const isNative = Capacitor.isNativePlatform();
+
   return (
-    <div className="bottom-nav">
+    <div className="bottom-nav" style={{ paddingBottom: isNative ? '16px' : 'env(safe-area-inset-bottom)', height: isNative ? '76px' : '64px' }}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = path === tab.route;

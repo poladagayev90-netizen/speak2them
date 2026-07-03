@@ -3,6 +3,7 @@ import BottomNav from './BottomNav';
 import SettingsPanel from './SettingsPanel';
 import InstallPrompt from './InstallPrompt';
 import { useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 
 export default function AppLayout({ children, user }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -66,9 +67,11 @@ export default function AppLayout({ children, user }) {
   // -------------------------
   // 1. MOBILE / PWA LAYOUT
   // -------------------------
+  // -------------------------
+  const isNative = Capacitor.isNativePlatform();
   if (forceMobile) {
     return (
-      <div className="mobile-layout">
+      <div className="mobile-layout" style={{ paddingTop: isNative ? '38px' : '0' }}>
         <div className="main-content">
           {children}
           <BottomNav user={user} />
