@@ -1,5 +1,6 @@
 import React, { useEffect, useState, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db, registerFcmToken } from './firebase';
@@ -174,30 +175,57 @@ function App() {
   return (
     <>
       <ErrorBoundary>
-        <BrowserRouter>
-          <Suspense fallback={<LoadingFallback />}>
-            <AppLayout user={user}>
-              {user && <GlobalCallListener user={user} />}
-              <Routes>
-                <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-                <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-                <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-                <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
-                <Route path="/" element={homeElement} />
-                <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-                <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
-                <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-                <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-                <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
-                <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-                <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
-                <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
-                <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
-                <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-              </Routes>
-            </AppLayout>
-          </Suspense>
-        </BrowserRouter>
+        {Capacitor.isNativePlatform() ? (
+          <HashRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <AppLayout user={user}>
+                {user && <GlobalCallListener user={user} />}
+                <Routes>
+                  <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+                  <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+                  <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/" element={homeElement} />
+                  <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
+                  <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
+                  <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+                </Routes>
+              </AppLayout>
+            </Suspense>
+          </HashRouter>
+        ) : (
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <AppLayout user={user}>
+                {user && <GlobalCallListener user={user} />}
+                <Routes>
+                  <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+                  <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+                  <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/" element={homeElement} />
+                  <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
+                  <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
+                  <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+                </Routes>
+              </AppLayout>
+            </Suspense>
+          </BrowserRouter>
+        )}
       </ErrorBoundary>
     </>
   );
