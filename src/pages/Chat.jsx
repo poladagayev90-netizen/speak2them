@@ -19,7 +19,6 @@ import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import { Capacitor } from '@capacitor/core';
-import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
@@ -65,7 +64,6 @@ export default function Chat({ user }) {
   const callTimeoutRef = useRef(null);
   const prevCallStatus = useRef('');
   
-  const callTranscriptRef = useRef('');
   const recognitionRef = useRef(null);
   const inCallRef = useRef(false);
 
