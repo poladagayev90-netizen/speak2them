@@ -1,6 +1,8 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { SafeArea } from 'capacitor-plugin-safe-area';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db, registerFcmToken } from './firebase';
@@ -53,6 +55,22 @@ function App() {
       document.documentElement.style.setProperty('--app-max-width', '100vw');
       document.body.style.maxWidth = '100vw';
       document.body.style.width = '100vw';
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      // Set status bar overlay to false so webview sits below it if possible
+      // OR set to true if we want to use safe area
+      StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
+      StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+      SafeArea.getSafeAreaInsets().then(({ insets }) => {
+        document.documentElement.style.setProperty('--safe-area-top', `${insets.top}px`);
+        document.documentElement.style.setProperty('--safe-area-bottom', `${insets.bottom}px`);
+      }).catch(() => {});
+      
+      SafeArea.addListener('safeAreaChanged', data => {
+        document.documentElement.style.setProperty('--safe-area-top', `${data.insets.top}px`);
+        document.documentElement.style.setProperty('--safe-area-bottom', `${data.insets.bottom}px`);
+      });
     }
   }, []);
 

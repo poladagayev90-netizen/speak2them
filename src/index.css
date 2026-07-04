@@ -30,6 +30,11 @@
   --overlay: rgba(0, 0, 0, 0.32);
 }
 
+:root {
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-bottom: env(safe-area-inset-bottom);
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -58,8 +63,6 @@ body, #root {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 ::-webkit-scrollbar {
