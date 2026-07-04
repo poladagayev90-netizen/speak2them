@@ -47,7 +47,7 @@ export default function PictureDescribing({ topic, imageKeywords, manualImageUrl
       {/* Header */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '16px 20px', borderBottom: '1px solid var(--border)'
+        padding: '16px 20px', paddingTop: 'calc(16px + var(--safe-area-top, 0px))', borderBottom: '1px solid var(--border)'
       }}>
         <div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: 0, textTransform: 'uppercase' }}>

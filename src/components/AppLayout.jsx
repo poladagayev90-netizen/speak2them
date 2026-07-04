@@ -3,6 +3,7 @@ import BottomNav from './BottomNav';
 import SettingsPanel from './SettingsPanel';
 import InstallPrompt from './InstallPrompt';
 import { useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 
 export default function AppLayout({ children, user }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -100,11 +101,14 @@ export default function AppLayout({ children, user }) {
         />
       </div>
 
-      <div className="main-content">
+      <main className="main-content">
+        {/* DEBUG BADGE FOR NATIVE DETECTION */}
+        <div style={{ position: 'fixed', top: '10px', left: '10px', background: 'red', color: 'white', padding: '5px', zIndex: 9999, fontSize: '10px', borderRadius: '4px' }}>
+          {Capacitor.isNativePlatform() ? 'NATIVE APK' : 'WEB/PWA'}
+        </div>
         {children}
-        {/* On desktop, settings sidebar is always visible, no bottom nav, no settings button overlay */}
         <InstallPrompt />
-      </div>
+      </main>
     </div>
   );
 }
