@@ -14,12 +14,9 @@ import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
-import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
-import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
-import PricingModal from '../components/PricingModal';
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 
@@ -33,9 +30,6 @@ export default function Chat({ user }) {
   const location = useLocation();
 
   const audioBlobRef = useRef(null);
-  const [showInsights, setShowInsights] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [showPricing, setShowPricing] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
@@ -57,7 +51,6 @@ export default function Chat({ user }) {
   const [showPostQuiz, setShowPostQuiz] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
-  const [bonusMinutes, setBonusMinutes] = useState(user.bonusMinutes || 0);
 
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
