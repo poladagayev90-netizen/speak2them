@@ -14,6 +14,7 @@ import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
+import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
@@ -50,6 +51,7 @@ export default function Chat({ user }) {
   const [callTranslations, setCallTranslations] = useState([]);
   const [showPostQuiz, setShowPostQuiz] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
+  const [bonusMinutes, setBonusMinutes] = useState(user.bonusMinutes || 0);
   const [, setBadgeQueue] = useState([]);
 
   const callSecondsRef = useRef(0);
@@ -872,10 +874,6 @@ export default function Chat({ user }) {
           vocabulary={content.vocabulary}
           onClose={() => setShowPictureDescribing(false)}
         />
-      )}
-
-      {showPricing && (
-        <PricingModal onClose={() => setShowPricing(false)} />
       )}
 
       {showDaily && (
