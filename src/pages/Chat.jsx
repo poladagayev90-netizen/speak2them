@@ -51,7 +51,6 @@ export default function Chat({ user }) {
   const [callTranslations, setCallTranslations] = useState([]);
   const [showPostQuiz, setShowPostQuiz] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
-  const [bonusMinutes, setBonusMinutes] = useState(user.bonusMinutes || 0);
   const [, setBadgeQueue] = useState([]);
 
   const callSecondsRef = useRef(0);
