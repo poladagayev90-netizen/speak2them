@@ -19,6 +19,7 @@ import { analyzeCallAudio } from '../utils/analyzeWithOpenAI';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
+import PricingModal from '../components/PricingModal';
 import { Capacitor } from '@capacitor/core';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 
@@ -34,6 +35,7 @@ export default function Chat({ user }) {
   const audioBlobRef = useRef(null);
   const [showInsights, setShowInsights] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
 
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
@@ -820,14 +822,40 @@ export default function Chat({ user }) {
             {audioBlobRef.current && !showInsights && (
               <button
                 onClick={async () => {
+                  // Premium Gating Logic: 1 free analysis per day
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  let usedToday = parseInt(localStorage.getItem('ai_analysis_used') || '0', 10);
+                  const lastDate = localStorage.getItem('ai_analysis_date');
+                  
+                  if (lastDate !== todayStr) {
+                    usedToday = 0;
+                    localStorage.setItem('ai_analysis_date', todayStr);
+                  }
+
+                  const isPremium = false; // Toggle this based on actual user.plan in the future
+
+                  if (!isPremium && usedToday >= 1) {
+                    setShowPricing(true);
+                    return;
+                  }
+
+                  // If they have access, increment usage and proceed
+                  if (!isPremium) {
+                    localStorage.setItem('ai_analysis_used', (usedToday + 1).toString());
+                  }
+
                   setShowRating(false);
                   setAnalyzing(true);
                   setShowInsights(true);
-                  const res = await analyzeCallAudio(callTranscriptRef.current, user.uid, stateCallId || peerId);
+                  const res = await analyzeCallAudio(audioBlobRef.current, user.uid, stateCallId || peerId, callTranscriptRef.current);
                   setAnalyzing(false);
                   if (!res) {
                     alert('Analiz üçün kifayət qədər nitq (səs) qeydə alınmadı. Zəhmət olmasa, gələn dəfə bir az daha çox danışın! 🎙️');
                     setShowInsights(false);
+                    // rollback token if failed
+                    if (!isPremium) {
+                      localStorage.setItem('ai_analysis_used', usedToday.toString());
+                    }
                   }
                   audioBlobRef.current = null;
                 }}
@@ -907,6 +935,10 @@ export default function Chat({ user }) {
           vocabulary={content.vocabulary}
           onClose={() => setShowPictureDescribing(false)}
         />
+      )}
+
+      {showPricing && (
+        <PricingModal onClose={() => setShowPricing(false)} />
       )}
 
       {showDaily && (

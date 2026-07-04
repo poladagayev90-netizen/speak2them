@@ -2,8 +2,43 @@ import { db, auth } from '../firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getTodayContent } from '../data/weeklyContent';
 
-export async function analyzeCallAudio(transcript, userId, channelName) {
+export async function analyzeCallAudio(audioBlob, userId, channelName, fallbackTranscript = '') {
   try {
+    let transcript = fallbackTranscript || '';
+
+    // If we have an audio recording, try Whisper transcription first!
+    if (audioBlob) {
+      try {
+        const openaiKey = process.env.REACT_APP_OPENAI_API_KEY;
+        if (openaiKey) {
+          const formData = new FormData();
+          formData.append('file', audioBlob, 'recording.webm');
+          formData.append('model', 'whisper-1');
+          formData.append('language', 'en'); // optimize for English
+
+          const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openaiKey}`
+            },
+            body: formData
+          });
+
+          if (whisperRes.ok) {
+            const whisperData = await whisperRes.json();
+            if (whisperData.text) {
+              transcript = whisperData.text;
+              console.log('[Whisper] Transcribed text:', transcript);
+            }
+          } else {
+            console.warn('[Whisper] Failed:', whisperRes.status);
+          }
+        }
+      } catch (err) {
+        console.warn('[Whisper] Error during transcription:', err);
+      }
+    }
+
     if (!transcript || transcript.trim().length < 10) {
       console.warn('[DeepSeek] Transcript too short, skipping analysis');
       return null;
@@ -20,7 +55,7 @@ export async function analyzeCallAudio(transcript, userId, channelName) {
     if (!apiKey) throw new Error("API Key eksikdir!");
 
     const prompt = `You are an expert EFL (English as a Foreign Language) tutor.
-Analyze this spoken transcript of an English practice conversation (transcribed by Web Speech API, so it may have slight transcription errors).
+Analyze this spoken transcript of an English practice conversation.
 
 Transcript: "${transcript}"
 

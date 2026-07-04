@@ -1,6 +1,3 @@
-const UNSPLASH_ACCESS_KEY = process.env.REACT_APP_UNSPLASH_ACCESS_KEY;
-const UNSPLASH_URL = 'https://api.unsplash.com/search/photos';
-
 export async function fetchTopicImages(imageKeywords, manualImageUrls = []) {
   // If manual URLs provided, use those instead
   if (manualImageUrls && manualImageUrls.length > 0) {
@@ -11,36 +8,25 @@ export async function fetchTopicImages(imageKeywords, manualImageUrls = []) {
     }));
   }
 
-  if (!UNSPLASH_ACCESS_KEY || !imageKeywords || imageKeywords.length === 0) {
-    return [];
-  }
-
+  // Use LoremFlickr as a free fallback (no API key required)
+  // It returns images based on keywords
   try {
-    const results = await Promise.all(
-      imageKeywords.map(async (keyword) => {
-        const res = await fetch(
-          `${UNSPLASH_URL}?query=${encodeURIComponent(keyword)}&per_page=1&orientation=landscape`,
-          {
-            headers: {
-              Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`
-            }
-          }
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        const photo = data.results?.[0];
-        if (!photo) return null;
-        return {
-          id: photo.id,
-          url: photo.urls.regular,
-          alt: photo.alt_description || keyword,
-          credit: photo.user?.name || 'Unsplash'
-        };
-      })
-    );
-    return results.filter(Boolean);
-  } catch (error) {
-    console.error('[Images] Fetch failed:', error);
+    if (!imageKeywords || imageKeywords.length === 0) return [];
+    
+    // Pick the first keyword string, split by space, take top 2 words
+    const topKeywords = imageKeywords[0].split(' ').slice(0, 2).join(',');
+    
+    // Generate 3 random images for the keyword
+    const images = Array.from({ length: 3 }).map((_, i) => ({
+      id: `loremflickr-${i}`,
+      url: `https://loremflickr.com/800/600/${topKeywords}?random=${i + 1}`,
+      alt: imageKeywords[0],
+      credit: 'LoremFlickr'
+    }));
+    
+    return images;
+  } catch (err) {
+    console.error('Error fetching topic images:', err);
     return [];
   }
 }
