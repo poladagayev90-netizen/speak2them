@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { Capacitor } from '@capacitor/core';
 import { tgUser, isTelegramWebApp } from '../telegram';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
@@ -103,7 +104,7 @@ export default function Register() {
 
           {error && <div className="error-box">{error}</div>}
 
-          {!isTelegramWebApp && (
+          {!isTelegramWebApp && !Capacitor.isNativePlatform() && (
           <button 
             onClick={handleGoogleRegister} 
             disabled={loading}

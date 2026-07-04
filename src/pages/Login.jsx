@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { Capacitor } from '@capacitor/core';
 import { Link, useNavigate } from 'react-router-dom';
 import { isTelegramWebApp } from '../telegram';
 import Logo from '../components/Logo';
@@ -86,8 +87,9 @@ export default function Login() {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const res = await signInWithPopup(auth, provider);
+      // Optional: Check if the user is new and add to Firestore, similar to Register
+      const user = res.user;
       
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef);
@@ -126,7 +128,7 @@ export default function Login() {
           </div>
         )}
 
-        {!isTelegramWebApp && (
+        {!isTelegramWebApp && !Capacitor.isNativePlatform() && (
           <button 
             onClick={handleGoogleLogin} 
             disabled={loading}
