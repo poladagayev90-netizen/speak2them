@@ -81,22 +81,8 @@ export default function Chat({ user }) {
   const callDocId = stateCallId || `call_${chatId}`;
   const content = getTodayContent();
   
-  const currentMonthStr = new Date().toISOString().slice(0, 7);
-  let monthlyLimit = 0;
-  if (user.premiumPlan === 'basic') monthlyLimit = 120;
-  if (user.premiumPlan === 'pro') monthlyLimit = 500;
-  
-  const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
-  const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
-  
-  let maxCallSeconds = (15 + bonusMinutes) * 60;
-  if (user.isPremium) {
-    if (user.premiumPlan === 'unlimited' || !user.premiumPlan) {
-      maxCallSeconds = Infinity;
-    } else {
-      maxCallSeconds = (remainingMonthlyMinutes + bonusMinutes) * 60;
-    }
-  }
+  // PROMOTION MVP: Everyone gets 30 minutes max call time
+  let maxCallSeconds = 30 * 60;
 
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
@@ -819,56 +805,14 @@ export default function Chat({ user }) {
               background: 'transparent', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer',
             }}>Keç</button>
 
+            {/* AI Speech Analysis disabled for 1-month promotion MVP */}
+            {/*
             {audioBlobRef.current && !showInsights && (
               <button
-                onClick={async () => {
-                  // Premium Gating Logic: 1 free analysis per day
-                  const todayStr = new Date().toISOString().split('T')[0];
-                  let usedToday = parseInt(localStorage.getItem('ai_analysis_used') || '0', 10);
-                  const lastDate = localStorage.getItem('ai_analysis_date');
-                  
-                  if (lastDate !== todayStr) {
-                    usedToday = 0;
-                    localStorage.setItem('ai_analysis_date', todayStr);
-                  }
-
-                  const isPremium = false; // Toggle this based on actual user.plan in the future
-
-                  if (!isPremium && usedToday >= 1) {
-                    setShowPricing(true);
-                    return;
-                  }
-
-                  // If they have access, increment usage and proceed
-                  if (!isPremium) {
-                    localStorage.setItem('ai_analysis_used', (usedToday + 1).toString());
-                  }
-
-                  setShowRating(false);
-                  setAnalyzing(true);
-                  setShowInsights(true);
-                  const res = await analyzeCallAudio(audioBlobRef.current, user.uid, stateCallId || peerId, callTranscriptRef.current);
-                  setAnalyzing(false);
-                  if (!res) {
-                    alert('Analiz üçün kifayət qədər nitq (səs) qeydə alınmadı. Zəhmət olmasa, gələn dəfə bir az daha çox danışın! 🎙️');
-                    setShowInsights(false);
-                    // rollback token if failed
-                    if (!isPremium) {
-                      localStorage.setItem('ai_analysis_used', usedToday.toString());
-                    }
-                  }
-                  audioBlobRef.current = null;
-                }}
-                style={{
-                  width: '100%', padding: '12px', marginTop: '8px',
-                  background: 'linear-gradient(135deg, #059669, #10b981)',
-                  color: 'white', border: 'none', borderRadius: '12px',
-                  fontSize: '15px', fontWeight: 700, cursor: 'pointer'
-                }}
+                ...
               >
-                {analyzing ? '🤖 Analiz edilir...' : '🤖 Analiz et'}
-              </button>
             )}
+            */}
           </div>
         </div>
       )}

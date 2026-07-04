@@ -11,11 +11,27 @@ export default function TranslateWidget({ userId, topic, onTranslate }) {
 
   const handleTranslate = async () => {
     if (!input.trim()) return;
+    
+    // MVP Limit: 10 translations per day
+    const todayStr = new Date().toISOString().split('T')[0];
+    let usedTranslations = parseInt(localStorage.getItem('translate_used') || '0', 10);
+    const lastTranslateDate = localStorage.getItem('translate_date');
+    if (lastTranslateDate !== todayStr) {
+      usedTranslations = 0;
+      localStorage.setItem('translate_date', todayStr);
+    }
+    
+    if (usedTranslations >= 10) {
+      alert('Siz bugünkü maksimum (10) tərcümə limitinizi doldurdunuz. Gündəlik limitsiz istifadə üçün səhifəmizi izləyin!');
+      return;
+    }
+
     setLoading(true);
     setSaved(false);
     const translated = await translateText(input.trim(), 'az', 'en');
     setLoading(false);
     if (translated) {
+      localStorage.setItem('translate_used', (usedTranslations + 1).toString());
       setResult(translated);
       saveWordToHistory(userId, input.trim(), translated, topic);
       if (onTranslate) onTranslate({ original: input.trim(), translated });
