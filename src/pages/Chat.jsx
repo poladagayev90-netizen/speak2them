@@ -88,7 +88,7 @@ export default function Chat({ user }) {
   userUidRef.current = user.uid;
 
   useEffect(() => {
-    setBonusMinutes(user.bonusMinutes || 0);
+    // bonus minutes disabled for mvp
   }, [user.bonusMinutes]);
 
   useEffect(() => {
@@ -604,7 +604,7 @@ export default function Chat({ user }) {
         setNewBadge(firstUnlock.badge);
         setNewBadgeReward(firstUnlock.rewardMessage);
         setBadgeQueue(remainingUnlocks);
-        if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
+        // if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
       if (secondsTalked >= 180) {
@@ -705,7 +705,7 @@ export default function Chat({ user }) {
             if (nextUnlock) {
               setNewBadge(nextUnlock.badge);
               setNewBadgeReward(nextUnlock.rewardMessage);
-              if (typeof nextUnlock.bonusMinutes === 'number') setBonusMinutes(nextUnlock.bonusMinutes);
+              // if (typeof nextUnlock.bonusMinutes === 'number') setBonusMinutes(nextUnlock.bonusMinutes);
               return rest;
             }
             setNewBadge(null);
