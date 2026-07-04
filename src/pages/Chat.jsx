@@ -194,6 +194,8 @@ export default function Chat({ user }) {
       setCallStatus('connected');
       joinedRef.current = true;
       
+      // [PROMOTION MVP] Disabled all background speech transcription
+      /*
       if (Capacitor.isNativePlatform()) {
         try {
           const hasPerm = await SpeechRecognition.checkPermissions();
@@ -203,8 +205,6 @@ export default function Chat({ user }) {
           
           SpeechRecognition.addListener('partialResults', (data) => {
             if (data.matches && data.matches.length > 0) {
-              // Capacitor plugin usually returns full accumulated matches for the session
-              // We'll just keep the latest match as transcript for now, or append if it splits
               callTranscriptRef.current += data.matches[0] + ' ';
             }
           });
@@ -220,7 +220,6 @@ export default function Chat({ user }) {
           console.error('[Chat] Native SpeechRecognition error', err);
         }
       } else {
-        // Start Web SpeechRecognition
         const WebSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (WebSpeechRecognition) {
           try {
@@ -239,14 +238,13 @@ export default function Chat({ user }) {
               callTranscriptRef.current += finalTranscript;
             };
 
-            // Removed onend auto-restart to prevent Android beeping sound
-
             recognitionRef.current.start();
           } catch(err) {
             console.error('[Chat] Web SpeechRecognition start error', err);
           }
         }
       }
+      */
 
       // Mark as busy
       try {
@@ -481,7 +479,7 @@ export default function Chat({ user }) {
     inCallRef.current = false;
     
     if (Capacitor.isNativePlatform()) {
-      try { await SpeechRecognition.stop(); } catch(e) {}
+      // try { await SpeechRecognition.stop(); } catch(e) {}
     } else {
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch(e) {}
