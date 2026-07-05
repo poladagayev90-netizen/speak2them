@@ -11,7 +11,6 @@ export default function Register() {
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [bio, setBio]           = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
@@ -30,7 +29,6 @@ export default function Register() {
         uid: user.uid,
         name,
         email,
-        bio,
         telegramId: tgUser?.id ? String(tgUser.id) : '',
         rating: 0,
         ratingCount: 0,
