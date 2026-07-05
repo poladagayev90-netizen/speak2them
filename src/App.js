@@ -76,8 +76,17 @@ function App() {
 
   useEffect(() => {
     let heartbeatInterval = null;
+    let visibilityHandler = null;
+    let unloadHandler = null;
+
+    const cleanupPresence = () => {
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
+      if (unloadHandler) window.removeEventListener('beforeunload', unloadHandler);
+    };
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
+      cleanupPresence();
       if (currentUser) {
         const uid = currentUser.uid;
         const userRef = doc(db, 'users', uid);
@@ -109,40 +118,50 @@ function App() {
           }
         }
 
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
         heartbeatInterval = setInterval(async () => {
-          await setDoc(doc(db, 'users', uid), {
-            online: true,
-            lastSeen: serverTimestamp(),
-          }, { merge: true });
+          try {
+            await setDoc(doc(db, 'users', uid), {
+              online: true,
+              lastSeen: serverTimestamp(),
+            }, { merge: true });
+          } catch (e) {}
         }, 60000);
 
         const goOffline = async () => {
-          await setDoc(doc(db, 'users', uid), {
-            online: false,
-            status: 'offline',
-            lastSeen: serverTimestamp(),
-          }, { merge: true });
-        };
-
-        window.addEventListener('beforeunload', goOffline);
-        document.addEventListener('visibilitychange', async () => {
-          if (document.visibilityState === 'hidden') await goOffline();
-          if (document.visibilityState === 'visible') {
+          try {
             await setDoc(doc(db, 'users', uid), {
-              online: true,
-              status: 'online',
+              online: false,
+              status: 'offline',
               lastSeen: serverTimestamp(),
             }, { merge: true });
-          }
-        });
+          } catch (e) {}
+        };
+
+        unloadHandler = goOffline;
+        window.addEventListener('beforeunload', unloadHandler);
+        
+        visibilityHandler = async () => {
+          try {
+            if (document.visibilityState === 'hidden') await goOffline();
+            if (document.visibilityState === 'visible') {
+              await setDoc(doc(db, 'users', uid), {
+                online: true,
+                status: 'online',
+                lastSeen: serverTimestamp(),
+              }, { merge: true });
+            }
+          } catch (e) {}
+        };
+        document.addEventListener('visibilitychange', visibilityHandler);
 
         // Ensure user is online and available on initial load
-        await setDoc(doc(db, 'users', uid), {
-          online: true,
-          status: 'online',
-          lastSeen: serverTimestamp(),
-        }, { merge: true });
+        try {
+          await setDoc(doc(db, 'users', uid), {
+            online: true,
+            status: 'online',
+            lastSeen: serverTimestamp(),
+          }, { merge: true });
+        } catch (e) {}
 
         const freshUserSnap = await getDoc(userRef);
         const freshUserData = freshUserSnap.exists() ? freshUserSnap.data() : {};
@@ -157,7 +176,7 @@ function App() {
 
         setUser(appUser);
       } else {
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
+        cleanupPresence();
         setUser(null);
       }
 
@@ -166,7 +185,7 @@ function App() {
 
     return () => {
       unsub();
-      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      cleanupPresence();
     };
   }, []);
 

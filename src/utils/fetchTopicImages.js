@@ -13,16 +13,19 @@ export async function fetchTopicImages(imageKeywords, manualImageUrls = []) {
   try {
     if (!imageKeywords || imageKeywords.length === 0) return [];
     
-    // Pick the first keyword string, split by space, take top 2 words
-    const topKeywords = imageKeywords[0].split(' ').slice(0, 2).join(',');
-    
-    // Generate 3 random images for the keyword
-    const images = Array.from({ length: 3 }).map((_, i) => ({
-      id: `loremflickr-${i}`,
-      url: `https://loremflickr.com/800/600/${topKeywords}?random=${i + 1}`,
-      alt: imageKeywords[0],
-      credit: 'LoremFlickr'
-    }));
+    // Map over all provided keywords (usually 5) to generate stable images
+    const images = imageKeywords.map((kw, i) => {
+      // Pick top 2 words from each keyword string for the search query
+      const topKeywords = kw.split(' ').slice(0, 2).join(',');
+      
+      return {
+        id: `loremflickr-${i}`,
+        // Use lock instead of random so both users see the EXACT same image
+        url: `https://loremflickr.com/800/600/${topKeywords}?lock=${i + 1}`,
+        alt: kw,
+        credit: 'LoremFlickr'
+      };
+    });
     
     return images;
   } catch (err) {
