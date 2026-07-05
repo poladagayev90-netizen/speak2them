@@ -28,7 +28,7 @@ export default function MatchMaking({ user }) {
           if (u.uid === user.uid) return false;
           if (u.status === 'busy') return false; // Hide busy users
           const lastSeen = u.lastSeen?.toMillis?.() || 0;
-          return (now - lastSeen) < 15000;
+          return (now - lastSeen) < 180000;
         });
       setCandidates(list);
       setCurrentIndex(0);

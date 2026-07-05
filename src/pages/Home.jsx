@@ -33,16 +33,15 @@ export default function Home({ user }) {
     setTodayTopic(content);
     
     const todayDateStr = new Date().toDateString();
-    const lastSeenDate = localStorage.getItem('lastTopicIntroDate_v2');
+    const storageKey = `lastTopicIntroDate_v2_${user.uid}`;
+    const lastSeenDate = localStorage.getItem(storageKey);
     
-    // Yoxlama üçün müvəqqəti olaraq hər yeniləmədə açılsın deyə şərti ləğv etmək olar,
-    // lakin istifadəçiləri bezdirməmək üçün gündə 1 dəfə məntiqi vacibdir.
-    // 'lastTopicIntroDate_v2' edərək indi 1 dəfəlik açılmasını təmin etdim.
+    // Check if the current user has seen the topic intro today
     if (lastSeenDate !== todayDateStr) {
       setShowTopicIntro(true);
-      localStorage.setItem('lastTopicIntroDate_v2', todayDateStr);
+      localStorage.setItem(storageKey, todayDateStr);
     }
-  }, []);
+  }, [user.uid]);
 
   const handleMatched = useCallback((partnerUid, callId) => {
     navigate(`/chat/${partnerUid}`, {
@@ -385,8 +384,8 @@ export default function Home({ user }) {
                           <span style={{ fontSize: '11px', color: '#7c6ff7' }}>⭐ Pro al — tam gör</span>
                         )}
                       </div>
-                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 15000 ? 'online' : 'offline'}`}>
-                        {u.lastSeen?.toMillis?.() > Date.now() - 15000 ? '🟢 Online' : '⚫ Offline'}
+                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 180000 ? 'online' : 'offline'}`}>
+                        {u.lastSeen?.toMillis?.() > Date.now() - 180000 ? '🟢 Online' : '⚫ Offline'}
                       </span>
                     </div>
 
