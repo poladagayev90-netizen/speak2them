@@ -85,7 +85,7 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card" style={{ padding: '40px 32px', position: 'relative', overflow: 'hidden' }}>
+      <div className="auth-card" style={{ position: 'relative', overflow: 'hidden' }}>
         <div style={{
           position: 'absolute',
           top: '-50px',
@@ -100,8 +100,8 @@ export default function Register() {
           <div className="auth-logo" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
             <Logo width={160} />
           </div>
-          <h2 style={{ fontSize: '32px', marginBottom: '8px', lineHeight: '1.2' }}>Start Speaking <br/><span style={{ color: '#7c6ff7' }}>Today</span></h2>
-          <p className="auth-sub" style={{ fontSize: '15px', marginBottom: '32px' }}>Join the fastest growing English community.</p>
+          <h2 style={{ fontSize: '28px', marginBottom: '8px', lineHeight: '1.2' }}>Start Speaking <br/><span style={{ color: '#7c6ff7' }}>Today</span></h2>
+          <p className="auth-sub" style={{ fontSize: '14px', marginBottom: '20px' }}>Join the fastest growing English community.</p>
 
           {error && <div className="error-box">{error}</div>}
 
@@ -123,7 +123,7 @@ export default function Register() {
               fontSize: '16px',
               fontWeight: '600',
               cursor: 'pointer',
-              marginBottom: '20px'
+              marginBottom: '16px'
             }}
           >
             <svg width="20" height="20" viewBox="0 0 48 48">
@@ -136,7 +136,7 @@ export default function Register() {
           </button>
         )}
 
-        <div style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '13px' }}>
           or register with email
         </div>
 
@@ -167,14 +167,6 @@ export default function Register() {
             onChange={e => setPassword(e.target.value)}
             minLength={6}
             required
-          />
-
-          <label>Short Bio <span className="optional">(optional)</span></label>
-          <textarea
-            placeholder="Tell others about yourself..."
-            value={bio}
-            onChange={e => setBio(e.target.value)}
-            rows={3}
           />
 
           <button type="submit" className="btn-primary" disabled={loading}>
