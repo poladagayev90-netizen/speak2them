@@ -384,7 +384,7 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] 
         "Authorization": `Bearer ${GROQ_API_KEY.value()}`
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192",
+        model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: fullPrompt }],
         temperature: 0.2
       })
