@@ -5,7 +5,7 @@ import {
   query, orderBy, serverTimestamp,
   doc, getDoc, setDoc, updateDoc, runTransaction
 } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
 import PremiumBadge from '../components/PremiumBadge';
@@ -467,7 +467,7 @@ export default function Chat({ user }) {
           reader.onloadend = async () => {
             const base64Audio = reader.result.split(',')[1];
             
-            const token = await user.getIdToken();
+            const token = await auth.currentUser.getIdToken();
             const res = await fetch(`${FUNCTIONS_BASE}/transcribeAudioGroq`, {
               method: 'POST',
               headers: { 
