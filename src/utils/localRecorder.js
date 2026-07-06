@@ -79,9 +79,9 @@ export function startLocalRecording(localAgoraTrack) {
     localSource = audioContext.createMediaStreamSource(localStream);
     localSource.connect(mixedDestination);
 
-    // Remote audio will be added via addRemoteStream()
-    remoteGainNode = audioContext.createGain();
-    remoteGainNode.connect(mixedDestination);
+    // Remote audio mixing has been disabled so the AI analysis only evaluates the local user's speech.
+    // remoteGainNode = audioContext.createGain();
+    // remoteGainNode.connect(mixedDestination);
 
     const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
       ? 'audio/webm;codecs=opus'
@@ -92,7 +92,7 @@ export function startLocalRecording(localAgoraTrack) {
       if (e.data && e.data.size > 0) audioChunks.push(e.data);
     };
     mediaRecorder.start(1000);
-    console.log('[Recorder] Started recording both sides');
+    console.log('[Recorder] Started recording local audio only');
   } catch (e) {
     console.error('[Recorder] Failed to start recording:', e);
   }
@@ -100,11 +100,12 @@ export function startLocalRecording(localAgoraTrack) {
 
 export function addRemoteStream(remoteAudioTrack) {
   try {
-    if (!audioContext || !remoteGainNode) return;
-    const remoteStream = new MediaStream([remoteAudioTrack.getMediaStreamTrack()]);
-    const remoteSource = audioContext.createMediaStreamSource(remoteStream);
-    remoteSource.connect(remoteGainNode);
-    console.log('[Recorder] Remote audio added to recording');
+    // Disabled to prevent the remote user's speech from being analyzed by the AI as the local user's speech
+    // if (!audioContext || !remoteGainNode) return;
+    // const remoteStream = new MediaStream([remoteAudioTrack.getMediaStreamTrack()]);
+    // const remoteSource = audioContext.createMediaStreamSource(remoteStream);
+    // remoteSource.connect(remoteGainNode);
+    // console.log('[Recorder] Remote audio added to recording');
   } catch (e) {
     console.error('[Recorder] Failed to add remote stream:', e);
   }
