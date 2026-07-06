@@ -732,7 +732,7 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user, callTranslations.length]);
+  }, [callDocId, peerId, user, callTranslations.length, peer]);
 
   endCallRef.current = endCall;
 
