@@ -344,64 +344,47 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] 
 
   try {
     const audioBuffer = Buffer.from(base64Audio, "base64");
-    const blob = new Blob([audioBuffer], { type: "audio/webm" });
+    const blob = new Blob([audioBuffer], { type: "audio/wav" });
 
-    if (prompt === "JUST_TRANSCRIBE_GROQ") {
-      const groqForm = new FormData();
-      groqForm.append("file", blob, "audio.webm");
-      groqForm.append("model", "whisper-large-v3-turbo");
-      groqForm.append("response_format", "json");
+    // 1. Transcription via Groq Whisper
+    const groqForm = new FormData();
+    groqForm.append("file", blob, "audio.wav");
+    groqForm.append("model", "whisper-large-v3-turbo");
+    groqForm.append("response_format", "json");
 
-      const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
-        body: groqForm
-      });
-
-      if (!groqRes.ok) {
-        const err = await groqRes.text();
-        return res.status(500).json({ error: "Groq error: " + err });
-      }
-
-      const data = await groqRes.json();
-      return res.status(200).json({ transcript: data.text });
-    }
-
-    const formData = new FormData();
-    formData.append("file", blob, "audio.webm");
-    formData.append("model", "whisper-1");
-    formData.append("language", "en");
-
-    // 1. Whisper API
-    const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
       method: "POST",
-      headers: { "Authorization": `Bearer ${OPENAI_API_KEY.value()}` },
-      body: formData
+      headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
+      body: groqForm
     });
 
-    if (!whisperRes.ok) {
-      const err = await whisperRes.text();
-      return res.status(500).json({ error: "Whisper error: " + err });
+    if (!groqRes.ok) {
+      const err = await groqRes.text();
+      return res.status(500).json({ error: "Groq Whisper error: " + err });
     }
 
-    const whisperData = await whisperRes.json();
-    const transcript = whisperData.text;
+    const groqData = await groqRes.json();
+    const transcript = groqData.text;
+
+    if (prompt === "JUST_TRANSCRIBE_GROQ") {
+      return res.status(200).json({ transcript });
+    }
 
     if (!transcript || transcript.trim() === "") {
       return res.status(400).json({ error: "Could not hear any speech in the audio." });
     }
 
-    // 2. GPT-4o-mini
+    // 2. Grammar Analysis via Groq Llama-3
     const fullPrompt = prompt.replace("{{TRANSCRIPT}}", transcript);
 
-    const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const chatRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY.value()}`
+        "Authorization": `Bearer ${GROQ_API_KEY.value()}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "llama3-70b-8192",
         messages: [{ role: "user", content: fullPrompt }],
         temperature: 0.2
       })
@@ -409,18 +392,18 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] 
 
     if (!chatRes.ok) {
       const err = await chatRes.text();
-      return res.status(500).json({ error: "GPT error: " + err });
+      return res.status(500).json({ error: "Groq LLM error: " + err });
     }
 
     const chatData = await chatRes.json();
     const rawText = chatData.choices?.[0]?.message?.content;
-    if (!rawText) return res.status(500).json({ error: "No response from GPT" });
+    if (!rawText) return res.status(500).json({ error: "No response from Groq LLM" });
 
     const clean = rawText.replace(/```json|```/g, "").trim();
     res.status(200).json({ analysis: JSON.parse(clean) });
 
   } catch (error) {
-    console.error("[OpenAI] Function error:", error);
+    console.error("[Groq] Function error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -458,6 +441,4 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-});
-
 });
