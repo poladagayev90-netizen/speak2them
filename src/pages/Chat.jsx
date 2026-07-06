@@ -487,18 +487,45 @@ export default function Chat({ user }) {
             const base64Audio = reader.result.split(',')[1];
             
             const token = await auth.currentUser.getIdToken();
-            const promptStr = `Analyze this language learning call transcript for grammar, vocabulary usage, and conversational flow. Return a strict JSON: { "score": 0-100, "strengths": [], "weaknesses": [], "corrections": [{"original": "", "corrected": "", "explanation": ""}], "overall_feedback": "" }`;
-            const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ base64Audio, prompt: promptStr })
-            });
+            const promptStr = `Sən təcrübəli İngilis dili müəllimisən.
+Bu tələbənin danışığının transkriptidir: {{TRANSCRIPT}}
+Qrammatik və lüğət səhvlərini tap.
+Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazma:
+{
+  "overallScore": 85,
+  "encouragement": "Qısa ruhlandırıcı mesaj",
+  "fluencyScore": 80,
+  "talkRatio": 50,
+  "vocabularyUsed": ["söz1", "söz2"],
+  "grammarFixes": [
+    { "original": "səhv cümlə", "corrected": "düzgün cümlə", "why": "izahı" }
+  ]
+}`;
+            const attemptFetch = async (retries = 3) => {
+              try {
+                const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
+                  method: 'POST',
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ base64Audio, prompt: promptStr })
+                });
+                if (!res.ok) {
+                  if (retries > 0) return await attemptFetch(retries - 1);
+                  return { ok: false, errText: await res.text() };
+                }
+                return { ok: true, data: await res.json() };
+              } catch (e) {
+                if (retries > 0) return await attemptFetch(retries - 1);
+                return { ok: false, errText: e.message };
+              }
+            };
+
+            const result = await attemptFetch();
             
-            if (res.ok) {
-              const data = await res.json();
+            if (result.ok) {
+              const data = result.data;
               console.log('[Chat] Analysis successful:', data);
               await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
                 ...data.analysis,
@@ -509,10 +536,9 @@ export default function Chat({ user }) {
                 [`transcript_${user.uid}`]: data.transcript
               });
             } else {
-              const errText = await res.text();
-              console.error('[Chat] Analysis failed:', errText);
+              console.error('[Chat] Analysis failed:', result.errText);
               await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
-                error: errText,
+                error: result.errText,
                 timestamp: serverTimestamp()
               });
             }

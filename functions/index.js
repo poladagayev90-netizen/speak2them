@@ -344,6 +344,9 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] 
 
   try {
     const audioBuffer = Buffer.from(base64Audio, "base64");
+    if (audioBuffer.length < 100) {
+      return res.status(400).json({ error: "Audio file is too small or empty. Please speak clearly into the microphone." });
+    }
     const blob = new Blob([audioBuffer], { type: "audio/wav" });
 
     // 1. Transcription via Groq Whisper
@@ -386,7 +389,8 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] 
       body: JSON.stringify({
         model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: fullPrompt }],
-        temperature: 0.2
+        temperature: 0.2,
+        response_format: { type: "json_object" }
       })
     });
 
