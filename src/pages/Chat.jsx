@@ -82,6 +82,7 @@ export default function Chat({ user }) {
   const timerRef = useRef(null);
   const callTimeoutRef = useRef(null);
   const prevCallStatus = useRef('');
+  const sessionIdRef = useRef(Date.now());
   
   const recognitionRef = useRef(null);
   const inCallRef = useRef(false);
@@ -403,6 +404,7 @@ export default function Chat({ user }) {
   const startCall = async () => {
     if (!user.uid || !peerId) return;
     try {
+      sessionIdRef.current = Date.now();
       // Pre-create mic track while we have user gesture context
       // This ensures iOS/Safari grants microphone permission
       if (!localTrackRef.current) {
@@ -527,7 +529,7 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
             if (result.ok) {
               const data = result.data;
               console.log('[Chat] Analysis successful:', data);
-              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
+              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
                 ...data.analysis,
                 transcript: data.transcript,
                 timestamp: serverTimestamp()
@@ -537,7 +539,7 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
               });
             } else {
               console.error('[Chat] Analysis failed:', result.errText);
-              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
+              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
                 error: result.errText,
                 timestamp: serverTimestamp()
               });
@@ -545,7 +547,7 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
           };
         } catch (e) {
           console.error('[Chat] Background transcription error:', e);
-          await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
+          await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
             error: e.message,
             timestamp: serverTimestamp()
           });
@@ -1075,7 +1077,7 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
       {showInsights && (
         <CallInsights 
           userId={user.uid} 
-          channelName={callDocId} 
+          channelName={`${callDocId}_${sessionIdRef.current}`} 
           onClose={() => {
             setShowInsights(false);
             if (callSecondsRef.current >= 180 && !showRating) {
