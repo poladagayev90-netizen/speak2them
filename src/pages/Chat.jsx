@@ -458,6 +458,42 @@ export default function Chat({ user }) {
     if (recordingBlob) {
       audioBlobRef.current = recordingBlob;
       console.log('[Chat] Recording stored, size:', recordingBlob.size);
+      
+      // Send for background transcription without blocking
+      const processTranscription = async () => {
+        try {
+          const reader = new FileReader();
+          reader.readAsDataURL(recordingBlob);
+          reader.onloadend = async () => {
+            const base64Audio = reader.result.split(',')[1];
+            
+            const token = await user.getIdToken();
+            const res = await fetch(`${FUNCTIONS_BASE}/transcribeAudioGroq`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ base64Audio })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.transcript) {
+                console.log('[Chat] Groq Transcription successful:', data.transcript);
+                // Save to calls document securely
+                await updateDoc(doc(db, 'calls', callDocId), {
+                  [`transcript_${user.uid}`]: data.transcript
+                });
+              }
+            } else {
+              console.error('[Chat] Groq Transcription failed:', await res.text());
+            }
+          };
+        } catch (e) {
+          console.error('[Chat] Background transcription error:', e);
+        }
+      };
+      processTranscription();
     }
 
     const secondsTalked = callSecondsRef.current;

@@ -10,6 +10,7 @@ const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
 const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
@@ -435,5 +436,50 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
     res.status(200).json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── Groq Audio Transcription Proxy ──────────────────────────────
+exports.transcribeAudioGroq = onRequest({ secrets: [GROQ_API_KEY] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { base64Audio } = req.body;
+  if (!base64Audio) {
+    return res.status(400).json({ error: "base64Audio required" });
+  }
+
+  try {
+    const audioBuffer = Buffer.from(base64Audio, "base64");
+    const blob = new Blob([audioBuffer], { type: "audio/webm" });
+
+    const formData = new FormData();
+    formData.append("file", blob, "audio.webm");
+    formData.append("model", "whisper-large-v3-turbo");
+    formData.append("response_format", "json");
+
+    const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
+      body: formData
+    });
+
+    if (!groqRes.ok) {
+      const err = await groqRes.text();
+      return res.status(500).json({ error: "Groq error: " + err });
+    }
+
+    const data = await groqRes.json();
+    res.status(200).json({ transcript: data.text });
+  } catch (error) {
+    console.error("[Groq] Function error:", error);
+    res.status(500).json({ error: error.message });
   }
 });
