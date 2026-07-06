@@ -11,6 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
+import Logo from './components/Logo';
 
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
@@ -192,12 +193,18 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#0f0f17', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '30px', height: '30px', border: '3px solid #7c6ff7', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        <style>
-          {`@keyframes spin { 100% { transform: rotate(360deg); } }`}
-        </style>
-      </div>
+      <>
+        <div className="splash-screen">
+          <div className="splash-content" style={{ display: 'flex', justifyContent: 'center' }}>
+            <Logo width={240} />
+          </div>
+          <div className="splash-quote">
+            <p className="splash-motto">"The limits of my language are the limits of my world."</p>
+            <span className="splash-by">- Ludwig Wittgenstein</span>
+          </div>
+          <p className="splash-credit">Built by Polad</p>
+        </div>
+      </>
     );
   }
   const homeElement = user
