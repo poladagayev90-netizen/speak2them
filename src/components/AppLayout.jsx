@@ -7,7 +7,15 @@ import { Capacitor } from '@capacitor/core';
 
 export default function AppLayout({ children, user }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [forceMobile, setForceMobile] = useState(false);
+  const [forceMobile, setForceMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator?.standalone === true;
+      const manual = localStorage.getItem('manualMobileMode') === 'true';
+      return isMobile || isPWA || manual;
+    }
+    return false;
+  });
   const location = useLocation();
 
   const [manualMobileMode, setManualMobileMode] = useState(() => {

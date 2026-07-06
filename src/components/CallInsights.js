@@ -90,7 +90,9 @@ export default function CallInsights({ userId, channelName, onClose }) {
       position: 'fixed', inset: 0,
       background: 'var(--bg-primary)',
       overflowY: 'auto', zIndex: 9999,
-      padding: '20px 16px 40px'
+      padding: '20px 16px 40px',
+      height: '100dvh',
+      WebkitOverflowScrolling: 'touch'
     }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>

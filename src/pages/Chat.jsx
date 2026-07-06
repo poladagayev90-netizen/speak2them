@@ -978,7 +978,10 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
 
       {showPictureDescribing && (
         <PictureDescribing
-          topicObj={content}
+          topic={content.topic}
+          imageKeywords={content.imageKeywords}
+          manualImageUrls={content.manualImageUrls}
+          vocabulary={content.vocabulary?.map(v => v.word) || []}
           onClose={() => setShowPictureDescribing(false)}
         />
       )}
