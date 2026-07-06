@@ -77,40 +77,47 @@ export default function AIChat({ user }) {
       const reader = new FileReader();
       reader.readAsDataURL(blob);
       reader.onloadend = async () => {
-        const base64Data = reader.result.split(",")[1];
-        const idToken = await auth.currentUser?.getIdToken(true);
+        try {
+          const base64Data = reader.result.split(",")[1];
+          const idToken = await auth.currentUser?.getIdToken(true);
 
-        const res = await fetch(`${FUNCTIONS_BASE}/chatWithAI`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${idToken}`
-          },
-          body: JSON.stringify({
-            base64Audio: base64Data,
-            history: history,
-            userLevel: userLevel,
-            topic: topic
-          })
-        });
+          const res = await fetch(`${FUNCTIONS_BASE}/chatWithAI`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              base64Audio: base64Data,
+              history: history,
+              userLevel: userLevel,
+              topic: topic
+            })
+          });
 
-        if (!res.ok) {
-          throw new Error("AI Server error");
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Server xətası: ${errText}`);
+          }
+
+          const data = await res.json();
+          const { transcript, aiReply, audioBase64 } = data;
+
+          setHistory(prev => [
+            ...prev, 
+            { role: "user", content: transcript }, 
+            { role: "assistant", content: aiReply }
+          ]);
+
+          playAIAudio(audioBase64);
+        } catch (innerError) {
+          console.error("AI Communication error:", innerError);
+          setStatus("idle");
+          alert(innerError.message);
         }
-
-        const data = await res.json();
-        const { transcript, aiReply, audioBase64 } = data;
-
-        setHistory(prev => [
-          ...prev, 
-          { role: "user", content: transcript }, 
-          { role: "assistant", content: aiReply }
-        ]);
-
-        playAIAudio(audioBase64);
       };
     } catch (error) {
-      console.error("AI Communication error:", error);
+      console.error("FileReader error:", error);
       setStatus("idle");
       alert("Xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.");
     }
