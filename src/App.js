@@ -27,6 +27,7 @@ const MatchMaking = React.lazy(() => import('./pages/MatchMaking'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(() => import('./pages/Ranking'));
+const History = React.lazy(() => import('./pages/History'));
 const CountdownPage = React.lazy(() => import('./components/CountdownPage'));
 
 const LoadingFallback = () => (
@@ -232,6 +233,7 @@ function App() {
                   <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
                   <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
                   <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
                   <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
                 </Routes>
               </AppLayout>
@@ -257,6 +259,7 @@ function App() {
                   <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
                   <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
                   <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
                   <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
                 </Routes>
               </AppLayout>

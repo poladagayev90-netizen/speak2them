@@ -243,6 +243,11 @@ export default function Profile({ user }) {
         📚 Mənim Sözlərim
       </button>
 
+      {/* ANALYSIS HISTORY */}
+      <button onClick={() => navigate('/history')} style={{ width: '100%', background: '#1e1e30', border: 'none', color: '#fff', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+        📊 Analiz Tarixçəsi
+      </button>
+
       {showWordHistory && (
         <WordHistoryPanel userId={user.uid} onClose={() => setShowWordHistory(false)} />
       )}

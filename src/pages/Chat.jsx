@@ -543,7 +543,10 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
               await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
                 ...data.analysis,
                 transcript: data.transcript,
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                userId: user.uid,
+                peerName: peer?.name || 'Unknown User',
+                durationSeconds: callSecondsRef.current
               });
               await updateDoc(doc(db, 'calls', callDocId), {
                 [`transcript_${user.uid}`]: data.transcript
@@ -552,7 +555,10 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
               console.error('[Chat] Analysis failed:', result.errText);
               await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
                 error: result.errText,
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                userId: user.uid,
+                peerName: peer?.name || 'Unknown User',
+                durationSeconds: callSecondsRef.current
               });
             }
           };
@@ -560,7 +566,10 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
           console.error('[Chat] Background transcription error:', e);
           await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
             error: e.message,
-            timestamp: serverTimestamp()
+            timestamp: serverTimestamp(),
+            userId: user.uid,
+            peerName: peer?.name || 'Unknown User',
+            durationSeconds: callSecondsRef.current
           });
         }
       };
