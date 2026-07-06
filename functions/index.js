@@ -388,7 +388,7 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY],
         "Authorization": `Bearer ${GROQ_API_KEY.value()}`
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: "llama3-70b-8192",
         messages: [{ role: "user", content: fullPrompt }],
         temperature: 0.2,
         response_format: { type: "json_object" }
@@ -517,7 +517,7 @@ Ask a follow-up question to keep the conversation going.`;
         "Authorization": `Bearer ${GROQ_API_KEY.value()}`
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192", // Fast and good for casual conversation
+        model: "llama3-70b-8192", // Fast and good for casual conversation
         messages: messages,
         temperature: 0.7,
         max_tokens: 100
