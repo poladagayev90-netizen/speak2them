@@ -18,6 +18,7 @@ import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../uti
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
+import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
 
 
@@ -49,8 +50,26 @@ export default function Chat({ user }) {
   const [newBadge, setNewBadge] = useState(null);
   const [callTranslations, setCallTranslations] = useState([]);
   const [showPostQuiz, setShowPostQuiz] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
+
+  const joinPromiseRef = useRef(null);
+
+  const safeJoin = async (client, ...args) => {
+    if (joinPromiseRef.current) await joinPromiseRef.current.catch(() => {});
+    joinPromiseRef.current = client.join(...args);
+    try {
+      return await joinPromiseRef.current;
+    } finally {
+      joinPromiseRef.current = null;
+    }
+  };
+
+  const safeLeave = async (client) => {
+    if (joinPromiseRef.current) await joinPromiseRef.current.catch(() => {});
+    return client.leave();
+  };
 
   const callSecondsRef = useRef(0);
   const endCallRef = useRef(null);
@@ -141,7 +160,7 @@ export default function Chat({ user }) {
     try {
       // Clean up previous client if any
       if (clientRef.current) {
-        try { await clientRef.current.leave(); } catch (e) {}
+        try { await safeLeave(clientRef.current); } catch (e) {}
         clientRef.current = null;
       }
 
@@ -174,7 +193,7 @@ export default function Chat({ user }) {
 
       // Reverting to null. Do NOT use string uid because the backend token is generated for integers (0).
       // Agora will auto-generate unique IDs for both users automatically.
-      await client.join(APP_ID, cId, tokenData.token, null);
+      await safeJoin(client, APP_ID, cId, tokenData.token, null);
 
       // If mic track was pre-created on user gesture, use it.
       // If not (matched call / receiver path), create it now.
@@ -257,7 +276,7 @@ export default function Chat({ user }) {
         localTrackRef.current = null;
       }
       if (clientRef.current) {
-        try { await clientRef.current.leave(); } catch (e) {}
+        try { await safeLeave(clientRef.current); } catch (e) {}
         clientRef.current = null;
       }
       setCallStatus('error');
@@ -459,7 +478,7 @@ export default function Chat({ user }) {
       audioBlobRef.current = recordingBlob;
       console.log('[Chat] Recording stored, size:', recordingBlob.size);
       
-      // Send for background transcription without blocking
+      // Send for background transcription and analysis
       const processTranscription = async () => {
         try {
           const reader = new FileReader();
@@ -468,29 +487,42 @@ export default function Chat({ user }) {
             const base64Audio = reader.result.split(',')[1];
             
             const token = await auth.currentUser.getIdToken();
+            const promptStr = `Analyze this language learning call transcript for grammar, vocabulary usage, and conversational flow. Return a strict JSON: { "score": 0-100, "strengths": [], "weaknesses": [], "corrections": [{"original": "", "corrected": "", "explanation": ""}], "overall_feedback": "" }`;
             const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify({ base64Audio, prompt: 'JUST_TRANSCRIBE_GROQ' })
+              body: JSON.stringify({ base64Audio, prompt: promptStr })
             });
+            
             if (res.ok) {
               const data = await res.json();
-              if (data.transcript) {
-                console.log('[Chat] Groq Transcription successful:', data.transcript);
-                // Save to calls document securely
-                await updateDoc(doc(db, 'calls', callDocId), {
-                  [`transcript_${user.uid}`]: data.transcript
-                });
-              }
+              console.log('[Chat] Analysis successful:', data);
+              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
+                ...data.analysis,
+                transcript: data.transcript,
+                timestamp: serverTimestamp()
+              });
+              await updateDoc(doc(db, 'calls', callDocId), {
+                [`transcript_${user.uid}`]: data.transcript
+              });
             } else {
-              console.error('[Chat] Groq Transcription failed:', await res.text());
+              const errText = await res.text();
+              console.error('[Chat] Analysis failed:', errText);
+              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
+                error: errText,
+                timestamp: serverTimestamp()
+              });
             }
           };
         } catch (e) {
           console.error('[Chat] Background transcription error:', e);
+          await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}`), {
+            error: e.message,
+            timestamp: serverTimestamp()
+          });
         }
       };
       processTranscription();
@@ -504,7 +536,7 @@ export default function Chat({ user }) {
         localTrackRef.current = null;
       }
       if (clientRef.current) {
-        try { await clientRef.current.leave(); } catch (e) {}
+        try { await safeLeave(clientRef.current); } catch (e) {}
         clientRef.current = null;
       }
     } catch (e) {}
@@ -639,7 +671,9 @@ export default function Chat({ user }) {
         // if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
-      if (secondsTalked >= 180) {
+      if (secondsTalked > 3) {
+        setShowInsights(true);
+      } else if (secondsTalked >= 180) {
         setShowRating(true);
       } else if (callTranslations.length > 0) {
         setShowPostQuiz(true);
@@ -831,14 +865,11 @@ export default function Chat({ user }) {
               background: 'transparent', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer',
             }}>Keç</button>
 
-            {/* AI Speech Analysis disabled for 1-month promotion MVP */}
-            {/*
-            {audioBlobRef.current && !showInsights && (
-              <button
-                ...
-              >
-            )}
-            */}
+            <button onClick={() => setShowInsights(true)} style={{
+              width: '100%', padding: '14px',
+              background: '#2e2e50', color: 'white', border: 'none', borderRadius: '12px',
+              fontSize: '16px', fontWeight: 700, cursor: 'pointer', marginBottom: '12px',
+            }}>Səs Analizi</button>
           </div>
         </div>
       )}
@@ -899,10 +930,7 @@ export default function Chat({ user }) {
 
       {showPictureDescribing && (
         <PictureDescribing
-          topic={content.topic}
-          imageKeywords={content.imageKeywords}
-          manualImageUrls={content.manualImageUrls}
-          vocabulary={content.vocabulary}
+          topicObj={content}
           onClose={() => setShowPictureDescribing(false)}
         />
       )}
@@ -1015,6 +1043,21 @@ export default function Chat({ user }) {
         <PostCallQuizModal 
           words={callTranslations} 
           onClose={() => setShowPostQuiz(false)} 
+        />
+      )}
+      
+      {showInsights && (
+        <CallInsights 
+          userId={user.uid} 
+          channelName={callDocId} 
+          onClose={() => {
+            setShowInsights(false);
+            if (callSecondsRef.current >= 180 && !showRating) {
+              setShowRating(true);
+            } else if (callTranslations.length > 0) {
+              setShowPostQuiz(true);
+            }
+          }} 
         />
       )}
     </div>

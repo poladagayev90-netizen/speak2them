@@ -400,7 +400,7 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] 
     if (!rawText) return res.status(500).json({ error: "No response from Groq LLM" });
 
     const clean = rawText.replace(/```json|```/g, "").trim();
-    res.status(200).json({ analysis: JSON.parse(clean) });
+    res.status(200).json({ transcript, analysis: JSON.parse(clean) });
 
   } catch (error) {
     console.error("[Groq] Function error:", error);
