@@ -159,11 +159,13 @@ export default function AIChat({ user }) {
       
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <div className="call-avatar-big" style={{
-          background: status === "speaking" ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #7c6ff7, #5b4de8)",
-          boxShadow: status === "speaking" ? "0 0 40px rgba(16, 185, 129, 0.4)" : "none",
-          transition: "all 0.3s ease"
+          background: "transparent",
+          boxShadow: status === "speaking" ? "0 0 40px rgba(16, 185, 129, 0.4)" : "0 0 20px rgba(124, 111, 247, 0.2)",
+          transition: "all 0.3s ease",
+          padding: 0,
+          overflow: "hidden"
         }}>
-          🤖
+          <img src="/ainur_avatar.png" alt="AInur" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
         <h2 className="call-peer-name" style={{ marginTop: "24px" }}>
           AInur

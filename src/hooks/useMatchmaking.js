@@ -11,7 +11,7 @@ import {
   subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-const SEARCH_TIMEOUT_MS = 15000;
+const SEARCH_TIMEOUT_MS = 6000;
 const COMPENSATION_MINUTES = 5;
 
 export function useMatchmaking({
