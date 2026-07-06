@@ -11,7 +11,6 @@ import {
   subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-const LEVEL_MATCHING_MIN_SEARCHING_USERS = 20;
 const SEARCH_TIMEOUT_MS = 15000;
 const COMPENSATION_MINUTES = 5;
 
