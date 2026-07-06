@@ -11,6 +11,7 @@ const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
+const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || "8c630370fa1c8efcc6d1dc50854e5a3a1681525b";
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
@@ -444,5 +445,119 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
     res.status(200).json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── AI Partner (Voice Chat with AInur) ───────────────────────────
+exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY], memory: "1GiB" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { base64Audio, history = [], userLevel = 'B1', topic = 'General' } = req.body;
+  if (!base64Audio) {
+    return res.status(400).json({ error: "base64Audio required" });
+  }
+
+  try {
+    const audioBuffer = Buffer.from(base64Audio, "base64");
+    if (audioBuffer.length < 100) {
+      return res.status(400).json({ error: "Audio file is too small." });
+    }
+    const blob = new Blob([audioBuffer], { type: "audio/webm" });
+
+    // 1. Transcription via Groq Whisper
+    const groqForm = new FormData();
+    groqForm.append("file", blob, "audio.webm");
+    groqForm.append("model", "whisper-large-v3-turbo");
+    groqForm.append("response_format", "json");
+
+    const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
+      body: groqForm
+    });
+
+    if (!groqRes.ok) {
+      const err = await groqRes.text();
+      return res.status(500).json({ error: "Groq Whisper error: " + err });
+    }
+
+    const groqData = await groqRes.json();
+    const transcript = groqData.text;
+
+    if (!transcript || transcript.trim() === "") {
+      return res.status(400).json({ error: "Could not hear any speech in the audio." });
+    }
+
+    // 2. Generate AI Reply via Groq LLM (Llama 3 8B or 70B)
+    const systemPrompt = `You are AInur, a friendly English tutor. 
+The user's English level is ${userLevel}. Speak clearly, simply, and naturally at this level.
+Today's topic is: ${topic}.
+You are having a casual voice conversation. Keep your responses VERY CONCISE (1-3 short sentences). 
+Do NOT use markdown, emojis, or special characters. Speak like a real human on a phone call. 
+Ask a follow-up question to keep the conversation going.`;
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...history,
+      { role: "user", content: transcript }
+    ];
+
+    const chatRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY.value()}`
+      },
+      body: JSON.stringify({
+        model: "llama3-8b-8192", // Fast and good for casual conversation
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 100
+      })
+    });
+
+    if (!chatRes.ok) {
+      const err = await chatRes.text();
+      return res.status(500).json({ error: "Groq LLM error: " + err });
+    }
+
+    const chatData = await chatRes.json();
+    const aiReply = chatData.choices?.[0]?.message?.content || "I didn't quite catch that. Could you repeat?";
+
+    // 3. Generate Speech via Deepgram Aura
+    const dgRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-asteria-en", {
+      method: "POST",
+      headers: {
+        "Authorization": `Token ${DEEPGRAM_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text: aiReply })
+    });
+
+    if (!dgRes.ok) {
+      const err = await dgRes.text();
+      return res.status(500).json({ error: "Deepgram TTS error: " + err });
+    }
+
+    const arrayBuffer = await dgRes.arrayBuffer();
+    const audioOutBase64 = Buffer.from(arrayBuffer).toString("base64");
+
+    res.status(200).json({ 
+      transcript, 
+      aiReply, 
+      audioBase64: audioOutBase64 
+    });
+
+  } catch (error) {
+    console.error("[chatWithAI] Function error:", error);
+    res.status(500).json({ error: error.message });
   }
 });

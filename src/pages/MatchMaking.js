@@ -110,6 +110,14 @@ export default function MatchMaking({ user }) {
           <button className="btn-primary" style={{ marginTop: '16px' }} onClick={fetchUsers}>
             Yenilə
           </button>
+          
+          <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(124, 111, 247, 0.1)', borderRadius: '16px', border: '1px solid rgba(124, 111, 247, 0.3)' }}>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#fff' }}>🤖 AInur ilə Pratik Et</h3>
+            <p style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '16px' }}>Kimsə yoxdur? Süni intellekt müəllimimiz ilə ingiliscə danışa bilərsiniz!</p>
+            <button className="btn-primary" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} onClick={() => navigate('/ai-chat')}>
+              AInur-a Zəng Et 📞
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -129,6 +137,14 @@ export default function MatchMaking({ user }) {
           <button className="btn-primary" style={{ marginTop: '16px' }} onClick={fetchUsers}>
             Yenidən axtar
           </button>
+
+          <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(124, 111, 247, 0.1)', borderRadius: '16px', border: '1px solid rgba(124, 111, 247, 0.3)' }}>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#fff' }}>🤖 AInur ilə Pratik Et</h3>
+            <p style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '16px' }}>Gözləmək istəmirsiniz? Süni intellekt müəllimimiz ilə ingiliscə danışa bilərsiniz!</p>
+            <button className="btn-primary" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} onClick={() => navigate('/ai-chat')}>
+              AInur-a Zəng Et 📞
+            </button>
+          </div>
         </div>
       </div>
     );

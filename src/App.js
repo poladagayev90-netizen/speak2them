@@ -18,6 +18,7 @@ const Register = React.lazy(() => import('./pages/Register'));
 const Home = React.lazy(() => import('./pages/Home'));
 const Chats = React.lazy(() => import('./pages/Chats'));
 const Chat = React.lazy(() => import('./pages/Chat'));
+const AIChat = React.lazy(() => import('./pages/AIChat'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
@@ -227,6 +228,7 @@ function App() {
                   <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
                   <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
                   <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
                   <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
                   <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
                   <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
@@ -253,6 +255,7 @@ function App() {
                   <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
                   <Route path="/match" element={user ? <MatchMaking user={user} /> : <Navigate to="/login" />} />
                   <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+                  <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
                   <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
                   <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
                   <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
