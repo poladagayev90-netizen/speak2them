@@ -11,7 +11,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
 import { ADMIN_UID, LAUNCH_DATE } from './constants';
-import Logo from './components/Logo';
 
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
