@@ -5,68 +5,6 @@ let mixedDestination = null;
 let localSource = null;
 let remoteGainNode = null;
 
-async function convertWebmToWav(webmBlob) {
-  try {
-    const arrayBuffer = await webmBlob.arrayBuffer();
-    // Use an offline context to decode, avoiding playback
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-    
-    // Encode to WAV
-    const numOfChannels = audioBuffer.numberOfChannels;
-    const sampleRate = audioBuffer.sampleRate;
-    const format = 1; // PCM
-    const bitDepth = 16;
-    
-    let resultBuffer;
-    if (numOfChannels === 2) {
-      const left = audioBuffer.getChannelData(0);
-      const right = audioBuffer.getChannelData(1);
-      const length = left.length + right.length;
-      resultBuffer = new Float32Array(length);
-      for (let i = 0; i < left.length; i++) {
-        resultBuffer[i * 2] = left[i];
-        resultBuffer[i * 2 + 1] = right[i];
-      }
-    } else {
-      resultBuffer = audioBuffer.getChannelData(0);
-    }
-    
-    const buffer = new ArrayBuffer(44 + resultBuffer.length * 2);
-    const view = new DataView(buffer);
-    
-    const writeString = (view, offset, string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-    
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + resultBuffer.length * 2, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, format, true);
-    view.setUint16(22, numOfChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * numOfChannels * 2, true);
-    view.setUint16(32, numOfChannels * 2, true);
-    view.setUint16(34, bitDepth, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, resultBuffer.length * 2, true);
-    
-    let offset = 44;
-    for (let i = 0; i < resultBuffer.length; i++, offset += 2) {
-      let s = Math.max(-1, Math.min(1, resultBuffer[i]));
-      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-    }
-    
-    return new Blob([view], { type: 'audio/wav' });
-  } catch (err) {
-    console.error('Wav conversion failed:', err);
-    return webmBlob; // fallback
-  }
-}
 
 export function startLocalRecording(localAgoraTrack) {
   try {
