@@ -22,6 +22,14 @@ export default function MatchMaking({ user }) {
       );
       const snap = await getDocs(q);
       const now = Date.now();
+      const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate', 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
+      const getLevelIndex = (lvl) => {
+        const idx = LEVELS.indexOf(lvl);
+        return idx !== -1 ? idx : 2; // Default to B1 if unknown
+      };
+
+      const userLevelIdx = getLevelIndex(user.level);
+
       const list = snap.docs
         .map(d => d.data())
         .filter(u => {
@@ -29,7 +37,13 @@ export default function MatchMaking({ user }) {
           if (u.status === 'busy') return false; // Hide busy users
           const lastSeen = u.lastSeen?.toMillis?.() || 0;
           return (now - lastSeen) < 180000;
+        })
+        .sort((a, b) => {
+          const distA = Math.abs(getLevelIndex(a.level) - userLevelIdx);
+          const distB = Math.abs(getLevelIndex(b.level) - userLevelIdx);
+          return distA - distB;
         });
+
       setCandidates(list);
       setCurrentIndex(0);
     } catch (err) {
