@@ -22,6 +22,7 @@ export default function BottomNav({ user }) {
         return (
           <button
             key={tab.route}
+            id={tab.route === '/chats' ? 'tour-ai-chat' : undefined}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
             onClick={() => navigate(tab.route)}
           >

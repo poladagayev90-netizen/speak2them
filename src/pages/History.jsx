@@ -3,6 +3,15 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ChevronLeft } from 'lucide-react';
+import GuidedTour from '../components/GuidedTour';
+
+const PROFILE_TOUR_STEPS = [
+  {
+    target: '#tour-analyze',
+    content: 'Zəng bitdikdən sonra etdiyiniz səhvləri, qrammatika və tələffüzünüzü görmək üçün hər zəngin bu analiz düyməsinə klikləyin!',
+    disableBeacon: true,
+  }
+];
 
 export default function History({ user }) {
   const [history, setHistory] = useState([]);
@@ -52,6 +61,8 @@ export default function History({ user }) {
         <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '0 0 0 16px' }}>Analiz Tarixçəsi</h2>
       </div>
 
+      <GuidedTour user={user} steps={PROFILE_TOUR_STEPS} tourKey="tourDone_profile" />
+
       {loading ? (
         <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>Yüklənir...</div>
       ) : history.length === 0 ? (
@@ -64,6 +75,7 @@ export default function History({ user }) {
           {history.map((call, idx) => (
             <div 
               key={idx} 
+              id={idx === 0 ? "tour-analyze" : undefined}
               onClick={() => setSelectedAnalysis(call)}
               style={{ 
                 background: 'var(--bg-secondary)', 

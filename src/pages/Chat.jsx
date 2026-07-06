@@ -8,6 +8,16 @@ import {
 import { db, auth } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
+import WordHistoryPanel from '../components/WordHistoryPanel';
+import GuidedTour from '../components/GuidedTour';
+
+const CHAT_TOUR_STEPS = [
+  {
+    target: '#tour-translate',
+    content: 'Zəng zamanı bilmədiyiniz sözləri və ya cümlələri anında tərcümə etmək üçün bu düymədən istifadə edin!',
+    disableBeacon: true,
+  }
+];
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
@@ -969,12 +979,16 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
         </div>
       )}
       {inCall && (
-        <TranslateWidget 
-          userId={user.uid} 
-          topic={content?.topic || 'General'} 
-          onTranslate={(t) => setCallTranslations(prev => [...prev, t])}
-        />
+        <div id="tour-translate">
+          <TranslateWidget 
+            userId={user.uid} 
+            topic={content?.topic || 'General'} 
+            onTranslate={(t) => setCallTranslations(prev => [...prev, t])}
+          />
+        </div>
       )}
+
+      {inCall && <GuidedTour user={user} steps={CHAT_TOUR_STEPS} tourKey="tourDone_chat" />}
 
       {showPictureDescribing && (
         <PictureDescribing

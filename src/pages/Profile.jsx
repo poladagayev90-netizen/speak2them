@@ -248,6 +248,23 @@ export default function Profile({ user }) {
         📊 Analiz Tarixçəsi
       </button>
 
+      {/* RESET TOURS */}
+      <button onClick={async () => {
+        if (!docId) return;
+        try {
+          await updateDoc(doc(db, 'users', docId), {
+            tourDone_home: false,
+            tourDone_chat: false,
+            tourDone_profile: false
+          });
+          alert('Turlar sıfırlandı! Səhifələri gəzərək yenidən baxa bilərsiniz.');
+        } catch (e) {
+          console.error(e);
+        }
+      }} style={{ width: '100%', background: '#1e1e30', border: 'none', color: '#7c6ff7', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+        🔄 Turları Sıfırla (Bələdçi)
+      </button>
+
       {showWordHistory && (
         <WordHistoryPanel userId={user.uid} onClose={() => setShowWordHistory(false)} />
       )}

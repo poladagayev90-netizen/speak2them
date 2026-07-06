@@ -10,6 +10,27 @@ import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
+import GuidedTour from '../components/GuidedTour';
+
+const HOME_TOUR_STEPS = [
+  {
+    target: '#tour-find-partner',
+    content: 'Sürətli şəkildə İngiliscə danışmaq üçün random partnyor axtarışına burdan qoşula bilərsiniz.',
+    disableBeacon: true,
+  },
+  {
+    target: '#tour-daily-topic',
+    content: 'Zəngdən əvvəl bu günün mövzusu, yeni sözlər və suallarla buradan tanış olun.',
+  },
+  {
+    target: '#tour-filters',
+    content: 'Öz səviyyənizə uyğun insanları tapmaq üçün bu filtrlərdən istifadə edin.',
+  },
+  {
+    target: '#tour-ai-chat',
+    content: 'Real insanla danışmağa hazır deyilsinizsə, bizim Süni İntellektlə limitsiz praktika edə bilərsiniz!',
+  }
+];
 import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -104,6 +125,7 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
+      <GuidedTour user={user} steps={HOME_TOUR_STEPS} tourKey="tourDone_home" />
       {todayTopic && (
         <TopicDecorations 
           topic={todayTopic.topic} 
@@ -160,6 +182,7 @@ export default function Home({ user }) {
       <div className="home-body">
 
         <button
+          id="tour-find-partner"
           onClick={searching ? cancelSearch : startSearch}
           className={searching ? 'btn-random searching' : 'btn-random'}
           style={{
@@ -213,6 +236,7 @@ export default function Home({ user }) {
 
         {/* Row 1: Daily Topic Button */}
         <button
+          id="tour-daily-topic"
           onClick={() => setDailyTopicOpen(true)}
           style={{
             width: '100%',
@@ -243,6 +267,7 @@ export default function Home({ user }) {
 
         {/* Row 2: Filter Chips */}
         <div 
+          id="tour-filters"
           className="filter-chip-wrapper"
           style={{ 
             display: 'flex', 
