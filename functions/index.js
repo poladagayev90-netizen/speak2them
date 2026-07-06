@@ -347,11 +347,11 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY],
     if (audioBuffer.length < 100) {
       return res.status(400).json({ error: "Audio file is too small or empty. Please speak clearly into the microphone." });
     }
-    const blob = new Blob([audioBuffer], { type: "audio/wav" });
+    const blob = new Blob([audioBuffer], { type: "audio/webm" });
 
     // 1. Transcription via Groq Whisper
     const groqForm = new FormData();
-    groqForm.append("file", blob, "audio.wav");
+    groqForm.append("file", blob, "audio.webm");
     groqForm.append("model", "whisper-large-v3-turbo");
     groqForm.append("response_format", "json");
 

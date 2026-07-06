@@ -135,9 +135,9 @@ export function stopLocalRecording() {
         return resolve(null);
       }
       
-      const wavBlob = await convertWebmToWav(webmBlob);
-      console.log('[Recorder] Converted to WAV, size:', wavBlob.size);
-      resolve(wavBlob);
+      // Sending raw WebM instead of WAV to reduce file size by 10x
+      // This prevents hitting the Groq 25MB API limit for long calls
+      resolve(webmBlob);
     };
     mediaRecorder.stop();
   });
