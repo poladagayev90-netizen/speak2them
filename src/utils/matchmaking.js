@@ -30,24 +30,7 @@ const getLevelRank = (level) => {
 
 export const getMatchCallId = (uidA, uidB) => `call_${[uidA, uidB].sort().join('_')}`;
 
-// Neighbor-based level compatibility
-const ALLOWED_NEIGHBORS = {
-  A1: ['A1', 'A2'],
-  A2: ['A1', 'A2', 'B1'],
-  B1: ['A2', 'B1', 'B2'],
-  B2: ['B1', 'B2', 'C1'],
-  C1: ['B1', 'B2', 'C1', 'C2'],
-  C2: ['C1', 'C2'],
-};
 
-const levelsCompatible = (levelA, levelB) => {
-  const codeA = getLevelCode(levelA);
-  const codeB = getLevelCode(levelB);
-  if (!codeA || !codeB) return true; // unknown level = accept anyone
-  const allowedForA = ALLOWED_NEIGHBORS[codeA] || [codeA];
-  const allowedForB = ALLOWED_NEIGHBORS[codeB] || [codeB];
-  return allowedForA.includes(codeB) && allowedForB.includes(codeA);
-};
 
 const scoreCandidate = (candidate, currentUser) => {
   const rankA = getLevelRank(currentUser.level);
@@ -59,7 +42,7 @@ const scoreCandidate = (candidate, currentUser) => {
   return distanceScore + waitBonus;
 };
 
-export function pickBestMatch(candidates, currentUser, useLevelMatching) {
+export function pickBestMatch(candidates, currentUser) {
   const pool = candidates.filter((c) => c.uid && c.uid !== currentUser.uid);
   if (pool.length === 0) return null;
 
@@ -72,16 +55,9 @@ export function pickBestMatch(candidates, currentUser, useLevelMatching) {
     if (Date.now() - joinedAt > 20000) return false; 
     return true;
   });
-  if (eligibleCandidates.length === 0) return null; // this user is the "waiter" or everyone is ghost
+  if (eligibleCandidates.length === 0) return null;
 
-  const compatiblePool = useLevelMatching
-    ? eligibleCandidates.filter((c) => levelsCompatible(currentUser.level, c.level))
-    : eligibleCandidates;
-
-  const finalPool = compatiblePool.length > 0 ? compatiblePool : eligibleCandidates;
-  if (finalPool.length === 0) return null;
-
-  return [...finalPool].sort(
+  return [...eligibleCandidates].sort(
     (a, b) => scoreCandidate(b, currentUser) - scoreCandidate(a, currentUser)
   )[0];
 }

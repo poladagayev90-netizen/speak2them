@@ -53,15 +53,9 @@ export function useMatchmaking({
   const tryMatchWithCandidates = useCallback(async (candidates) => {
     if (!searchingRef.current || matchingRef.current || !user.uid) return;
 
-    const searchingCount = candidates.filter(
-      (c) => c.status === MATCH_STATUS.SEARCHING
-    ).length;
-    const useLevelMatching = searchingCount >= LEVEL_MATCHING_MIN_SEARCHING_USERS;
-
     const best = pickBestMatch(
       candidates,
-      { uid: user.uid, level: userLevel },
-      useLevelMatching
+      { uid: user.uid, level: userLevel }
     );
     if (!best?.uid) return;
 
@@ -82,8 +76,8 @@ export function useMatchmaking({
     await setDoc(userRef, {
       bonusMinutes: currentBonus + COMPENSATION_MINUTES,
     }, { merge: true });
-    setCompensationMsg(`Partnyor tapılmadı, ${COMPENSATION_MINUTES} dəqiqə hədiyyə edildi!`);
-    setTimeout(() => setCompensationMsg(''), 5000);
+    setCompensationMsg(`Partnyor tapılmadı. İstərsəniz AInur ilə (Süni İntellekt) dərhal praktika edə bilərsiniz!`);
+    setTimeout(() => setCompensationMsg(''), 10000);
   } catch (e) {
     console.error('[Matchmaking] Compensation write error:', e);
   }

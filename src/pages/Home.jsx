@@ -196,6 +196,18 @@ export default function Home({ user }) {
             <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px', margin: 0 }}>
               🎁 {compensationMsg}
             </p>
+            <button 
+              onClick={() => navigate('/ai-chat')}
+              style={{
+                marginTop: '10px', background: '#10b981', color: '#fff',
+                border: 'none', borderRadius: '8px', padding: '8px 16px',
+                fontWeight: 'bold', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', gap: '6px',
+                width: '100%', fontSize: '14px'
+              }}
+            >
+              🤖 AInur-a Zəng Et 📞
+            </button>
           </div>
         )}
 
