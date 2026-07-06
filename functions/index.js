@@ -326,7 +326,7 @@ exports.dailyReminder = onSchedule({
 });
 
 // ─── OpenAI Audio Analysis Proxy ──────────────────────────────────
-exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY] }, async (req, res) => {
+exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
@@ -345,6 +345,27 @@ exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY] }, async (req,
   try {
     const audioBuffer = Buffer.from(base64Audio, "base64");
     const blob = new Blob([audioBuffer], { type: "audio/webm" });
+
+    if (prompt === "JUST_TRANSCRIBE_GROQ") {
+      const groqForm = new FormData();
+      groqForm.append("file", blob, "audio.webm");
+      groqForm.append("model", "whisper-large-v3-turbo");
+      groqForm.append("response_format", "json");
+
+      const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
+        body: groqForm
+      });
+
+      if (!groqRes.ok) {
+        const err = await groqRes.text();
+        return res.status(500).json({ error: "Groq error: " + err });
+      }
+
+      const data = await groqRes.json();
+      return res.status(200).json({ transcript: data.text });
+    }
 
     const formData = new FormData();
     formData.append("file", blob, "audio.webm");
@@ -439,47 +460,4 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
-// ─── Groq Audio Transcription Proxy ──────────────────────────────
-exports.transcribeAudioGroq = onRequest({ secrets: [GROQ_API_KEY] }, async (req, res) => {
-  setCors(res);
-  if (req.method === "OPTIONS") return res.status(204).send("");
-
-  let decoded;
-  try {
-    decoded = await verifyAuth(req);
-  } catch {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const { base64Audio } = req.body;
-  if (!base64Audio) {
-    return res.status(400).json({ error: "base64Audio required" });
-  }
-
-  try {
-    const audioBuffer = Buffer.from(base64Audio, "base64");
-    const blob = new Blob([audioBuffer], { type: "audio/webm" });
-
-    const formData = new FormData();
-    formData.append("file", blob, "audio.webm");
-    formData.append("model", "whisper-large-v3-turbo");
-    formData.append("response_format", "json");
-
-    const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
-      body: formData
-    });
-
-    if (!groqRes.ok) {
-      const err = await groqRes.text();
-      return res.status(500).json({ error: "Groq error: " + err });
-    }
-
-    const data = await groqRes.json();
-    res.status(200).json({ transcript: data.text });
-  } catch (error) {
-    console.error("[Groq] Function error:", error);
-    res.status(500).json({ error: error.message });
-  }
 });

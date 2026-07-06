@@ -468,13 +468,13 @@ export default function Chat({ user }) {
             const base64Audio = reader.result.split(',')[1];
             
             const token = await auth.currentUser.getIdToken();
-            const res = await fetch(`${FUNCTIONS_BASE}/transcribeAudioGroq`, {
+            const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify({ base64Audio })
+              body: JSON.stringify({ base64Audio, prompt: 'JUST_TRANSCRIBE_GROQ' })
             });
             if (res.ok) {
               const data = await res.json();
