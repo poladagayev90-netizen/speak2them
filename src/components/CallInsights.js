@@ -14,8 +14,8 @@ export default function CallInsights({ userId, channelName, onClose }) {
         setLoading(false);
       }
     });
-    // Timeout after 30s if Gemini doesn't respond
-    const timeout = setTimeout(() => setLoading(false), 30000);
+    // Timeout after 60s if Gemini doesn't respond
+    const timeout = setTimeout(() => setLoading(false), 60000);
     return () => { unsub(); clearTimeout(timeout); };
   }, [userId, channelName]);
 

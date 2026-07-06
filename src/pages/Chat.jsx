@@ -503,6 +503,11 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
     { "original": "səhv cümlə", "corrected": "düzgün cümlə", "why": "izahı" }
   ]
 }`;
+            // Random jitter (0-20 seconds) to spread out API requests if 
+            // hundreds of users finish their 30-min call at the exact same millisecond
+            const jitterMs = Math.floor(Math.random() * 20000);
+            await new Promise(r => setTimeout(r, jitterMs));
+
             const attemptFetch = async (retries = 3) => {
               try {
                 const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
@@ -514,12 +519,18 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
                   body: JSON.stringify({ base64Audio, prompt: promptStr })
                 });
                 if (!res.ok) {
-                  if (retries > 0) return await attemptFetch(retries - 1);
+                  if (retries > 0) {
+                    await new Promise(r => setTimeout(r, 5000)); // 5s backoff
+                    return await attemptFetch(retries - 1);
+                  }
                   return { ok: false, errText: await res.text() };
                 }
                 return { ok: true, data: await res.json() };
               } catch (e) {
-                if (retries > 0) return await attemptFetch(retries - 1);
+                if (retries > 0) {
+                  await new Promise(r => setTimeout(r, 5000)); // 5s backoff
+                  return await attemptFetch(retries - 1);
+                }
                 return { ok: false, errText: e.message };
               }
             };
