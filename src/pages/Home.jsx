@@ -11,6 +11,7 @@ import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { ADMIN_UID } from '../constants';
 import GuidedTour from '../components/GuidedTour';
+import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 const HOME_TOUR_STEPS = [
   {
@@ -31,7 +32,6 @@ const HOME_TOUR_STEPS = [
     content: 'Real insanla danışmağa hazır deyilsinizsə, bizim Süni İntellektlə limitsiz praktika edə bilərsiniz!',
   }
 ];
-import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];

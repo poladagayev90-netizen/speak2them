@@ -10,14 +10,6 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 import GuidedTour from '../components/GuidedTour';
-
-const CHAT_TOUR_STEPS = [
-  {
-    target: '#tour-translate',
-    content: 'Zəng zamanı bilmədiyiniz sözləri və ya cümlələri anında tərcümə etmək üçün bu düymədən istifadə edin!',
-    disableBeacon: true,
-  }
-];
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
@@ -30,6 +22,14 @@ import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
+
+const CHAT_TOUR_STEPS = [
+  {
+    target: '#tour-translate',
+    content: 'Zəng zamanı bilmədiyiniz sözləri və ya cümlələri anında tərcümə etmək üçün bu düymədən istifadə edin!',
+    disableBeacon: true,
+  }
+];
 
 
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
