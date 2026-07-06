@@ -271,9 +271,26 @@ exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req,
   }
 });
 
-// ─── Daily Practice Reminder ──────────────────────────────────
-exports.dailyReminder = onSchedule({
-  schedule: "0 21 * * *",
+const ALL_TOPICS = [
+  "Travel ✈️", "Technology 💻", "Food & Culture 🍽️", "Education 📚", 
+  "Health & Wellbeing 🏃", "Environment 🌍", "Work & Career 💼", 
+  "Social Media 📱", "Money & Finances 💰", "Films & Series 🎬", 
+  "Music 🎵", "Famous People & Celebrities ⭐", "Hobbies & Free Time 🎨", 
+  "Fashion & Style 👗", "Cartoons & Animation 🎭", "Fear & Phobias 😱", 
+  "Relationships & Friendship ❤️", "Sports & Competition 🏆", "Animals & Pets 🐾", 
+  "Culture & Traditions 🌐", "Science & Space 🚀", "City vs Countryside 🏙️", 
+  "Books & Reading 📖", "Language & Communication 🗣️", "Shopping & Consumerism 🛍️", 
+  "Dreams & Ambitions 🌟", "History & Past Events 🏛️", "Future & Predictions 🔮"
+];
+
+function getTodayTopic() {
+  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+  return ALL_TOPICS[daysSinceEpoch % ALL_TOPICS.length];
+}
+
+// ─── Topic Practice Reminder ──────────────────────────────────
+exports.topicReminder = onSchedule({
+  schedule: "0 10,15 * * *",
   timeZone: "Asia/Baku",
 }, async () => {
   const usersSnap = await admin.firestore().collection("users").get();
@@ -287,11 +304,12 @@ exports.dailyReminder = onSchedule({
 
   for (let i = 0; i < usersWithTokens.length; i += DAILY_REMINDER_BATCH_SIZE) {
     const batch = usersWithTokens.slice(i, i + DAILY_REMINDER_BATCH_SIZE);
+    const todayTopic = getTodayTopic();
     const response = await admin.messaging().sendEachForMulticast({
       tokens: batch.map(user => user.fcmToken),
       notification: {
-        title: "Speak2Them practice time",
-        body: "Come practice English with someone today.",
+        title: `Günlük Mövzu: ${todayTopic}`,
+        body: "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir! Səni gözləyirlər.",
       },
       data: {
         type: "daily_reminder",
