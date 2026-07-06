@@ -326,7 +326,7 @@ exports.dailyReminder = onSchedule({
 });
 
 // ─── OpenAI Audio Analysis Proxy ──────────────────────────────────
-exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY] }, async (req, res) => {
+exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY], memory: "1GiB" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
