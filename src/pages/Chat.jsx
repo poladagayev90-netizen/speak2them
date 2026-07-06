@@ -8,7 +8,6 @@ import {
 import { db, auth } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
-import WordHistoryPanel from '../components/WordHistoryPanel';
 import GuidedTour from '../components/GuidedTour';
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';

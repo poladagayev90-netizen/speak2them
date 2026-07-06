@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Joyride, { STATUS } from 'react-joyride';
+import { Joyride, STATUS } from 'react-joyride';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
