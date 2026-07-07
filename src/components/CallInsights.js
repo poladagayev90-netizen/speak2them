@@ -14,7 +14,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
         setLoading(false);
       }
     });
-    // Timeout after 60s if Gemini doesn't respond
+    // Timeout after 60s if AI doesn't respond
     const timeout = setTimeout(() => setLoading(false), 60000);
     return () => { unsub(); clearTimeout(timeout); };
   }, [userId, channelName]);
@@ -34,7 +34,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
         Analiz edilir...
       </p>
       <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8 }}>
-        Gemini AI danışığınızı yoxlayır
+        AI danışığınızı yoxlayır
       </p>
     </div>
   );
