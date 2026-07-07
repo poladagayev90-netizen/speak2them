@@ -43,8 +43,11 @@ export default function GlobalCallListener({ user }) {
     ringtoneRef.current?.pause();
 
     try {
+      // Acquire mic permission while we still have the user gesture (iOS/Safari),
+      // then release the track immediately — Chat creates its own track on join.
       const tempTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      window.tempGlobalMicTrack = tempTrack;
+      tempTrack.stop();
+      tempTrack.close();
     } catch (e) {
       console.warn('[GlobalCallListener] Mic permission denied or failed:', e);
     }
