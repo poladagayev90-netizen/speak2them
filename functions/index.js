@@ -11,6 +11,7 @@ const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
+const DEEPSEEK_API_KEY = defineSecret("DEEPSEEK_API_KEY");
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || "8c630370fa1c8efcc6d1dc50854e5a3a1681525b";
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
@@ -514,6 +515,98 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
     res.status(200).json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── AI Quiz Generation (DeepSeek proxy) ──────────────────────────
+exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  try {
+    await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { translatedItems } = req.body;
+  const itemsValid = Array.isArray(translatedItems)
+    && translatedItems.length > 0
+    && translatedItems.length <= 50
+    && translatedItems.every((w) =>
+      w
+      && typeof w.original === "string" && w.original.length > 0 && w.original.length <= 200
+      && typeof w.translated === "string" && w.translated.length > 0 && w.translated.length <= 200);
+  if (!itemsValid) {
+    return res.status(400).json({ error: "translatedItems must be a non-empty array of {original, translated}" });
+  }
+
+  try {
+    const sampleSize = Math.min(translatedItems.length, 5);
+    const shuffled = [...translatedItems].sort(() => 0.5 - Math.random());
+    const selectedItems = shuffled.slice(0, sampleSize);
+
+    const wordsList = selectedItems.map((w) => `'${w.original}' (translated to '${w.translated}')`).join(", ");
+
+    const prompt = `
+      You are an English language teacher for an Azerbaijani student.
+      The student has just learned the following English words/phrases during a conversation:
+      ${wordsList}
+
+      Generate a quick multiple-choice quiz (1 question per word) to test their memory.
+      The questions must be in Azerbaijani. The options can be either in English or Azerbaijani depending on what is being asked.
+
+      Return ONLY a valid JSON object with a "quiz" key containing an array of questions. Format:
+      {
+        "quiz": [
+          {
+            "qText": "Question text in Azerbaijani",
+            "options": ["Option 1", "Option 2", "Option 3"],
+            "correctIdx": 0
+          }
+        ]
+      }
+    `;
+
+    const deepseekRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${DEEPSEEK_API_KEY.value()}`
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" }
+      })
+    });
+
+    if (!deepseekRes.ok) {
+      const err = await deepseekRes.text().catch(() => "");
+      console.error("[generateQuiz] DeepSeek error:", deepseekRes.status, err);
+      return res.status(500).json({ error: `DeepSeek error: ${deepseekRes.status}` });
+    }
+
+    const data = await deepseekRes.json();
+    const responseText = data.choices?.[0]?.message?.content;
+    if (!responseText) return res.status(500).json({ error: "No response from DeepSeek" });
+
+    const cleanedText = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(cleanedText);
+
+    // Unwrap a single-key object ({ quiz: [...] }) into the array itself
+    let quizData = parsed;
+    if (!Array.isArray(parsed)) {
+      const keys = Object.keys(parsed);
+      if (keys.length === 1 && Array.isArray(parsed[keys[0]])) {
+        quizData = parsed[keys[0]];
+      }
+    }
+
+    res.status(200).json({ quiz: quizData });
+  } catch (error) {
+    console.error("[generateQuiz] Function error:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
