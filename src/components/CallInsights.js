@@ -113,7 +113,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         {[
           { label: 'Fluency', value: `${analysis.fluencyScore}/100` },
-          { label: 'Danışıq', value: `${analysis.talkRatio}%` },
+          { label: 'Sürət', value: analysis.speakingPace?.wpm ? `${analysis.speakingPace.wpm} wpm` : '—' },
           { label: 'Vocab', value: `${analysis.vocabularyUsed?.length || 0} söz` },
         ].map((s, i) => (
           <div key={i} style={{
@@ -177,7 +177,48 @@ export default function CallInsights({ userId, channelName, onClose }) {
             <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Günün sözlərindən istifadə edilmədi</p>
           )}
         </div>
+
+        {/* Recommended vocabulary */}
+        {analysis.vocabularySuggestions?.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, marginBottom: 8 }}>
+              Tövsiyə olunan sözlər ✨
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {analysis.vocabularySuggestions.map((v, i) => (
+                <div key={i} style={{
+                  background: 'var(--bg-card)', borderRadius: 12,
+                  padding: '10px 12px', border: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap'
+                }}>
+                  <span style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700 }}>{v.word}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>— {v.meaning}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Suggestions — example sentences */}
+      {analysis.exampleSentences?.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
+            Nümunə Cümlələr 💡
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {analysis.exampleSentences.map((s, i) => (
+              <div key={i} style={{
+                background: 'var(--bg-card)', borderRadius: 12,
+                padding: '10px 12px', border: '1px solid var(--border)',
+                color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5
+              }}>
+                “{s}”
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Transcript */}
       {analysis.transcript && (
