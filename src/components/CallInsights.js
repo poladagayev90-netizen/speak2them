@@ -10,7 +10,11 @@ export default function CallInsights({ userId, channelName, onClose }) {
     const docId = `${userId}_${channelName}`;
     const unsub = onSnapshot(doc(db, 'callAnalysis', docId), (snap) => {
       if (snap.exists()) {
-        setAnalysis(snap.data());
+        const data = snap.data();
+        // Queue status docs (queued/processing) carry no analysis fields yet;
+        // keep showing the loading state until the worker writes the result.
+        if (data.status && data.status !== 'done') return;
+        setAnalysis(data);
         setLoading(false);
       }
     });

@@ -104,6 +104,32 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /analysisQueue/{docId} {
+      // Clients may only create their own pending ticket pointing at their
+      // own recording; claiming/retrying/deleting is done by the scheduled
+      // worker through the Admin SDK (bypasses rules).
+      allow create: if isSignedIn()
+        && docId.split('_')[0] == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'status', 'storagePath', 'audioSeconds', 'uid', 'callDocId',
+          'sessionId', 'peerName', 'retryCount', 'createdAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.retryCount == 0
+        && request.resource.data.audioSeconds is number
+        && request.resource.data.audioSeconds > 0
+        && request.resource.data.audioSeconds <= 1800
+        && request.resource.data.callDocId is string
+        && request.resource.data.sessionId is string
+        && request.resource.data.storagePath ==
+          'callRecordings/' + request.auth.uid + '/'
+          + request.resource.data.callDocId + '_'
+          + request.resource.data.sessionId + '.webm';
+      allow read: if isSignedIn() && docId.split('_')[0] == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     match /callAnalysis/{docId} {
       allow read: if isSignedIn() && (
         docId.split('_')[0] == request.auth.uid ||

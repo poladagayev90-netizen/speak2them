@@ -17,6 +17,7 @@ import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { uploadCallRecording } from '../utils/recordingUpload';
+import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
@@ -505,17 +506,26 @@ export default function Chat({ user }) {
       callTimeoutRef.current = null;
     }
 
-    // Stop recording and upload it to Storage in the background;
-    // the server-side analysis queue picks it up from there.
-    const recordingBlob = await stopLocalRecording();
-    if (recordingBlob) {
-      audioBlobRef.current = recordingBlob;
-      console.log('[Chat] Recording stored, size:', recordingBlob.size);
-      uploadCallRecording(recordingBlob, user.uid, callDocId, sessionIdRef.current)
-        .catch((e) => console.error('[Chat] Recording upload failed:', e));
-    }
-
     const secondsTalked = callSecondsRef.current;
+
+    // Stop recording; if the call was long enough to analyze, upload it to
+    // Storage and create the queue ticket the scheduled worker picks up.
+    const recordingBlob = await stopLocalRecording();
+    if (recordingBlob && secondsTalked > 3) {
+      audioBlobRef.current = recordingBlob;
+      const sessionId = sessionIdRef.current;
+      console.log('[Chat] Recording stored, size:', recordingBlob.size);
+      uploadCallRecording(recordingBlob, user.uid, callDocId, sessionId)
+        .then((storagePath) => enqueueCallAnalysis({
+          uid: user.uid,
+          callDocId,
+          sessionId,
+          storagePath,
+          audioSeconds: secondsTalked,
+          peerName: peer?.name || null,
+        }))
+        .catch((e) => console.error('[Chat] Recording upload/enqueue failed:', e));
+    }
 
     try {
       if (localTrackRef.current) {
@@ -674,7 +684,7 @@ export default function Chat({ user }) {
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user, callTranslations.length]);
+  }, [callDocId, peerId, user, peer, callTranslations.length]);
 
   endCallRef.current = endCall;
 
