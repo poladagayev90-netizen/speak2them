@@ -832,3 +832,133 @@ exports.processAnalysisQueue = onSchedule({
     }
   }
 });
+
+// ─── Scheduled Session Matchmaking ─────────────────────────────────
+// Pairs everyone who joined the evening session (matchQueue docs with
+// status "waiting_session") in ONE server-side pass when the buffer window
+// closes — no client fan-out, no client transactions. Runs every minute but
+// only acts once per session (guarded by sessionRuns/{sessionId}).
+const SESSION_LEVEL_RANK = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
+
+function sessionLevelRank(level) {
+  const match = String(level || "").match(/^(A1|A2|B1|B2|C1|C2)\b/);
+  return match ? SESSION_LEVEL_RANK[match[1]] : null;
+}
+
+function sessionPairScore(a, b) {
+  const rankA = sessionLevelRank(a.level);
+  const rankB = sessionLevelRank(b.level);
+  const distance = (rankA !== null && rankB !== null) ? Math.abs(rankA - rankB) : 3;
+  let score = Math.max(0, 50 - distance * 15);
+
+  const topicsA = Array.isArray(a.topics) ? a.topics : [];
+  const topicsB = Array.isArray(b.topics) ? b.topics : [];
+  score += topicsA.filter((t) => topicsB.includes(t)).length * 10;
+
+  if (a.partnerPreference === "Same" && distance === 0) score += 10;
+  if (b.partnerPreference === "Same" && distance === 0) score += 10;
+  if (a.partnerPreference === "Higher" && rankB !== null && rankA !== null && rankB > rankA) score += 10;
+  if (b.partnerPreference === "Higher" && rankA !== null && rankB !== null && rankA > rankB) score += 10;
+  return score;
+}
+
+exports.matchSessionQueue = onSchedule({
+  schedule: "every 1 minutes",
+  timeZone: "Asia/Baku",
+}, async () => {
+  const db = admin.firestore();
+
+  const cfgSnap = await db.collection("appConfig").doc("session").get();
+  if (!cfgSnap.exists || !cfgSnap.data().enabled) return;
+  const cfg = { hour: 21, minute: 0, bufferMinutes: 10, ...cfgSnap.data() };
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const bakuDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Baku" }).format(new Date());
+  const startMs = Date.parse(`${bakuDate}T${pad(cfg.hour)}:${pad(cfg.minute)}:00+04:00`);
+  const endMs = startMs + cfg.bufferMinutes * 60 * 1000;
+  if (Date.now() < endMs) return;
+
+  const runRef = db.collection("sessionRuns").doc(bakuDate);
+  const claimed = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(runRef);
+    if (snap.exists) return false;
+    tx.set(runRef, { startedAt: admin.firestore.FieldValue.serverTimestamp() });
+    return true;
+  });
+  if (!claimed) return;
+
+  try {
+    const waitingSnap = await db.collection("matchQueue")
+      .where("status", "==", "waiting_session")
+      .where("sessionId", "==", bakuDate)
+      .get();
+    const users = waitingSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
+    console.log("[SessionMatch]", bakuDate, "joined:", users.length);
+    if (users.length === 0) return;
+
+    // Greedy pairing: earliest joiner picks the best-scoring remaining partner.
+    users.sort((a, b) => (a.joinedAtMs || 0) - (b.joinedAtMs || 0));
+    const pairs = [];
+    const remaining = [...users];
+    while (remaining.length >= 2) {
+      const current = remaining.shift();
+      let bestIdx = 0;
+      let bestScore = -1;
+      remaining.forEach((cand, idx) => {
+        const score = sessionPairScore(current, cand);
+        if (score > bestScore) { bestScore = score; bestIdx = idx; }
+      });
+      pairs.push([current, remaining.splice(bestIdx, 1)[0]]);
+    }
+    const leftover = remaining;
+
+    // 3 writes per pair, 2 per leftover — chunk under the 500-write limit.
+    const ops = [];
+    for (const [a, b] of pairs) {
+      const callId = `call_${[a.uid, b.uid].sort().join("_")}`;
+      ops.push((batch) => {
+        batch.set(db.collection("calls").doc(callId), {
+          userA: a.uid,
+          userB: b.uid,
+          callerId: a.uid,
+          callerName: a.name || "User",
+          receiverId: b.uid,
+          receiverName: b.name || "User",
+          status: "accepted",
+          source: "session_match",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        batch.update(a.ref, {
+          status: "matched", matchedWith: b.uid, callId,
+          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        batch.update(b.ref, {
+          status: "matched", matchedWith: a.uid, callId,
+          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+    }
+    for (const u of leftover) {
+      ops.push((batch) => {
+        batch.update(u.ref, { status: "unmatched" });
+        batch.set(db.collection("users").doc(u.uid), {
+          bonusMinutes: admin.firestore.FieldValue.increment(5),
+        }, { merge: true });
+      });
+    }
+
+    const OPS_PER_BATCH = 150; // ≤3 writes each → max 450 writes per batch
+    for (let i = 0; i < ops.length; i += OPS_PER_BATCH) {
+      const batch = db.batch();
+      ops.slice(i, i + OPS_PER_BATCH).forEach((apply) => apply(batch));
+      await batch.commit();
+    }
+
+    console.log("[SessionMatch] pairs:", pairs.length, "unmatched:", leftover.length);
+  } catch (error) {
+    // Release the run marker so the next tick can retry the whole pass.
+    await runRef.delete().catch(() => null);
+    throw error;
+  }
+});

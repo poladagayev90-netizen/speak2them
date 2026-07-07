@@ -96,6 +96,12 @@ service cloud.firestore {
       allow delete: if isOwnDoc(userId);
     }
 
+    match /appConfig/{docId} {
+      // Session schedule etc. — clients read it, only the admin edits it.
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     match /waitlist/{docId} {
       allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt'])
         && request.resource.data.email is string
