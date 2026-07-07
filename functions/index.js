@@ -723,3 +723,200 @@ Ask a follow-up question to keep the conversation going.`;
     res.status(500).json({ error: error.message });
   }
 });
+// ─── Analysis Queue Worker ─────────────────────────────────────────
+// Claims pending analysisQueue tickets, runs Groq Whisper + Llama on the
+// uploaded recording and writes the result into callAnalysis/{ticketId}.
+const ANALYSIS_CLAIM_LIMIT = 3;
+const ANALYSIS_MAX_RETRIES = 3;
+const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
+// 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
+const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
+
+const ANALYSIS_PROMPT = `Sən təcrübəli İngilis dili müəllimisən.
+Bu tələbənin danışığının transkriptidir: {{TRANSCRIPT}}
+Qrammatik və lüğət səhvlərini tap.
+Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazma:
+{ "overallScore": 85, "encouragement": "Qısa ruhlandırıcı mesaj", "fluencyScore": 80, "talkRatio": 50, "vocabularyUsed": ["söz1", "söz2"], "grammarFixes": [ { "original": "səhv cümlə", "corrected": "düzgün cümlə", "why": "izahı" } ] }`;
+
+function isRetryableStatus(httpStatus) {
+  return httpStatus === 429 || httpStatus >= 500;
+}
+
+// Transactionally flips one pending ticket to processing if the hourly
+// audio budget allows it. Returns the ticket data or null when skipped.
+async function claimTicket(db, ticketRef) {
+  const budgetRef = db.collection("analysisBudget").doc("current");
+  return db.runTransaction(async (tx) => {
+    const ticketSnap = await tx.get(ticketRef);
+    if (!ticketSnap.exists || ticketSnap.data().status !== "pending") return null;
+    const ticket = ticketSnap.data();
+
+    const budgetSnap = await tx.get(budgetRef);
+    const now = Date.now();
+    let windowStart = now;
+    let used = 0;
+    if (budgetSnap.exists) {
+      const b = budgetSnap.data();
+      const startMs = b.windowStart ? b.windowStart.toMillis() : 0;
+      if (now - startMs < 60 * 60 * 1000) {
+        windowStart = startMs;
+        used = b.usedAudioSeconds || 0;
+      }
+    }
+    const audioSeconds = ticket.audioSeconds || 0;
+    // Budget counts attempts (no refund on retry) — deliberately conservative.
+    if (used + audioSeconds > ANALYSIS_HOURLY_AUDIO_BUDGET) return null;
+
+    tx.set(budgetRef, {
+      windowStart: admin.firestore.Timestamp.fromMillis(windowStart),
+      usedAudioSeconds: used + audioSeconds,
+    });
+    tx.update(ticketRef, {
+      status: "processing",
+      processingStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { id: ticketSnap.id, ref: ticketRef, ...ticket };
+  });
+}
+
+async function runGroqAnalysis(audioBuffer) {
+  const blob = new Blob([audioBuffer], { type: "audio/webm" });
+  const groqForm = new FormData();
+  groqForm.append("file", blob, "audio.webm");
+  groqForm.append("model", "whisper-large-v3-turbo");
+  groqForm.append("response_format", "json");
+
+  const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
+    body: groqForm,
+  });
+  if (!whisperRes.ok) {
+    const err = new Error("Groq Whisper error: " + (await whisperRes.text()).slice(0, 300));
+    err.retryable = isRetryableStatus(whisperRes.status);
+    throw err;
+  }
+  const transcript = (await whisperRes.json()).text;
+  if (!transcript || !transcript.trim()) {
+    const err = new Error("no-speech: could not hear any speech in the audio");
+    err.retryable = false;
+    throw err;
+  }
+
+  const chatRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", transcript) }],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+    }),
+  });
+  if (!chatRes.ok) {
+    const err = new Error("Groq LLM error: " + (await chatRes.text()).slice(0, 300));
+    err.retryable = isRetryableStatus(chatRes.status);
+    throw err;
+  }
+  const rawText = (await chatRes.json()).choices?.[0]?.message?.content;
+  if (!rawText) {
+    const err = new Error("Groq LLM returned no content");
+    err.retryable = true;
+    throw err;
+  }
+  const analysis = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+  return { transcript, analysis };
+}
+
+exports.processAnalysisQueue = onSchedule({
+  schedule: "every 1 minutes",
+  timeZone: "Asia/Baku",
+  secrets: [GROQ_API_KEY],
+  memory: "1GiB",
+  timeoutSeconds: 540,
+}, async () => {
+  const db = admin.firestore();
+  const queue = db.collection("analysisQueue");
+
+  // Recover tickets stuck in processing (worker crash / timeout).
+  const processingSnap = await queue.where("status", "==", "processing").get();
+  const stuckCutoff = Date.now() - ANALYSIS_STUCK_MS;
+  for (const docSnap of processingSnap.docs) {
+    const startedMs = docSnap.data().processingStartedAt
+      ? docSnap.data().processingStartedAt.toMillis() : 0;
+    if (startedMs < stuckCutoff) {
+      await docSnap.ref.update({ status: "pending" });
+      console.warn("[AnalysisQueue] Reset stuck ticket:", docSnap.id);
+    }
+  }
+
+  // Queue depth is the backlog metric; exit early when there is nothing to do.
+  const depth = (await queue.where("status", "==", "pending").count().get()).data().count;
+  console.log("[AnalysisQueue] Pending depth:", depth, "processing:", processingSnap.size);
+  if (depth === 0) return;
+
+  const pendingSnap = await queue
+    .where("status", "==", "pending")
+    .orderBy("createdAt", "asc")
+    .limit(ANALYSIS_CLAIM_LIMIT)
+    .get();
+
+  for (const docSnap of pendingSnap.docs) {
+    const ticket = await claimTicket(db, docSnap.ref);
+    if (!ticket) {
+      console.log("[AnalysisQueue] Skipped (budget or already claimed):", docSnap.id);
+      continue;
+    }
+
+    const analysisRef = db.collection("callAnalysis").doc(ticket.id);
+    try {
+      await analysisRef.set({ status: "processing" }, { merge: true });
+
+      const [audioBuffer] = await admin.storage().bucket().file(ticket.storagePath).download();
+      const { transcript, analysis } = await runGroqAnalysis(audioBuffer);
+
+      await analysisRef.set({
+        ...analysis,
+        transcript,
+        status: "done",
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        userId: ticket.uid,
+        peerName: ticket.peerName || null,
+        durationSeconds: ticket.audioSeconds || 0,
+      }, { merge: true });
+      await ticket.ref.update({
+        status: "done",
+        finishedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      await admin.storage().bucket().file(ticket.storagePath).delete().catch(() => null);
+      console.log("[AnalysisQueue] Done:", ticket.id);
+    } catch (error) {
+      const retryCount = (ticket.retryCount || 0) + 1;
+      const retryable = error.retryable !== false && retryCount < ANALYSIS_MAX_RETRIES;
+      console.error("[AnalysisQueue] Failed:", ticket.id, "retryable:", retryable, error.message);
+      if (retryable) {
+        await ticket.ref.update({
+          status: "pending",
+          retryCount,
+          lastError: String(error.message).slice(0, 500),
+        });
+      } else {
+        await ticket.ref.update({
+          status: "failed",
+          retryCount,
+          lastError: String(error.message).slice(0, 500),
+        });
+        await analysisRef.set({
+          status: "failed",
+          error: String(error.message).slice(0, 300),
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          userId: ticket.uid,
+        }, { merge: true });
+        await admin.storage().bucket().file(ticket.storagePath).delete().catch(() => null);
+      }
+    }
+  }
+});
