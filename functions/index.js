@@ -12,7 +12,7 @@ const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 const DEEPSEEK_API_KEY = defineSecret("DEEPSEEK_API_KEY");
-const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY || "8c630370fa1c8efcc6d1dc50854e5a3a1681525b";
+const DEEPGRAM_API_KEY = defineSecret("DEEPGRAM_API_KEY");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
@@ -611,7 +611,7 @@ exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY] }, async (req, re
 });
 
 // ─── AI Partner (Voice Chat with AInur) ───────────────────────────
-exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY], memory: "1GiB" }, async (req, res) => {
+exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memory: "1GiB" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
@@ -698,7 +698,7 @@ Ask a follow-up question to keep the conversation going.`;
     const dgRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-asteria-en", {
       method: "POST",
       headers: {
-        "Authorization": `Token ${DEEPGRAM_API_KEY}`,
+        "Authorization": `Token ${DEEPGRAM_API_KEY.value()}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ text: aiReply })
