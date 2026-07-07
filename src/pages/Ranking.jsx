@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import HomeRanking from '../components/HomeRanking';
 
 export default function Ranking({ user }) {
   const [allUsers, setAllUsers] = useState([]);
 
+  // One-shot read: a leaderboard doesn't need realtime, and a live listener
+  // on the whole collection re-streams every presence heartbeat to every
+  // viewer (read amplification at scale).
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'users'), (snap) => {
-      setAllUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return unsub;
+    let cancelled = false;
+    getDocs(collection(db, 'users')).then((snap) => {
+      if (!cancelled) setAllUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }).catch((e) => console.error('[Ranking] load failed:', e));
+    return () => { cancelled = true; };
   }, []);
 
   return (
