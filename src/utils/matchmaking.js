@@ -44,7 +44,11 @@ const scoreCandidate = (candidate, currentUser) => {
   const distanceScore = Math.max(0, 50 - distance * 15);
   const joinedAt = candidate.joinedAt?.toMillis?.() || candidate.joinedAtMs || 0;
   const waitBonus = joinedAt ? Math.min(20, Math.floor((Date.now() - joinedAt) / 30000)) : 0;
-  return distanceScore + waitBonus;
+  // Shared survey interests — same weighting the server-side session pairing uses.
+  const myTopics = Array.isArray(currentUser.topics) ? currentUser.topics : [];
+  const theirTopics = Array.isArray(candidate.topics) ? candidate.topics : [];
+  const topicBonus = myTopics.filter((t) => theirTopics.includes(t)).length * 10;
+  return distanceScore + waitBonus + topicBonus;
 };
 
 export function pickBestMatch(candidates, currentUser) {

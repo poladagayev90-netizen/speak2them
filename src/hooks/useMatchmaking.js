@@ -54,7 +54,7 @@ export function useMatchmaking({
 
     const best = pickBestMatch(
       candidates,
-      { uid: user.uid, level: userLevel }
+      { uid: user.uid, level: userLevel, topics: user.topics }
     );
     if (!best?.uid) return;
 
@@ -64,7 +64,7 @@ export function useMatchmaking({
     } finally {
       matchingRef.current = false; // ALWAYS reset, even on failure
     }
-  }, [user.uid, userLevel]);
+  }, [user.uid, userLevel, user.topics]);
 
   const giveCompensation = useCallback(async () => {
   if (!user.uid) return;
@@ -104,6 +104,7 @@ export function useMatchmaking({
       name: userName,
       level: userLevel,
       desiredLevel: levelFilter || 'Any',
+      topics: Array.isArray(user.topics) ? user.topics.slice(0, 3) : [],
       partnerPreference: user.partnerPreference || 'Any',
       status: MATCH_STATUS.SEARCHING,
       joinedAtMs: Date.now(),
@@ -140,6 +141,7 @@ export function useMatchmaking({
     userName,
     userLevel,
     levelFilter,
+    user.topics,
     user.partnerPreference,
     tryMatchWithCandidates,
     cleanupListeners,
