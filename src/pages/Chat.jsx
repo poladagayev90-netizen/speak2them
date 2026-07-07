@@ -749,10 +749,13 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
         // if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
+      // Rating is independent of the insights chain: for long calls it is set
+      // here and stays hidden under CallInsights until that modal closes.
+      if (secondsTalked >= 180) {
+        setShowRating(true);
+      }
       if (secondsTalked > 3) {
         setShowInsights(true);
-      } else if (secondsTalked >= 180) {
-        setShowRating(true);
       } else if (callTranslations.length > 0) {
         setShowPostQuiz(true);
       }
@@ -1137,8 +1140,10 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
           channelName={`${callDocId}_${sessionIdRef.current}`} 
           onClose={() => {
             setShowInsights(false);
-            if (callSecondsRef.current >= 180 && !showRating) {
-              setShowRating(true);
+            if (callSecondsRef.current >= 180) {
+              // Rating modal is usually already open underneath; the quiz
+              // follows it via submitRating, so don't open the quiz here.
+              if (!showRating) setShowRating(true);
             } else if (callTranslations.length > 0) {
               setShowPostQuiz(true);
             }
