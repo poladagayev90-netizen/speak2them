@@ -11,7 +11,7 @@ import {
   subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-const SEARCH_TIMEOUT_MS = 6000;
+const SEARCH_TIMEOUT_MS = 30000;
 const COMPENSATION_MINUTES = 5;
 
 export function useMatchmaking({
@@ -123,7 +123,7 @@ export function useMatchmaking({
       }
     });
 
-    // 15-saniyəlik timeout — partner tapılmasa kompensasiya ver
+    // Axtarış timeout-u — partner tapılmasa kompensasiya ver
     timeoutRef.current = setTimeout(async () => {
       if (searchingRef.current) {
         await giveCompensation();

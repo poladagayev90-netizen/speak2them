@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   deleteDoc,
+  limit,
   onSnapshot,
   query,
   runTransaction,
@@ -151,9 +152,12 @@ export function subscribeToOwnQueue(uid, onUpdate) {
 }
 
 export function subscribeToSearchingQueue(onCandidates) {
+  // Cap the fan-out: every searcher streams this set, so at high load an
+  // unbounded query would cost O(N) reads per searcher.
   const q = query(
     collection(db, 'matchQueue'),
-    where('status', '==', MATCH_STATUS.SEARCHING)
+    where('status', '==', MATCH_STATUS.SEARCHING),
+    limit(25)
   );
   return onSnapshot(q, (snap) => {
     onCandidates(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
