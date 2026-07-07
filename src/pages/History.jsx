@@ -185,6 +185,15 @@ function AnalysisDetail({ analysis, onClose }) {
         </div>
       )}
 
+      {analysis.speakingPace?.wpm > 0 && (
+        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, marginBottom: 24, textAlign: 'center' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Danışıq sürəti: </span>
+          <span style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700 }}>
+            {analysis.speakingPace.wpm} wpm ({analysis.speakingPace.label})
+          </span>
+        </div>
+      )}
+
       {/* Grammar Fixes */}
       <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Qrammatika Səhvləri</h3>
       {analysis.grammarFixes && analysis.grammarFixes.length > 0 ? (
@@ -216,6 +225,33 @@ function AnalysisDetail({ analysis, onClose }) {
           <span style={{ color: 'var(--text-secondary)' }}>Lüğət tapılmadı.</span>
         )}
       </div>
+
+      {analysis.vocabularySuggestions && analysis.vocabularySuggestions.length > 0 && (
+        <>
+          <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Tövsiyə olunan Sözlər</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+            {analysis.vocabularySuggestions.map((v, idx) => (
+              <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                <span style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700 }}>{v.word}</span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>— {v.meaning}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {analysis.exampleSentences && analysis.exampleSentences.length > 0 && (
+        <>
+          <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Nümunə Cümlələr</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+            {analysis.exampleSentences.map((s, idx) => (
+              <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
+                “{s}”
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
