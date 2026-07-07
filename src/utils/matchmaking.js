@@ -14,6 +14,10 @@ import { db } from '../firebase';
 export const MATCH_STATUS = {
   SEARCHING: 'searching',
   MATCHED: 'matched',
+  // Parked for the scheduled evening session; paired server-side by the
+  // matchSessionQueue function, invisible to on-demand searchers.
+  WAITING_SESSION: 'waiting_session',
+  UNMATCHED: 'unmatched',
 };
 
 const LEVEL_RANK = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4, C2: 5 };
@@ -66,6 +70,13 @@ export async function joinSearchQueue(entry) {
   await setDoc(doc(db, 'matchQueue', entry.uid), {
     ...entry,
     status: MATCH_STATUS.SEARCHING,
+  }, { merge: true });
+}
+
+export async function joinSessionQueue(entry) {
+  await setDoc(doc(db, 'matchQueue', entry.uid), {
+    ...entry,
+    status: MATCH_STATUS.WAITING_SESSION,
   }, { merge: true });
 }
 

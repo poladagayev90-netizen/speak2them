@@ -9,6 +9,8 @@ import { getTodayContent } from '../data/weeklyContent';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
+import { useSessionQueue } from '../hooks/useSessionQueue';
+import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
 import { ADMIN_UID } from '../constants';
 import GuidedTour from '../components/GuidedTour';
 import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
@@ -48,6 +50,8 @@ export default function Home({ user }) {
   const [levelFilter, setLevelFilter] = useState('All');
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
+  const [sessionConfig, setSessionConfig] = useState(null);
+  const [nowTick, setNowTick] = useState(Date.now());
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
   const navigate = useNavigate();
@@ -79,6 +83,22 @@ export default function Home({ user }) {
     levelFilter,
     onMatched: handleMatched,
   });
+
+  const {
+    joined: sessionJoined,
+    joinSession,
+    leaveSession,
+    unmatchedMsg: sessionUnmatchedMsg,
+  } = useSessionQueue({ user, onMatched: handleMatched });
+
+  useEffect(() => subscribeToSessionConfig(setSessionConfig), []);
+
+  // 1s tick drives the session countdown; runs only while the card is shown.
+  useEffect(() => {
+    if (!sessionConfig?.enabled) return;
+    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [sessionConfig?.enabled]);
 
 
 
@@ -189,6 +209,93 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
+
+        {sessionConfig?.enabled && (() => {
+          const win = getSessionWindow(sessionConfig, nowTick);
+          const pad = (n) => String(n).padStart(2, '0');
+          const startLabel = `${pad(sessionConfig.hour)}:${pad(sessionConfig.minute)}`;
+          const fmtLeft = (ms) => {
+            const s = Math.max(0, Math.floor(ms / 1000));
+            return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+          };
+          const inWindow = nowTick >= win.startMs && nowTick < win.endMs;
+          // Server pairing runs when the buffer closes; joined users keep
+          // waiting through a short grace period until their doc flips.
+          const graceEndMs = win.endMs + 5 * 60 * 1000;
+
+          return (
+            <div className="searching-card" style={{ marginBottom: 12, textAlign: 'center' }}>
+              <p style={{ color: '#7c6ff7', fontWeight: 700, fontSize: '15px', margin: '0 0 6px' }}>
+                🧪 Axşam sessiyası • {startLabel}
+              </p>
+              {nowTick < win.startMs && (
+                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
+                  Başlamasına qalıb: <b>{fmtLeft(win.startMs - nowTick)}</b>
+                </p>
+              )}
+              {inWindow && !sessionJoined && (
+                <>
+                  <p style={{ color: '#666', fontSize: '13px', margin: '0 0 10px' }}>
+                    Qoşul — eşləşmələr hazırlanır, zənglər avtomatik başlayacaq
+                  </p>
+                  <button
+                    onClick={() => joinSession(win.sessionId)}
+                    style={{
+                      background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+                      border: 'none', borderRadius: '10px', padding: '10px 20px',
+                      fontWeight: 700, fontSize: '14px', cursor: 'pointer', width: '100%',
+                    }}
+                  >
+                    Sessiyaya qoşul
+                  </button>
+                </>
+              )}
+              {sessionJoined && (
+                <>
+                  <p style={{ color: '#666', fontSize: '13px', margin: '0 0 10px' }}>
+                    Qoşuldun! Eşləşmə hazırlanır — zəngin avtomatik başlayacaq.
+                  </p>
+                  <button
+                    onClick={leaveSession}
+                    style={{
+                      background: 'transparent', color: '#ef4444',
+                      border: '1px solid #ef444455', borderRadius: '10px',
+                      padding: '8px 16px', fontWeight: 600, fontSize: '13px',
+                      cursor: 'pointer', width: '100%',
+                    }}
+                  >
+                    Sessiyadan çıx
+                  </button>
+                </>
+              )}
+              {!sessionJoined && nowTick >= win.endMs && nowTick < graceEndMs && (
+                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
+                  Sessiya eşləşmələri gedir…
+                </p>
+              )}
+              {!sessionJoined && nowTick >= graceEndMs && (
+                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
+                  Bu günün sessiyası bitdi — sabah yenə {startLabel}-də!
+                </p>
+              )}
+            </div>
+          );
+        })()}
+
+        {sessionUnmatchedMsg && (
+          <div style={{
+            background: 'linear-gradient(135deg, #065f46, #047857)',
+            border: '1px solid #10b98155',
+            borderRadius: '14px',
+            padding: '14px 18px',
+            marginBottom: '12px',
+            textAlign: 'center',
+          }}>
+            <p style={{ color: '#fff', fontWeight: 700, fontSize: '14px', margin: 0 }}>
+              🎁 {sessionUnmatchedMsg}
+            </p>
+          </div>
+        )}
 
         <button
           id="tour-find-partner"
