@@ -654,6 +654,13 @@ function isRetryableStatus(httpStatus) {
   return httpStatus === 429 || httpStatus >= 500;
 }
 
+// Long calls are analyzed partially to keep the queue moving on the free
+// Groq tier: short calls in full, longer ones one third (min 5 minutes).
+function effectiveAnalyzeSeconds(audioSeconds) {
+  if (!audioSeconds || audioSeconds <= 300) return audioSeconds || 0;
+  return Math.max(300, Math.round(audioSeconds / 3));
+}
+
 // Data-only push to one user's device (the messaging SW displays it and
 // routes clicks via data.url); prunes dead tokens. Data-only avoids the
 // SDK double-display problem that notification payloads can cause.
@@ -703,19 +710,19 @@ async function claimTicket(db, ticketRef) {
         used = b.usedAudioSeconds || 0;
       }
     }
-    const audioSeconds = ticket.audioSeconds || 0;
+    const analyzeSeconds = effectiveAnalyzeSeconds(ticket.audioSeconds || 0);
     // Budget counts attempts (no refund on retry) — deliberately conservative.
-    if (used + audioSeconds > ANALYSIS_HOURLY_AUDIO_BUDGET) return null;
+    if (used + analyzeSeconds > ANALYSIS_HOURLY_AUDIO_BUDGET) return null;
 
     tx.set(budgetRef, {
       windowStart: admin.firestore.Timestamp.fromMillis(windowStart),
-      usedAudioSeconds: used + audioSeconds,
+      usedAudioSeconds: used + analyzeSeconds,
     });
     tx.update(ticketRef, {
       status: "processing",
       processingStartedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    return { id: ticketSnap.id, ref: ticketRef, ...ticket };
+    return { id: ticketSnap.id, ref: ticketRef, analyzeSeconds, ...ticket };
   });
 }
 
@@ -816,7 +823,18 @@ exports.processAnalysisQueue = onSchedule({
       await analysisRef.set({ status: "processing" }, { merge: true });
 
       const [audioBuffer] = await admin.storage().bucket().file(ticket.storagePath).download();
-      const { transcript, analysis } = await runGroqAnalysis(audioBuffer);
+
+      // Partial analysis: a WebM byte-prefix stays decodable (header is at
+      // the start; Opus speech is ~constant bitrate, so bytes ≈ time).
+      const totalSeconds = ticket.audioSeconds || 0;
+      const analyzeSeconds = ticket.analyzeSeconds || totalSeconds;
+      let analysisBuffer = audioBuffer;
+      if (totalSeconds > 0 && analyzeSeconds < totalSeconds) {
+        analysisBuffer = audioBuffer.subarray(
+          0, Math.ceil(audioBuffer.length * (analyzeSeconds / totalSeconds)));
+      }
+
+      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer);
 
       await analysisRef.set({
         ...analysis,
@@ -826,6 +844,7 @@ exports.processAnalysisQueue = onSchedule({
         userId: ticket.uid,
         peerName: ticket.peerName || null,
         durationSeconds: ticket.audioSeconds || 0,
+        analyzedSeconds: analyzeSeconds,
       }, { merge: true });
       await ticket.ref.update({
         status: "done",
