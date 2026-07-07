@@ -10,7 +10,7 @@ import { tg, tgUser, isTelegramWebApp } from './telegram';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
-import { ADMIN_UID, LAUNCH_DATE } from './constants';
+import { ADMIN_UID } from './constants';
 import Logo from './components/Logo';
 
 const Login = React.lazy(() => import('./pages/Login'));
@@ -28,7 +28,6 @@ const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(() => import('./pages/Ranking'));
 const History = React.lazy(() => import('./pages/History'));
-const CountdownPage = React.lazy(() => import('./components/CountdownPage'));
 
 const LoadingFallback = () => (
   <div className="loading-screen">
@@ -37,7 +36,6 @@ const LoadingFallback = () => (
   </div>
 );
 
-const isPreLaunch = Date.now() < LAUNCH_DATE;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -208,7 +206,7 @@ function App() {
   }
   const homeElement = user
     ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
-    : (isPreLaunch ? <CountdownPage /> : <Navigate to="/register" />);
+    : <Navigate to="/register" />;
 
   return (
     <>
