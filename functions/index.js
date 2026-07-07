@@ -654,6 +654,34 @@ function isRetryableStatus(httpStatus) {
   return httpStatus === 429 || httpStatus >= 500;
 }
 
+// Data-only push to one user's device (the messaging SW displays it and
+// routes clicks via data.url); prunes dead tokens. Data-only avoids the
+// SDK double-display problem that notification payloads can cause.
+async function sendPushToUser(db, uid, { title, body, type, url }) {
+  const userRef = db.collection("users").doc(uid);
+  try {
+    const userSnap = await userRef.get();
+    const token = userSnap.exists ? userSnap.data().fcmToken : null;
+    if (typeof token !== "string" || !token.trim()) return;
+    await admin.messaging().send({
+      token,
+      data: { title, body, type, url },
+    });
+  } catch (error) {
+    const code = error.code;
+    if (
+      code === "messaging/invalid-registration-token" ||
+      code === "messaging/registration-token-not-registered"
+    ) {
+      await userRef.update({
+        fcmToken: admin.firestore.FieldValue.delete(),
+      }).catch(() => null);
+    } else {
+      console.warn("[Push] send failed:", uid, error.message);
+    }
+  }
+}
+
 // Transactionally flips one pending ticket to processing if the hourly
 // audio budget allows it. Returns the ticket data or null when skipped.
 async function claimTicket(db, ticketRef) {
@@ -805,6 +833,13 @@ exports.processAnalysisQueue = onSchedule({
       });
       await admin.storage().bucket().file(ticket.storagePath).delete().catch(() => null);
       console.log("[AnalysisQueue] Done:", ticket.id);
+
+      await sendPushToUser(db, ticket.uid, {
+        title: "Analiziniz hazırdır 🎓",
+        body: "Zəng analizin hazır oldu — nəticəyə bax!",
+        type: "analysis_ready",
+        url: "/history",
+      });
     } catch (error) {
       const retryCount = (ticket.retryCount || 0) + 1;
       const retryable = error.retryable !== false && retryCount < ANALYSIS_MAX_RETRIES;
