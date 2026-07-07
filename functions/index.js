@@ -1000,9 +1000,20 @@ exports.matchSessionQueue = onSchedule({
       .where("status", "==", "waiting_session")
       .where("sessionId", "==", bakuDate)
       .get();
-    const users = waitingSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
-    console.log("[SessionMatch]", bakuDate, "joined:", users.length);
-    if (users.length === 0) return;
+    const allWaiting = waitingSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
+
+    // Ghost filter: skip waiters whose liveness ping went stale (closed the
+    // app after joining) so nobody gets paired into a dead call. No bonus —
+    // they left on their own.
+    const staleCutoff = Date.now() - 4 * 60 * 1000;
+    const users = [];
+    const ghosts = [];
+    for (const u of allWaiting) {
+      const lastPing = u.lastPingMs || u.joinedAtMs || 0;
+      (lastPing < staleCutoff ? ghosts : users).push(u);
+    }
+    console.log("[SessionMatch]", bakuDate, "joined:", allWaiting.length, "ghosts:", ghosts.length);
+    if (users.length === 0 && ghosts.length === 0) return;
 
     // Greedy pairing: earliest joiner picks the best-scoring remaining partner.
     users.sort((a, b) => (a.joinedAtMs || 0) - (b.joinedAtMs || 0));
@@ -1053,6 +1064,11 @@ exports.matchSessionQueue = onSchedule({
         batch.set(db.collection("users").doc(u.uid), {
           bonusMinutes: admin.firestore.FieldValue.increment(5),
         }, { merge: true });
+      });
+    }
+    for (const u of ghosts) {
+      ops.push((batch) => {
+        batch.update(u.ref, { status: "unmatched", ghost: true });
       });
     }
 

@@ -4,6 +4,7 @@ import {
   MATCH_STATUS,
   joinSessionQueue,
   leaveSearchQueue,
+  pingSessionQueue,
   subscribeToOwnQueue,
 } from '../utils/matchmaking';
 
@@ -15,11 +16,16 @@ export function useSessionQueue({ user, onMatched }) {
   const [unmatchedMsg, setUnmatchedMsg] = useState('');
   const unsubRef = useRef(null);
   const joinedRef = useRef(false);
+  const pingIntervalRef = useRef(null);
 
   const cleanup = useCallback(() => {
     if (unsubRef.current) {
       unsubRef.current();
       unsubRef.current = null;
+    }
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
     }
   }, []);
 
@@ -47,8 +53,14 @@ export function useSessionQueue({ user, onMatched }) {
       partnerPreference: user.partnerPreference || 'Any',
       sessionId,
       joinedAtMs: Date.now(),
+      lastPingMs: Date.now(),
       joinedAt: serverTimestamp(),
     });
+
+    // Liveness ping so the server can skip waiters who closed the app.
+    pingIntervalRef.current = setInterval(() => {
+      if (joinedRef.current) pingSessionQueue(user.uid);
+    }, 90000);
 
     unsubRef.current = subscribeToOwnQueue(user.uid, async (data) => {
       if (!joinedRef.current || !data) return;

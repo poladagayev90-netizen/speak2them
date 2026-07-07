@@ -85,6 +85,14 @@ export async function joinSessionQueue(entry) {
   }, { merge: true });
 }
 
+// Liveness ping while parked for a session; the server-side pairing skips
+// tickets whose last ping is stale (user closed the app while waiting).
+export async function pingSessionQueue(uid) {
+  try {
+    await setDoc(doc(db, 'matchQueue', uid), { lastPingMs: Date.now() }, { merge: true });
+  } catch (e) { /* transient — next ping retries */ }
+}
+
 export async function leaveSearchQueue(uid) {
   try {
     await deleteDoc(doc(db, 'matchQueue', uid));
