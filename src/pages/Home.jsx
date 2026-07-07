@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { useSessionQueue } from '../hooks/useSessionQueue';
 import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
+import TopicPickerModal from '../components/TopicPickerModal';
 import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
 import { ADMIN_UID } from '../constants';
 import GuidedTour from '../components/GuidedTour';
@@ -53,6 +54,8 @@ export default function Home({ user }) {
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const [sessionConfig, setSessionConfig] = useState(null);
   const [nowTick, setNowTick] = useState(Date.now());
+  const [topicPickerOpen, setTopicPickerOpen] = useState(false);
+  const pendingSessionIdRef = useRef(null);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
   const navigate = useNavigate();
@@ -240,7 +243,18 @@ export default function Home({ user }) {
                     Qoşul — eşləşmələr hazırlanır, zənglər avtomatik başlayacaq
                   </p>
                   <button
-                    onClick={() => joinSession(win.sessionId)}
+                    onClick={() => {
+                      // Survey-skippers pick interests once before joining.
+                      const hasTopics = Array.isArray(user.topics)
+                        && user.topics.length > 0
+                        && !(user.topics.length === 1 && user.topics[0] === 'General');
+                      if (!hasTopics) {
+                        pendingSessionIdRef.current = win.sessionId;
+                        setTopicPickerOpen(true);
+                        return;
+                      }
+                      joinSession(win.sessionId);
+                    }}
                     style={{
                       background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
                       border: 'none', borderRadius: '10px', padding: '10px 20px',
@@ -559,6 +573,21 @@ export default function Home({ user }) {
         )}
       </div>
       <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} />
+      <TopicPickerModal
+        open={topicPickerOpen}
+        uid={user.uid}
+        onSave={(topics) => {
+          setTopicPickerOpen(false);
+          if (pendingSessionIdRef.current) {
+            joinSession(pendingSessionIdRef.current, topics);
+            pendingSessionIdRef.current = null;
+          }
+        }}
+        onClose={() => {
+          setTopicPickerOpen(false);
+          pendingSessionIdRef.current = null;
+        }}
+      />
     </div>
   );
 }

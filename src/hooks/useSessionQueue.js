@@ -30,17 +30,20 @@ export function useSessionQueue({ user, onMatched }) {
     await leaveSearchQueue(user.uid);
   }, [cleanup, user.uid]);
 
-  const joinSession = useCallback(async (sessionId) => {
+  // topicsOverride: freshly picked interests (TopicPickerModal) that may not
+  // be on the user prop yet.
+  const joinSession = useCallback(async (sessionId, topicsOverride) => {
     if (!user.uid || joinedRef.current) return;
     joinedRef.current = true;
     setJoined(true);
     setUnmatchedMsg('');
 
+    const topics = Array.isArray(topicsOverride) ? topicsOverride : user.topics;
     await joinSessionQueue({
       uid: user.uid,
       name: user.displayName || user.name || 'User',
       level: user.level || 'Any',
-      topics: Array.isArray(user.topics) ? user.topics.slice(0, 3) : [],
+      topics: Array.isArray(topics) ? topics.slice(0, 3) : [],
       partnerPreference: user.partnerPreference || 'Any',
       sessionId,
       joinedAtMs: Date.now(),
