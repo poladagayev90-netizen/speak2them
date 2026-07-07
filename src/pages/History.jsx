@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ChevronLeft } from 'lucide-react';
@@ -26,7 +26,9 @@ export default function History({ user }) {
       try {
         const q = query(
           collection(db, 'callAnalysis'),
-          where('userId', '==', user.uid)
+          where('userId', '==', user.uid),
+          orderBy('timestamp', 'desc'),
+          limit(50)
         );
         const snap = await getDocs(q);
         const results = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));

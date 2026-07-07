@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { collection, deleteDoc, doc, onSnapshot, query, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, limit, onSnapshot, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -23,7 +23,8 @@ export default function GlobalCallListener({ user }) {
     const q = query(
       collection(db, 'calls'),
       where('receiverId', '==', user.uid),
-      where('status', '==', 'calling')
+      where('status', '==', 'calling'),
+      limit(1)
     );
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {

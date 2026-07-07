@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 
 export function saveWordToHistory(userId, originalWord, translatedWord, topic = 'General') {
   if (!userId || !originalWord || !translatedWord) return;
@@ -14,7 +14,8 @@ export function saveWordToHistory(userId, originalWord, translatedWord, topic = 
 export function subscribeToWordHistory(userId, callback) {
   const q = query(
     collection(db, 'wordHistory', userId, 'words'),
-    orderBy('createdAt', 'desc')
+    orderBy('createdAt', 'desc'),
+    limit(200)
   );
   return onSnapshot(q, (snap) => {
     const words = snap.docs.map(d => ({ id: d.id, ...d.data() }));

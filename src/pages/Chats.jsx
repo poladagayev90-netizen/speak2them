@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,12 @@ export default function Chats({ user }) {
 
   useEffect(() => {
     const unsub = onSnapshot(
-      query(collection(db, 'chats'), where('participants', 'array-contains', user.uid)),
+      query(
+        collection(db, 'chats'),
+        where('participants', 'array-contains', user.uid),
+        orderBy('updatedAt', 'desc'),
+        limit(30)
+      ),
       async (snap) => {
         try {
           const promises = snap.docs.map(async (docSnap) => {
