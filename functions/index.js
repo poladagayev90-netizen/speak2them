@@ -444,7 +444,19 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
   }
 
   const { peerId, updates } = req.body;
-  if (!peerId || !updates) return res.status(400).json({ error: "peerId and updates required" });
+  if (!peerId || typeof peerId !== "string" || !updates || typeof updates !== "object") {
+    return res.status(400).json({ error: "peerId and updates required" });
+  }
+  if (peerId === decoded.uid) {
+    return res.status(403).json({ error: "Cannot update own stats via this endpoint" });
+  }
+
+  const peerRef = admin.firestore().collection("users").doc(peerId);
+  const peerSnap = await peerRef.get().catch(() => null);
+  if (!peerSnap || !peerSnap.exists) {
+    return res.status(404).json({ error: "Peer not found" });
+  }
+  const peerData = peerSnap.data() || {};
 
   // Yalnız icazə verilən sahələrin yenilənməsinə zəmanət veririk:
   const allowedKeys = ["rating", "ratingCount", "receivedFiveStar", "badges", "bonusMinutes"];
@@ -454,12 +466,51 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
       safeUpdates[key] = updates[key];
     }
   }
+
+  // Dəyər validasiyası: rating yalnız 1-5 ulduzluq bir səs qədər arta bilər,
+  // ratingCount yalnız 1 vahid; qalan sahələr tip və sərhəd yoxlamasından keçir.
+  if (safeUpdates.rating !== undefined) {
+    const prevRating = typeof peerData.rating === "number" ? peerData.rating : 0;
+    const delta = safeUpdates.rating - prevRating;
+    if (typeof safeUpdates.rating !== "number" || !Number.isFinite(delta) || delta < 1 || delta > 5) {
+      return res.status(400).json({ error: "Invalid rating value" });
+    }
+  }
+  if (safeUpdates.ratingCount !== undefined) {
+    const prevCount = typeof peerData.ratingCount === "number" ? peerData.ratingCount : 0;
+    if (safeUpdates.ratingCount !== prevCount + 1) {
+      return res.status(400).json({ error: "Invalid ratingCount value" });
+    }
+  }
+  if (safeUpdates.receivedFiveStar !== undefined && safeUpdates.receivedFiveStar !== true) {
+    return res.status(400).json({ error: "Invalid receivedFiveStar value" });
+  }
+  if (safeUpdates.badges !== undefined) {
+    const badgesValid = Array.isArray(safeUpdates.badges)
+      && safeUpdates.badges.length <= 100
+      && safeUpdates.badges.every((b) => typeof b === "string" && b.length <= 64);
+    if (!badgesValid) {
+      return res.status(400).json({ error: "Invalid badges value" });
+    }
+  }
+  if (safeUpdates.bonusMinutes !== undefined) {
+    if (typeof safeUpdates.bonusMinutes !== "number"
+      || safeUpdates.bonusMinutes < 0
+      || safeUpdates.bonusMinutes > 10000) {
+      return res.status(400).json({ error: "Invalid bonusMinutes value" });
+    }
+  }
+
   if (updates.badgeUpdatedAt === "SERVER_TIMESTAMP") {
     safeUpdates.badgeUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
   }
 
+  if (Object.keys(safeUpdates).length === 0) {
+    return res.status(400).json({ error: "No valid fields to update" });
+  }
+
   try {
-    await admin.firestore().collection("users").doc(peerId).update(safeUpdates);
+    await peerRef.update(safeUpdates);
     res.status(200).json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
