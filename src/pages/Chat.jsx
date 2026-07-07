@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, serverTimestamp,
-  doc, getDoc, setDoc, updateDoc, runTransaction
+  doc, getDoc, setDoc, updateDoc, runTransaction, increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
@@ -19,7 +19,7 @@ import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../uti
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import TranslateWidget from '../components/TranslateWidget';
-import PictureDescribing from '../components/PictureDescribing';
+import CallImageStage from '../components/CallImageStage';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
@@ -52,7 +52,7 @@ export default function Chat({ user }) {
   const [callStatus, setCallStatus] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
   const [showDaily, setShowDaily] = useState(false);
-  const [showPictureDescribing, setShowPictureDescribing] = useState(false);
+  const [imageStage, setImageStage] = useState(null);
   const [showRating, setShowRating] = useState(false);
   const [selectedStar, setSelectedStar] = useState(0);
   const [dailyTab, setDailyTab] = useState('questions');
@@ -362,6 +362,9 @@ export default function Chat({ user }) {
       const data = snap.data();
       const prevStatus = prevCallStatus.current;
       prevCallStatus.current = data.status;
+
+      // Synced picture stage: either side writes it, both render it.
+      setImageStage(data.imageStage || null);
 
       // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
@@ -911,9 +914,18 @@ export default function Chat({ user }) {
                 <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
                   📅<span>Daily</span>
                 </button>
-                <button className="call-btn-big" onClick={() => setShowPictureDescribing(true)}>
-                  🖼️<span>Şəkil</span>
-                </button>
+                {!imageStage?.active && (
+                  <button
+                    className="call-btn-big"
+                    onClick={() => {
+                      updateDoc(doc(db, 'calls', callDocId), {
+                        imageStage: { active: true, imageIndex: 0, startedAtMs: Date.now() },
+                      }).catch((e) => console.error('[Chat] imageStage start failed:', e));
+                    }}
+                  >
+                    🖼️<span>Şəkil</span>
+                  </button>
+                )}
               </>
             )}
             <button className="call-btn-big end" onClick={endCall}>📵<span>End</span></button>
@@ -932,13 +944,20 @@ export default function Chat({ user }) {
 
       {inCall && <GuidedTour user={user} steps={CHAT_TOUR_STEPS} tourKey="tourDone_chat" />}
 
-      {showPictureDescribing && (
-        <PictureDescribing
-          topic={content.topic}
-          imageKeywords={content.imageKeywords}
-          manualImageUrls={content.manualImageUrls}
-          vocabulary={content.vocabulary?.map(v => v.word) || []}
-          onClose={() => setShowPictureDescribing(false)}
+      {inCall && imageStage?.active && content && (
+        <CallImageStage
+          content={content}
+          imageIndex={imageStage.imageIndex || 0}
+          onNext={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'imageStage.imageIndex': increment(1),
+            }).catch((e) => console.error('[Chat] imageStage next failed:', e));
+          }}
+          onClose={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'imageStage.active': false,
+            }).catch((e) => console.error('[Chat] imageStage close failed:', e));
+          }}
         />
       )}
 
