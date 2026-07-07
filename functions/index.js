@@ -503,8 +503,7 @@ exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY] }, async (req, re
     const responseText = data.choices?.[0]?.message?.content;
     if (!responseText) return res.status(500).json({ error: "No response from DeepSeek" });
 
-    const cleanedText = responseText.replace(/```json/gi, "").replace(/```/g, "").trim();
-    const parsed = JSON.parse(cleanedText);
+    const parsed = parseJsonLoose(responseText);
 
     // Unwrap a single-key object ({ quiz: [...] }) into the array itself
     let quizData = parsed;
@@ -644,14 +643,191 @@ const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
 const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
 
-const ANALYSIS_PROMPT = `Sən təcrübəli İngilis dili müəllimisən.
-Bu tələbənin danışığının transkriptidir: {{TRANSCRIPT}}
-Qrammatik və lüğət səhvlərini tap.
-Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazma:
-{ "overallScore": 85, "encouragement": "Qısa ruhlandırıcı mesaj", "fluencyScore": 80, "talkRatio": 50, "vocabularyUsed": ["söz1", "söz2"], "grammarFixes": [ { "original": "səhv cümlə", "corrected": "düzgün cümlə", "why": "izahı" } ] }`;
+const ANALYSIS_PROMPT = `Sən təcrübəli, dəqiq İngilis dili müəllimisən. Aşağıda bir Azərbaycanlı tələbənin İngiliscə danışığının transkripti var.
+
+TRANSKRIPT:
+"""{{TRANSCRIPT}}"""
+
+Vəzifən: bu danışığı təhlil et və nəticəni YALNIZ bir JSON obyekti kimi qaytar. Markdown, izah və ya əlavə mətn yazma.
+
+Qaydalar:
+- overallScore və fluencyScore: 0-100 arası tam ədəd.
+- encouragement: 1 qısa ruhlandırıcı cümlə (Azərbaycanca).
+- grammarFixes: YALNIZ qrammatik və ya leksik SƏHVİ olan cümlələr. Düzgün cümlələri ƏSLA daxil etmə. Hər element: original (tələbənin dediyi səhv cümlə), corrected (düzgün variant), why (səhvin qısa izahı, Azərbaycanca). Səhv yoxdursa boş massiv.
+- vocabularyUsed: tələbənin işlətdiyi diqqətəlayiq İngilis sözləri.
+- vocabularySuggestions: tələbənin işlətdiyindən daha uyğun/zəngin İngilis sözləri. Hər element: word (İngiliscə), meaning (Azərbaycanca qısa məna).
+- exampleSentences: bu mövzuda düzgün qurulmuş 2-3 nümunə İngilis cümləsi.
+- Uydurma etmə; yalnız transkriptə əsaslan.`;
+
+// Strict schema enforced at the Groq API level (structured outputs).
+const ANALYSIS_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["overallScore", "fluencyScore", "encouragement", "grammarFixes",
+    "vocabularyUsed", "vocabularySuggestions", "exampleSentences"],
+  properties: {
+    overallScore: { type: "integer", minimum: 0, maximum: 100 },
+    fluencyScore: { type: "integer", minimum: 0, maximum: 100 },
+    encouragement: { type: "string" },
+    grammarFixes: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["original", "corrected", "why"],
+        properties: {
+          original: { type: "string" },
+          corrected: { type: "string" },
+          why: { type: "string" },
+        },
+      },
+    },
+    vocabularyUsed: { type: "array", items: { type: "string" } },
+    vocabularySuggestions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["word", "meaning"],
+        properties: {
+          word: { type: "string" },
+          meaning: { type: "string" },
+        },
+      },
+    },
+    exampleSentences: { type: "array", items: { type: "string" } },
+  },
+};
 
 function isRetryableStatus(httpStatus) {
   return httpStatus === 429 || httpStatus >= 500;
+}
+
+// Tolerant JSON parser: strips code fences, extracts the outermost object,
+// and repairs common model glitches (trailing commas, smart quotes).
+function parseJsonLoose(text) {
+  if (!text || typeof text !== "string") throw new Error("empty model response");
+  let s = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+  const first = s.indexOf("{");
+  const last = s.lastIndexOf("}");
+  if (first !== -1 && last > first) s = s.slice(first, last + 1);
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    const repaired = s
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/,\s*([}\]])/g, "$1");
+    return JSON.parse(repaired);
+  }
+}
+
+// Speaking pace is computed deterministically from the transcript — the LLM
+// never hears audio, so asking it to estimate pace would only hallucinate.
+function computeSpeakingPace(transcript, analyzeSeconds) {
+  const words = String(transcript || "").trim().split(/\s+/).filter(Boolean).length;
+  const seconds = analyzeSeconds > 0 ? analyzeSeconds : 0;
+  const wpm = seconds > 0 ? Math.round((words / seconds) * 60) : 0;
+  let label = "Normal";
+  if (wpm > 0 && wpm < 90) label = "Yavaş";
+  else if (wpm > 160) label = "Sürətli";
+  return { wpm, label };
+}
+
+// Coerces whatever the model returned into a guaranteed, bounded shape so the
+// frontend never sees a malformed analysis, even on a partial response.
+function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
+  const obj = raw && typeof raw === "object" ? raw : {};
+  const clampScore = (v) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+  };
+  const asStr = (v) => (typeof v === "string" ? v.trim() : "");
+
+  const grammarFixes = (Array.isArray(obj.grammarFixes) ? obj.grammarFixes : [])
+    .map((f) => ({ original: asStr(f?.original), corrected: asStr(f?.corrected), why: asStr(f?.why) }))
+    // Drop entries where the "fix" equals the original — i.e. correct sentences.
+    .filter((f) => f.original && f.corrected && f.original !== f.corrected)
+    .slice(0, 8);
+
+  const vocabularyUsed = (Array.isArray(obj.vocabularyUsed) ? obj.vocabularyUsed : [])
+    .map(asStr).filter(Boolean).slice(0, 15);
+
+  const vocabularySuggestions = (Array.isArray(obj.vocabularySuggestions) ? obj.vocabularySuggestions : [])
+    .map((v) => ({ word: asStr(v?.word), meaning: asStr(v?.meaning) }))
+    .filter((v) => v.word).slice(0, 6);
+
+  const exampleSentences = (Array.isArray(obj.exampleSentences) ? obj.exampleSentences : [])
+    .map(asStr).filter(Boolean).slice(0, 3);
+
+  return {
+    overallScore: clampScore(obj.overallScore),
+    fluencyScore: clampScore(obj.fluencyScore),
+    encouragement: asStr(obj.encouragement) || "Yaxşı iş! Davam et.",
+    grammarFixes,
+    vocabularyUsed,
+    vocabularySuggestions,
+    exampleSentences,
+    speakingPace: computeSpeakingPace(transcript, analyzeSeconds),
+  };
+}
+
+// Groq chat with strict JSON, in-call retries (max 3) and a schema→json_object
+// fallback, so json_validate_failed and malformed output self-heal instead of
+// failing the ticket permanently.
+async function callGroqChat(userContent) {
+  const messages = [{ role: "user", content: userContent }];
+  let useSchema = true;
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages,
+        temperature: 0,
+        top_p: 1,
+        seed: 7,
+        response_format: useSchema
+          ? { type: "json_schema", json_schema: { name: "speech_analysis", strict: true, schema: ANALYSIS_SCHEMA } }
+          : { type: "json_object" },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = (await res.text().catch(() => "")).slice(0, 400);
+      // Model/endpoint rejects json_schema → drop to json_object and retry.
+      if (useSchema && /json_schema|response_format|not supported/i.test(errText)) {
+        useSchema = false;
+        continue;
+      }
+      // Model produced invalid JSON → nudge and retry.
+      if (/json_validate_failed/i.test(errText)) {
+        messages.push({ role: "system", content: "Əvvəlki cavab keçərli JSON deyildi. YALNIZ keçərli JSON obyekti qaytar, başqa heç nə yazma." });
+        lastErr = Object.assign(new Error("json_validate_failed"), { retryable: true });
+        continue;
+      }
+      // Rate limit / server error → let the queue retry on the next tick.
+      throw Object.assign(new Error("Groq LLM error " + res.status + ": " + errText), {
+        retryable: isRetryableStatus(res.status),
+      });
+    }
+
+    const rawText = (await res.json()).choices?.[0]?.message?.content;
+    try {
+      return parseJsonLoose(rawText);
+    } catch (e) {
+      messages.push({ role: "system", content: "Əvvəlki cavab keçərli JSON deyildi. YALNIZ keçərli JSON obyekti qaytar, başqa heç nə yazma." });
+      lastErr = Object.assign(new Error("json_parse_failed: " + e.message), { retryable: true });
+    }
+  }
+
+  throw lastErr || Object.assign(new Error("Groq JSON failed after retries"), { retryable: true });
 }
 
 // Long calls are analyzed partially to keep the queue moving on the free
@@ -726,7 +902,7 @@ async function claimTicket(db, ticketRef) {
   });
 }
 
-async function runGroqAnalysis(audioBuffer) {
+async function runGroqAnalysis(audioBuffer, analyzeSeconds) {
   const blob = new Blob([audioBuffer], { type: "audio/webm" });
   const groqForm = new FormData();
   groqForm.append("file", blob, "audio.webm");
@@ -750,31 +926,9 @@ async function runGroqAnalysis(audioBuffer) {
     throw err;
   }
 
-  const chatRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      messages: [{ role: "user", content: ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", transcript) }],
-      temperature: 0.2,
-      response_format: { type: "json_object" },
-    }),
-  });
-  if (!chatRes.ok) {
-    const err = new Error("Groq LLM error: " + (await chatRes.text()).slice(0, 300));
-    err.retryable = isRetryableStatus(chatRes.status);
-    throw err;
-  }
-  const rawText = (await chatRes.json()).choices?.[0]?.message?.content;
-  if (!rawText) {
-    const err = new Error("Groq LLM returned no content");
-    err.retryable = true;
-    throw err;
-  }
-  const analysis = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+  // 2. Analysis via Groq LLM — strict JSON schema, self-healing retries.
+  const raw = await callGroqChat(ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", transcript));
+  const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
   return { transcript, analysis };
 }
 
@@ -834,7 +988,7 @@ exports.processAnalysisQueue = onSchedule({
           0, Math.ceil(audioBuffer.length * (analyzeSeconds / totalSeconds)));
       }
 
-      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer);
+      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds);
 
       await analysisRef.set({
         ...analysis,
