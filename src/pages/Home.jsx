@@ -547,20 +547,9 @@ export default function Home({ user }) {
 
                     <button
                       className="btn-chat"
-                      onClick={() => {
-                        if (!user.isPremium) {
-                          navigate('/upgrade');
-                          return;
-                        }
-                        navigate(`/chat/${u.uid || u.id}`);
-                      }}
-                      style={{
-                        background: !user.isPremium
-                          ? 'linear-gradient(135deg, #7c6ff7, #5a4de3)'
-                          : undefined,
-                      }}
+                      onClick={() => navigate(`/user/${u.uid || u.id}`)}
                     >
-                      {user.isPremium ? '💬 Chat & Call' : '⭐ Get Pro'}
+                      👀 View Profile
                     </button>
                   </div>
                 ))}

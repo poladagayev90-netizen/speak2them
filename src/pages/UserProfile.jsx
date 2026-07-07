@@ -85,17 +85,11 @@ export default function UserProfile({ user: currentUser }) {
         {/* Action Buttons */}
         {uid !== currentUser.uid && (
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
-            <button 
-              onClick={() => navigate(`/chat/${uid}`)} 
+            <button
+              onClick={() => navigate(`/chat/${uid}`)}
               style={{ background: '#2e2e50', border: '1px solid #3a3a5a', color: '#fff', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               💬 Chat
-            </button>
-            <button 
-              onClick={() => navigate(`/chat/${uid}`)} 
-              style={{ background: 'linear-gradient(135deg, #7c6ff7, #5a4bdf)', border: 'none', color: '#fff', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(124, 111, 247, 0.4)' }}
-            >
-              📞 Call
             </button>
           </div>
         )}
