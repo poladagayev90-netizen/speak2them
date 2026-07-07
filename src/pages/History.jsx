@@ -8,7 +8,8 @@ import GuidedTour from '../components/GuidedTour';
 const PROFILE_TOUR_STEPS = [
   {
     target: '#tour-analyze',
-    content: 'Zəng bitdikdən sonra etdiyiniz səhvləri, qrammatika və tələffüzünüzü görmək üçün hər zəngin bu analiz düyməsinə klikləyin!',
+    title: 'Analyze Data',
+    content: 'Zəngdən sonra qrammatika, söz seçimi və ümumi nəticənizə buradan baxa bilərsiniz.',
     disableBeacon: true,
   }
 ];
@@ -75,7 +76,6 @@ export default function History({ user }) {
           {history.map((call, idx) => (
             <div 
               key={idx} 
-              id={idx === 0 ? "tour-analyze" : undefined}
               onClick={() => setSelectedAnalysis(call)}
               style={{ 
                 background: 'var(--bg-secondary)', 
@@ -98,20 +98,42 @@ export default function History({ user }) {
                 </div>
               </div>
               
-              {call.overallScore ? (
-                <div style={{ 
-                  background: `${scoreColor(call.overallScore)}22`, 
-                  color: scoreColor(call.overallScore),
-                  padding: '8px 12px',
-                  borderRadius: '12px',
-                  fontWeight: 800,
-                  fontSize: '18px'
-                }}>
-                  {call.overallScore}
-                </div>
-              ) : call.error ? (
-                 <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700 }}>Xəta</div>
-              ) : null}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                {call.overallScore ? (
+                  <div style={{
+                    background: `${scoreColor(call.overallScore)}22`,
+                    color: scoreColor(call.overallScore),
+                    padding: '8px 12px',
+                    borderRadius: '12px',
+                    fontWeight: 800,
+                    fontSize: '18px'
+                  }}>
+                    {call.overallScore}
+                  </div>
+                ) : call.error ? (
+                   <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700 }}>Xəta</div>
+                ) : null}
+                <button
+                  id={idx === 0 ? "tour-analyze" : undefined}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setSelectedAnalysis(call);
+                  }}
+                  style={{
+                    border: '1px solid rgba(124, 111, 247, 0.35)',
+                    background: 'rgba(124, 111, 247, 0.12)',
+                    color: '#a5b4fc',
+                    borderRadius: '10px',
+                    padding: '7px 10px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Analyze Data
+                </button>
+              </div>
             </div>
           ))}
         </div>

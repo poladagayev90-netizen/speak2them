@@ -16,20 +16,24 @@ import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react
 const HOME_TOUR_STEPS = [
   {
     target: '#tour-find-partner',
-    content: 'Sürətli şəkildə İngiliscə danışmaq üçün random partnyor axtarışına burdan qoşula bilərsiniz.',
+    title: 'Random Partner',
+    content: 'Danışıq praktikasına tez başlamaq üçün uyğun partnyor axtarışını buradan başladın.',
     disableBeacon: true,
   },
   {
     target: '#tour-daily-topic',
-    content: 'Zəngdən əvvəl bu günün mövzusu, yeni sözlər və suallarla buradan tanış olun.',
+    title: 'Daily Topic',
+    content: 'Zəngdən əvvəl günün mövzusu, yeni sözlər və hazır suallarla buradan tanış olun.',
   },
   {
     target: '#tour-filters',
-    content: 'Öz səviyyənizə uyğun insanları tapmaq üçün bu filtrlərdən istifadə edin.',
+    title: 'Level Filters',
+    content: 'Səviyyənizə uyğun insanları tapmaq üçün bu filtrlərdən istifadə edin.',
   },
   {
     target: '#tour-ai-chat',
-    content: 'Real insanla danışmağa hazır deyilsinizsə, bizim Süni İntellektlə limitsiz praktika edə bilərsiniz!',
+    title: 'AI Practice',
+    content: 'Real insanla danışmağa hazır deyilsinizsə, AInur ilə dərhal səsli praktika edə bilərsiniz.',
   }
 ];
 
@@ -125,7 +129,12 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
-      <GuidedTour user={user} steps={HOME_TOUR_STEPS} tourKey="tourDone_home" />
+      <GuidedTour
+        user={user}
+        steps={HOME_TOUR_STEPS}
+        tourKey="tourDone_home"
+        disabled={showTopicIntro || dailyTopicOpen}
+      />
       {todayTopic && (
         <TopicDecorations 
           topic={todayTopic.topic} 

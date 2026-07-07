@@ -25,7 +25,8 @@ import { Capacitor } from '@capacitor/core';
 const CHAT_TOUR_STEPS = [
   {
     target: '#tour-translate',
-    content: 'Zəng zamanı bilmədiyiniz sözləri və ya cümlələri anında tərcümə etmək üçün bu düymədən istifadə edin!',
+    title: 'Live Translate',
+    content: 'Zəng zamanı bilmədiyiniz sözləri və ya cümlələri anında tərcümə etmək üçün bu düymədən istifadə edin.',
     disableBeacon: true,
   }
 ];

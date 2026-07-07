@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, Trophy, User } from 'lucide-react';
+import { Bot, Home, MessageCircle, Trophy, User } from 'lucide-react';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ export default function BottomNav({ user }) {
   const tabs = [
     { icon: Home,          label: 'Lobby',   route: '/' },
     { icon: MessageCircle, label: 'Chats',   route: '/chats' },
+    { icon: Bot,           label: 'AI',      route: '/ai-chat', tourId: 'tour-ai-chat' },
     { icon: Trophy,        label: 'Ranking', route: '/ranking' },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
@@ -22,7 +23,7 @@ export default function BottomNav({ user }) {
         return (
           <button
             key={tab.route}
-            id={tab.route === '/chats' ? 'tour-ai-chat' : undefined}
+            id={tab.tourId}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
             onClick={() => navigate(tab.route)}
           >
