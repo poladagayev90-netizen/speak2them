@@ -126,6 +126,26 @@ export default function Chat({ user }) {
     return () => { audio.pause(); };
   }, []);
 
+  // Unmount safety net: if the user navigates away mid-call, stop the mic,
+  // stop the recorder and leave the Agora channel so nothing keeps running.
+  useEffect(() => {
+    return () => {
+      if (callTimeoutRef.current) {
+        clearTimeout(callTimeoutRef.current);
+        callTimeoutRef.current = null;
+      }
+      stopLocalRecording();
+      if (localTrackRef.current) {
+        try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+        localTrackRef.current = null;
+      }
+      if (clientRef.current) {
+        try { clientRef.current.leave(); } catch (e) {}
+        clientRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     getDoc(doc(db, 'users', peerId)).then(d => {
       if (d.exists()) setPeer(d.data());
