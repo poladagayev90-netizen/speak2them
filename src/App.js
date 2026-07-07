@@ -124,7 +124,7 @@ function App() {
               lastSeen: serverTimestamp(),
             }, { merge: true });
           } catch (e) {}
-        }, 60000);
+        }, 120000); // presence heartbeat; keep in sync with the 300s online window
 
         const goOffline = async () => {
           try {

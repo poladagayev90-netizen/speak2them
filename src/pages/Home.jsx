@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { collection, doc, onSnapshot, query, where, limit } from 'firebase/firestore';
+import { collection, doc, getDocs, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
@@ -106,31 +106,44 @@ export default function Home({ user }) {
 
 
 
-  // ✅ Optimized — yalnız son 3 dəqiqədə aktiv olan 50 user
+  // Polled instead of a live listener: with a live query every user's
+  // presence heartbeat would be re-streamed to every Home viewer (read
+  // amplification). 60s polling is fresh enough for an online list.
+  // Online window is 300s to stay coherent with the 120s heartbeat.
   useEffect(() => {
-    const cutoff = new Date(Date.now() - 180000);
-    const q = query(
-      collection(db, 'users'),
-      where('lastSeen', '>', cutoff),
-      limit(50)
-    );
-    const unsub = onSnapshot(q, (snap) => {
-      const now = Date.now();
-      const online = [];
-      const all = [];
-      snap.docs.forEach(d => {
-        const data = d.data();
-        const u = { id: d.id, ...data, uid: data.uid || d.id };
-        if (u.uid === user.uid || u.id === user.uid) return;
-        all.push(u);
-        if (!u.lastSeen) return;
-        const lastSeen = u.lastSeen.toMillis?.() || 0;
-        if (now - lastSeen < 180000 || u.uid === ADMIN_UID) online.push(u);
-      });
-      setOnlineUsers(online);
-      setAllUsers(all);
-    });
-    return unsub;
+    let cancelled = false;
+
+    const loadUsers = async () => {
+      try {
+        const cutoff = new Date(Date.now() - 300000);
+        const snap = await getDocs(query(
+          collection(db, 'users'),
+          where('lastSeen', '>', cutoff),
+          limit(50)
+        ));
+        if (cancelled) return;
+        const now = Date.now();
+        const online = [];
+        const all = [];
+        snap.docs.forEach(d => {
+          const data = d.data();
+          const u = { id: d.id, ...data, uid: data.uid || d.id };
+          if (u.uid === user.uid || u.id === user.uid) return;
+          all.push(u);
+          if (!u.lastSeen) return;
+          const lastSeen = u.lastSeen.toMillis?.() || 0;
+          if (now - lastSeen < 300000 || u.uid === ADMIN_UID) online.push(u);
+        });
+        setOnlineUsers(online);
+        setAllUsers(all);
+      } catch (e) {
+        console.error('[Home] users load failed:', e);
+      }
+    };
+
+    loadUsers();
+    const interval = setInterval(loadUsers, 60000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [user.uid]);
 
 
@@ -554,8 +567,8 @@ export default function Home({ user }) {
                           <span style={{ fontSize: '11px', color: '#7c6ff7' }}>⭐ Pro al — tam gör</span>
                         )}
                       </div>
-                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 180000 ? 'online' : 'offline'}`}>
-                        {u.lastSeen?.toMillis?.() > Date.now() - 180000 ? '🟢 Online' : '⚫ Offline'}
+                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 300000 ? 'online' : 'offline'}`}>
+                        {u.lastSeen?.toMillis?.() > Date.now() - 300000 ? '🟢 Online' : '⚫ Offline'}
                       </span>
                     </div>
 
