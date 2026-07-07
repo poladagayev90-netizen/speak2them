@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 
 const firebaseConfig = {
@@ -22,11 +23,13 @@ if (missingKeys.length > 0) {
 let app;
 let auth;
 let db;
+let storage;
 
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  storage = getStorage(app);
 } catch (error) {
   console.error('[Firebase] Failed to initialize Firebase:', error);
   throw error;
@@ -57,5 +60,5 @@ export async function registerFcmToken(uid) {
   }
 }
 
-export { auth, db, GoogleAuthProvider, signInWithPopup };
+export { auth, db, storage, GoogleAuthProvider, signInWithPopup };
 export default app;

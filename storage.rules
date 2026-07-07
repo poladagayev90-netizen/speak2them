@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Post-call recordings: users may only upload into their own folder.
+    // Reads/deletes happen server-side via the Admin SDK (bypasses rules).
+    match /callRecordings/{userId}/{fileName} {
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 15 * 1024 * 1024
+        && request.resource.contentType.matches('audio/.*');
+      allow read: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

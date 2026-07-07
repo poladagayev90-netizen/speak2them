@@ -5,7 +5,7 @@ import {
   query, orderBy, serverTimestamp,
   doc, getDoc, setDoc, updateDoc, runTransaction
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
@@ -16,6 +16,7 @@ import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
+import { uploadCallRecording } from '../utils/recordingUpload';
 import TranslateWidget from '../components/TranslateWidget';
 import PictureDescribing from '../components/PictureDescribing';
 import PostCallQuizModal from '../components/PostCallQuizModal';
@@ -504,106 +505,14 @@ export default function Chat({ user }) {
       callTimeoutRef.current = null;
     }
 
-    // Stop recording and store blob
+    // Stop recording and upload it to Storage in the background;
+    // the server-side analysis queue picks it up from there.
     const recordingBlob = await stopLocalRecording();
     if (recordingBlob) {
       audioBlobRef.current = recordingBlob;
       console.log('[Chat] Recording stored, size:', recordingBlob.size);
-      
-      // Send for background transcription and analysis
-      const processTranscription = async () => {
-        try {
-          const reader = new FileReader();
-          reader.readAsDataURL(recordingBlob);
-          reader.onloadend = async () => {
-            const base64Audio = reader.result.split(',')[1];
-            
-            const token = await auth.currentUser.getIdToken();
-            const promptStr = `Sən təcrübəli İngilis dili müəllimisən.
-Bu tələbənin danışığının transkriptidir: {{TRANSCRIPT}}
-Qrammatik və lüğət səhvlərini tap.
-Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazma:
-{
-  "overallScore": 85,
-  "encouragement": "Qısa ruhlandırıcı mesaj",
-  "fluencyScore": 80,
-  "talkRatio": 50,
-  "vocabularyUsed": ["söz1", "söz2"],
-  "grammarFixes": [
-    { "original": "səhv cümlə", "corrected": "düzgün cümlə", "why": "izahı" }
-  ]
-}`;
-            // Random jitter (0-20 seconds) to spread out API requests if 
-            // hundreds of users finish their 30-min call at the exact same millisecond
-            const jitterMs = Math.floor(Math.random() * 20000);
-            await new Promise(r => setTimeout(r, jitterMs));
-
-            const attemptFetch = async (retries = 3) => {
-              try {
-                const res = await fetch(`${FUNCTIONS_BASE}/analyzeCallOpenAI`, {
-                  method: 'POST',
-                  headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                  },
-                  body: JSON.stringify({ base64Audio, prompt: promptStr })
-                });
-                if (!res.ok) {
-                  if (retries > 0) {
-                    await new Promise(r => setTimeout(r, 5000)); // 5s backoff
-                    return await attemptFetch(retries - 1);
-                  }
-                  return { ok: false, errText: await res.text() };
-                }
-                return { ok: true, data: await res.json() };
-              } catch (e) {
-                if (retries > 0) {
-                  await new Promise(r => setTimeout(r, 5000)); // 5s backoff
-                  return await attemptFetch(retries - 1);
-                }
-                return { ok: false, errText: e.message };
-              }
-            };
-
-            const result = await attemptFetch();
-            
-            if (result.ok) {
-              const data = result.data;
-              console.log('[Chat] Analysis successful:', data);
-              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
-                ...data.analysis,
-                transcript: data.transcript,
-                timestamp: serverTimestamp(),
-                userId: user.uid,
-                peerName: peer?.name || 'Unknown User',
-                durationSeconds: callSecondsRef.current
-              });
-              await updateDoc(doc(db, 'calls', callDocId), {
-                [`transcript_${user.uid}`]: data.transcript
-              });
-            } else {
-              console.error('[Chat] Analysis failed:', result.errText);
-              await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
-                error: result.errText,
-                timestamp: serverTimestamp(),
-                userId: user.uid,
-                peerName: peer?.name || 'Unknown User',
-                durationSeconds: callSecondsRef.current
-              });
-            }
-          };
-        } catch (e) {
-          console.error('[Chat] Background transcription error:', e);
-          await setDoc(doc(db, 'callAnalysis', `${user.uid}_${callDocId}_${sessionIdRef.current}`), {
-            error: e.message,
-            timestamp: serverTimestamp(),
-            userId: user.uid,
-            peerName: peer?.name || 'Unknown User',
-            durationSeconds: callSecondsRef.current
-          });
-        }
-      };
-      processTranscription();
+      uploadCallRecording(recordingBlob, user.uid, callDocId, sessionIdRef.current)
+        .catch((e) => console.error('[Chat] Recording upload failed:', e));
     }
 
     const secondsTalked = callSecondsRef.current;
@@ -765,7 +674,7 @@ Ciddi şəkildə aşağıdakı JSON formatında cavab ver, əlavə heç nə yazm
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user, callTranslations.length, peer]);
+  }, [callDocId, peerId, user, callTranslations.length]);
 
   endCallRef.current = endCall;
 
