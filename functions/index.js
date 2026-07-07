@@ -9,7 +9,6 @@ admin.initializeApp();
 const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
 const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
 const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
-const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 const DEEPSEEK_API_KEY = defineSecret("DEEPSEEK_API_KEY");
 const DEEPGRAM_API_KEY = defineSecret("DEEPGRAM_API_KEY");
@@ -343,93 +342,6 @@ exports.topicReminder = onSchedule({
     failed,
     invalidTokensRemoved: invalidTokenRefs.length,
   });
-});
-
-// ─── OpenAI Audio Analysis Proxy ──────────────────────────────────
-exports.analyzeCallOpenAI = onRequest({ secrets: [OPENAI_API_KEY, GROQ_API_KEY], memory: "1GiB" }, async (req, res) => {
-  setCors(res);
-  if (req.method === "OPTIONS") return res.status(204).send("");
-
-  let decoded;
-  try {
-    decoded = await verifyAuth(req);
-  } catch {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const { base64Audio, prompt } = req.body;
-  if (!base64Audio || !prompt) {
-    return res.status(400).json({ error: "base64Audio and prompt required" });
-  }
-
-  try {
-    const audioBuffer = Buffer.from(base64Audio, "base64");
-    if (audioBuffer.length < 100) {
-      return res.status(400).json({ error: "Audio file is too small or empty. Please speak clearly into the microphone." });
-    }
-    const blob = new Blob([audioBuffer], { type: "audio/webm" });
-
-    // 1. Transcription via Groq Whisper
-    const groqForm = new FormData();
-    groqForm.append("file", blob, "audio.webm");
-    groqForm.append("model", "whisper-large-v3-turbo");
-    groqForm.append("response_format", "json");
-
-    const groqRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
-      body: groqForm
-    });
-
-    if (!groqRes.ok) {
-      const err = await groqRes.text();
-      return res.status(500).json({ error: "Groq Whisper error: " + err });
-    }
-
-    const groqData = await groqRes.json();
-    const transcript = groqData.text;
-
-    if (prompt === "JUST_TRANSCRIBE_GROQ") {
-      return res.status(200).json({ transcript });
-    }
-
-    if (!transcript || transcript.trim() === "") {
-      return res.status(400).json({ error: "Could not hear any speech in the audio." });
-    }
-
-    // 2. Grammar Analysis via Groq Llama-3
-    const fullPrompt = prompt.replace("{{TRANSCRIPT}}", transcript);
-
-    const chatRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY.value()}`
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [{ role: "user", content: fullPrompt }],
-        temperature: 0.2,
-        response_format: { type: "json_object" }
-      })
-    });
-
-    if (!chatRes.ok) {
-      const err = await chatRes.text();
-      return res.status(500).json({ error: "Groq LLM error: " + err });
-    }
-
-    const chatData = await chatRes.json();
-    const rawText = chatData.choices?.[0]?.message?.content;
-    if (!rawText) return res.status(500).json({ error: "No response from Groq LLM" });
-
-    const clean = rawText.replace(/```json|```/g, "").trim();
-    res.status(200).json({ transcript, analysis: JSON.parse(clean) });
-
-  } catch (error) {
-    console.error("[Groq] Function error:", error);
-    res.status(500).json({ error: error.message });
-  }
 });
 
 // ─── Peer Təhlükəsiz Yeniləmə (Rating & Badges) ─────────────
