@@ -897,6 +897,43 @@ function sessionPairScore(a, b) {
   return score;
 }
 
+// One reminder push to every registered device, 15 min before the session.
+async function broadcastSessionReminder(db, startLabel) {
+  const usersSnap = await db.collection("users").get();
+  const usersWithTokens = usersSnap.docs
+    .map((d) => ({ ref: d.ref, ...d.data() }))
+    .filter((u) => typeof u.fcmToken === "string" && u.fcmToken.trim());
+
+  let sent = 0;
+  const invalidTokenRefs = [];
+  for (let i = 0; i < usersWithTokens.length; i += DAILY_REMINDER_BATCH_SIZE) {
+    const batch = usersWithTokens.slice(i, i + DAILY_REMINDER_BATCH_SIZE);
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens: batch.map((u) => u.fcmToken),
+      data: {
+        title: "Axşam sessiyasına az qaldı! 🧪",
+        body: `Sessiya ${startLabel}-da başlayır — günün mövzusuna bax və hazır ol.`,
+        type: "session_reminder",
+        url: "/",
+      },
+    });
+    sent += response.successCount;
+    response.responses.forEach((result, index) => {
+      const code = result.error?.code;
+      if (
+        code === "messaging/invalid-registration-token" ||
+        code === "messaging/registration-token-not-registered"
+      ) {
+        invalidTokenRefs.push(batch[index].ref);
+      }
+    });
+  }
+  await Promise.all(invalidTokenRefs.map((ref) => ref.update({
+    fcmToken: admin.firestore.FieldValue.delete(),
+  }).catch(() => null)));
+  console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", invalidTokenRefs.length);
+}
+
 exports.matchSessionQueue = onSchedule({
   schedule: "every 1 minutes",
   timeZone: "Asia/Baku",
@@ -911,7 +948,24 @@ exports.matchSessionQueue = onSchedule({
   const bakuDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Baku" }).format(new Date());
   const startMs = Date.parse(`${bakuDate}T${pad(cfg.hour)}:${pad(cfg.minute)}:00+04:00`);
   const endMs = startMs + cfg.bufferMinutes * 60 * 1000;
-  if (Date.now() < endMs) return;
+  const now = Date.now();
+
+  // Reminder window: 15 min before start, sent once (guarded by marker doc).
+  if (now >= startMs - 15 * 60 * 1000 && now < startMs) {
+    const remRef = db.collection("sessionRuns").doc(`${bakuDate}_reminder`);
+    const remClaimed = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(remRef);
+      if (snap.exists) return false;
+      tx.set(remRef, { sentAt: admin.firestore.FieldValue.serverTimestamp() });
+      return true;
+    });
+    if (remClaimed) {
+      await broadcastSessionReminder(db, `${pad(cfg.hour)}:${pad(cfg.minute)}`);
+    }
+    return;
+  }
+
+  if (now < endMs) return;
 
   const runRef = db.collection("sessionRuns").doc(bakuDate);
   const claimed = await db.runTransaction(async (tx) => {
