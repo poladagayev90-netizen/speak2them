@@ -10,10 +10,11 @@ import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
 import { useSessionQueue } from '../hooks/useSessionQueue';
+import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
 import { ADMIN_UID } from '../constants';
 import GuidedTour from '../components/GuidedTour';
-import { Award, Shuffle, Search, X, Globe, Shield, BookOpen } from 'lucide-react';
+import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 const HOME_TOUR_STEPS = [
   {
@@ -252,8 +253,12 @@ export default function Home({ user }) {
               )}
               {sessionJoined && (
                 <>
-                  <p style={{ color: '#666', fontSize: '13px', margin: '0 0 10px' }}>
-                    Qoşuldun! Eşləşmə hazırlanır — zəngin avtomatik başlayacaq.
+                  <FlaskSearchOverlay
+                    fullscreen={false}
+                    title="Eşləşmə hazırlanır…"
+                  />
+                  <p style={{ color: '#666', fontSize: '13px', margin: '6px 0 10px' }}>
+                    Qoşuldun! Zəngin avtomatik başlayacaq.
                   </p>
                   <button
                     onClick={leaveSession}
@@ -312,15 +317,13 @@ export default function Home({ user }) {
           }
         </button>
 
-        {searching && (
-          <div className="searching-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
-              <Search size={16} color="#7c6ff7" />
-              <p style={{ color: '#7c6ff7', fontWeight: 600, fontSize: '14px' }}>Uyğun partnyor axtarılır...</p>
-            </div>
-            <p style={{ color: '#666', fontSize: '12px' }}>Birisi sizi tapanda avtomatik qoşulacaqsınız</p>
-          </div>
-        )}
+        <FlaskSearchOverlay
+          visible={searching}
+          title="Tərəfdaş axtarılır…"
+          subtitle="Laboratoriyada uyğun partnyor hazırlanır — tapılan kimi zəng avtomatik başlayacaq"
+          onCancel={cancelSearch}
+          cancelLabel="Axtarışı dayandır"
+        />
 
         {compensationMsg && (
           <div style={{
