@@ -47,6 +47,27 @@ async function verifyAuth(req) {
   return admin.auth().verifyIdToken(token);
 }
 
+// Every AI endpoint costs money per call and was callable in a loop by any
+// signed-in account. A rolling-window counter per user per endpoint keeps a
+// real user well clear of the limit while bounding what one account can spend.
+// The rateLimits collection is denied to clients by the catch-all rule.
+async function enforceRateLimit(uid, key, maxCalls, windowMs) {
+  const ref = admin.firestore().collection("rateLimits").doc(`${uid}_${key}`);
+  const allowed = await admin.firestore().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const now = Date.now();
+    const data = snap.exists ? snap.data() : null;
+    const windowStart = data && now - data.windowStart < windowMs ? data.windowStart : now;
+    const count = windowStart === (data && data.windowStart) ? (data.count || 0) : 0;
+    if (count >= maxCalls) return false;
+    tx.set(ref, { windowStart, count: count + 1 });
+    return true;
+  });
+  if (!allowed) {
+    throw Object.assign(new Error(`Rate limit reached for ${key}`), { httpStatus: 429 });
+  }
+}
+
 // ─── Agora Token ───────────────────────────────────────────────
 exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (req, res) => {
   setCors(res, "GET, POST");
@@ -480,10 +501,17 @@ exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY], invoker: "public
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
+  let decoded;
   try {
-    await verifyAuth(req);
+    decoded = await verifyAuth(req);
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    await enforceRateLimit(decoded.uid, "generateQuiz", 20, 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(429).json({ error: "Çox sürətli — bir azdan yenidən cəhd et." });
   }
 
   const { translatedItems } = req.body;
@@ -578,9 +606,23 @@ exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memo
     return res.status(401).json({ error: "Unauthorized" });
   }
 
+  try {
+    await enforceRateLimit(decoded.uid, "chatWithAI", 40, 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(429).json({ error: "Çox sürətli — bir azdan yenidən cəhd et." });
+  }
+
   const { base64Audio, history = [], userLevel = 'B1', topic = 'General' } = req.body;
   if (!base64Audio) {
     return res.status(400).json({ error: "base64Audio required" });
+  }
+  // ~6 MB of audio. Unbounded, a single request could exhaust the 1 GiB
+  // instance and be billed for the transcription of anything sent.
+  if (typeof base64Audio !== "string" || base64Audio.length > 8000000) {
+    return res.status(413).json({ error: "Audio too large" });
+  }
+  if (!Array.isArray(history) || history.length > 20) {
+    return res.status(400).json({ error: "history must be an array of at most 20 turns" });
   }
 
   try {

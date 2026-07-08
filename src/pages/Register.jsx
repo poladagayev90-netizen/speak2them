@@ -33,7 +33,6 @@ export default function Register() {
         rating: 0,
         ratingCount: 0,
         surveyDone: false,
-        isPro: true, // 1-month trial promotion
         createdAt: serverTimestamp(),
         lastSeen: serverTimestamp(),
       });
@@ -68,8 +67,7 @@ export default function Register() {
           rating: 0,
           ratingCount: 0,
           surveyDone: false,
-          isPro: true, // 1-month trial promotion
-          createdAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
           lastSeen: serverTimestamp(),
         });
       }

@@ -13,13 +13,16 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // 'isPro' was written by the client and read by nothing. It stays on the
+    // list so it can never become a self-service premium flag if some view
+    // starts honouring it later.
     function isNotChangingPremiumFields() {
       return !request.resource.data.diff(resource.data).affectedKeys()
-        .hasAny(['isPremium', 'premiumSince', 'premiumPlan']);
+        .hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro']);
     }
 
     function isNotCreatingPremiumFields() {
-      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan']);
+      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro']);
     }
 
     match /users/{userId} {

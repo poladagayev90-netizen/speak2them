@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
-  query, orderBy, serverTimestamp,
+  query, orderBy, limitToLast, serverTimestamp,
   doc, getDoc, setDoc, updateDoc, runTransaction, increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -175,7 +175,13 @@ export default function Chat({ user }) {
       updatedAt: serverTimestamp(),
     }, { merge: true }).catch(console.error);
 
-    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+    // Unbounded, this re-read every message in the thread on every mount and
+    // streamed the whole history to each participant.
+    const q = query(
+      collection(db, 'chats', chatId, 'messages'),
+      orderBy('createdAt', 'asc'),
+      limitToLast(200)
+    );
     const unsub = onSnapshot(q, (snap) => {
       const msgs = snap.docs
         .map((d) => {

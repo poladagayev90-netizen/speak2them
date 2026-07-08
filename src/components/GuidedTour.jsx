@@ -8,6 +8,7 @@ import './GuidedTour.css';
 const START_DELAY_MS = 700;
 const TARGET_RETRY_MS = 250;
 const MAX_TARGET_RETRIES = 20;
+const GUIDED_TOUR_ENABLED = false;
 
 function getCreatedAtMillis(createdAt) {
   if (!createdAt) return 0;
@@ -100,7 +101,7 @@ function PremiumTourTooltip({
   );
 }
 
-export default function GuidedTour({ user, steps = [], tourKey, disabled = false }) {
+function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
   const [activeSteps, setActiveSteps] = useState([]);
   const [dismissed, setDismissed] = useState(false);
   const [run, setRun] = useState(false);
@@ -309,4 +310,9 @@ export default function GuidedTour({ user, steps = [], tourKey, disabled = false
       }}
     />
   );
+}
+
+export default function GuidedTour(props) {
+  if (!GUIDED_TOUR_ENABLED) return null;
+  return <GuidedTourImpl {...props} />;
 }
