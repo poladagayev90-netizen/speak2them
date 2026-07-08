@@ -337,7 +337,7 @@ function getTodayTopic() {
 
 // ─── Topic Practice Reminder ──────────────────────────────────
 exports.topicReminder = onSchedule({
-  schedule: "0 10,15 * * *",
+  schedule: "0 10,15,21 * * *",
   timeZone: "Asia/Baku",
 }, async () => {
   const usersSnap = await admin.firestore().collection("users").get();
@@ -509,7 +509,7 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
 // CORS preflight (an OPTIONS with no Authorization header) before our handler
 // runs, so the response carries no Access-Control-Allow-Origin and the browser
 // reports a CORS failure. Callers are still authenticated by verifyAuth below.
-exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY], invoker: "public" }, async (req, res) => {
+exports.generateQuiz = onRequest({ secrets: [GROQ_API_KEY], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
@@ -565,28 +565,28 @@ exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY], invoker: "public
       }
     `;
 
-    const deepseekRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY.value()}`
+        "Authorization": `Bearer ${GROQ_API_KEY.value()}`
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
     });
 
-    if (!deepseekRes.ok) {
-      const err = await deepseekRes.text().catch(() => "");
-      console.error("[generateQuiz] DeepSeek error:", deepseekRes.status, err);
-      return res.status(500).json({ error: `DeepSeek error: ${deepseekRes.status}` });
+    if (!groqRes.ok) {
+      const err = await groqRes.text().catch(() => "");
+      console.error("[generateQuiz] Groq error:", groqRes.status, err);
+      return res.status(500).json({ error: `Groq error: ${groqRes.status}` });
     }
 
-    const data = await deepseekRes.json();
+    const data = await groqRes.json();
     const responseText = data.choices?.[0]?.message?.content;
-    if (!responseText) return res.status(500).json({ error: "No response from DeepSeek" });
+    if (!responseText) return res.status(500).json({ error: "No response from Groq" });
 
     const parsed = parseJsonLoose(responseText);
 
@@ -624,7 +624,7 @@ exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memo
     return res.status(429).json({ error: "Çox sürətli — bir azdan yenidən cəhd et." });
   }
 
-  const { base64Audio, history = [], userLevel = 'B1', topic = 'General' } = req.body;
+  const { base64Audio, history = [], userLevel = 'B1', topic = 'General', mimeType = 'audio/webm' } = req.body;
   if (!base64Audio) {
     return res.status(400).json({ error: "base64Audio required" });
   }
@@ -642,11 +642,12 @@ exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memo
     if (audioBuffer.length < 100) {
       return res.status(400).json({ error: "Audio file is too small." });
     }
-    const blob = new Blob([audioBuffer], { type: "audio/webm" });
+    const blob = new Blob([audioBuffer], { type: mimeType });
+    const ext = mimeType.includes("mp4") ? "mp4" : "webm";
 
     // 1. Transcription via Groq Whisper
     const groqForm = new FormData();
-    groqForm.append("file", blob, "audio.webm");
+    groqForm.append("file", blob, `audio.${ext}`);
     groqForm.append("model", "whisper-large-v3-turbo");
     groqForm.append("response_format", "json");
 
@@ -1132,10 +1133,11 @@ async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, messa
   });
 }
 
-async function runGroqAnalysis(audioBuffer, analyzeSeconds) {
-  const blob = new Blob([audioBuffer], { type: "audio/webm" });
+async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm") {
+  const mime = ext === "mp4" ? "audio/mp4" : "audio/webm";
+  const blob = new Blob([audioBuffer], { type: mime });
   const groqForm = new FormData();
-  groqForm.append("file", blob, "audio.webm");
+  groqForm.append("file", blob, `audio.${ext}`);
   groqForm.append("model", "whisper-large-v3-turbo");
   groqForm.append("response_format", "json");
 
@@ -1252,7 +1254,8 @@ exports.processAnalysisQueue = onSchedule({
           0, Math.ceil(audioBuffer.length * (analyzeSeconds / totalSeconds)));
       }
 
-      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds);
+      const ext = (ticket.storagePath || "").includes(".mp4") ? "mp4" : "webm";
+      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds, ext);
 
       await analysisRef.set({
         ...analysis,

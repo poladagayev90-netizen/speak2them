@@ -40,7 +40,16 @@ export default function AIChat({ user }) {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      
+      let options = { mimeType: 'audio/webm' };
+      if (!MediaRecorder.isTypeSupported('audio/webm')) {
+          options = { mimeType: 'audio/mp4' };
+      }
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options = {};
+      }
+      
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
@@ -63,8 +72,9 @@ export default function AIChat({ user }) {
         setStatus("processing");
         mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
         
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        await sendAudioToAI(audioBlob);
+        const actualMime = mediaRecorderRef.current.mimeType || "audio/webm";
+        const audioBlob = new Blob(audioChunksRef.current, { type: actualMime });
+        await sendAudioToAI(audioBlob, actualMime);
       };
       mediaRecorderRef.current.stop();
     } else {
@@ -72,7 +82,7 @@ export default function AIChat({ user }) {
     }
   };
 
-  const sendAudioToAI = async (blob) => {
+  const sendAudioToAI = async (blob, mimeType) => {
     try {
       const reader = new FileReader();
       reader.readAsDataURL(blob);
@@ -89,6 +99,7 @@ export default function AIChat({ user }) {
             },
             body: JSON.stringify({
               base64Audio: base64Data,
+              mimeType: mimeType,
               history: history,
               userLevel: userLevel,
               topic: topic

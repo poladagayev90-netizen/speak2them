@@ -21,11 +21,18 @@ export function startLocalRecording(localAgoraTrack) {
     // remoteGainNode = audioContext.createGain();
     // remoteGainNode.connect(mixedDestination);
 
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? 'audio/webm;codecs=opus'
-      : 'audio/webm';
+    let options = { mimeType: 'audio/webm;codecs=opus' };
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+      options = { mimeType: 'audio/webm' };
+    }
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+      options = { mimeType: 'audio/mp4' };
+    }
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+      options = {};
+    }
 
-    mediaRecorder = new MediaRecorder(mixedDestination.stream, { mimeType });
+    mediaRecorder = new MediaRecorder(mixedDestination.stream, options);
     mediaRecorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) audioChunks.push(e.data);
     };
@@ -56,7 +63,8 @@ export function stopLocalRecording() {
       return;
     }
     mediaRecorder.onstop = async () => {
-      const webmBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const actualMime = mediaRecorder.mimeType || 'audio/webm';
+      const audioBlob = new Blob(audioChunks, { type: actualMime });
       audioChunks = [];
       // Cleanup
       try { localSource?.disconnect(); } catch (e) {}
@@ -66,16 +74,17 @@ export function stopLocalRecording() {
       mixedDestination = null;
       localSource = null;
       remoteGainNode = null;
+      const recMime = mediaRecorder.mimeType;
       mediaRecorder = null;
       
-      console.log('[Recorder] Stopped. WebM size:', webmBlob.size);
-      if (webmBlob.size < 100) {
+      console.log(`[Recorder] Stopped. Size: ${audioBlob.size}, Mime: ${actualMime}`);
+      if (audioBlob.size < 100) {
         return resolve(null);
       }
       
-      // Sending raw WebM instead of WAV to reduce file size by 10x
+      // Sending raw audio blob to reduce file size
       // This prevents hitting the Groq 25MB API limit for long calls
-      resolve(webmBlob);
+      resolve(audioBlob);
     };
     mediaRecorder.stop();
   });

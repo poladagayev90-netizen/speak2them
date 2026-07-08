@@ -898,15 +898,26 @@ export default function Chat({ user }) {
               color: 'white', border: 'none', borderRadius: '12px',
               fontSize: '16px', fontWeight: 700, cursor: selectedStar > 0 ? 'pointer' : 'not-allowed', marginBottom: '12px',
             }}>Göndər</button>
-            <button onClick={() => setShowRating(false)} style={{
-              background: 'transparent', border: 'none', color: '#888', fontSize: '13px', cursor: 'pointer',
-            }}>Keç</button>
+            
+            <button onClick={() => {
+              setShowRating(false);
+              if (callTranslations.length > 0) {
+                setShowPostQuiz(true);
+              }
+            }} style={{
+              width: '100%', padding: '12px',
+              background: 'transparent', border: '2px solid #2e2e50', color: '#a1a1aa', borderRadius: '12px',
+              fontSize: '15px', fontWeight: 600, cursor: 'pointer', marginBottom: '12px'
+            }}>İndi yox (Keç)</button>
 
-            <button onClick={() => setShowInsights(true)} style={{
-              width: '100%', padding: '14px',
-              background: '#2e2e50', color: 'white', border: 'none', borderRadius: '12px',
-              fontSize: '16px', fontWeight: 700, cursor: 'pointer', marginBottom: '12px',
-            }}>Səs Analizi</button>
+            <button onClick={() => {
+              setShowRating(false);
+              setShowInsights(true);
+            }} style={{
+              width: '100%', padding: '12px',
+              background: 'rgba(124, 111, 247, 0.15)', color: '#7c6ff7', border: 'none', borderRadius: '12px',
+              fontSize: '15px', fontWeight: 600, cursor: 'pointer'
+            }}>Səs Analizinə Bax</button>
           </div>
         </div>
       )}
