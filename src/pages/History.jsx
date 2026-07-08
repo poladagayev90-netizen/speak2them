@@ -23,16 +23,27 @@ export default function History({ user }) {
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
+      const base = [collection(db, 'callAnalysis'), where('userId', '==', user.uid)];
+      const run = async (ordered) => getDocs(
+        ordered
+          ? query(...base, orderBy('timestamp', 'desc'), limit(50))
+          : query(...base, limit(50))
+      );
       try {
-        const q = query(
-          collection(db, 'callAnalysis'),
-          where('userId', '==', user.uid),
-          orderBy('timestamp', 'desc'),
-          limit(50)
-        );
-        const snap = await getDocs(q);
-        const results = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Sort descending locally because Firestore requires a composite index if we mix where and orderBy
+        let snap;
+        try {
+          snap = await run(true);
+        } catch (e) {
+          // The composite index (userId, timestamp desc) may not exist yet —
+          // fall back to an unordered read; the local sort below covers it.
+          if (e.code !== 'failed-precondition') throw e;
+          console.warn('[History] composite index missing, falling back');
+          snap = await run(false);
+        }
+        const results = snap.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          // Tickets still in the queue carry no analysis yet.
+          .filter(d => d.status !== 'queued' && d.status !== 'processing' && d.status !== 'failed');
         results.sort((a, b) => {
           const tA = a.timestamp?.seconds || 0;
           const tB = b.timestamp?.seconds || 0;
