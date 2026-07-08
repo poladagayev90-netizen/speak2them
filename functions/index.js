@@ -391,6 +391,25 @@ exports.topicReminder = onSchedule({
   });
 });
 
+exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
+  const usersSnap = await admin.firestore().collection("users").get();
+  const usersWithTokens = usersSnap.docs
+    .map(docSnap => ({ ref: docSnap.ref, ...docSnap.data() }))
+    .filter(user => typeof user.fcmToken === "string" && user.fcmToken.trim());
+
+  if (usersWithTokens.length === 0) return res.status(200).json({ error: "No users with tokens" });
+
+  const response = await admin.messaging().sendEachForMulticast({
+    tokens: usersWithTokens.map(u => u.fcmToken),
+    notification: {
+      title: "🛠️ SpeakLab Test Mesajı",
+      body: "Bu mesaj push bildirişlərinin düzgün işlədiyini yoxlamaq üçün göndərilmişdir.",
+    },
+  });
+
+  res.status(200).json({ sent: response.successCount, failed: response.failureCount, users: usersWithTokens.length });
+});
+
 // ─── Peer Təhlükəsiz Yeniləmə (Rating & Badges) ─────────────
 exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);

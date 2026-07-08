@@ -74,7 +74,6 @@ export function stopLocalRecording() {
       mixedDestination = null;
       localSource = null;
       remoteGainNode = null;
-      const recMime = mediaRecorder.mimeType;
       mediaRecorder = null;
       
       console.log(`[Recorder] Stopped. Size: ${audioBlob.size}, Mime: ${actualMime}`);
