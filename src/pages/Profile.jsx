@@ -95,25 +95,25 @@ export default function Profile({ user }) {
 
   if (isEditing) {
     return (
-      <div className="profile-page" style={{ backgroundColor: '#0f0f0f', padding: '16px', paddingBottom: '120px' }}>
+      <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
-          <h2 style={{ fontSize: '18px', margin: 0, color: '#fff' }}>Edit Profile</h2>
-          <button onClick={() => { handleSave(); setIsEditing(false); }} style={{ background: 'none', border: 'none', color: '#7c6ff7', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
+          <h2 style={{ fontSize: '18px', margin: 0, color: 'var(--text-primary)' }}>Edit Profile</h2>
+          <button onClick={() => { handleSave(); setIsEditing(false); }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
             {saved ? 'Saved' : loading ? '...' : 'Save'}
           </button>
         </div>
-        <div className="profile-form" style={{ background: '#1e1e30', padding: '20px', borderRadius: '16px' }}>
-          <label style={{ color: '#a1a1aa', fontSize: '12px' }}>Full Name</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ background: '#151520', border: 'none', color: '#fff', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }} />
+        <div className="profile-form" style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '16px' }}>
+          <label style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Full Name</label>
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-primary)', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }} />
           
-          <label style={{ color: '#a1a1aa', fontSize: '12px' }}>English Level</label>
-          <select value={level} onChange={e => setLevel(e.target.value)} style={{ background: '#151520', border: 'none', color: '#fff', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }}>
+          <label style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>English Level</label>
+          <select value={level} onChange={e => setLevel(e.target.value)} style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-primary)', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }}>
             {LEVELS.map(l => <option key={l}>{l}</option>)}
           </select>
           
-          <label style={{ color: '#a1a1aa', fontSize: '12px' }}>Bio Status</label>
-          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself..." rows={3} style={{ background: '#151520', border: 'none', color: '#fff', padding: '12px', borderRadius: '8px', width: '100%' }} />
+          <label style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Bio Status</label>
+          <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself..." rows={3} style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-primary)', padding: '12px', borderRadius: '8px', width: '100%' }} />
         </div>
       </div>
     );
@@ -126,11 +126,11 @@ export default function Profile({ user }) {
   };
 
   return (
-    <div className="profile-page" style={{ backgroundColor: '#0f0f0f', padding: '16px', paddingBottom: '120px' }}>
+    <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
       
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '16px', cursor: 'pointer' }}>Edit</button>
+        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '16px', cursor: 'pointer' }}>Edit</button>
         <button onClick={handleSettingsClick} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>⚙️</button>
       </div>
 
@@ -138,54 +138,54 @@ export default function Profile({ user }) {
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         
         {/* Fake Topic Bubble */}
-        <div style={{ display: 'inline-block', background: '#2e2e50', color: '#a1a1aa', fontSize: '12px', padding: '6px 12px', borderRadius: '20px', marginBottom: '12px', position: 'relative' }}>
+        <div style={{ display: 'inline-block', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '12px', padding: '6px 12px', borderRadius: '20px', marginBottom: '12px', position: 'relative' }}>
           Set a topic...
-          <div style={{ position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid #2e2e50' }}></div>
+          <div style={{ position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid var(--border)' }}></div>
         </div>
 
         {/* Avatar */}
         <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 16px' }}>
-          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #3a3a5a, #1e1e30)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
             {name?.charAt(0).toUpperCase() || '?'}
           </div>
           {/* Online Flag Indicator */}
-          <div style={{ position: 'absolute', bottom: '0', right: '0', width: '22px', height: '22px', borderRadius: '50%', background: '#10b981', border: '3px solid #0f0f0f' }}></div>
+          <div style={{ position: 'absolute', bottom: '0', right: '0', width: '22px', height: '22px', borderRadius: '50%', background: 'var(--success)', border: '3px solid var(--bg-primary)' }}></div>
         </div>
 
         {/* Name & Bio */}
-        <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 4px 0' }}>{name || 'User'}</h2>
-        <p style={{ fontSize: '14px', color: '#a1a1aa', margin: '0 0 24px 0' }}>{bio || 'No time to die'}</p>
+        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>{name || 'User'}</h2>
+        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px 0' }}>{bio || 'No time to die'}</p>
 
         {/* Horizontal Stats */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid #1e1e30', paddingBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '24px' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
               <span>💬</span> Feedback
             </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{avgRating}</div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{avgRating}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
               <span>📞</span> Talks
             </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{stats.calls}</div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.calls}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
               <span>🕐</span> Mins
             </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{stats.totalMinutes}</div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.totalMinutes}</div>
           </div>
         </div>
       </div>
 
       {/* PLAN INDICATOR */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1e1e30', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ background: '#2e2e50', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>💎</div>
+          <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>💎</div>
           <div>
-            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>Current Plan</div>
-            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Plan</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
               {isPremium ? (user.premiumPlan ? user.premiumPlan.charAt(0).toUpperCase() + user.premiumPlan.slice(1) : 'Pro') : 'Free Plan'}
             </div>
           </div>
@@ -196,24 +196,24 @@ export default function Profile({ user }) {
       </div>
 
       {/* INFORMATION SECTION */}
-      <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Information</h3>
-      <div style={{ background: '#1e1e30', borderRadius: '16px', padding: '8px 0' }}>
+      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Information</h3>
+      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
         
         {/* Level */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #2e2e50' }}>
-          <div style={{ background: '#7c6ff722', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>💬</div>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>💬</div>
           <div>
-            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>English level</div>
-            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>{level}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>English level</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{level}</div>
           </div>
         </div>
 
         {/* Email */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #2e2e50' }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ background: '#10b98122', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>✉️</div>
           <div>
-            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>Email Address</div>
-            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>{user.email || 'Hidden'}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Email Address</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{user.email || 'Hidden'}</div>
           </div>
         </div>
 
@@ -221,30 +221,30 @@ export default function Profile({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px' }}>
           <div style={{ background: '#f59e0b22', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>🔥</div>
           <div>
-            <div style={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
-            <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>
           </div>
         </div>
       </div>
 
       {/* MINUTE BALANCE (Gifts Alternative) */}
-      <div style={{ background: '#1e1e30', borderRadius: '16px', padding: '16px', marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '16px', marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: 700, margin: '0 0 4px 0' }}>Minute Balance</h3>
-          <p style={{ color: '#a1a1aa', fontSize: '12px', margin: 0 }}>{balanceLabel}</p>
+          <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700, margin: '0 0 4px 0' }}>Minute Balance</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: 0 }}>{balanceLabel}</p>
         </div>
-        <div style={{ background: '#7c6ff722', padding: '8px 16px', borderRadius: '20px', color: '#7c6ff7', fontWeight: 700, fontSize: '16px' }}>
+        <div style={{ background: 'var(--accent-soft)', padding: '8px 16px', borderRadius: '20px', color: 'var(--accent)', fontWeight: 700, fontSize: '16px' }}>
           {displayedBalance}
         </div>
       </div>
 
       {/* MY WORDS */}
-      <button onClick={() => setShowWordHistory(true)} style={{ width: '100%', background: '#1e1e30', border: 'none', color: '#fff', padding: '16px', borderRadius: '16px', marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+      <button onClick={() => setShowWordHistory(true)} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
         📚 Mənim Sözlərim
       </button>
 
       {/* ANALYSIS HISTORY */}
-      <button onClick={() => navigate('/history')} style={{ width: '100%', background: '#1e1e30', border: 'none', color: '#fff', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+      <button onClick={() => navigate('/history')} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
         📊 Analiz Tarixçəsi
       </button>
 
@@ -261,7 +261,7 @@ export default function Profile({ user }) {
         } catch (e) {
           console.error(e);
         }
-      }} style={{ width: '100%', background: '#1e1e30', border: 'none', color: '#7c6ff7', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+      }} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--accent)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
         🔄 Turları Sıfırla (Bələdçi)
       </button>
 

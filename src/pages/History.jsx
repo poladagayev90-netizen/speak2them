@@ -59,7 +59,9 @@ export default function History({ user }) {
     fetchHistory();
   }, [user]);
 
-  const scoreColor = (s) => s >= 80 ? '#16a34a' : s >= 60 ? '#f59e0b' : '#dc2626';
+  // A CSS variable cannot take an "22" alpha suffix the way a hex literal can,
+  // so the score badge uses the paired bg/fg tokens instead of tinting one colour.
+  const scoreTone = (s) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger');
 
   if (selectedAnalysis) {
     return <AnalysisDetail analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} />;
@@ -69,10 +71,10 @@ export default function History({ user }) {
     <div className="history-page" style={{ padding: '20px 16px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
+        <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '0 0 0 16px' }}>Analiz Tarixçəsi</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>Analiz Tarixçəsi</h2>
       </div>
 
       <GuidedTour user={user} steps={PROFILE_TOUR_STEPS} tourKey="tourDone_profile" />
@@ -101,7 +103,7 @@ export default function History({ user }) {
               }}
             >
               <div>
-                <div style={{ color: '#fff', fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>
+                <div style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>
                   {call.peerName || 'Anonim'}
                 </div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -114,8 +116,8 @@ export default function History({ user }) {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                 {call.overallScore ? (
                   <div style={{
-                    background: `${scoreColor(call.overallScore)}22`,
-                    color: scoreColor(call.overallScore),
+                    background: `var(--${scoreTone(call.overallScore)}-bg)`,
+                    color: `var(--${scoreTone(call.overallScore)}-fg)`,
                     padding: '8px 12px',
                     borderRadius: '12px',
                     fontWeight: 800,
@@ -124,7 +126,7 @@ export default function History({ user }) {
                     {call.overallScore}
                   </div>
                 ) : call.error ? (
-                   <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700 }}>Xəta</div>
+                   <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700 }}>Xəta</div>
                 ) : null}
                 <button
                   id={idx === 0 ? "tour-analyze" : undefined}
@@ -133,9 +135,9 @@ export default function History({ user }) {
                     setSelectedAnalysis(call);
                   }}
                   style={{
-                    border: '1px solid rgba(124, 111, 247, 0.35)',
-                    background: 'rgba(124, 111, 247, 0.12)',
-                    color: '#a5b4fc',
+                    border: '1px solid var(--accent)',
+                    background: 'var(--accent-soft)',
+                    color: 'var(--accent)',
                     borderRadius: '10px',
                     padding: '7px 10px',
                     fontSize: '12px',
@@ -156,24 +158,25 @@ export default function History({ user }) {
 }
 
 function AnalysisDetail({ analysis, onClose }) {
-  const scoreColor = (s) => s >= 80 ? '#16a34a' : s >= 60 ? '#f59e0b' : '#dc2626';
+  // Rendered as large text on a theme surface, so these follow the theme.
+  const scoreColor = (s) => s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)';
 
   if (analysis.error) return (
     <div style={{ padding: 20, background: 'var(--bg-primary)', minHeight: '100vh' }}>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', marginBottom: 20, display: 'flex', alignItems: 'center', cursor: 'pointer' }}><ChevronLeft size={24}/> Geri</button>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', cursor: 'pointer' }}><ChevronLeft size={24}/> Geri</button>
       <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>❌</div>
       <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>Sistem Xətası</p>
-      <p style={{ color: '#ef4444', fontSize: 13, marginTop: 12, textAlign: 'center', background: '#fee2e2', padding: 12, borderRadius: 8 }}>{analysis.error}</p>
+      <p style={{ color: 'var(--danger-fg)', fontSize: 13, marginTop: 12, textAlign: 'center', background: 'var(--danger-bg)', padding: 12, borderRadius: 8 }}>{analysis.error}</p>
     </div>
   );
 
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', padding: '20px 16px 40px' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
-        <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 0 16px' }}>Analiz Nəticəsi</h2>
+        <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>Analiz Nəticəsi</h2>
       </div>
 
       {/* Overview Cards */}
@@ -206,29 +209,29 @@ function AnalysisDetail({ analysis, onClose }) {
       )}
 
       {/* Grammar Fixes */}
-      <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Qrammatika Səhvləri</h3>
+      <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Qrammatika Səhvləri</h3>
       {analysis.grammarFixes && analysis.grammarFixes.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
           {analysis.grammarFixes.map((item, idx) => (
             <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16 }}>
-              <div style={{ color: '#ef4444', fontSize: 14, textDecoration: 'line-through', marginBottom: 4 }}>{item.original}</div>
-              <div style={{ color: '#10b981', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{item.corrected}</div>
+              <div style={{ color: 'var(--danger)', fontSize: 14, textDecoration: 'line-through', marginBottom: 4 }}>{item.original}</div>
+              <div style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{item.corrected}</div>
               <div style={{ color: 'var(--text-secondary)', fontSize: 13, background: 'rgba(255,255,255,0.05)', padding: 8, borderRadius: 8 }}>{item.why}</div>
             </div>
           ))}
         </div>
       ) : (
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, textAlign: 'center', color: '#10b981', fontWeight: 700, marginBottom: 32 }}>
+        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
           Xəta tapılmadı! 🎉
         </div>
       )}
 
       {/* Vocabulary */}
-      <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>İstifadə edilən Sözlər</h3>
+      <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>İstifadə edilən Sözlər</h3>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
         {analysis.vocabularyUsed && analysis.vocabularyUsed.length > 0 ? (
           analysis.vocabularyUsed.map((word, idx) => (
-            <span key={idx} style={{ background: 'var(--accent)', color: '#fff', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
+            <span key={idx} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
               {word}
             </span>
           ))
@@ -239,7 +242,7 @@ function AnalysisDetail({ analysis, onClose }) {
 
       {analysis.vocabularySuggestions && analysis.vocabularySuggestions.length > 0 && (
         <>
-          <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Tövsiyə olunan Sözlər</h3>
+          <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Tövsiyə olunan Sözlər</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
             {analysis.vocabularySuggestions.map((v, idx) => (
               <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
@@ -253,7 +256,7 @@ function AnalysisDetail({ analysis, onClose }) {
 
       {analysis.exampleSentences && analysis.exampleSentences.length > 0 && (
         <>
-          <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Nümunə Cümlələr</h3>
+          <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Nümunə Cümlələr</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
             {analysis.exampleSentences.map((s, idx) => (
               <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>

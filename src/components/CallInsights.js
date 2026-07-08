@@ -25,7 +25,10 @@ export default function CallInsights({ userId, channelName, onClose }) {
     return () => unsub();
   }, [userId, channelName]);
 
-  const scoreColor = (s) => s >= 80 ? '#16a34a' : s >= 60 ? '#f59e0b' : '#dc2626';
+  // Used as the score circle's FILL with white text on top, so the circle
+  // supplies its own background and these stay fixed across themes. The old
+  // amber (#f59e0b) gave white only 2.15:1 — effectively unreadable.
+  const scoreColor = (s) => (s >= 80 ? '#15803d' : s >= 60 ? '#b45309' : '#b91c1c');
 
   if (status !== 'done' && status !== 'failed') {
     const statusText = status === 'processing'
@@ -135,7 +138,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
           Qrammatika Düzəlişləri ✏️
         </p>
         {!analysis.grammarFixes?.length ? (
-          <p style={{ color: '#16a34a', fontSize: 14 }}>Xəta tapılmadı! Əla qrammatika ✅</p>
+          <p style={{ color: 'var(--success)', fontSize: 14 }}>Xəta tapılmadı! Əla qrammatika ✅</p>
         ) : analysis.grammarFixes.map((fix, i) => (
           <div key={i} style={{
             background: 'var(--bg-card)', borderRadius: 12,
@@ -143,11 +146,11 @@ export default function CallInsights({ userId, channelName, onClose }) {
             border: '1px solid var(--border)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-              <span style={{ background: '#fee2e2', color: '#dc2626', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 600 }}>
+              <span style={{ background: 'var(--danger-bg)', color: 'var(--danger-fg)', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 600 }}>
                 {fix.original}
               </span>
               <span style={{ color: 'var(--text-secondary)' }}>→</span>
-              <span style={{ background: '#dcfce7', color: '#16a34a', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 600 }}>
+              <span style={{ background: 'var(--success-bg)', color: 'var(--success-fg)', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 600 }}>
                 {fix.corrected}
               </span>
             </div>
@@ -161,7 +164,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
         <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
           Günün Sözləri 📘
           {analysis.idiomBonus && (
-            <span style={{ marginLeft: 8, background: '#dcfce7', color: '#16a34a', borderRadius: 20, padding: '2px 10px', fontSize: 12 }}>
+            <span style={{ marginLeft: 8, background: 'var(--success-bg)', color: 'var(--success-fg)', borderRadius: 20, padding: '2px 10px', fontSize: 12 }}>
               🎉 İdiom Bonusu!
             </span>
           )}
@@ -169,7 +172,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {analysis.vocabularyUsed?.length ? (
             analysis.vocabularyUsed.map((word, i) => (
-              <span key={i} style={{ background: 'var(--accent)', color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
+              <span key={i} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', borderRadius: 20, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
                 {word}
               </span>
             ))
@@ -237,7 +240,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
       {/* Done button */}
       <button onClick={onClose} style={{
         width: '100%', height: 52, borderRadius: 16, border: 'none',
-        background: 'var(--accent)', color: '#fff',
+        background: 'var(--accent)', color: 'var(--text-on-accent)',
         fontSize: 16, fontWeight: 700, cursor: 'pointer'
       }}>
         Bitti ✓

@@ -1,38 +1,88 @@
-[data-theme="dark"] {
-  --bg-primary: #0f0f0f;
-  --bg-secondary: #1a1a1a;
-  --bg-card: #222222;
-  --text-primary: #ffffff;
-  --text-secondary: #aaaaaa;
-  --accent: #6c63ff;
-  --border: #333333;
-  --shadow: rgba(0, 0, 0, 0.4);
-  --bg-input: #151515;
-  --accent-strong: #554cf0;
-  --text-muted: #777777;
+/* SpeakLab palette. Brand tokens: Ink Navy #0D1B3E, Deep BG #0B0A1C,
+   Lab Violet #6D3BEB, Sky #38BDF8, Neon Cyan #12BBD6, Magenta #A855F7.
+
+   Contrast ratios below are against that theme's --bg-card, checked to WCAG AA
+   (4.5:1 body text, 3:1 large/bold). --accent doubles as link colour and button
+   fill, so each theme picks the violet that clears 4.5:1 as text on its own
+   background while still taking white text on top.
+
+   The tri-colour signature gradient is decorative only (logo, rings): white on
+   its Sky end is 2.0:1, far below AA, so buttons use the violet ramp instead. */
+
+/* :root carries the light values so the page is never unstyled — if the theme
+   attribute is missing (JS blocked, or a paint before the boot script runs) the
+   text still has a colour that contrasts with the background. */
+:root,
+[data-theme="light"] {
+  --bg-primary: #f6f6fb;
+  --bg-secondary: #eeeef7;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --text-primary: #0d1b3e;   /* 15.9:1 on white */
+  --text-secondary: #4a5578; /*  7.4:1 */
+  --text-muted: #657093;     /*  4.5:1 on --bg-primary, the worst surface */
+  --accent: #6d3beb;         /*  6.1:1 as text; white on it = 6.1:1 */
+  --accent-strong: #5325c9;
+  --border: #e2e4f0;
+  --shadow: rgba(13, 27, 62, 0.08);
   --text-on-accent: #ffffff;
-  --overlay: rgba(0, 0, 0, 0.48);
+  --overlay: rgba(13, 27, 62, 0.45);
+  --accent-soft: rgba(109, 59, 235, 0.10);
+  /* Status colours are picked per theme: the usual #16a34a / #ef4444 are only
+     ~3.3:1 on white, fine for an icon but not for the label next to it. */
+  --success: #15803d;
+  --danger: #b91c1c;
+  --warning: #b45309;
+  --success-bg: #dcfce7;
+  --success-fg: #14532d;
+  --danger-bg: #fee2e2;
+  --danger-fg: #7f1d1d;
+  --warning-bg: #fef3c7;
+  --warning-fg: #713f12;
+  --logo-wordmark: #0d1b3e;
+  /* "Lab" wordmark ramp. Sky (#38BDF8) is only 2.0:1 on white, below the 3:1
+     large-text floor, so light mode runs violet -> magenta (6.1:1 -> 3.3:1). */
+  --logo-text-1: #6d3beb;
+  --logo-text-2: #7c3bd8;
+  --logo-text-3: #a855f7;
 }
 
-[data-theme="light"] {
-  --bg-primary: #faf8f5;
-  --bg-secondary: #f0ede8;
-  --bg-card: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-  --accent: #6c63ff;
-  --border: #e0dbd3;
-  --shadow: rgba(0, 0, 0, 0.08);
-  --bg-input: #ffffff;
-  --accent-strong: #554cf0;
-  --text-muted: #8a8177;
+[data-theme="dark"] {
+  --bg-primary: #0b0a1c;
+  --bg-secondary: #12122a;
+  --bg-card: #1a1935;
+  --bg-input: #14132b;
+  --text-primary: #f2f3f9;
+  --text-secondary: #a8afc9;
+  --text-muted: #7c84a2;     /* 4.6:1 on --bg-card */
+  --accent: #8b6bff;         /* 4.6:1 as text on the dark card */
+  --accent-strong: #6d3beb;
+  --border: #2a2947;
+  --shadow: rgba(0, 0, 0, 0.5);
   --text-on-accent: #ffffff;
-  --overlay: rgba(0, 0, 0, 0.32);
+  --overlay: rgba(4, 4, 12, 0.6);
+  --accent-soft: rgba(139, 107, 255, 0.16);
+  --success: #4ade80;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --success-bg: rgba(74, 222, 128, 0.14);
+  --success-fg: #86efac;
+  --danger-bg: rgba(248, 113, 113, 0.14);
+  --danger-fg: #fca5a5;
+  --warning-bg: rgba(251, 191, 36, 0.14);
+  --warning-fg: #fcd34d;
+  --logo-wordmark: #ffffff;
+  /* On the dark background Sky is bright, so the full signature ramp is used. */
+  --logo-text-1: #38bdf8;
+  --logo-text-2: #6d3beb;
+  --logo-text-3: #a855f7;
 }
 
 :root {
   --safe-area-top: env(safe-area-inset-top);
   --safe-area-bottom: env(safe-area-inset-bottom);
+  /* Decorative only — never put small text on this. */
+  --brand-gradient: linear-gradient(100deg, #38bdf8, #6d3beb, #a855f7);
 }
 
 html {

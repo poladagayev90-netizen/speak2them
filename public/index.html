@@ -6,13 +6,30 @@
     <link rel="alternate icon" href="%PUBLIC_URL%/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0D1B3E" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="google" content="notranslate" />
+    <script>
+      // Apply the saved theme before first paint, otherwise the app renders in
+      // the default theme for one frame and then snaps — a visible flash.
+      // Must stay in sync with getInitialTheme() in src/context/ThemeContext.js.
+      (function () {
+        try {
+          var t = window.localStorage.getItem('theme') || 'light';
+          document.documentElement.setAttribute('data-theme', t);
+          if (t === 'dark') {
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#0b0a1c');
+          }
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="SpeakLab" />
     <meta name="application-name" content="SpeakLab" />
     <meta name="msapplication-TileColor" content="#0D1B3E" />

@@ -11,7 +11,9 @@ export default function Logo({ width = 160, className = '', style = {} }) {
       width={width}
       viewBox="0 0 470 150"
       className={className}
-      style={style}
+      // "Speak" inherits currentColor so it flips with the theme. It used to be
+      // hard-coded #ffffff, which made the word invisible on a light background.
+      style={{ color: 'var(--logo-wordmark)', ...style }}
       role="img"
       aria-label="SpeakLab"
       xmlns="http://www.w3.org/2000/svg"
@@ -27,6 +29,13 @@ export default function Logo({ width = 160, className = '', style = {} }) {
           <stop offset="1" stopColor="#7C4DFF" />
         </linearGradient>
         <clipPath id="logo-wd-body"><circle cx="64" cy="88" r="30" /></clipPath>
+        {/* Separate ramp for the wordmark: the flask keeps the full signature
+            gradient (decorative shapes), the text uses a theme-aware one. */}
+        <linearGradient id="logo-wd-text" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--logo-text-1)" />
+          <stop offset="0.55" stopColor="var(--logo-text-2)" />
+          <stop offset="1" stopColor="var(--logo-text-3)" />
+        </linearGradient>
       </defs>
 
       <g transform="translate(0,8) scale(0.92)">
@@ -55,8 +64,8 @@ export default function Logo({ width = 160, className = '', style = {} }) {
         fontSize="78"
         letterSpacing="-3"
       >
-        <tspan fill="#ffffff">Speak</tspan>
-        <tspan fill="url(#logo-wd-grad)">Lab</tspan>
+        <tspan fill="currentColor">Speak</tspan>
+        <tspan fill="url(#logo-wd-text)">Lab</tspan>
       </text>
     </svg>
   );
