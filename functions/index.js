@@ -670,6 +670,12 @@ Ask a follow-up question to keep the conversation going.`;
 const ANALYSIS_CLAIM_LIMIT = 3;
 const ANALYSIS_MAX_RETRIES = 3;
 const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
+// Stop claiming new tickets this far into the 540s invocation, so a ticket is
+// never orphaned mid-flight by the function timeout. The bound must leave room
+// for one whole ticket: Whisper 120s + up to three 60s chat attempts + the
+// download ≈ 310s, so claiming must stop by 540 - 310 = 230s. 200s keeps a
+// margin, and a normal ticket takes ~30s, so all three still fit in a tick.
+const ANALYSIS_INVOCATION_BUDGET_MS = 200 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
 const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
 
@@ -750,6 +756,28 @@ const ANALYSIS_SCHEMA = {
 
 function isRetryableStatus(httpStatus) {
   return httpStatus === 429 || httpStatus >= 500;
+}
+
+// An upstream request that never returns would hold the whole invocation until
+// the 540s function timeout, leaving its ticket wedged in "processing". Bound
+// each call so a hang fails fast and is retried on the next tick instead.
+const GROQ_WHISPER_TIMEOUT_MS = 120000;
+const GROQ_CHAT_TIMEOUT_MS = 60000;
+
+async function fetchWithTimeout(url, options, timeoutMs, label) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw Object.assign(new Error(`${label} timed out after ${timeoutMs}ms`), { retryable: true });
+    }
+    // Network blips are worth another tick.
+    throw Object.assign(error, { retryable: true });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // Tolerant JSON parser: strips code fences, extracts the outermost object,
@@ -865,7 +893,7 @@ async function callGroqChat(userContent) {
   let lastErr = null;
 
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const res = await fetchWithTimeout("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -882,7 +910,7 @@ async function callGroqChat(userContent) {
           ? { type: "json_schema", json_schema: { name: "speech_analysis", strict: true, schema: ANALYSIS_SCHEMA } }
           : { type: "json_object" },
       }),
-    });
+    }, GROQ_CHAT_TIMEOUT_MS, "Groq chat");
 
     if (!res.ok) {
       const errText = (await res.text().catch(() => "")).slice(0, 400);
@@ -999,6 +1027,27 @@ async function claimTicket(db, ticketRef) {
   });
 }
 
+// Retires a ticket for good: mark it failed, tell the user's callAnalysis doc,
+// and drop the recording so a dead ticket never keeps costing storage.
+async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, message) {
+  const text = String(message);
+  await ticketRef.update({
+    status: "failed",
+    retryCount,
+    lastError: text.slice(0, 500),
+  });
+  await db.collection("callAnalysis").doc(ticketId).set({
+    status: "failed",
+    error: text.slice(0, 300),
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    userId: ticketData.uid,
+  }, { merge: true });
+  if (ticketData.storagePath) {
+    await admin.storage().bucket().file(ticketData.storagePath).delete().catch(() => null);
+  }
+  console.error("[AnalysisQueue] Failed permanently:", ticketId, text);
+}
+
 async function runGroqAnalysis(audioBuffer, analyzeSeconds) {
   const blob = new Blob([audioBuffer], { type: "audio/webm" });
   const groqForm = new FormData();
@@ -1006,11 +1055,11 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds) {
   groqForm.append("model", "whisper-large-v3-turbo");
   groqForm.append("response_format", "json");
 
-  const whisperRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+  const whisperRes = await fetchWithTimeout("https://api.groq.com/openai/v1/audio/transcriptions", {
     method: "POST",
     headers: { "Authorization": `Bearer ${GROQ_API_KEY.value()}` },
     body: groqForm,
-  });
+  }, GROQ_WHISPER_TIMEOUT_MS, "Groq Whisper");
   if (!whisperRes.ok) {
     const err = new Error("Groq Whisper error: " + (await whisperRes.text()).slice(0, 300));
     err.retryable = isRetryableStatus(whisperRes.status);
@@ -1041,16 +1090,30 @@ exports.processAnalysisQueue = onSchedule({
 }, async () => {
   const db = admin.firestore();
   const queue = db.collection("analysisQueue");
+  const invocationStart = Date.now();
 
   // Recover tickets stuck in processing (worker crash / timeout).
   const processingSnap = await queue.where("status", "==", "processing").get();
   const stuckCutoff = Date.now() - ANALYSIS_STUCK_MS;
   for (const docSnap of processingSnap.docs) {
-    const startedMs = docSnap.data().processingStartedAt
-      ? docSnap.data().processingStartedAt.toMillis() : 0;
-    if (startedMs < stuckCutoff) {
-      await docSnap.ref.update({ status: "pending" });
-      console.warn("[AnalysisQueue] Reset stuck ticket:", docSnap.id);
+    const data = docSnap.data();
+    const startedMs = data.processingStartedAt ? data.processingStartedAt.toMillis() : 0;
+    if (startedMs >= stuckCutoff) continue;
+
+    // Resetting a stuck ticket without counting the attempt let a ticket that
+    // always hangs cycle forever — and claimTicket charges the hourly audio
+    // budget on every cycle, so a handful of them starved the whole queue.
+    const retryCount = (data.retryCount || 0) + 1;
+    if (retryCount >= ANALYSIS_MAX_RETRIES) {
+      await failTicket(db, docSnap.ref, docSnap.id, data, retryCount,
+        "stuck: worker timed out repeatedly");
+    } else {
+      await docSnap.ref.update({
+        status: "pending",
+        retryCount,
+        lastError: "stuck: reset after worker timeout",
+      });
+      console.warn("[AnalysisQueue] Reset stuck ticket:", docSnap.id, "retryCount:", retryCount);
     }
   }
 
@@ -1066,6 +1129,13 @@ exports.processAnalysisQueue = onSchedule({
     .get();
 
   for (const docSnap of pendingSnap.docs) {
+    // Never start a ticket we cannot finish: an invocation killed at 540s
+    // leaves its ticket wedged in "processing" for the next ten minutes.
+    if (Date.now() - invocationStart > ANALYSIS_INVOCATION_BUDGET_MS) {
+      console.log("[AnalysisQueue] Deadline reached, leaving the rest for the next tick");
+      break;
+    }
+
     const ticket = await claimTicket(db, docSnap.ref);
     if (!ticket) {
       console.log("[AnalysisQueue] Skipped (budget or already claimed):", docSnap.id);
@@ -1076,7 +1146,17 @@ exports.processAnalysisQueue = onSchedule({
     try {
       await analysisRef.set({ status: "processing" }, { merge: true });
 
-      const [audioBuffer] = await admin.storage().bucket().file(ticket.storagePath).download();
+      let audioBuffer;
+      try {
+        [audioBuffer] = await admin.storage().bucket().file(ticket.storagePath).download();
+      } catch (downloadError) {
+        // A recording that is not there will never appear; retrying only burns
+        // three more slices of the hourly audio budget.
+        if (downloadError.code === 404) {
+          throw Object.assign(new Error("recording-missing: " + ticket.storagePath), { retryable: false });
+        }
+        throw downloadError;
+      }
 
       // Partial analysis: a WebM byte-prefix stays decodable (header is at
       // the start; Opus speech is ~constant bitrate, so bytes ≈ time).
@@ -1124,18 +1204,7 @@ exports.processAnalysisQueue = onSchedule({
           lastError: String(error.message).slice(0, 500),
         });
       } else {
-        await ticket.ref.update({
-          status: "failed",
-          retryCount,
-          lastError: String(error.message).slice(0, 500),
-        });
-        await analysisRef.set({
-          status: "failed",
-          error: String(error.message).slice(0, 300),
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
-          userId: ticket.uid,
-        }, { merge: true });
-        await admin.storage().bucket().file(ticket.storagePath).delete().catch(() => null);
+        await failTicket(db, ticket.ref, ticket.id, ticket, retryCount, error.message);
       }
     }
   }
