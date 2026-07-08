@@ -653,11 +653,16 @@ Vəzifən: bu danışığı təhlil et və nəticəni YALNIZ bir JSON obyekti ki
 Qaydalar:
 - overallScore və fluencyScore: 0-100 arası tam ədəd.
 - encouragement: 1 qısa ruhlandırıcı cümlə (Azərbaycanca).
-- grammarFixes: YALNIZ qrammatik və ya leksik SƏHVİ olan cümlələr. Düzgün cümlələri ƏSLA daxil etmə. Hər element: original (tələbənin dediyi səhv cümlə), corrected (düzgün variant), why (səhvin qısa izahı, Azərbaycanca). Səhv yoxdursa boş massiv.
-- vocabularyUsed: tələbənin işlətdiyi diqqətəlayiq İngilis sözləri.
-- vocabularySuggestions: tələbənin işlətdiyindən daha uyğun/zəngin İngilis sözləri. Hər element: word (İngiliscə), meaning (Azərbaycanca qısa məna).
+- grammarFixes: YALNIZ qrammatik və ya leksik SƏHVİ olan cümlələr, ƏN ÇOX 6 ədəd (ən vacibləri). Düzgün cümlələri ƏSLA daxil etmə. Hər element: original (tələbənin dediyi səhv cümlə), corrected (düzgün variant), why (səhvin izahı, Azərbaycanca, maksimum 12 söz). Səhv yoxdursa boş massiv.
+- vocabularyUsed: tələbənin işlətdiyi diqqətəlayiq İngilis sözləri, ən çox 10 ədəd.
+- vocabularySuggestions: tələbənin işlətdiyindən daha uyğun/zəngin İngilis sözləri, ən çox 5 ədəd. Hər element: word (İngiliscə), meaning (Azərbaycanca qısa məna, maksimum 6 söz).
 - exampleSentences: bu mövzuda düzgün qurulmuş 2-3 nümunə İngilis cümləsi.
+- Cavabı qısa saxla: heç bir mətn sahəsi bir cümlədən uzun olmasın.
 - Uydurma etmə; yalnız transkriptə əsaslan.`;
+
+// Whisper can return very long transcripts; the JSON answer must still fit in
+// the completion budget, so the model only sees a bounded slice.
+const MAX_TRANSCRIPT_CHARS = 6000;
 
 // Strict schema enforced at the Groq API level (structured outputs).
 const ANALYSIS_SCHEMA = {
@@ -671,6 +676,7 @@ const ANALYSIS_SCHEMA = {
     encouragement: { type: "string" },
     grammarFixes: {
       type: "array",
+      maxItems: 6,
       items: {
         type: "object",
         additionalProperties: false,
@@ -682,9 +688,10 @@ const ANALYSIS_SCHEMA = {
         },
       },
     },
-    vocabularyUsed: { type: "array", items: { type: "string" } },
+    vocabularyUsed: { type: "array", maxItems: 10, items: { type: "string" } },
     vocabularySuggestions: {
       type: "array",
+      maxItems: 5,
       items: {
         type: "object",
         additionalProperties: false,
@@ -695,7 +702,7 @@ const ANALYSIS_SCHEMA = {
         },
       },
     },
-    exampleSentences: { type: "array", items: { type: "string" } },
+    exampleSentences: { type: "array", maxItems: 3, items: { type: "string" } },
   },
 };
 
@@ -775,6 +782,11 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
 // Groq chat with strict JSON, in-call retries (max 3) and a schema→json_object
 // fallback, so json_validate_failed and malformed output self-heal instead of
 // failing the ticket permanently.
+// Escalating completion budgets: the observed production failure was
+// "max completion tokens reached before generating a valid document" — the
+// answer was cut mid-JSON, so retrying with the same budget can never succeed.
+const ANALYSIS_MAX_TOKENS = [2500, 3500, 4096];
+
 async function callGroqChat(userContent) {
   const messages = [{ role: "user", content: userContent }];
   let useSchema = true;
@@ -793,6 +805,7 @@ async function callGroqChat(userContent) {
         temperature: 0,
         top_p: 1,
         seed: 7,
+        max_tokens: ANALYSIS_MAX_TOKENS[attempt - 1],
         response_format: useSchema
           ? { type: "json_schema", json_schema: { name: "speech_analysis", strict: true, schema: ANALYSIS_SCHEMA } }
           : { type: "json_object" },
@@ -804,6 +817,13 @@ async function callGroqChat(userContent) {
       // Model/endpoint rejects json_schema → drop to json_object and retry.
       if (useSchema && /json_schema|response_format|not supported/i.test(errText)) {
         useSchema = false;
+        continue;
+      }
+      // Answer was truncated mid-JSON → next attempt gets a bigger budget and
+      // an explicit order to shrink the arrays.
+      if (/max completion tokens|max_tokens/i.test(errText)) {
+        messages.push({ role: "system", content: "Cavab çox uzun idi və kəsildi. Massivləri qısalt: grammarFixes ən çox 3, vocabularyUsed ən çox 5, vocabularySuggestions ən çox 3, exampleSentences 2. İzahlar 8 sözdən uzun olmasın." });
+        lastErr = Object.assign(new Error("json_truncated"), { retryable: true });
         continue;
       }
       // Model produced invalid JSON → nudge and retry.
@@ -927,7 +947,10 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds) {
   }
 
   // 2. Analysis via Groq LLM — strict JSON schema, self-healing retries.
-  const raw = await callGroqChat(ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", transcript));
+  const promptTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
+    ? transcript.slice(0, MAX_TRANSCRIPT_CHARS)
+    : transcript;
+  const raw = await callGroqChat(ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", promptTranscript));
   const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
   return { transcript, analysis };
 }
