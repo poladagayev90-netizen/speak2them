@@ -744,9 +744,11 @@ export default function Chat({ user }) {
         ...(newBadges.length > 0 ? { badgeUpdatedAt: "SERVER_TIMESTAMP" } : {}),
       };
 
+      // callId is the server's proof that this rating belongs to a real call
+      // between these two users, and its once-per-call guard.
       await authedFetch(`${FUNCTIONS_BASE}/updatePeerStats`, {
         method: 'POST',
-        body: JSON.stringify({ peerId, updates })
+        body: JSON.stringify({ peerId, callId: callDocId, updates })
       });
     } catch (e) {
       console.error('[Chat] Rating error:', e);
