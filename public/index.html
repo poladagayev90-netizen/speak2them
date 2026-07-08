@@ -6,7 +6,7 @@
     <link rel="alternate icon" href="%PUBLIC_URL%/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#0b0a1c" />
     <meta name="google" content="notranslate" />
     <script>
       // Apply the saved theme before first paint, otherwise the app renders in
@@ -16,22 +16,23 @@
         try {
           var ls = window.localStorage;
           var t;
-          // Existing users have 'dark' saved from before light became the
-          // default, so reset them once; after that their choice wins.
-          if (!ls.getItem('themeDefaultLightApplied')) {
-            ls.setItem('themeDefaultLightApplied', '1');
-            ls.setItem('theme', 'light');
-            t = 'light';
+          // A saved theme outlives a change of default, so each new default
+          // gets its own key: everyone is reset once, then their choice wins.
+          // Keep this key and the fallback in sync with src/context/ThemeContext.js.
+          if (!ls.getItem('themeDefault:dark')) {
+            ls.setItem('themeDefault:dark', '1');
+            ls.setItem('theme', 'dark');
+            t = 'dark';
           } else {
-            t = ls.getItem('theme') || 'light';
+            t = ls.getItem('theme') || 'dark';
           }
           document.documentElement.setAttribute('data-theme', t);
-          if (t === 'dark') {
+          if (t === 'light') {
             var m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.setAttribute('content', '#0b0a1c');
+            if (m) m.setAttribute('content', '#ffffff');
           }
         } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.setAttribute('data-theme', 'dark');
         }
       })();
     </script>
@@ -39,7 +40,7 @@
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="SpeakLab" />
     <meta name="application-name" content="SpeakLab" />
     <meta name="msapplication-TileColor" content="#0D1B3E" />

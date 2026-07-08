@@ -46,7 +46,7 @@ export default function HomeRanking({ users, currentUserId }) {
       <div className="empty-state">
         <div className="empty-icon">🏆</div>
         <p>No rankings yet.</p>
-        <p style={{ color: '#888', fontSize: 13, marginTop: 8 }}>Complete a call to appear on the board.</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 8 }}>Complete a call to appear on the board.</p>
       </div>
     );
   }

@@ -12,26 +12,32 @@ export default function RankingCard({ user, rank, isCurrentUser = false }) {
     return `#${rankNumber}`;
   };
 
+  // The literal medal colours are unreadable on a light surface, so the theme
+  // supplies a legible stand-in for each place.
   const getMedalColor = (rankNumber) => {
-    if (rankNumber === 1) return '#f59e0b';
-    if (rankNumber === 2) return '#9ca3af';
-    if (rankNumber === 3) return '#b45309';
-    return '#666';
+    if (rankNumber === 1) return 'var(--gold)';
+    if (rankNumber === 2) return 'var(--silver)';
+    if (rankNumber === 3) return 'var(--bronze)';
+    return 'var(--text-secondary)';
   };
 
+  const borderColor = isCurrentUser
+    ? 'var(--accent)'
+    : rank <= 3 ? getMedalColor(rank) : 'var(--border)';
+
   return (
-    <div 
+    <div
       onClick={() => navigate(`/user/${user.uid || user.id}`)}
       style={{
-        background: isCurrentUser ? '#7c6ff71f' : '#1e1e30',
-        border: `1px solid ${isCurrentUser ? '#7c6ff7' : rank === 1 ? '#f59e0b' : rank === 2 ? '#9ca3af' : rank === 3 ? '#b45309' : '#2e2e50'}`,
+        background: isCurrentUser ? 'var(--accent-soft)' : 'var(--bg-card)',
+        border: `1px solid ${borderColor}`,
         borderRadius: '14px',
         padding: '14px 16px',
         marginBottom: '10px',
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        boxShadow: isCurrentUser ? '0 0 0 1px #7c6ff733' : 'none',
+        boxShadow: isCurrentUser ? '0 0 0 1px var(--accent-soft)' : 'none',
         cursor: 'pointer'
       }}
     >
@@ -52,14 +58,14 @@ export default function RankingCard({ user, rank, isCurrentUser = false }) {
       </div>
       <div style={{ flex: 1 }}>
         <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
-          {user.name}{isCurrentUser && <span style={{ color: '#7c6ff7', marginLeft: 6 }}>(you)</span>}{user.isPremium && <PremiumBadge />}
+          {user.name}{isCurrentUser && <span style={{ color: 'var(--accent)', marginLeft: 6 }}>(you)</span>}{user.isPremium && <PremiumBadge />}
         </p>
-        <p style={{ fontSize: '11px', color: '#888' }}>{user.level || 'English Speaker'}</p>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.level || 'English Speaker'}</p>
       </div>
       <div style={{ textAlign: 'right' }}>
-        <p style={{ fontWeight: 700, color: '#7c6ff7', fontSize: '15px' }}>{user.totalMinutes || 0} min</p>
-        <p style={{ fontSize: '11px', color: '#888' }}>{user.callCount || 0} calls</p>
-        {user.streak > 0 && <p style={{ fontSize: '11px', color: '#f59e0b' }}>Streak {user.streak}</p>}
+        <p style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '15px' }}>{user.totalMinutes || 0} min</p>
+        <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.callCount || 0} calls</p>
+        {user.streak > 0 && <p style={{ fontSize: '11px', color: 'var(--gold)' }}>Streak {user.streak}</p>}
       </div>
     </div>
   );
