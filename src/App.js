@@ -6,6 +6,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db, registerFcmToken } from './firebase';
+import { isInCall } from './utils/presence';
 import { tg, tgUser, isTelegramWebApp } from './telegram';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
@@ -136,11 +137,21 @@ function App() {
           } catch (e) {}
         };
 
+        // A tab closed mid-call must still stop looking busy to everyone else.
         unloadHandler = goOffline;
         window.addEventListener('beforeunload', unloadHandler);
-        
+
         visibilityHandler = async () => {
           try {
+            // Backgrounding the app during a call (very common on mobile) must
+            // not clear the busy flag — the call is still running.
+            if (isInCall()) {
+              await setDoc(doc(db, 'users', uid), {
+                online: true,
+                lastSeen: serverTimestamp(),
+              }, { merge: true });
+              return;
+            }
             if (document.visibilityState === 'hidden') await goOffline();
             if (document.visibilityState === 'visible') {
               await setDoc(doc(db, 'users', uid), {

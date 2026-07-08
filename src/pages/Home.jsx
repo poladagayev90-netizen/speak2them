@@ -14,6 +14,7 @@ import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import TopicPickerModal from '../components/TopicPickerModal';
 import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
 import { ADMIN_UID } from '../constants';
+import { getPresence } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
@@ -134,6 +135,8 @@ export default function Home({ user }) {
           const lastSeen = u.lastSeen.toMillis?.() || 0;
           if (now - lastSeen < 300000 || u.uid === ADMIN_UID) online.push(u);
         });
+        // Free people first — someone already in a call cannot talk to you.
+        online.sort((a, b) => (getPresence(a, now) === 'busy') - (getPresence(b, now) === 'busy'));
         setOnlineUsers(online);
         setAllUsers(all);
       } catch (e) {
@@ -567,9 +570,12 @@ export default function Home({ user }) {
                           <span style={{ fontSize: '11px', color: '#7c6ff7' }}>⭐ Pro al — tam gör</span>
                         )}
                       </div>
-                      <span className={`online-badge ${u.lastSeen?.toMillis?.() > Date.now() - 300000 ? 'online' : 'offline'}`}>
-                        {u.lastSeen?.toMillis?.() > Date.now() - 300000 ? '🟢 Online' : '⚫ Offline'}
-                      </span>
+                      {(() => {
+                        const presence = getPresence(u);
+                        const label = presence === 'busy' ? '📞 Zəngdə'
+                          : presence === 'online' ? '🟢 Online' : '⚫ Offline';
+                        return <span className={`online-badge ${presence}`}>{label}</span>;
+                      })()}
                     </div>
 
                     <button

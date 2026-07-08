@@ -18,6 +18,7 @@ import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
+import { setInCallFlag } from '../utils/presence';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import PostCallQuizModal from '../components/PostCallQuizModal';
@@ -296,12 +297,14 @@ export default function Chat({ user }) {
       }
       */
 
-      // Mark as busy
+      // Mark as busy so the online list shows "Zəngdə" instead of available.
+      setInCallFlag(true);
       try {
         await updateDoc(doc(db, 'users', userUidRef.current), { status: 'busy' });
       } catch (e) {}
 
     } catch (err) {
+      setInCallFlag(false);
       console.error('[Chat] joinCall error:', err);
       joinedRef.current = false;
       if (localTrackRef.current) {
@@ -558,7 +561,8 @@ export default function Chat({ user }) {
     joinedRef.current = false;
     ringtoneRef.current?.pause();
 
-    // Mark as online
+    // Mark as online again — free to be called.
+    setInCallFlag(false);
     try {
       await updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' });
     } catch (e) {}
