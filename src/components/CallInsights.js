@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { toAnalysisView } from '../utils/analysisView';
+import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 
-export default function CallInsights({ userId, channelName, onClose }) {
+export default function CallInsights({ userId, channelName, onClose, enqueueFailed = false }) {
   const [analysis, setAnalysis] = useState(null);
   // 'uploading' → doc not written yet; then mirrors callAnalysis.status.
   const [status, setStatus] = useState('uploading');
@@ -30,6 +30,31 @@ export default function CallInsights({ userId, channelName, onClose }) {
   // supplies its own background and these stay fixed across themes. The old
   // amber (#f59e0b) gave white only 2.15:1 — effectively unreadable.
   const scoreColor = (s) => (s >= 80 ? '#15803d' : s >= 60 ? '#b45309' : '#b91c1c');
+
+  // The upload or the ticket write never landed, so nothing will ever produce a
+  // result for this call — do not leave the user on the "queued" screen.
+  if (enqueueFailed && status === 'uploading') return (
+    <div style={{
+      position: 'fixed', inset: 0,
+      background: 'var(--bg-primary)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      zIndex: 9999, padding: 20
+    }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>📡</div>
+      <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
+        Səs yazısı göndərilə bilmədi
+      </p>
+      <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center', maxWidth: 320 }}>
+        İnternet bağlantını yoxla. Bu zəngin analizi hazırlanmayacaq.
+      </p>
+      <button onClick={onClose} style={{
+        marginTop: 24, width: '100%', maxWidth: 320, height: 52,
+        borderRadius: 16, border: 'none', background: 'var(--accent)',
+        color: 'var(--text-on-accent)', fontSize: 16, fontWeight: 700, cursor: 'pointer'
+      }}>Bağla</button>
+    </div>
+  );
 
   if (status !== 'done' && status !== 'failed') {
     const statusText = status === 'processing'
@@ -72,9 +97,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
         Analiz alınmadı
       </p>
       <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center', maxWidth: 320 }}>
-        {analysis?.error?.startsWith?.('no-speech')
-          ? 'Danışıq eşidilmədi — zəng çox qısa ola bilər və ya mikrofon işləməyib.'
-          : 'Texniki xəta baş verdi, komanda məlumatlandırıldı.'}
+        {analysisErrorMessage(analysis?.error)}
       </p>
       <button onClick={onClose} style={{
         marginTop: 24, width: '100%', maxWidth: 320, height: 52,

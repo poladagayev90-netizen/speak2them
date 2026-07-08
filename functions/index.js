@@ -1041,11 +1041,26 @@ async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, messa
     error: text.slice(0, 300),
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
     userId: ticketData.uid,
+    // Without these the History row renders as "Anonim / Naməlum".
+    peerName: ticketData.peerName || null,
+    durationSeconds: ticketData.audioSeconds || 0,
   }, { merge: true });
   if (ticketData.storagePath) {
     await admin.storage().bucket().file(ticketData.storagePath).delete().catch(() => null);
   }
   console.error("[AnalysisQueue] Failed permanently:", ticketId, text);
+
+  // Silence is the worst outcome: without this the user waits for a result that
+  // is never coming, because History only ever showed finished analyses.
+  const noSpeech = text.startsWith("no-speech");
+  await sendPushToUser(db, ticketData.uid, {
+    title: "Analiz alınmadı",
+    body: noSpeech
+      ? "Danışıq eşidilmədi — mikrofonu yoxlayıb yenidən cəhd et."
+      : "Zəngin analizi tamamlana bilmədi. Növbəti zəngdə yenidən cəhd edəcəyik.",
+    type: "analysis_failed",
+    url: "/history",
+  });
 }
 
 async function runGroqAnalysis(audioBuffer, analyzeSeconds) {

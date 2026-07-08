@@ -5,6 +5,20 @@
 
 const arr = (v) => (Array.isArray(v) ? v : []);
 
+// Worker errors are internal strings ("recording-missing: callRecordings/<uid>/…",
+// "Groq LLM error 500: …"). Never show them raw: they are noise at best and leak
+// storage paths at worst.
+export function analysisErrorMessage(error) {
+  const text = String(error || '');
+  if (text.startsWith('no-speech')) {
+    return 'Danışıq eşidilmədi — zəng çox qısa ola bilər və ya mikrofon işləməyib.';
+  }
+  if (text.startsWith('recording-missing')) {
+    return 'Səs yazısı tapılmadı — yükləmə yarımçıq qalmış ola bilər.';
+  }
+  return 'Texniki xəta baş verdi, komanda məlumatlandırıldı.';
+}
+
 export function toAnalysisView(analysis) {
   if (!analysis) return null;
 

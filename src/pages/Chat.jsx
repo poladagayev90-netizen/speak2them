@@ -64,6 +64,8 @@ export default function Chat({ user }) {
   const [callTranslations, setCallTranslations] = useState([]);
   const [showPostQuiz, setShowPostQuiz] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
+  // True when the recording never made it into the queue, so no result is coming.
+  const [enqueueFailed, setEnqueueFailed] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
 
@@ -534,6 +536,7 @@ export default function Chat({ user }) {
       audioBlobRef.current = recordingBlob;
       const sessionId = sessionIdRef.current;
       console.log('[Chat] Recording stored, size:', recordingBlob.size);
+      setEnqueueFailed(false);
       uploadCallRecording(recordingBlob, user.uid, callDocId, sessionId)
         .then((storagePath) => enqueueCallAnalysis({
           uid: user.uid,
@@ -543,7 +546,13 @@ export default function Chat({ user }) {
           audioSeconds: secondsTalked,
           peerName: peer?.name || null,
         }))
-        .catch((e) => console.error('[Chat] Recording upload/enqueue failed:', e));
+        .catch((e) => {
+          // Nothing was queued, so no worker will ever write a result and no
+          // push will arrive. Say so instead of leaving the insights screen
+          // spinning on "queued" forever.
+          console.error('[Chat] Recording upload/enqueue failed:', e);
+          setEnqueueFailed(true);
+        });
     }
 
     try {
@@ -1090,9 +1099,10 @@ export default function Chat({ user }) {
       )}
       
       {showInsights && (
-        <CallInsights 
-          userId={user.uid} 
-          channelName={`${callDocId}_${sessionIdRef.current}`} 
+        <CallInsights
+          userId={user.uid}
+          channelName={`${callDocId}_${sessionIdRef.current}`}
+          enqueueFailed={enqueueFailed}
           onClose={() => {
             setShowInsights(false);
             if (callSecondsRef.current >= 180) {

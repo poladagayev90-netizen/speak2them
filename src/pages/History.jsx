@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ChevronLeft } from 'lucide-react';
 import GuidedTour from '../components/GuidedTour';
-import { toAnalysisView } from '../utils/analysisView';
+import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 
 const PROFILE_TOUR_STEPS = [
   {
@@ -43,8 +43,9 @@ export default function History({ user }) {
         }
         const results = snap.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
-          // Tickets still in the queue carry no analysis yet.
-          .filter(d => d.status !== 'queued' && d.status !== 'processing' && d.status !== 'failed');
+          // Tickets still in the queue carry no analysis yet. Failed ones stay:
+          // hiding them left the user waiting for a result that never arrives.
+          .filter(d => d.status !== 'queued' && d.status !== 'processing');
         results.sort((a, b) => {
           const tA = a.timestamp?.seconds || 0;
           const tB = b.timestamp?.seconds || 0;
@@ -166,8 +167,10 @@ function AnalysisDetail({ analysis, onClose }) {
     <div style={{ padding: 20, background: 'var(--bg-primary)', minHeight: '100vh' }}>
       <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', cursor: 'pointer' }}><ChevronLeft size={24}/> Geri</button>
       <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>❌</div>
-      <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>Sistem Xətası</p>
-      <p style={{ color: 'var(--danger-fg)', fontSize: 13, marginTop: 12, textAlign: 'center', background: 'var(--danger-bg)', padding: 12, borderRadius: 8 }}>{analysis.error}</p>
+      <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>Analiz alınmadı</p>
+      <p style={{ color: 'var(--danger-fg)', fontSize: 13, marginTop: 12, textAlign: 'center', background: 'var(--danger-bg)', padding: 12, borderRadius: 8 }}>
+        {analysisErrorMessage(analysis.error)}
+      </p>
     </div>
   );
 
