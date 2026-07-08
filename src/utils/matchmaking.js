@@ -51,18 +51,28 @@ const scoreCandidate = (candidate, currentUser) => {
   return distanceScore + waitBonus + topicBonus;
 };
 
+// A searcher pings every PING_INTERVAL_MS; anything older than this is a tab
+// that died mid-search. Liveness must be measured by the last ping, never by
+// how long ago the user joined — the old rule dropped anyone who had been
+// waiting more than 20s, which meant two users who arrived more than 20s apart
+// could never see each other.
+export const SEARCH_PING_INTERVAL_MS = 15000;
+const SEARCH_STALE_MS = 60000;
+
+const lastAliveMs = (c) =>
+  c.lastPingMs || c.joinedAtMs || c.joinedAt?.toMillis?.() || 0;
+
 export function pickBestMatch(candidates, currentUser) {
   const pool = candidates.filter((c) => c.uid && c.uid !== currentUser.uid);
   if (pool.length === 0) return null;
 
-  // Deterministic role: only the lexicographically SMALLER uid initiates matching
-  // The larger uid just waits — this prevents race conditions completely
+  const now = Date.now();
+  // Deterministic role: only the lexicographically SMALLER uid initiates the
+  // transaction. Every pair still has exactly one initiator, so no candidate
+  // becomes unreachable — it only decides who writes.
   const eligibleCandidates = pool.filter((c) => {
     if (currentUser.uid >= c.uid) return false;
-    // Exclude offline "ghosts" who closed the app abruptly while searching
-    const joinedAt = c.joinedAtMs || c.joinedAt?.toMillis?.() || 0;
-    if (Date.now() - joinedAt > 20000) return false; 
-    return true;
+    return now - lastAliveMs(c) <= SEARCH_STALE_MS;
   });
   if (eligibleCandidates.length === 0) return null;
 
@@ -85,13 +95,16 @@ export async function joinSessionQueue(entry) {
   }, { merge: true });
 }
 
-// Liveness ping while parked for a session; the server-side pairing skips
-// tickets whose last ping is stale (user closed the app while waiting).
+// Liveness ping, used by both queue modes. The server-side session pairing and
+// the client-side on-demand pairing both skip tickets whose last ping is stale
+// (the user closed the app while waiting).
 export async function pingSessionQueue(uid) {
   try {
     await setDoc(doc(db, 'matchQueue', uid), { lastPingMs: Date.now() }, { merge: true });
   } catch (e) { /* transient — next ping retries */ }
 }
+
+export const pingSearchQueue = pingSessionQueue;
 
 export async function leaveSearchQueue(uid) {
   try {

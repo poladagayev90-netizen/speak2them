@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
@@ -81,6 +81,30 @@ export async function registerFcmToken(uid) {
     });
   } catch (error) {
     console.warn('[Firebase] FCM registration skipped:', error.message);
+  }
+}
+
+// Popups are unreliable in an installed PWA (standalone display) and are
+// blocked outright inside in-app webviews such as Telegram's. Fall back to a
+// full-page redirect: onAuthStateChanged in App.js creates/refreshes the user
+// doc afterwards, so the redirect path needs no extra bookkeeping.
+const POPUP_UNAVAILABLE = new Set([
+  'auth/popup-blocked',
+  'auth/operation-not-supported-in-this-environment',
+  'auth/web-storage-unsupported',
+]);
+
+export async function signInWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (error) {
+    if (POPUP_UNAVAILABLE.has(error.code)) {
+      await signInWithRedirect(auth, provider);
+      return null; // the page navigates away; nothing else to do here
+    }
+    throw error; // popup-closed-by-user etc. — a real cancellation
   }
 }
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db, signInWithGoogle } from '../firebase';
 import { Capacitor } from '@capacitor/core';
 import { Link, useNavigate } from 'react-router-dom';
 import { isTelegramWebApp } from '../telegram';
@@ -86,11 +86,10 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const res = await signInWithPopup(auth, provider);
-      // Optional: Check if the user is new and add to Firestore, similar to Register
+      const res = await signInWithGoogle();
+      if (!res) return; // redirect fallback — the page is navigating away
       const user = res.user;
-      
+
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef);
       if (!snap.exists()) {

@@ -3,15 +3,20 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
   MATCH_STATUS,
+  SEARCH_PING_INTERVAL_MS,
   commitMatch,
   joinSearchQueue,
   leaveSearchQueue,
   pickBestMatch,
+  pingSearchQueue,
   subscribeToOwnQueue,
   subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-const SEARCH_TIMEOUT_MS = 30000;
+// With a small user base the odds of two people searching inside the same
+// 30-second window are poor, and a premature give-up reads as "the app is
+// broken". Two minutes costs one queue doc and a listener.
+const SEARCH_TIMEOUT_MS = 120000;
 const COMPENSATION_MINUTES = 5;
 
 export function useMatchmaking({
@@ -26,6 +31,7 @@ export function useMatchmaking({
   const ownUnsubRef = useRef(null);
   const queueUnsubRef = useRef(null);
   const timeoutRef = useRef(null);
+  const pingIntervalRef = useRef(null);
 
   useEffect(() => {
     searchingRef.current = searching;
@@ -46,6 +52,10 @@ export function useMatchmaking({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
+    }
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
     }
   }, []);
 
@@ -108,8 +118,14 @@ export function useMatchmaking({
       partnerPreference: user.partnerPreference || 'Any',
       status: MATCH_STATUS.SEARCHING,
       joinedAtMs: Date.now(),
+      lastPingMs: Date.now(),
       joinedAt: serverTimestamp(),
     });
+
+    // Proof of life for peers scoring us — without it we look like a ghost.
+    pingIntervalRef.current = setInterval(() => {
+      if (searchingRef.current) pingSearchQueue(user.uid);
+    }, SEARCH_PING_INTERVAL_MS);
 
     queueUnsubRef.current = subscribeToSearchingQueue((candidates) => {
       tryMatchWithCandidates(candidates);
