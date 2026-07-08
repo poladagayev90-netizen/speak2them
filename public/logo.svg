@@ -1,44 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="SpeakLab">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2c1b4d" />
-      <stop offset="50%" stop-color="#0f0f1a" />
-      <stop offset="100%" stop-color="#0a0a14" />
+    <linearGradient id="sl-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38BDF8"></stop>
+      <stop offset="0.55" stop-color="#6D3BEB"></stop>
+      <stop offset="1" stop-color="#A855F7"></stop>
     </linearGradient>
-    <linearGradient id="flaskGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.25" />
+    <linearGradient id="sl-liq" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#12BBD6"></stop>
+      <stop offset="1" stop-color="#7C4DFF"></stop>
     </linearGradient>
-    <linearGradient id="liquid" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#c084fc" />
-      <stop offset="100%" stop-color="#6b21a8" />
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
+    <clipPath id="sl-body"><circle cx="64" cy="88" r="30"></circle></clipPath>
   </defs>
   
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <g clip-path="url(#sl-body)"><rect x="30" y="92" width="70" height="36" fill="url(#sl-liq)" opacity="0.16"></rect></g>
   
-  <g transform="translate(100, 68) scale(6.8)">
-    {/* Flask Outer Contour (Circle + Speech Bubble Pointer + Neck) */}
-    <path d="M 16 4 L 24 4 L 24 22.6 A 14 14 0 1 1 13 48.1 L 5 52 L 6.9 40.8 A 14 14 0 0 1 16 22.6 L 16 4 Z" fill="none" stroke="url(#flaskGlass)" stroke-width="2.5" stroke-linejoin="round"/>
-    {/* Flask Neck Lip */}
-    <rect x="13" y="1" width="14" height="3" fill="url(#flaskGlass)" rx="1.5"/>
-    {/* Liquid Base */}
-    <path d="M 6.3 33 A 14 14 0 0 1 13 48.1 L 5 52 L 6.9 40.8 A 14 14 0 0 1 6.3 33 Z" fill="url(#liquid)"/>
-    <path d="M 6.3 33 A 14 14 0 0 0 33.7 33 A 14 14 0 0 1 13 48.1 L 5 52 L 6.9 40.8 A 14 14 0 0 1 6.3 33 Z" fill="url(#liquid)"/>
-    {/* Liquid Surface Wave / 3D Oval Highlight */}
-    <path d="M 6.3 33 Q 20 35.5 33.7 33 Q 20 30.5 6.3 33 Z" fill="#e9d5ff" opacity="0.8"/>
-    {/* Glass Highlight Reflection */}
-    <path d="M 29.5 30.5 A 11 11 0 0 1 27.8 43.8" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-    {/* Tiny Speech Bubble rising */}
-    <g filter="url(#glow)">
-      <path d="M 18 23 C 19.5 23 20.5 24 20.5 25 C 20.5 26.2 19.5 27 18 27 C 17.5 27 17.1 27.2 16.7 27.5 L 16.2 28.5 L 16.5 27.2 C 15.8 27 15.5 26.2 15.5 25 C 15.5 24 16.5 23 18 23 Z" fill="#ffffff" opacity="0.95"/>
-    </g>
-    {/* Circular Bubbles */}
-    <circle cx="25" cy="18" r="1.2" fill="#ffffff" opacity="0.8"/>
-    <circle cx="21" cy="12" r="0.8" fill="#ffffff" opacity="0.6"/>
-  </g>
+  <path d="M46,110 L33,124 L56,116 Z" fill="url(#sl-grad)"></path>
+  
+  <circle cx="64" cy="88" r="30" fill="none" stroke="url(#sl-grad)" stroke-width="6.5"></circle>
+  
+  <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="url(#sl-grad)" stroke-width="6.5" stroke-linecap="round"></path>
+  <line x1="47" y1="36" x2="81" y2="36" stroke="url(#sl-grad)" stroke-width="6.5" stroke-linecap="round"></line>
+  
+  <circle cx="52" cy="88" r="4.6" fill="#12BBD6"></circle>
+  <circle cx="64" cy="88" r="4.6" fill="#6D3BEB"></circle>
+  <circle cx="76" cy="88" r="4.6" fill="#A855F7"></circle>
 </svg>

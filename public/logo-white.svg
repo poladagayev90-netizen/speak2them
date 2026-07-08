@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="SpeakLab">
+  <defs>
+    <clipPath id="sl-body-w"><circle cx="64" cy="88" r="30"></circle></clipPath>
+  </defs>
+  <g clip-path="url(#sl-body-w)"><rect x="30" y="92" width="70" height="36" fill="#ffffff" opacity="0.18"></rect></g>
+  <path d="M46,110 L33,124 L56,116 Z" fill="#ffffff"></path>
+  <circle cx="64" cy="88" r="30" fill="none" stroke="#ffffff" stroke-width="6.5"></circle>
+  <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"></path>
+  <line x1="47" y1="36" x2="81" y2="36" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round"></line>
+  <circle cx="52" cy="88" r="4.6" fill="#ffffff"></circle>
+  <circle cx="64" cy="88" r="4.6" fill="#ffffff"></circle>
+  <circle cx="76" cy="88" r="4.6" fill="#ffffff"></circle>
+</svg>

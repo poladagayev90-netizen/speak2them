@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 150" width="470" height="150" role="img" aria-label="SpeakLab">
+  <defs>
+    <linearGradient id="wd-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38BDF8"></stop>
+      <stop offset="0.55" stop-color="#6D3BEB"></stop>
+      <stop offset="1" stop-color="#A855F7"></stop>
+    </linearGradient>
+    <linearGradient id="wd-liq" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#12BBD6"></stop>
+      <stop offset="1" stop-color="#7C4DFF"></stop>
+    </linearGradient>
+    <clipPath id="wd-body"><circle cx="64" cy="88" r="30"></circle></clipPath>
+  </defs>
+  <g transform="translate(0,8) scale(0.92)">
+    <g clip-path="url(#wd-body)"><rect x="30" y="92" width="70" height="36" fill="url(#wd-liq)" opacity="0.2"></rect></g>
+    <path d="M46,110 L33,124 L56,116 Z" fill="url(#wd-grad)"></path>
+    <circle cx="64" cy="88" r="30" fill="none" stroke="url(#wd-grad)" stroke-width="6.5"></circle>
+    <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="url(#wd-grad)" stroke-width="6.5" stroke-linecap="round"></path>
+    <line x1="47" y1="36" x2="81" y2="36" stroke="url(#wd-grad)" stroke-width="6.5" stroke-linecap="round"></line>
+    <circle cx="52" cy="88" r="4.6" fill="#12BBD6"></circle>
+    <circle cx="64" cy="88" r="4.6" fill="#6D3BEB"></circle>
+    <circle cx="76" cy="88" r="4.6" fill="#A855F7"></circle>
+  </g>
+  <text x="132" y="98" font-family="Outfit, &#39;Segoe UI&#39;, system-ui, sans-serif" font-weight="800" font-size="78" letter-spacing="-3">
+    <tspan fill="#ffffff">Speak</tspan><tspan fill="url(#wd-grad)">Lab</tspan>
+  </text>
+</svg>
