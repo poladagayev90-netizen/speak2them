@@ -3,6 +3,8 @@ import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'f
 import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 
 
@@ -10,6 +12,8 @@ const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
 export default function Profile({ user }) {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [level, setLevel] = useState('B1 – Intermediate');
@@ -224,6 +228,38 @@ export default function Profile({ user }) {
             <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
             <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>
           </div>
+        </div>
+      </div>
+
+      {/* APPEARANCE — the theme switch previously only existed in the desktop
+          settings sidebar, which mobile users can never open. */}
+      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Görünüş</h3>
+      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
+        <div
+          onClick={toggleTheme}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); } }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px' }}>
+              {isDark ? <Moon size={18} /> : <Sun size={18} />}
+            </div>
+            <div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Tema</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
+                {isDark ? 'Qaranlıq rejim' : 'İşıqlı rejim'}
+              </div>
+            </div>
+          </div>
+          <span
+            className={`theme-switch ${isDark ? 'dark' : 'light'}`}
+            aria-hidden="true"
+            style={{ display: 'inline-block', flexShrink: 0 }}
+          >
+            <span className="theme-switch-thumb"></span>
+          </span>
         </div>
       </div>
 

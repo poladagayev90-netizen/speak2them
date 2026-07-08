@@ -3,10 +3,8 @@ import BottomNav from './BottomNav';
 import SettingsPanel from './SettingsPanel';
 import InstallPrompt from './InstallPrompt';
 import { useLocation } from 'react-router-dom';
-import { Capacitor } from '@capacitor/core';
 
 export default function AppLayout({ children, user }) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [forceMobile, setForceMobile] = useState(() => {
     if (typeof window !== 'undefined') {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
@@ -51,14 +49,9 @@ export default function AppLayout({ children, user }) {
       
       const mobileMode = isMobile || isPWA || isTelegram || manualMobileMode;
       setForceMobile(mobileMode);
-      
+
       // Update app height to prevent mobile browser URL bar scroll issues
       document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-      
-      // Close settings if switching to mobile
-      if (mobileMode) {
-        setSettingsOpen(false);
-      }
     };
     
     checkLayout();
@@ -76,6 +69,10 @@ export default function AppLayout({ children, user }) {
   // 1. MOBILE / PWA LAYOUT
   // -------------------------
   if (forceMobile) {
+    // No SettingsPanel here: nothing ever opened it (setSettingsOpen(true) was
+    // never called), so it sat closed and unreachable — which is why the theme
+    // switch appeared to be missing. On mobile it lives in the Profile page,
+    // where users expect settings to be.
     return (
       <div className="mobile-layout" style={{ paddingTop: 'var(--safe-area-top, 0px)', paddingBottom: 'var(--safe-area-bottom, 0px)' }}>
         <div className="main-content">
@@ -83,13 +80,6 @@ export default function AppLayout({ children, user }) {
           <BottomNav user={user} />
           <InstallPrompt />
         </div>
-        <SettingsPanel 
-          open={settingsOpen} 
-          onClose={() => setSettingsOpen(false)} 
-          isDesktop={false} 
-          manualMobileMode={manualMobileMode}
-          toggleManualMobileMode={toggleManualMobileMode}
-        />
       </div>
     );
   }
@@ -110,10 +100,6 @@ export default function AppLayout({ children, user }) {
       </div>
 
       <main className="main-content">
-        {/* DEBUG BADGE FOR NATIVE DETECTION */}
-        <div style={{ position: 'fixed', top: '10px', left: '10px', background: 'red', color: 'white', padding: '5px', zIndex: 9999, fontSize: '10px', borderRadius: '4px' }}>
-          {Capacitor.isNativePlatform() ? 'NATIVE APK' : 'WEB/PWA'}
-        </div>
         {children}
         <InstallPrompt />
       </main>

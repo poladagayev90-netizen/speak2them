@@ -29,7 +29,7 @@ export default function BottomNav({ user }) {
           >
             <Icon
               size={22}
-              color={isActive ? '#7c6ff7' : '#555'}
+              color={isActive ? 'var(--accent)' : 'var(--text-muted)'}
               strokeWidth={isActive ? 2.5 : 1.8}
             />
             <span className="bottom-nav-label">{tab.label}</span>

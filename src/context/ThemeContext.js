@@ -5,11 +5,23 @@ const ThemeContext = createContext({
   toggleTheme: () => {},
 });
 
-// Must agree with the boot script in public/index.html, which applies the same
-// value before first paint so the app never flashes the wrong theme.
+// Everyone who used the app before light became the default has 'dark' saved,
+// so a plain fallback would never reach them. Reset once, then honour whatever
+// they pick from then on.
+const THEME_KEY = 'theme';
+const DEFAULT_MIGRATION_KEY = 'themeDefaultLightApplied';
+
+// Must agree with the boot script in public/index.html, which runs this same
+// logic before first paint so the app never flashes the wrong theme.
 const getInitialTheme = () => {
   if (typeof window === 'undefined') return 'light';
-  return window.localStorage.getItem('theme') || 'light';
+  const ls = window.localStorage;
+  if (!ls.getItem(DEFAULT_MIGRATION_KEY)) {
+    ls.setItem(DEFAULT_MIGRATION_KEY, '1');
+    ls.setItem(THEME_KEY, 'light');
+    return 'light';
+  }
+  return ls.getItem(THEME_KEY) || 'light';
 };
 
 // Keep the browser chrome (status bar, address bar) in step with the theme.

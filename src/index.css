@@ -284,7 +284,9 @@ code {
   height: 26px;
   border: none;
   border-radius: 13px;
-  background: #e0dbd3;
+  /* Was the old light-palette border colour, hard-coded, so the "off" track
+     stayed beige on a dark background. */
+  background: var(--border);
   padding: 0;
   cursor: pointer;
   position: relative;
@@ -300,6 +302,8 @@ code {
   height: 20px;
   border-radius: 50%;
   background: white;
+  /* A white thumb on the light "off" track needs an edge to be visible. */
+  box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px rgba(13, 27, 62, 0.06);
   margin: 3px;
   display: flex;
   align-items: center;
