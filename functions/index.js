@@ -456,7 +456,11 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
 });
 
 // ─── AI Quiz Generation (DeepSeek proxy) ──────────────────────────
-exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY] }, async (req, res) => {
+// invoker: "public" is required, not optional. Cloud Run rejects the browser's
+// CORS preflight (an OPTIONS with no Authorization header) before our handler
+// runs, so the response carries no Access-Control-Allow-Origin and the browser
+// reports a CORS failure. Callers are still authenticated by verifyAuth below.
+exports.generateQuiz = onRequest({ secrets: [DEEPSEEK_API_KEY], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
@@ -875,11 +879,16 @@ async function callGroqChat(userContent) {
   throw lastErr || Object.assign(new Error("Groq JSON failed after retries"), { retryable: true });
 }
 
-// Long calls are analyzed partially to keep the queue moving on the free
-// Groq tier: short calls in full, longer ones one third (min 5 minutes).
+// Only the first 5 minutes of a call are analyzed. A byte-prefix of a WebM is
+// still decodable, so this is a contiguous, real 5-minute recording — not a
+// stitched sample. Shorter calls are analyzed in full. Capping here (rather
+// than at a fraction of the call) keeps the per-ticket cost constant, which is
+// what makes the queue drain predictably on the free Groq audio budget.
+const ANALYSIS_MAX_SECONDS = 300;
+
 function effectiveAnalyzeSeconds(audioSeconds) {
-  if (!audioSeconds || audioSeconds <= 300) return audioSeconds || 0;
-  return Math.max(300, Math.round(audioSeconds / 3));
+  if (!audioSeconds) return 0;
+  return Math.min(audioSeconds, ANALYSIS_MAX_SECONDS);
 }
 
 // Data-only push to one user's device (the messaging SW displays it and

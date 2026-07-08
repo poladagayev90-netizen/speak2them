@@ -106,8 +106,10 @@ export default function Chat({ user }) {
   const callDocId = stateCallId || `call_${chatId}`;
   const content = getTodayContent();
   
-  // PROMOTION MVP: Everyone gets 30 minutes max call time
-  let maxCallSeconds = 30 * 60;
+  // Hard cap on call length. Agora bills per participant-minute, so this is
+  // the single biggest lever on running cost; the recording also stays well
+  // under the 15 MB Storage rule and the analysis ticket's 1800s ceiling.
+  let maxCallSeconds = 20 * 60;
 
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
@@ -423,6 +425,9 @@ export default function Chat({ user }) {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
         if (maxCallSeconds !== Infinity && callSecondsRef.current >= maxCallSeconds) {
+          // endCall is async and alert() blocks — without this the interval
+          // keeps firing and stacks one alert per second.
+          clearInterval(timerRef.current);
           endCallRef.current?.();
           alert('⏰ Danışıq limitin doldu!\n\nLimitsiz danışmaq üçün paketinizi yeniləyin!');
         }
