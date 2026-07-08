@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { toAnalysisView } from '../utils/analysisView';
 
 export default function CallInsights({ userId, channelName, onClose }) {
   const [analysis, setAnalysis] = useState(null);
@@ -52,7 +53,7 @@ export default function CallInsights({ userId, channelName, onClose }) {
         <button onClick={onClose} style={{
           marginTop: 24, width: '100%', maxWidth: 320, height: 52,
           borderRadius: 16, border: 'none', background: 'var(--accent)',
-          color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer'
+          color: 'var(--text-on-accent)', fontSize: 16, fontWeight: 700, cursor: 'pointer'
         }}>Bağla</button>
       </div>
     );
@@ -78,10 +79,30 @@ export default function CallInsights({ userId, channelName, onClose }) {
       <button onClick={onClose} style={{
         marginTop: 24, width: '100%', maxWidth: 320, height: 52,
         borderRadius: 16, border: 'none', background: 'var(--accent)',
-        color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer'
+        color: 'var(--text-on-accent)', fontSize: 16, fontWeight: 700, cursor: 'pointer'
       }}>Bağla</button>
     </div>
   );
+
+  // Old and new documents both come through the adapter, so this view never has
+  // to know which shape it was handed.
+  const view = toAnalysisView(analysis);
+
+  // Older analyses only recorded a fluency score; hide the tiles they lack
+  // rather than printing a misleading 0.
+  const scoreTiles = [
+    { label: 'Axıcılıq', value: view.scores.fluency },
+    { label: 'Qrammatika', value: view.scores.grammar },
+    { label: 'Lüğət', value: view.scores.vocabulary },
+  ].filter((t) => Number.isFinite(t.value));
+
+  const sectionTitle = {
+    color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10,
+  };
+  const card = {
+    background: 'var(--bg-card)', borderRadius: 12,
+    padding: '10px 12px', marginBottom: 8, border: '1px solid var(--border)',
+  };
 
   return (
     <div style={{
@@ -92,59 +113,54 @@ export default function CallInsights({ userId, channelName, onClose }) {
       height: '100dvh',
       WebkitOverflowScrolling: 'touch'
     }}>
-      {/* Header */}
+      {/* SCORE */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>
-          Zəng Analizi 🎓
-        </p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Zəng Analizi 🎓</p>
         <div style={{
           width: 90, height: 90, borderRadius: '50%',
-          background: scoreColor(analysis.overallScore),
+          background: scoreColor(view.overallScore),
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 12px'
         }}>
-          <span style={{ color: '#fff', fontSize: 28, fontWeight: 800 }}>
-            {analysis.overallScore}
+          <span style={{ color: '#fff', fontSize: 28, fontWeight: 800 }}>{view.overallScore}</span>
+        </div>
+        {view.recap && (
+          <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
+            {view.recap}
+          </p>
+        )}
+      </div>
+
+      {scoreTiles.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {scoreTiles.map((s) => (
+            <div key={s.label} style={{
+              flex: 1, background: 'var(--bg-card)', borderRadius: 12,
+              padding: '12px 8px', textAlign: 'center', border: '1px solid var(--border)'
+            }}>
+              <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>{s.value}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: 0 }}>{s.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {view.speakingPace?.wpm > 0 && (
+        <div style={{ ...card, textAlign: 'center', marginBottom: 24 }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Danışıq sürəti: </span>
+          <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+            {view.speakingPace.wpm} wpm ({view.speakingPace.label})
           </span>
         </div>
-        <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 600, margin: 0 }}>
-          {analysis.encouragement}
-        </p>
-      </div>
+      )}
 
-      {/* Stats Row */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        {[
-          { label: 'Fluency', value: `${analysis.fluencyScore}/100` },
-          { label: 'Sürət', value: analysis.speakingPace?.wpm ? `${analysis.speakingPace.wpm} wpm` : '—' },
-          { label: 'Vocab', value: `${analysis.vocabularyUsed?.length || 0} söz` },
-        ].map((s, i) => (
-          <div key={i} style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 12,
-            padding: '12px 8px', textAlign: 'center',
-            border: '1px solid var(--border)'
-          }}>
-            <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
-              {s.value}
-            </p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: 0 }}>{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Grammar Fixes */}
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
-          Qrammatika Düzəlişləri ✏️
-        </p>
-        {!analysis.grammarFixes?.length ? (
-          <p style={{ color: 'var(--success)', fontSize: 14 }}>Xəta tapılmadı! Əla qrammatika ✅</p>
-        ) : analysis.grammarFixes.map((fix, i) => (
-          <div key={i} style={{
-            background: 'var(--bg-card)', borderRadius: 12,
-            padding: '10px 12px', marginBottom: 8,
-            border: '1px solid var(--border)'
-          }}>
+      {/* MISTAKES */}
+      <div style={{ marginBottom: 24 }}>
+        <p style={sectionTitle}>Səhvlər ✏️</p>
+        {!view.feedback.length ? (
+          <p style={{ color: 'var(--success)', fontSize: 14 }}>Real qrammatik səhv tapılmadı ✅</p>
+        ) : view.feedback.map((fix, i) => (
+          <div key={i} style={card}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               <span style={{ background: 'var(--danger-bg)', color: 'var(--danger-fg)', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 600 }}>
                 {fix.original}
@@ -154,90 +170,75 @@ export default function CallInsights({ userId, channelName, onClose }) {
                 {fix.corrected}
               </span>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: 0 }}>{fix.why || fix.explanation}</p>
+            {fix.reason && <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: 0 }}>{fix.reason}</p>}
           </div>
         ))}
       </div>
 
-      {/* Vocabulary */}
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
-          Günün Sözləri 📘
-          {analysis.idiomBonus && (
-            <span style={{ marginLeft: 8, background: 'var(--success-bg)', color: 'var(--success-fg)', borderRadius: 20, padding: '2px 10px', fontSize: 12 }}>
-              🎉 İdiom Bonusu!
-            </span>
-          )}
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {analysis.vocabularyUsed?.length ? (
-            analysis.vocabularyUsed.map((word, i) => (
+      {/* STRENGTHS */}
+      {view.strengths.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={sectionTitle}>Güclü tərəflərin 💪</p>
+          {view.strengths.map((s, i) => (
+            <div key={i} style={{
+              background: 'var(--success-bg)', color: 'var(--success-fg)', borderRadius: 12,
+              padding: '10px 12px', marginBottom: 8, fontSize: 13, lineHeight: 1.5
+            }}>{s}</div>
+          ))}
+        </div>
+      )}
+
+      {/* TIPS */}
+      {view.tips.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={sectionTitle}>Tövsiyələr 💡</p>
+          {view.tips.map((t, i) => (
+            <div key={i} style={{ ...card, display: 'flex', gap: 8, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
+              <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{i + 1}.</span>
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* VOCABULARY */}
+      {view.vocabulary.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={sectionTitle}>Lüğət 📘</p>
+          {view.vocabulary.map((v, i) => (
+            <div key={i} style={card}>
+              <p style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700, margin: '0 0 4px' }}>{v.word}</p>
+              {v.example && (
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>{v.example}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Words the learner used — only older analyses recorded these. */}
+      {view.legacyVocabularyUsed.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={sectionTitle}>İşlətdiyin sözlər</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {view.legacyVocabularyUsed.map((word, i) => (
               <span key={i} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', borderRadius: 20, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
                 {word}
               </span>
-            ))
-          ) : (
-            <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Günün sözlərindən istifadə edilmədi</p>
-          )}
-        </div>
-
-        {/* Recommended vocabulary */}
-        {analysis.vocabularySuggestions?.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, marginBottom: 8 }}>
-              Tövsiyə olunan sözlər ✨
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {analysis.vocabularySuggestions.map((v, i) => (
-                <div key={i} style={{
-                  background: 'var(--bg-card)', borderRadius: 12,
-                  padding: '10px 12px', border: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap'
-                }}>
-                  <span style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700 }}>{v.word}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>— {v.meaning}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Suggestions — example sentences */}
-      {analysis.exampleSentences?.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
-            Nümunə Cümlələr 💡
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {analysis.exampleSentences.map((s, i) => (
-              <div key={i} style={{
-                background: 'var(--bg-card)', borderRadius: 12,
-                padding: '10px 12px', border: '1px solid var(--border)',
-                color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5
-              }}>
-                “{s}”
-              </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Transcript */}
-      {analysis.transcript && (
+      {view.transcript && (
         <div style={{ marginBottom: 24 }}>
-          <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
-            Danışıq Xülasəsi 📝
-          </p>
+          <p style={sectionTitle}>Danışıq Xülasəsi 📝</p>
           <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: '12px 14px', border: '1px solid var(--border)' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>
-              {analysis.transcript}
-            </p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{view.transcript}</p>
           </div>
         </div>
       )}
 
-      {/* Done button */}
       <button onClick={onClose} style={{
         width: '100%', height: 52, borderRadius: 16, border: 'none',
         background: 'var(--accent)', color: 'var(--text-on-accent)',

@@ -673,66 +673,78 @@ const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
 const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
 
-const ANALYSIS_PROMPT = `Sən təcrübəli, dəqiq İngilis dili müəllimisən. Aşağıda bir Azərbaycanlı tələbənin İngiliscə danışığının transkripti var.
+const ANALYSIS_PROMPT = `You are an English speaking coach reviewing a transcript of an Azerbaijani learner's spoken English.
 
-TRANSKRIPT:
+TRANSCRIPT:
 """{{TRANSCRIPT}}"""
 
-Vəzifən: bu danışığı təhlil et və nəticəni YALNIZ bir JSON obyekti kimi qaytar. Markdown, izah və ya əlavə mətn yazma.
+Return ONLY a valid JSON object. No markdown, no text outside the JSON.
 
-Qaydalar:
-- overallScore və fluencyScore: 0-100 arası tam ədəd.
-- encouragement: 1 qısa ruhlandırıcı cümlə (Azərbaycanca).
-- grammarFixes: YALNIZ qrammatik və ya leksik SƏHVİ olan cümlələr, ƏN ÇOX 6 ədəd (ən vacibləri). Düzgün cümlələri ƏSLA daxil etmə. Hər element: original (tələbənin dediyi səhv cümlə), corrected (düzgün variant), why (səhvin izahı, Azərbaycanca, maksimum 12 söz). Səhv yoxdursa boş massiv.
-- vocabularyUsed: tələbənin işlətdiyi diqqətəlayiq İngilis sözləri, ən çox 10 ədəd.
-- vocabularySuggestions: tələbənin işlətdiyindən daha uyğun/zəngin İngilis sözləri, ən çox 5 ədəd. Hər element: word (İngiliscə), meaning (Azərbaycanca qısa məna, maksimum 6 söz).
-- exampleSentences: bu mövzuda düzgün qurulmuş 2-3 nümunə İngilis cümləsi.
-- Cavabı qısa saxla: heç bir mətn sahəsi bir cümlədən uzun olmasın.
-- Uydurma etmə; yalnız transkriptə əsaslan.`;
+Rules:
+- Correct ONLY real grammatical or lexical mistakes. If a sentence is already correct, leave it alone.
+- Never rewrite for style: do not swap "is not" for "isn't", do not reorder correct clauses, do not offer alternatives to correct sentences.
+- feedback: at most 5 items, the most valuable ones. original = the learner's exact sentence, corrected = the fixed sentence, reason = why it was wrong. Empty array if there are no real mistakes.
+- scores: fluency = flow and natural delivery; grammar = correctness; vocabulary = range and level. Integers 0-100.
+- recap: 1-2 sentences on what the learner talked about.
+- strengths: 1-2 concrete things they did well.
+- tips: 2-3 actionable suggestions based on patterns you noticed (e.g. missing articles, tense confusion).
+- vocabulary: 3-4 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words.
+- recap, reason, strengths and tips must be written in Azerbaijani. word and example stay in English.
+- Keep every text field to one sentence. Base everything on the transcript; invent nothing.
+- Be encouraging but honest. You are a coach, not a rewriter.`;
 
 // Whisper can return very long transcripts; the JSON answer must still fit in
 // the completion budget, so the model only sees a bounded slice.
 const MAX_TRANSCRIPT_CHARS = 6000;
 
 // Strict schema enforced at the Groq API level (structured outputs).
+// maxItems is what keeps the completion small: with these caps a full answer is
+// ~600 output tokens, which is why ANALYSIS_MAX_TOKENS can start low.
 const ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["overallScore", "fluencyScore", "encouragement", "grammarFixes",
-    "vocabularyUsed", "vocabularySuggestions", "exampleSentences"],
+  required: ["recap", "scores", "feedback", "strengths", "tips", "vocabulary"],
   properties: {
-    overallScore: { type: "integer", minimum: 0, maximum: 100 },
-    fluencyScore: { type: "integer", minimum: 0, maximum: 100 },
-    encouragement: { type: "string" },
-    grammarFixes: {
-      type: "array",
-      maxItems: 6,
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["original", "corrected", "why"],
-        properties: {
-          original: { type: "string" },
-          corrected: { type: "string" },
-          why: { type: "string" },
-        },
+    recap: { type: "string" },
+    scores: {
+      type: "object",
+      additionalProperties: false,
+      required: ["fluency", "grammar", "vocabulary"],
+      properties: {
+        fluency: { type: "integer", minimum: 0, maximum: 100 },
+        grammar: { type: "integer", minimum: 0, maximum: 100 },
+        vocabulary: { type: "integer", minimum: 0, maximum: 100 },
       },
     },
-    vocabularyUsed: { type: "array", maxItems: 10, items: { type: "string" } },
-    vocabularySuggestions: {
+    feedback: {
       type: "array",
       maxItems: 5,
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["word", "meaning"],
+        required: ["original", "corrected", "reason"],
         properties: {
-          word: { type: "string" },
-          meaning: { type: "string" },
+          original: { type: "string" },
+          corrected: { type: "string" },
+          reason: { type: "string" },
         },
       },
     },
-    exampleSentences: { type: "array", maxItems: 3, items: { type: "string" } },
+    strengths: { type: "array", maxItems: 2, items: { type: "string" } },
+    tips: { type: "array", maxItems: 3, items: { type: "string" } },
+    vocabulary: {
+      type: "array",
+      maxItems: 4,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["word", "example"],
+        properties: {
+          word: { type: "string" },
+          example: { type: "string" },
+        },
+      },
+    },
   },
 };
 
@@ -771,6 +783,32 @@ function computeSpeakingPace(transcript, analyzeSeconds) {
   return { wpm, label };
 }
 
+// Telling the model "don't rewrite correct sentences" is necessary but not
+// sufficient — it still slips in contraction swaps and punctuation tweaks. So
+// the rule is also enforced here, deterministically: two sentences that differ
+// only in contractions, casing or punctuation are not a correction.
+const CONTRACTIONS = [
+  [/\bcan ?not\b/g, "can't"], [/\bis not\b/g, "isn't"], [/\bare not\b/g, "aren't"],
+  [/\bwas not\b/g, "wasn't"], [/\bwere not\b/g, "weren't"], [/\bdo not\b/g, "don't"],
+  [/\bdoes not\b/g, "doesn't"], [/\bdid not\b/g, "didn't"], [/\bhave not\b/g, "haven't"],
+  [/\bhas not\b/g, "hasn't"], [/\bhad not\b/g, "hadn't"], [/\bwill not\b/g, "won't"],
+  [/\bwould not\b/g, "wouldn't"], [/\bshould not\b/g, "shouldn't"], [/\bcould not\b/g, "couldn't"],
+  [/\bi am\b/g, "i'm"], [/\bit is\b/g, "it's"], [/\bthat is\b/g, "that's"],
+  [/\bthere is\b/g, "there's"], [/\bwhat is\b/g, "what's"], [/\bhe is\b/g, "he's"],
+  [/\bshe is\b/g, "she's"], [/\bthey are\b/g, "they're"], [/\bwe are\b/g, "we're"],
+  [/\byou are\b/g, "you're"], [/\bi have\b/g, "i've"], [/\bi will\b/g, "i'll"],
+  [/\bi would\b/g, "i'd"], [/\blet us\b/g, "let's"],
+];
+
+function canonicalSentence(value) {
+  let s = String(value || "").toLowerCase().replace(/[‘’ʼ]/g, "'");
+  for (const [re, to] of CONTRACTIONS) s = s.replace(re, to);
+  return s.replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+const isRealCorrection = (f) =>
+  f.original && f.corrected && canonicalSentence(f.original) !== canonicalSentence(f.corrected);
+
 // Coerces whatever the model returned into a guaranteed, bounded shape so the
 // frontend never sees a malformed analysis, even on a partial response.
 function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
@@ -780,31 +818,33 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
   };
   const asStr = (v) => (typeof v === "string" ? v.trim() : "");
+  const strList = (v, max) => (Array.isArray(v) ? v : []).map(asStr).filter(Boolean).slice(0, max);
 
-  const grammarFixes = (Array.isArray(obj.grammarFixes) ? obj.grammarFixes : [])
-    .map((f) => ({ original: asStr(f?.original), corrected: asStr(f?.corrected), why: asStr(f?.why) }))
-    // Drop entries where the "fix" equals the original — i.e. correct sentences.
-    .filter((f) => f.original && f.corrected && f.original !== f.corrected)
-    .slice(0, 8);
+  const rawFeedback = (Array.isArray(obj.feedback) ? obj.feedback : [])
+    .map((f) => ({ original: asStr(f?.original), corrected: asStr(f?.corrected), reason: asStr(f?.reason) }));
+  const feedback = rawFeedback.filter(isRealCorrection).slice(0, 5);
+  const dropped = rawFeedback.length - feedback.length;
+  if (dropped > 0) console.log("[Analysis] dropped", dropped, "non-corrections (style-only rewrites)");
 
-  const vocabularyUsed = (Array.isArray(obj.vocabularyUsed) ? obj.vocabularyUsed : [])
-    .map(asStr).filter(Boolean).slice(0, 15);
+  const scores = obj.scores && typeof obj.scores === "object" ? obj.scores : {};
+  const fluency = clampScore(scores.fluency);
+  const grammar = clampScore(scores.grammar);
+  const vocabScore = clampScore(scores.vocabulary);
 
-  const vocabularySuggestions = (Array.isArray(obj.vocabularySuggestions) ? obj.vocabularySuggestions : [])
-    .map((v) => ({ word: asStr(v?.word), meaning: asStr(v?.meaning) }))
-    .filter((v) => v.word).slice(0, 6);
-
-  const exampleSentences = (Array.isArray(obj.exampleSentences) ? obj.exampleSentences : [])
-    .map(asStr).filter(Boolean).slice(0, 3);
+  const vocabulary = (Array.isArray(obj.vocabulary) ? obj.vocabulary : [])
+    .map((v) => ({ word: asStr(v?.word), example: asStr(v?.example) }))
+    .filter((v) => v.word).slice(0, 4);
 
   return {
-    overallScore: clampScore(obj.overallScore),
-    fluencyScore: clampScore(obj.fluencyScore),
-    encouragement: asStr(obj.encouragement) || "Yaxşı iş! Davam et.",
-    grammarFixes,
-    vocabularyUsed,
-    vocabularySuggestions,
-    exampleSentences,
+    recap: asStr(obj.recap) || "Söhbətiniz analiz olundu.",
+    // Derived, not asked of the model: one less field to hallucinate, and it can
+    // never contradict the three scores it is supposed to summarise.
+    overallScore: Math.round((fluency + grammar + vocabScore) / 3),
+    scores: { fluency, grammar, vocabulary: vocabScore },
+    feedback,
+    strengths: strList(obj.strengths, 2),
+    tips: strList(obj.tips, 3),
+    vocabulary,
     speakingPace: computeSpeakingPace(transcript, analyzeSeconds),
   };
 }
@@ -815,7 +855,9 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
 // Escalating completion budgets: the observed production failure was
 // "max completion tokens reached before generating a valid document" — the
 // answer was cut mid-JSON, so retrying with the same budget can never succeed.
-const ANALYSIS_MAX_TOKENS = [2500, 3500, 4096];
+// A full answer under ANALYSIS_SCHEMA's maxItems is ~600 tokens, so the first
+// attempt has ample headroom; the ladder exists only for the rare overrun.
+const ANALYSIS_MAX_TOKENS = [1200, 1700, 2200];
 
 async function callGroqChat(userContent) {
   const messages = [{ role: "user", content: userContent }];

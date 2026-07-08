@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ChevronLeft } from 'lucide-react';
 import GuidedTour from '../components/GuidedTour';
+import { toAnalysisView } from '../utils/analysisView';
 
 const PROFILE_TOUR_STEPS = [
   {
@@ -159,7 +160,7 @@ export default function History({ user }) {
 
 function AnalysisDetail({ analysis, onClose }) {
   // Rendered as large text on a theme surface, so these follow the theme.
-  const scoreColor = (s) => s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)';
+  const scoreColor = (s) => (s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)');
 
   if (analysis.error) return (
     <div style={{ padding: 20, background: 'var(--bg-primary)', minHeight: '100vh' }}>
@@ -170,6 +171,18 @@ function AnalysisDetail({ analysis, onClose }) {
     </div>
   );
 
+  // Old and new analysis documents share one view model.
+  const view = toAnalysisView(analysis);
+  const tiles = [
+    { label: 'Ümumi Bal', value: view.overallScore },
+    { label: 'Axıcılıq', value: view.scores.fluency },
+    { label: 'Qrammatika', value: view.scores.grammar },
+    { label: 'Lüğət', value: view.scores.vocabulary },
+  ].filter((t) => Number.isFinite(t.value));
+
+  const h3 = { color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 };
+  const panel = { background: 'var(--bg-secondary)', padding: 16, borderRadius: 16 };
+
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', padding: '20px 16px 40px' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
@@ -179,86 +192,108 @@ function AnalysisDetail({ analysis, onClose }) {
         <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>Analiz Nəticəsi</h2>
       </div>
 
-      {/* Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, textAlign: 'center' }}>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 4 }}>Ümumi Bal</div>
-          <div style={{ color: scoreColor(analysis.overallScore), fontSize: 32, fontWeight: 800 }}>{analysis.overallScore || 0}</div>
-        </div>
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, textAlign: 'center' }}>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 4 }}>Axıcılıq</div>
-          <div style={{ color: scoreColor(analysis.fluencyScore), fontSize: 32, fontWeight: 800 }}>{analysis.fluencyScore || 0}</div>
-        </div>
+        {tiles.map((t) => (
+          <div key={t.label} style={{ ...panel, textAlign: 'center' }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 4 }}>{t.label}</div>
+            <div style={{ color: scoreColor(t.value), fontSize: 32, fontWeight: 800 }}>{t.value}</div>
+          </div>
+        ))}
       </div>
 
-      {analysis.encouragement && (
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, marginBottom: 24 }}>
-          <p style={{ color: 'var(--text-primary)', fontSize: 14, margin: 0, fontStyle: 'italic', display: 'flex', gap: 8 }}>
-            <span>💡</span> {analysis.encouragement}
+      {view.recap && (
+        <div style={{ ...panel, marginBottom: 24 }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: 14, margin: 0, display: 'flex', gap: 8, lineHeight: 1.5 }}>
+            <span>📝</span> {view.recap}
           </p>
         </div>
       )}
 
-      {analysis.speakingPace?.wpm > 0 && (
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, marginBottom: 24, textAlign: 'center' }}>
+      {view.speakingPace?.wpm > 0 && (
+        <div style={{ ...panel, marginBottom: 24, textAlign: 'center' }}>
           <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Danışıq sürəti: </span>
           <span style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700 }}>
-            {analysis.speakingPace.wpm} wpm ({analysis.speakingPace.label})
+            {view.speakingPace.wpm} wpm ({view.speakingPace.label})
           </span>
         </div>
       )}
 
-      {/* Grammar Fixes */}
-      <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Qrammatika Səhvləri</h3>
-      {analysis.grammarFixes && analysis.grammarFixes.length > 0 ? (
+      <h3 style={h3}>Səhvlər</h3>
+      {view.feedback.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-          {analysis.grammarFixes.map((item, idx) => (
-            <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16 }}>
+          {view.feedback.map((item, idx) => (
+            <div key={idx} style={panel}>
               <div style={{ color: 'var(--danger)', fontSize: 14, textDecoration: 'line-through', marginBottom: 4 }}>{item.original}</div>
               <div style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{item.corrected}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: 13, background: 'rgba(255,255,255,0.05)', padding: 8, borderRadius: 8 }}>{item.why}</div>
+              {item.reason && (
+                <div style={{ color: 'var(--text-secondary)', fontSize: 13, background: 'var(--bg-card)', padding: 8, borderRadius: 8 }}>{item.reason}</div>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 16, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
-          Xəta tapılmadı! 🎉
+        <div style={{ ...panel, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
+          Real qrammatik səhv tapılmadı! 🎉
         </div>
       )}
 
-      {/* Vocabulary */}
-      <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>İstifadə edilən Sözlər</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-        {analysis.vocabularyUsed && analysis.vocabularyUsed.length > 0 ? (
-          analysis.vocabularyUsed.map((word, idx) => (
-            <span key={idx} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-              {word}
-            </span>
-          ))
-        ) : (
-          <span style={{ color: 'var(--text-secondary)' }}>Lüğət tapılmadı.</span>
-        )}
-      </div>
-
-      {analysis.vocabularySuggestions && analysis.vocabularySuggestions.length > 0 && (
+      {view.strengths.length > 0 && (
         <>
-          <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Tövsiyə olunan Sözlər</h3>
+          <h3 style={h3}>Güclü tərəflərin</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-            {analysis.vocabularySuggestions.map((v, idx) => (
-              <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                <span style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700 }}>{v.word}</span>
-                <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>— {v.meaning}</span>
+            {view.strengths.map((s, idx) => (
+              <div key={idx} style={{ background: 'var(--success-bg)', color: 'var(--success-fg)', padding: 12, borderRadius: 12, fontSize: 13, lineHeight: 1.5 }}>{s}</div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {view.tips.length > 0 && (
+        <>
+          <h3 style={h3}>Tövsiyələr</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+            {view.tips.map((t, idx) => (
+              <div key={idx} style={{ ...panel, display: 'flex', gap: 8, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{idx + 1}.</span>
+                <span>{t}</span>
               </div>
             ))}
           </div>
         </>
       )}
 
-      {analysis.exampleSentences && analysis.exampleSentences.length > 0 && (
+      {view.vocabulary.length > 0 && (
         <>
-          <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 }}>Nümunə Cümlələr</h3>
+          <h3 style={h3}>Lüğət</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-            {analysis.exampleSentences.map((s, idx) => (
+            {view.vocabulary.map((v, idx) => (
+              <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12 }}>
+                <div style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{v.word}</div>
+                {v.example && <div style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>{v.example}</div>}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {view.legacyVocabularyUsed.length > 0 && (
+        <>
+          <h3 style={h3}>İstifadə edilən Sözlər</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
+            {view.legacyVocabularyUsed.map((word, idx) => (
+              <span key={idx} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
+                {word}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+
+      {view.legacyExamples.length > 0 && (
+        <>
+          <h3 style={h3}>Nümunə Cümlələr</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+            {view.legacyExamples.map((s, idx) => (
               <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
                 “{s}”
               </div>
