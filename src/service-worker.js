@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 // eslint-disable-next-line no-unused-vars
 const ignored = self.__WB_MANIFEST;
-const CACHE_NAME = 's2t-cache-v3';
+const CACHE_NAME = 's2t-cache-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -21,18 +21,16 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Don't intercept POST requests or external API calls
-  if (
-    event.request.method !== 'GET' ||
-    event.request.url.includes('firestore.googleapis.com') || 
-    event.request.url.includes('identitytoolkit') ||
-    event.request.url.includes('api.openai.com') ||
-    event.request.url.includes('api.deepseek.com')
-  ) {
-    return;
-  }
+  // Only ever handle our own GETs. Intercepting cross-origin requests broke
+  // media loads (the ringtone CDN, ranged audio) and API calls: fetch() would
+  // reject and the cache miss below resolved to undefined, which respondWith
+  // cannot accept — "Failed to convert value to 'Response'".
+  if (event.request.method !== 'GET') return;
 
-  // Network First, fallback to cache
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  // Network first, fall back to cache — but never resolve with undefined.
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -45,8 +43,10 @@ self.addEventListener('fetch', event => {
         });
         return response;
       })
-      .catch(() => {
-        return caches.match(event.request);
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        return new Response('', { status: 504, statusText: 'Offline' });
       })
   );
 });

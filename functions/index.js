@@ -185,10 +185,25 @@ exports.sendCallNotification = onRequest({ secrets: [BOT_TOKEN] }, async (req, r
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const { telegramId, callerName, callerId, receiverId } = req.body;
-  if (!telegramId) return res.status(400).json({ error: "telegramId required" });
+  const { callerId, receiverId } = req.body;
   if (!callerId || !receiverId) return res.status(400).json({ error: "callerId and receiverId required" });
   if (decoded.uid !== callerId) return res.status(403).json({ error: "Forbidden" });
+  if (callerId === receiverId) return res.status(400).json({ error: "Cannot call yourself" });
+
+  // The chat id and the caller's name are resolved here, never taken from the
+  // request: a client-supplied telegramId turned this into an open relay for
+  // spoofed "X is calling you" messages to any Telegram chat.
+  const db = admin.firestore();
+  const [receiverSnap, callerSnap] = await Promise.all([
+    db.collection("users").doc(receiverId).get().catch(() => null),
+    db.collection("users").doc(callerId).get().catch(() => null),
+  ]);
+  const telegramId = receiverSnap && receiverSnap.exists ? receiverSnap.data().telegramId : null;
+  if (!telegramId) return res.status(200).json({ ok: true, skipped: "no-telegram" });
+
+  const rawName = (callerSnap && callerSnap.exists ? callerSnap.data().name : "") || "Someone";
+  // Strip Markdown control characters so a display name cannot inject markup.
+  const callerName = String(rawName).replace(/[*_`[\]()~>#+=|{}.!-]/g, "").slice(0, 40);
 
   try {
     await fetch(telegramApiUrl(), {
