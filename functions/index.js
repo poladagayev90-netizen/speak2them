@@ -1,5 +1,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const admin = require("firebase-admin");
@@ -1296,4 +1297,97 @@ exports.matchSessionQueue = onSchedule({
     await runRef.delete().catch(() => null);
     throw error;
   }
+});
+
+// ─── "Someone is looking for a partner" push ───────────────────────
+// With a small user base the bottleneck is not the matching algorithm, it is
+// that two people are rarely searching at the same minute. When somebody joins
+// the on-demand queue and nobody else is in it, nudge the users who are online
+// and free. Guarded by a global cooldown so this can never become a spam loop.
+const SEARCH_PING_COOLDOWN_MS = 10 * 60 * 1000;
+const SEARCH_PING_MAX_RECIPIENTS = 30;
+const PRESENCE_FRESH_MS = 5 * 60 * 1000;
+
+// One multicast instead of a read + send per recipient.
+async function sendPushToTokens(db, recipients, { title, body, type, url }) {
+  if (recipients.length === 0) return 0;
+  const response = await admin.messaging().sendEachForMulticast({
+    tokens: recipients.map((r) => r.token),
+    data: { title, body, type, url },
+  });
+  const dead = [];
+  response.responses.forEach((r, i) => {
+    const code = r.error && r.error.code;
+    if (code === "messaging/invalid-registration-token" ||
+        code === "messaging/registration-token-not-registered") {
+      dead.push(recipients[i].uid);
+    }
+  });
+  await Promise.all(dead.map((uid) => db.collection("users").doc(uid).update({
+    fcmToken: admin.firestore.FieldValue.delete(),
+  }).catch(() => null)));
+  return response.successCount;
+}
+
+exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event) => {
+  const before = event.data.before.exists ? event.data.before.data() : null;
+  const after = event.data.after.exists ? event.data.after.data() : null;
+
+  // Only the moment a ticket *becomes* an on-demand search. Liveness pings and
+  // the scheduled-session tickets must not re-trigger this.
+  if (!after || after.status !== "searching") return;
+  if (before && before.status === "searching") return;
+
+  const db = admin.firestore();
+  const searcherUid = event.params.uid;
+
+  // If someone else is already searching, the two will pair on their own.
+  const others = await db.collection("matchQueue")
+    .where("status", "==", "searching")
+    .limit(2)
+    .get();
+  if (others.docs.some((d) => d.id !== searcherUid)) {
+    console.log("[SearchPing] another searcher present, skipping");
+    return;
+  }
+
+  // Global cooldown, claimed transactionally so concurrent joins send once.
+  const cooldownRef = db.collection("pushCooldown").doc("searchPing");
+  const claimed = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(cooldownRef);
+    const lastMs = snap.exists ? (snap.data().lastSentMs || 0) : 0;
+    if (Date.now() - lastMs < SEARCH_PING_COOLDOWN_MS) return false;
+    tx.set(cooldownRef, { lastSentMs: Date.now() });
+    return true;
+  });
+  if (!claimed) {
+    console.log("[SearchPing] within cooldown, skipping");
+    return;
+  }
+
+  const cutoff = admin.firestore.Timestamp.fromMillis(Date.now() - PRESENCE_FRESH_MS);
+  const onlineSnap = await db.collection("users")
+    .where("lastSeen", ">", cutoff)
+    .limit(SEARCH_PING_MAX_RECIPIENTS * 2)
+    .get();
+
+  const recipients = [];
+  for (const docSnap of onlineSnap.docs) {
+    if (docSnap.id === searcherUid) continue;
+    const data = docSnap.data();
+    if (data.status === "busy") continue; // already in a call
+    const token = data.fcmToken;
+    if (typeof token !== "string" || !token.trim()) continue;
+    recipients.push({ uid: docSnap.id, token });
+    if (recipients.length >= SEARCH_PING_MAX_RECIPIENTS) break;
+  }
+
+  const searcherName = String(after.name || "Kimsə").slice(0, 30);
+  const sent = await sendPushToTokens(db, recipients, {
+    title: "Kimsə praktika axtarır 🎙️",
+    body: `${searcherName} partnyor gözləyir — indi qoşul!`,
+    type: "search_ping",
+    url: "/",
+  });
+  console.log("[SearchPing] candidates:", recipients.length, "sent:", sent);
 });
