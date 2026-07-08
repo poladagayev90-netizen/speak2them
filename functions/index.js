@@ -421,6 +421,15 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
 
   const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
 
+  // calls/{id} is keyed by the pair, not by the call: the same two users reuse
+  // one document for every call they ever have. So "already rated" has to mean
+  // "already rated THIS call", identified by when it started. matchedAt (or
+  // createdAt) is rewritten each time a call begins, so it names the instance.
+  const callInstance = (call) => {
+    const at = call.matchedAt || call.createdAt;
+    return at && at.toMillis ? at.toMillis() : 0;
+  };
+
   try {
     // One transaction so a rating is proven, applied and recorded atomically.
     // Previously the peer's document was read outside any transaction and the
@@ -435,7 +444,10 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
       if (!participants.includes(decoded.uid) || !participants.includes(peerId)) {
         throw fail(403, "Not a participant of this call");
       }
-      if (call[ratedFlag]) throw fail(409, "This call has already been rated");
+      const instance = callInstance(call);
+      if (instance && call[ratedFlag] === instance) {
+        throw fail(409, "This call has already been rated");
+      }
 
       const peerSnap = await tx.get(peerRef);
       if (!peerSnap.exists) throw fail(404, "Peer not found");
@@ -482,7 +494,7 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
       if (Object.keys(safeUpdates).length === 0) throw fail(400, "No valid fields to update");
 
       tx.update(peerRef, safeUpdates);
-      tx.update(callRef, { [ratedFlag]: true });
+      tx.update(callRef, { [ratedFlag]: instance });
     });
     res.status(200).json({ ok: true });
   } catch (e) {
