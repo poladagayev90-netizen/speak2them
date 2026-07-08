@@ -52,8 +52,9 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
 
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
 
+  let decoded;
   try {
-    await verifyAuth(req);
+    decoded = await verifyAuth(req);
   } catch {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -61,6 +62,15 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
 
   const channelName = req.body.channelName || req.query.channelName;
   if (!channelName) { res.status(400).json({ error: "channelName required" }); return; }
+
+  // A channel is named after its two participants ("uidA_uidB", or
+  // "call_uidA_uidB"). Without this check any signed-in user could mint a
+  // publisher token for a channel they are not part of and listen in on it —
+  // uids are readable from the users collection, so channels are guessable.
+  if (!String(channelName).split("_").includes(decoded.uid)) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
 
   const role = RtcRole.PUBLISHER;
   const expireTime = 3600;

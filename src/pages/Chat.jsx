@@ -137,6 +137,14 @@ export default function Chat({ user }) {
         clearTimeout(callTimeoutRef.current);
         callTimeoutRef.current = null;
       }
+      // Navigating away is not endCall(), so the busy flag has to be cleared
+      // here too — otherwise the user stays "Zəngdə" for the rest of the
+      // session and the App-level presence writer keeps skipping status.
+      if (inCallRef.current) {
+        inCallRef.current = false;
+        setInCallFlag(false);
+        updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' }).catch(() => {});
+      }
       stopLocalRecording();
       if (localTrackRef.current) {
         try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}

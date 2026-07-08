@@ -88,10 +88,16 @@ service cloud.firestore {
     match /matchQueue/{userId} {
       allow read: if isSignedIn();
       allow create: if isOwnDoc(userId);
+      // A peer may only flip a *searching* ticket to matched-with-themselves,
+      // and only those four fields. Previously any signed-in user could
+      // rewrite anyone's whole ticket (callId included) at any time.
       allow update: if isOwnDoc(userId) || (
         isSignedIn()
+        && resource.data.status == 'searching'
         && request.resource.data.status == 'matched'
         && request.resource.data.matchedWith == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'matchedWith', 'callId', 'matchedAt'])
       );
       allow delete: if isOwnDoc(userId);
     }
@@ -141,10 +147,16 @@ service cloud.firestore {
         docId.split('_')[0] == request.auth.uid ||
         (resource != null && resource.data.userId == request.auth.uid)
       );
-      allow write: if isSignedIn() && (
-        docId.split('_')[0] == request.auth.uid ||
-        request.resource.data.userId == request.auth.uid
-      );
+      // Clients only seed the "queued" placeholder for their OWN recording.
+      // The analysis itself is written by the worker through the Admin SDK.
+      // The old rule OR'd the two clauses, so anyone could overwrite another
+      // user's analysis simply by setting userId to their own uid.
+      allow create: if isSignedIn()
+        && docId.split('_')[0] == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'queued'
+        && request.resource.data.keys().hasOnly(['status', 'userId', 'timestamp']);
+      allow update, delete: if false;
     }
 
     match /wordHistory/{userId}/words/{wordId} {
