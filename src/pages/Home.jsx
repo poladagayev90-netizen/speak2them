@@ -284,10 +284,10 @@ export default function Home({ user }) {
             }}>
               <span style={{ fontSize: 20, flexShrink: 0 }}>{out ? '⏳' : '⚠️'}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700, lineHeight: 1.35, paddingRight: 16 }}>
+                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700, lineHeight: 1.35, paddingRight: 24 }}>
                   {out
-                    ? 'Sınaq vaxtın bitdi — zəng etmək üçün PRO al.'
-                    : <>Siz Sınaq Müddətindəsiniz! Balansınız: <b style={{ color: out ? '#ef4444' : '#f59e0b' }}>{mins} dəqiqə</b>.</>}
+                    ? 'Sınaq vaxtın bitdi — zəng etmək üçün dəqiqə al.'
+                    : <>Balansınız: <b style={{ color: out ? '#ef4444' : '#f59e0b' }}>{mins} dəqiqə</b>.</>}
                 </div>
               </div>
               <button
@@ -298,13 +298,13 @@ export default function Home({ user }) {
                   padding: '8px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
                 }}
               >
-                PRO al
+                Dəqiqə al
               </button>
               <button 
                 onClick={() => { setHideTrialBanner(true); localStorage.setItem('hideTrialBanner', 'true'); }}
-                style={{ position: 'absolute', top: 4, right: 4, background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '12px' }}
               >
-                <X size={14} />
+                <X size={20} />
               </button>
             </div>
           );

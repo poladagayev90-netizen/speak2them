@@ -8,57 +8,47 @@ import { applyBadgeRewardsToData } from '../badges/rewards';
 
 const PLANS = [
   {
-    id: 'free',
-    name: 'Free',
-    mins: 'Qrup sessiyaları pulsuz',
-    price: 0,
-    priceLabel: 'Pulsuz',
-    icon: '👤',
-    color: '#2e2e50',
-    features: ['Qrup sessiyalarına giriş', 'Gündəlik mövzular', '—  Fərdi zəng üçün dəqiqə yoxdur', '—  Priority queue yoxdur'],
-  },
-  {
-    id: 'basic',
-    name: 'Basic',
-    mins: '120 dəq / ay',
-    price: 2.49,
-    priceLabel: '2.49 ₼/ay',
-    icon: '🔥',
+    id: 'pack_200',
+    name: 'Başlanğıc',
+    mins: '200 dəqiqə',
+    price: 3.49,
+    priceLabel: '3.49 ₼',
+    icon: '🔋',
     color: '#185FA5',
-    features: ['Free-dəki hər şey', 'Priority queue', 'Səviyyəyə görə match'],
+    features: ['200 dəqiqə fərdi zəng', 'Səviyyəyə görə match'],
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    mins: '500 dəq / ay',
-    price: 5.99,
-    priceLabel: '5.99 ₼/ay',
-    icon: '🚀',
+    id: 'pack_300',
+    name: 'Aktiv',
+    mins: '300 dəqiqə',
+    price: 4.99,
+    priceLabel: '4.99 ₼',
+    icon: '🔥',
     color: '#7c6ff7',
     popular: true,
-    features: ['Basic-dəki hər şey', 'Pro badge profildə', 'Kim baxdı göstər', 'Sürətli dəstək'],
+    features: ['300 dəqiqə fərdi zəng', 'Priority queue', 'Profil badge'],
   },
   {
-    id: 'unlimited',
-    name: 'Unlimited',
-    mins: 'Limitsiz',
-    price: 10.99,
-    priceLabel: '10.99 ₼/ay',
-    icon: '♾️',
+    id: 'pack_500',
+    name: 'İntensiv',
+    mins: '500 dəqiqə',
+    price: 7.99,
+    priceLabel: '7.99 ₼',
+    icon: '🚀',
     color: '#22c55e',
-    features: ['Pro-dakı hər şey', 'Limitsiz zəng müddəti', 'Prioritet boost', 'Qızıl badge + erkən xüsusiyyətlər'],
+    features: ['500 dəqiqə fərdi zəng', 'Priority queue', 'Profil badge', 'Sürətli dəstək'],
   },
 ];
 
 const COMPARE = [
-  { feature: 'Fərdi zəng dəqiqəsi', values: ['—', '120/ay', '500/ay', '∞'] },
-  { feature: 'Priority queue', values: [false, true, true, true] },
-  { feature: 'Badge', values: [false, false, true, true] },
-  { feature: 'Profile boost', values: [false, false, false, true] },
+  { feature: 'Zəng dəqiqəsi', values: ['200', '300', '500'] },
+  { feature: 'Priority queue', values: [false, true, true] },
+  { feature: 'Profil badge', values: [false, true, true] },
+  { feature: 'Sürətli dəstək', values: [false, false, true] },
 ];
 
 export default function Upgrade({ user }) {
-  const [selected, setSelected] = useState('pro');
+  const [selected, setSelected] = useState('pack_300');
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
@@ -123,8 +113,8 @@ export default function Upgrade({ user }) {
   }, [user?.uid, user?.premiumDiscountPercent]);
 
   const handleContinue = () => {
-    if (selected === 'free') { navigate('/'); return; }
-    const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). SpeakLab tətbiqində ${plan.name} planına keçmək istəyirəm.`;
+    if (!plan) return;
+    const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). SpeakLab tətbiqində ${plan.name} (${plan.mins}) paketini almaq istəyirəm.`;
     const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -158,8 +148,8 @@ export default function Upgrade({ user }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>🎙️</div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Pro Seç</h2>
-        <p style={{ fontSize: 13, color: '#888', margin: 0 }}>Daha çox dəqiqə, daha yaxşı partnyor, limitsiz təcrübə</p>
+        <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Dəqiqə Paketləri (Beta)</h2>
+        <p style={{ fontSize: 13, color: '#888', margin: 0 }}>Tətbiqimiz beta versiyadadır. Sizə uyğun dəqiqə paketini seçib praktikaya başlayın.</p>
       </div>
 
       {premiumDiscount > 0 && (
@@ -174,7 +164,7 @@ export default function Upgrade({ user }) {
           fontWeight: 700,
           textAlign: 'center',
         }}>
-          Explorer endirimi aktivdir: Pro üçün {premiumDiscount}% endirim
+          Explorer endirimi aktivdir: Paketlərə {premiumDiscount}% endirim
         </div>
       )}
 
@@ -250,14 +240,14 @@ export default function Upgrade({ user }) {
       <div style={{ padding: '16px 16px 0' }}>
         <button onClick={handleContinue} style={{
           width: '100%', padding: 14,
-          background: plan.id === 'free' ? '#2e2e50' : `linear-gradient(135deg, ${plan.color}, ${plan.color}cc)`,
+          background: `linear-gradient(135deg, ${plan.color}, ${plan.color}cc)`,
           border: 'none', borderRadius: 14,
           color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
         }}>
-          {plan.id === 'free' ? 'Pulsuz davam et' : `${plan.name} al — ${plan.priceLabel}`}
+          {plan.name} paketini al — {plan.priceLabel}
         </button>
         <p style={{ textAlign: 'center', fontSize: 11, color: '#555', margin: '10px 0 0' }}>
-          Keyfiyyəti qorumaq üçün Pro hesablara WhatsApp vasitəsilə təsdiqlə baxılır
+          Təsdiqləmə prosesi WhatsApp vasitəsilə həyata keçirilir
         </p>
       </div>
 
