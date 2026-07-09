@@ -96,15 +96,10 @@ function App() {
 
         refreshFcmToken(uid).catch(() => {});
 
-        const today = new Date().toDateString();
-        const yesterday = new Date(Date.now() - 86400000).toDateString();
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          const lastCallDate = data.lastCallDate || '';
-          if (lastCallDate !== today && lastCallDate !== yesterday && (data.streak || 0) > 0) {
-            await setDoc(userRef, { streak: 0 }, { merge: true });
-          }
-        }
+        // Streak reset removed from app-load: Chat.jsx already resets streak
+        // to 1 when there is a gap (lastCallDate is older than yesterday).
+        // Resetting here was zeroing the streak BEFORE the user could call,
+        // so consecutive-day users saw streak = 0 or 1 instead of climbing.
 
         heartbeatInterval = setInterval(async () => {
           try {
