@@ -11,8 +11,9 @@ const PLANS = [
     id: 'pack_200',
     name: 'Başlanğıc',
     mins: '200 dəqiqə',
-    price: 3.49,
-    priceLabel: '3.49 ₼',
+    price: 2.49,
+    priceLabel: '2.49 ₼',
+    oldPriceLabel: '3.49 ₼',
     icon: '🔋',
     color: '#185FA5',
     features: ['200 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Səviyyəyə görə match'],
@@ -21,8 +22,9 @@ const PLANS = [
     id: 'pack_300',
     name: 'Aktiv',
     mins: '300 dəqiqə',
-    price: 4.99,
-    priceLabel: '4.99 ₼',
+    price: 3.49,
+    priceLabel: '3.49 ₼',
+    oldPriceLabel: '4.99 ₼',
     icon: '🔥',
     color: '#7c6ff7',
     popular: true,
@@ -32,8 +34,9 @@ const PLANS = [
     id: 'pack_500',
     name: 'İntensiv',
     mins: '500 dəqiqə',
-    price: 7.99,
-    priceLabel: '7.99 ₼',
+    price: 5.99,
+    priceLabel: '5.99 ₼',
+    oldPriceLabel: '7.99 ₼',
     icon: '🚀',
     color: '#22c55e',
     features: ['500 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Priority queue', 'Profil badge', 'Sürətli dəstək'],
@@ -149,9 +152,11 @@ export default function Upgrade({ user }) {
 
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
-        <div style={{ fontSize: 40, marginBottom: 8 }}>🎙️</div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 6px' }}>Dəqiqə Paketləri (Beta)</h2>
-        <p style={{ fontSize: 13, color: '#888', margin: 0 }}>Tətbiqimiz beta versiyadadır. Sizə uyğun dəqiqə paketini seçib praktikaya başlayın.</p>
+        <div style={{ fontSize: 40, marginBottom: 8 }}>💎</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Beta Endirimləri</h2>
+        <p style={{ fontSize: 13, color: '#aaa', margin: 0, lineHeight: 1.5 }}>
+          Süni intellekt xərcləri pulsuz olduğu müddətcə (Groq free tier) <b style={{color: '#fff'}}>bütün paketlərə</b> xüsusi beta endirimləri aktivdir!
+        </p>
       </div>
 
       {premiumDiscount > 0 && (
@@ -189,9 +194,10 @@ export default function Upgrade({ user }) {
             {p.popular && (
               <div style={{
                 position: 'absolute', top: -1, right: 14,
-                background: '#7c6ff722', border: '1px solid #7c6ff755',
-                color: '#7c6ff7', fontSize: 10, fontWeight: 700,
-                padding: '3px 10px', borderRadius: '0 0 8px 8px', letterSpacing: '1px',
+                background: '#7c6ff7', border: '1px solid #7c6ff7',
+                color: '#fff', fontSize: 10, fontWeight: 800,
+                padding: '4px 12px', borderRadius: '0 0 8px 8px', letterSpacing: '1px',
+                boxShadow: '0 4px 12px rgba(124, 111, 247, 0.4)'
               }}>ƏN POPULYAR</div>
             )}
 
@@ -219,8 +225,13 @@ export default function Upgrade({ user }) {
                 </div>
               </div>
 
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 17, fontWeight: 700, color: p.id === 'free' ? '#888' : '#fff' }}>{p.priceLabel}</div>
+              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                {p.oldPriceLabel && (
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#666', textDecoration: 'line-through', marginBottom: -2 }}>
+                    {p.oldPriceLabel}
+                  </div>
+                )}
+                <div style={{ fontSize: 19, fontWeight: 800, color: '#fff' }}>{p.priceLabel}</div>
               </div>
             </div>
 
@@ -241,14 +252,15 @@ export default function Upgrade({ user }) {
       {/* CTA */}
       <div style={{ padding: '16px 16px 0' }}>
         <button onClick={handleContinue} style={{
-          width: '100%', padding: 14,
+          width: '100%', padding: '16px',
           background: `linear-gradient(135deg, ${plan.color}, ${plan.color}cc)`,
-          border: 'none', borderRadius: 14,
-          color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+          border: 'none', borderRadius: 16,
+          color: '#fff', fontSize: 17, fontWeight: 800, cursor: 'pointer',
+          boxShadow: `0 8px 24px ${plan.color}40`,
         }}>
           {plan.name} paketini al — {plan.priceLabel}
         </button>
-        <p style={{ textAlign: 'center', fontSize: 11, color: '#555', margin: '10px 0 0' }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: '#666', margin: '14px 0 0' }}>
           Təsdiqləmə prosesi WhatsApp vasitəsilə həyata keçirilir
         </p>
       </div>
