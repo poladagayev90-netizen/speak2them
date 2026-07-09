@@ -58,6 +58,7 @@ export default function Home({ user }) {
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const [sessionConfig, setSessionConfig] = useState(null);
+  const [hideTrialBanner, setHideTrialBanner] = useState(() => localStorage.getItem('hideTrialBanner') === 'true');
   const [sub, setSub] = useState(null);
   const [nowTick, setNowTick] = useState(Date.now());
   const [showTopicIntro, setShowTopicIntro] = useState(false);
@@ -271,7 +272,7 @@ export default function Home({ user }) {
 
       <div className="home-body">
 
-        {sub?.subscriptionPlan === 'trial' && (() => {
+        {!hideTrialBanner && sub?.subscriptionPlan === 'trial' && !sub?.isPremium && (() => {
           const mins = remainingMinutes(sub);
           const out = mins <= 0;
           return (
@@ -279,14 +280,14 @@ export default function Home({ user }) {
               display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12,
               background: out ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
               border: `1px solid ${out ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.4)'}`,
-              borderRadius: 14, padding: '12px 14px',
+              borderRadius: 14, padding: '12px 14px', position: 'relative'
             }}>
               <span style={{ fontSize: 20, flexShrink: 0 }}>{out ? '⏳' : '⚠️'}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700, lineHeight: 1.35 }}>
+                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700, lineHeight: 1.35, paddingRight: 16 }}>
                   {out
-                    ? 'Sınaq vaxtın bitdi — zəng etmək üçün Premium al.'
-                    : <>Siz Sınaq Müddətindəsiniz! Zəng üçün qalan vaxt: <b style={{ color: out ? '#ef4444' : '#f59e0b' }}>{mins} dəqiqə</b>.</>}
+                    ? 'Sınaq vaxtın bitdi — zəng etmək üçün PRO al.'
+                    : <>Siz Sınaq Müddətindəsiniz! Balansınız: <b style={{ color: out ? '#ef4444' : '#f59e0b' }}>{mins} dəqiqə</b>.</>}
                 </div>
               </div>
               <button
@@ -297,7 +298,13 @@ export default function Home({ user }) {
                   padding: '8px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
                 }}
               >
-                Premium al
+                PRO al
+              </button>
+              <button 
+                onClick={() => { setHideTrialBanner(true); localStorage.setItem('hideTrialBanner', 'true'); }}
+                style={{ position: 'absolute', top: 4, right: 4, background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={14} />
               </button>
             </div>
           );
