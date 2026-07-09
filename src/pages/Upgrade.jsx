@@ -15,7 +15,7 @@ const PLANS = [
     priceLabel: '3.49 ₼',
     icon: '🔋',
     color: '#185FA5',
-    features: ['200 dəqiqə fərdi zəng', 'AInur ilə limitsiz praktika', 'Səviyyəyə görə match'],
+    features: ['200 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Səviyyəyə görə match'],
   },
   {
     id: 'pack_300',
@@ -26,7 +26,7 @@ const PLANS = [
     icon: '🔥',
     color: '#7c6ff7',
     popular: true,
-    features: ['300 dəqiqə fərdi zəng', 'AInur ilə limitsiz praktika', 'Priority queue', 'Profil badge'],
+    features: ['300 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Priority queue', 'Profil badge'],
   },
   {
     id: 'pack_500',
@@ -36,13 +36,14 @@ const PLANS = [
     priceLabel: '7.99 ₼',
     icon: '🚀',
     color: '#22c55e',
-    features: ['500 dəqiqə fərdi zəng', 'AInur ilə limitsiz praktika', 'Priority queue', 'Profil badge', 'Sürətli dəstək'],
+    features: ['500 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Priority queue', 'Profil badge', 'Sürətli dəstək'],
   },
 ];
 
 const COMPARE = [
   { feature: 'Zəng dəqiqəsi', values: ['200', '300', '500'] },
   { feature: 'AInur (Süni intellekt)', values: [true, true, true] },
+  { feature: 'AI analiz və Quizlər', values: [true, true, true] },
   { feature: 'Priority queue', values: [false, true, true] },
   { feature: 'Profil badge', values: [false, true, true] },
   { feature: 'Sürətli dəstək', values: [false, false, true] },
