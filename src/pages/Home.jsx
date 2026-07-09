@@ -176,6 +176,12 @@ export default function Home({ user }) {
   const baseList = tab === 'online' ? onlineUsers : browsableUsers;
   const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
+  // While a session is open or the user is queued, the session is the only CTA —
+  // the random-partner button is hidden to avoid the "which button?" confusion.
+  const sessionWin = sessionConfig?.enabled ? getSessionWindow(sessionConfig, nowTick) : null;
+  const sessionWindowOpen = !!sessionWin && nowTick >= sessionWin.startMs && nowTick < sessionWin.endMs;
+  const hideRandom = sessionJoined || sessionWindowOpen;
+
   return (
     <div className="home-page">
       <GuidedTour
@@ -357,28 +363,40 @@ export default function Home({ user }) {
           </div>
         )}
 
-        <button
-          id="tour-find-partner"
-          onClick={searching ? cancelSearch : startSearch}
-          className={searching ? 'btn-random searching' : 'btn-random'}
-          style={{
-            background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-          }}
-        >
-          {searching
-            ? <><X size={20} /> Axtarılır... (ləğv et)</>
-            : <><Shuffle size={20} /> Find Random Partner</>
-          }
-        </button>
+        {hideRandom ? (
+          <div style={{
+            textAlign: 'center', color: '#7c6ff7', fontSize: '13px', fontWeight: 600,
+            background: 'rgba(124,111,247,0.08)', border: '1px solid rgba(124,111,247,0.25)',
+            borderRadius: '12px', padding: '12px 14px',
+          }}>
+            🧪 Sessiya aktivdir — yuxarıdan qoşul
+          </div>
+        ) : (
+          <>
+            <button
+              id="tour-find-partner"
+              onClick={searching ? cancelSearch : startSearch}
+              className={searching ? 'btn-random searching' : 'btn-random'}
+              style={{
+                background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+              }}
+            >
+              {searching
+                ? <><X size={20} /> Axtarılır... (ləğv et)</>
+                : <><Shuffle size={20} /> Find Random Partner</>
+              }
+            </button>
 
-        <FlaskSearchOverlay
-          visible={searching}
-          title="Tərəfdaş axtarılır…"
-          subtitle="Laboratoriyada uyğun partnyor hazırlanır — tapılan kimi zəng avtomatik başlayacaq"
-          onCancel={cancelSearch}
-          cancelLabel="Axtarışı dayandır"
-        />
+            <FlaskSearchOverlay
+              visible={searching}
+              title="Tərəfdaş axtarılır…"
+              subtitle="Laboratoriyada uyğun partnyor hazırlanır — tapılan kimi zəng avtomatik başlayacaq"
+              onCancel={cancelSearch}
+              cancelLabel="Axtarışı dayandır"
+            />
+          </>
+        )}
 
         {compensationMsg && (
           <div style={{

@@ -3,6 +3,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
+const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -11,9 +12,14 @@ const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 const DEEPSEEK_API_KEY = defineSecret("DEEPSEEK_API_KEY");
 const DEEPGRAM_API_KEY = defineSecret("DEEPGRAM_API_KEY");
+const GMAIL_USER = defineSecret("GMAIL_USER");
+const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
+});
+const APP_URL = defineString("APP_URL", {
+  default: "https://speak2them.vercel.app",
 });
 
 const DAILY_REMINDER_BATCH_SIZE = 500;
@@ -1316,6 +1322,81 @@ function sessionPairScore(a, b) {
   return score;
 }
 
+// Email fallback for the 15-min reminder: web push is unreliable on mobile
+// (especially uninstalled iOS), so email makes sure people still show up. Only
+// recently-active users are mailed to keep volume under Gmail's limits and
+// protect sender reputation.
+const EMAIL_ACTIVE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+const EMAIL_BCC_BATCH = 50;
+
+async function sendSessionEmails(db, startLabel, hour) {
+  const gmailUser = GMAIL_USER.value();
+  const gmailPass = GMAIL_APP_PASSWORD.value();
+  if (!gmailUser || !gmailPass) {
+    console.warn("[SessionEmail] Gmail secrets not set — skipping email reminder");
+    return;
+  }
+
+  const usersSnap = await db.collection("users").get();
+  const cutoff = Date.now() - EMAIL_ACTIVE_WINDOW_MS;
+  const seen = new Set();
+  const recipients = [];
+  for (const d of usersSnap.docs) {
+    const u = d.data() || {};
+    const email = typeof u.email === "string" ? u.email.trim() : "";
+    const lastSeen = u.lastSeen && u.lastSeen.toMillis ? u.lastSeen.toMillis() : 0;
+    if (!email || !email.includes("@")) continue;
+    if (lastSeen < cutoff) continue;
+    const key = email.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recipients.push(email);
+  }
+  if (recipients.length === 0) {
+    console.log("[SessionEmail] no recently-active recipients");
+    return;
+  }
+
+  const isDay = hour < 18;
+  const subject = isDay
+    ? "☀️ Günorta sessiyasına 15 dəqiqə qaldı!"
+    : "🌙 Axşam sessiyasına 15 dəqiqə qaldı!";
+  const appUrl = APP_URL.value();
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1a2e">
+      <h2 style="margin:0 0 12px">🎙️ SpeakLab sessiyası ${startLabel}-da başlayır</h2>
+      <p style="font-size:15px;line-height:1.5;color:#444;margin:0 0 20px">
+        Sessiyaya <b>15 dəqiqə</b> qaldı. Danışıq təcrübəsi üçün tətbiqə daxil ol və növbəyə qoşul —
+        rəqib tapılan kimi zəng avtomatik başlayacaq.
+      </p>
+      <a href="${appUrl}" style="display:inline-block;background:#7c6ff7;color:#fff;text-decoration:none;
+        padding:12px 24px;border-radius:10px;font-weight:700">Tətbiqi aç →</a>
+    </div>`;
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: gmailUser, pass: gmailPass },
+  });
+
+  let sent = 0;
+  for (let i = 0; i < recipients.length; i += EMAIL_BCC_BATCH) {
+    const batch = recipients.slice(i, i + EMAIL_BCC_BATCH);
+    try {
+      await transporter.sendMail({
+        from: `SpeakLab <${gmailUser}>`,
+        to: gmailUser, // a To is required; the real audience is BCC'd
+        bcc: batch,
+        subject,
+        html,
+      });
+      sent += batch.length;
+    } catch (e) {
+      console.error("[SessionEmail] batch failed:", e.message);
+    }
+  }
+  console.log("[SessionEmail] sent:", sent, "of", recipients.length);
+}
+
 // One reminder push to every registered device, 15 min before the session.
 // The wording follows the session's time of day.
 async function broadcastSessionReminder(db, startLabel, hour) {
@@ -1370,9 +1451,11 @@ function getSessionTimes(cfg) {
     .sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
 }
 
-// Pair everyone parked for one session. Throws on failure so the caller can
-// release the run marker and let the next tick retry the pass.
-async function matchSessionWaiters(db, sessionId) {
+// Pair everyone parked for one session. Called on every tick while the window
+// is open (greedy: whoever is waiting gets matched at once). `final` is set on
+// the closing sweep, where the last unmatched waiter is settled with a bonus;
+// mid-window, leftovers are left in the queue to keep waiting for a partner.
+async function matchSessionWaiters(db, sessionId, final) {
   const waitingSnap = await db.collection("matchQueue")
     .where("status", "==", "waiting_session")
     .where("sessionId", "==", sessionId)
@@ -1435,13 +1518,17 @@ async function matchSessionWaiters(db, sessionId) {
       });
     });
   }
-  for (const u of leftover) {
-    ops.push((batch) => {
-      batch.update(u.ref, { status: "unmatched" });
-      batch.set(db.collection("users").doc(u.uid), {
-        bonusMinutes: admin.firestore.FieldValue.increment(5),
-      }, { merge: true });
-    });
+  // Mid-window, an unpaired waiter stays in the queue for the next tick; only
+  // the closing sweep settles them as unmatched with a consolation bonus.
+  if (final) {
+    for (const u of leftover) {
+      ops.push((batch) => {
+        batch.update(u.ref, { status: "unmatched" });
+        batch.set(db.collection("users").doc(u.uid), {
+          bonusMinutes: admin.firestore.FieldValue.increment(5),
+        }, { merge: true });
+      });
+    }
   }
   for (const u of ghosts) {
     ops.push((batch) => {
@@ -1462,6 +1549,7 @@ async function matchSessionWaiters(db, sessionId) {
 exports.matchSessionQueue = onSchedule({
   schedule: "every 1 minutes",
   timeZone: "Asia/Baku",
+  secrets: [GMAIL_USER, GMAIL_APP_PASSWORD],
 }, async () => {
   const db = admin.firestore();
 
@@ -1491,12 +1579,23 @@ exports.matchSessionQueue = onSchedule({
         return true;
       });
       if (remClaimed) {
-        await broadcastSessionReminder(db, `${pad(t.hour)}:${pad(t.minute)}`, t.hour);
+        const startLabel = `${pad(t.hour)}:${pad(t.minute)}`;
+        await broadcastSessionReminder(db, startLabel, t.hour);
+        await sendSessionEmails(db, startLabel, t.hour);
       }
       continue;
     }
 
-    // Matching: once the buffer closes, claim the run and pair the waiters.
+    // Greedy matching while the window is open: pair whoever is waiting right
+    // now, every tick, so a second joiner is matched within a minute instead of
+    // waiting for the buffer to close. Leftovers stay queued for the next tick.
+    if (now >= startMs && now < endMs) {
+      await matchSessionWaiters(db, sessionId, false);
+      continue;
+    }
+
+    // Closing sweep: once the buffer closes, claim the run once and settle any
+    // remaining waiter (unmatched + consolation bonus).
     if (now < endMs) continue;
 
     const runRef = db.collection("sessionRuns").doc(sessionId);
@@ -1509,7 +1608,7 @@ exports.matchSessionQueue = onSchedule({
     if (!claimed) continue;
 
     try {
-      await matchSessionWaiters(db, sessionId);
+      await matchSessionWaiters(db, sessionId, true);
     } catch (error) {
       // Release the run marker so the next tick can retry this session's pass.
       await runRef.delete().catch(() => null);
