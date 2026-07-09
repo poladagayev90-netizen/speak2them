@@ -1197,7 +1197,12 @@ function sessionPairScore(a, b) {
 }
 
 // One reminder push to every registered device, 15 min before the session.
-async function broadcastSessionReminder(db, startLabel) {
+// The wording follows the session's time of day.
+async function broadcastSessionReminder(db, startLabel, hour) {
+  const title = hour < 18
+    ? "Günorta sessiyasına az qaldı! ☀️"
+    : "Axşam sessiyasına az qaldı! 🌙";
+
   const usersSnap = await db.collection("users").get();
   const usersWithTokens = usersSnap.docs
     .map((d) => ({ ref: d.ref, ...d.data() }))
@@ -1210,7 +1215,7 @@ async function broadcastSessionReminder(db, startLabel) {
     const response = await admin.messaging().sendEachForMulticast({
       tokens: batch.map((u) => u.fcmToken),
       data: {
-        title: "Axşam sessiyasına az qaldı! 🧪",
+        title,
         body: `Sessiya ${startLabel}-da başlayır — günün mövzusuna bax və hazır ol.`,
         type: "session_reminder",
         url: "/",
@@ -1233,6 +1238,107 @@ async function broadcastSessionReminder(db, startLabel) {
   console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", invalidTokenRefs.length);
 }
 
+// Same normalisation as the client (src/utils/sessionSchedule.js): a non-empty
+// `sessions` array wins, else the two standard daily sessions. Legacy single
+// hour/minute configs are intentionally upgraded to the two-session default.
+const DEFAULT_SESSION_TIMES = [{ hour: 16, minute: 0 }, { hour: 21, minute: 0 }];
+function getSessionTimes(cfg) {
+  const list = Array.isArray(cfg?.sessions) && cfg.sessions.length ? cfg.sessions : DEFAULT_SESSION_TIMES;
+  return list
+    .filter((s) => Number.isFinite(s?.hour))
+    .map((s) => ({ hour: s.hour, minute: s.minute || 0 }))
+    .sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute));
+}
+
+// Pair everyone parked for one session. Throws on failure so the caller can
+// release the run marker and let the next tick retry the pass.
+async function matchSessionWaiters(db, sessionId) {
+  const waitingSnap = await db.collection("matchQueue")
+    .where("status", "==", "waiting_session")
+    .where("sessionId", "==", sessionId)
+    .get();
+  const allWaiting = waitingSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
+
+  // Ghost filter: skip waiters whose liveness ping went stale (closed the
+  // app after joining) so nobody gets paired into a dead call. No bonus —
+  // they left on their own.
+  const staleCutoff = Date.now() - 4 * 60 * 1000;
+  const users = [];
+  const ghosts = [];
+  for (const u of allWaiting) {
+    const lastPing = u.lastPingMs || u.joinedAtMs || 0;
+    (lastPing < staleCutoff ? ghosts : users).push(u);
+  }
+  console.log("[SessionMatch]", sessionId, "joined:", allWaiting.length, "ghosts:", ghosts.length);
+  if (users.length === 0 && ghosts.length === 0) return;
+
+  // Greedy pairing: earliest joiner picks the best-scoring remaining partner.
+  users.sort((a, b) => (a.joinedAtMs || 0) - (b.joinedAtMs || 0));
+  const pairs = [];
+  const remaining = [...users];
+  while (remaining.length >= 2) {
+    const current = remaining.shift();
+    let bestIdx = 0;
+    let bestScore = -1;
+    remaining.forEach((cand, idx) => {
+      const score = sessionPairScore(current, cand);
+      if (score > bestScore) { bestScore = score; bestIdx = idx; }
+    });
+    pairs.push([current, remaining.splice(bestIdx, 1)[0]]);
+  }
+  const leftover = remaining;
+
+  // 3 writes per pair, 2 per leftover — chunk under the 500-write limit.
+  const ops = [];
+  for (const [a, b] of pairs) {
+    const callId = `call_${[a.uid, b.uid].sort().join("_")}`;
+    ops.push((batch) => {
+      batch.set(db.collection("calls").doc(callId), {
+        userA: a.uid,
+        userB: b.uid,
+        callerId: a.uid,
+        callerName: a.name || "User",
+        receiverId: b.uid,
+        receiverName: b.name || "User",
+        status: "accepted",
+        source: "session_match",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      batch.update(a.ref, {
+        status: "matched", matchedWith: b.uid, callId,
+        matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      batch.update(b.ref, {
+        status: "matched", matchedWith: a.uid, callId,
+        matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+  }
+  for (const u of leftover) {
+    ops.push((batch) => {
+      batch.update(u.ref, { status: "unmatched" });
+      batch.set(db.collection("users").doc(u.uid), {
+        bonusMinutes: admin.firestore.FieldValue.increment(5),
+      }, { merge: true });
+    });
+  }
+  for (const u of ghosts) {
+    ops.push((batch) => {
+      batch.update(u.ref, { status: "unmatched", ghost: true });
+    });
+  }
+
+  const OPS_PER_BATCH = 150; // ≤3 writes each → max 450 writes per batch
+  for (let i = 0; i < ops.length; i += OPS_PER_BATCH) {
+    const batch = db.batch();
+    ops.slice(i, i + OPS_PER_BATCH).forEach((apply) => apply(batch));
+    await batch.commit();
+  }
+
+  console.log("[SessionMatch] pairs:", pairs.length, "unmatched:", leftover.length);
+}
+
 exports.matchSessionQueue = onSchedule({
   schedule: "every 1 minutes",
   timeZone: "Asia/Baku",
@@ -1241,129 +1347,54 @@ exports.matchSessionQueue = onSchedule({
 
   const cfgSnap = await db.collection("appConfig").doc("session").get();
   if (!cfgSnap.exists || !cfgSnap.data().enabled) return;
-  const cfg = { hour: 21, minute: 0, bufferMinutes: 10, ...cfgSnap.data() };
+  const cfg = cfgSnap.data();
+  const bufferMs = (Number.isFinite(cfg.bufferMinutes) ? cfg.bufferMinutes : 10) * 60 * 1000;
 
   const pad = (n) => String(n).padStart(2, "0");
   const bakuDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Baku" }).format(new Date());
-  const startMs = Date.parse(`${bakuDate}T${pad(cfg.hour)}:${pad(cfg.minute)}:00+04:00`);
-  const endMs = startMs + cfg.bufferMinutes * 60 * 1000;
   const now = Date.now();
 
-  // Reminder window: 15 min before start, sent once (guarded by marker doc).
-  if (now >= startMs - 15 * 60 * 1000 && now < startMs) {
-    const remRef = db.collection("sessionRuns").doc(`${bakuDate}_reminder`);
-    const remClaimed = await db.runTransaction(async (tx) => {
-      const snap = await tx.get(remRef);
+  // Each session runs its own reminder and matching pass. The times never
+  // overlap, so evaluating every session each tick does no redundant work.
+  for (const t of getSessionTimes(cfg)) {
+    const sessionId = `${bakuDate}-${pad(t.hour)}`;
+    const startMs = Date.parse(`${bakuDate}T${pad(t.hour)}:${pad(t.minute)}:00+04:00`);
+    const endMs = startMs + bufferMs;
+
+    // Reminder window: 15 min before start, sent once (guarded by marker doc).
+    if (now >= startMs - 15 * 60 * 1000 && now < startMs) {
+      const remRef = db.collection("sessionRuns").doc(`${sessionId}_reminder`);
+      const remClaimed = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(remRef);
+        if (snap.exists) return false;
+        tx.set(remRef, { sentAt: admin.firestore.FieldValue.serverTimestamp() });
+        return true;
+      });
+      if (remClaimed) {
+        await broadcastSessionReminder(db, `${pad(t.hour)}:${pad(t.minute)}`, t.hour);
+      }
+      continue;
+    }
+
+    // Matching: once the buffer closes, claim the run and pair the waiters.
+    if (now < endMs) continue;
+
+    const runRef = db.collection("sessionRuns").doc(sessionId);
+    const claimed = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(runRef);
       if (snap.exists) return false;
-      tx.set(remRef, { sentAt: admin.firestore.FieldValue.serverTimestamp() });
+      tx.set(runRef, { startedAt: admin.firestore.FieldValue.serverTimestamp() });
       return true;
     });
-    if (remClaimed) {
-      await broadcastSessionReminder(db, `${pad(cfg.hour)}:${pad(cfg.minute)}`);
+    if (!claimed) continue;
+
+    try {
+      await matchSessionWaiters(db, sessionId);
+    } catch (error) {
+      // Release the run marker so the next tick can retry this session's pass.
+      await runRef.delete().catch(() => null);
+      throw error;
     }
-    return;
-  }
-
-  if (now < endMs) return;
-
-  const runRef = db.collection("sessionRuns").doc(bakuDate);
-  const claimed = await db.runTransaction(async (tx) => {
-    const snap = await tx.get(runRef);
-    if (snap.exists) return false;
-    tx.set(runRef, { startedAt: admin.firestore.FieldValue.serverTimestamp() });
-    return true;
-  });
-  if (!claimed) return;
-
-  try {
-    const waitingSnap = await db.collection("matchQueue")
-      .where("status", "==", "waiting_session")
-      .where("sessionId", "==", bakuDate)
-      .get();
-    const allWaiting = waitingSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
-
-    // Ghost filter: skip waiters whose liveness ping went stale (closed the
-    // app after joining) so nobody gets paired into a dead call. No bonus —
-    // they left on their own.
-    const staleCutoff = Date.now() - 4 * 60 * 1000;
-    const users = [];
-    const ghosts = [];
-    for (const u of allWaiting) {
-      const lastPing = u.lastPingMs || u.joinedAtMs || 0;
-      (lastPing < staleCutoff ? ghosts : users).push(u);
-    }
-    console.log("[SessionMatch]", bakuDate, "joined:", allWaiting.length, "ghosts:", ghosts.length);
-    if (users.length === 0 && ghosts.length === 0) return;
-
-    // Greedy pairing: earliest joiner picks the best-scoring remaining partner.
-    users.sort((a, b) => (a.joinedAtMs || 0) - (b.joinedAtMs || 0));
-    const pairs = [];
-    const remaining = [...users];
-    while (remaining.length >= 2) {
-      const current = remaining.shift();
-      let bestIdx = 0;
-      let bestScore = -1;
-      remaining.forEach((cand, idx) => {
-        const score = sessionPairScore(current, cand);
-        if (score > bestScore) { bestScore = score; bestIdx = idx; }
-      });
-      pairs.push([current, remaining.splice(bestIdx, 1)[0]]);
-    }
-    const leftover = remaining;
-
-    // 3 writes per pair, 2 per leftover — chunk under the 500-write limit.
-    const ops = [];
-    for (const [a, b] of pairs) {
-      const callId = `call_${[a.uid, b.uid].sort().join("_")}`;
-      ops.push((batch) => {
-        batch.set(db.collection("calls").doc(callId), {
-          userA: a.uid,
-          userB: b.uid,
-          callerId: a.uid,
-          callerName: a.name || "User",
-          receiverId: b.uid,
-          receiverName: b.name || "User",
-          status: "accepted",
-          source: "session_match",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-        batch.update(a.ref, {
-          status: "matched", matchedWith: b.uid, callId,
-          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        batch.update(b.ref, {
-          status: "matched", matchedWith: a.uid, callId,
-          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-      });
-    }
-    for (const u of leftover) {
-      ops.push((batch) => {
-        batch.update(u.ref, { status: "unmatched" });
-        batch.set(db.collection("users").doc(u.uid), {
-          bonusMinutes: admin.firestore.FieldValue.increment(5),
-        }, { merge: true });
-      });
-    }
-    for (const u of ghosts) {
-      ops.push((batch) => {
-        batch.update(u.ref, { status: "unmatched", ghost: true });
-      });
-    }
-
-    const OPS_PER_BATCH = 150; // ≤3 writes each → max 450 writes per batch
-    for (let i = 0; i < ops.length; i += OPS_PER_BATCH) {
-      const batch = db.batch();
-      ops.slice(i, i + OPS_PER_BATCH).forEach((apply) => apply(batch));
-      await batch.commit();
-    }
-
-    console.log("[SessionMatch] pairs:", pairs.length, "unmatched:", leftover.length);
-  } catch (error) {
-    // Release the run marker so the next tick can retry the whole pass.
-    await runRef.delete().catch(() => null);
-    throw error;
   }
 });
 

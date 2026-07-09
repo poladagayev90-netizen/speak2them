@@ -233,20 +233,18 @@ export default function Home({ user }) {
         {sessionConfig?.enabled && (() => {
           const win = getSessionWindow(sessionConfig, nowTick);
           const pad = (n) => String(n).padStart(2, '0');
-          const startLabel = `${pad(sessionConfig.hour)}:${pad(sessionConfig.minute)}`;
+          const startLabel = `${pad(win.hour)}:${pad(win.minute)}`;
+          const sessionTitle = win.hour < 18 ? '☀️ Günorta sessiyası' : '🌙 Axşam sessiyası';
           const fmtLeft = (ms) => {
             const s = Math.max(0, Math.floor(ms / 1000));
             return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
           };
           const inWindow = nowTick >= win.startMs && nowTick < win.endMs;
-          // Server pairing runs when the buffer closes; joined users keep
-          // waiting through a short grace period until their doc flips.
-          const graceEndMs = win.endMs + 5 * 60 * 1000;
 
           return (
             <div className="searching-card" style={{ marginBottom: 12, textAlign: 'center' }}>
               <p style={{ color: '#7c6ff7', fontWeight: 700, fontSize: '15px', margin: '0 0 6px' }}>
-                🧪 Axşam sessiyası • {startLabel}
+                {sessionTitle} • {startLabel}
               </p>
               {nowTick < win.startMs && (
                 <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
@@ -292,14 +290,9 @@ export default function Home({ user }) {
                   </button>
                 </>
               )}
-              {!sessionJoined && nowTick >= win.endMs && nowTick < graceEndMs && (
+              {!sessionJoined && nowTick >= win.endMs && (
                 <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
                   Sessiya eşləşmələri gedir…
-                </p>
-              )}
-              {!sessionJoined && nowTick >= graceEndMs && (
-                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
-                  Bu günün sessiyası bitdi — sabah yenə {startLabel}-də!
                 </p>
               )}
             </div>
