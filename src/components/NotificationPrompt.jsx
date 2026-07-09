@@ -17,21 +17,13 @@ async function messagingSupported() {
 
 const DISMISS_KEY = 'notifPromptDismissed';
 
-const isIOS = () =>
-  typeof navigator !== 'undefined' &&
-  /iP(hone|ad|od)/.test(navigator.userAgent);
-
-const isStandalone = () =>
-  window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;
-
 // A dismissible opt-in banner. Notification permission must be requested from a
 // user gesture (a tap) — required on iOS/installed PWAs and best practice
 // everywhere — so the actual request lives behind this button, never on load.
+// Getting installed is InstallGate's job; this only handles enabling
+// notifications once the app can actually receive them.
 export default function NotificationPrompt({ user }) {
-  // 'hidden' until we know it's worth showing; then 'ask' (button) or
-  // 'ios-install' (can't prompt in an iOS tab — must install first).
-  const [mode, setMode] = useState('hidden');
+  const [mode, setMode] = useState('hidden'); // 'hidden' | 'ask'
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -39,16 +31,13 @@ export default function NotificationPrompt({ user }) {
     (async () => {
       if (!user?.uid) return;
       if (localStorage.getItem(DISMISS_KEY) === '1') return;
-      if (typeof Notification === 'undefined') {
-        // iOS Safari in a tab has no Notification API — push only works once
-        // the PWA is installed to the home screen (iOS 16.4+).
-        if (isIOS() && !isStandalone() && !cancelled) setMode('ios-install');
-        return;
-      }
+      // No Web Notifications here (e.g. an iOS browser tab) — InstallGate nudges
+      // those users to install first, so there is nothing to ask yet.
+      if (typeof Notification === 'undefined') return;
       if (Notification.permission !== 'default') return;
       if (!(await messagingSupported())) return;
       if (cancelled) return;
-      setMode(isIOS() && !isStandalone() ? 'ios-install' : 'ask');
+      setMode('ask');
     })();
     return () => { cancelled = true; };
   }, [user?.uid]);
@@ -90,25 +79,21 @@ export default function NotificationPrompt({ user }) {
           Bildirişləri aç
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.4 }}>
-          {mode === 'ios-install'
-            ? 'Bildiriş almaq üçün tətbiqi əsas ekrana əlavə et: Paylaş → “Ana ekrana əlavə et”.'
-            : 'Sessiya və analiz hazır olanda xəbərdar olmaq üçün icazə ver.'}
+          Sessiya və analiz hazır olanda xəbərdar olmaq üçün icazə ver.
         </div>
       </div>
-      {mode === 'ask' && (
-        <button
-          onClick={handleEnable}
-          disabled={busy}
-          style={{
-            flexShrink: 0, border: 'none', borderRadius: 10,
-            background: 'var(--accent)', color: 'var(--text-on-accent)',
-            padding: '8px 12px', fontSize: 13, fontWeight: 800,
-            cursor: busy ? 'default' : 'pointer', whiteSpace: 'nowrap',
-          }}
-        >
-          {busy ? '...' : 'Aç'}
-        </button>
-      )}
+      <button
+        onClick={handleEnable}
+        disabled={busy}
+        style={{
+          flexShrink: 0, border: 'none', borderRadius: 10,
+          background: 'var(--accent)', color: 'var(--text-on-accent)',
+          padding: '8px 12px', fontSize: 13, fontWeight: 800,
+          cursor: busy ? 'default' : 'pointer', whiteSpace: 'nowrap',
+        }}
+      >
+        {busy ? '...' : 'Aç'}
+      </button>
       <button
         onClick={dismiss}
         aria-label="Bağla"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BottomNav from './BottomNav';
 import SettingsPanel from './SettingsPanel';
-import InstallPrompt from './InstallPrompt';
+import InstallGate from './InstallGate';
 import { useLocation } from 'react-router-dom';
 
 export default function AppLayout({ children, user }) {
@@ -77,7 +77,7 @@ export default function AppLayout({ children, user }) {
         <div className="main-content">
           {children}
           <BottomNav user={user} />
-          <InstallPrompt />
+          <InstallGate />
         </div>
       </div>
     );
@@ -100,7 +100,6 @@ export default function AppLayout({ children, user }) {
 
       <main className="main-content">
         {children}
-        <InstallPrompt />
       </main>
     </div>
   );
