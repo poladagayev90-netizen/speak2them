@@ -13,6 +13,7 @@ import { useMatchmaking } from '../hooks/useMatchmaking';
 import { useSessionQueue } from '../hooks/useSessionQueue';
 import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
+import { remainingMinutes } from '../utils/subscription';
 import { ADMIN_UID } from '../constants';
 import { getPresence } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
@@ -54,6 +55,7 @@ export default function Home({ user }) {
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const [sessionConfig, setSessionConfig] = useState(null);
+  const [sub, setSub] = useState(null);
   const [nowTick, setNowTick] = useState(Date.now());
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
@@ -73,6 +75,15 @@ export default function Home({ user }) {
       setShowTopicIntro(true);
       localStorage.setItem(storageKey, todayDateStr);
     }
+  }, [user.uid]);
+
+  // Live plan + minute balance so the trial banner counts down after calls
+  // (the `user` prop is only loaded once at auth time).
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+    return onSnapshot(doc(db, 'users', user.uid), (snap) => {
+      if (snap.exists()) setSub(snap.data());
+    }, () => {});
   }, [user.uid]);
 
   const handleMatched = useCallback((partnerUid, callId) => {
@@ -227,6 +238,38 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
+
+        {sub?.subscriptionPlan === 'trial' && (() => {
+          const mins = remainingMinutes(sub);
+          const out = mins <= 0;
+          return (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12,
+              background: out ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+              border: `1px solid ${out ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.4)'}`,
+              borderRadius: 14, padding: '12px 14px',
+            }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>{out ? '⏳' : '⚠️'}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700, lineHeight: 1.35 }}>
+                  {out
+                    ? 'Sınaq vaxtın bitdi — zəng etmək üçün Premium al.'
+                    : <>Siz Sınaq Müddətindəsiniz! Zəng üçün qalan vaxt: <b style={{ color: out ? '#ef4444' : '#f59e0b' }}>{mins} dəqiqə</b>.</>}
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/upgrade')}
+                style={{
+                  flexShrink: 0, border: 'none', borderRadius: 10,
+                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+                  padding: '8px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                Premium al
+              </button>
+            </div>
+          );
+        })()}
 
         <NotificationPrompt user={user} />
 

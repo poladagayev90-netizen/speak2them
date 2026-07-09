@@ -1,6 +1,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const admin = require("firebase-admin");
@@ -249,6 +249,89 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
   });
 
   res.status(200).json({ sent: response.successCount, failed: response.failureCount, users: usersWithTokens.length });
+});
+
+// ─── Trial / Subscription ────────────────────────────────────
+const TRIAL_MINUTES = 100;
+const CALL_CAP_SECONDS = 20 * 60; // calls are capped at 20 minutes
+const METERED_PLANS = new Set(["free", "trial"]);
+
+// Every new user starts on a 100-minute trial. Written server-side because
+// subscriptionPlan/availableTrialMinutes are locked to clients by the rules.
+exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+  const data = snap.data() || {};
+  if (data.subscriptionPlan) return; // already provisioned (e.g. admin-granted)
+  await snap.ref.set({
+    subscriptionPlan: "trial",
+    availableTrialMinutes: TRIAL_MINUTES,
+    trialGrantedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+});
+
+// Bills a finished call against the caller's trial (then bonus) minutes.
+// Server-authoritative: the duration is computed from the call's own timestamps,
+// never taken from the client, and each participant is billed once per call.
+exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { callId } = req.body;
+  if (!callId || typeof callId !== "string") return res.status(400).json({ error: "callId required" });
+
+  const db = admin.firestore();
+  const uid = decoded.uid;
+  const callRef = db.collection("calls").doc(callId);
+  const userRef = db.collection("users").doc(uid);
+  const billedFlag = `minutesBilled_${uid}`;
+
+  try {
+    const remaining = await db.runTransaction(async (tx) => {
+      const callSnap = await tx.get(callRef);
+      if (!callSnap.exists) throw Object.assign(new Error("Call not found"), { httpStatus: 404 });
+      const call = callSnap.data() || {};
+
+      const participants = [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean);
+      if (!participants.includes(uid)) throw Object.assign(new Error("Not a participant"), { httpStatus: 403 });
+      if (call[billedFlag]) return null; // already billed for this user — idempotent
+
+      const startMs = (call.matchedAt && call.matchedAt.toMillis && call.matchedAt.toMillis())
+        || (call.createdAt && call.createdAt.toMillis && call.createdAt.toMillis()) || 0;
+      const elapsedSec = startMs ? Math.max(0, Math.floor((Date.now() - startMs) / 1000)) : 0;
+      const billedSec = Math.min(elapsedSec, CALL_CAP_SECONDS);
+      const minutes = Math.ceil(billedSec / 60);
+
+      const userSnap = await tx.get(userRef);
+      const user = userSnap.exists ? userSnap.data() : {};
+      const metered = METERED_PLANS.has(user.subscriptionPlan || "free");
+
+      tx.update(callRef, { [billedFlag]: true });
+      if (!metered || minutes <= 0) return null; // paid plans / no-op calls: mark billed, don't decrement
+
+      const trial = Number(user.availableTrialMinutes) || 0;
+      const bonus = Number(user.bonusMinutes) || 0;
+      const fromTrial = Math.min(trial, minutes);
+      const fromBonus = Math.min(bonus, minutes - fromTrial);
+
+      tx.set(userRef, {
+        availableTrialMinutes: trial - fromTrial,
+        bonusMinutes: bonus - fromBonus,
+      }, { merge: true });
+      return (trial - fromTrial) + (bonus - fromBonus);
+    });
+
+    return res.status(200).json({ ok: true, remaining });
+  } catch (e) {
+    return res.status(e.httpStatus || 500).json({ error: e.message });
+  }
 });
 
 // ─── Peer Təhlükəsiz Yeniləmə (Rating & Badges) ─────────────

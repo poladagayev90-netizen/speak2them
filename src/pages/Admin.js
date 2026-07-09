@@ -89,6 +89,25 @@ export default function Admin({ user }) {
     }
   };
 
+  const setTrial = async (u) => {
+    const userId = u.uid || u.id;
+    if (!userId) { setError('User id is missing.'); return; }
+    setError('');
+    setLoading(prev => ({ ...prev, [userId]: true }));
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        subscriptionPlan: 'trial',
+        availableTrialMinutes: 100,
+        trialGrantedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      console.error('[Admin] setTrial failed:', e);
+      setError(e.message || 'Trial could not be granted.');
+    } finally {
+      setLoading(prev => ({ ...prev, [userId]: false }));
+    }
+  };
+
   const filterByTime = (u) => {
     if (timeFilter === 'all') return true;
     
@@ -264,7 +283,7 @@ export default function Admin({ user }) {
                   </div>
                 </div>
                 
-                <div style={{ flexShrink: 0 }}>
+                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {!isAdmin && (
                     u.isPremium ? (
                       <button
@@ -273,26 +292,40 @@ export default function Admin({ user }) {
                         style={{
                           padding: '8px 16px', background: 'rgba(239, 68, 68, 0.1)',
                           color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)',
-                          borderRadius: '10px', fontWeight: 700, cursor: 'pointer', 
-                          fontSize: '12px', transition: 'all 0.2s', width: '90px'
+                          borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
+                          fontSize: '12px', transition: 'all 0.2s', width: '110px'
                         }}
                       >
                         {loading[u.uid || u.id] ? '...' : 'Ləğv et'}
                       </button>
                     ) : (
-                      <button 
-                        onClick={() => setPremium(u, true, 'pro')} 
-                        disabled={loading[u.uid || u.id]}
-                        style={{ 
-                          padding: '8px 16px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
-                          color: '#fff', border: 'none', borderRadius: '10px', 
-                          fontWeight: 700, cursor: 'pointer', fontSize: '12px',
-                          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
-                          transition: 'all 0.2s', width: '90px'
-                        }}
-                      >
-                        {loading[u.uid || u.id] ? '...' : 'PRO Ver ✨'}
-                      </button>
+                      <>
+                        <button
+                          onClick={() => setPremium(u, true, 'pro')}
+                          disabled={loading[u.uid || u.id]}
+                          style={{
+                            padding: '8px 16px', background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            color: '#fff', border: 'none', borderRadius: '10px',
+                            fontWeight: 700, cursor: 'pointer', fontSize: '12px',
+                            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                            transition: 'all 0.2s', width: '110px'
+                          }}
+                        >
+                          {loading[u.uid || u.id] ? '...' : 'PRO Ver ✨'}
+                        </button>
+                        <button
+                          onClick={() => setTrial(u)}
+                          disabled={loading[u.uid || u.id]}
+                          style={{
+                            padding: '8px 16px', background: 'rgba(124, 111, 247, 0.12)',
+                            color: '#7c6ff7', border: '1px solid rgba(124, 111, 247, 0.4)',
+                            borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
+                            fontSize: '12px', transition: 'all 0.2s', width: '110px'
+                          }}
+                        >
+                          {loading[u.uid || u.id] ? '...' : 'TRIAL 100dəq ⏳'}
+                        </button>
+                      </>
                     )
                   )}
                 </div>

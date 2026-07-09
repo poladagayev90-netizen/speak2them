@@ -16,13 +16,16 @@ service cloud.firestore {
     // 'isPro' was written by the client and read by nothing. It stays on the
     // list so it can never become a self-service premium flag if some view
     // starts honouring it later.
+    // 'subscriptionPlan' and 'availableTrialMinutes' gate paid access, so like
+    // the premium flags they must only ever be written by an admin or a Cloud
+    // Function (admin SDK) — never self-served from the client.
     function isNotChangingPremiumFields() {
       return !request.resource.data.diff(resource.data).affectedKeys()
-        .hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro']);
+        .hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes']);
     }
 
     function isNotCreatingPremiumFields() {
-      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro']);
+      return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes']);
     }
 
     match /users/{userId} {

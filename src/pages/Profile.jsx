@@ -22,6 +22,8 @@ export default function Profile({ user }) {
   const [isPremium, setIsPremium] = useState(false);
   const [stats, setStats] = useState({ calls: 0, totalMinutes: 0, streak: 0, rating: 0, ratingCount: 0 });
   const [bonusMinutes, setBonusMinutes] = useState(0);
+  const [subPlan, setSubPlan] = useState('free');
+  const [trialMinutes, setTrialMinutes] = useState(0);
   const [docId, setDocId] = useState(null);
   const navigate = useNavigate();
 
@@ -50,6 +52,8 @@ export default function Profile({ user }) {
               setIsPremium(d.isPremium || false);
               setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0, rating: d.rating || 0, ratingCount: d.ratingCount || 0 });
               setBonusMinutes(d.bonusMinutes || 0);
+              setSubPlan(d.subscriptionPlan || 'free');
+              setTrialMinutes(d.availableTrialMinutes || 0);
             }
           });
         }
@@ -99,8 +103,10 @@ export default function Profile({ user }) {
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
 
   // Calculate Minute Balance
-  let displayedBalance = 15 + bonusMinutes;
-  let balanceLabel = `15 min limit + ${bonusMinutes} bonus / call`;
+  let displayedBalance = trialMinutes + bonusMinutes;
+  let balanceLabel = subPlan === 'trial'
+    ? `${trialMinutes} sınaq + ${bonusMinutes} bonus dəqiqə`
+    : `${trialMinutes} + ${bonusMinutes} bonus dəqiqə`;
   if (isPremium && user.premiumPlan !== 'unlimited') {
     const currentMonthStr = new Date().toISOString().slice(0, 7);
     let monthlyLimit = user.premiumPlan === 'basic' ? 120 : (user.premiumPlan === 'pro' ? 500 : 0);

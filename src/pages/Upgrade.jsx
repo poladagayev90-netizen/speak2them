@@ -10,12 +10,12 @@ const PLANS = [
   {
     id: 'free',
     name: 'Free',
-    mins: '30 dəq / həftə',
+    mins: 'Qrup sessiyaları pulsuz',
     price: 0,
     priceLabel: 'Pulsuz',
     icon: '👤',
     color: '#2e2e50',
-    features: ['Random partnyor matching', 'Gündəlik mövzular', '—  Priority queue yoxdur'],
+    features: ['Qrup sessiyalarına giriş', 'Gündəlik mövzular', '—  Fərdi zəng üçün dəqiqə yoxdur', '—  Priority queue yoxdur'],
   },
   {
     id: 'basic',
@@ -51,7 +51,7 @@ const PLANS = [
 ];
 
 const COMPARE = [
-  { feature: 'Dəqiqə', values: ['30/həftə', '120/ay', '500/ay', '∞'] },
+  { feature: 'Fərdi zəng dəqiqəsi', values: ['—', '120/ay', '500/ay', '∞'] },
   { feature: 'Priority queue', values: [false, true, true, true] },
   { feature: 'Badge', values: [false, false, true, true] },
   { feature: 'Profile boost', values: [false, false, false, true] },
