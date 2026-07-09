@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Share, Plus, MoreVertical, MessageCircle } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Bell, Share, Plus, MoreVertical, MessageCircle, Copy, Check, ExternalLink } from 'lucide-react';
 
 const BYPASS_KEY = 'installGateBypass';
 const SUPPORT_WHATSAPP = 'https://wa.me/994513549195';
@@ -7,6 +8,11 @@ const SUPPORT_WHATSAPP = 'https://wa.me/994513549195';
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   window.navigator.standalone === true;
+
+// In-app browsers (Instagram, Facebook, TikTok, WeChat, Android WebView, …)
+// cannot install a PWA — the user must first reopen the link in a real browser.
+const isInAppBrowser = () =>
+  /FBAN|FBAV|Instagram|Line\/|Twitter|TikTok|musical_ly|BytedanceWebview|Snapchat|MicroMessenger|; wv\)/i.test(navigator.userAgent);
 
 const isIOS = () =>
   /iP(hone|ad|od)/.test(navigator.userAgent) ||
@@ -27,8 +33,12 @@ const isIOSNonSafari = () => isIOS() && /CriOS|FxiOS|EdgiOS/i.test(navigator.use
 export default function InstallGate() {
   const [visible, setVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    // The Capacitor native app renders the same web build but is already an
+    // installed app — it must never see the "install me" gate.
+    if (Capacitor.isNativePlatform()) return;
     if (isStandalone() || !isMobile()) return;
     if (sessionStorage.getItem(BYPASS_KEY) === '1') return;
     setVisible(true);
@@ -66,7 +76,19 @@ export default function InstallGate() {
     window.open(`${SUPPORT_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
+  const appUrl = window.location.origin;
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(appUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.prompt('Linki kopyala:', appUrl);
+    }
+  };
+
   const ios = isIOS();
+  const inApp = isInAppBrowser();
 
   const step = (icon, text) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
@@ -99,18 +121,45 @@ export default function InstallGate() {
         </div>
 
         <h2 style={{ color: '#fff', fontSize: 21, fontWeight: 800, textAlign: 'center', margin: '0 0 10px' }}>
-          Tətbiqi əsas ekrana əlavə et
+          {inApp ? 'Brauzerdə aç' : 'Tətbiqi əsas ekrana əlavə et'}
         </h2>
         <p style={{ color: '#a9a9c4', fontSize: 14, lineHeight: 1.5, textAlign: 'center', margin: '0 0 22px' }}>
-          SpeakLab-ı tam istifadə etmək və sessiya bildirişlərini almaq üçün tətbiqi əsas ekrana əlavə etməlisən.
-          Əks halda <b style={{ color: '#f59e0b' }}>bildirişlər gəlməyəcək</b> və sessiyaları qaçıracaqsan.
+          {inApp ? (
+            <>
+              Bu tətbiqi burada quraşdırmaq mümkün deyil. Linki
+              {' '}<b style={{ color: '#fff' }}>Safari</b> və ya <b style={{ color: '#fff' }}>Chrome</b> brauzerində açıb
+              əsas ekrana əlavə et — yoxsa <b style={{ color: '#f59e0b' }}>bildirişlər gəlməyəcək</b>.
+            </>
+          ) : (
+            <>
+              SpeakLab-ı tam istifadə etmək və sessiya bildirişlərini almaq üçün tətbiqi əsas ekrana əlavə etməlisən.
+              Əks halda <b style={{ color: '#f59e0b' }}>bildirişlər gəlməyəcək</b> və sessiyaları qaçıracaqsan.
+            </>
+          )}
         </p>
 
         <div style={{
           background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,111,247,0.25)',
           borderRadius: 16, padding: 18, display: 'flex', flexDirection: 'column', gap: 14,
         }}>
-          {ios ? (
+          {inApp ? (
+            <>
+              {step(<MoreVertical size={18} />, 'Yuxarı küncdəki ⋯ menyusunu aç')}
+              {step(<ExternalLink size={18} />, '“Brauzerdə aç” (Open in browser) seç')}
+              {step(<Plus size={18} />, 'Brauzerdə əsas ekrana əlavə et')}
+              <button
+                onClick={copyLink}
+                style={{
+                  marginTop: 4, border: 'none', borderRadius: 12, padding: '13px',
+                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+                  fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                {copied ? <><Check size={16} /> Kopyalandı</> : <><Copy size={16} /> Linki kopyala</>}
+              </button>
+            </>
+          ) : ios ? (
             <>
               {isIOSNonSafari() && (
                 <p style={{ color: '#f59e0b', fontSize: 13, margin: 0, fontWeight: 600 }}>
