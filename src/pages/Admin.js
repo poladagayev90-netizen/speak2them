@@ -65,12 +65,10 @@ export default function Admin({ user }) {
           });
         }
 
-        if (u.telegramId) {
-          await authedFetch(BOT_NOTIFY_URL, {
-            method: 'POST',
-            body: JSON.stringify({ telegramId: u.telegramId, userName: u.name }),
-          }).catch(() => {});
-        }
+        await authedFetch(BOT_NOTIFY_URL, {
+          method: 'POST',
+          body: JSON.stringify({ userId, userName: u.name }),
+        }).catch(() => {});
       } else if (requestSnap.exists()) {
         await updateDoc(premiumRequestRef, {
           status: 'revoked',

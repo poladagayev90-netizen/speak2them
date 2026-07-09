@@ -126,11 +126,7 @@ export default function Upgrade({ user }) {
     if (selected === 'free') { navigate('/'); return; }
     const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). SpeakLab tətbiqində ${plan.name} planına keçmək istəyirəm.`;
     const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
-    if (window.Telegram?.WebApp?.openLink) {
-      window.Telegram.WebApp.openLink(whatsappUrl);
-    } else {
-      window.open(whatsappUrl, '_blank');
-    }
+    window.open(whatsappUrl, '_blank');
   };
 
   return (

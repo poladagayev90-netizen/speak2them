@@ -502,17 +502,15 @@ export default function Chat({ user }) {
       setCallStatus('calling');
 
       try {
-        if (peerData?.telegramId) {
-          await authedFetch(`${FUNCTIONS_BASE}/sendCallNotification`, {
-            method: 'POST',
-            body: JSON.stringify({
-              telegramId: peerData.telegramId,
-              callerName: user.displayName || 'User',
-              callerId: user.uid,
-              receiverId: peerId,
-            }),
-          });
-        }
+        // Ring the callee via web push so they know to open the app. The server
+        // resolves the caller's name and the callee's device token itself.
+        await authedFetch(`${FUNCTIONS_BASE}/sendCallNotification`, {
+          method: 'POST',
+          body: JSON.stringify({
+            callerId: user.uid,
+            receiverId: peerId,
+          }),
+        });
       } catch (e) {}
     } catch (error) {
       console.error('[Chat] startCall error:', error);

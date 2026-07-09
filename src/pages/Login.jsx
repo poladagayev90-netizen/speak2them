@@ -4,7 +4,6 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, signInWithGoogle } from '../firebase';
 import { Capacitor } from '@capacitor/core';
 import { Link, useNavigate } from 'react-router-dom';
-import { isTelegramWebApp } from '../telegram';
 import Logo from '../components/Logo';
 
 function getResetPasswordErrorMessage(code) {
@@ -127,7 +126,7 @@ export default function Login() {
           </div>
         )}
 
-        {!isTelegramWebApp && !Capacitor.isNativePlatform() && (
+        {!Capacitor.isNativePlatform() && (
           <button 
             onClick={handleGoogleLogin} 
             disabled={loading}

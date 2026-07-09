@@ -8,8 +8,6 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
-const BOT_TOKEN = defineSecret("TELEGRAM_BOT_TOKEN");
-const BROADCAST_ADMIN_KEY = defineSecret("BROADCAST_ADMIN_KEY");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 const DEEPSEEK_API_KEY = defineSecret("DEEPSEEK_API_KEY");
 const DEEPGRAM_API_KEY = defineSecret("DEEPGRAM_API_KEY");
@@ -17,20 +15,7 @@ const DEEPGRAM_API_KEY = defineSecret("DEEPGRAM_API_KEY");
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
 });
-const CHANNEL_LINK = defineString("TELEGRAM_CHANNEL_LINK", {
-  default: "https://t.me/speak2them",
-});
-const CHANNEL_ID = defineString("TELEGRAM_CHANNEL_ID", {
-  default: "@speak2them",
-});
-const ADMIN_TELEGRAM_ID = defineString("ADMIN_TELEGRAM_ID", {
-  default: "5134853364",
-});
-const TELEGRAM_APP_URL = defineString("TELEGRAM_APP_URL", {
-  default: "https://t.me/Speak2them_bot/app",
-});
 
-const telegramApiUrl = () => `https://api.telegram.org/bot${BOT_TOKEN.value()}/sendMessage`;
 const DAILY_REMINDER_BATCH_SIZE = 500;
 const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
 
@@ -110,92 +95,8 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   res.status(200).json({ token });
 });
 
-// ─── Telegram Webhook ─────────────────────────────────────────
-exports.telegramWebhook = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
-  const { message } = req.body;
-  if (!message) return res.send("ok");
-
-  const chatId = message.chat.id;
-  const text = message.text;
-
-  if (text === "/start") {
-    await admin.firestore().collection("telegramUsers").doc(String(chatId)).set({
-      chatId,
-      joinedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-
-    await fetch(telegramApiUrl(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: `🎙️ Speak2Them-ə xoş gəldin!\n\nKanalımıza qoşul: ${CHANNEL_LINK.value()}\n\nTətbiqi aç: ${TELEGRAM_APP_URL.value()}`,
-        reply_markup: {
-          inline_keyboard: [[
-            { text: "📢 Kanala qoşul", url: CHANNEL_LINK.value() },
-            { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() },
-          ]],
-        },
-      }),
-    });
-  }
-
-  res.send("ok");
-});
-
-// ─── Broadcast ────────────────────────────────────────────────
-exports.broadcastMessage = onRequest({ secrets: [BOT_TOKEN, BROADCAST_ADMIN_KEY] }, async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST");
-  res.set("Access-Control-Allow-Headers", "Content-Type, x-admin-key");
-
-  if (req.method === "OPTIONS") return res.status(204).send("");
-  if (req.headers["x-admin-key"] !== BROADCAST_ADMIN_KEY.value()) return res.status(403).send("Forbidden");
-
-  const { text } = req.body;
-  if (!text) return res.status(400).send("text required");
-
-  await fetch(telegramApiUrl(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: CHANNEL_ID.value(), text,
-      reply_markup: { inline_keyboard: [[
-        { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() },
-        { text: "📢 Kanala qoşul", url: CHANNEL_LINK.value() },
-      ]]},
-    }),
-  }).catch(() => {});
-
-  const [tgUsers, appUsers] = await Promise.all([
-    admin.firestore().collection("telegramUsers").get(),
-    admin.firestore().collection("users").get(),
-  ]);
-
-  const chatIds = new Set();
-  tgUsers.docs.forEach(d => { if (d.data().chatId) chatIds.add(String(d.data().chatId)); });
-  appUsers.docs.forEach(d => { if (d.data().telegramId) chatIds.add(String(d.data().telegramId)); });
-
-  const promises = [...chatIds].map(chatId =>
-    fetch(telegramApiUrl(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId, text,
-        reply_markup: { inline_keyboard: [[
-          { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() },
-          { text: "📢 Kanala qoşul", url: CHANNEL_LINK.value() },
-        ]]},
-      }),
-    }).catch(() => {})
-  );
-
-  await Promise.allSettled(promises);
-  res.send({ sent: chatIds.size + 1 });
-});
-
-// ─── Zəng Bildirişi ───────────────────────────────────────────
-exports.sendCallNotification = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
+// ─── Zəng Bildirişi (incoming direct call → callee's device) ──
+exports.sendCallNotification = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);
 
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -212,78 +113,24 @@ exports.sendCallNotification = onRequest({ secrets: [BOT_TOKEN] }, async (req, r
   if (decoded.uid !== callerId) return res.status(403).json({ error: "Forbidden" });
   if (callerId === receiverId) return res.status(400).json({ error: "Cannot call yourself" });
 
-  // The chat id and the caller's name are resolved here, never taken from the
-  // request: a client-supplied telegramId turned this into an open relay for
-  // spoofed "X is calling you" messages to any Telegram chat.
+  // The caller's name is resolved server-side, never trusted from the request,
+  // so a client cannot spoof a "X is calling you" push to an arbitrary device.
   const db = admin.firestore();
-  const [receiverSnap, callerSnap] = await Promise.all([
-    db.collection("users").doc(receiverId).get().catch(() => null),
-    db.collection("users").doc(callerId).get().catch(() => null),
-  ]);
-  const telegramId = receiverSnap && receiverSnap.exists ? receiverSnap.data().telegramId : null;
-  if (!telegramId) return res.status(200).json({ ok: true, skipped: "no-telegram" });
-
+  const callerSnap = await db.collection("users").doc(callerId).get().catch(() => null);
   const rawName = (callerSnap && callerSnap.exists ? callerSnap.data().name : "") || "Someone";
-  // Strip Markdown control characters so a display name cannot inject markup.
-  const callerName = String(rawName).replace(/[*_`[\]()~>#+=|{}.!-]/g, "").slice(0, 40);
+  const callerName = String(rawName).slice(0, 40);
 
-  try {
-    await fetch(telegramApiUrl(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: telegramId,
-        text: `📞 *${callerName}* sizi Speak2Them-də zəng edir!\n\nQəbul etmək üçün tətbiqi açın 👇`,
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: [[
-          { text: "🎙️ Tətbiqi aç", url: TELEGRAM_APP_URL.value() }
-        ]]},
-      }),
-    });
-    res.status(200).json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  await sendPushToUser(db, receiverId, {
+    title: `📞 ${callerName} sizə zəng edir`,
+    body: "Qəbul etmək üçün tətbiqi açın",
+    type: "incoming_call",
+    url: "/",
+  });
+  res.status(200).json({ ok: true });
 });
 
-// ─── Premium Sorğusu — adminə xəbər ver ──────────────────────
-exports.notifyPremiumRequest = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
-  setCors(res);
-
-  if (req.method === "OPTIONS") return res.status(204).send("");
-
-  let decoded;
-  try {
-    decoded = await verifyAuth(req);
-  } catch {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const { userName, userEmail, userId } = req.body;
-  if (!userId) return res.status(400).json({ error: "userId required" });
-  if (decoded.uid !== userId) return res.status(403).json({ error: "Forbidden" });
-
-  try {
-    await fetch(telegramApiUrl(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: ADMIN_TELEGRAM_ID.value(),
-        text: `💰 *Yeni Premium Sorğusu!*\n\n👤 Ad: ${userName}\n📧 Email: ${userEmail}\n🆔 UID: ${userId}\n\nAdmin paneldən aktivləşdir 👇`,
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: [[
-          { text: "🛡️ Admin Panel", url: `${TELEGRAM_APP_URL.value()}/admin` }
-        ]]},
-      }),
-    });
-    res.status(200).json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ─── Premium Aktivləşdi — istifadəçiyə xəbər ver ─────────────
-exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req, res) => {
+// ─── Premium Aktivləşdi — istifadəçiyə push göndər ────────────
+exports.notifyPremiumActivated = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);
 
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -296,26 +143,17 @@ exports.notifyPremiumActivated = onRequest({ secrets: [BOT_TOKEN] }, async (req,
   }
   if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
 
-  const { telegramId, userName } = req.body;
-  if (!telegramId) return res.status(400).json({ error: "telegramId required" });
+  const { userId, userName } = req.body;
+  if (!userId) return res.status(400).json({ error: "userId required" });
 
-  try {
-    await fetch(telegramApiUrl(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: telegramId,
-        text: `👑 *${userName}*, Premium üzvlüyünüz aktivləşdirildi!\n\n✅ Bütün premium xüsusiyyətlər indi sizin üçün açıqdır.\n\nTətbiqi açın və zövq alın 🎙️`,
-        parse_mode: "Markdown",
-        reply_markup: { inline_keyboard: [[
-          { text: "🚀 Tətbiqi aç", url: TELEGRAM_APP_URL.value() }
-        ]]},
-      }),
-    });
-    res.status(200).json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+  const db = admin.firestore();
+  await sendPushToUser(db, userId, {
+    title: "👑 Premium aktivləşdirildi",
+    body: `${userName || "Üzv"}, bütün premium xüsusiyyətlər indi sizin üçün açıqdır!`,
+    type: "premium_activated",
+    url: "/",
+  });
+  res.status(200).json({ ok: true });
 });
 
 const ALL_TOPICS = [
@@ -354,11 +192,12 @@ exports.topicReminder = onSchedule({
     const todayTopic = getTodayTopic();
     const response = await admin.messaging().sendEachForMulticast({
       tokens: batch.map(user => user.fcmToken),
-      notification: {
+      // Data-only so the messaging SW renders it and routes the click to `url`.
+      // A `notification` payload is auto-displayed by the SDK and bypasses the
+      // SW's notificationclick handler.
+      data: {
         title: `Günlük Mövzu: ${todayTopic}`,
         body: "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir! Səni gözləyirlər.",
-      },
-      data: {
         type: "daily_reminder",
         url: "/",
       },
@@ -401,9 +240,11 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
 
   const response = await admin.messaging().sendEachForMulticast({
     tokens: usersWithTokens.map(u => u.fcmToken),
-    notification: {
+    data: {
       title: "🛠️ SpeakLab Test Mesajı",
       body: "Bu mesaj push bildirişlərinin düzgün işlədiyini yoxlamaq üçün göndərilmişdir.",
+      type: "test",
+      url: "/",
     },
   });
 

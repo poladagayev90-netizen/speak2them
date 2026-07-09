@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { updateProfile, signOut } from 'firebase/auth';
-import { db, auth } from '../firebase';
+import { db, auth, enableNotifications } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Bell } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 
@@ -79,6 +79,22 @@ export default function Profile({ user }) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [showWordHistory, setShowWordHistory] = useState(false);
+  const [notifPerm, setNotifPerm] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
+
+  const handleEnableNotifications = async () => {
+    if (notifPerm !== 'default') return; // granted or denied: browser settings only now
+    const status = await enableNotifications(user.uid);
+    setNotifPerm(status);
+  };
+
+  const notifLabel = {
+    granted: 'Aktiv',
+    denied: 'Brauzer parametrlərindən aç',
+    default: 'Aktivləşdir',
+    unsupported: 'Bu cihazda mövcud deyil',
+  }[notifPerm] || 'Aktivləşdir';
 
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
 
@@ -259,6 +275,35 @@ export default function Profile({ user }) {
             style={{ display: 'inline-block', flexShrink: 0 }}
           >
             <span className="theme-switch-thumb"></span>
+          </span>
+        </div>
+      </div>
+
+      {/* NOTIFICATIONS */}
+      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Bildirişlər</h3>
+      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
+        <div
+          onClick={handleEnableNotifications}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEnableNotifications(); } }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', cursor: notifPerm === 'default' ? 'pointer' : 'default' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', marginRight: '16px' }}>
+              <Bell size={18} />
+            </div>
+            <div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Push bildirişləri</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>Sessiya və analiz xəbərdarlıqları</div>
+            </div>
+          </div>
+          <span style={{
+            flexShrink: 0,
+            fontSize: '13px', fontWeight: 700,
+            color: notifPerm === 'granted' ? 'var(--success)' : 'var(--accent)',
+          }}>
+            {notifLabel}
           </span>
         </div>
       </div>

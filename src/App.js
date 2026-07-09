@@ -5,9 +5,8 @@ import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { auth, db, registerFcmToken } from './firebase';
+import { auth, db, refreshFcmToken } from './firebase';
 import { isInCall } from './utils/presence';
-import { tg, tgUser, isTelegramWebApp } from './telegram';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
@@ -43,12 +42,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isTelegramWebApp && tg.ready) {
-      tg.ready();
-      tg.expand();
-      document.body.classList.add('is-telegram');
-    }
-
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
     const isMobile = window.innerWidth <= 768;
     if (isPWA || isMobile) {
@@ -92,21 +85,16 @@ function App() {
         const userRef = doc(db, 'users', uid);
         const userSnap = await getDoc(userRef);
 
-        const telegramId = tgUser?.id
-          ? String(tgUser.id)
-          : (userSnap.exists() ? (userSnap.data()?.telegramId || '') : '');
-
         await setDoc(userRef, {
           uid,
           name: userSnap.exists() ? userSnap.data().name : (currentUser.displayName || 'User'),
           email: currentUser.email || userSnap.data()?.email || '',
-          photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (tgUser?.photo_url || ''),
-          telegramId,
+          photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (currentUser.photoURL || ''),
           online: true,
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        registerFcmToken(uid).catch(() => {});
+        refreshFcmToken(uid).catch(() => {});
 
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();

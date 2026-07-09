@@ -45,9 +45,8 @@ export default function AppLayout({ children, user }) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       // Improve PWA check to cover iOS navigator.standalone
       const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      const isTelegram = document.body.classList.contains('is-telegram');
-      
-      const mobileMode = isMobile || isPWA || isTelegram || manualMobileMode;
+
+      const mobileMode = isMobile || isPWA || manualMobileMode;
       setForceMobile(mobileMode);
 
       // Update app height to prevent mobile browser URL bar scroll issues

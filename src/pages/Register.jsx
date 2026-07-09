@@ -3,7 +3,6 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, signInWithGoogle } from '../firebase';
 import { Capacitor } from '@capacitor/core';
-import { tgUser, isTelegramWebApp } from '../telegram';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 
@@ -29,7 +28,6 @@ export default function Register() {
         uid: user.uid,
         name,
         email,
-        telegramId: tgUser?.id ? String(tgUser.id) : '',
         rating: 0,
         ratingCount: 0,
         surveyDone: false,
@@ -62,7 +60,6 @@ export default function Register() {
           email: user.email || '',
           photo: user.photoURL || '',
           bio: '',
-          telegramId: tgUser?.id ? String(tgUser.id) : '',
           online: true,
           rating: 0,
           ratingCount: 0,
@@ -101,7 +98,7 @@ export default function Register() {
 
           {error && <div className="error-box">{error}</div>}
 
-          {!isTelegramWebApp && !Capacitor.isNativePlatform() && (
+          {!Capacitor.isNativePlatform() && (
           <button 
             onClick={handleGoogleRegister} 
             disabled={loading}

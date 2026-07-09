@@ -42,52 +42,85 @@ try {
 // default) so both workers coexist.
 const FCM_SW_SCOPE = '/firebase-cloud-messaging-push-scope';
 
-export async function registerFcmToken(uid) {
+// Registers the messaging SW, mints a token, stores it, and wires the
+// foreground handler. Shared by the gesture (enableNotifications) and load
+// (refreshFcmToken) paths — both need the identical token + listener setup once
+// permission is granted; only who asks for permission differs.
+async function registerTokenAndListener(uid) {
+  const registration = await navigator.serviceWorker.register(
+    '/firebase-messaging-sw.js',
+    { scope: FCM_SW_SCOPE }
+  );
+  const messaging = getMessaging(app);
+  const token = await getToken(messaging, {
+    vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
+    serviceWorkerRegistration: registration,
+  });
+
+  if (token) {
+    await setDoc(doc(db, 'users', uid), { fcmToken: token }, { merge: true });
+  }
+
+  // Data-only pushes that arrive while a tab is open never reach the SW's
+  // onBackgroundMessage — display them here or they are lost entirely.
+  onMessage(messaging, (payload) => {
+    const data = payload?.data;
+    if (!data?.title) return;
+    registration.showNotification(data.title, {
+      body: data.body || '',
+      icon: '/logo192.png',
+      badge: '/logo192.png',
+      tag: data.type || 'speaklab',
+      data: { url: data.url || '/' },
+    });
+  });
+
+  return Boolean(token);
+}
+
+// Opt-in from a user gesture (a tap). Notification.requestPermission() is
+// unreliable without a gesture and is outright required to be gesture-triggered
+// on iOS/installed PWAs, so this must never be called from an effect or the
+// auth callback. Returns the resulting permission-ish status for the UI to act
+// on: 'granted' | 'denied' | 'default' | 'unsupported'.
+export async function enableNotifications(uid) {
+  if (!uid || !process.env.REACT_APP_FIREBASE_VAPID_KEY) return 'unsupported';
+
+  try {
+    if (!(await isSupported())) return 'unsupported';
+    if (Notification.permission === 'denied') return 'denied';
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return permission; // 'denied' | 'default'
+
+    await registerTokenAndListener(uid);
+    return 'granted';
+  } catch (error) {
+    console.error('[Firebase] enableNotifications failed:', error);
+    return 'unsupported';
+  }
+}
+
+// Load-time refresh for users who already granted permission. Never prompts —
+// it bails unless permission is already 'granted' — so it is safe to call from
+// the auth callback and keeps an opted-in user's token fresh across sessions.
+export async function refreshFcmToken(uid) {
   if (!uid || !process.env.REACT_APP_FIREBASE_VAPID_KEY) return;
 
   try {
     if (!(await isSupported())) return;
-    if (Notification.permission === 'denied') return;
+    if (Notification.permission !== 'granted') return;
 
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
-
-    const registration = await navigator.serviceWorker.register(
-      '/firebase-messaging-sw.js',
-      { scope: FCM_SW_SCOPE }
-    );
-    const messaging = getMessaging(app);
-    const token = await getToken(messaging, {
-      vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
-      serviceWorkerRegistration: registration,
-    });
-
-    if (token) {
-      await setDoc(doc(db, 'users', uid), { fcmToken: token }, { merge: true });
-    }
-
-    // Data-only pushes that arrive while a tab is open never reach the SW's
-    // onBackgroundMessage — display them here or they are lost entirely.
-    onMessage(messaging, (payload) => {
-      const data = payload?.data;
-      if (!data?.title) return;
-      registration.showNotification(data.title, {
-        body: data.body || '',
-        icon: '/logo192.png',
-        badge: '/logo192.png',
-        tag: data.type || 'speaklab',
-        data: { url: data.url || '/' },
-      });
-    });
+    await registerTokenAndListener(uid);
   } catch (error) {
-    console.warn('[Firebase] FCM registration skipped:', error.message);
+    console.warn('[Firebase] refreshFcmToken skipped:', error.message);
   }
 }
 
-// Popups are unreliable in an installed PWA (standalone display) and are
-// blocked outright inside in-app webviews such as Telegram's. Fall back to a
-// full-page redirect: onAuthStateChanged in App.js creates/refreshes the user
-// doc afterwards, so the redirect path needs no extra bookkeeping.
+// Popups are unreliable in an installed PWA (standalone display) and inside
+// in-app webviews. Fall back to a full-page redirect: onAuthStateChanged in
+// App.js creates/refreshes the user doc afterwards, so the redirect path needs
+// no extra bookkeeping.
 const POPUP_UNAVAILABLE = new Set([
   'auth/popup-blocked',
   'auth/operation-not-supported-in-this-environment',
