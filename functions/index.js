@@ -334,6 +334,43 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
+// One-time admin action: put every pre-existing user who has no plan yet onto
+// the trial. Skips users who already have a plan or are premium, so it is safe
+// to run more than once.
+exports.backfillTrials = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
+
+  const db = admin.firestore();
+  const snap = await db.collection("users").get();
+  let granted = 0;
+  let batch = db.batch();
+  let ops = 0;
+  for (const d of snap.docs) {
+    const u = d.data() || {};
+    if (u.subscriptionPlan || u.isPremium) continue;
+    batch.set(d.ref, {
+      subscriptionPlan: "trial",
+      availableTrialMinutes: TRIAL_MINUTES,
+      trialGrantedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    granted++;
+    ops++;
+    if (ops >= 400) { await batch.commit(); batch = db.batch(); ops = 0; }
+  }
+  if (ops > 0) await batch.commit();
+
+  return res.status(200).json({ ok: true, granted, total: snap.size });
+});
+
 // ─── Peer Təhlükəsiz Yeniləmə (Rating & Badges) ─────────────
 exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);

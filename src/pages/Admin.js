@@ -13,7 +13,21 @@ export default function Admin({ user }) {
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
+  const [backfillMsg, setBackfillMsg] = useState('');
   const navigate = useNavigate();
+
+  const runBackfill = async () => {
+    if (!window.confirm('Planı olmayan bütün istifadəçilərə 100 dəqiqəlik trial verilsin?')) return;
+    setBackfillMsg('İşlənir...');
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/backfillTrials`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'alınmadı');
+      setBackfillMsg(`✅ Trial verildi: ${data.granted} / ${data.total} istifadəçi`);
+    } catch (e) {
+      setBackfillMsg('Xəta: ' + (e.message || 'alınmadı'));
+    }
+  };
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), snap => {
@@ -191,6 +205,23 @@ export default function Admin({ user }) {
             {error}
           </div>
         )}
+
+        <div style={{ marginBottom: '16px' }}>
+          <button
+            onClick={runBackfill}
+            style={{
+              width: '100%', padding: '10px 14px',
+              background: 'rgba(124, 111, 247, 0.12)', color: '#7c6ff7',
+              border: '1px solid rgba(124, 111, 247, 0.4)', borderRadius: '12px',
+              fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+            }}
+          >
+            ⏳ Köhnə istifadəçilərə Trial ver (100 dəq)
+          </button>
+          {backfillMsg && (
+            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>{backfillMsg}</p>
+          )}
+        </div>
 
         <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
           <input
