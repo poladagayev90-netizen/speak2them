@@ -1656,3 +1656,96 @@ body {
   .auth-sub { margin-bottom: 16px; }
   .btn-primary { margin-top: 16px; }
 }
+
+/* ===== In-call Taboo game =====
+   Layout lives in inline styles (see CallTabooStage.jsx, mirroring
+   CallImageStage.jsx). Only motion lives here, because @keyframes cannot be
+   expressed inline. Every animation is opt-in so the game stays fully usable
+   when the OS asks for reduced motion. */
+
+.taboo-confetti-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.taboo-confetti-piece {
+  position: absolute;
+  top: 34%;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  opacity: 0;
+}
+
+.taboo-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 3px;
+  border-radius: 50%;
+  background: var(--text-muted, #7c84a2);
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Cards are keyed on cardIndex, so a new word remounts and deals itself in. */
+  .taboo-card {
+    animation: tabooCardIn 420ms cubic-bezier(0.34, 1.32, 0.5, 1) both;
+  }
+
+  .taboo-confetti-piece {
+    animation: tabooConfettiBurst 1100ms ease-out forwards;
+  }
+
+  .taboo-orb {
+    animation: tabooPulse 2.4s ease-in-out infinite;
+  }
+
+  .taboo-toast {
+    animation: tabooToastIn 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .taboo-score-pop {
+    animation: tabooScorePop 460ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .taboo-dots span {
+    animation: tabooDots 1.3s ease-in-out infinite;
+  }
+}
+
+@keyframes tabooCardIn {
+  from { opacity: 0; transform: perspective(900px) rotateY(-70deg) scale(0.92); }
+  to   { opacity: 1; transform: perspective(900px) rotateY(0deg) scale(1); }
+}
+
+/* --tx/--ty/--rot are set per-piece inline so each shard flies its own way. */
+@keyframes tabooConfettiBurst {
+  0%   { opacity: 1; transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--tx), var(--ty), 0) scale(1) rotate(var(--rot)); }
+}
+
+@keyframes tabooPulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(139, 107, 255, 0.35); }
+  50%      { transform: scale(1.05); box-shadow: 0 0 0 18px rgba(139, 107, 255, 0); }
+}
+
+@keyframes tabooToastIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes tabooScorePop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+@keyframes tabooDots {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50%      { opacity: 1;    transform: translateY(-4px); }
+}

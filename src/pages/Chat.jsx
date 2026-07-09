@@ -22,6 +22,8 @@ import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag } from '../utils/presence';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
+import CallTabooStage from '../components/CallTabooStage';
+import { tabooWords } from '../data/tabooWords';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
@@ -55,6 +57,7 @@ export default function Chat({ user }) {
   const [callSeconds, setCallSeconds] = useState(0);
   const [showDaily, setShowDaily] = useState(false);
   const [imageStage, setImageStage] = useState(null);
+  const [tabooStage, setTabooStage] = useState(null);
   const [showRating, setShowRating] = useState(false);
   const [selectedStar, setSelectedStar] = useState(0);
   const [dailyTab, setDailyTab] = useState('questions');
@@ -387,6 +390,10 @@ export default function Chat({ user }) {
 
       // Synced picture stage: either side writes it, both render it.
       setImageStage(data.imageStage || null);
+
+      // Synced Taboo game: same channel, but explainerUid decides which half
+      // of the UI each peer gets.
+      setTabooStage(data.tabooStage || null);
 
       // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
@@ -975,16 +982,42 @@ export default function Chat({ user }) {
                 <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
                   📅<span>Daily</span>
                 </button>
-                {!imageStage?.active && (
+                {!imageStage?.active && !tabooStage?.active && (
                   <button
                     className="call-btn-big"
                     onClick={() => {
+                      // Closing the other stage is what settles the race where
+                      // both peers open a different stage at the same moment:
+                      // whichever write lands last leaves exactly one active.
                       updateDoc(doc(db, 'calls', callDocId), {
                         imageStage: { active: true, imageIndex: 0, startedAtMs: Date.now() },
+                        'tabooStage.active': false,
                       }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                     }}
                   >
                     🖼️<span>Şəkil</span>
+                  </button>
+                )}
+                {!tabooStage?.active && !imageStage?.active && (
+                  <button
+                    className="call-btn-big"
+                    onClick={() => {
+                      // See the picture-stage button: the cross-close keeps the
+                      // two stages mutually exclusive even under a simultaneous open.
+                      updateDoc(doc(db, 'calls', callDocId), {
+                        tabooStage: {
+                          active: true,
+                          explainerUid: user.uid,
+                          // Random start so each game opens on a different word;
+                          // the starter writes the number, so both peers agree.
+                          cardIndex: Math.floor(Math.random() * tabooWords.length),
+                          score: 0,
+                        },
+                        'imageStage.active': false,
+                      }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
+                    }}
+                  >
+                    🎭<span>Taboo</span>
                   </button>
                 )}
               </>
@@ -1018,6 +1051,33 @@ export default function Chat({ user }) {
             updateDoc(doc(db, 'calls', callDocId), {
               'imageStage.active': false,
             }).catch((e) => console.error('[Chat] imageStage close failed:', e));
+          }}
+        />
+      )}
+
+      {inCall && tabooStage?.active && (
+        <CallTabooStage
+          cardIndex={tabooStage.cardIndex || 0}
+          score={tabooStage.score || 0}
+          isExplainer={tabooStage.explainerUid === user.uid}
+          // Only the explainer renders these two buttons, so a single client
+          // ever writes the round result — no lost updates.
+          onCorrect={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'tabooStage.score': increment(1),
+              'tabooStage.cardIndex': increment(1),
+              'tabooStage.explainerUid': peerId,
+            }).catch((e) => console.error('[Chat] tabooStage correct failed:', e));
+          }}
+          onPass={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'tabooStage.cardIndex': increment(1),
+            }).catch((e) => console.error('[Chat] tabooStage pass failed:', e));
+          }}
+          onClose={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'tabooStage.active': false,
+            }).catch((e) => console.error('[Chat] tabooStage close failed:', e));
           }}
         />
       )}
