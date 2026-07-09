@@ -24,8 +24,10 @@ export default function Admin({ user }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'alınmadı');
       setBackfillMsg(`✅ Trial verildi: ${data.granted} / ${data.total} istifadəçi`);
+      alert(`✅ Trial verildi: ${data.granted} / ${data.total} istifadəçi`);
     } catch (e) {
       setBackfillMsg('Xəta: ' + (e.message || 'alınmadı'));
+      alert('Xəta: ' + (e.message || 'alınmadı'));
     }
   };
 
@@ -90,6 +92,7 @@ export default function Admin({ user }) {
           revokedBy: user.uid,
         });
       }
+      alert(`✅ ${u.name || 'İstifadəçi'} üçün Premium statusu yeniləndi!`);
     } catch (e) {
       console.error('[Admin] Failed to update premium status:', {
         targetUserId: userId,
@@ -98,6 +101,7 @@ export default function Admin({ user }) {
         error: e,
       });
       setError(e.message || 'Premium status could not be updated.');
+      alert('Xəta (Premium): ' + (e.message || 'Yenilənmədi.'));
     } finally {
       setLoading(prev => ({ ...prev, [userId]: false }));
     }
@@ -114,9 +118,11 @@ export default function Admin({ user }) {
         availableTrialMinutes: 100,
         trialGrantedAt: serverTimestamp(),
       });
+      alert(`✅ ${u.name || 'İstifadəçi'} üçün Trial (100 dəq) uğurla verildi/yeniləndi!`);
     } catch (e) {
       console.error('[Admin] setTrial failed:', e);
       setError(e.message || 'Trial could not be granted.');
+      alert('Xəta (Trial): ' + (e.message || 'Trial verilə bilmədi.'));
     } finally {
       setLoading(prev => ({ ...prev, [userId]: false }));
     }
