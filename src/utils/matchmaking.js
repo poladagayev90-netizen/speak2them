@@ -88,10 +88,15 @@ export async function joinSearchQueue(entry) {
   }, { merge: true });
 }
 
+// Session joiners enter the SAME instant pool as on-demand searchers, tagged
+// with sessionId. Pairing happens client-side within seconds (snapshot →
+// commitMatch) instead of waiting for the once-a-minute server cron; the cron
+// keeps only the reminder and the close-of-window consolation sweep. The
+// sessionId tag is what the sweep uses to find waiters left unmatched.
 export async function joinSessionQueue(entry) {
   await setDoc(doc(db, 'matchQueue', entry.uid), {
     ...entry,
-    status: MATCH_STATUS.WAITING_SESSION,
+    status: MATCH_STATUS.SEARCHING,
   }, { merge: true });
 }
 
@@ -127,15 +132,19 @@ export async function commitMatch(myUid, partnerUid) {
       const mySnap = await transaction.get(myRef);
       const partnerSnap = await transaction.get(partnerRef);
 
-      if (!mySnap.exists() || mySnap.data().status !== MATCH_STATUS.SEARCHING) {
+      // waiting_session is accepted alongside searching for the rollout
+      // window where an old client still parks tickets with the legacy status.
+      const matchable = [MATCH_STATUS.SEARCHING, MATCH_STATUS.WAITING_SESSION];
+      if (!mySnap.exists() || !matchable.includes(mySnap.data().status)) {
         throw new Error('self-not-searching');
       }
-      if (!partnerSnap.exists() || partnerSnap.data().status !== MATCH_STATUS.SEARCHING) {
+      if (!partnerSnap.exists() || !matchable.includes(partnerSnap.data().status)) {
         throw new Error('partner-not-searching');
       }
 
       const myData = mySnap.data();
       const partnerData = partnerSnap.data();
+      const sameSession = myData.sessionId && myData.sessionId === partnerData.sessionId;
 
       transaction.set(callRef, {
         userA: myUid,
@@ -145,7 +154,7 @@ export async function commitMatch(myUid, partnerUid) {
         receiverName: partnerData.name || 'User',
         receiverId: partnerUid,
         status: 'accepted',
-        source: 'random_match',
+        source: sameSession ? 'session_match' : 'random_match',
         createdAt: serverTimestamp(),
         matchedAt: serverTimestamp(),
       }, { merge: true });

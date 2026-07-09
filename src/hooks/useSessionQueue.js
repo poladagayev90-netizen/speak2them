@@ -2,26 +2,39 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { serverTimestamp } from 'firebase/firestore';
 import {
   MATCH_STATUS,
+  SEARCH_PING_INTERVAL_MS,
+  commitMatch,
   joinSessionQueue,
   leaveSearchQueue,
+  pickBestMatch,
   pingSessionQueue,
   subscribeToOwnQueue,
+  subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-// Session mode: the user parks a ticket in matchQueue and only listens to
-// their own doc — pairing happens server-side (matchSessionQueue) when the
-// buffer window closes. No candidate fan-out, no client transactions.
+// Session mode: the user joins the shared instant `searching` pool with a
+// sessionId tag and pairs client-side within seconds, exactly like the
+// on-demand path (snapshot → pickBestMatch → smaller uid commits). The server
+// cron is only a fallback pairer and the close-of-window settler — a lone
+// waiter stays queued until the window closes, then gets the consolation
+// bonus (no 2-minute give-up here, unlike useMatchmaking).
 export function useSessionQueue({ user, onMatched }) {
   const [joined, setJoined] = useState(false);
   const [unmatchedMsg, setUnmatchedMsg] = useState('');
   const unsubRef = useRef(null);
+  const queueUnsubRef = useRef(null);
   const joinedRef = useRef(false);
+  const matchingRef = useRef(false);
   const pingIntervalRef = useRef(null);
 
   const cleanup = useCallback(() => {
     if (unsubRef.current) {
       unsubRef.current();
       unsubRef.current = null;
+    }
+    if (queueUnsubRef.current) {
+      queueUnsubRef.current();
+      queueUnsubRef.current = null;
     }
     if (pingIntervalRef.current) {
       clearInterval(pingIntervalRef.current);
@@ -41,15 +54,17 @@ export function useSessionQueue({ user, onMatched }) {
   const joinSession = useCallback(async (sessionId, topicsOverride) => {
     if (!user.uid || joinedRef.current) return;
     joinedRef.current = true;
+    matchingRef.current = false;
     setJoined(true);
     setUnmatchedMsg('');
 
     const topics = Array.isArray(topicsOverride) ? topicsOverride : user.topics;
+    const myTopics = Array.isArray(topics) ? topics.slice(0, 3) : [];
     await joinSessionQueue({
       uid: user.uid,
       name: user.displayName || user.name || 'User',
       level: user.level || 'Any',
-      topics: Array.isArray(topics) ? topics.slice(0, 3) : [],
+      topics: myTopics,
       partnerPreference: user.partnerPreference || 'Any',
       sessionId,
       joinedAtMs: Date.now(),
@@ -57,10 +72,29 @@ export function useSessionQueue({ user, onMatched }) {
       joinedAt: serverTimestamp(),
     });
 
-    // Liveness ping so the server can skip waiters who closed the app.
+    // Proof of life at the searching cadence: candidates drop anyone whose
+    // ping is older than 60s, so the old 90s session ping made every session
+    // waiter look like a ghost to the instant pool.
     pingIntervalRef.current = setInterval(() => {
       if (joinedRef.current) pingSessionQueue(user.uid);
-    }, 90000);
+    }, SEARCH_PING_INTERVAL_MS);
+
+    // Instant pairing: same mechanism as useMatchmaking. The smaller uid
+    // initiates; commitMatch validates both tickets in a transaction.
+    queueUnsubRef.current = subscribeToSearchingQueue(async (candidates) => {
+      if (!joinedRef.current || matchingRef.current) return;
+      const best = pickBestMatch(
+        candidates,
+        { uid: user.uid, level: user.level || 'Any', topics: myTopics }
+      );
+      if (!best?.uid) return;
+      matchingRef.current = true;
+      try {
+        await commitMatch(user.uid, best.uid);
+      } finally {
+        matchingRef.current = false;
+      }
+    });
 
     unsubRef.current = subscribeToOwnQueue(user.uid, async (data) => {
       if (!joinedRef.current || !data) return;

@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import { getTodayContent } from '../data/weeklyContent';
+import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import PremiumBadge from '../components/PremiumBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
@@ -984,8 +984,15 @@ export default function Chat({ user }) {
                     <button
                       className="call-btn-big"
                       onClick={() => {
+                        // contentIndex pins the topic for BOTH peers: each
+                        // device computes "today" from its own clock, so a
+                        // clock-skewed or midnight-spanning call used to show
+                        // two topics — same imageIndex, different pictures.
                         updateDoc(doc(db, 'calls', callDocId), {
-                          imageStage: { active: true, imageIndex: 0, startedAtMs: Date.now() },
+                          imageStage: {
+                            active: true, imageIndex: 0, startedAtMs: Date.now(),
+                            contentIndex: getTodayIndex(),
+                          },
                           'tabooStage.active': false,
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
@@ -1040,11 +1047,18 @@ export default function Chat({ user }) {
 
       {inCall && imageStage?.active && content && (
         <CallImageStage
-          content={content}
+          // Read the topic the starter pinned into the call doc; fall back to
+          // the local day for stage docs written before contentIndex existed.
+          content={imageStage.contentIndex != null
+            ? getContentByIndex(imageStage.contentIndex)
+            : content}
           imageIndex={imageStage.imageIndex || 0}
           onNext={() => {
+            // Explicit value, not increment(): when both peers tap "next" at
+            // the same moment they write the same number and the deck advances
+            // by one instead of silently skipping a picture.
             updateDoc(doc(db, 'calls', callDocId), {
-              'imageStage.imageIndex': increment(1),
+              'imageStage.imageIndex': (imageStage.imageIndex || 0) + 1,
             }).catch((e) => console.error('[Chat] imageStage next failed:', e));
           }}
           onClose={() => {

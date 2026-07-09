@@ -1121,9 +1121,21 @@ export const weeklyContent = [
   },
 ];
 
-export function getTodayContent() {
-  // Use global timestamp so users in different timezones always see the exact same topic in a call
+// UTC day index — but note it still comes from the DEVICE clock. Two peers can
+// disagree (clock skew, a call spanning UTC midnight), so anything that must
+// stay in sync across a call should write getTodayIndex() into the call doc
+// once and have both sides read content via getContentByIndex().
+export function getTodayIndex() {
   const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  return weeklyContent[daysSinceEpoch % weeklyContent.length];
+  return daysSinceEpoch % weeklyContent.length;
+}
+
+export function getContentByIndex(index) {
+  const i = Number.isFinite(index) ? Math.abs(Math.trunc(index)) : 0;
+  return weeklyContent[i % weeklyContent.length];
+}
+
+export function getTodayContent() {
+  return getContentByIndex(getTodayIndex());
 }
 

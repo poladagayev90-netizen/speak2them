@@ -6,15 +6,33 @@ import { fetchTopicImages } from '../utils/fetchTopicImages';
 // which is synced through the call doc's imageStage field.
 export default function CallImageStage({ content, imageIndex, onNext, onClose }) {
   const [images, setImages] = useState([]);
+  // Per-image load bookkeeping, keyed by image id:
+  // failed  — primary URL errored, render the deterministic fallback instead
+  // dead    — fallback errored too, render a static placeholder
+  // loadedUrl — the src that last finished loading; anything else shows the skeleton
+  const [failed, setFailed] = useState({});
+  const [dead, setDead] = useState({});
+  const [loadedUrl, setLoadedUrl] = useState('');
 
   useEffect(() => {
     fetchTopicImages(content.imageKeywords, content.manualImageUrls).then(setImages);
   }, [content]);
 
+  // Warm the next picture while the current one is on screen, so "Növbəti"
+  // swaps instantly instead of showing the skeleton again.
+  useEffect(() => {
+    if (!images.length) return;
+    const next = images[(imageIndex + 1) % images.length];
+    if (next?.url) { const img = new Image(); img.src = next.url; }
+  }, [images, imageIndex]);
+
   if (!images.length) return null;
 
   const safeIndex = imageIndex % images.length;
   const image = images[safeIndex];
+  const src = failed[image.id] && image.fallbackUrl ? image.fallbackUrl : image.url;
+  const isDead = !!dead[image.id];
+  const isLoading = !isDead && loadedUrl !== src;
   const vocab = content.vocabulary || [];
   const start = vocab.length ? (safeIndex * 2) % vocab.length : 0;
   const keywords = vocab.length
@@ -53,11 +71,45 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
           </button>
         </div>
 
-        <img
-          src={image.url}
-          alt={image.alt || 'Topic'}
-          style={{ width: '100%', height: 190, objectFit: 'cover', display: 'block' }}
-        />
+        <div style={{ position: 'relative', width: '100%', height: 190, background: 'var(--bg-input, #14132b)' }}>
+          {isDead ? (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 6,
+              color: 'var(--text-muted)', fontSize: 13,
+            }}>
+              <span style={{ fontSize: 30 }} aria-hidden="true">🖼️</span>
+              Şəkil yüklənmədi — mövzunu sözlə təsvir edin
+            </div>
+          ) : (
+            <img
+              key={src}
+              src={src}
+              alt={image.alt || 'Topic'}
+              onLoad={() => setLoadedUrl(src)}
+              onError={() => {
+                if (src === image.url && image.fallbackUrl) {
+                  setFailed((prev) => ({ ...prev, [image.id]: true }));
+                } else {
+                  setDead((prev) => ({ ...prev, [image.id]: true }));
+                }
+              }}
+              style={{
+                width: '100%', height: 190, objectFit: 'cover', display: 'block',
+                opacity: isLoading ? 0 : 1, transition: 'opacity 200ms ease',
+              }}
+            />
+          )}
+          {isLoading && (
+            <div aria-hidden="true" className="imgstage-skeleton" style={{
+              position: 'absolute', inset: 0, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-muted)', fontSize: 12,
+            }}>
+              Şəkil yüklənir…
+            </div>
+          )}
+        </div>
 
         {keywords.length > 0 && (
           <div style={{ padding: '12px 16px 4px' }}>

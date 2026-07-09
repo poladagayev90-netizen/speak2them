@@ -1373,26 +1373,32 @@ async function sendSessionEmails(db, startLabel, hour) {
         padding:12px 24px;border-radius:10px;font-weight:700">Tətbiqi aç →</a>
     </div>`;
 
+  const textBody = `SpeakLab sessiyası ${startLabel}-da başlayır!\n\nSessiyaya 15 dəqiqə qaldı. Danışıq təcrübəsi üçün tətbiqə daxil ol və növbəyə qoşul.\n\nTətbiqi aç: ${appUrl}`;
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user: gmailUser, pass: gmailPass },
   });
 
   let sent = 0;
-  for (let i = 0; i < recipients.length; i += EMAIL_BCC_BATCH) {
-    const batch = recipients.slice(i, i + EMAIL_BCC_BATCH);
-    try {
-      await transporter.sendMail({
-        from: `SpeakLab <${gmailUser}>`,
-        to: gmailUser, // a To is required; the real audience is BCC'd
-        bcc: batch,
-        subject,
-        html,
-      });
-      sent += batch.length;
-    } catch (e) {
-      console.error("[SessionEmail] batch failed:", e.message);
-    }
+  const CHUNK_SIZE = 10; // Send 10 emails concurrently to respect Gmail connection limits
+  
+  for (let i = 0; i < recipients.length; i += CHUNK_SIZE) {
+    const batch = recipients.slice(i, i + CHUNK_SIZE);
+    await Promise.all(batch.map(async (email) => {
+      try {
+        await transporter.sendMail({
+          from: `"SpeakLab" <${gmailUser}>`,
+          to: email,
+          subject,
+          text: textBody,
+          html,
+        });
+        sent++;
+      } catch (e) {
+        console.error("[SessionEmail] failed for", email, e.message);
+      }
+    }));
   }
   console.log("[SessionEmail] sent:", sent, "of", recipients.length);
 }
@@ -1456,8 +1462,12 @@ function getSessionTimes(cfg) {
 // the closing sweep, where the last unmatched waiter is settled with a bonus;
 // mid-window, leftovers are left in the queue to keep waiting for a partner.
 async function matchSessionWaiters(db, sessionId, final) {
+  // New clients join sessions as "searching" (shared instant pool, paired
+  // client-side within seconds); "waiting_session" is kept for old clients
+  // still on the parked-ticket flow. This cron pass is now just the fallback
+  // pairer and the close-of-window settler.
   const waitingSnap = await db.collection("matchQueue")
-    .where("status", "==", "waiting_session")
+    .where("status", "in", ["searching", "waiting_session"])
     .where("sessionId", "==", sessionId)
     .get();
   const allWaiting = waitingSnap.docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }));
@@ -1491,59 +1501,72 @@ async function matchSessionWaiters(db, sessionId, final) {
   }
   const leftover = remaining;
 
-  // 3 writes per pair, 2 per leftover — chunk under the 500-write limit.
-  const ops = [];
+  // Clients now pair this same pool concurrently, so every pair must be
+  // committed through a transaction that re-verifies both tickets. A blind
+  // batch write could split a pair the clients had already committed between
+  // our read and our write (overwriting matchedWith with a different partner
+  // and sending two people into calls where nobody shows up).
+  const MATCHABLE_STATUSES = ["searching", "waiting_session"];
+  let committedPairs = 0;
   for (const [a, b] of pairs) {
     const callId = `call_${[a.uid, b.uid].sort().join("_")}`;
-    ops.push((batch) => {
-      batch.set(db.collection("calls").doc(callId), {
-        userA: a.uid,
-        userB: b.uid,
-        callerId: a.uid,
-        callerName: a.name || "User",
-        receiverId: b.uid,
-        receiverName: b.name || "User",
-        status: "accepted",
-        source: "session_match",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        matchedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
-      batch.update(a.ref, {
-        status: "matched", matchedWith: b.uid, callId,
-        matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+    try {
+      await db.runTransaction(async (tx) => {
+        const [aSnap, bSnap] = await Promise.all([tx.get(a.ref), tx.get(b.ref)]);
+        if (!aSnap.exists || !MATCHABLE_STATUSES.includes(aSnap.data().status)) {
+          throw new Error("a-already-taken");
+        }
+        if (!bSnap.exists || !MATCHABLE_STATUSES.includes(bSnap.data().status)) {
+          throw new Error("b-already-taken");
+        }
+        tx.set(db.collection("calls").doc(callId), {
+          userA: a.uid,
+          userB: b.uid,
+          callerId: a.uid,
+          callerName: a.name || "User",
+          receiverId: b.uid,
+          receiverName: b.name || "User",
+          status: "accepted",
+          source: "session_match",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        tx.update(a.ref, {
+          status: "matched", matchedWith: b.uid, callId,
+          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        tx.update(b.ref, {
+          status: "matched", matchedWith: a.uid, callId,
+          matchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
       });
-      batch.update(b.ref, {
-        status: "matched", matchedWith: a.uid, callId,
-        matchedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-    });
+      committedPairs++;
+    } catch (e) {
+      // A client transaction won the ticket first — their pairing stands.
+      console.log("[SessionMatch] pair skipped:", a.uid, b.uid, e.message);
+    }
   }
+
+  // Settlement writes are per-doc with individual failure tolerance: a ticket
+  // deleted mid-sweep (its owner just matched or left) must not abort the
+  // consolation for everyone else, which a shared batch would do.
   // Mid-window, an unpaired waiter stays in the queue for the next tick; only
   // the closing sweep settles them as unmatched with a consolation bonus.
   if (final) {
     for (const u of leftover) {
-      ops.push((batch) => {
-        batch.update(u.ref, { status: "unmatched" });
-        batch.set(db.collection("users").doc(u.uid), {
+      try {
+        await u.ref.update({ status: "unmatched" });
+        await db.collection("users").doc(u.uid).set({
           bonusMinutes: admin.firestore.FieldValue.increment(5),
         }, { merge: true });
-      });
+      } catch (e) { /* ticket gone — matched or left on their own */ }
     }
   }
   for (const u of ghosts) {
-    ops.push((batch) => {
-      batch.update(u.ref, { status: "unmatched", ghost: true });
-    });
+    await u.ref.update({ status: "unmatched", ghost: true }).catch(() => null);
   }
 
-  const OPS_PER_BATCH = 150; // ≤3 writes each → max 450 writes per batch
-  for (let i = 0; i < ops.length; i += OPS_PER_BATCH) {
-    const batch = db.batch();
-    ops.slice(i, i + OPS_PER_BATCH).forEach((apply) => apply(batch));
-    await batch.commit();
-  }
-
-  console.log("[SessionMatch] pairs:", pairs.length, "unmatched:", leftover.length);
+  console.log("[SessionMatch] pairs:", committedPairs, "of", pairs.length, "unmatched:", leftover.length);
 }
 
 exports.matchSessionQueue = onSchedule({

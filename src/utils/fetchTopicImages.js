@@ -22,6 +22,9 @@ export async function fetchTopicImages(imageKeywords, manualImageUrls = []) {
         id: `loremflickr-${i}`,
         // Use lock instead of random so both users see the EXACT same image
         url: `https://loremflickr.com/800/600/${topKeywords}?lock=${i + 1}`,
+        // LoremFlickr rate-limits and flakes; the seed makes this fallback
+        // just as deterministic across both peers as the primary URL.
+        fallbackUrl: `https://picsum.photos/seed/${encodeURIComponent(topKeywords)}-${i}/800/600`,
         alt: kw,
         credit: 'LoremFlickr'
       };
