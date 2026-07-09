@@ -304,13 +304,21 @@ export default function Admin({ user }) {
                   <p style={{ fontSize: '12px', color: isAdmin ? '#d8b4fe' : '#94a3b8', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {u.email}
                   </p>
-                  <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: isAdmin ? '#a855f7' : '#64748b', fontWeight: 600 }}>
+                  <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: isAdmin ? '#a855f7' : '#64748b', fontWeight: 600, flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       📞 {u.callCount || 0}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       ⏱️ {u.totalMinutes || 0} dəq
                     </span>
+                    {!isAdmin && (
+                      <span style={{
+                        color: u.subscriptionPlan === 'trial' ? '#7c6ff7' : (u.isPremium ? '#f59e0b' : '#64748b'),
+                      }}>
+                        🎁 {u.isPremium ? (u.premiumPlan || 'pro') : (u.subscriptionPlan || 'free')}
+                        {u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0}dəq` : ''}
+                      </span>
+                    )}
                   </div>
                 </div>
                 
@@ -348,13 +356,16 @@ export default function Admin({ user }) {
                           onClick={() => setTrial(u)}
                           disabled={loading[u.uid || u.id]}
                           style={{
-                            padding: '8px 16px', background: 'rgba(124, 111, 247, 0.12)',
+                            padding: '8px 16px',
+                            background: u.subscriptionPlan === 'trial' ? 'rgba(124, 111, 247, 0.28)' : 'rgba(124, 111, 247, 0.12)',
                             color: '#7c6ff7', border: '1px solid rgba(124, 111, 247, 0.4)',
                             borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
                             fontSize: '12px', transition: 'all 0.2s', width: '110px'
                           }}
                         >
-                          {loading[u.uid || u.id] ? '...' : 'TRIAL 100dəq ⏳'}
+                          {loading[u.uid || u.id]
+                            ? '...'
+                            : (u.subscriptionPlan === 'trial' ? 'Trial ✓ Yenilə' : 'TRIAL 100dəq ⏳')}
                         </button>
                       </>
                     )
