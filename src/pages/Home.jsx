@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
+import StreakModal from '../components/StreakModal';
+import StreakJourney from '../components/StreakJourney';
+import { getStreakInfo } from '../utils/streak';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
 import { AchievementsPanel } from '../components/BadgeSystem';
@@ -59,6 +62,10 @@ export default function Home({ user }) {
   const [nowTick, setNowTick] = useState(Date.now());
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
+  const [streakModalOpen, setStreakModalOpen] = useState(false);
+  const [journeyOpen, setJourneyOpen] = useState(false);
+  const [pendingTopicIntro, setPendingTopicIntro] = useState(false);
+  const [streakInfo] = useState(() => getStreakInfo(user));
   const navigate = useNavigate();
 
 
@@ -67,15 +74,34 @@ export default function Home({ user }) {
     setTodayTopic(content);
     
     const todayDateStr = new Date().toDateString();
-    const storageKey = `lastTopicIntroDate_v2_${user.uid}`;
-    const lastSeenDate = localStorage.getItem(storageKey);
-    
-    // Check if the current user has seen the topic intro today
-    if (lastSeenDate !== todayDateStr) {
+
+    const topicKey = `lastTopicIntroDate_v2_${user.uid}`;
+    const topicDue = localStorage.getItem(topicKey) !== todayDateStr;
+    if (topicDue) localStorage.setItem(topicKey, todayDateStr);
+
+    // The daily streak celebration takes the stage first; the topic intro is
+    // deferred until it closes so two full-screen modals never stack.
+    const streakKey = `streak_modal_shown_${todayDateStr}_${user.uid}`;
+    const streakDue = localStorage.getItem(streakKey) !== '1';
+
+    if (streakDue) {
+      setStreakModalOpen(true);
+      setPendingTopicIntro(topicDue);
+      localStorage.setItem(streakKey, '1');
+    } else if (topicDue) {
       setShowTopicIntro(true);
-      localStorage.setItem(storageKey, todayDateStr);
     }
   }, [user.uid]);
+
+  const closeStreakModal = () => {
+    setStreakModalOpen(false);
+    if (pendingTopicIntro) { setShowTopicIntro(true); setPendingTopicIntro(false); }
+  };
+
+  const closeJourney = () => {
+    setJourneyOpen(false);
+    if (pendingTopicIntro) { setShowTopicIntro(true); setPendingTopicIntro(false); }
+  };
 
   // Live plan + minute balance so the trial banner counts down after calls
   // (the `user` prop is only loaded once at auth time).
@@ -635,6 +661,13 @@ export default function Home({ user }) {
         )}
       </div>
       <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} />
+      <StreakModal
+        open={streakModalOpen}
+        streakInfo={streakInfo}
+        onClose={closeStreakModal}
+        onOpenJourney={() => { setStreakModalOpen(false); setJourneyOpen(true); }}
+      />
+      <StreakJourney open={journeyOpen} streakInfo={streakInfo} onClose={closeJourney} />
     </div>
   );
 }

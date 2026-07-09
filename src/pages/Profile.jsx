@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { Moon, Sun, Bell } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
+import StreakJourney from '../components/StreakJourney';
+import { getStreakInfo } from '../utils/streak';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -24,6 +26,8 @@ export default function Profile({ user }) {
   const [bonusMinutes, setBonusMinutes] = useState(0);
   const [subPlan, setSubPlan] = useState('free');
   const [trialMinutes, setTrialMinutes] = useState(0);
+  const [journeyOpen, setJourneyOpen] = useState(false);
+  const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
   const [docId, setDocId] = useState(null);
   const navigate = useNavigate();
 
@@ -54,6 +58,7 @@ export default function Profile({ user }) {
               setBonusMinutes(d.bonusMinutes || 0);
               setSubPlan(d.subscriptionPlan || 'free');
               setTrialMinutes(d.availableTrialMinutes || 0);
+              setStreakInfo(getStreakInfo(d));
             }
           });
         }
@@ -330,6 +335,12 @@ export default function Profile({ user }) {
         📚 Mənim Sözlərim
       </button>
 
+      {/* STREAK JOURNEY */}
+      <button onClick={() => setJourneyOpen(true)} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>🔥 Streak Səyahəti</span>
+        <span style={{ color: '#f59e0b', fontWeight: 800 }}>{streakInfo.count}</span>
+      </button>
+
       {/* ANALYSIS HISTORY */}
       <button onClick={() => navigate('/history')} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
         📊 Analiz Tarixçəsi
@@ -355,6 +366,8 @@ export default function Profile({ user }) {
       {showWordHistory && (
         <WordHistoryPanel userId={user.uid} onClose={() => setShowWordHistory(false)} />
       )}
+
+      <StreakJourney open={journeyOpen} streakInfo={streakInfo} onClose={() => setJourneyOpen(false)} />
 
     </div>
   );
