@@ -973,56 +973,56 @@ export default function Chat({ user }) {
               )}
             </>
           )}
-          <div className="fullscreen-call-buttons">
-            {inCall && (
-              <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+            <div className="fullscreen-call-buttons">
+              {inCall && (
+                <>
+                  <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
+                    📅<span>Daily</span>
+                  </button>
+                  {!imageStage?.active && !tabooStage?.active && (
+                    <button
+                      className="call-btn-big"
+                      onClick={() => {
+                        updateDoc(doc(db, 'calls', callDocId), {
+                          imageStage: { active: true, imageIndex: 0, startedAtMs: Date.now() },
+                          'tabooStage.active': false,
+                        }).catch((e) => console.error('[Chat] imageStage start failed:', e));
+                      }}
+                    >
+                      🖼️<span>Şəkil</span>
+                    </button>
+                  )}
+                  {!tabooStage?.active && !imageStage?.active && (
+                    <button
+                      className="call-btn-big"
+                      onClick={() => {
+                        updateDoc(doc(db, 'calls', callDocId), {
+                          tabooStage: {
+                            active: true,
+                            explainerUid: user.uid,
+                            cardIndex: Math.floor(Math.random() * tabooWords.length),
+                            score: 0,
+                          },
+                          'imageStage.active': false,
+                        }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
+                      }}
+                    >
+                      🎭<span>Taboo</span>
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+            
+            <div className="fullscreen-call-buttons">
+              {inCall && (
                 <button className={`call-btn-big ${muted ? 'active-mute' : ''}`} onClick={toggleMute}>
                   {muted ? '🔇' : '🎤'}<span>{muted ? 'Unmute' : 'Mute'}</span>
                 </button>
-                <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
-                  📅<span>Daily</span>
-                </button>
-                {!imageStage?.active && !tabooStage?.active && (
-                  <button
-                    className="call-btn-big"
-                    onClick={() => {
-                      // Closing the other stage is what settles the race where
-                      // both peers open a different stage at the same moment:
-                      // whichever write lands last leaves exactly one active.
-                      updateDoc(doc(db, 'calls', callDocId), {
-                        imageStage: { active: true, imageIndex: 0, startedAtMs: Date.now() },
-                        'tabooStage.active': false,
-                      }).catch((e) => console.error('[Chat] imageStage start failed:', e));
-                    }}
-                  >
-                    🖼️<span>Şəkil</span>
-                  </button>
-                )}
-                {!tabooStage?.active && !imageStage?.active && (
-                  <button
-                    className="call-btn-big"
-                    onClick={() => {
-                      // See the picture-stage button: the cross-close keeps the
-                      // two stages mutually exclusive even under a simultaneous open.
-                      updateDoc(doc(db, 'calls', callDocId), {
-                        tabooStage: {
-                          active: true,
-                          explainerUid: user.uid,
-                          // Random start so each game opens on a different word;
-                          // the starter writes the number, so both peers agree.
-                          cardIndex: Math.floor(Math.random() * tabooWords.length),
-                          score: 0,
-                        },
-                        'imageStage.active': false,
-                      }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
-                    }}
-                  >
-                    🎭<span>Taboo</span>
-                  </button>
-                )}
-              </>
-            )}
-            <button className="call-btn-big end" onClick={endCall}>📵<span>End</span></button>
+              )}
+              <button className="call-btn-big end" onClick={endCall}>📵<span>End</span></button>
+            </div>
           </div>
         </div>
       )}
