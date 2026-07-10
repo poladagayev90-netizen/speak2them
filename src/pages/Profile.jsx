@@ -107,22 +107,7 @@ export default function Profile({ user }) {
 
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
 
-  // Calculate Minute Balance
-  let displayedBalance = trialMinutes + bonusMinutes;
-  let balanceLabel = subPlan === 'trial'
-    ? `${trialMinutes} sınaq + ${bonusMinutes} bonus dəqiqə`
-    : `${trialMinutes} + ${bonusMinutes} bonus dəqiqə`;
-  if (isPremium && user.premiumPlan !== 'unlimited') {
-    const currentMonthStr = new Date().toISOString().slice(0, 7);
-    let monthlyLimit = user.premiumPlan === 'basic' ? 120 : (user.premiumPlan === 'pro' ? 500 : 0);
-    const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
-    const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
-    displayedBalance = remainingMonthlyMinutes + bonusMinutes;
-    balanceLabel = `${remainingMonthlyMinutes} plan + ${bonusMinutes} bonus`;
-  } else if (isPremium && user.premiumPlan === 'unlimited') {
-    displayedBalance = '∞';
-    balanceLabel = `Unlimited plan active`;
-  }
+
 
   if (isEditing) {
     return (
@@ -319,16 +304,7 @@ export default function Profile({ user }) {
         </div>
       </div>
 
-      {/* MINUTE BALANCE (Gifts Alternative) */}
-      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '16px', marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700, margin: '0 0 4px 0' }}>Minute Balance</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: 0 }}>{balanceLabel}</p>
-        </div>
-        <div style={{ background: 'var(--accent-soft)', padding: '8px 16px', borderRadius: '20px', color: 'var(--accent)', fontWeight: 700, fontSize: '16px' }}>
-          {displayedBalance}
-        </div>
-      </div>
+
 
       {/* MY WORDS */}
       <button onClick={() => setShowWordHistory(true)} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>

@@ -204,10 +204,10 @@ export default function DailyPuzzle({ user }) {
         {done && (
           <div className={`puzzle-result${state.won ? ' is-win' : ''}`}>
             {state.won ? (
-              <>
-                <p className="puzzle-result-title">🎉 Afərin! {state.guesses.length} cəhdə tapdın</p>
-                <p className="puzzle-result-sub">+2 bonus dəqiqə qazandın. Sabah yeni söz! 🧩</p>
-              </>
+              <div className="puzzle-result" style={{ background: 'linear-gradient(135deg, #10b98122, #05966922)', border: '1px solid #10b98155' }}>
+                <h3 className="puzzle-result-title" style={{ color: '#10b981' }}>Təbriklər, düz tapdın! 🎉</h3>
+                <p className="puzzle-result-sub">Sabah yeni söz gələcək! 🧩</p>
+              </div>
             ) : (
               <>
                 <p className="puzzle-result-title">Söz: <b>{answer}</b> — {puzzle.hintAZ}</p>
