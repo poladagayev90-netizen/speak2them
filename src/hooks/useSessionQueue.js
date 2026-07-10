@@ -108,7 +108,7 @@ export function useSessionQueue({ user, onMatched }) {
         joinedRef.current = false;
         setJoined(false);
         cleanup();
-        setUnmatchedMsg('Bu sessiyada tərəfdaş tapılmadı. İstərsən AInur ilə dərhal praktika et!');
+        setUnmatchedMsg('Bu sessiyada tərəfdaş tapılmadı — 5 bonus dəqiqə hesabına əlavə olundu. İstərsən AInur ilə dərhal praktika et!');
         await leaveSearchQueue(user.uid);
       }
     });

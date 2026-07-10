@@ -446,7 +446,10 @@ export default function Chat({ user }) {
           // keeps firing and stacks one alert per second.
           clearInterval(timerRef.current);
           endCallRef.current?.();
-          alert('⏰ Gündəlik 30 dəqiqəlik danışıq limitin doldu!\n\nSabah yenidən qoşul.');
+          alert('⏰ Danışıq limitin doldu!\n\nLimitsiz danışmaq üçün paketinizi yeniləyin!');
+        }
+        if (maxCallSeconds !== Infinity && callSecondsRef.current === Math.max(0, maxCallSeconds - 120)) {
+          alert('⚠️ 2 dəqiqə qaldı! Limitsiz danışmaq üçün paketinizi yeniləyin!');
         }
       }, 1000);
     } else {
@@ -468,7 +471,13 @@ export default function Chat({ user }) {
   // ─────────────────────────────────────────────────────────────
   const startCall = async () => {
     if (!user.uid || !peerId) return;
-
+    // Direct 1:1 calls are the metered premium action. Out of trial minutes →
+    // steer to Upgrade. (Group sessions never reach startCall, so they stay free.)
+    if (isMetered(user.subscriptionPlan) && remainingMinutes(user) <= 0) {
+      alert('Sınaq dəqiqələrin bitib. Zəng etmək üçün Premium al.');
+      navigate('/upgrade');
+      return;
+    }
     try {
       sessionIdRef.current = Date.now();
       // Pre-create mic track while we have user gesture context
