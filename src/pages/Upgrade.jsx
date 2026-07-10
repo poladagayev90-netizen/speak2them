@@ -8,58 +8,45 @@ import { applyBadgeRewardsToData } from '../badges/rewards';
 
 const PLANS = [
   {
-    id: 'pack_200',
-    name: 'Başlanğıc',
-    mins: '200 dəqiqə',
-    price: 2.49,
-    priceLabel: '2.49 ₼',
-    oldPriceLabel: '3.49 ₼',
+    id: 'free',
+    name: 'Free',
+    tagline: 'Əsas',
+    price: 0,
+    priceLabel: 'Pulsuz',
     icon: '🔋',
     color: '#185FA5',
-    features: ['200 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Səviyyəyə görə match'],
+    features: ['Limitsiz danışıq — hər gün 30 dəqiqə', 'Ayda 3 AI analiz', 'AInur və Quizlər'],
   },
   {
-    id: 'pack_300',
-    name: 'Aktiv',
-    mins: '300 dəqiqə',
-    price: 3.49,
-    priceLabel: '3.49 ₼',
-    oldPriceLabel: '4.99 ₼',
-    icon: '🔥',
+    id: 'premium',
+    name: 'Premium',
+    tagline: 'Tam limitsiz',
+    price: 9.99,
+    priceLabel: '9.99 ₼',
+    icon: '🚀',
     color: '#7c6ff7',
     popular: true,
-    features: ['300 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Priority queue', 'Profil badge'],
-  },
-  {
-    id: 'pack_500',
-    name: 'İntensiv',
-    mins: '500 dəqiqə',
-    price: 5.99,
-    priceLabel: '5.99 ₼',
-    oldPriceLabel: '7.99 ₼',
-    icon: '🚀',
-    color: '#22c55e',
-    features: ['500 dəqiqə fərdi zəng', 'AInur, AI analiz və Quizlər', 'Priority queue', 'Profil badge', 'Sürətli dəstək'],
+    features: ['Limitsiz AI analiz', 'Prioritet matching', 'Limitsiz danışıq — hər gün 30 dəqiqə', 'Profil badge'],
   },
 ];
 
 const COMPARE = [
-  { feature: 'Zəng dəqiqəsi', values: ['200', '300', '500'] },
-  { feature: 'AInur (Süni intellekt)', values: [true, true, true] },
-  { feature: 'AI analiz və Quizlər', values: [true, true, true] },
-  { feature: 'Priority queue', values: [false, true, true] },
-  { feature: 'Profil badge', values: [false, true, true] },
-  { feature: 'Sürətli dəstək', values: [false, false, true] },
+  { feature: 'Danışıq (gündə 30 dəq)', values: [true, true] },
+  { feature: 'AI analiz', values: ['Ayda 3', 'Limitsiz'] },
+  { feature: 'AInur və Quizlər', values: [true, true] },
+  { feature: 'Prioritet matching', values: [false, true] },
+  { feature: 'Profil badge', values: [false, true] },
 ];
 
 export default function Upgrade({ user }) {
-  const [selected, setSelected] = useState('pack_300');
+  const [selected, setSelected] = useState('premium');
   const [newBadge, setNewBadge] = useState(null);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
   const [premiumDiscount, setPremiumDiscount] = useState(user?.premiumDiscountPercent || 0);
   const navigate = useNavigate();
-  const plan = PLANS.find(p => p.id === selected);
+  // Purchases always target Premium — Free needs no checkout.
+  const premiumPlan = PLANS.find(p => p.id === 'premium');
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -118,8 +105,8 @@ export default function Upgrade({ user }) {
   }, [user?.uid, user?.premiumDiscountPercent]);
 
   const handleContinue = () => {
-    if (!plan) return;
-    const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). SpeakLab tətbiqində ${plan.name} (${plan.mins}) paketini almaq istəyirəm.`;
+    if (!premiumPlan) return;
+    const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). SpeakLab tətbiqində ${premiumPlan.name} planını almaq istəyirəm.`;
     const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -153,9 +140,9 @@ export default function Upgrade({ user }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>💎</div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Beta Endirimləri</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Free və Premium</h2>
         <p style={{ fontSize: 13, color: '#aaa', margin: 0, lineHeight: 1.5 }}>
-          Süni intellekt xərcləri pulsuz olduğu müddətcə (Groq free tier) <b style={{color: '#fff'}}>bütün paketlərə</b> xüsusi beta endirimləri aktivdir!
+          Danışıq praktikası <b style={{color: '#fff'}}>hər kəs üçün pulsuzdur</b> — Premium ilə limitsiz AI analiz və prioritet matching əldə et!
         </p>
       </div>
 
@@ -171,7 +158,7 @@ export default function Upgrade({ user }) {
           fontWeight: 700,
           textAlign: 'center',
         }}>
-          Explorer endirimi aktivdir: Paketlərə {premiumDiscount}% endirim
+          Explorer endirimi aktivdir: Premium planına {premiumDiscount}% endirim
         </div>
       )}
 
@@ -221,7 +208,7 @@ export default function Upgrade({ user }) {
 
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: '#888' }}>{p.mins}</div>
+                  <div style={{ fontSize: 12, color: '#888' }}>{p.tagline}</div>
                 </div>
               </div>
 
@@ -253,12 +240,12 @@ export default function Upgrade({ user }) {
       <div style={{ padding: '16px 16px 0' }}>
         <button onClick={handleContinue} style={{
           width: '100%', padding: '16px',
-          background: `linear-gradient(135deg, ${plan.color}, ${plan.color}cc)`,
+          background: `linear-gradient(135deg, ${premiumPlan.color}, ${premiumPlan.color}cc)`,
           border: 'none', borderRadius: 16,
           color: '#fff', fontSize: 17, fontWeight: 800, cursor: 'pointer',
-          boxShadow: `0 8px 24px ${plan.color}40`,
+          boxShadow: `0 8px 24px ${premiumPlan.color}40`,
         }}>
-          {plan.name} paketini al — {plan.priceLabel}
+          Premium planına keç — {premiumPlan.priceLabel}
         </button>
         <p style={{ textAlign: 'center', fontSize: 12, color: '#666', margin: '14px 0 0' }}>
           Təsdiqləmə prosesi WhatsApp vasitəsilə həyata keçirilir

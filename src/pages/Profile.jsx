@@ -23,9 +23,6 @@ export default function Profile({ user }) {
   const [saved, setSaved] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [stats, setStats] = useState({ calls: 0, totalMinutes: 0, streak: 0, rating: 0, ratingCount: 0 });
-  const [bonusMinutes, setBonusMinutes] = useState(0);
-  const [subPlan, setSubPlan] = useState('free');
-  const [trialMinutes, setTrialMinutes] = useState(0);
   const [journeyOpen, setJourneyOpen] = useState(false);
   const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
   const [docId, setDocId] = useState(null);
@@ -55,9 +52,6 @@ export default function Profile({ user }) {
               setLevel(d.level || 'B1 – Intermediate');
               setIsPremium(d.isPremium || false);
               setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0, rating: d.rating || 0, ratingCount: d.ratingCount || 0 });
-              setBonusMinutes(d.bonusMinutes || 0);
-              setSubPlan(d.subscriptionPlan || 'free');
-              setTrialMinutes(d.availableTrialMinutes || 0);
               setStreakInfo(getStreakInfo(d));
             }
           });
@@ -106,23 +100,6 @@ export default function Profile({ user }) {
   }[notifPerm] || 'Aktivləşdir';
 
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
-
-  // Calculate Minute Balance
-  let displayedBalance = trialMinutes + bonusMinutes;
-  let balanceLabel = subPlan === 'trial'
-    ? `${trialMinutes} sınaq + ${bonusMinutes} bonus dəqiqə`
-    : `${trialMinutes} + ${bonusMinutes} bonus dəqiqə`;
-  if (isPremium && user.premiumPlan !== 'unlimited') {
-    const currentMonthStr = new Date().toISOString().slice(0, 7);
-    let monthlyLimit = user.premiumPlan === 'basic' ? 120 : (user.premiumPlan === 'pro' ? 500 : 0);
-    const currentMonthMinutes = user.currentMonth === currentMonthStr ? (user.currentMonthMinutes || 0) : 0;
-    const remainingMonthlyMinutes = Math.max(0, monthlyLimit - currentMonthMinutes);
-    displayedBalance = remainingMonthlyMinutes + bonusMinutes;
-    balanceLabel = `${remainingMonthlyMinutes} plan + ${bonusMinutes} bonus`;
-  } else if (isPremium && user.premiumPlan === 'unlimited') {
-    displayedBalance = '∞';
-    balanceLabel = `Unlimited plan active`;
-  }
 
   if (isEditing) {
     return (
@@ -316,17 +293,6 @@ export default function Profile({ user }) {
           }}>
             {notifLabel}
           </span>
-        </div>
-      </div>
-
-      {/* MINUTE BALANCE (Gifts Alternative) */}
-      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '16px', marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700, margin: '0 0 4px 0' }}>Minute Balance</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: 0 }}>{balanceLabel}</p>
-        </div>
-        <div style={{ background: 'var(--accent-soft)', padding: '8px 16px', borderRadius: '20px', color: 'var(--accent)', fontWeight: 700, fontSize: '16px' }}>
-          {displayedBalance}
         </div>
       </div>
 

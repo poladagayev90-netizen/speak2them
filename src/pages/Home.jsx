@@ -17,7 +17,6 @@ import { useMatchmaking } from '../hooks/useMatchmaking';
 import { useSessionQueue } from '../hooks/useSessionQueue';
 import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
-import { remainingMinutes } from '../utils/subscription';
 import { ADMIN_UID } from '../constants';
 import { getPresence, ONLINE_WINDOW_MS } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
@@ -77,8 +76,6 @@ export default function Home({ user }) {
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const [sessionConfig, setSessionConfig] = useState(null);
-  const [hideTrialBanner, setHideTrialBanner] = useState(() => localStorage.getItem('hideTrialBanner') === 'true');
-  const [sub, setSub] = useState(null);
   const [nowTick, setNowTick] = useState(Date.now());
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
@@ -132,15 +129,6 @@ export default function Home({ user }) {
     setJourneyOpen(false);
     if (pendingTopicIntro) { setShowTopicIntro(true); setPendingTopicIntro(false); }
   };
-
-  // Live plan + minute balance so the trial banner counts down after calls
-  // (the `user` prop is only loaded once at auth time).
-  useEffect(() => {
-    if (!user?.uid) return undefined;
-    return onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      if (snap.exists()) setSub(snap.data());
-    }, () => {});
-  }, [user.uid]);
 
   const handleMatched = useCallback((partnerUid, callId) => {
     navigate(`/chat/${partnerUid}`, {
@@ -303,44 +291,6 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
-
-        {!hideTrialBanner && sub?.subscriptionPlan === 'trial' && !sub?.isPremium && (() => {
-          const mins = remainingMinutes(sub);
-          const out = mins <= 0;
-          return (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12,
-              background: out ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
-              border: `1px solid ${out ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.4)'}`,
-              borderRadius: 14, padding: '12px 14px', position: 'relative'
-            }}>
-              <span style={{ fontSize: 20, flexShrink: 0 }}>{out ? '⏳' : '⚠️'}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 700, lineHeight: 1.35, paddingRight: 24 }}>
-                  {out
-                    ? 'Sınaq vaxtın bitdi — zəng etmək üçün dəqiqə al.'
-                    : <>Balansınız: <b style={{ color: out ? '#ef4444' : '#f59e0b' }}>{mins} dəqiqə</b>.</>}
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/upgrade')}
-                style={{
-                  flexShrink: 0, border: 'none', borderRadius: 10,
-                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
-                  padding: '8px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-              >
-                Dəqiqə al
-              </button>
-              <button 
-                onClick={() => { setHideTrialBanner(true); localStorage.setItem('hideTrialBanner', 'true'); }}
-                style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '12px' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-          );
-        })()}
 
         <NotificationPrompt user={user} />
 

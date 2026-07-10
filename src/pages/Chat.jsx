@@ -15,7 +15,6 @@ import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
-import { isMetered, remainingMinutes } from '../utils/subscription';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
@@ -126,10 +125,6 @@ export default function Chat({ user }) {
   callDocIdRef.current = callDocId;
   peerIdRef.current = peerId;
   userUidRef.current = user.uid;
-
-  useEffect(() => {
-    // bonus minutes disabled for mvp
-  }, [user.bonusMinutes]);
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -446,10 +441,7 @@ export default function Chat({ user }) {
           // keeps firing and stacks one alert per second.
           clearInterval(timerRef.current);
           endCallRef.current?.();
-          alert('⏰ Danışıq limitin doldu!\n\nLimitsiz danışmaq üçün paketinizi yeniləyin!');
-        }
-        if (maxCallSeconds !== Infinity && callSecondsRef.current === Math.max(0, maxCallSeconds - 120)) {
-          alert('⚠️ 2 dəqiqə qaldı! Limitsiz danışmaq üçün paketinizi yeniləyin!');
+          alert('⏰ Bu zəng üçün vaxt limiti doldu. Yeni zənglə davam edə bilərsən!');
         }
       }, 1000);
     } else {
@@ -471,13 +463,6 @@ export default function Chat({ user }) {
   // ─────────────────────────────────────────────────────────────
   const startCall = async () => {
     if (!user.uid || !peerId) return;
-    // Direct 1:1 calls are the metered premium action. Out of trial minutes →
-    // steer to Upgrade. (Group sessions never reach startCall, so they stay free.)
-    if (isMetered(user.subscriptionPlan) && remainingMinutes(user) <= 0) {
-      alert('Sınaq dəqiqələrin bitib. Zəng etmək üçün Premium al.');
-      navigate('/upgrade');
-      return;
-    }
     try {
       sessionIdRef.current = Date.now();
       // Pre-create mic track while we have user gesture context

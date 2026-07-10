@@ -206,7 +206,7 @@ export default function DailyPuzzle({ user }) {
             {state.won ? (
               <>
                 <p className="puzzle-result-title">🎉 Afərin! {state.guesses.length} cəhdə tapdın</p>
-                <p className="puzzle-result-sub">+2 bonus dəqiqə qazandın. Sabah yeni söz! 🧩</p>
+                <p className="puzzle-result-sub">Möhtəşəm nəticə! Sabah yeni söz! 🧩</p>
               </>
             ) : (
               <>
