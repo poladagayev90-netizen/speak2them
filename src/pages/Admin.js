@@ -13,23 +13,7 @@ export default function Admin({ user }) {
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
-  const [backfillMsg, setBackfillMsg] = useState('');
-  const navigate = useNavigate();
 
-  const runBackfill = async () => {
-    if (!window.confirm('Planı olmayan bütün istifadəçilərə 100 dəqiqəlik trial verilsin?')) return;
-    setBackfillMsg('İşlənir...');
-    try {
-      const res = await authedFetch(`${FUNCTIONS_BASE}/backfillTrials`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'alınmadı');
-      setBackfillMsg(`✅ Trial verildi: ${data.granted} / ${data.total} istifadəçi`);
-      alert(`✅ Trial verildi: ${data.granted} / ${data.total} istifadəçi`);
-    } catch (e) {
-      setBackfillMsg('Xəta: ' + (e.message || 'alınmadı'));
-      alert('Xəta: ' + (e.message || 'alınmadı'));
-    }
-  };
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), snap => {
@@ -107,26 +91,6 @@ export default function Admin({ user }) {
     }
   };
 
-  const setTrial = async (u) => {
-    const userId = u.uid || u.id;
-    if (!userId) { setError('User id is missing.'); return; }
-    setError('');
-    setLoading(prev => ({ ...prev, [userId]: true }));
-    try {
-      await updateDoc(doc(db, 'users', userId), {
-        subscriptionPlan: 'trial',
-        availableTrialMinutes: 100,
-        trialGrantedAt: serverTimestamp(),
-      });
-      alert(`✅ ${u.name || 'İstifadəçi'} üçün Trial (100 dəq) uğurla verildi/yeniləndi!`);
-    } catch (e) {
-      console.error('[Admin] setTrial failed:', e);
-      setError(e.message || 'Trial could not be granted.');
-      alert('Xəta (Trial): ' + (e.message || 'Trial verilə bilmədi.'));
-    } finally {
-      setLoading(prev => ({ ...prev, [userId]: false }));
-    }
-  };
 
   const filterByTime = (u) => {
     if (timeFilter === 'all') return true;
@@ -212,22 +176,7 @@ export default function Admin({ user }) {
           </div>
         )}
 
-        <div style={{ marginBottom: '16px' }}>
-          <button
-            onClick={runBackfill}
-            style={{
-              width: '100%', padding: '10px 14px',
-              background: 'rgba(124, 111, 247, 0.12)', color: '#7c6ff7',
-              border: '1px solid rgba(124, 111, 247, 0.4)', borderRadius: '12px',
-              fontWeight: 700, fontSize: '13px', cursor: 'pointer',
-            }}
-          >
-            ⏳ Köhnə istifadəçilərə Trial ver (100 dəq)
-          </button>
-          {backfillMsg && (
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>{backfillMsg}</p>
-          )}
-        </div>
+
 
         <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
           <input
@@ -357,22 +306,6 @@ export default function Admin({ user }) {
                           }}
                         >
                           {loading[u.uid || u.id] ? '...' : 'PRO Ver ✨'}
-                        </button>
-                        <button
-                          onClick={() => setTrial(u)}
-                          disabled={loading[u.uid || u.id]}
-                          style={{
-                            padding: '8px 16px',
-                            background: u.subscriptionPlan === 'trial' ? 'rgba(124, 111, 247, 0.28)' : 'rgba(124, 111, 247, 0.12)',
-                            color: '#7c6ff7', border: '1px solid rgba(124, 111, 247, 0.4)',
-                            borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
-                            fontSize: '12px', transition: 'all 0.2s', width: '110px'
-                          }}
-                        >
-                          {loading[u.uid || u.id]
-                            ? '...'
-                            : (u.subscriptionPlan === 'trial' ? 'Trial ✓ Yenilə' : 'TRIAL 100dəq ⏳')}
-                        </button>
                       </>
                     )
                   )}
