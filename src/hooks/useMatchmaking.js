@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { serverTimestamp } from 'firebase/firestore';
 import {
   MATCH_STATUS,
   SEARCH_PING_INTERVAL_MS,
@@ -17,7 +16,6 @@ import {
 // 30-second window are poor, and a premature give-up reads as "the app is
 // broken". Two minutes costs one queue doc and a listener.
 const SEARCH_TIMEOUT_MS = 120000;
-const COMPENSATION_MINUTES = 5;
 
 export function useMatchmaking({
   user,
@@ -76,21 +74,12 @@ export function useMatchmaking({
     }
   }, [user.uid, userLevel, user.topics]);
 
-  const giveCompensation = useCallback(async () => {
-  if (!user.uid) return;
-  try {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-    const currentBonus = userSnap.exists() ? (userSnap.data().bonusMinutes || 0) : 0;
-    await setDoc(userRef, {
-      bonusMinutes: currentBonus + COMPENSATION_MINUTES,
-    }, { merge: true });
-    setCompensationMsg(`Partnyor tapılmadı. İstərsəniz AInur ilə (Süni İntellekt) dərhal praktika edə bilərsiniz!`);
+  // No minute compensation anymore (Free/Premium model) — the consolation is
+  // the AInur fallback CTA the message drives.
+  const showNoMatchFallback = useCallback(() => {
+    setCompensationMsg('Partnyor tapılmadı. İstərsəniz AInur ilə (Süni İntellekt) dərhal praktika edə bilərsiniz!');
     setTimeout(() => setCompensationMsg(''), 10000);
-  } catch (e) {
-    console.error('[Matchmaking] Compensation write error:', e);
-  }
-}, [user.uid]);
+  }, []);
 
   const cancelSearch = useCallback(async () => {
     setSearching(false);
@@ -140,10 +129,10 @@ export function useMatchmaking({
       }
     });
 
-    // Axtarış timeout-u — partner tapılmasa kompensasiya ver
+    // Axtarış timeout-u — partner tapılmasa AInur fallback-ı göstər
     timeoutRef.current = setTimeout(async () => {
       if (searchingRef.current) {
-        await giveCompensation();
+        showNoMatchFallback();
         setSearching(false);
         matchingRef.current = false;
         cleanupListeners();
@@ -162,7 +151,7 @@ export function useMatchmaking({
     tryMatchWithCandidates,
     cleanupListeners,
     onMatched,
-    giveCompensation,
+    showNoMatchFallback,
   ]);
 
   useEffect(() => () => {

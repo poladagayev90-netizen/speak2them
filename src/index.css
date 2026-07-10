@@ -562,18 +562,25 @@ code {
   top: 0;
   z-index: 2;
   text-align: center;
-  padding: 20px 16px 16px;
+  /* The overlay is fixed inset:0 and the webview draws under the OS status
+     bar, so without this inset the close button sits inside the system bar
+     and taps never reach it. */
+  padding: calc(20px + var(--safe-area-top, 0px)) 16px 16px;
   background: linear-gradient(#12101f 60%, transparent);
 }
 .journey-close {
   position: absolute;
   left: 14px;
-  top: 16px;
+  top: calc(16px + var(--safe-area-top, 0px));
+  /* Above the hero flame: its drop-shadow filter creates a stacking context,
+     so the later-in-DOM full-width flame div painted over this button and
+     swallowed every tap — the "X doesn't work" bug. */
+  z-index: 1;
   background: rgba(255, 255, 255, 0.08);
   border: none;
   color: var(--text-primary, #fff);
   border-radius: 10px;
-  padding: 6px;
+  padding: 10px;
   cursor: pointer;
   display: flex;
 }
@@ -581,6 +588,7 @@ code {
   font-size: 44px;
   line-height: 1;
   filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.55));
+  pointer-events: none;
 }
 .journey-head-count { font-size: 34px; font-weight: 900; line-height: 1.1; }
 .journey-head-days { font-size: 15px; font-weight: 700; opacity: 0.75; }

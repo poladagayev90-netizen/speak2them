@@ -63,20 +63,20 @@ export default function DailyPuzzle({ user }) {
 
   const done = state.won || state.guesses.length >= MAX_GUESSES;
   const wrongCount = state.guesses.length - (state.won ? 1 : 0);
-  const showAzHint = state.won || wrongCount >= 3 || done;
+  const showAzHint = state.won || wrongCount >= 2 || done;
 
   const persist = useCallback((next) => {
     setState(next);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
   }, []);
 
-  // +2 bonus minutes, once per day. The localStorage `rewarded` flag guards
-  // the write; the increment itself is merge-safe.
+  // Records the win once per day (stats/badges read puzzleWins). The
+  // localStorage `rewarded` flag guards the write; the increment itself is
+  // merge-safe. Minute rewards are gone with the Free/Premium model.
   const grantReward = useCallback((next) => {
     if (next.rewarded || !user?.uid) return next;
     setDoc(doc(db, 'users', user.uid), {
       puzzleWins: increment(1),
-      bonusMinutes: increment(2),
       lastPuzzleDate: new Date().toDateString(),
     }, { merge: true }).catch((e) => console.error('[Puzzle] reward failed:', e));
     return { ...next, rewarded: true };
@@ -181,7 +181,7 @@ export default function DailyPuzzle({ user }) {
           <p className="puzzle-hint-text">“{puzzle.hintEN}”</p>
           {showAzHint && <p className="puzzle-hint-az">🇦🇿 {puzzle.hintAZ}</p>}
           {!showAzHint && wrongCount > 0 && (
-            <p className="puzzle-hint-locked">🔒 AZ tərcümə {3 - wrongCount} səhv cəhddən sonra açılır</p>
+            <p className="puzzle-hint-locked">🔒 AZ tərcümə {2 - wrongCount} səhv cəhddən sonra açılır</p>
           )}
         </div>
 

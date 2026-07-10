@@ -1121,13 +1121,15 @@ export const weeklyContent = [
   },
 ];
 
-// UTC day index — but note it still comes from the DEVICE clock. Two peers can
-// disagree (clock skew, a call spanning UTC midnight), so anything that must
+// LOCAL calendar-day index, so the topic rolls over at local midnight (all
+// users share UTC+4). It still comes from the DEVICE clock: two peers can
+// disagree (clock skew, a call spanning midnight), so anything that must
 // stay in sync across a call should write getTodayIndex() into the call doc
 // once and have both sides read content via getContentByIndex().
 export function getTodayIndex() {
-  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  return daysSinceEpoch % weeklyContent.length;
+  const d = new Date();
+  const localDays = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+  return localDays % weeklyContent.length;
 }
 
 export function getContentByIndex(index) {

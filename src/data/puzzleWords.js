@@ -108,10 +108,13 @@ export const puzzleWords = [
   { word: 'HOTEL', hintEN: 'You stay there on a trip', hintAZ: 'otel' },
 ];
 
-// Same day-selection convention as getTodayIndex() in weeklyContent.js.
+// Same day-selection convention as getTodayIndex() in weeklyContent.js:
+// the LOCAL calendar day, so the word rolls over at local midnight (all
+// users share UTC+4; the old UTC formula rolled at 04:00 Baku time).
 export function getTodayPuzzleIndex() {
-  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  return daysSinceEpoch % puzzleWords.length;
+  const d = new Date();
+  const localDays = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+  return localDays % puzzleWords.length;
 }
 
 export function getTodayPuzzle() {

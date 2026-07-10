@@ -57,9 +57,9 @@ const scoreCandidate = (candidate, currentUser) => {
 // waiting more than 20s, which meant two users who arrived more than 20s apart
 // could never see each other.
 export const SEARCH_PING_INTERVAL_MS = 15000;
-const SEARCH_STALE_MS = 60000;
+export const SEARCH_STALE_MS = 60000;
 
-const lastAliveMs = (c) =>
+export const lastAliveMs = (c) =>
   c.lastPingMs || c.joinedAtMs || c.joinedAt?.toMillis?.() || 0;
 
 export function pickBestMatch(candidates, currentUser) {

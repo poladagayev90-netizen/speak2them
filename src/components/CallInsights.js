@@ -3,7 +3,108 @@ import { db } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 
-export default function CallInsights({ userId, channelName, onClose, enqueueFailed = false }) {
+const shellStyle = {
+  position: 'fixed', inset: 0,
+  background: 'var(--bg-primary)',
+  overflowY: 'auto', zIndex: 9999,
+  padding: 'calc(20px + var(--safe-area-top, 0px)) 16px 40px',
+  height: '100dvh',
+  WebkitOverflowScrolling: 'touch',
+};
+
+const closeBtnStyle = {
+  width: '100%', height: 52, borderRadius: 16, border: 'none',
+  background: 'var(--accent)', color: 'var(--text-on-accent)',
+  fontSize: 16, fontWeight: 700, cursor: 'pointer',
+};
+
+// The one post-call screen. Whatever state the analysis is in, the shell also
+// carries the inline peer rating and the opt-in word-quiz button, so a user who
+// closes a still-processing analysis has already had the chance to do both.
+function InsightsShell({ children, centered, onClose, extras }) {
+  return (
+    <div style={{
+      ...shellStyle,
+      ...(centered ? { display: 'flex', flexDirection: 'column', justifyContent: 'center' } : {}),
+    }}>
+      {children}
+      {extras}
+      <button onClick={onClose} style={{ ...closeBtnStyle, marginTop: 12 }}>
+        Bitti ✓
+      </button>
+    </div>
+  );
+}
+
+// Inline star rating — replaces the old separate full-screen rating modal.
+function RatingBlock({ peerName, onSubmitRating }) {
+  const [selectedStar, setSelectedStar] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
+
+  const submit = async () => {
+    if (selectedStar === 0 || submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await onSubmitRating(selectedStar);
+      setDone(true);
+    } catch (e) {
+      console.error('[CallInsights] Rating error:', e);
+      setError('Qiymət göndərilmədi. İnternetini yoxla və yenidən cəhd et.');
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <div style={{
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 16, padding: '16px 14px', marginTop: 20, textAlign: 'center',
+    }}>
+      {done ? (
+        <p style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, margin: 0 }}>
+          Təşəkkürlər ✓
+        </p>
+      ) : (
+        <>
+          <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, margin: '0 0 10px' }}>
+            {peerName ? `${peerName} ilə zəng necə getdi?` : 'Zəng necə getdi?'}
+          </p>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12 }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} disabled={submitting} onClick={() => setSelectedStar(star)} style={{
+                fontSize: 32, background: 'none', border: 'none',
+                cursor: submitting ? 'default' : 'pointer',
+                opacity: star <= selectedStar ? 1 : 0.3, transition: 'opacity 0.2s',
+              }}>⭐</button>
+            ))}
+          </div>
+          {error && (
+            <p style={{ color: 'var(--danger-fg, #ff4757)', fontSize: 13, margin: '0 0 10px' }}>{error}</p>
+          )}
+          <button
+            disabled={selectedStar === 0 || submitting}
+            onClick={submit}
+            style={{
+              width: '100%', padding: 12, border: 'none', borderRadius: 12,
+              background: selectedStar > 0 ? 'var(--accent)' : 'var(--border)',
+              color: 'var(--text-on-accent)', fontSize: 15, fontWeight: 700,
+              cursor: selectedStar > 0 && !submitting ? 'pointer' : 'not-allowed',
+              opacity: submitting ? 0.6 : 1,
+            }}
+          >{submitting ? 'Göndərilir…' : 'Göndər'}</button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function CallInsights({
+  userId, channelName, onClose, enqueueFailed = false,
+  ratingEnabled = false, peerName = null, onSubmitRating = null,
+  quizWordCount = 0, onStartQuiz = null,
+}) {
   const [analysis, setAnalysis] = useState(null);
   // 'uploading' → doc not written yet; then mirrors callAnalysis.status.
   const [status, setStatus] = useState('uploading');
@@ -31,29 +132,35 @@ export default function CallInsights({ userId, channelName, onClose, enqueueFail
   // amber (#f59e0b) gave white only 2.15:1 — effectively unreadable.
   const scoreColor = (s) => (s >= 80 ? '#15803d' : s >= 60 ? '#b45309' : '#b91c1c');
 
+  const extras = (
+    <>
+      {ratingEnabled && onSubmitRating && (
+        <RatingBlock peerName={peerName} onSubmitRating={onSubmitRating} />
+      )}
+      {quizWordCount > 0 && onStartQuiz && (
+        <button onClick={onStartQuiz} style={{
+          width: '100%', marginTop: 12, padding: 14,
+          background: 'rgba(124, 111, 247, 0.15)', color: 'var(--accent)',
+          border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+        }}>
+          📝 Söz testi ({quizWordCount} söz)
+        </button>
+      )}
+    </>
+  );
+
   // The upload or the ticket write never landed, so nothing will ever produce a
   // result for this call — do not leave the user on the "queued" screen.
   if (enqueueFailed && status === 'uploading') return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'var(--bg-primary)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      zIndex: 9999, padding: 20
-    }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>📡</div>
+    <InsightsShell centered onClose={onClose} extras={extras}>
+      <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>📡</div>
       <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
         Səs yazısı göndərilə bilmədi
       </p>
-      <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center', maxWidth: 320 }}>
+      <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center' }}>
         İnternet bağlantını yoxla. Bu zəngin analizi hazırlanmayacaq.
       </p>
-      <button onClick={onClose} style={{
-        marginTop: 24, width: '100%', maxWidth: 320, height: 52,
-        borderRadius: 16, border: 'none', background: 'var(--accent)',
-        color: 'var(--text-on-accent)', fontSize: 16, fontWeight: 700, cursor: 'pointer'
-      }}>Bağla</button>
-    </div>
+    </InsightsShell>
   );
 
   if (status !== 'done' && status !== 'failed') {
@@ -61,50 +168,28 @@ export default function CallInsights({ userId, channelName, onClose, enqueueFail
       ? 'AI danışığınızı yoxlayır…'
       : 'Səs analiziniz növbəyə alındı';
     return (
-      <div style={{
-        position: 'fixed', inset: 0,
-        background: 'var(--bg-primary)',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        zIndex: 9999, padding: 20
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🎓</div>
+      <InsightsShell centered onClose={onClose} extras={extras}>
+        <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>🎓</div>
         <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>
           {statusText}
         </p>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center', maxWidth: 320 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center' }}>
           Hazır olduqda burada görünəcək. Gözləmək istəmirsənsə bağlaya bilərsən — nəticə itməyəcək.
         </p>
-        <button onClick={onClose} style={{
-          marginTop: 24, width: '100%', maxWidth: 320, height: 52,
-          borderRadius: 16, border: 'none', background: 'var(--accent)',
-          color: 'var(--text-on-accent)', fontSize: 16, fontWeight: 700, cursor: 'pointer'
-        }}>Bağla</button>
-      </div>
+      </InsightsShell>
     );
   }
 
   if (status === 'failed') return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'var(--bg-primary)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      zIndex: 9999, padding: 20
-    }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+    <InsightsShell centered onClose={onClose} extras={extras}>
+      <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>⚠️</div>
       <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
         Analiz alınmadı
       </p>
-      <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center', maxWidth: 320 }}>
+      <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center' }}>
         {analysisErrorMessage(analysis?.error)}
       </p>
-      <button onClick={onClose} style={{
-        marginTop: 24, width: '100%', maxWidth: 320, height: 52,
-        borderRadius: 16, border: 'none', background: 'var(--accent)',
-        color: 'var(--text-on-accent)', fontSize: 16, fontWeight: 700, cursor: 'pointer'
-      }}>Bağla</button>
-    </div>
+    </InsightsShell>
   );
 
   // Old and new documents both come through the adapter, so this view never has
@@ -128,14 +213,7 @@ export default function CallInsights({ userId, channelName, onClose, enqueueFail
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'var(--bg-primary)',
-      overflowY: 'auto', zIndex: 9999,
-      padding: '20px 16px 40px',
-      height: '100dvh',
-      WebkitOverflowScrolling: 'touch'
-    }}>
+    <InsightsShell onClose={onClose} extras={extras}>
       {/* SCORE */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Zəng Analizi 🎓</p>
@@ -261,14 +339,6 @@ export default function CallInsights({ userId, channelName, onClose, enqueueFail
           </div>
         </div>
       )}
-
-      <button onClick={onClose} style={{
-        width: '100%', height: 52, borderRadius: 16, border: 'none',
-        background: 'var(--accent)', color: 'var(--text-on-accent)',
-        fontSize: 16, fontWeight: 700, cursor: 'pointer'
-      }}>
-        Bitti ✓
-      </button>
-    </div>
+    </InsightsShell>
   );
 }

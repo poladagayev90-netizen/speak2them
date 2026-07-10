@@ -8,7 +8,7 @@ import './GuidedTour.css';
 const START_DELAY_MS = 700;
 const TARGET_RETRY_MS = 250;
 const MAX_TARGET_RETRIES = 20;
-const GUIDED_TOUR_ENABLED = false;
+const GUIDED_TOUR_ENABLED = true;
 
 function getCreatedAtMillis(createdAt) {
   if (!createdAt) return 0;

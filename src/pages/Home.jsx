@@ -14,58 +14,45 @@ import { getTodayPuzzleIndex } from '../data/puzzleWords';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
-import { useSessionQueue } from '../hooks/useSessionQueue';
+import { subscribeToSearchingQueue, SEARCH_STALE_MS, lastAliveMs } from '../utils/matchmaking';
 import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
-import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
 import { ADMIN_UID } from '../constants';
 import { getPresence, ONLINE_WINDOW_MS } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
+// Ordered to match the screen top-to-bottom, ending on the bottom nav.
 const HOME_TOUR_STEPS = [
   {
     target: '#tour-find-partner',
-    title: 'Random Partner',
-    content: 'Danışıq praktikasına tez başlamaq üçün uyğun partnyor axtarışını buradan başladın.',
+    title: 'Buradan başla! 🎙️',
+    content: 'Bir toxunuşla səviyyənə (A1–C2) uyğun canlı partnyor tapılır və zəng avtomatik başlayır. İngilis dilini praktika etməyin ən sürətli yolu budur.',
     disableBeacon: true,
   },
   {
     target: '#tour-daily-topic',
-    title: 'Daily Topic',
-    content: 'Zəngdən əvvəl günün mövzusu, yeni sözlər və hazır suallarla buradan tanış olun.',
+    title: 'Günün Mövzusu 📅',
+    content: 'Zəngdən əvvəl günün mövzusu, yeni sözlər və hazır suallarla buradan tanış ol — zəngdə nədən danışacağını biləcəksən.',
+  },
+  {
+    target: '#tour-puzzle',
+    title: 'Günün Tapmacası 🧩',
+    content: 'Hər gün yeni söz tapmacası — ingilis sözlərini oyunla öyrən.',
   },
   {
     target: '#tour-filters',
-    title: 'Level Filters',
-    content: 'Səviyyənizə uyğun insanları tapmaq üçün bu filtrlərdən istifadə edin.',
+    title: 'Səviyyə Filtrləri',
+    content: 'Səviyyənə uyğun insanları tapmaq üçün bu filtrlərdən istifadə et.',
   },
   {
     target: '#tour-ai-chat',
-    title: 'AI Practice',
-    content: 'Real insanla danışmağa hazır deyilsinizsə, AInur ilə dərhal səsli praktika edə bilərsiniz.',
+    title: 'AI Praktika 🤖',
+    content: 'Real insanla danışmağa hazır deyilsənsə, AInur ilə dərhal səsli praktika edə bilərsən.',
   }
 ];
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
-
-// Self-ticking countdown line. Isolating the 1s interval here means only this
-// tiny element re-renders every second — previously the tick lived in Home
-// state and re-rendered the entire page (user grid included) once per second.
-function SessionCountdown({ targetMs }) {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const pad = (n) => String(n).padStart(2, '0');
-  const s = Math.max(0, Math.floor((targetMs - now) / 1000));
-  return (
-    <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
-      Başlamasına qalıb: <b>{`${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`}</b>
-    </p>
-  );
-}
 
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -75,8 +62,9 @@ export default function Home({ user }) {
   const [levelFilter, setLevelFilter] = useState('All');
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
-  const [sessionConfig, setSessionConfig] = useState(null);
-  const [nowTick, setNowTick] = useState(Date.now());
+  const [rawSearchers, setRawSearchers] = useState([]);
+  // Value unused — bumping it only forces the staleness re-filter below.
+  const [, setSearcherTick] = useState(0);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
@@ -142,26 +130,6 @@ export default function Home({ user }) {
     onMatched: handleMatched,
   });
 
-  const {
-    joined: sessionJoined,
-    joinSession,
-    leaveSession,
-    unmatchedMsg: sessionUnmatchedMsg,
-  } = useSessionQueue({ user, onMatched: handleMatched });
-
-  useEffect(() => subscribeToSessionConfig(setSessionConfig), []);
-
-  // Coarse tick for the session window booleans (open/closed, hideRandom).
-  // The per-second countdown lives in SessionCountdown, so 5s accuracy is
-  // enough here and Home re-renders 5× less while the card is shown.
-  useEffect(() => {
-    if (!sessionConfig?.enabled) return;
-    const id = setInterval(() => setNowTick(Date.now()), 5000);
-    return () => clearInterval(id);
-  }, [sessionConfig?.enabled]);
-
-
-
   // Polled instead of a live listener: with a live query every user's
   // presence heartbeat would be re-streamed to every Home viewer (read
   // amplification). 20s polling makes an exit visible fast (goOffline stamps
@@ -209,6 +177,23 @@ export default function Home({ user }) {
 
   useEffect(() => () => { cancelSearch(); }, [cancelSearch]);
 
+  // Live searchers, so "somebody is waiting right now" is visible in-app and
+  // not only via the FCM ping. Reuses the same capped listener the matcher
+  // uses; staleness is re-evaluated on a slow tick because a killed app stops
+  // pinging without emitting a final snapshot.
+  useEffect(() => subscribeToSearchingQueue(setRawSearchers), []);
+
+  useEffect(() => {
+    if (rawSearchers.length === 0) return;
+    const id = setInterval(() => setSearcherTick((t) => t + 1), 15000);
+    return () => clearInterval(id);
+  }, [rawSearchers.length]);
+
+  const searcherNow = Date.now();
+  const activeSearchers = rawSearchers.filter((t) =>
+    t.uid && t.uid !== user.uid && !t.sessionId
+    && searcherNow - lastAliveMs(t) <= SEARCH_STALE_MS);
+
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
       setUserBadges(snap.exists() ? (snap.data().badges || []) : []);
@@ -223,19 +208,13 @@ export default function Home({ user }) {
   const baseList = tab === 'online' ? onlineUsers : browsableUsers;
   const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
-  // While a session is open or the user is queued, the session is the only CTA —
-  // the random-partner button is hidden to avoid the "which button?" confusion.
-  const sessionWin = sessionConfig?.enabled ? getSessionWindow(sessionConfig, nowTick) : null;
-  const sessionWindowOpen = !!sessionWin && nowTick >= sessionWin.startMs && nowTick < sessionWin.endMs;
-  const hideRandom = sessionJoined || sessionWindowOpen;
-
   return (
     <div className="home-page">
       <GuidedTour
         user={user}
         steps={HOME_TOUR_STEPS}
         tourKey="tourDone_home"
-        disabled={showTopicIntro || dailyTopicOpen}
+        disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen}
       />
       {todayTopic && (
         <TopicDecorations 
@@ -294,116 +273,60 @@ export default function Home({ user }) {
 
         <NotificationPrompt user={user} />
 
-        {sessionConfig?.enabled && (() => {
-          const win = getSessionWindow(sessionConfig, nowTick);
-          const pad = (n) => String(n).padStart(2, '0');
-          const startLabel = `${pad(win.hour)}:${pad(win.minute)}`;
-          const sessionTitle = win.hour < 18 ? '☀️ Günorta sessiyası' : '🌙 Axşam sessiyası';
-          const inWindow = nowTick >= win.startMs && nowTick < win.endMs;
-
-          return (
-            <div className="searching-card" style={{ marginBottom: 12, textAlign: 'center' }}>
-              <p style={{ color: '#7c6ff7', fontWeight: 700, fontSize: '15px', margin: '0 0 6px' }}>
-                {sessionTitle} • {startLabel}
-              </p>
-              {nowTick < win.startMs && <SessionCountdown targetMs={win.startMs} />}
-              {inWindow && !sessionJoined && (
-                <>
-                  <p style={{ color: '#666', fontSize: '13px', margin: '0 0 10px' }}>
-                    Qoşul — eşləşmələr hazırlanır, zənglər avtomatik başlayacaq
-                  </p>
-                  <button
-                    onClick={() => joinSession(win.sessionId)}
-                    style={{
-                      background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
-                      border: 'none', borderRadius: '10px', padding: '10px 20px',
-                      fontWeight: 700, fontSize: '14px', cursor: 'pointer', width: '100%',
-                    }}
-                  >
-                    Sessiyaya qoşul
-                  </button>
-                </>
-              )}
-              {sessionJoined && (
-                <>
-                  <FlaskSearchOverlay
-                    fullscreen={false}
-                    title="Eşləşmə hazırlanır…"
-                  />
-                  <p style={{ color: '#666', fontSize: '13px', margin: '6px 0 10px' }}>
-                    Qoşuldun! Zəngin avtomatik başlayacaq.
-                  </p>
-                  <button
-                    onClick={leaveSession}
-                    style={{
-                      background: 'transparent', color: '#ef4444',
-                      border: '1px solid #ef444455', borderRadius: '10px',
-                      padding: '8px 16px', fontWeight: 600, fontSize: '13px',
-                      cursor: 'pointer', width: '100%',
-                    }}
-                  >
-                    Sessiyadan çıx
-                  </button>
-                </>
-              )}
-              {!sessionJoined && nowTick >= win.endMs && (
-                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
-                  Sessiya eşləşmələri gedir…
-                </p>
-              )}
-            </div>
-          );
-        })()}
-
-        {sessionUnmatchedMsg && (
+        {activeSearchers.length > 0 && !searching && (
           <div style={{
-            background: 'linear-gradient(135deg, #065f46, #047857)',
-            border: '1px solid #10b98155',
-            borderRadius: '14px',
-            padding: '14px 18px',
-            marginBottom: '12px',
-            textAlign: 'center',
+            background: 'rgba(124,111,247,0.10)',
+            border: '1px solid rgba(124,111,247,0.4)',
+            borderRadius: '14px', padding: '12px 16px', marginBottom: '10px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            animation: 'searcherPulse 2s ease-in-out infinite',
           }}>
-            <p style={{ color: '#fff', fontWeight: 700, fontSize: '14px', margin: 0 }}>
-              🎁 {sessionUnmatchedMsg}
+            <span style={{ fontSize: '22px' }}>🔎</span>
+            <p style={{ flex: 1, color: 'var(--text-primary, #fff)', fontSize: '14px', margin: 0, lineHeight: 1.4 }}>
+              <b>{activeSearchers[0].name || 'Bir istifadəçi'}</b>
+              {activeSearchers.length > 1 ? ` və daha ${activeSearchers.length - 1} nəfər` : ''} indi partnyor axtarır!
             </p>
-          </div>
-        )}
-
-        {hideRandom ? (
-          <div style={{
-            textAlign: 'center', color: '#7c6ff7', fontSize: '13px', fontWeight: 600,
-            background: 'rgba(124,111,247,0.08)', border: '1px solid rgba(124,111,247,0.25)',
-            borderRadius: '12px', padding: '12px 14px',
-          }}>
-            🧪 Sessiya aktivdir — yuxarıdan qoşul
-          </div>
-        ) : (
-          <>
             <button
-              id="tour-find-partner"
-              onClick={searching ? cancelSearch : startSearch}
-              className={searching ? 'btn-random searching' : 'btn-random'}
+              onClick={startSearch}
               style={{
-                background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)', color: '#fff',
+                border: 'none', borderRadius: '10px', padding: '10px 14px',
+                fontWeight: 700, fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
               }}
             >
-              {searching
-                ? <><X size={20} /> Axtarılır... (ləğv et)</>
-                : <><Shuffle size={20} /> Find Random Partner</>
-              }
+              Dərhal qoşul
             </button>
-
-            <FlaskSearchOverlay
-              visible={searching}
-              title="Tərəfdaş axtarılır…"
-              subtitle="Laboratoriyada uyğun partnyor hazırlanır — tapılan kimi zəng avtomatik başlayacaq"
-              onCancel={cancelSearch}
-              cancelLabel="Axtarışı dayandır"
-            />
-          </>
+            <style>{`
+              @keyframes searcherPulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(124,111,247,0.35); }
+                50% { box-shadow: 0 0 0 6px rgba(124,111,247,0); }
+              }
+            `}</style>
+          </div>
         )}
+
+        <button
+          id="tour-find-partner"
+          onClick={searching ? cancelSearch : startSearch}
+          className={searching ? 'btn-random searching' : 'btn-random'}
+          style={{
+            background: searching ? 'linear-gradient(135deg, #ef4444, #dc2626)' : undefined,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+          }}
+        >
+          {searching
+            ? <><X size={20} /> Axtarılır... (ləğv et)</>
+            : <><Shuffle size={20} /> Find Random Partner</>
+          }
+        </button>
+
+        <FlaskSearchOverlay
+          visible={searching}
+          title="Tərəfdaş axtarılır…"
+          subtitle="Laboratoriyada uyğun partnyor hazırlanır — tapılan kimi zəng avtomatik başlayacaq"
+          onCancel={cancelSearch}
+          cancelLabel="Axtarışı dayandır"
+        />
 
         {compensationMsg && (
           <div style={{
@@ -468,6 +391,7 @@ export default function Home({ user }) {
           } catch (e) {}
           return (
             <button
+              id="tour-puzzle"
               onClick={() => navigate('/puzzle')}
               style={{
                 width: '100%',
@@ -488,7 +412,7 @@ export default function Home({ user }) {
                 cursor: 'pointer',
               }}
             >
-              🧩 {solved ? 'Tapmaca həll edildi ✓ — Sabah yenisi!' : 'Günün Tapmacası — +2 dəq qazan'}
+              🧩 {solved ? 'Tapmaca həll edildi ✓ — Sabah yenisi!' : 'Günün Tapmacası'}
             </button>
           );
         })()}

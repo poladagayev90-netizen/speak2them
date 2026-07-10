@@ -882,6 +882,96 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+/* In-call conversation roadmap — above the call screen (1000) and the daily
+   panel (1001), below the post-call overlays (9999). */
+.call-roadmap {
+  position: fixed;
+  inset: 0;
+  z-index: 1002;
+  background: rgba(10, 10, 20, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(20px + var(--safe-area-top, 0px)) 16px calc(20px + var(--safe-area-bottom, 0px));
+  overflow-y: auto;
+}
+
+.call-roadmap-card {
+  width: 100%;
+  max-width: 400px;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.call-roadmap-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+.call-roadmap-topic {
+  color: var(--accent);
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 16px;
+}
+
+.call-roadmap-section {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  margin: 14px 0 8px;
+}
+
+.call-roadmap-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.call-roadmap-chip {
+  background: var(--accent);
+  color: white;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.call-roadmap-start {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #7c6ff7, #5b4de8);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.call-roadmap-more {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .dp-tab {
   padding: 8px 14px;
   background: transparent;
