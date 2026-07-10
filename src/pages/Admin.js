@@ -13,7 +13,7 @@ export default function Admin({ user }) {
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), snap => {
@@ -293,20 +293,19 @@ export default function Admin({ user }) {
                         {loading[u.uid || u.id] ? '...' : 'Ləğv et'}
                       </button>
                     ) : (
-                      <>
-                        <button
-                          onClick={() => setPremium(u, true, 'pro')}
-                          disabled={loading[u.uid || u.id]}
-                          style={{
-                            padding: '8px 16px', background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                            color: '#fff', border: 'none', borderRadius: '10px',
-                            fontWeight: 700, cursor: 'pointer', fontSize: '12px',
-                            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
-                            transition: 'all 0.2s', width: '110px'
-                          }}
-                        >
-                          {loading[u.uid || u.id] ? '...' : 'PRO Ver ✨'}
-                      </>
+                      <button
+                        onClick={() => setPremium(u, true, 'pro')}
+                        disabled={loading[u.uid || u.id]}
+                        style={{
+                          padding: '8px 16px', background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                          color: '#fff', border: 'none', borderRadius: '10px',
+                          fontWeight: 700, cursor: 'pointer', fontSize: '12px',
+                          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                          transition: 'all 0.2s', width: '110px'
+                        }}
+                      >
+                        {loading[u.uid || u.id] ? '...' : 'PRO Ver ✨'}
+                      </button>
                     )
                   )}
                 </div>

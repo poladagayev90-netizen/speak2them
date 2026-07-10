@@ -477,12 +477,18 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const { peerId, callId, updates } = req.body;
+  const { peerId, callId, updates, stars } = req.body;
   if (!peerId || typeof peerId !== "string" || !updates || typeof updates !== "object") {
     return res.status(400).json({ error: "peerId and updates required" });
   }
   if (!callId || typeof callId !== "string") {
     return res.status(400).json({ error: "callId required" });
+  }
+  // `stars` is the modern shape: the caller states its vote and the totals are
+  // derived here, inside the transaction. Older clients send the totals instead.
+  const hasStars = stars !== undefined;
+  if (hasStars && (!Number.isInteger(stars) || stars < 1 || stars > 5)) {
+    return res.status(400).json({ error: "stars must be an integer 1-5" });
   }
   if (peerId === decoded.uid) {
     return res.status(403).json({ error: "Cannot update own stats via this endpoint" });
@@ -531,6 +537,15 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
       const safeUpdates = {};
       for (const key of allowedKeys) {
         if (updates[key] !== undefined) safeUpdates[key] = updates[key];
+      }
+
+      if (hasStars) {
+        // Derived from the values just read in this transaction, so a rating
+        // that landed while the user was choosing stars cannot invalidate it.
+        safeUpdates.rating = (typeof peerData.rating === "number" ? peerData.rating : 0) + stars;
+        safeUpdates.ratingCount = (typeof peerData.ratingCount === "number" ? peerData.ratingCount : 0) + 1;
+        if (stars === 5) safeUpdates.receivedFiveStar = true;
+        else delete safeUpdates.receivedFiveStar;
       }
 
       // rating may only rise by one vote's worth, ratingCount by exactly one.
@@ -612,22 +627,31 @@ exports.generateQuiz = onRequest({ secrets: [GROQ_API_KEY], invoker: "public" },
     return res.status(400).json({ error: "translatedItems must be a non-empty array of {original, translated}" });
   }
 
-  try {
-    const sampleSize = Math.min(translatedItems.length, 5);
-    const shuffled = [...translatedItems].sort(() => 0.5 - Math.random());
-    const selectedItems = shuffled.slice(0, sampleSize);
+  const sampleSize = Math.min(translatedItems.length, 5);
+  const shuffled = [...translatedItems].sort(() => 0.5 - Math.random());
+  const selectedItems = shuffled.slice(0, sampleSize);
 
-    const wordsList = selectedItems.map((w) => `'${w.original}' (translated to '${w.translated}')`).join(", ");
+  // Interpolating the words straight into the prompt with quotes around them is
+  // what broke the model's JSON: an apostrophe in a word closed the string it
+  // was copying. JSON-encoding the list keeps every quote already escaped.
+  const wordsList = JSON.stringify(
+    selectedItems.map((w) => ({ english: w.original, azerbaijani: w.translated })),
+  );
 
-    const prompt = `
+  const prompt = `
       You are a friendly English practice partner helping an Azerbaijani friend.
-      They have just learned the following English words/phrases during a conversation:
+      They have just learned these English words/phrases during a conversation:
       ${wordsList}
 
       Generate a quick multiple-choice quiz (1 question per word) to test their memory.
       The questions must be in Azerbaijani. The options can be either in English or Azerbaijani depending on what is being asked.
 
-      Return ONLY a valid JSON object with a "quiz" key containing an array of questions. Format:
+      Output rules — these are strict:
+      - Return ONLY a single valid JSON object. No prose, no markdown fences.
+      - Use double quotes for every key and string. Escape any double quote inside a string as \\".
+      - "options" must hold exactly 3 distinct strings, and "correctIdx" must be 0, 1 or 2.
+
+      Format:
       {
         "quiz": [
           {
@@ -639,6 +663,7 @@ exports.generateQuiz = onRequest({ secrets: [GROQ_API_KEY], invoker: "public" },
       }
     `;
 
+  const askGroq = async (temperature) => {
     const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -648,37 +673,113 @@ exports.generateQuiz = onRequest({ secrets: [GROQ_API_KEY], invoker: "public" },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        temperature,
       })
     });
 
     if (!groqRes.ok) {
       const err = await groqRes.text().catch(() => "");
       console.error("[generateQuiz] Groq error:", groqRes.status, err);
-      return res.status(500).json({ error: `Groq error: ${groqRes.status}` });
+      // Groq rejects its own malformed JSON with a 400 and hands the broken text
+      // back. It is usually one bad escape away from valid, so try to repair it.
+      const salvaged = salvageFailedGeneration(err);
+      if (salvaged) return salvaged;
+      throw new Error(`Groq error: ${groqRes.status}`);
     }
 
     const data = await groqRes.json();
     const responseText = data.choices?.[0]?.message?.content;
-    if (!responseText) return res.status(500).json({ error: "No response from Groq" });
+    if (!responseText) throw new Error("No response from Groq");
+    return parseJsonLoose(responseText);
+  };
 
-    const parsed = parseJsonLoose(responseText);
-
-    // Unwrap a single-key object ({ quiz: [...] }) into the array itself
-    let quizData = parsed;
-    if (!Array.isArray(parsed)) {
-      const keys = Object.keys(parsed);
-      if (keys.length === 1 && Array.isArray(parsed[keys[0]])) {
-        quizData = parsed[keys[0]];
-      }
-    }
-
-    res.status(200).json({ quiz: quizData });
+  // A quiz over the user's own words does not actually need a model, so a model
+  // failure must not become a 500 the user reads as "the AI is broken".
+  let quiz = [];
+  try {
+    quiz = sanitizeQuiz(await askGroq(0.6));
   } catch (error) {
-    console.error("[generateQuiz] Function error:", error);
-    res.status(500).json({ error: error.message });
+    console.error("[generateQuiz] First attempt failed:", error.message);
   }
+  if (quiz.length === 0) {
+    try {
+      // Greedy decoding: the same prompt, but far less likely to wander out of
+      // the JSON grammar a second time.
+      quiz = sanitizeQuiz(await askGroq(0));
+    } catch (error) {
+      console.error("[generateQuiz] Retry failed:", error.message);
+    }
+  }
+  if (quiz.length === 0) {
+    console.warn("[generateQuiz] Falling back to a locally built quiz");
+    quiz = buildFallbackQuiz(selectedItems, translatedItems);
+  }
+
+  if (quiz.length === 0) {
+    return res.status(422).json({ error: "Bu sözlərdən sınaq hazırlamaq alınmadı." });
+  }
+  res.status(200).json({ quiz });
 });
+
+// Pulls the model's rejected output out of a Groq json_validate_failed body and
+// tries to parse it with the loose parser.
+function salvageFailedGeneration(errorBody) {
+  try {
+    const failed = JSON.parse(errorBody)?.error?.failed_generation;
+    if (typeof failed !== "string") return null;
+    return parseJsonLoose(failed);
+  } catch {
+    return null;
+  }
+}
+
+// Accepts either a bare array or a wrapper object, then keeps only the questions
+// that are actually renderable: the client indexes options by correctIdx and
+// prints qText, so a malformed entry is a crash, not a cosmetic issue.
+function sanitizeQuiz(parsed) {
+  let questions = parsed;
+  if (!Array.isArray(questions)) {
+    if (!questions || typeof questions !== "object") return [];
+    questions = Object.values(questions).find(Array.isArray) || [];
+  }
+  return questions
+    .filter((q) =>
+      q
+      && typeof q.qText === "string" && q.qText.trim().length > 0
+      && Array.isArray(q.options)
+      && q.options.length >= 2 && q.options.length <= 4
+      && q.options.every((o) => typeof o === "string" && o.trim().length > 0)
+      && Number.isInteger(q.correctIdx)
+      && q.correctIdx >= 0 && q.correctIdx < q.options.length)
+    .map((q) => ({
+      qText: q.qText.trim(),
+      options: q.options.map((o) => o.trim()),
+      correctIdx: q.correctIdx,
+    }))
+    .slice(0, 5);
+}
+
+// The words and their translations are all the quiz needs: ask for the meaning
+// of each word, and draw the wrong options from the other words of the call.
+function buildFallbackQuiz(selectedItems, allItems) {
+  return selectedItems.map((item) => {
+    const distractors = allItems
+      .filter((w) => w.translated !== item.translated)
+      .map((w) => w.translated)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 2);
+    // With fewer than three distinct words there is nothing plausible to offer
+    // as a wrong answer, so a two-option question is the honest maximum.
+    const options = [item.translated, ...distractors].sort(() => 0.5 - Math.random());
+    if (options.length < 2) return null;
+    return {
+      qText: `"${item.original}" sözünün mənası nədir?`,
+      options,
+      correctIdx: options.indexOf(item.translated),
+    };
+  }).filter(Boolean);
+}
 
 // ─── AI Partner (Voice Chat with AInur) ───────────────────────────
 exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memory: "1GiB" }, async (req, res) => {

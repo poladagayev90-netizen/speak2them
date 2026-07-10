@@ -58,20 +58,31 @@ export default function Chat({ user }) {
   const [showDaily, setShowDaily] = useState(false);
   const [imageStage, setImageStage] = useState(null);
   const [tabooStage, setTabooStage] = useState(null);
-  const [showRating, setShowRating] = useState(false);
+  // The post-call screens run as a strict queue — insights, then rating, then
+  // quiz — instead of independent booleans. Overlapping flags used to let the
+  // rating modal reopen the insights it had just closed, and back again.
+  const [postCallStages, setPostCallStages] = useState([]);
   const [selectedStar, setSelectedStar] = useState(0);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingError, setRatingError] = useState('');
   const [dailyTab, setDailyTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
   const [newBadge, setNewBadge] = useState(null);
   const [callTranslations, setCallTranslations] = useState([]);
-  const [showPostQuiz, setShowPostQuiz] = useState(false);
-  const [showInsights, setShowInsights] = useState(false);
   // True when the recording never made it into the queue, so no result is coming.
   const [enqueueFailed, setEnqueueFailed] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
   const [, setBadgeQueue] = useState([]);
+
+  const postCallStage = postCallStages[0] || null;
+  const advancePostCall = useCallback(() => setPostCallStages((stages) => stages.slice(1)), []);
+
+  // endCall reads this after the call has ended, so it must not re-create the
+  // callback (and its cleanup timers) on every translated word.
+  const callTranslationsRef = useRef([]);
+  callTranslationsRef.current = callTranslations;
 
   const joinPromiseRef = useRef(null);
 
@@ -722,33 +733,34 @@ export default function Chat({ user }) {
         // if (typeof firstUnlock.bonusMinutes === 'number') setBonusMinutes(firstUnlock.bonusMinutes);
       }
 
-      // Rating is independent of the insights chain: for long calls it is set
-      // here and stays hidden under CallInsights until that modal closes.
-      if (secondsTalked >= 180) {
-        setShowRating(true);
-      }
-      if (secondsTalked > 3) {
-        setShowInsights(true);
-      } else if (callTranslations.length > 0) {
-        setShowPostQuiz(true);
-      }
+      // Queue the post-call screens once, in the order they should appear. Each
+      // one advances to the next when it closes, so none of them can reopen an
+      // earlier screen.
+      const stages = [];
+      if (secondsTalked > 3) stages.push('insights');
+      if (secondsTalked >= 180) stages.push('rating');
+      if (callTranslationsRef.current.length > 0) stages.push('quiz');
+      setPostCallStages(stages);
 
     } catch (e) {
       console.error('[Chat] endCall error:', e);
     } finally {
       endingRef.current = false;
     }
-  }, [callDocId, peerId, user, peer, callTranslations.length]);
+  }, [callDocId, peerId, user, peer]);
 
   endCallRef.current = endCall;
 
   const submitRating = async (stars) => {
+    if (ratingSubmitting) return;
+    setRatingSubmitting(true);
+    setRatingError('');
     try {
       // First read the peer's document to calculate badge unlocks accurately
       const peerRef = doc(db, 'users', peerId);
       const peerDoc = await getDoc(peerRef);
-      if (!peerDoc.exists()) return;
-      
+      if (!peerDoc.exists()) throw new Error('Peer not found');
+
       const peerData = peerDoc.data();
       const updatedPeerData = {
         ...peerData,
@@ -756,32 +768,40 @@ export default function Chat({ user }) {
         ratingCount: (peerData.ratingCount || 0) + 1,
         ...(stars === 5 ? { receivedFiveStar: true } : {}),
       };
-      
+
       const newBadges = checkNewBadges(updatedPeerData);
       const rewardResult = applyBadgeRewardsToData(updatedPeerData, newBadges);
-      
-      // Send the computed updates securely to the backend
+
+      // Only the badge rewards are computed here. rating/ratingCount are derived
+      // on the server from `stars`, because peerData above was read outside the
+      // server's transaction: a rating landing in between would make the totals
+      // we compute here stale, and the server would reject them.
       const updates = {
-        rating: updatedPeerData.rating,
-        ratingCount: updatedPeerData.ratingCount,
-        ...(stars === 5 ? { receivedFiveStar: true } : {}),
         ...(newBadges.length > 0 ? rewardResult.updates : {}),
         ...(newBadges.length > 0 ? { badgeUpdatedAt: "SERVER_TIMESTAMP" } : {}),
       };
 
       // callId is the server's proof that this rating belongs to a real call
       // between these two users, and its once-per-call guard.
-      await authedFetch(`${FUNCTIONS_BASE}/updatePeerStats`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/updatePeerStats`, {
         method: 'POST',
-        body: JSON.stringify({ peerId, callId: callDocId, updates })
+        body: JSON.stringify({ peerId, callId: callDocId, stars, updates })
       });
+
+      // 409 means this call was already rated — the user's vote is recorded, so
+      // treat it as done rather than sending them back to the stars.
+      if (!res.ok && res.status !== 409) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
     } catch (e) {
       console.error('[Chat] Rating error:', e);
+      setRatingError('Qiymət göndərilmədi. İnternetini yoxla və yenidən cəhd et.');
+      setRatingSubmitting(false);
+      return;
     }
-    setShowRating(false);
-    if (callTranslations.length > 0) {
-      setShowPostQuiz(true);
-    }
+    setRatingSubmitting(false);
+    advancePostCall();
   };
 
   const toggleMute = async () => {
@@ -885,7 +905,7 @@ export default function Chat({ user }) {
         </div>
       )}
 
-      {showRating && (
+      {postCallStage === 'rating' && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: '#0f0f1aee', display: 'flex', alignItems: 'center',
@@ -905,38 +925,35 @@ export default function Chat({ user }) {
             <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>{peer?.name}-i qiymətləndir</p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '24px' }}>
               {[1, 2, 3, 4, 5].map(star => (
-                <button key={star} onClick={() => setSelectedStar(star)} style={{
+                <button key={star} disabled={ratingSubmitting} onClick={() => setSelectedStar(star)} style={{
                   fontSize: '36px', background: 'none', border: 'none',
-                  cursor: 'pointer', opacity: star <= selectedStar ? 1 : 0.3, transition: 'opacity 0.2s',
+                  cursor: ratingSubmitting ? 'default' : 'pointer',
+                  opacity: star <= selectedStar ? 1 : 0.3, transition: 'opacity 0.2s',
                 }}>⭐</button>
               ))}
             </div>
-            <button onClick={() => selectedStar > 0 && submitRating(selectedStar)} style={{
-              width: '100%', padding: '14px',
-              background: selectedStar > 0 ? 'linear-gradient(135deg, #7c6ff7, #5b4de8)' : '#2e2e50',
-              color: 'white', border: 'none', borderRadius: '12px',
-              fontSize: '16px', fontWeight: 700, cursor: selectedStar > 0 ? 'pointer' : 'not-allowed', marginBottom: '12px',
-            }}>Göndər</button>
-            
-            <button onClick={() => {
-              setShowRating(false);
-              if (callTranslations.length > 0) {
-                setShowPostQuiz(true);
-              }
-            }} style={{
+
+            {ratingError && (
+              <p style={{ color: '#ff4757', fontSize: '13px', marginBottom: '12px' }}>{ratingError}</p>
+            )}
+
+            <button
+              disabled={selectedStar === 0 || ratingSubmitting}
+              onClick={() => submitRating(selectedStar)}
+              style={{
+                width: '100%', padding: '14px',
+                background: selectedStar > 0 ? 'linear-gradient(135deg, #7c6ff7, #5b4de8)' : '#2e2e50',
+                color: 'white', border: 'none', borderRadius: '12px',
+                fontSize: '16px', fontWeight: 700,
+                cursor: selectedStar > 0 && !ratingSubmitting ? 'pointer' : 'not-allowed',
+                opacity: ratingSubmitting ? 0.6 : 1, marginBottom: '12px',
+              }}>{ratingSubmitting ? 'Göndərilir…' : 'Göndər'}</button>
+
+            <button disabled={ratingSubmitting} onClick={advancePostCall} style={{
               width: '100%', padding: '12px',
               background: 'transparent', border: '2px solid #2e2e50', color: '#a1a1aa', borderRadius: '12px',
-              fontSize: '15px', fontWeight: 600, cursor: 'pointer', marginBottom: '12px'
+              fontSize: '15px', fontWeight: 600, cursor: ratingSubmitting ? 'not-allowed' : 'pointer',
             }}>İndi yox (Keç)</button>
-
-            <button onClick={() => {
-              setShowRating(false);
-              setShowInsights(true);
-            }} style={{
-              width: '100%', padding: '12px',
-              background: 'rgba(124, 111, 247, 0.15)', color: '#7c6ff7', border: 'none', borderRadius: '12px',
-              fontSize: '15px', fontWeight: 600, cursor: 'pointer'
-            }}>Səs Analizinə Bax</button>
           </div>
         </div>
       )}
@@ -1196,28 +1213,19 @@ export default function Chat({ user }) {
         <button type="submit">Send ➤</button>
       </form>
       
-      {showPostQuiz && (
-        <PostCallQuizModal 
-          words={callTranslations} 
-          onClose={() => setShowPostQuiz(false)} 
+      {postCallStage === 'quiz' && (
+        <PostCallQuizModal
+          words={callTranslations}
+          onClose={advancePostCall}
         />
       )}
-      
-      {showInsights && (
+
+      {postCallStage === 'insights' && (
         <CallInsights
           userId={user.uid}
           channelName={`${callDocId}_${sessionIdRef.current}`}
           enqueueFailed={enqueueFailed}
-          onClose={() => {
-            setShowInsights(false);
-            if (callSecondsRef.current >= 180) {
-              // Rating modal is usually already open underneath; the quiz
-              // follows it via submitRating, so don't open the quiz here.
-              if (!showRating) setShowRating(true);
-            } else if (callTranslations.length > 0) {
-              setShowPostQuiz(true);
-            }
-          }} 
+          onClose={advancePostCall}
         />
       )}
     </div>

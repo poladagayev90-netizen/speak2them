@@ -11,9 +11,13 @@ export const generateQuizFromWords = async (translatedItems) => {
     });
 
     if (!res.ok) {
-      const err = await res.text().catch(() => '');
-      console.error('generateQuiz server error:', res.status, err);
-      return { error: `Süni İntellekt serverində xəta baş verdi (${res.status})` };
+      const body = await res.json().catch(() => ({}));
+      console.error('generateQuiz server error:', res.status, body);
+      // 400/422 carry a message written for the user; anything else is ours.
+      const explained = res.status === 429 || res.status === 422;
+      return { error: explained && body.error
+        ? body.error
+        : `Süni İntellekt serverində xəta baş verdi (${res.status})` };
     }
 
     const data = await res.json();
