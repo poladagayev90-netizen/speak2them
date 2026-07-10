@@ -2,7 +2,7 @@ import React from 'react';
 import PremiumBadge from './PremiumBadge';
 import { useNavigate } from 'react-router-dom';
 
-export default function RankingCard({ user, rank, isCurrentUser = false }) {
+export default function RankingCard({ user, rank, isCurrentUser = false, displayMinutes }) {
   const navigate = useNavigate();
 
   const getMedalEmoji = (rankNumber) => {
@@ -63,7 +63,7 @@ export default function RankingCard({ user, rank, isCurrentUser = false }) {
         <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.level || 'English Speaker'}</p>
       </div>
       <div style={{ textAlign: 'right' }}>
-        <p style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '15px' }}>{user.totalMinutes || 0} min</p>
+        <p style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '15px' }}>{displayMinutes ?? (user.totalMinutes || 0)} min</p>
         <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.callCount || 0} calls</p>
         {user.streak > 0 && <p style={{ fontSize: '11px', color: 'var(--gold)' }}>Streak {user.streak}</p>}
       </div>

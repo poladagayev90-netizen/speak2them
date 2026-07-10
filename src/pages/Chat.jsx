@@ -20,6 +20,7 @@ import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../uti
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag } from '../utils/presence';
+import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import CallTabooStage from '../components/CallTabooStage';
@@ -665,6 +666,12 @@ export default function Chat({ user }) {
         const isSameMonth = userData.currentMonth === currentMonthStr;
         const newMonthMinutes = (isSameMonth ? (userData.currentMonthMinutes || 0) : 0) + durationMinutes;
 
+        // Weekly leaderboard counter — same lazy-rollover pattern as the
+        // monthly one: a stored key from an old week reads as 0.
+        const weekKey = getWeekKey();
+        const isSameWeek = userData.currentWeek === weekKey;
+        const newWeekMinutes = (isSameWeek ? (userData.currentWeekMinutes || 0) : 0) + durationMinutes;
+
         const updatedStats = {
           ...userData,
           callCount: (userData.callCount || 0) + 1,
@@ -673,6 +680,8 @@ export default function Chat({ user }) {
           lastCallDate: today,
           currentMonth: currentMonthStr,
           currentMonthMinutes: newMonthMinutes,
+          currentWeek: weekKey,
+          currentWeekMinutes: newWeekMinutes,
         };
         const badgeCallData = {
           duration: secondsTalked,
@@ -689,6 +698,8 @@ export default function Chat({ user }) {
           lastCallDate: updatedStats.lastCallDate,
           currentMonth: updatedStats.currentMonth,
           currentMonthMinutes: updatedStats.currentMonthMinutes,
+          currentWeek: updatedStats.currentWeek,
+          currentWeekMinutes: updatedStats.currentWeekMinutes,
           ...(newBadges.length > 0 ? rewardResult.updates : {}),
           ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
         }, { merge: true });

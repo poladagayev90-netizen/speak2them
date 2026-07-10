@@ -577,8 +577,45 @@ code {
   cursor: pointer;
   display: flex;
 }
-.journey-head-count { font-size: 30px; font-weight: 900; }
-.journey-head-sub { font-size: 13px; color: var(--text-secondary, #9a9ab0); margin-top: 4px; }
+.journey-hero-flame {
+  font-size: 44px;
+  line-height: 1;
+  filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.55));
+}
+.journey-head-count { font-size: 34px; font-weight: 900; line-height: 1.1; }
+.journey-head-days { font-size: 15px; font-weight: 700; opacity: 0.75; }
+.journey-head-tier {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-secondary, #9a9ab0);
+  margin-top: 2px;
+}
+.journey-progress-track {
+  width: min(240px, 70%);
+  height: 8px;
+  margin: 10px auto 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.journey-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--journey-accent, #f59e0b), #dc2626);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  transition: width 0.6s cubic-bezier(0.34, 1.2, 0.5, 1);
+}
+.journey-head-sub { font-size: 13px; color: var(--text-secondary, #9a9ab0); margin-top: 8px; }
+
+.journey-spark {
+  position: fixed;
+  z-index: 0;
+  color: rgba(245, 158, 11, 0.4);
+  pointer-events: none;
+  opacity: 0.5;
+}
 
 .journey-trail {
   position: relative;
@@ -590,6 +627,8 @@ code {
   align-items: center;
   gap: 22px;
 }
+/* Two-layer spine: a dim dashed path for the road ahead, with a glowing
+   accent beam poured over the travelled portion (--journey-trail-fill). */
 .journey-trail::before {
   content: '';
   position: absolute;
@@ -599,6 +638,18 @@ code {
   width: 4px;
   margin-left: -2px;
   background: repeating-linear-gradient(#2e2e50 0 8px, transparent 8px 16px);
+}
+.journey-trail::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: var(--journey-trail-fill, 0%);
+  left: 50%;
+  width: 4px;
+  margin-left: -2px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--journey-accent, #f59e0b), #dc2626);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
 }
 .journey-node { position: relative; z-index: 1; }
 .journey-node--left { align-self: flex-start; margin-left: 28px; }
@@ -620,21 +671,28 @@ code {
   color: #fff;
   background: linear-gradient(135deg, var(--node-accent, #f59e0b), #dc2626);
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(245, 158, 11, 0.35);
 }
 .journey-node.is-milestone .journey-dot {
   width: 64px;
   height: 64px;
   font-size: 26px;
   border-color: #7c6ff7;
+  box-shadow: 0 0 0 4px rgba(124, 111, 247, 0.12);
 }
 .journey-node.is-milestone.is-done .journey-dot {
   background: linear-gradient(135deg, #7c6ff7, #6355e0);
-  box-shadow: 0 0 20px rgba(124, 111, 247, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 5px rgba(124, 111, 247, 0.18),
+    0 0 22px rgba(124, 111, 247, 0.55);
 }
 .journey-node.is-current .journey-dot {
   outline: 3px solid #fff;
   outline-offset: 3px;
+  transform: scale(1.12);
 }
 .journey-lock { font-size: 15px; opacity: 0.6; }
 .journey-node-label {
@@ -643,6 +701,13 @@ code {
   color: var(--text-secondary, #9a9ab0);
   margin-top: 4px;
   font-weight: 700;
+}
+.journey-node-label--today {
+  color: #fff;
+  background: linear-gradient(135deg, var(--journey-accent, #f59e0b), #dc2626);
+  border-radius: 10px;
+  padding: 2px 10px;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35);
 }
 
 @keyframes streak-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -659,6 +724,8 @@ code {
   .streak-flame-emoji { animation: streak-flicker 2.2s ease-in-out infinite; will-change: transform; }
   .streak-flame-glow { animation: streak-pulse 2.2s ease-in-out infinite; }
   .journey-node.is-current .journey-dot { animation: streak-node-pulse 1.6s ease-in-out infinite; }
+  .journey-hero-flame { animation: streak-flicker 2.2s ease-in-out infinite; }
+  .journey-spark { animation: streak-pulse 2.6s ease-in-out infinite; }
 }
 @keyframes streak-flicker {
   0%, 100% { transform: scale(1) rotate(-1deg); }

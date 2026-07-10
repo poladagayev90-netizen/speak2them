@@ -9,10 +9,15 @@ export const setInCallFlag = (value) => { inCall = !!value; };
 export const isInCall = () => inCall;
 
 // A "busy" status left behind by a crashed tab would be sticky forever, so it
-// only counts while the heartbeat is still fresh (same 300s window Home uses).
-export const ONLINE_WINDOW_MS = 300000;
+// only counts while the heartbeat is still fresh. 150s = 2.5× the 60s App.js
+// heartbeat; shrink both together or active users flicker offline.
+export const ONLINE_WINDOW_MS = 150000;
 
 export function getPresence(userDoc, now = Date.now()) {
+  // An explicit offline status wins over a fresh lastSeen: goOffline() stamps
+  // lastSeen at the moment of exit, so checking the window first made a user
+  // who just LEFT look online for the whole window.
+  if (userDoc?.status === 'offline') return 'offline';
   const lastSeen = userDoc?.lastSeen?.toMillis?.() || 0;
   if (now - lastSeen >= ONLINE_WINDOW_MS) return 'offline';
   return userDoc.status === 'busy' ? 'busy' : 'online';

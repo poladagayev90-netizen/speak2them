@@ -17,8 +17,31 @@ export function dedupeUsers(users) {
   return Array.from(map.values());
 }
 
-export function sortUsersForRanking(users) {
+// Monday of the current week as YYYY-MM-DD. Written into the user doc at
+// call end (Chat.jsx) and compared at read time: a stored currentWeek that
+// doesn't match today's key means the counter is from an old week and reads
+// as 0 — the weekly board "resets" lazily, no cron needed (same pattern as
+// currentMonth/currentMonthMinutes).
+export function getWeekKey(d = new Date()) {
+  const date = new Date(d);
+  const day = date.getDay(); // 0=Sun..6=Sat
+  const diffToMonday = day === 0 ? 6 : day - 1;
+  date.setDate(date.getDate() - diffToMonday);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+export function weeklyMinutesOf(user, weekKey = getWeekKey()) {
+  return user?.currentWeek === weekKey ? (user.currentWeekMinutes || 0) : 0;
+}
+
+export function sortUsersForRanking(users, mode = 'all') {
+  const weekKey = getWeekKey();
   return dedupeUsers(users).sort((a, b) => {
+    if (mode === 'weekly') {
+      const weeklyDiff = weeklyMinutesOf(b, weekKey) - weeklyMinutesOf(a, weekKey);
+      if (weeklyDiff !== 0) return weeklyDiff;
+    }
     const minutesDiff = (b.totalMinutes || 0) - (a.totalMinutes || 0);
     if (minutesDiff !== 0) return minutesDiff;
 

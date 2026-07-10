@@ -13,28 +13,80 @@ import GlobalCallListener from './components/GlobalCallListener';
 import { ADMIN_UID } from './constants';
 import Logo from './components/Logo';
 
+// Import thunks are kept separate from React.lazy so the bottom-nav tabs can
+// be preloaded on idle (see the preload effect in App) — without this, the
+// first visit to each tab downloads its chunk on the spot and the page flashes.
+const importHome = () => import('./pages/Home');
+const importChats = () => import('./pages/Chats');
+const importAIChat = () => import('./pages/AIChat');
+const importProfile = () => import('./pages/Profile');
+const importRanking = () => import('./pages/Ranking');
+const TAB_PAGE_IMPORTS = [importHome, importChats, importAIChat, importRanking, importProfile];
+
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
-const Home = React.lazy(() => import('./pages/Home'));
-const Chats = React.lazy(() => import('./pages/Chats'));
+const Home = React.lazy(importHome);
+const Chats = React.lazy(importChats);
 const Chat = React.lazy(() => import('./pages/Chat'));
-const AIChat = React.lazy(() => import('./pages/AIChat'));
-const Profile = React.lazy(() => import('./pages/Profile'));
+const AIChat = React.lazy(importAIChat);
+const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Survey = React.lazy(() => import('./pages/Survey'));
 const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
-const Ranking = React.lazy(() => import('./pages/Ranking'));
+const Ranking = React.lazy(importRanking);
 const History = React.lazy(() => import('./pages/History'));
+const DailyPuzzle = React.lazy(() => import('./pages/DailyPuzzle'));
 
-const LoadingFallback = () => (
-  <div className="loading-screen">
-    <div className="loading-logo">🎙️</div>
-    <p>Loading...</p>
+// Shown INSIDE the layout while a page chunk loads — the bottom nav stays
+// mounted, so a tab switch never blanks the whole screen.
+const PageFallback = () => (
+  <div style={{
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    minHeight: '60vh', color: 'var(--text-muted)', fontSize: 22,
+  }} aria-label="Yüklənir">
+    <span className="loading-logo" style={{ fontSize: 34 }}>🎙️</span>
   </div>
 );
+
+// One shared shell for both routers. Suspense sits INSIDE AppLayout around
+// only the Routes: while a lazy chunk downloads, the nav and layout stay put
+// (the old placement unmounted the entire shell into a full-screen loader on
+// every first visit to a tab — the "tab switch flash").
+function AppShell({ user }) {
+  const homeElement = user
+    ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
+    : <Navigate to="/register" />;
+
+  return (
+    <AppLayout user={user}>
+      {user && <GlobalCallListener user={user} />}
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+          <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+          <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+          <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
+          <Route path="/" element={homeElement} />
+          <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+          <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+          <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+          <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
+          <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
+          <Route path="/puzzle" element={user ? <DailyPuzzle user={user} /> : <Navigate to="/login" />} />
+          <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
+          <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
+          <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+          <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+        </Routes>
+      </Suspense>
+    </AppLayout>
+  );
+}
 
 
 function App() {
@@ -67,6 +119,16 @@ function App() {
     }
   }, []);
 
+  // Warm the bottom-nav tab chunks shortly after first paint so the first
+  // visit to each tab renders from cache instead of downloading its bundle.
+  useEffect(() => {
+    if (loading) return undefined;
+    const t = setTimeout(() => {
+      TAB_PAGE_IMPORTS.forEach((load) => load().catch(() => {}));
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [loading]);
+
   useEffect(() => {
     let heartbeatInterval = null;
     let visibilityHandler = null;
@@ -75,7 +137,10 @@ function App() {
     const cleanupPresence = () => {
       if (heartbeatInterval) clearInterval(heartbeatInterval);
       if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
-      if (unloadHandler) window.removeEventListener('beforeunload', unloadHandler);
+      if (unloadHandler) {
+        window.removeEventListener('beforeunload', unloadHandler);
+        window.removeEventListener('pagehide', unloadHandler);
+      }
     };
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
@@ -108,7 +173,7 @@ function App() {
               lastSeen: serverTimestamp(),
             }, { merge: true });
           } catch (e) {}
-        }, 120000); // presence heartbeat; keep in sync with the 300s online window
+        }, 60000); // presence heartbeat; ONLINE_WINDOW_MS (150s) must stay ≥2.5× this
 
         const goOffline = async () => {
           try {
@@ -121,8 +186,11 @@ function App() {
         };
 
         // A tab closed mid-call must still stop looking busy to everyone else.
+        // pagehide fires far more reliably than beforeunload on mobile
+        // browsers/installed PWAs, so register the same handler on both.
         unloadHandler = goOffline;
         window.addEventListener('beforeunload', unloadHandler);
+        window.addEventListener('pagehide', unloadHandler);
 
         visibilityHandler = async () => {
           try {
@@ -198,64 +266,16 @@ function App() {
       </>
     );
   }
-  const homeElement = user
-    ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
-    : <Navigate to="/register" />;
-
   return (
     <>
       <ErrorBoundary>
         {Capacitor.isNativePlatform() ? (
           <HashRouter>
-            <Suspense fallback={<LoadingFallback />}>
-              <AppLayout user={user}>
-                {user && <GlobalCallListener user={user} />}
-                <Routes>
-                  <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-                  <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-                  <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/" element={homeElement} />
-                  <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-                  <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
-                  <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-                </Routes>
-              </AppLayout>
-            </Suspense>
+            <AppShell user={user} />
           </HashRouter>
         ) : (
           <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
-              <AppLayout user={user}>
-                {user && <GlobalCallListener user={user} />}
-                <Routes>
-                  <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-                  <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-                  <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/" element={homeElement} />
-                  <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-                  <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
-                  <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
-                  <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
-                </Routes>
-              </AppLayout>
-            </Suspense>
+            <AppShell user={user} />
           </BrowserRouter>
         )}
       </ErrorBoundary>

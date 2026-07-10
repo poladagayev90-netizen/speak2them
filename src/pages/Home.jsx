@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { collection, doc, getDocs, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -10,6 +10,7 @@ import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
+import { getTodayPuzzleIndex } from '../data/puzzleWords';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
@@ -18,7 +19,7 @@ import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import { subscribeToSessionConfig, getSessionWindow } from '../utils/sessionSchedule';
 import { remainingMinutes } from '../utils/subscription';
 import { ADMIN_UID } from '../constants';
-import { getPresence } from '../utils/presence';
+import { getPresence, ONLINE_WINDOW_MS } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
@@ -49,6 +50,24 @@ const HOME_TOUR_STEPS = [
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
+// Self-ticking countdown line. Isolating the 1s interval here means only this
+// tiny element re-renders every second — previously the tick lived in Home
+// state and re-rendered the entire page (user grid included) once per second.
+function SessionCountdown({ targetMs }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const pad = (n) => String(n).padStart(2, '0');
+  const s = Math.max(0, Math.floor((targetMs - now) / 1000));
+  return (
+    <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
+      Başlamasına qalıb: <b>{`${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`}</b>
+    </p>
+  );
+}
+
 export default function Home({ user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -68,6 +87,16 @@ export default function Home({ user }) {
   const [pendingTopicIntro, setPendingTopicIntro] = useState(false);
   const [streakInfo] = useState(() => getStreakInfo(user));
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // The daily-question push deep-links to /?daily=1 — open the topic modal
+  // and strip the param so refresh/back doesn't reopen it.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('daily')) {
+      setDailyTopicOpen(true);
+      navigate('/', { replace: true });
+    }
+  }, [location.search, navigate]);
 
 
   useEffect(() => {
@@ -134,10 +163,12 @@ export default function Home({ user }) {
 
   useEffect(() => subscribeToSessionConfig(setSessionConfig), []);
 
-  // 1s tick drives the session countdown; runs only while the card is shown.
+  // Coarse tick for the session window booleans (open/closed, hideRandom).
+  // The per-second countdown lives in SessionCountdown, so 5s accuracy is
+  // enough here and Home re-renders 5× less while the card is shown.
   useEffect(() => {
     if (!sessionConfig?.enabled) return;
-    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    const id = setInterval(() => setNowTick(Date.now()), 5000);
     return () => clearInterval(id);
   }, [sessionConfig?.enabled]);
 
@@ -145,14 +176,15 @@ export default function Home({ user }) {
 
   // Polled instead of a live listener: with a live query every user's
   // presence heartbeat would be re-streamed to every Home viewer (read
-  // amplification). 60s polling is fresh enough for an online list.
-  // Online window is 300s to stay coherent with the 120s heartbeat.
+  // amplification). 20s polling makes an exit visible fast (goOffline stamps
+  // status:'offline' instantly; the poll is the only remaining latency).
+  // The window/heartbeat pair lives in presence.js / App.js.
   useEffect(() => {
     let cancelled = false;
 
     const loadUsers = async () => {
       try {
-        const cutoff = new Date(Date.now() - 300000);
+        const cutoff = new Date(Date.now() - ONLINE_WINDOW_MS);
         const snap = await getDocs(query(
           collection(db, 'users'),
           where('lastSeen', '>', cutoff),
@@ -167,9 +199,9 @@ export default function Home({ user }) {
           const u = { id: d.id, ...data, uid: data.uid || d.id };
           if (u.uid === user.uid || u.id === user.uid) return;
           all.push(u);
-          if (!u.lastSeen) return;
-          const lastSeen = u.lastSeen.toMillis?.() || 0;
-          if (now - lastSeen < 300000 || u.uid === ADMIN_UID) online.push(u);
+          // getPresence respects status:'offline', so a user who just exited
+          // drops off the list on the next poll instead of after the window.
+          if (getPresence(u, now) !== 'offline' || u.uid === ADMIN_UID) online.push(u);
         });
         // Free people first — someone already in a call cannot talk to you.
         online.sort((a, b) => (getPresence(a, now) === 'busy') - (getPresence(b, now) === 'busy'));
@@ -181,7 +213,7 @@ export default function Home({ user }) {
     };
 
     loadUsers();
-    const interval = setInterval(loadUsers, 60000);
+    const interval = setInterval(loadUsers, 20000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [user.uid]);
 
@@ -317,10 +349,6 @@ export default function Home({ user }) {
           const pad = (n) => String(n).padStart(2, '0');
           const startLabel = `${pad(win.hour)}:${pad(win.minute)}`;
           const sessionTitle = win.hour < 18 ? '☀️ Günorta sessiyası' : '🌙 Axşam sessiyası';
-          const fmtLeft = (ms) => {
-            const s = Math.max(0, Math.floor(ms / 1000));
-            return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
-          };
           const inWindow = nowTick >= win.startMs && nowTick < win.endMs;
 
           return (
@@ -328,11 +356,7 @@ export default function Home({ user }) {
               <p style={{ color: '#7c6ff7', fontWeight: 700, fontSize: '15px', margin: '0 0 6px' }}>
                 {sessionTitle} • {startLabel}
               </p>
-              {nowTick < win.startMs && (
-                <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
-                  Başlamasına qalıb: <b>{fmtLeft(win.startMs - nowTick)}</b>
-                </p>
-              )}
+              {nowTick < win.startMs && <SessionCountdown targetMs={win.startMs} />}
               {inWindow && !sessionJoined && (
                 <>
                   <p style={{ color: '#666', fontSize: '13px', margin: '0 0 10px' }}>
@@ -483,6 +507,41 @@ export default function Home({ user }) {
         >
           <BookOpen size={18} /> Daily Topic
         </button>
+
+        {/* Daily word puzzle entry — done-state comes from the puzzle page's
+            own localStorage record so no extra Firestore read is needed. */}
+        {(() => {
+          let solved = false;
+          try {
+            const raw = JSON.parse(localStorage.getItem('dailyPuzzle_v1') || 'null');
+            solved = !!raw && raw.dayIndex === getTodayPuzzleIndex() && raw.won;
+          } catch (e) {}
+          return (
+            <button
+              onClick={() => navigate('/puzzle')}
+              style={{
+                width: '100%',
+                height: '44px',
+                borderRadius: '14px',
+                background: solved
+                  ? 'var(--bg-card)'
+                  : 'linear-gradient(135deg, #0ea5e9, #6366f1)',
+                color: solved ? 'var(--text-secondary)' : '#ffffff',
+                border: solved ? '1px solid var(--border)' : 'none',
+                fontSize: '15px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginBottom: '10px',
+                cursor: 'pointer',
+              }}
+            >
+              🧩 {solved ? 'Tapmaca həll edildi ✓ — Sabah yenisi!' : 'Günün Tapmacası — +2 dəq qazan'}
+            </button>
+          );
+        })()}
 
         <style>{`
           .filter-chip-wrapper::-webkit-scrollbar {

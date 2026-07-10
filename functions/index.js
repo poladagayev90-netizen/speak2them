@@ -162,21 +162,28 @@ exports.notifyPremiumActivated = onRequest({ secrets: [] }, async (req, res) => 
   res.status(200).json({ ok: true });
 });
 
-const ALL_TOPICS = [
-  "Travel ✈️", "Technology 💻", "Food & Culture 🍽️", "Education 📚", 
-  "Health & Wellbeing 🏃", "Environment 🌍", "Work & Career 💼", 
-  "Social Media 📱", "Money & Finances 💰", "Films & Series 🎬", 
-  "Music 🎵", "Famous People & Celebrities ⭐", "Hobbies & Free Time 🎨", 
-  "Fashion & Style 👗", "Cartoons & Animation 🎭", "Fear & Phobias 😱", 
-  "Relationships & Friendship ❤️", "Sports & Competition 🏆", "Animals & Pets 🐾", 
-  "Culture & Traditions 🌐", "Science & Space 🚀", "City vs Countryside 🏙️", 
-  "Books & Reading 📖", "Language & Communication 🗣️", "Shopping & Consumerism 🛍️", 
-  "Dreams & Ambitions 🌟", "History & Past Events 🏛️", "Future & Predictions 🔮"
-];
+// Snapshot of src/data/weeklyContent.js (topic + easy/hard questions per day),
+// regenerated when the client content changes. Using the same array and the
+// same day formula as the client keeps the push and the app on the SAME topic
+// — the old hardcoded topic list here could drift out of sync.
+const DAILY_CONTENT = require("./dailyQuestions.json");
 
-function getTodayTopic() {
+function getTodayContent() {
   const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  return ALL_TOPICS[daysSinceEpoch % ALL_TOPICS.length];
+  return DAILY_CONTENT[daysSinceEpoch % DAILY_CONTENT.length];
+}
+
+// One concrete question per reminder slot: mornings pull from the easy half
+// of the list, evenings from the hard half, and the day index shifts the
+// rotation so the same slot asks something new each cycle.
+function getQuestionForHour(content, hour) {
+  const qs = content.questions || [];
+  if (!qs.length) return "";
+  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+  const half = Math.ceil(qs.length / 2);
+  const offset = hour >= 18 ? half : 0; // easy questions come first in the array
+  const span = hour >= 18 ? qs.length - half : half;
+  return qs[offset + ((daysSinceEpoch + hour) % Math.max(1, span))];
 }
 
 // ─── Topic Practice Reminder ──────────────────────────────────
@@ -193,19 +200,28 @@ exports.topicReminder = onSchedule({
   let failed = 0;
   const invalidTokenRefs = [];
 
+  // A concrete question pulls far better than a bare topic name: the reader
+  // can start answering it in their head before they even open the app.
+  const todayContent = getTodayContent();
+  const bakuHour = Number(new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Baku", hour: "2-digit", hour12: false,
+  }).format(new Date()));
+  const question = getQuestionForHour(todayContent, bakuHour);
+
   for (let i = 0; i < usersWithTokens.length; i += DAILY_REMINDER_BATCH_SIZE) {
     const batch = usersWithTokens.slice(i, i + DAILY_REMINDER_BATCH_SIZE);
-    const todayTopic = getTodayTopic();
     const response = await admin.messaging().sendEachForMulticast({
       tokens: batch.map(user => user.fcmToken),
       // Data-only so the messaging SW renders it and routes the click to `url`.
       // A `notification` payload is auto-displayed by the SDK and bypasses the
       // SW's notificationclick handler.
       data: {
-        title: `Günlük Mövzu: ${todayTopic}`,
-        body: "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir! Səni gözləyirlər.",
+        title: `💬 ${todayContent.topic}`,
+        body: question
+          ? `${question} — Cavabını düşün və daxil ol!`
+          : "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir!",
         type: "daily_reminder",
-        url: "/",
+        url: "/?daily=1",
       },
     });
 
@@ -234,6 +250,78 @@ exports.topicReminder = onSchedule({
     failed,
     invalidTokensRemoved: invalidTokenRefs.length,
   });
+});
+
+// ─── Streak Rescue Reminder ───────────────────────────────────
+// The classic retention push: anyone whose streak is alive but who hasn't
+// called TODAY gets nudged in the evening — a gentle heads-up at 19:00 and an
+// urgent one at 22:00. lastCallDate is written by Chat.jsx as toDateString()
+// in the user's local timezone; at these Baku hours the server's UTC calendar
+// date matches Baku's, so a plain toDateString() comparison holds for the
+// (Azerbaijani) user base.
+exports.streakReminder = onSchedule({
+  schedule: "0 19,22 * * *",
+  timeZone: "Asia/Baku",
+}, async () => {
+  const db = admin.firestore();
+  const snap = await db.collection("users").where("streak", ">=", 1).get();
+  const today = new Date().toDateString();
+
+  const atRisk = snap.docs
+    .map((d) => ({ ref: d.ref, ...d.data() }))
+    .filter((u) =>
+      typeof u.fcmToken === "string" && u.fcmToken.trim() &&
+      u.lastCallDate && u.lastCallDate !== today);
+
+  if (atRisk.length === 0) {
+    console.log("[StreakReminder] nobody at risk");
+    return;
+  }
+
+  const bakuHour = Number(new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Baku", hour: "2-digit", hour12: false,
+  }).format(new Date()));
+  const urgent = bakuHour >= 21;
+
+  let sent = 0;
+  const invalidTokenRefs = [];
+  // Messages are personalised with the streak count, so send per-user rather
+  // than multicast; the at-risk set is small (streak>=1 AND idle today).
+  for (const u of atRisk) {
+    const streak = u.streak || 1;
+    try {
+      await admin.messaging().send({
+        token: u.fcmToken,
+        data: urgent
+          ? {
+              title: "⚠️ Streak-in bu gecə sönəcək!",
+              body: `${streak} günlük əziyyətin gecə yarısı sıfırlanır. Qısa bir zəng kifayətdir! 🔥`,
+              type: "streak_rescue",
+              url: "/",
+            }
+          : {
+              title: `🔥 ${streak} günlük streak-in gözləyir`,
+              body: "Bu gün hələ danışmamısan — bir zəng et, alovu qoru!",
+              type: "streak_rescue",
+              url: "/",
+            },
+      });
+      sent++;
+    } catch (e) {
+      if (
+        e.code === "messaging/invalid-registration-token" ||
+        e.code === "messaging/registration-token-not-registered"
+      ) {
+        invalidTokenRefs.push(u.ref);
+      }
+    }
+  }
+
+  await Promise.all(invalidTokenRefs.map((ref) => ref.update({
+    fcmToken: admin.firestore.FieldValue.delete(),
+  }).catch(() => null)));
+
+  console.log("[StreakReminder]", { atRisk: atRisk.length, sent, urgent, invalidTokensRemoved: invalidTokenRefs.length });
 });
 
 exports.testPush = onRequest({ secrets: [] }, async (req, res) => {

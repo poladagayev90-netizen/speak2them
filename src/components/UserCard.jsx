@@ -1,9 +1,11 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
 import { useNavigate } from 'react-router-dom';
+import { getPresence } from '../utils/presence';
 
 export default function UserCard({ user, onChat }) {
   const navigate = useNavigate();
+  const isOnline = getPresence(user) !== 'offline';
 
   return (
     <div className="user-card" style={{
@@ -42,8 +44,8 @@ export default function UserCard({ user, onChat }) {
           {user.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {user.streak}</span>}
           {user.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(user.rating / user.ratingCount).toFixed(1)}</span>}
         </div>
-        <span className={`online-badge ${user.lastSeen?.toMillis?.() > Date.now() - 300000 ? 'online' : 'offline'}`}>
-          {user.lastSeen?.toMillis?.() > Date.now() - 300000 ? '🟢 Online' : '⚫ Offline'}
+        <span className={`online-badge ${isOnline ? 'online' : 'offline'}`}>
+          {isOnline ? '🟢 Online' : '⚫ Offline'}
         </span>
       </div>
       <button className="btn-chat" onClick={() => navigate(`/user/${user.uid || user.id}`)}>

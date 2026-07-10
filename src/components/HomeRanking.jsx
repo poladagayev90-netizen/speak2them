@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react';
 import RankingCard from './RankingCard';
-import { getUserRank, sortUsersForRanking } from '../utils/ranking';
+import { getUserRank, sortUsersForRanking, weeklyMinutesOf } from '../utils/ranking';
 import { useNavigate } from 'react-router-dom';
 import './Ranking.css';
 
-function PodiumCard({ user, rank, isCurrentUser }) {
+function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   const heights = { 1: 120, 2: 90, 3: 70 };
   const emojis = { 1: '🥇', 2: '🥈', 3: '🥉' };
   const navigate = useNavigate();
 
   return (
-    <div 
-      className={`ranking-podium-slot rank-${rank}`} 
+    <div
+      className={`ranking-podium-slot rank-${rank}`}
       onClick={() => navigate(`/user/${user.uid || user.id}`)}
       style={{ cursor: 'pointer' }}
     >
@@ -23,7 +23,7 @@ function PodiumCard({ user, rank, isCurrentUser }) {
       <p className="ranking-podium-name">
         {user.name}{isCurrentUser && ' (you)'}
       </p>
-      <p className="ranking-podium-minutes">{user.totalMinutes || 0} min</p>
+      <p className="ranking-podium-minutes">{displayMinutes ?? (user.totalMinutes || 0)} min</p>
       <div className="ranking-podium-bar" style={{ height: heights[rank] }}>
         <span>{emojis[rank]}</span>
       </div>
@@ -31,10 +31,11 @@ function PodiumCard({ user, rank, isCurrentUser }) {
   );
 }
 
-export default function HomeRanking({ users, currentUserId }) {
-  const sortedUsers = useMemo(() => sortUsersForRanking(users), [users]);
+export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
+  const sortedUsers = useMemo(() => sortUsersForRanking(users, mode), [users, mode]);
   const myRank = useMemo(() => getUserRank(sortedUsers, currentUserId), [sortedUsers, currentUserId]);
   const currentUser = sortedUsers.find((u) => (u.uid || u.id) === currentUserId);
+  const minutesOf = (u) => (mode === 'weekly' ? weeklyMinutesOf(u) : (u.totalMinutes || 0));
   const topThree = sortedUsers.slice(0, 3);
   const rest = sortedUsers.slice(3);
   const podiumOrder = topThree.length >= 3
@@ -60,7 +61,7 @@ export default function HomeRanking({ users, currentUserId }) {
             <p className="ranking-you-rank">#{myRank}</p>
           </div>
           <div className="ranking-you-stats">
-            <span>🕐 {currentUser?.totalMinutes || 0} min</span>
+            <span>🕐 {currentUser ? minutesOf(currentUser) : 0} min</span>
             <span>📞 {currentUser?.callCount || 0} calls</span>
             {(currentUser?.streak || 0) > 0 && <span className="streak-pill">🔥 {currentUser.streak}</span>}
           </div>
@@ -77,6 +78,7 @@ export default function HomeRanking({ users, currentUserId }) {
                 user={user}
                 rank={rank}
                 isCurrentUser={(user.uid || user.id) === currentUserId}
+                displayMinutes={minutesOf(user)}
               />
             );
           })}
@@ -91,6 +93,7 @@ export default function HomeRanking({ users, currentUserId }) {
             user={user}
             rank={rank}
             isCurrentUser={(user.uid || user.id) === currentUserId}
+            displayMinutes={minutesOf(user)}
           />
         );
       })}

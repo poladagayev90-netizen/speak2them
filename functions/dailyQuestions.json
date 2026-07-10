@@ -1,0 +1,422 @@
+[
+  {
+    "topic": "Travel ✈️",
+    "questions": [
+      "What is your favourite country to visit and why?",
+      "Do you prefer travelling alone or with friends?",
+      "What do you always pack when you travel?",
+      "Have you ever been on a plane? How was it?",
+      "What is the best food you tried while travelling?",
+      "How does travelling abroad change a person's perspective on life?",
+      "Do you think budget travel is better than luxury travel? Why?",
+      "What are the pros and cons of solo travel?",
+      "How has social media changed the way people travel?",
+      "Should governments invest more in tourism? Discuss."
+    ]
+  },
+  {
+    "topic": "Technology 💻",
+    "questions": [
+      "What technology can you not live without?",
+      "How many hours a day do you spend on your phone?",
+      "What is your favourite app and why?",
+      "Do you prefer texting or calling people?",
+      "What was the first device you ever owned?",
+      "Is technology making us more or less social?",
+      "Should children under 12 be allowed to use smartphones?",
+      "How will AI affect employment in the next 10 years?",
+      "Do you think social media does more harm than good?",
+      "Should there be global regulations on artificial intelligence?"
+    ]
+  },
+  {
+    "topic": "Food & Culture 🍽️",
+    "questions": [
+      "What is your favourite meal and how is it made?",
+      "Do you prefer cooking at home or eating out?",
+      "What food do you dislike and why?",
+      "Have you ever tried food from another country?",
+      "How important is food in your culture?",
+      "How does food reflect the culture and history of a country?",
+      "Should fast food companies be taxed more heavily?",
+      "Is veganism a practical lifestyle for everyone?",
+      "How has globalisation changed local food traditions?",
+      "Should schools teach students how to cook?"
+    ]
+  },
+  {
+    "topic": "Education 📚",
+    "questions": [
+      "What was your favourite subject at school?",
+      "Do you prefer studying alone or in a group?",
+      "How do you study for an exam?",
+      "Who was your favourite teacher and why?",
+      "Do you think homework is useful?",
+      "Is university education necessary for success in life?",
+      "How should schools prepare students for the modern world?",
+      "Should education be free for everyone globally?",
+      "Does the current education system encourage creativity?",
+      "How has online learning permanently changed education?"
+    ]
+  },
+  {
+    "topic": "Health & Wellbeing 🏃",
+    "questions": [
+      "How do you stay healthy in your daily life?",
+      "Do you exercise regularly? What do you do?",
+      "What do you eat for breakfast?",
+      "How many hours do you sleep each night?",
+      "What do you do when you feel stressed?",
+      "Should governments ban junk food advertising to children?",
+      "How can societies better support people with mental health issues?",
+      "Is a work-life balance achievable in today's world?",
+      "Should employers be responsible for employees' mental health?",
+      "How has modern life negatively affected human health?"
+    ]
+  },
+  {
+    "topic": "Environment 🌍",
+    "questions": [
+      "Do you recycle at home? What do you recycle?",
+      "What is the environment like in your city?",
+      "Do you use public transport? Why or why not?",
+      "Have you seen any environmental problems near you?",
+      "What small things can people do to help the planet?",
+      "Who is more responsible for climate change — individuals or governments?",
+      "Should petrol cars be banned completely?",
+      "Is economic growth compatible with environmental protection?",
+      "How can developing countries grow without harming the environment?",
+      "Should there be a global carbon tax?"
+    ]
+  },
+  {
+    "topic": "Work & Career 💼",
+    "questions": [
+      "What is your dream job and why?",
+      "Do you prefer working indoors or outdoors?",
+      "What skills do you think are important for any job?",
+      "Would you prefer working for a company or being your own boss?",
+      "How do you handle a difficult day at work?",
+      "Will remote work permanently change office culture?",
+      "Should the working week be reduced to 4 days?",
+      "How important is job satisfaction compared to salary?",
+      "Is it ethical for companies to monitor employees at home?",
+      "How should people prepare for job automation in the future?"
+    ]
+  },
+  {
+    "topic": "Social Media 📱",
+    "questions": [
+      "Which social media platforms do you use the most?",
+      "How much time do you spend on social media each day?",
+      "Have you ever posted something that got a lot of attention?",
+      "Do you follow any influencers? Who and why?",
+      "What is the best thing you have seen on social media recently?",
+      "Should social media platforms be held responsible for fake news?",
+      "Does social media help or hurt mental health? Give examples.",
+      "Should there be an age limit for using social media?",
+      "Is the influencer lifestyle realistic or dangerous to promote?",
+      "How has social media changed the way we form relationships?"
+    ]
+  },
+  {
+    "topic": "Money & Finances 💰",
+    "questions": [
+      "Do you save money regularly? How do you do it?",
+      "What would you do if you won a lot of money?",
+      "Do you prefer paying by cash or card?",
+      "What is something you saved up to buy?",
+      "Do you think it is important to talk about money with friends?",
+      "Is it better to save money or invest it? Discuss.",
+      "Should wealthy people pay more taxes? Why?",
+      "How does money affect personal relationships?",
+      "Should financial education be taught in schools?",
+      "Is it possible to be happy without much money?"
+    ]
+  },
+  {
+    "topic": "Films & Series 🎬",
+    "questions": [
+      "What is your favourite film of all time and why?",
+      "Do you prefer watching films at home or at the cinema?",
+      "What genre do you enjoy the most — action, comedy, drama?",
+      "Have you ever watched a film in another language?",
+      "Who is your favourite actor or actress?",
+      "How do films and series influence society's values?",
+      "Do you think streaming platforms have killed cinema?",
+      "Should violent or explicit content be allowed on streaming platforms?",
+      "How do films portray different cultures — fairly or unfairly?",
+      "What makes a truly great film?"
+    ]
+  },
+  {
+    "topic": "Music 🎵",
+    "questions": [
+      "What type of music do you listen to most?",
+      "Who is your favourite singer or band?",
+      "Do you play any musical instrument?",
+      "What song always puts you in a good mood?",
+      "Do you prefer live concerts or recorded music?",
+      "How does music affect your emotions and mental state?",
+      "Should music streaming services pay artists more?",
+      "Has AI-generated music changed the industry for better or worse?",
+      "Do you think lyrics can influence young people's behaviour?",
+      "Is music a universal language? Explain your view."
+    ]
+  },
+  {
+    "topic": "Famous People & Celebrities ⭐",
+    "questions": [
+      "Who is your favourite famous person and why?",
+      "Would you like to be a celebrity? Why or why not?",
+      "What famous person do you admire the most?",
+      "Have you ever met someone famous?",
+      "What do you think is the hardest part of being famous?",
+      "Do celebrities have a responsibility to be good role models?",
+      "Does fame change a person's personality? How?",
+      "Should celebrities be involved in politics?",
+      "Is the media too invasive when reporting on famous people?",
+      "Why do we idolise certain people in modern culture?"
+    ]
+  },
+  {
+    "topic": "Hobbies & Free Time 🎨",
+    "questions": [
+      "What hobbies do you have?",
+      "How did you start your favourite hobby?",
+      "Do you prefer indoor or outdoor hobbies?",
+      "Have you ever tried a hobby and given up?",
+      "Would you teach your hobby to others?",
+      "Can hobbies turn into successful careers? Give examples.",
+      "How do hobbies contribute to a person's mental wellbeing?",
+      "Do people have enough free time in modern life?",
+      "Should schools offer more time for creative hobbies?",
+      "Is it better to have one deep hobby or many varied interests?"
+    ]
+  },
+  {
+    "topic": "Fashion & Style 👗",
+    "questions": [
+      "How would you describe your personal style?",
+      "Do you follow fashion trends? Why or why not?",
+      "What is your favourite item of clothing?",
+      "How much do you spend on clothes each month?",
+      "Do you think what you wear affects how people see you?",
+      "Is the fashion industry harmful to the environment?",
+      "Should we move away from fast fashion? How?",
+      "Does fashion reflect a person's identity or just their wealth?",
+      "Is it right that fashion models are expected to look a certain way?",
+      "How has social media changed the fashion industry?"
+    ]
+  },
+  {
+    "topic": "Cartoons & Animation 🎭",
+    "questions": [
+      "What was your favourite cartoon as a child?",
+      "Do you still watch animated films or series? Which ones?",
+      "Who is your favourite animated character?",
+      "What do you think makes a cartoon funny?",
+      "Have you ever watched a cartoon in English?",
+      "Are modern cartoons better or worse than older ones? Why?",
+      "Can animated films teach important life lessons? Give examples.",
+      "Is it strange for adults to enjoy cartoons? Discuss.",
+      "How do cartoons reflect society's values and problems?",
+      "Should cartoons always have a positive message for children?"
+    ]
+  },
+  {
+    "topic": "Fear & Phobias 😱",
+    "questions": [
+      "What are you afraid of?",
+      "Have you ever faced a fear? What happened?",
+      "Do you enjoy scary films? Why or why not?",
+      "What scared you most as a child?",
+      "Does anyone in your family have a funny fear?",
+      "Is fear ever a useful emotion? Explain.",
+      "How can phobias negatively affect a person's life?",
+      "Should people try to overcome their fears or accept them?",
+      "Why do some people enjoy being scared, like on rollercoasters?",
+      "Can social media create new fears in young people?"
+    ]
+  },
+  {
+    "topic": "Relationships & Friendship ❤️",
+    "questions": [
+      "How many close friends do you have?",
+      "What do you value most in a friend?",
+      "How do you usually meet new people?",
+      "Do you prefer spending time with family or friends?",
+      "Have you ever had an argument with a close friend?",
+      "Can men and women truly be just friends? Discuss.",
+      "How has social media changed the nature of friendship?",
+      "Is it possible to maintain close friendships as you get older?",
+      "What makes a relationship healthy or unhealthy?",
+      "Should couples share all their passwords? Why or why not?"
+    ]
+  },
+  {
+    "topic": "Sports & Competition 🏆",
+    "questions": [
+      "What is your favourite sport to watch or play?",
+      "Did you play any sports at school?",
+      "Do you think sport is important for children?",
+      "Who is your favourite sports player?",
+      "Have you ever watched a live sports event?",
+      "Should professional athletes be paid so much money?",
+      "Is competition healthy or harmful for children?",
+      "Should performance-enhancing drugs be allowed in sport?",
+      "How does sport bring nations together?",
+      "Is mental strength more important than physical in sport?"
+    ]
+  },
+  {
+    "topic": "Animals & Pets 🐾",
+    "questions": [
+      "Do you have any pets? What are they like?",
+      "What is your favourite animal and why?",
+      "Would you prefer a dog or a cat?",
+      "Have you ever been to a zoo? What did you think?",
+      "What animal would you be if you could choose?",
+      "Should keeping animals in zoos be banned?",
+      "Is it ethical to have exotic animals as pets?",
+      "How should governments protect endangered species?",
+      "Do animals have the same rights as humans? Discuss.",
+      "Should animal testing for medicine or cosmetics be allowed?"
+    ]
+  },
+  {
+    "topic": "Culture & Traditions 🌐",
+    "questions": [
+      "What is a tradition you celebrate in your family?",
+      "What is the most important festival in your country?",
+      "Have you ever tried a tradition from another culture?",
+      "What traditional food do you love?",
+      "How do people in your country celebrate weddings?",
+      "How important is it to preserve traditional culture in modern life?",
+      "Should immigrants be expected to adopt the culture of their new country?",
+      "Is globalisation destroying local cultures?",
+      "Which traditions do you think should be abandoned and why?",
+      "How can younger generations keep traditions alive?"
+    ]
+  },
+  {
+    "topic": "Science & Space 🚀",
+    "questions": [
+      "Are you interested in space? What fascinates you about it?",
+      "What was the last scientific fact you found interesting?",
+      "Would you travel to space if you had the chance?",
+      "Do you believe there is life on other planets?",
+      "What invention do you think has changed the world the most?",
+      "Should governments spend more money on space exploration?",
+      "Is it ethical to send humans to Mars knowing the risks?",
+      "How has scientific progress improved daily life?",
+      "Do you think science can answer all of life's questions?",
+      "Should private companies like SpaceX control space travel?"
+    ]
+  },
+  {
+    "topic": "City vs Countryside 🏙️",
+    "questions": [
+      "Do you live in a city or a rural area?",
+      "What do you like most about where you live?",
+      "Would you prefer to live in a big city or a quiet village?",
+      "What are three good things about city life?",
+      "What do you miss when you are away from home?",
+      "What are the biggest challenges facing modern cities?",
+      "Is countryside life becoming less attractive to young people? Why?",
+      "How should governments manage population growth in cities?",
+      "Does where you live affect your happiness and opportunities?",
+      "Should cities invest more in public transport? Why?"
+    ]
+  },
+  {
+    "topic": "Books & Reading 📖",
+    "questions": [
+      "Do you enjoy reading? What do you like to read?",
+      "What is the last book you read?",
+      "Do you prefer physical books or e-books?",
+      "Who is your favourite author?",
+      "How often do you read in a week?",
+      "Is reading becoming less popular in the digital age?",
+      "Can books change a person's life? Give an example.",
+      "Should schools require students to read more classic literature?",
+      "Do you think films based on books are usually better or worse?",
+      "How does reading in English help someone improve the language?"
+    ]
+  },
+  {
+    "topic": "Language & Communication 🗣️",
+    "questions": [
+      "How many languages can you speak?",
+      "Why are you learning English?",
+      "What is the hardest thing about learning English?",
+      "Do you think you communicate better in writing or speaking?",
+      "What language would you most like to learn and why?",
+      "Is English becoming the world's only important language?",
+      "Should everyone learn a second language at school?",
+      "How does language shape the way we think?",
+      "Is it possible to fully understand a culture without speaking its language?",
+      "Will translation technology ever replace human language learners?"
+    ]
+  },
+  {
+    "topic": "Shopping & Consumerism 🛍️",
+    "questions": [
+      "Do you enjoy shopping? What do you like to buy?",
+      "Do you prefer shopping in stores or online?",
+      "What is the most expensive thing you have ever bought?",
+      "Do you ever buy things you don't really need?",
+      "What is your favourite place to shop?",
+      "Has online shopping harmed local businesses?",
+      "Is consumerism making us happier or more unhappy?",
+      "Should luxury goods be taxed more heavily?",
+      "How can people become more mindful consumers?",
+      "Is it wrong to spend a lot on fashion or luxury items?"
+    ]
+  },
+  {
+    "topic": "Dreams & Ambitions 🌟",
+    "questions": [
+      "What is your biggest dream in life?",
+      "What did you want to be when you were a child?",
+      "What is one goal you want to achieve this year?",
+      "Who inspires you to work hard?",
+      "What is your biggest achievement so far?",
+      "Is it better to have realistic goals or dream big?",
+      "How much does luck play a role in achieving success?",
+      "Do social pressures influence people's ambitions?",
+      "Can ambition be harmful? When?",
+      "What advice would you give to someone who has lost motivation?"
+    ]
+  },
+  {
+    "topic": "History & Past Events 🏛️",
+    "questions": [
+      "What is your favourite period in history?",
+      "Have you visited any historical places?",
+      "Who is a historical figure you admire?",
+      "Do you enjoy watching historical films or documentaries?",
+      "What event in history do you find most interesting?",
+      "Should countries apologise for historical wrongs?",
+      "How does understanding history help us today?",
+      "Do we learn enough history in schools?",
+      "Is it possible to view history objectively?",
+      "How should nations deal with controversial historical monuments?"
+    ]
+  },
+  {
+    "topic": "Future & Predictions 🔮",
+    "questions": [
+      "Where do you see yourself in five years?",
+      "What do you think the world will look like in 2050?",
+      "Would you like to live on another planet?",
+      "What invention do you hope will exist in the future?",
+      "Are you optimistic or pessimistic about the future?",
+      "Will humans ever live on Mars? Should we try?",
+      "How will climate change affect the world in 50 years?",
+      "Is technological progress always a good thing?",
+      "Will AI ever replace teachers, doctors, or lawyers?",
+      "What is the biggest challenge humanity will face in the future?"
+    ]
+  }
+]

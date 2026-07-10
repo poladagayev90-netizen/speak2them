@@ -1657,6 +1657,113 @@ body {
   .btn-primary { margin-top: 16px; }
 }
 
+/* ===== Daily word puzzle (Wordle-style) ===== */
+.puzzle-hint {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.puzzle-hint-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 4px;
+}
+.puzzle-hint-text { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
+.puzzle-hint-az { font-size: 13px; font-weight: 700; color: var(--accent); margin: 6px 0 0; }
+.puzzle-hint-locked { font-size: 11px; color: var(--text-muted); margin: 6px 0 0; }
+
+.puzzle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 auto 16px;
+  width: min(320px, 100%);
+}
+.puzzle-row { display: flex; gap: 6px; justify-content: center; }
+.puzzle-tile {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.puzzle-tile.is-filled { border-color: var(--accent); }
+.puzzle-tile.is-correct { background: #22c55e; border-color: #22c55e; color: #fff; }
+.puzzle-tile.is-present { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+.puzzle-tile.is-absent {
+  background: var(--bg-secondary);
+  border-color: var(--bg-secondary);
+  color: var(--text-muted);
+}
+
+.puzzle-keyboard { display: flex; flex-direction: column; gap: 6px; }
+.puzzle-key-row { display: flex; gap: 4px; justify-content: center; }
+.puzzle-key {
+  min-width: 30px;
+  height: 46px;
+  padding: 0 6px;
+  flex: 1;
+  max-width: 40px;
+  border: none;
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+.puzzle-key--wide { max-width: 58px; font-size: 16px; }
+.puzzle-key.is-correct { background: #22c55e; border-color: #22c55e; color: #fff; }
+.puzzle-key.is-present { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+.puzzle-key.is-absent { background: var(--bg-secondary); color: var(--text-muted); }
+
+.puzzle-result {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.puzzle-result.is-win { border-color: #22c55e66; box-shadow: 0 0 18px rgba(34, 197, 94, 0.15); }
+.puzzle-result-title { font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; }
+.puzzle-result-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .puzzle-tile.is-correct,
+  .puzzle-tile.is-present,
+  .puzzle-tile.is-absent {
+    animation: puzzleFlip 420ms ease both;
+  }
+  .puzzle-shake { animation: puzzleShake 400ms ease; }
+}
+
+@keyframes puzzleFlip {
+  0% { transform: rotateX(90deg); opacity: 0.4; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+@keyframes puzzleShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
 /* In-call picture stage: soft shimmer while a picture is on the wire. */
 .imgstage-skeleton {
   background: linear-gradient(100deg,

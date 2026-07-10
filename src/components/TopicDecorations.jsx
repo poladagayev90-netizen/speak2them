@@ -52,7 +52,9 @@ export default function TopicDecorations({ topic, intensity = 'low' }) {
     resizeCanvas();
     
     const symbols = getThemeParticles(topic || '');
-    const maxParticles = intensity === 'high' ? 35 : 10;
+    // Decorative only — every particle costs save/rotate/fillText/restore per
+    // frame on the main thread, right where tab-switch mount work happens.
+    const maxParticles = intensity === 'high' ? 14 : 6;
     
     class Particle {
       constructor() {
@@ -108,21 +110,24 @@ export default function TopicDecorations({ topic, intensity = 'low' }) {
     }
     
     const animate = () => {
+      // Hidden tab: skip drawing entirely, just idle until visible again.
+      if (document.hidden) {
+        animationFrameId = requestAnimationFrame(animate);
+        return;
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Adjust particle count smoothly
-      const targetCount = intensity === 'high' ? 35 : 10;
-      if (particles.length < targetCount) {
+
+      if (particles.length < maxParticles) {
         particles.push(new Particle());
-      } else if (particles.length > targetCount) {
+      } else if (particles.length > maxParticles) {
         particles.pop();
       }
-      
+
       particles.forEach(p => {
         p.update();
         p.draw(ctx);
       });
-      
+
       animationFrameId = requestAnimationFrame(animate);
     };
     
