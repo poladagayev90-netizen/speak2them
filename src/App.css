@@ -888,8 +888,8 @@ body {
   position: fixed;
   inset: 0;
   z-index: 1002;
-  background: rgba(10, 10, 20, 0.88);
-  backdrop-filter: blur(6px);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(124, 58, 237, 0.18), rgba(15, 15, 23, 0.94));
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -897,53 +897,146 @@ body {
   overflow-y: auto;
 }
 
+/* Glassmorphism card, brand dark surface (#13131A) regardless of app theme —
+   it always sits over the dark in-call screen. */
 .call-roadmap-card {
+  position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   max-height: 100%;
   overflow-y: auto;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px 20px;
+  background: rgba(19, 19, 26, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  padding: 26px 20px 22px;
   text-align: center;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.call-roadmap-skip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c7c4d4;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.call-roadmap-skip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 .call-roadmap-label {
-  color: var(--text-secondary);
-  font-size: 13px;
-  margin: 0 0 4px;
-}
-
-.call-roadmap-topic {
-  color: var(--accent);
-  font-size: 22px;
-  font-weight: 800;
-  margin: 0 0 16px;
-}
-
-.call-roadmap-section {
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 700;
-  text-align: left;
-  margin: 14px 0 8px;
-}
-
-.call-roadmap-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
-}
-
-.call-roadmap-chip {
-  background: var(--accent);
-  color: white;
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 13px;
+  color: #9d8bff;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.call-roadmap-title {
+  color: #fff;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 14px;
+}
+
+.call-roadmap-topic-pill {
+  display: inline-block;
+  max-width: 100%;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.22), rgba(79, 70, 229, 0.22));
+  border: 1px solid rgba(124, 58, 237, 0.45);
+  color: #d9d2ff;
+  font-size: 13px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  margin: 0 0 18px;
+}
+
+.call-roadmap-topic-pill b {
+  color: #fff;
+}
+
+.call-roadmap-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+/* Each step is its own glass card with a neon-gradient number, laid out
+   top-to-bottom for a clear reading flow. */
+.call-roadmap-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 14px 14px;
+}
+
+.call-roadmap-step-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
+}
+
+.call-roadmap-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.call-roadmap-step-label {
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  margin: 2px 0 4px;
+}
+
+.call-roadmap-step-text {
+  color: #b3b0c2;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.call-roadmap-questions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.call-roadmap-question {
+  background: rgba(124, 58, 237, 0.12);
+  border-left: 2px solid #7c3aed;
+  color: #d9d2ff;
+  font-size: 12.5px;
+  line-height: 1.4;
+  padding: 7px 10px;
+  border-radius: 8px;
+  margin: 0;
 }
 
 .call-roadmap-start {
@@ -952,11 +1045,12 @@ body {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #7c6ff7, #5b4de8);
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
   color: white;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 8px 22px rgba(124, 58, 237, 0.4);
 }
 
 .call-roadmap-more {
@@ -965,7 +1059,7 @@ body {
   padding: 10px;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: #9d8bff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
