@@ -5,7 +5,7 @@ import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
-import { auth, db, refreshFcmToken } from './firebase';
+import { auth, db, watchFcmToken } from './firebase';
 import { isInCall } from './utils/presence';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
@@ -133,6 +133,7 @@ function App() {
     let heartbeatInterval = null;
     let visibilityHandler = null;
     let unloadHandler = null;
+    let stopTokenWatch = null;
 
     const cleanupPresence = () => {
       if (heartbeatInterval) clearInterval(heartbeatInterval);
@@ -141,6 +142,7 @@ function App() {
         window.removeEventListener('beforeunload', unloadHandler);
         window.removeEventListener('pagehide', unloadHandler);
       }
+      if (stopTokenWatch) { stopTokenWatch(); stopTokenWatch = null; }
     };
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
@@ -159,7 +161,9 @@ function App() {
           lastSeen: serverTimestamp(),
         }, { merge: true });
 
-        refreshFcmToken(uid).catch(() => {});
+        // Keep this device's FCM token fresh for the whole session, not just at
+        // load: re-mints on foreground return and on a periodic timer.
+        stopTokenWatch = watchFcmToken(uid);
 
         // Streak reset removed from app-load: Chat.jsx already resets streak
         // to 1 when there is a gap (lastCallDate is older than yesterday).
