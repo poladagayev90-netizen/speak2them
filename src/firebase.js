@@ -141,6 +141,38 @@ export async function refreshFcmToken(uid) {
   }
 }
 
+// The modular Web SDK has no onTokenRefresh callback (it was removed), so we
+// actively re-mint the token instead of only doing it once at app load: on
+// every foreground return and on a periodic timer while the app stays open.
+// registerTokenAndListener is idempotent — getToken returns the *current*
+// token and the SW registration is reused — so a token that rotated while the
+// app was closed (or during a long-lived session) is re-written without the
+// user doing anything. This is the practical web equivalent of onTokenRefresh
+// and closes the "stale token until the next full reload" gap. Returns a
+// cleanup function; call it when the user signs out / the effect tears down.
+const TOKEN_REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6h
+
+export function watchFcmToken(uid) {
+  if (!uid) return () => {};
+
+  let stopped = false;
+  const tick = () => { if (!stopped) refreshFcmToken(uid).catch(() => {}); };
+
+  tick(); // immediate refresh — covers rotation since the previous session
+
+  const onVisible = () => {
+    if (document.visibilityState === 'visible') tick();
+  };
+  document.addEventListener('visibilitychange', onVisible);
+  const interval = setInterval(tick, TOKEN_REFRESH_INTERVAL_MS);
+
+  return () => {
+    stopped = true;
+    document.removeEventListener('visibilitychange', onVisible);
+    clearInterval(interval);
+  };
+}
+
 // Popups are unreliable in an installed PWA (standalone display) and inside
 // in-app webviews. Fall back to a full-page redirect: onAuthStateChanged in
 // App.js creates/refreshes the user doc afterwards, so the redirect path needs
