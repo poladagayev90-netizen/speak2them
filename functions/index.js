@@ -8,8 +8,7 @@ const admin = require("firebase-admin");
 const {
   getTokensForUser,
   getAllTokens,
-  sendDataToTokens,
-  pruneDeadTokens,
+  sendPush,
 } = require("./pushTokens");
 
 admin.initializeApp();
@@ -198,7 +197,7 @@ exports.topicReminder = onSchedule({
 }, async () => {
   const db = admin.firestore();
   const usersSnap = await db.collection("users").get();
-  const users = usersSnap.docs.map(docSnap => ({ ref: docSnap.ref, fcmToken: docSnap.data().fcmToken }));
+  const users = usersSnap.docs.map(d => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
 
   // A concrete question pulls far better than a bare topic name: the reader
@@ -212,7 +211,7 @@ exports.topicReminder = onSchedule({
   // Data-only so the messaging SW renders it and routes the click to `url`.
   // A `notification` payload is auto-displayed by the SDK and bypasses the
   // SW's notificationclick handler.
-  const { sent, failed, dead } = await sendDataToTokens(tokenEntries, {
+  const { sent, failed, removed } = await sendPush(tokenEntries, {
     title: `💬 ${todayContent.topic}`,
     body: question
       ? `${question} — Cavabını düşün və daxil ol!`
@@ -221,14 +220,12 @@ exports.topicReminder = onSchedule({
     url: "/?daily=1",
   });
 
-  await pruneDeadTokens(dead);
-
   console.log("Daily reminder complete", {
     users: usersSnap.size,
     tokens: tokenEntries.length,
     sent,
     failed,
-    invalidTokensRemoved: dead.length,
+    invalidTokensRemoved: removed,
   });
 });
 
@@ -267,10 +264,10 @@ exports.streakReminder = onSchedule({
   // than one shared multicast; the at-risk set is small (streak>=1 AND idle
   // today). Each user may have several devices — all get the nudge.
   for (const u of atRisk) {
-    const entries = await getTokensForUser(db, u.ref.id, u.fcmToken);
+    const entries = await getTokensForUser(db, u.ref.id, u.fcmToken, u.fcmTokenFailCount);
     if (!entries.length) continue;
     const streak = u.streak || 1;
-    const { sent: s, dead } = await sendDataToTokens(entries, urgent
+    const { sent: s, removed: r } = await sendPush(entries, urgent
       ? {
           title: "⚠️ Streak-in bu gecə sönəcək!",
           body: `${streak} günlük əziyyətin gecə yarısı sıfırlanır. Qısa bir zəng kifayətdir! 🔥`,
@@ -284,8 +281,7 @@ exports.streakReminder = onSchedule({
           url: "/",
         });
     sent += s;
-    removed += dead.length;
-    await pruneDeadTokens(dead);
+    removed += r;
   }
 
   console.log("[StreakReminder]", { atRisk: atRisk.length, sent, urgent, invalidTokensRemoved: removed });
@@ -294,18 +290,17 @@ exports.streakReminder = onSchedule({
 exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
   const db = admin.firestore();
   const usersSnap = await db.collection("users").get();
-  const users = usersSnap.docs.map(docSnap => ({ ref: docSnap.ref, fcmToken: docSnap.data().fcmToken }));
+  const users = usersSnap.docs.map(d => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
 
   if (tokenEntries.length === 0) return res.status(200).json({ error: "No users with tokens" });
 
-  const { sent, failed, dead } = await sendDataToTokens(tokenEntries, {
+  const { sent, failed } = await sendPush(tokenEntries, {
     title: "🛠️ SpeakLab Test Mesajı",
     body: "Bu mesaj push bildirişlərinin düzgün işlədiyini yoxlamaq üçün göndərilmişdir.",
     type: "test",
     url: "/",
   });
-  await pruneDeadTokens(dead);
 
   res.status(200).json({ sent, failed, tokens: tokenEntries.length });
 });
@@ -1187,12 +1182,11 @@ function effectiveAnalyzeSeconds(audioSeconds) {
 // SDK double-display problem that notification payloads can cause.
 async function sendPushToUser(db, uid, { title, body, type, url }) {
   const userSnap = await db.collection("users").doc(uid).get();
-  const legacy = userSnap.exists ? userSnap.data().fcmToken : null;
-  const entries = await getTokensForUser(db, uid, legacy);
+  const data = userSnap.exists ? userSnap.data() : {};
+  const entries = await getTokensForUser(db, uid, data.fcmToken, data.fcmTokenFailCount);
   if (!entries.length) return;
   try {
-    const { dead } = await sendDataToTokens(entries, { title, body, type, url });
-    await pruneDeadTokens(dead);
+    await sendPush(entries, { title, body, type, url });
   } catch (error) {
     console.warn("[Push] send failed:", uid, error.message);
   }
@@ -1553,17 +1547,16 @@ async function broadcastSessionReminder(db, startLabel, hour) {
     : "Axşam sessiyasına az qaldı! 🌙";
 
   const usersSnap = await db.collection("users").get();
-  const users = usersSnap.docs.map((d) => ({ ref: d.ref, fcmToken: d.data().fcmToken }));
+  const users = usersSnap.docs.map((d) => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
 
-  const { sent, dead } = await sendDataToTokens(tokenEntries, {
+  const { sent, removed } = await sendPush(tokenEntries, {
     title,
     body: `Sessiya ${startLabel}-da başlayır — günün mövzusuna bax və hazır ol.`,
     type: "session_reminder",
     url: "/",
   });
-  await pruneDeadTokens(dead);
-  console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", dead.length);
+  console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", removed);
 }
 
 // Same normalisation as the client (src/utils/sessionSchedule.js): a non-empty
@@ -1819,7 +1812,7 @@ exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event
     if (docSnap.id === searcherUid) continue;
     const data = docSnap.data();
     if (data.status === "busy") continue; // already in a call
-    const entries = await getTokensForUser(db, docSnap.id, data.fcmToken);
+    const entries = await getTokensForUser(db, docSnap.id, data.fcmToken, data.fcmTokenFailCount);
     for (const e of entries) {
       recipients.push(e);
       if (recipients.length >= SEARCH_PING_MAX_RECIPIENTS) break;
@@ -1828,12 +1821,11 @@ exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event
   }
 
   const searcherName = String(after.name || "Kimsə").slice(0, 30);
-  const { sent, dead } = await sendDataToTokens(recipients, {
+  const { sent } = await sendPush(recipients, {
     title: "Kimsə praktika axtarır 🎙️",
     body: `${searcherName} partnyor gözləyir — indi qoşul!`,
     type: "search_ping",
     url: "/",
   });
-  await pruneDeadTokens(dead);
   console.log("[SearchPing] candidates:", recipients.length, "sent:", sent);
 });
