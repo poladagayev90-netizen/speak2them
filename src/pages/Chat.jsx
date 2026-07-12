@@ -274,8 +274,20 @@ export default function Chat({ user }) {
       inCallRef.current = true;
       setCallStatus('connected');
       joinedRef.current = true;
-      // Both peers get the conversation roadmap the moment the call is live.
-      setShowRoadmap(true);
+      // The "how to start" roadmap is only useful for newcomers. Show it for a
+      // user's first few calls, then never again — surfacing it on every call
+      // is just noise for experienced users. Counter is per-device (localStorage).
+      try {
+        const ROADMAP_MAX_SHOWS = 3;
+        const seen = parseInt(localStorage.getItem('callRoadmapShows_v1') || '0', 10) || 0;
+        if (seen < ROADMAP_MAX_SHOWS) {
+          setShowRoadmap(true);
+          localStorage.setItem('callRoadmapShows_v1', String(seen + 1));
+        }
+      } catch (e) {
+        // localStorage unavailable (private mode) — fall back to showing it.
+        setShowRoadmap(true);
+      }
       
       // [PROMOTION MVP] Disabled all background speech transcription
       /*
