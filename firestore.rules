@@ -33,6 +33,13 @@ service cloud.firestore {
       allow create: if isOwnDoc(userId) && isNotCreatingPremiumFields();
       allow update: if isAdmin() || (isOwnDoc(userId) && isNotChangingPremiumFields());
       allow delete: if isAdmin();
+
+      // Per-device FCM push tokens. Each device writes its own doc (id = hash of
+      // the token) so devices don't overwrite each other. Only the owner
+      // manages them; Cloud Functions read/prune via the Admin SDK.
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isOwnDoc(userId);
+      }
     }
 
     match /premiumRequests/{userId} {

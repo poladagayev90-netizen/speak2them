@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
 
@@ -42,6 +42,25 @@ try {
 // default) so both workers coexist.
 const FCM_SW_SCOPE = '/firebase-cloud-messaging-push-scope';
 
+// Each device keeps its own token doc under users/{uid}/fcmTokens so a second
+// device never overwrites the first (the old single users/{uid}.fcmToken field
+// meant only the most recently opened device received pushes). The doc id is a
+// stable hash of the token, so re-registering an unchanged token updates the
+// same doc instead of piling up duplicates.
+async function tokenDocId(token) {
+  try {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+    return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    // Non-secure contexts have no crypto.subtle; a deterministic 32-bit hash is
+    // enough for a per-device id (a collision only merges two tokens for one
+    // user, which self-heals when the stale one is pruned on send failure).
+    let h = 5381;
+    for (let i = 0; i < token.length; i++) h = ((h << 5) + h + token.charCodeAt(i)) >>> 0;
+    return 'h' + h.toString(16);
+  }
+}
+
 // Registers the messaging SW, mints a token, stores it, and wires the
 // foreground handler. Shared by the gesture (enableNotifications) and load
 // (refreshFcmToken) paths — both need the identical token + listener setup once
@@ -58,7 +77,12 @@ async function registerTokenAndListener(uid) {
   });
 
   if (token) {
-    await setDoc(doc(db, 'users', uid), { fcmToken: token }, { merge: true });
+    const id = await tokenDocId(token);
+    await setDoc(
+      doc(db, 'users', uid, 'fcmTokens', id),
+      { token, userAgent: (navigator.userAgent || '').slice(0, 300), updatedAt: serverTimestamp() },
+      { merge: true }
+    );
   }
 
   // Data-only pushes that arrive while a tab is open never reach the SW's

@@ -5,6 +5,12 @@ const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
+const {
+  getTokensForUser,
+  getAllTokens,
+  sendDataToTokens,
+  pruneDeadTokens,
+} = require("./pushTokens");
 
 admin.initializeApp();
 
@@ -22,7 +28,6 @@ const APP_URL = defineString("APP_URL", {
   default: "https://speak2them.vercel.app",
 });
 
-const DAILY_REMINDER_BATCH_SIZE = 500;
 const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
 
 function setCors(res, methods = "POST") {
@@ -191,14 +196,10 @@ exports.topicReminder = onSchedule({
   schedule: "0 10,15,21 * * *",
   timeZone: "Asia/Baku",
 }, async () => {
-  const usersSnap = await admin.firestore().collection("users").get();
-  const usersWithTokens = usersSnap.docs
-    .map(docSnap => ({ ref: docSnap.ref, ...docSnap.data() }))
-    .filter(user => typeof user.fcmToken === "string" && user.fcmToken.trim());
-
-  let sent = 0;
-  let failed = 0;
-  const invalidTokenRefs = [];
+  const db = admin.firestore();
+  const usersSnap = await db.collection("users").get();
+  const users = usersSnap.docs.map(docSnap => ({ ref: docSnap.ref, fcmToken: docSnap.data().fcmToken }));
+  const tokenEntries = await getAllTokens(db, users);
 
   // A concrete question pulls far better than a bare topic name: the reader
   // can start answering it in their head before they even open the app.
@@ -208,47 +209,26 @@ exports.topicReminder = onSchedule({
   }).format(new Date()));
   const question = getQuestionForHour(todayContent, bakuHour);
 
-  for (let i = 0; i < usersWithTokens.length; i += DAILY_REMINDER_BATCH_SIZE) {
-    const batch = usersWithTokens.slice(i, i + DAILY_REMINDER_BATCH_SIZE);
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens: batch.map(user => user.fcmToken),
-      // Data-only so the messaging SW renders it and routes the click to `url`.
-      // A `notification` payload is auto-displayed by the SDK and bypasses the
-      // SW's notificationclick handler.
-      data: {
-        title: `💬 ${todayContent.topic}`,
-        body: question
-          ? `${question} — Cavabını düşün və daxil ol!`
-          : "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir!",
-        type: "daily_reminder",
-        url: "/?daily=1",
-      },
-    });
+  // Data-only so the messaging SW renders it and routes the click to `url`.
+  // A `notification` payload is auto-displayed by the SDK and bypasses the
+  // SW's notificationclick handler.
+  const { sent, failed, dead } = await sendDataToTokens(tokenEntries, {
+    title: `💬 ${todayContent.topic}`,
+    body: question
+      ? `${question} — Cavabını düşün və daxil ol!`
+      : "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir!",
+    type: "daily_reminder",
+    url: "/?daily=1",
+  });
 
-    sent += response.successCount;
-    failed += response.failureCount;
-
-    response.responses.forEach((result, index) => {
-      const code = result.error?.code;
-      if (
-        code === "messaging/invalid-registration-token" ||
-        code === "messaging/registration-token-not-registered"
-      ) {
-        invalidTokenRefs.push(batch[index].ref);
-      }
-    });
-  }
-
-  await Promise.all(invalidTokenRefs.map(ref => ref.update({
-    fcmToken: admin.firestore.FieldValue.delete(),
-  }).catch(() => null)));
+  await pruneDeadTokens(dead);
 
   console.log("Daily reminder complete", {
     users: usersSnap.size,
-    tokens: usersWithTokens.length,
+    tokens: tokenEntries.length,
     sent,
     failed,
-    invalidTokensRemoved: invalidTokenRefs.length,
+    invalidTokensRemoved: dead.length,
   });
 });
 
@@ -269,9 +249,7 @@ exports.streakReminder = onSchedule({
 
   const atRisk = snap.docs
     .map((d) => ({ ref: d.ref, ...d.data() }))
-    .filter((u) =>
-      typeof u.fcmToken === "string" && u.fcmToken.trim() &&
-      u.lastCallDate && u.lastCallDate !== today);
+    .filter((u) => u.lastCallDate && u.lastCallDate !== today);
 
   if (atRisk.length === 0) {
     console.log("[StreakReminder] nobody at risk");
@@ -284,65 +262,52 @@ exports.streakReminder = onSchedule({
   const urgent = bakuHour >= 21;
 
   let sent = 0;
-  const invalidTokenRefs = [];
+  let removed = 0;
   // Messages are personalised with the streak count, so send per-user rather
-  // than multicast; the at-risk set is small (streak>=1 AND idle today).
+  // than one shared multicast; the at-risk set is small (streak>=1 AND idle
+  // today). Each user may have several devices — all get the nudge.
   for (const u of atRisk) {
+    const entries = await getTokensForUser(db, u.ref.id, u.fcmToken);
+    if (!entries.length) continue;
     const streak = u.streak || 1;
-    try {
-      await admin.messaging().send({
-        token: u.fcmToken,
-        data: urgent
-          ? {
-              title: "⚠️ Streak-in bu gecə sönəcək!",
-              body: `${streak} günlük əziyyətin gecə yarısı sıfırlanır. Qısa bir zəng kifayətdir! 🔥`,
-              type: "streak_rescue",
-              url: "/",
-            }
-          : {
-              title: `🔥 ${streak} günlük streak-in gözləyir`,
-              body: "Bu gün hələ danışmamısan — bir zəng et, alovu qoru!",
-              type: "streak_rescue",
-              url: "/",
-            },
-      });
-      sent++;
-    } catch (e) {
-      if (
-        e.code === "messaging/invalid-registration-token" ||
-        e.code === "messaging/registration-token-not-registered"
-      ) {
-        invalidTokenRefs.push(u.ref);
-      }
-    }
+    const { sent: s, dead } = await sendDataToTokens(entries, urgent
+      ? {
+          title: "⚠️ Streak-in bu gecə sönəcək!",
+          body: `${streak} günlük əziyyətin gecə yarısı sıfırlanır. Qısa bir zəng kifayətdir! 🔥`,
+          type: "streak_rescue",
+          url: "/",
+        }
+      : {
+          title: `🔥 ${streak} günlük streak-in gözləyir`,
+          body: "Bu gün hələ danışmamısan — bir zəng et, alovu qoru!",
+          type: "streak_rescue",
+          url: "/",
+        });
+    sent += s;
+    removed += dead.length;
+    await pruneDeadTokens(dead);
   }
 
-  await Promise.all(invalidTokenRefs.map((ref) => ref.update({
-    fcmToken: admin.firestore.FieldValue.delete(),
-  }).catch(() => null)));
-
-  console.log("[StreakReminder]", { atRisk: atRisk.length, sent, urgent, invalidTokensRemoved: invalidTokenRefs.length });
+  console.log("[StreakReminder]", { atRisk: atRisk.length, sent, urgent, invalidTokensRemoved: removed });
 });
 
 exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
-  const usersSnap = await admin.firestore().collection("users").get();
-  const usersWithTokens = usersSnap.docs
-    .map(docSnap => ({ ref: docSnap.ref, ...docSnap.data() }))
-    .filter(user => typeof user.fcmToken === "string" && user.fcmToken.trim());
+  const db = admin.firestore();
+  const usersSnap = await db.collection("users").get();
+  const users = usersSnap.docs.map(docSnap => ({ ref: docSnap.ref, fcmToken: docSnap.data().fcmToken }));
+  const tokenEntries = await getAllTokens(db, users);
 
-  if (usersWithTokens.length === 0) return res.status(200).json({ error: "No users with tokens" });
+  if (tokenEntries.length === 0) return res.status(200).json({ error: "No users with tokens" });
 
-  const response = await admin.messaging().sendEachForMulticast({
-    tokens: usersWithTokens.map(u => u.fcmToken),
-    data: {
-      title: "🛠️ SpeakLab Test Mesajı",
-      body: "Bu mesaj push bildirişlərinin düzgün işlədiyini yoxlamaq üçün göndərilmişdir.",
-      type: "test",
-      url: "/",
-    },
+  const { sent, failed, dead } = await sendDataToTokens(tokenEntries, {
+    title: "🛠️ SpeakLab Test Mesajı",
+    body: "Bu mesaj push bildirişlərinin düzgün işlədiyini yoxlamaq üçün göndərilmişdir.",
+    type: "test",
+    url: "/",
   });
+  await pruneDeadTokens(dead);
 
-  res.status(200).json({ sent: response.successCount, failed: response.failureCount, users: usersWithTokens.length });
+  res.status(200).json({ sent, failed, tokens: tokenEntries.length });
 });
 
 // ─── Trial / Subscription ────────────────────────────────────
@@ -1221,27 +1186,15 @@ function effectiveAnalyzeSeconds(audioSeconds) {
 // routes clicks via data.url); prunes dead tokens. Data-only avoids the
 // SDK double-display problem that notification payloads can cause.
 async function sendPushToUser(db, uid, { title, body, type, url }) {
-  const userRef = db.collection("users").doc(uid);
+  const userSnap = await db.collection("users").doc(uid).get();
+  const legacy = userSnap.exists ? userSnap.data().fcmToken : null;
+  const entries = await getTokensForUser(db, uid, legacy);
+  if (!entries.length) return;
   try {
-    const userSnap = await userRef.get();
-    const token = userSnap.exists ? userSnap.data().fcmToken : null;
-    if (typeof token !== "string" || !token.trim()) return;
-    await admin.messaging().send({
-      token,
-      data: { title, body, type, url },
-    });
+    const { dead } = await sendDataToTokens(entries, { title, body, type, url });
+    await pruneDeadTokens(dead);
   } catch (error) {
-    const code = error.code;
-    if (
-      code === "messaging/invalid-registration-token" ||
-      code === "messaging/registration-token-not-registered"
-    ) {
-      await userRef.update({
-        fcmToken: admin.firestore.FieldValue.delete(),
-      }).catch(() => null);
-    } else {
-      console.warn("[Push] send failed:", uid, error.message);
-    }
+    console.warn("[Push] send failed:", uid, error.message);
   }
 }
 
@@ -1600,38 +1553,17 @@ async function broadcastSessionReminder(db, startLabel, hour) {
     : "Axşam sessiyasına az qaldı! 🌙";
 
   const usersSnap = await db.collection("users").get();
-  const usersWithTokens = usersSnap.docs
-    .map((d) => ({ ref: d.ref, ...d.data() }))
-    .filter((u) => typeof u.fcmToken === "string" && u.fcmToken.trim());
+  const users = usersSnap.docs.map((d) => ({ ref: d.ref, fcmToken: d.data().fcmToken }));
+  const tokenEntries = await getAllTokens(db, users);
 
-  let sent = 0;
-  const invalidTokenRefs = [];
-  for (let i = 0; i < usersWithTokens.length; i += DAILY_REMINDER_BATCH_SIZE) {
-    const batch = usersWithTokens.slice(i, i + DAILY_REMINDER_BATCH_SIZE);
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens: batch.map((u) => u.fcmToken),
-      data: {
-        title,
-        body: `Sessiya ${startLabel}-da başlayır — günün mövzusuna bax və hazır ol.`,
-        type: "session_reminder",
-        url: "/",
-      },
-    });
-    sent += response.successCount;
-    response.responses.forEach((result, index) => {
-      const code = result.error?.code;
-      if (
-        code === "messaging/invalid-registration-token" ||
-        code === "messaging/registration-token-not-registered"
-      ) {
-        invalidTokenRefs.push(batch[index].ref);
-      }
-    });
-  }
-  await Promise.all(invalidTokenRefs.map((ref) => ref.update({
-    fcmToken: admin.firestore.FieldValue.delete(),
-  }).catch(() => null)));
-  console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", invalidTokenRefs.length);
+  const { sent, dead } = await sendDataToTokens(tokenEntries, {
+    title,
+    body: `Sessiya ${startLabel}-da başlayır — günün mövzusuna bax və hazır ol.`,
+    type: "session_reminder",
+    url: "/",
+  });
+  await pruneDeadTokens(dead);
+  console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", dead.length);
 }
 
 // Same normalisation as the client (src/utils/sessionSchedule.js): a non-empty
@@ -1838,27 +1770,6 @@ const SEARCH_PING_COOLDOWN_MS = 10 * 60 * 1000;
 const SEARCH_PING_MAX_RECIPIENTS = 30;
 const PRESENCE_FRESH_MS = 5 * 60 * 1000;
 
-// One multicast instead of a read + send per recipient.
-async function sendPushToTokens(db, recipients, { title, body, type, url }) {
-  if (recipients.length === 0) return 0;
-  const response = await admin.messaging().sendEachForMulticast({
-    tokens: recipients.map((r) => r.token),
-    data: { title, body, type, url },
-  });
-  const dead = [];
-  response.responses.forEach((r, i) => {
-    const code = r.error && r.error.code;
-    if (code === "messaging/invalid-registration-token" ||
-        code === "messaging/registration-token-not-registered") {
-      dead.push(recipients[i].uid);
-    }
-  });
-  await Promise.all(dead.map((uid) => db.collection("users").doc(uid).update({
-    fcmToken: admin.firestore.FieldValue.delete(),
-  }).catch(() => null)));
-  return response.successCount;
-}
-
 exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event) => {
   const before = event.data.before.exists ? event.data.before.data() : null;
   const after = event.data.after.exists ? event.data.after.data() : null;
@@ -1901,23 +1812,28 @@ exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event
     .limit(SEARCH_PING_MAX_RECIPIENTS * 2)
     .get();
 
+  // Gather up to SEARCH_PING_MAX_RECIPIENTS candidate devices — each free,
+  // online user contributes all of their device tokens.
   const recipients = [];
   for (const docSnap of onlineSnap.docs) {
     if (docSnap.id === searcherUid) continue;
     const data = docSnap.data();
     if (data.status === "busy") continue; // already in a call
-    const token = data.fcmToken;
-    if (typeof token !== "string" || !token.trim()) continue;
-    recipients.push({ uid: docSnap.id, token });
+    const entries = await getTokensForUser(db, docSnap.id, data.fcmToken);
+    for (const e of entries) {
+      recipients.push(e);
+      if (recipients.length >= SEARCH_PING_MAX_RECIPIENTS) break;
+    }
     if (recipients.length >= SEARCH_PING_MAX_RECIPIENTS) break;
   }
 
   const searcherName = String(after.name || "Kimsə").slice(0, 30);
-  const sent = await sendPushToTokens(db, recipients, {
+  const { sent, dead } = await sendDataToTokens(recipients, {
     title: "Kimsə praktika axtarır 🎙️",
     body: `${searcherName} partnyor gözləyir — indi qoşul!`,
     type: "search_ping",
     url: "/",
   });
+  await pruneDeadTokens(dead);
   console.log("[SearchPing] candidates:", recipients.length, "sent:", sent);
 });
