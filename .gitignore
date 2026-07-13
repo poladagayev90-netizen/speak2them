@@ -30,5 +30,6 @@ yarn-error.log*
 
 # android release signing — keep keys and passwords out of git
 android/keystore.properties
+android/app/gradle.properties
 *.jks
 *.keystore

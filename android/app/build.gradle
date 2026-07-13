@@ -1,26 +1,27 @@
 apply plugin: 'com.android.application'
 
-// Release signing is loaded from android/keystore.properties, which is
-// git-ignored so the upload key and its passwords never land in the repo. When
-// the file is absent (CI without secrets, or a fresh clone) the release build
-// simply falls back to unsigned — debug builds are unaffected.
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-def hasReleaseKeystore = keystorePropertiesFile.exists()
-if (hasReleaseKeystore) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+// Release signing credentials are read from android/app/gradle.properties,
+// which is git-ignored, so the keystore passwords never enter version control.
+// Gradle does not auto-load a module-level gradle.properties, so it is loaded
+// explicitly here. When the keys are missing (fresh clone, CI without secrets)
+// the release build falls back to unsigned; debug builds are unaffected.
+def releaseSigningProps = new Properties()
+def releaseSigningFile = file("gradle.properties")
+if (releaseSigningFile.exists()) {
+    releaseSigningFile.withInputStream { releaseSigningProps.load(it) }
 }
+def hasReleaseSigning = releaseSigningProps.getProperty('MYAPP_RELEASE_STORE_PASSWORD')?.trim()
 
 android {
     namespace = "com.speaklab.app"
     compileSdk = rootProject.ext.compileSdkVersion
     signingConfigs {
-        if (hasReleaseKeystore) {
+        if (hasReleaseSigning) {
             release {
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
+                storeFile file('speaklab-release.jks')
+                storePassword releaseSigningProps['MYAPP_RELEASE_STORE_PASSWORD']
+                keyAlias releaseSigningProps['MYAPP_RELEASE_KEY_ALIAS']
+                keyPassword releaseSigningProps['MYAPP_RELEASE_KEY_PASSWORD']
             }
         }
     }
@@ -39,7 +40,7 @@ android {
     }
     buildTypes {
         release {
-            if (hasReleaseKeystore) {
+            if (hasReleaseSigning) {
                 signingConfig signingConfigs.release
             }
             minifyEnabled false
