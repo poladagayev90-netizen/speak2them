@@ -8,6 +8,8 @@ import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
+import { authedFetch } from '../api';
+import { FUNCTIONS_BASE } from '../constants';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -77,6 +79,34 @@ export default function Profile({ user }) {
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/login');
+  };
+
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    // Two-step confirmation: an explicit warning, then a typed word, so the
+    // account can never be destroyed by a single accidental tap.
+    if (!window.confirm(
+      'Hesabınız və bütün datanız (profil, söz tarixçəsi, zəng analizləri, səs qeydləri) həmişəlik silinəcək. Bu əməliyyat geri qaytarıla bilməz. Davam edilsin?'
+    )) return;
+    const typed = window.prompt('Təsdiq üçün "SİL" yazın:');
+    if ((typed || '').trim().toUpperCase() !== 'SİL') return;
+
+    setDeleting(true);
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/deleteAccount`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Silinmə uğursuz oldu');
+      }
+      await signOut(auth).catch(() => {});
+      alert('Hesabınız silindi.');
+      navigate('/login');
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Silinmə zamanı xəta baş verdi. Yenidən cəhd edin.');
+      setDeleting(false);
+    }
   };
 
 
@@ -328,6 +358,27 @@ export default function Profile({ user }) {
       }} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--accent)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
         🔄 Turları Sıfırla (Bələdçi)
       </button>
+
+      {/* PRIVACY & ACCOUNT — Google Play requires an in-app privacy link and a
+          way to delete the account together with its data. */}
+      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Məxfilik və Hesab</h3>
+      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
+        <a
+          href="/privacy.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '16px', fontWeight: 700, borderBottom: '1px solid var(--border)' }}
+        >
+          🔒 Məxfilik Siyasəti
+        </a>
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deleting}
+          style={{ width: '100%', background: 'none', border: 'none', color: 'var(--danger, #ef4444)', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: deleting ? 'default' : 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left', opacity: deleting ? 0.6 : 1 }}
+        >
+          🗑️ {deleting ? 'Silinir…' : 'Hesabı Sil'}
+        </button>
+      </div>
 
       {showWordHistory && (
         <WordHistoryPanel userId={user.uid} onClose={() => setShowWordHistory(false)} />

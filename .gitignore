@@ -27,3 +27,8 @@ public/firebase-sw-config.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# android release signing — keep keys and passwords out of git
+android/keystore.properties
+*.jks
+*.keystore

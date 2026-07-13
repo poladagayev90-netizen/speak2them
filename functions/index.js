@@ -1829,3 +1829,99 @@ exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event
   });
   console.log("[SearchPing] candidates:", recipients.length, "sent:", sent);
 });
+
+// ─── Hesab Silmə (Google Play tələbi: hesab + data silmə) ──────
+// Deletes every piece of data a single user owns, anonymises their name in
+// shared call/chat records, then removes the Firebase Auth account. Data is
+// removed *before* the auth account so that a partial failure leaves the
+// account intact and the user can safely retry rather than being locked out of
+// a half-deleted account.
+const DELETED_LABEL = "Silinmiş istifadəçi";
+
+// Deletes every doc a query returns, 400 at a time (Firestore batch cap 500).
+async function deleteByQuery(query) {
+  let removed = 0;
+  while (true) {
+    const snap = await query.limit(400).get();
+    if (snap.empty) break;
+    const batch = admin.firestore().batch();
+    snap.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+    removed += snap.size;
+    if (snap.size < 400) break;
+  }
+  return removed;
+}
+
+// Recursively deletes a doc together with any known sub-collections.
+async function deleteDocDeep(ref, subcollections = []) {
+  for (const name of subcollections) {
+    await deleteByQuery(ref.collection(name));
+  }
+  await ref.delete().catch(() => null);
+}
+
+exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const uid = decoded.uid;
+  const db = admin.firestore();
+
+  try {
+    // 1) Owned documents (+ their sub-collections).
+    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens"]);
+    await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
+    await db.collection("matchQueue").doc(uid).delete().catch(() => null);
+    await db.collection("premiumRequests").doc(uid).delete().catch(() => null);
+
+    // 2) Owned collections keyed by a uid field.
+    await deleteByQuery(db.collection("callAnalysis").where("userId", "==", uid));
+    await deleteByQuery(db.collection("analysisQueue").where("uid", "==", uid));
+
+    // 3) Stored call recordings (Storage), best-effort.
+    await admin.storage().bucket()
+      .deleteFiles({ prefix: `callRecordings/${uid}/` })
+      .catch((e) => console.warn("[deleteAccount] storage cleanup failed:", e.message));
+
+    // 4) Anonymise the user's name in shared call/chat records (best-effort —
+    //    these docs belong to a conversation with another person, so we keep the
+    //    record but strip this user's identity from it).
+    try {
+      for (const field of ["callerId", "userA"]) {
+        const snap = await db.collection("calls").where(field, "==", uid).limit(400).get();
+        await Promise.all(snap.docs.map((d) =>
+          d.ref.update({ callerName: DELETED_LABEL }).catch(() => null)));
+      }
+      for (const field of ["receiverId", "userB"]) {
+        const snap = await db.collection("calls").where(field, "==", uid).limit(400).get();
+        await Promise.all(snap.docs.map((d) =>
+          d.ref.update({ receiverName: DELETED_LABEL }).catch(() => null)));
+      }
+      const chats = await db.collection("chats").where("participants", "array-contains", uid).limit(200).get();
+      for (const chat of chats.docs) {
+        const msgs = await chat.ref.collection("messages").where("senderId", "==", uid).limit(400).get();
+        await Promise.all(msgs.docs.map((d) =>
+          d.ref.update({ senderName: DELETED_LABEL }).catch(() => null)));
+      }
+    } catch (e) {
+      console.warn("[deleteAccount] anonymisation partial failure:", e.message);
+    }
+
+    // 5) Finally the auth account itself.
+    await admin.auth().deleteUser(uid);
+
+    console.log("[deleteAccount] completed for", uid);
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error("[deleteAccount] failed for", uid, e);
+    res.status(500).json({ error: "Silinmə tamamlanmadı. Yenidən cəhd edin." });
+  }
+});
