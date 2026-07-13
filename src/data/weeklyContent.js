@@ -1,3 +1,5 @@
+import { getCachedCycle } from '../utils/cycleCache';
+
 export const weeklyContent = [
   {
     day: 1,
@@ -1121,15 +1123,21 @@ export const weeklyContent = [
   },
 ];
 
-// LOCAL calendar-day index, so the topic rolls over at local midnight (all
-// users share UTC+4). It still comes from the DEVICE clock: two peers can
-// disagree (clock skew, a call spanning midnight), so anything that must
+// The current topic index. It now comes from the server-driven global cycle
+// (appConfig/cycle → cycleCache), which only advances on session days. Until
+// that doc has loaded (cold start / offline) it falls back to the old LOCAL
+// calendar-day formula so the app is never blank. As before, anything that must
 // stay in sync across a call should write getTodayIndex() into the call doc
 // once and have both sides read content via getContentByIndex().
 export function getTodayIndex() {
+  const n = weeklyContent.length;
+  const cycle = getCachedCycle();
+  if (cycle && Number.isFinite(cycle.currentTopicIndex)) {
+    return ((cycle.currentTopicIndex % n) + n) % n;
+  }
   const d = new Date();
   const localDays = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
-  return localDays % weeklyContent.length;
+  return ((localDays % n) + n) % n;
 }
 
 export function getContentByIndex(index) {

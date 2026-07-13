@@ -7,6 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { auth, db, watchFcmToken } from './firebase';
 import { isInCall } from './utils/presence';
+import { subscribeToCycle } from './utils/cycle';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
@@ -92,6 +93,9 @@ function AppShell({ user }) {
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Held only to re-render the tree when the global cycle advances (nightly),
+  // so the topic updates live; the value itself is read via the shared cache.
+  const [, setCycle] = useState(null);
 
   useEffect(() => {
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -128,6 +132,10 @@ function App() {
     }, 2000);
     return () => clearTimeout(t);
   }, [loading]);
+
+  // Subscribe once to the server-driven topic cycle (appConfig/cycle). This
+  // warms the shared cache used by getTodayIndex()/getTodayContent() app-wide.
+  useEffect(() => subscribeToCycle(setCycle), []);
 
   useEffect(() => {
     let heartbeatInterval = null;

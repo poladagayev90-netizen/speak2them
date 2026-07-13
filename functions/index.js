@@ -63,6 +63,66 @@ async function enforceRateLimit(uid, key, maxCalls, windowMs) {
   }
 }
 
+// ─── Kohort + Qlobal Mövzu Cycle-ı ─────────────────────────────
+// Qlobal, heç vaxt sıfırlanmayan mövzu dövrü. cycleTick monoton artır;
+// topicIndex = cycleTick % TOPIC_COUNT. Proqres per-user YAZILMIR — client
+// currentCycleTick - startTick ilə hesablayır.
+const TOPIC_COUNT = require("./dailyQuestions.json").length; // src/data/weeklyContent.js ilə eyni
+const TRIAL_DAYS = 2;              // kodsuz trial: ilk girişdən 2 gün
+const COURSE_FREE_MONTHS = 6;      // kurs bitəndən sonra pulsuz dövr
+// Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Admin appConfig/session-da dəyişir.
+const DEFAULT_SESSION_DAYS = [1, 3, 5];   // B.e / Çər / Cümə
+const DEFAULT_BONUS_DAYS = [];
+
+// Baku təqvim tarixi "YYYY-MM-DD" (UTC+4, DST yoxdur).
+function bakuDateStr(ms = Date.now()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Baku" }).format(new Date(ms));
+}
+
+// Baku tarixinin həftə günü (0=Bazar). Tarix sətrini UTC gecəyarısı kimi
+// oxuyuruq ki, serverin saat qurşağından asılı olmayaraq deterministik olsun.
+function bakuWeekday(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
+// Davamlılıq toxumu: köhnə təqvim-günü formulu ilə eyni indeks, belə ki
+// cycle ilk dəfə qurulanda mövcud userlər üçün mövzu sıçramır.
+function seedTickForDate(dateStr) {
+  const days = Math.floor(Date.parse(`${dateStr}T00:00:00Z`) / 86400000);
+  return ((days % TOPIC_COUNT) + TOPIC_COUNT) % TOPIC_COUNT;
+}
+
+// appConfig/cycle-dən hazırkı topic indeksini oxuyur; sənəd hələ yoxdursa
+// köhnə təqvim formuluna düşür.
+async function readCycleIndex(db) {
+  const snap = await db.collection("appConfig").doc("cycle").get().catch(() => null);
+  if (snap && snap.exists && Number.isFinite(snap.data().currentTopicIndex)) {
+    return snap.data().currentTopicIndex;
+  }
+  return seedTickForDate(bakuDateStr());
+}
+
+// Kodsuz trial ilk girişdən TRIAL_DAYS gün sonra bitir. Premium / pullu plan
+// heç vaxt bloklanmır. Müstəsna yalnız rules-qorunan sahələrə (isPremium,
+// subscriptionPlan) əsaslanır — client-yazıla bilən `mode` sahəsinə GÜVƏNMİRİK,
+// yoxsa dəyişdirilmiş client mode:'course' qoyub 2 günlük limiti keçərdi.
+// (Kurs istifadəçiləri redeemCode-da isPremium:true alır, ona görə müstəsnadır.)
+// trialStartedAt olmayan köhnə userlər də bloklanmır.
+function isTrialExpired(u) {
+  if (!u) return false;
+  if (u.isPremium) return false;
+  if (u.freeAccessUntil && typeof u.freeAccessUntil.toMillis === "function"
+    && u.freeAccessUntil.toMillis() > Date.now()) return false;
+  if (u.subscriptionPlan && u.subscriptionPlan !== "trial" && u.subscriptionPlan !== "free") return false;
+  const s = u.trialStartedAt;
+  const startedMs = s && typeof s.toMillis === "function"
+    ? s.toMillis()
+    : (typeof s === "number" ? s : null);
+  if (!startedMs) return false;
+  return Date.now() - startedMs > TRIAL_DAYS * 24 * 60 * 60 * 1000;
+}
+
 // ─── Agora Token ───────────────────────────────────────────────
 exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (req, res) => {
   setCors(res, "GET, POST");
@@ -86,6 +146,13 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   // uids are readable from the users collection, so channels are guessable.
   if (!String(channelName).split("_").includes(decoded.uid)) {
     res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
+  // Kodsuz trial 2 gündən sonra zəngi serverdə bloklayır — token verilmir.
+  const uDoc = await admin.firestore().collection("users").doc(decoded.uid).get().catch(() => null);
+  if (isTrialExpired(uDoc && uDoc.exists ? uDoc.data() : null)) {
+    res.status(403).json({ error: "trial_expired" });
     return;
   }
 
@@ -167,15 +234,10 @@ exports.notifyPremiumActivated = onRequest({ secrets: [] }, async (req, res) => 
 });
 
 // Snapshot of src/data/weeklyContent.js (topic + easy/hard questions per day),
-// regenerated when the client content changes. Using the same array and the
-// same day formula as the client keeps the push and the app on the SAME topic
-// — the old hardcoded topic list here could drift out of sync.
+// regenerated when the client content changes. The topic index now comes from
+// the global cycle (appConfig/cycle) via readCycleIndex(), so push and app stay
+// on the SAME topic and both advance only on session days.
 const DAILY_CONTENT = require("./dailyQuestions.json");
-
-function getTodayContent() {
-  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  return DAILY_CONTENT[daysSinceEpoch % DAILY_CONTENT.length];
-}
 
 // One concrete question per reminder slot: mornings pull from the easy half
 // of the list, evenings from the hard half, and the day index shifts the
@@ -190,6 +252,55 @@ function getQuestionForHour(content, hour) {
   return qs[offset + ((daysSinceEpoch + hour) % Math.max(1, span))];
 }
 
+// ─── Qlobal Mövzu Cycle-ı bir addım irəli ──────────────────────
+// Gündə bir dəfə (Baku 00:05) işləyir. Bugün sessiya (və ya bonus) günüdürsə
+// VƏ bu tarix üçün hələ irəliləməyibsə, cycleTick +1 olur. İdempotent:
+// lastAdvancedDate eyni gündə iki dəfə artımın qarşısını alır.
+exports.advanceCycle = onSchedule({
+  schedule: "5 0 * * *",
+  timeZone: "Asia/Baku",
+}, async () => {
+  const db = admin.firestore();
+  const cfgSnap = await db.collection("appConfig").doc("session").get().catch(() => null);
+  const cfg = (cfgSnap && cfgSnap.exists) ? cfgSnap.data() : {};
+  const sessionDays = Array.isArray(cfg.sessionDays) ? cfg.sessionDays : DEFAULT_SESSION_DAYS;
+  const bonusDays = Array.isArray(cfg.bonusDays) ? cfg.bonusDays : DEFAULT_BONUS_DAYS;
+  const activeDays = new Set([...sessionDays, ...bonusDays].map(Number));
+
+  const today = bakuDateStr();
+  const isSessionToday = activeDays.has(bakuWeekday(today));
+
+  await db.runTransaction(async (tx) => {
+    const ref = db.collection("appConfig").doc("cycle");
+    const snap = await tx.get(ref);
+
+    // İlk dəfə: davamlılıq üçün köhnə təqvim indeksi ilə toxumla. Bugün
+    // sessiya günüdürsə bu toxum "bugünkü irəliləmə" sayılır.
+    if (!snap.exists) {
+      const seed = seedTickForDate(today);
+      tx.set(ref, {
+        cycleTick: seed,
+        currentTopicIndex: seed % TOPIC_COUNT,
+        lastAdvancedDate: isSessionToday ? today : null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return;
+    }
+
+    const data = snap.data();
+    if (data.lastAdvancedDate === today) return; // bugün artıq irəlilədi
+    if (!isSessionToday) return;                  // sessiya/bonus günü deyil
+
+    const nextTick = (Number(data.cycleTick) || 0) + 1;
+    tx.set(ref, {
+      cycleTick: nextTick,
+      currentTopicIndex: nextTick % TOPIC_COUNT,
+      lastAdvancedDate: today,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  });
+});
+
 // ─── Topic Practice Reminder ──────────────────────────────────
 exports.topicReminder = onSchedule({
   schedule: "0 10,15,21 * * *",
@@ -202,7 +313,9 @@ exports.topicReminder = onSchedule({
 
   // A concrete question pulls far better than a bare topic name: the reader
   // can start answering it in their head before they even open the app.
-  const todayContent = getTodayContent();
+  // Mövzu artıq qlobal cycle-dan gəlir (köhnə təqvim-günü formulu deyil).
+  const cycleIndex = await readCycleIndex(db);
+  const todayContent = DAILY_CONTENT[((cycleIndex % DAILY_CONTENT.length) + DAILY_CONTENT.length) % DAILY_CONTENT.length];
   const bakuHour = Number(new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Baku", hour: "2-digit", hour12: false,
   }).format(new Date()));
@@ -423,6 +536,150 @@ exports.backfillTrials = onRequest({ secrets: [] }, async (req, res) => {
   if (ops > 0) await batch.commit();
 
   return res.status(200).json({ ok: true, granted, total: snap.size });
+});
+
+// ─── Kurs kodu ilə aktivləşdirmə (server-side) ─────────────────
+// Kohort sənədində kodu tapır, statusu/limiti yoxlayır, useri KURS moduna
+// keçirir və startTick-i (o andakı cycleTick) BİR DƏFƏ yazır. Bütün yoxlama
+// serverdə — client-side yoxlama yoxdur.
+exports.redeemCode = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const code = String((req.body && req.body.code) || "").trim().toUpperCase();
+  if (code.length < 4 || code.length > 40) {
+    return res.status(400).json({ error: "invalid_code" });
+  }
+
+  try {
+    await enforceRateLimit(decoded.uid, "redeemCode", 10, 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(e.httpStatus || 429).json({ error: "rate_limited" });
+  }
+
+  const db = admin.firestore();
+  const q = await db.collection("cohorts").where("code", "==", code).limit(1).get();
+  if (q.empty) return res.status(404).json({ error: "code_not_found" });
+  const cohortRef = q.docs[0].ref;
+
+  try {
+    const result = await db.runTransaction(async (tx) => {
+      // Bütün oxumalar yazmalardan əvvəl.
+      const cohortSnap = await tx.get(cohortRef);
+      const cohort = cohortSnap.data() || {};
+      const userRef = db.collection("users").doc(decoded.uid);
+      const userSnap = await tx.get(userRef);
+      const u = userSnap.data() || {};
+      const cycleRef = db.collection("appConfig").doc("cycle");
+      const cycleSnap = await tx.get(cycleRef);
+
+      if (cohort.status && cohort.status !== "active") return { error: "code_inactive" };
+      const maxUses = Number(cohort.maxUses) || 0;
+      if (maxUses > 0 && (Number(cohort.memberCount) || 0) >= maxUses) {
+        return { error: "code_exhausted" };
+      }
+
+      // İdempotent: artıq kurs modundadırsa startTick-ə TOXUNMA.
+      if (u.mode === "course" && Number.isFinite(u.startTick)) {
+        return { alreadyActive: true, cohortId: cohortRef.id, startTick: u.startTick };
+      }
+
+      // startTick üçün cycleTick; cycle sənədi hələ yoxdursa toxumla.
+      let startTick;
+      if (cycleSnap.exists && Number.isFinite(cycleSnap.data().cycleTick)) {
+        startTick = cycleSnap.data().cycleTick;
+      } else {
+        startTick = seedTickForDate(bakuDateStr());
+        tx.set(cycleRef, {
+          cycleTick: startTick,
+          currentTopicIndex: startTick % TOPIC_COUNT,
+          lastAdvancedDate: null,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+
+      tx.set(userRef, {
+        mode: "course",
+        cohortId: cohortRef.id,
+        startTick,
+        // Kurs = avtomatik premium; unlimited plan metered deyil (isMetered).
+        subscriptionPlan: "unlimited",
+        isPremium: true,
+        premiumSince: admin.firestore.FieldValue.serverTimestamp(),
+        premiumPlan: "course",
+        courseActivatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      tx.update(cohortRef, { memberCount: admin.firestore.FieldValue.increment(1) });
+      return { activated: true, cohortId: cohortRef.id, startTick };
+    });
+
+    if (result.error) {
+      const map = { code_inactive: 400, code_exhausted: 409 };
+      return res.status(map[result.error] || 400).json({ error: result.error });
+    }
+    return res.status(200).json({ ok: true, ...result });
+  } catch (e) {
+    console.error("[redeemCode]", e);
+    return res.status(500).json({ error: "redeem_failed" });
+  }
+});
+
+// ─── Kurs tamamlanmasını təsdiqlə (28/28) ──────────────────────
+// Client lokal olaraq topicsCompleted>=28 aşkarlayanda çağırır; server
+// cycleTick - startTick ilə YENİDƏN yoxlayır (client-ə etibar etmir), sonra
+// courseCompletedAt + freeAccessUntil (+6 ay) yazır. Bir dəfəlik, per-user
+// cron olmadan.
+exports.claimCourseCompletion = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const db = admin.firestore();
+  try {
+    const result = await db.runTransaction(async (tx) => {
+      const userRef = db.collection("users").doc(decoded.uid);
+      const userSnap = await tx.get(userRef);
+      const u = userSnap.data() || {};
+      const cycleSnap = await tx.get(db.collection("appConfig").doc("cycle"));
+
+      if (u.mode !== "course" || !Number.isFinite(u.startTick)) return { error: "not_course" };
+      if (u.courseCompletedAt) return { alreadyClaimed: true };
+
+      const tick = cycleSnap.exists ? Number(cycleSnap.data().cycleTick) : NaN;
+      if (!Number.isFinite(tick)) return { error: "no_cycle" };
+
+      const completed = Math.min(TOPIC_COUNT, tick - u.startTick);
+      if (completed < TOPIC_COUNT) return { error: "not_complete", completed };
+
+      const until = new Date();
+      until.setMonth(until.getMonth() + COURSE_FREE_MONTHS);
+      tx.set(userRef, {
+        courseCompletedAt: admin.firestore.FieldValue.serverTimestamp(),
+        freeAccessUntil: admin.firestore.Timestamp.fromDate(until),
+      }, { merge: true });
+      return { completed: true };
+    });
+
+    if (result.error) return res.status(400).json(result);
+    return res.status(200).json({ ok: true, ...result });
+  } catch (e) {
+    console.error("[claimCourseCompletion]", e);
+    return res.status(500).json({ error: "claim_failed" });
+  }
 });
 
 // ─── Peer Təhlükəsiz Yeniləmə (Rating & Badges) ─────────────
