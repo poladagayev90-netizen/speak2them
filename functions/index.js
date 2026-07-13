@@ -72,7 +72,7 @@ const TRIAL_DAYS = 2;              // kodsuz trial: ilk girişdən 2 gün
 const COURSE_FREE_MONTHS = 6;      // kurs bitəndən sonra pulsuz dövr
 // Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Admin appConfig/session-da dəyişir.
 const DEFAULT_SESSION_DAYS = [1, 3, 5];   // B.e / Çər / Cümə
-const DEFAULT_BONUS_DAYS = [6];           // Şənbə (bonus gün)
+const DEFAULT_BONUS_DAYS = [0];           // Bazar — həftənin 7-ci günü (bonus)
 
 // Baku təqvim tarixi "YYYY-MM-DD" (UTC+4, DST yoxdur).
 function bakuDateStr(ms = Date.now()) {

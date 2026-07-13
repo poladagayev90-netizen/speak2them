@@ -7,7 +7,7 @@ import { db } from '../firebase';
 // days the global topic cycle advances on — see advanceCycle in functions. They
 // live on the same appConfig/session doc and are admin-editable.
 export const DEFAULT_SESSION_DAYS = [1, 3, 5]; // Mon / Wed / Fri
-export const DEFAULT_BONUS_DAYS = [6];         // Sat (bonus day)
+export const DEFAULT_BONUS_DAYS = [0];         // Sun — 7th day of the week (bonus)
 
 export const DEFAULT_SESSION_CONFIG = {
   enabled: false,

@@ -10,7 +10,7 @@ const admin = require('firebase-admin');
 admin.initializeApp({ projectId: 'speak2them-64f2b' });
 
 const SESSION_DAYS = [1, 3, 5]; // Mon / Wed / Fri — 3 sessions per week
-const BONUS_DAYS = [6];         // Sat — bonus day
+const BONUS_DAYS = [0];         // Sun — 7th day of the week (bonus)
 
 (async () => {
   const ref = admin.firestore().collection('appConfig').doc('session');
