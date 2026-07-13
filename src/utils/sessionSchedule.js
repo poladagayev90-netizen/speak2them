@@ -3,6 +3,12 @@ import { db } from '../firebase';
 
 // Session times are editable from Firestore without a code change. A config
 // with no `sessions` array falls back to the two standard daily sessions.
+// sessionDays / bonusDays (weekday numbers, 0=Sunday … 6=Saturday) decide which
+// days the global topic cycle advances on — see advanceCycle in functions. They
+// live on the same appConfig/session doc and are admin-editable.
+export const DEFAULT_SESSION_DAYS = [1, 3, 5]; // Mon / Wed / Fri
+export const DEFAULT_BONUS_DAYS = [6];         // Sat (bonus day)
+
 export const DEFAULT_SESSION_CONFIG = {
   enabled: false,
   bufferMinutes: 10,
@@ -10,6 +16,8 @@ export const DEFAULT_SESSION_CONFIG = {
     { hour: 16, minute: 0 },
     { hour: 21, minute: 0 },
   ],
+  sessionDays: DEFAULT_SESSION_DAYS,
+  bonusDays: DEFAULT_BONUS_DAYS,
 };
 
 export function subscribeToSessionConfig(cb) {
