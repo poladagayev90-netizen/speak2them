@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from 'react';
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -11,6 +11,8 @@ import { subscribeToCycle } from './utils/cycle';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
+import TrialExpiredGate from './components/TrialExpiredGate';
+import { isTrialExpiredClient } from './utils/courseProgress';
 import { ADMIN_UID } from './constants';
 import Logo from './components/Logo';
 
@@ -68,10 +70,35 @@ const PageFallback = () => (
 // only the Routes: while a lazy chunk downloads, the nav and layout stay put
 // (the old placement unmounted the entire shell into a full-screen loader on
 // every first visit to a tab — the "tab switch flash").
+// Trial-ı bitmiş user bu yollarda SƏRBƏST qalır: kodu daxil edə bilsin
+// (/redeem), hesabını idarə edə/silə bilsin (/profile — Play Store tələbi),
+// auth axını pozulmasın.
+const TRIAL_GATE_EXEMPT = ['/redeem', '/profile', '/login', '/register'];
+
 function AppShell({ user }) {
+  const location = useLocation();
+  // Dəqiqəlik tick: app açıq qalarkən trial tam bu anda bitərsə, gate növbəti
+  // yoxlamada (naviqasiyasız da) görünsün.
+  const [, setGateTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setGateTick((t) => t + 1), 60000);
+    return () => clearInterval(id);
+  }, []);
+
+  const gateExempt = TRIAL_GATE_EXEMPT.some((p) => location.pathname.startsWith(p));
+  const showTrialGate = !!user && !gateExempt && isTrialExpiredClient(user);
+
   const homeElement = user
     ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
     : <Navigate to="/register" />;
+
+  if (showTrialGate) {
+    return (
+      <AppLayout user={user}>
+        <TrialExpiredGate />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout user={user}>

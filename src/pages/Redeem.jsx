@@ -2,23 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { authedFetch } from '../api';
-import { FUNCTIONS_BASE } from '../constants';
+import { redeemCourseCode, SUPPORT_WHATSAPP } from '../utils/redeem';
 import { DEFAULT_SESSION_CONFIG, getNextSessionDay } from '../utils/sessionSchedule';
 import { formatAzDate } from '../utils/courseProgress';
 import Logo from '../components/Logo';
-
-const SUPPORT_WHATSAPP = 'https://wa.me/994513549195';
-
-// Server (redeemCode) xəta kodu → istifadəçiyə göstərilən mətn. Server nə
-// qaytarırsa ona görə fərqli mesaj: "tapılmadı" ≠ "dolub".
-const ERROR_TEXT = {
-  invalid_code: 'Kod formatı yanlışdır — hərfləri yoxlayıb yenidən yazın.',
-  code_not_found: 'Bu kod tapılmadı. Hərf səhvi ola bilər — kodu olduğu kimi yazın.',
-  code_inactive: 'Bu kod artıq aktiv deyil. Yeni kod üçün bizə yazın.',
-  code_exhausted: 'Bu qrup dolub. Bizə yazın — sizi növbəti dalğaya əlavə edək.',
-  rate_limited: 'Çox cəhd etdiniz. Bir az gözləyib yenidən yoxlayın.',
-};
 
 export default function Redeem({ user }) {
   const [code, setCode] = useState('');
@@ -37,46 +24,37 @@ export default function Redeem({ user }) {
     setShowSupport(false);
     setLoading(true);
 
-    try {
-      const res = await authedFetch(`${FUNCTIONS_BASE}/redeemCode`, {
-        method: 'POST',
-        body: JSON.stringify({ code: trimmed }),
-      });
-      const data = await res.json().catch(() => ({}));
+    const result = await redeemCourseCode(trimmed);
 
-      if (!res.ok) {
-        setError(ERROR_TEXT[data.error] || 'Xəta baş verdi. Yenidən cəhd edin.');
-        setShowSupport(data.error === 'code_exhausted' || data.error === 'code_inactive');
-        setLoading(false);
-        return;
-      }
-
-      // Kohort kartı + ilk sessiya tarixi. Bunlar bəzək məlumatıdır — oxunma
-      // alınmasa da aktivləşmə uğurludur, ekran sadəcə daha az detal göstərir.
-      let cohort = null;
-      let nextSession = null;
-      try {
-        const snap = await getDoc(doc(db, 'cohorts', data.cohortId));
-        if (snap.exists()) cohort = snap.data();
-      } catch {}
-      try {
-        const cfgSnap = await getDoc(doc(db, 'appConfig', 'session'));
-        const cfg = cfgSnap.exists()
-          ? { ...DEFAULT_SESSION_CONFIG, ...cfgSnap.data() }
-          : DEFAULT_SESSION_CONFIG;
-        nextSession = getNextSessionDay(cfg);
-      } catch {}
-
-      setWelcome({
-        alreadyActive: !!data.alreadyActive,
-        cohortName: (cohort && (cohort.name || cohort.title)) || 'SpeakLab kursu',
-        memberCount: cohort ? Number(cohort.memberCount) || 0 : 0,
-        nextSession,
-      });
-    } catch (err) {
-      console.error('[Redeem]', err);
-      setError('Şəbəkə xətası. İnternetinizi yoxlayıb yenidən cəhd edin.');
+    if (!result.ok) {
+      setError(result.errorText);
+      setShowSupport(!!result.showSupport);
+      setLoading(false);
+      return;
     }
+
+    // Kohort kartı + ilk sessiya tarixi. Bunlar bəzək məlumatıdır — oxunma
+    // alınmasa da aktivləşmə uğurludur, ekran sadəcə daha az detal göstərir.
+    let cohort = null;
+    let nextSession = null;
+    try {
+      const snap = await getDoc(doc(db, 'cohorts', result.data.cohortId));
+      if (snap.exists()) cohort = snap.data();
+    } catch {}
+    try {
+      const cfgSnap = await getDoc(doc(db, 'appConfig', 'session'));
+      const cfg = cfgSnap.exists()
+        ? { ...DEFAULT_SESSION_CONFIG, ...cfgSnap.data() }
+        : DEFAULT_SESSION_CONFIG;
+      nextSession = getNextSessionDay(cfg);
+    } catch {}
+
+    setWelcome({
+      alreadyActive: !!result.data.alreadyActive,
+      cohortName: (cohort && (cohort.name || cohort.title)) || 'SpeakLab kursu',
+      memberCount: cohort ? Number(cohort.memberCount) || 0 : 0,
+      nextSession,
+    });
     setLoading(false);
   };
 
