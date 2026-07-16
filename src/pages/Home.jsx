@@ -21,6 +21,7 @@ import { getPresence, ONLINE_WINDOW_MS } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
 import CourseProgressCard from '../components/CourseProgressCard';
 import SessionDayBanner from '../components/SessionDayBanner';
+import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 // Ordered to match the screen top-to-bottom, ending on the bottom nav.
@@ -272,6 +273,8 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
+
+        <CourseCompletionCelebration user={user} />
 
         <SessionDayBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
 
