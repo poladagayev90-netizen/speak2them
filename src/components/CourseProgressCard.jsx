@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 import { subscribeToCycle } from '../utils/cycle';
 import { subscribeToSessionConfig } from '../utils/sessionSchedule';
 import {
@@ -18,10 +20,23 @@ import {
 export default function CourseProgressCard({ user }) {
   const [cycle, setCycle] = useState(null);
   const [sessionConfig, setSessionConfig] = useState(null);
+  const [cohort, setCohort] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => subscribeToCycle(setCycle), []);
   useEffect(() => subscribeToSessionConfig(setSessionConfig), []);
+
+  // Kohort otağı hissi: öz kohort sənədindən (rules üzvə GET icazəsi verir)
+  // ad + üzv sayı real vaxtda. Kohortsuz userdə heç nə oxunmur.
+  const cohortId = user.mode === 'course' ? user.cohortId : null;
+  useEffect(() => {
+    if (!cohortId) { setCohort(null); return undefined; }
+    return onSnapshot(
+      doc(db, 'cohorts', cohortId),
+      (snap) => setCohort(snap.exists() ? snap.data() : null),
+      () => setCohort(null)
+    );
+  }, [cohortId]);
 
   const cardStyle = {
     background: 'linear-gradient(135deg, rgba(124,111,247,0.14), rgba(91,77,232,0.10))',
@@ -69,6 +84,18 @@ export default function CourseProgressCard({ user }) {
               ? <>🏁 Finiş: <b style={{ color: 'var(--text-primary, #fff)' }}>{formatAzDate(finishStr)}</b></>
               : 'Sessiya günlərində bir mövzu irəliləyirsiniz'}
         </div>
+
+        {cohort && (
+          <div style={{
+            marginTop: '10px', paddingTop: '10px',
+            borderTop: '1px solid rgba(124,111,247,0.2)',
+            fontSize: '12px', color: 'var(--text-secondary, #aaa)',
+            display: 'flex', alignItems: 'center', gap: '6px',
+          }}>
+            🧪 <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
+            {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} iştirakçı</>}
+          </div>
+        )}
       </div>
     );
   }
