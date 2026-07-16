@@ -48,7 +48,9 @@ const pad = (n) => String(n).padStart(2, '0');
 // this long before the card rolls forward to the next one.
 const ROLL_GRACE_MS = 5 * 60 * 1000;
 
-function bakuDateStr(ms) {
+// Bakı təqvim tarixi "YYYY-MM-DD" (UTC+4, DST yoxdur) — kurs proqresi və
+// sessiya günü hesablamaları da bunu paylaşır.
+export function bakuDateStr(ms = Date.now()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baku' }).format(new Date(ms));
 }
 
@@ -66,7 +68,7 @@ function buildWindow(dateStr, time, bufferMs) {
 // Baku tarixinin həftə günü (0=Bazar). Tarix sətri UTC gecəyarısı kimi
 // oxunur ki, cihazın saat qurşağından asılı olmadan deterministik olsun
 // (functions/index.js-dəki bakuWeekday ilə eyni konvensiya).
-function bakuWeekday(dateStr) {
+export function bakuWeekday(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 }

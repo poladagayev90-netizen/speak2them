@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { DEFAULT_SESSION_CONFIG, getNextSessionDay } from '../utils/sessionSchedule';
+import { formatAzDate } from '../utils/courseProgress';
 import Logo from '../components/Logo';
 
 const SUPPORT_WHATSAPP = 'https://wa.me/994513549195';
@@ -18,18 +19,6 @@ const ERROR_TEXT = {
   code_exhausted: 'Bu qrup dolub. Bizə yazın — sizi növbəti dalğaya əlavə edək.',
   rate_limited: 'Çox cəhd etdiniz. Bir az gözləyib yenidən yoxlayın.',
 };
-
-// Bakı tarixini az dilində oxunaqlı göstərir: "çərşənbə, 22 iyul".
-function formatAzDate(dateStr) {
-  try {
-    const [y, m, d] = dateStr.split('-').map(Number);
-    return new Intl.DateTimeFormat('az', {
-      weekday: 'long', day: 'numeric', month: 'long',
-    }).format(new Date(Date.UTC(y, m - 1, d)));
-  } catch {
-    return dateStr;
-  }
-}
 
 export default function Redeem({ user }) {
   const [code, setCode] = useState('');

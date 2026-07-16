@@ -19,6 +19,7 @@ import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import { ADMIN_UID } from '../constants';
 import { getPresence, ONLINE_WINDOW_MS } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
+import CourseProgressCard from '../components/CourseProgressCard';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 // Ordered to match the screen top-to-bottom, ending on the bottom nav.
@@ -270,6 +271,8 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
+
+        <CourseProgressCard user={user} />
 
         <NotificationPrompt user={user} />
 

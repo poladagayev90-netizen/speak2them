@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, watchFcmToken } from './firebase';
 import { isInCall } from './utils/presence';
 import { subscribeToCycle } from './utils/cycle';
@@ -44,6 +44,17 @@ const Redeem = React.lazy(() => import('./pages/Redeem'));
 
 // Shown INSIDE the layout while a page chunk loads — the bottom nav stays
 // mounted, so a tab switch never blanks the whole screen.
+// Vəziyyət keçidlərini (trial→kurs, kurs→bitmə, premium) reload OLMADAN
+// bütün app-a çatdıran sahələr. Yalnız bunlar dəyişəndə user state yenilənir —
+// presence heartbeat-in hər 60 saniyəlik lastSeen yazısı re-render yaratmır.
+const LIVE_USER_FIELDS = [
+  'mode', 'startTick', 'cohortId', 'isPremium', 'subscriptionPlan',
+  'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
+  'freeAccessUntil', 'surveyDone',
+];
+
+const fieldValue = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : v);
+
 const PageFallback = () => (
   <div style={{
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -144,6 +155,7 @@ function App() {
     let visibilityHandler = null;
     let unloadHandler = null;
     let stopTokenWatch = null;
+    let stopLiveUserSync = null;
 
     const cleanupPresence = () => {
       if (heartbeatInterval) clearInterval(heartbeatInterval);
@@ -153,6 +165,7 @@ function App() {
         window.removeEventListener('pagehide', unloadHandler);
       }
       if (stopTokenWatch) { stopTokenWatch(); stopTokenWatch = null; }
+      if (stopLiveUserSync) { stopLiveUserSync(); stopLiveUserSync = null; }
     };
 
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
@@ -250,6 +263,23 @@ function App() {
         };
 
         setUser(appUser);
+
+        // Trial→kurs, tamamlanma və premium keçidləri serverdə yazılan kimi
+        // ekranda görünsün (redeem-dən sonra reload tələb olunmasın).
+        stopLiveUserSync = onSnapshot(userRef, (snap) => {
+          if (!snap.exists()) return;
+          const d = snap.data();
+          setUser((prev) => {
+            if (!prev || prev.uid !== uid) return prev;
+            const changed = LIVE_USER_FIELDS.some(
+              (k) => fieldValue(prev[k]) !== fieldValue(d[k])
+            );
+            if (!changed) return prev;
+            const merged = { ...prev };
+            LIVE_USER_FIELDS.forEach((k) => { merged[k] = d[k]; });
+            return merged;
+          });
+        }, () => {});
       } else {
         cleanupPresence();
         setUser(null);
