@@ -63,6 +63,42 @@ function buildWindow(dateStr, time, bufferMs) {
   };
 }
 
+// Baku tarixinin həftə günü (0=Bazar). Tarix sətri UTC gecəyarısı kimi
+// oxunur ki, cihazın saat qurşağından asılı olmadan deterministik olsun
+// (functions/index.js-dəki bakuWeekday ilə eyni konvensiya).
+function bakuWeekday(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
+// Sessiya keçirilən günlər = sessionDays + bonusDays. Redeem xoş-gəldin
+// ekranı ("ilk sessiya: …") və Home-dakı sessiya günü banneri bunu oxuyur.
+export function getActiveDays(config) {
+  const s = Array.isArray(config?.sessionDays) ? config.sessionDays : DEFAULT_SESSION_DAYS;
+  const b = Array.isArray(config?.bonusDays) ? config.bonusDays : DEFAULT_BONUS_DAYS;
+  return new Set([...s, ...b].map(Number));
+}
+
+// Növbəti sessiya GÜNÜ (bugün daxil, hələ keçməmiş sessiya varsa) və o günün
+// ilk uyğun sessiya vaxtı. getSessionWindow-dan fərqi: o hər günü sessiya günü
+// sayır, bu isə yalnız sessionDays/bonusDays günlərini nəzərə alır.
+export function getNextSessionDay(config, nowMs = Date.now()) {
+  const days = getActiveDays(config);
+  if (days.size === 0) return null;
+  const times = getSessionTimes(config);
+  for (let i = 0; i < 8; i++) {
+    const dayMs = nowMs + i * 24 * 60 * 60 * 1000;
+    const dateStr = bakuDateStr(dayMs);
+    if (!days.has(bakuWeekday(dateStr))) continue;
+    const usable = i > 0
+      ? times
+      : times.filter((t) =>
+          nowMs < Date.parse(`${dateStr}T${pad(t.hour)}:${pad(t.minute)}:00+04:00`));
+    if (usable.length) return { dateStr, time: usable[0] };
+  }
+  return null;
+}
+
 // Session times are defined in Baku time (UTC+4, no DST) so every client
 // computes the exact same window and sessionId regardless of device timezone.
 // Returns the next relevant session: the earliest of today's sessions that has

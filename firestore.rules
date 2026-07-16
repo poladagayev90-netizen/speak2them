@@ -136,8 +136,16 @@ service cloud.firestore {
     // Cohorts hold the entry CODES, so normal clients must not read them (codes
     // would be enumerable). Redemption goes through the redeemCode Cloud
     // Function (admin SDK, bypasses rules); the admin panel reads them directly.
+    // Exception: a MEMBER may read their own cohort doc (name/memberCount for
+    // the welcome screen and the Home cohort card) — they already know its
+    // code, and other cohorts' codes stay unreadable. `get` (not list), so the
+    // collection can never be enumerated.
     match /cohorts/{cohortId} {
-      allow read, write: if isAdmin();
+      allow get: if isAdmin() || (
+        isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cohortId == cohortId
+      );
+      allow list, write: if isAdmin();
     }
 
     match /waitlist/{docId} {

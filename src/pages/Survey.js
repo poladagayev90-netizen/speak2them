@@ -161,6 +161,27 @@ export default function Survey({ user }) {
           Daha uyğun danışıq partnyoru tapmaq üçün 20 saniyəlik seçim et.
         </p>
 
+        {/* Qeydiyyatdan sonrakı ilk ekran budur — kurs kodu olan istifadəçi
+            kodu elə buradaca aktivləşdirə bilsin (Profile-da da həmişə var). */}
+        <button
+          type="button"
+          onClick={() => navigate('/redeem')}
+          style={{
+            width: '100%',
+            border: '1px solid #7c6ff755',
+            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
+            color: '#ffffff',
+            padding: '12px',
+            borderRadius: '14px',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            marginTop: '12px',
+          }}
+        >
+          🎟️ Kurs kodunuz var? Aktivləşdirin
+        </button>
+
         <button
           type="button"
           onClick={() => saveSurvey(true)}

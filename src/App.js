@@ -40,6 +40,7 @@ const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(importRanking);
 const History = React.lazy(() => import('./pages/History'));
 const DailyPuzzle = React.lazy(() => import('./pages/DailyPuzzle'));
+const Redeem = React.lazy(() => import('./pages/Redeem'));
 
 // Shown INSIDE the layout while a page chunk loads — the bottom nav stays
 // mounted, so a tab switch never blanks the whole screen.
@@ -78,6 +79,7 @@ function AppShell({ user }) {
           <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
           <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
           <Route path="/puzzle" element={user ? <DailyPuzzle user={user} /> : <Navigate to="/login" />} />
+          <Route path="/redeem" element={user ? <Redeem user={user} /> : <Navigate to="/login" />} />
           <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
           <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />

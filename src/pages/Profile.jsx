@@ -24,6 +24,7 @@ export default function Profile({ user }) {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [mode, setMode] = useState(user.mode || '');
   const [stats, setStats] = useState({ calls: 0, totalMinutes: 0, streak: 0, rating: 0, ratingCount: 0 });
   const [journeyOpen, setJourneyOpen] = useState(false);
   const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
@@ -53,6 +54,7 @@ export default function Profile({ user }) {
               setBio(d.bio || '');
               setLevel(d.level || 'B1 – Intermediate');
               setIsPremium(d.isPremium || false);
+              setMode(d.mode || '');
               setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0, rating: d.rating || 0, ratingCount: d.ratingCount || 0 });
               setStreakInfo(getStreakInfo(d));
             }
@@ -232,6 +234,24 @@ export default function Profile({ user }) {
           <button onClick={() => navigate('/upgrade')} style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#1a1000', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Upgrade</button>
         )}
       </div>
+
+      {/* COURSE CODE — kurs kodu olan istifadəçi onu istənilən vaxt buradan
+          aktivləşdirə bilir; artıq kurs modundadırsa sıra görünmür. */}
+      {mode !== 'course' && (
+        <button
+          onClick={() => navigate('/redeem')}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
+            border: '1px solid #7c6ff755', color: 'var(--text-primary)',
+            padding: '16px', borderRadius: '16px', marginBottom: '16px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left',
+          }}
+        >
+          🎟️ Kodunuz var? Kursu aktivləşdirin
+        </button>
+      )}
 
       {/* INFORMATION SECTION */}
       <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Information</h3>
