@@ -8,15 +8,15 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   plugins: {
-    // 'none' left the webview at full height when the keyboard opened, so the
-    // focused input stayed hidden behind it — you could not see what you were
-    // typing. It also meant the window kept ADJUST_NOTHING, which leaves the
-    // IME inset in WindowInsets: the safe-area listener then pushed
-    // --safe-area-bottom up to the keyboard's height, and every rule using it
-    // (App.css) grew a blank gap. 'native' resizes the webview above the
-    // keyboard, which fixes both and consumes the IME inset.
+    // Must stay 'none': @capacitor-community/safe-area already owns the IME.
+    // Its window-insets listener pads the decor view by imeInsets.bottom while
+    // the keyboard is up (SafeAreaPlugin.java), which is what lifts the content
+    // clear of it — and it deliberately keeps the IME out of the safe-area
+    // insets it reports to JS (getBottomInset returns systemBars.bottom only).
+    // Setting 'native' makes the window ALSO adjustResize, so the view gets
+    // pushed up twice and a keyboard-sized blank gap opens above it.
     Keyboard: {
-      resize: 'native',
+      resize: 'none',
       style: 'dark',
     },
     SplashScreen: {
