@@ -172,30 +172,41 @@ export default function Profile({ user }) {
     );
   }
 
-  const handleSettingsClick = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      handleLogout();
-    }
-  };
+  // Compact iOS-style list building blocks, shared by every settings group below
+  // so the profile reads as one grouped list instead of a stack of loose cards.
+  const divider = '1px solid var(--border)';
+  const listCard = { background: 'var(--bg-card)', borderRadius: '16px', overflow: 'hidden', marginBottom: '16px' };
+  const sectionLabel = (t) => (
+    <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', margin: '18px 6px 8px' }}>{t}</div>
+  );
+  const row = ({ icon, label, value, right, onClick, danger, notLast }) => (
+    <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 16px', cursor: onClick ? 'pointer' : 'default', borderBottom: notLast ? divider : 'none' }}
+    >
+      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: danger ? '#ef444422' : 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '17px', color: danger ? '#ef4444' : 'var(--accent)' }}>{icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ color: danger ? '#ef4444' : 'var(--text-primary)', fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+        {value && <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>}
+      </div>
+      {right !== undefined ? right : (onClick ? <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span> : null)}
+    </div>
+  );
 
   return (
     <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
-      
+
       {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '16px', cursor: 'pointer' }}>Edit</button>
-        <button onClick={handleSettingsClick} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>⚙️</button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
+        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>Redaktə et</button>
       </div>
 
       {/* TOP SECTION: AVATAR, NAME, STATS */}
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         
-        {/* Fake Topic Bubble */}
-        <div style={{ display: 'inline-block', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: '12px', padding: '6px 12px', borderRadius: '20px', marginBottom: '12px', position: 'relative' }}>
-          Set a topic...
-          <div style={{ position: 'absolute', bottom: '-4px', left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid var(--border)' }}></div>
-        </div>
-
         {/* Avatar */}
         <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 16px' }}>
           <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
@@ -266,151 +277,58 @@ export default function Profile({ user }) {
         </button>
       )}
 
-      {/* INFORMATION SECTION */}
-      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Information</h3>
-      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
-        
-        {/* Level */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>💬</div>
-          <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>English level</div>
-            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{level}</div>
-          </div>
-        </div>
-
-        {/* Email */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ background: '#10b98122', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>✉️</div>
-          <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Email Address</div>
-            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{user.email || 'Hidden'}</div>
-          </div>
-        </div>
-
-        {/* Streak */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px' }}>
-          <div style={{ background: '#f59e0b22', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>🔥</div>
-          <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
-            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>
-          </div>
-        </div>
+      {/* ÖYRƏNMƏ */}
+      {sectionLabel('Öyrənmə')}
+      <div style={listCard}>
+        {row({ icon: '📚', label: 'Mənim Sözlərim', onClick: () => setShowWordHistory(true), notLast: true })}
+        {row({ icon: '🔥', label: 'Streak Səyahəti', onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
+        {row({ icon: '📊', label: 'Analiz Tarixçəsi', onClick: () => navigate('/history') })}
       </div>
 
-      {/* APPEARANCE — the theme switch previously only existed in the desktop
-          settings sidebar, which mobile users can never open. */}
-      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Görünüş</h3>
-      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
-        <div
-          onClick={toggleTheme}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); } }}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', cursor: 'pointer' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px' }}>
-              {isDark ? <Moon size={18} /> : <Sun size={18} />}
-            </div>
-            <div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Tema</div>
-              <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
-                {isDark ? 'Qaranlıq rejim' : 'İşıqlı rejim'}
-              </div>
-            </div>
-          </div>
-          <span
-            className={`theme-switch ${isDark ? 'dark' : 'light'}`}
-            aria-hidden="true"
-            style={{ display: 'inline-block', flexShrink: 0 }}
-          >
-            <span className="theme-switch-thumb"></span>
-          </span>
-        </div>
+      {/* MƏLUMAT */}
+      {sectionLabel('Məlumat')}
+      <div style={listCard}>
+        {row({ icon: '💬', label: 'İngilis səviyyəsi', right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
+        {row({ icon: '✉️', label: user.email || 'Hidden', value: 'Email' })}
       </div>
 
-      {/* NOTIFICATIONS */}
-      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Bildirişlər</h3>
-      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
-        <div
-          onClick={handleEnableNotifications}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEnableNotifications(); } }}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', cursor: notifPerm === 'default' ? 'pointer' : 'default' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', marginRight: '16px' }}>
-              <Bell size={18} />
-            </div>
-            <div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Push bildirişləri</div>
-              <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>Sessiya və analiz xəbərdarlıqları</div>
-            </div>
-          </div>
-          <span style={{
-            flexShrink: 0,
-            fontSize: '13px', fontWeight: 700,
-            color: notifPerm === 'granted' ? 'var(--success)' : 'var(--accent)',
-          }}>
-            {notifLabel}
-          </span>
-        </div>
+      {/* TƏNZİMLƏMƏLƏR */}
+      {sectionLabel('Tənzimləmələr')}
+      <div style={listCard}>
+        {row({
+          icon: isDark ? <Moon size={17} /> : <Sun size={17} />,
+          label: isDark ? 'Qaranlıq rejim' : 'İşıqlı rejim',
+          onClick: toggleTheme,
+          right: <span className={`theme-switch ${isDark ? 'dark' : 'light'}`} aria-hidden="true" style={{ display: 'inline-block', flexShrink: 0 }}><span className="theme-switch-thumb"></span></span>,
+          notLast: true,
+        })}
+        {row({
+          icon: <Bell size={17} />,
+          label: 'Push bildirişləri',
+          onClick: handleEnableNotifications,
+          right: <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: notifPerm === 'granted' ? 'var(--success)' : 'var(--accent)' }}>{notifLabel}</span>,
+          notLast: true,
+        })}
+        {row({
+          icon: '🔄',
+          label: 'Turları sıfırla',
+          onClick: async () => {
+            if (!docId) return;
+            try {
+              await updateDoc(doc(db, 'users', docId), { tourDone_home: false, tourDone_chat: false, tourDone_profile: false });
+              alert('Turlar sıfırlandı! Səhifələri gəzərək yenidən baxa bilərsiniz.');
+            } catch (e) { console.error(e); }
+          },
+        })}
       </div>
 
-      {/* MY WORDS */}
-      <button onClick={() => setShowWordHistory(true)} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
-        📚 Mənim Sözlərim
-      </button>
-
-      {/* STREAK JOURNEY */}
-      <button onClick={() => setJourneyOpen(true)} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>🔥 Streak Səyahəti</span>
-        <span style={{ color: '#f59e0b', fontWeight: 800 }}>{streakInfo.count}</span>
-      </button>
-
-      {/* ANALYSIS HISTORY */}
-      <button onClick={() => navigate('/history')} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--text-primary)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
-        📊 Analiz Tarixçəsi
-      </button>
-
-      {/* RESET TOURS */}
-      <button onClick={async () => {
-        if (!docId) return;
-        try {
-          await updateDoc(doc(db, 'users', docId), {
-            tourDone_home: false,
-            tourDone_chat: false,
-            tourDone_profile: false
-          });
-          alert('Turlar sıfırlandı! Səhifələri gəzərək yenidən baxa bilərsiniz.');
-        } catch (e) {
-          console.error(e);
-        }
-      }} style={{ width: '100%', background: 'var(--bg-card)', border: 'none', color: 'var(--accent)', padding: '16px', borderRadius: '16px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left' }}>
-        🔄 Turları Sıfırla (Bələdçi)
-      </button>
-
-      {/* PRIVACY & ACCOUNT — Google Play requires an in-app privacy link and a
-          way to delete the account together with its data. */}
-      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 700, margin: '24px 0 16px 0' }}>Məxfilik və Hesab</h3>
-      <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '8px 0' }}>
-        <a
-          href="/privacy.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', color: 'var(--text-primary)', textDecoration: 'none', fontSize: '16px', fontWeight: 700, borderBottom: '1px solid var(--border)' }}
-        >
-          🔒 Məxfilik Siyasəti
-        </a>
-        <button
-          onClick={handleDeleteAccount}
-          disabled={deleting}
-          style={{ width: '100%', background: 'none', border: 'none', color: 'var(--danger, #ef4444)', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: deleting ? 'default' : 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left', opacity: deleting ? 0.6 : 1 }}
-        >
-          🗑️ {deleting ? 'Silinir…' : 'Hesabı Sil'}
-        </button>
+      {/* HESAB — Google Play requires an in-app privacy link and a way to
+          delete the account together with its data. */}
+      {sectionLabel('Hesab')}
+      <div style={listCard}>
+        {row({ icon: '🔒', label: 'Məxfilik Siyasəti', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
+        {row({ icon: '🗑️', label: deleting ? 'Silinir…' : 'Hesabı Sil', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}
+        {row({ icon: '↩️', label: 'Çıxış', onClick: () => { if (window.confirm('Çıxış etmək istəyirsiniz?')) handleLogout(); }, right: null })}
       </div>
 
       {showWordHistory && (

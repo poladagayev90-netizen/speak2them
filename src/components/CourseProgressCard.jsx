@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { subscribeToCycle } from '../utils/cycle';
-import { subscribeToSessionConfig } from '../utils/sessionSchedule';
 import {
   COURSE_TOPIC_COUNT,
   getTopicsCompleted,
-  getFinishDateStr,
   getTrialDaysLeft,
-  formatAzDate,
 } from '../utils/courseProgress';
 
 // Home-un yuxarısındakı "finish xətti" kartı.
@@ -19,12 +16,10 @@ import {
 // - Digərləri (premium/köhnə userlər): heç nə göstərmir.
 export default function CourseProgressCard({ user }) {
   const [cycle, setCycle] = useState(null);
-  const [sessionConfig, setSessionConfig] = useState(null);
   const [cohort, setCohort] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => subscribeToCycle(setCycle), []);
-  useEffect(() => subscribeToSessionConfig(setSessionConfig), []);
 
   // Kohort otağı hissi: öz kohort sənədindən (rules üzvə GET icazəsi verir)
   // ad + üzv sayı real vaxtda. Kohortsuz userdə heç nə oxunmur.
@@ -52,7 +47,6 @@ export default function CourseProgressCard({ user }) {
 
   if (completed !== null) {
     const pct = Math.round((completed / COURSE_TOPIC_COUNT) * 100);
-    const finishStr = getFinishDateStr(completed, sessionConfig);
     const done = completed >= COURSE_TOPIC_COUNT;
 
     return (
@@ -80,9 +74,7 @@ export default function CourseProgressCard({ user }) {
         <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
           {done
             ? '🏁 Kurs tamamlandı!'
-            : finishStr
-              ? <>🏁 Finiş: <b style={{ color: 'var(--text-primary, #fff)' }}>{formatAzDate(finishStr)}</b></>
-              : 'Sessiya günlərində bir mövzu irəliləyirsiniz'}
+            : 'Hər sessiya günü bir mövzu irəliləyirsiniz'}
         </div>
 
         {cohort && (
