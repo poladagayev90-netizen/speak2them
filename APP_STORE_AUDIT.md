@@ -7,6 +7,19 @@
 
 ---
 
+## STATUS YENİLƏNMƏSİ — 2026-07-17
+
+| Bloker | Status | Qeyd |
+|---|--------|------|
+| B1 Native push | ❌ **HƏLƏ EDİLMƏYİB** | Deploy olunan iş `d0ec6d7 Merge FAZA A: PWA push notification reliability` idi — bu, auditin **1.4(B)** bəndini (web/PWA token kövrəkliyi: per-device token, refresh, retry) düzəltdi. **1.1–1.3 (native) toxunulmayıb:** `@capacitor/push-notifications` package.json-da yoxdur, `google-services.json` yoxdur, `POST_NOTIFICATIONS` Manifest-də yoxdur, `cap sync` 5 plugin tapır. Yəni APK-da push işləmir (1.4A). Play blokeri deyil — v2-yə saxlanıldı. |
+| B2 Release keystore | ✅ **Tamam** | `signingConfigs.release` ← git-ignored `android/app/gradle.properties` (`MYAPP_RELEASE_*`), keystore `android/app/speaklab-release.jks`. İmzalı AAB quruldu və `jarsigner` ilə təsdiqləndi: `CN=Polad Agayev, OU=SpeakLab, C=AZ`, SHA256withRSA 2048-bit. |
+| B3 Privacy Policy | ✅ **Canlı** | `public/privacy.html` → `https://speaklab-app.vercel.app/privacy.html` (200); Profil-də tətbiq daxili link. AAB-də: `base/assets/public/privacy.html`. |
+| B4 Hesab silmə | ✅ **Deploy olundu** | `deleteAccount` (us-central1) canlıdır. Uçdan-uca yoxlanıldı: OPTIONS→204, auth-suz POST→401, saxta token→401. |
+
+**Qalan:** Play Console-a AAB yükləmək + Data Safety formu (§3.4) + privacy URL. Hər yükləmədə `versionCode` artır (§4).
+
+---
+
 ## 0. XÜLASƏ — Ən kritik nəticə
 
 **Bütün push/bildiriş sistemi yalnız WEB FCM üzərində qurulub (Firebase JS SDK + `firebase-messaging-sw.js` service worker). Native Android FCM ÜMUMİYYƏTLƏ YOXDUR.** Capacitor Android WebView-də Web Notifications/Push API dəstəklənmir, ona görə **Play Store-dan yüklənən APK-da bildirişlər 100% işləməyəcək**. "Bildiriş bəzən gəlir, bəzən gəlmir" şikayətinin kökü budur (ətraflı izah 1-ci bölmədə).
