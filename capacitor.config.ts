@@ -8,6 +8,16 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   plugins: {
+    // ROOT CAUSE of the keyboard blank-gap: Capacitor core's own SystemBars
+    // plugin pads the webview by the IME height (SystemBars.java:208) AND
+    // @capacitor-community/safe-area does the exact same thing, so the webview
+    // shrank by the keyboard height TWICE (measured: innerHeight 872→226 with a
+    // ~275px keyboard). Disabling core's inset handling — which the safe-area
+    // plugin explicitly requires (it logs an error otherwise) — leaves the
+    // safe-area plugin as the single owner of the IME, and the gap closes.
+    SystemBars: {
+      insetsHandling: 'disable',
+    },
     // Must stay 'none': @capacitor-community/safe-area already owns the IME.
     // Its window-insets listener pads the decor view by imeInsets.bottom while
     // the keyboard is up (SafeAreaPlugin.java), which is what lifts the content
