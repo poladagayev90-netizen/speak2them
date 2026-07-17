@@ -22,6 +22,12 @@ android {
                 storePassword releaseSigningProps['MYAPP_RELEASE_STORE_PASSWORD']
                 keyAlias releaseSigningProps['MYAPP_RELEASE_KEY_ALIAS']
                 keyPassword releaseSigningProps['MYAPP_RELEASE_KEY_PASSWORD']
+                // minSdk 24 makes AGP drop v1 (JAR) signing, leaving the APK
+                // v2-only. Play re-signs the bundle so it never notices, but a
+                // sideloaded APK has to satisfy the device itself — keep v1 on
+                // so installing straight from the file works everywhere.
+                enableV1Signing true
+                enableV2Signing true
             }
         }
     }
