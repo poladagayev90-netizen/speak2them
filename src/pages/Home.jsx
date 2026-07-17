@@ -365,30 +365,8 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {/* Row 1: Daily Topic Button */}
-        <button
-          id="tour-daily-topic"
-          onClick={() => setDailyTopicOpen(true)}
-          style={{
-            width: '100%',
-            height: '44px',
-            borderRadius: '14px',
-            backgroundColor: '#6C3EF4',
-            color: '#ffffff',
-            fontSize: '15px',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            marginBottom: '10px',
-            marginTop: '16px',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          <BookOpen size={18} /> Daily Topic
-        </button>
+        {/* Günün mövzusu girişi yuxarıdakı SessionDayBanner-dədir — burada
+            ayrıca "Daily Topic" düyməsi eyni modalı açırdı və təkrar idi. */}
 
         {/* Daily word puzzle entry — done-state comes from the puzzle page's
             own localStorage record so no extra Firestore read is needed. */}
@@ -417,6 +395,7 @@ export default function Home({ user }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
+                marginTop: '16px',
                 marginBottom: '10px',
                 cursor: 'pointer',
               }}

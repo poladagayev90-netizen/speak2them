@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { BookOpen } from 'lucide-react';
 import { subscribeToCycle } from '../utils/cycle';
 import {
   subscribeToSessionConfig,
@@ -12,9 +13,16 @@ import { getTopicsCompleted } from '../utils/courseProgress';
 
 const pad = (n) => String(n).padStart(2, '0');
 
-// Bugün sessiya/bonus günüdürsə Home-da görkəmli banner: "Bu axşam: Mövzu N ·
-// {mövzu adı} · {saat}". Sessiya günü deyilsə (və ya günün son sessiyası da
-// keçibsə) heç nə render olunmur — sakit ekran. Yalnız in-app; push-a toxunmur.
+// Home-un YEGANƏ "günün mövzusu" girişi — hər iki halda eyni modalı açır.
+//
+//  • Sessiya/bonus günü, sessiya saatı hələ keçməyib → görkəmli banner:
+//    "Bu axşam: Mövzu N · {mövzu} · {saat}".
+//  • Başqa hallarda (sessiya günü deyil, günün sessiyaları keçib, ya da konfiq
+//    hələ yüklənir) → eyni modalı açan kompakt düymə.
+//
+// Əvvəllər bu ikisi ayrıca dururdu (banner burada, "Daily Topic" düyməsi
+// Home-da) və eyni onOpenTopic-i çağırırdı — sessiya günlərində ekranda iki
+// eyni məqsədli zolaq görünürdü. Yalnız in-app; push-a toxunmur.
 export default function SessionDayBanner({ user, onOpenTopic }) {
   const [cycle, setCycle] = useState(null);
   const [config, setConfig] = useState(null);
@@ -28,19 +36,45 @@ export default function SessionDayBanner({ user, onOpenTopic }) {
     return () => clearInterval(id);
   }, []);
 
-  if (!config) return null;
+  // Banner şərtləri ödənmədikdə göstərilən sadə giriş.
+  const compactEntry = (
+    <button
+      id="tour-daily-topic"
+      onClick={onOpenTopic}
+      style={{
+        width: '100%',
+        height: '44px',
+        borderRadius: '14px',
+        backgroundColor: '#6C3EF4',
+        color: '#ffffff',
+        fontSize: '15px',
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        marginBottom: '12px',
+        border: 'none',
+        cursor: 'pointer',
+      }}
+    >
+      <BookOpen size={18} /> Daily Topic
+    </button>
+  );
+
+  if (!config) return compactEntry;
 
   const today = bakuDateStr(nowMs);
   const isSessionDay = getActiveDays(config).has(bakuWeekday(today));
-  if (!isSessionDay) return null;
+  if (!isSessionDay) return compactEntry;
 
   // Bugünün hələ keçməmiş sessiya saatları (10 dəq buffer da bitibsə keçmiş
-  // sayılır). Hamısı keçibsə günün işi bitib — banner yığışır.
+  // sayılır). Hamısı keçibsə günün işi bitib — sadə girişə qayıdırıq.
   const bufferMs = (Number.isFinite(config.bufferMinutes) ? config.bufferMinutes : 10) * 60 * 1000;
   const upcoming = getSessionTimes(config).filter(
     (t) => nowMs < Date.parse(`${today}T${pad(t.hour)}:${pad(t.minute)}:00+04:00`) + bufferMs
   );
-  if (upcoming.length === 0) return null;
+  if (upcoming.length === 0) return compactEntry;
 
   const timesLabel = upcoming.map((t) => `${pad(t.hour)}:${pad(t.minute)}`).join(' və ');
   const topic = getTodayContent();
@@ -51,6 +85,7 @@ export default function SessionDayBanner({ user, onOpenTopic }) {
 
   return (
     <div
+      id="tour-daily-topic"
       onClick={onOpenTopic}
       role={onOpenTopic ? 'button' : undefined}
       tabIndex={onOpenTopic ? 0 : undefined}
