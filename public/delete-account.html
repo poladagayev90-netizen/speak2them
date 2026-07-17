@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="index, follow" />
+  <title>Hesabın Silinməsi — SpeakLab</title>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #ffffff;
+      -webkit-text-size-adjust: 100%;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+    h1 { font-size: 1.9rem; margin: 0 0 4px; }
+    h2 { font-size: 1.25rem; margin: 36px 0 10px; }
+    .meta { color: #666; font-size: 0.9rem; margin-bottom: 8px; }
+    p, li { font-size: 1rem; }
+    ul, ol { padding-left: 22px; }
+    li { margin-bottom: 6px; }
+    a { color: #4f46e5; }
+    .lead { font-size: 1.05rem; color: #333; }
+    hr { border: none; border-top: 1px solid #e2e2e2; margin: 40px 0; }
+    .cta {
+      display: inline-block; margin: 10px 0 4px; padding: 12px 22px;
+      background: #6C3EF4; color: #fff; text-decoration: none;
+      border-radius: 12px; font-weight: 700;
+    }
+    .card {
+      border: 1px solid #e2e2e2; border-radius: 14px;
+      padding: 16px 20px; margin: 16px 0;
+    }
+    .note { color: #666; font-size: 0.92rem; }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e6e6e6; background: #0f0f17; }
+      .meta, .note { color: #9a9aa8; }
+      .lead { color: #c9c9d4; }
+      a { color: #a5b4fc; }
+      hr, .card { border-color: #2a2a3a; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Hesabın və məlumatların silinməsi</h1>
+    <p class="meta">Tətbiq: <strong>SpeakLab</strong> (com.speaklab.app) · Son yenilənmə: 17 iyul 2026</p>
+
+    <p class="lead">Hesabınızı və onunla bağlı bütün məlumatları istənilən vaxt özünüz silə bilərsiniz. Silmə <strong>dərhal</strong> baş verir və <strong>geri qaytarıla bilməz</strong>.</p>
+
+    <h2>1. Özünüz silin — ən sürətli yol</h2>
+    <div class="card">
+      <p><strong>Brauzerdən (tətbiqi quraşdırmadan):</strong></p>
+      <a class="cta" href="https://speaklab-app.vercel.app/profile">Hesabıma daxil olub silmək →</a>
+      <p class="note">Google hesabınızla daxil olun → <strong>Profil</strong> səhifəsi → <strong>Məxfilik və Hesab</strong> → <strong>Hesabı Sil</strong>.</p>
+    </div>
+    <div class="card">
+      <p><strong>Tətbiq daxilində (Android):</strong></p>
+      <p style="margin:0"><strong>Profil</strong> → <strong>Məxfilik və Hesab</strong> → <strong>Hesabı Sil</strong></p>
+      <p class="note">Təsdiq üçün xəbərdarlığı qəbul edib <code>SİL</code> yazmalısınız — təsadüfi toxunuşla silinmə mümkün deyil.</p>
+    </div>
+
+    <h2>2. E-poçt ilə tələb</h2>
+    <p>Tətbiqə daxil ola bilmirsinizsə, hesabınızın e-poçt ünvanından bizə yazın:
+      <a href="mailto:poladagayev90@gmail.com?subject=Hesab%20silinm%C9%99%20t%C9%99l%C9%99bi">poladagayev90@gmail.com</a>.
+      Tələbi <strong>30 gün ərzində</strong> icra edirik.</p>
+
+    <h2>3. Nə silinir</h2>
+    <p>Hesab silindikdə aşağıdakıların hamısı həmişəlik silinir:</p>
+    <ul>
+      <li>Giriş hesabınız (Firebase Authentication)</li>
+      <li>Profiliniz — ad, e-poçt, profil şəkli, ingilis səviyyəsi, bio, streak və statistika</li>
+      <li>Söz tarixçəniz (öyrəndiyiniz sözlər)</li>
+      <li>Zəng analizləriniz və analiz növbəsindəki qeydlər</li>
+      <li>Səs qeydləriniz (zəng yazıları — fayl olaraq tam silinir)</li>
+      <li>Partnyor axtarışı növbəsindəki qeydiniz</li>
+      <li>Premium sorğularınız</li>
+      <li>Push bildiriş tokenləriniz (bütün cihazlar üzrə)</li>
+    </ul>
+
+    <h2>4. Nə qalır</h2>
+    <p>Başqa istifadəçi ilə <strong>paylaşılan</strong> zəng və söhbət qeydləri tamamilə silinmir, çünki onlar qarşı tərəfin də tarixçəsinin bir hissəsidir. Bu qeydlərdə sizin <strong>adınız “Silinmiş istifadəçi” ilə əvəz olunur</strong> — yəni şəxsiyyətiniz həmin qeydlərdən çıxarılır. Profiliniz silindiyi üçün sizə aid heç bir şəxsi məlumat qalmır.</p>
+
+    <h2>5. Müddət</h2>
+    <p>Tətbiqdən və ya brauzerdən silmə <strong>dərhal</strong> (bir neçə saniyə ərzində) tamamlanır. Ehtiyat nüsxələrdən (backup) tam təmizlənmə <strong>30 gün</strong> çəkə bilər.</p>
+
+    <p class="note">Ətraflı: <a href="/privacy.html">Məxfilik Siyasəti</a></p>
+
+    <hr />
+
+    <h2 id="en">English</h2>
+    <p class="meta">SpeakLab (com.speaklab.app) · Updated 17 July 2026</p>
+    <p>You can delete your SpeakLab account and all associated data at any time. Deletion is immediate and cannot be undone.</p>
+    <ul>
+      <li><strong>From a browser (no app install needed):</strong> sign in at <a href="https://speaklab-app.vercel.app/profile">speaklab-app.vercel.app/profile</a> → <em>Məxfilik və Hesab (Privacy &amp; Account)</em> → <em>Hesabı Sil (Delete Account)</em>.</li>
+      <li><strong>In the app:</strong> Profile → Privacy &amp; Account → Delete Account.</li>
+      <li><strong>By email:</strong> write from your account email to <a href="mailto:poladagayev90@gmail.com">poladagayev90@gmail.com</a>; we action requests within 30 days.</li>
+    </ul>
+    <p><strong>Deleted:</strong> your authentication account, profile (name, email, photo, level, bio, streak, stats), word history, call analyses and analysis queue entries, voice recordings, matchmaking queue entry, premium requests, and push notification tokens on all devices.</p>
+    <p><strong>Retained:</strong> shared call and chat records remain, because they are also part of the other participant's history — but your name is replaced with “Silinmiş istifadəçi” (Deleted user), removing your identity from them.</p>
+    <p><strong>Timing:</strong> deletion completes immediately; removal from backups may take up to 30 days. See our <a href="/privacy.html">Privacy Policy</a>.</p>
+  </div>
+</body>
+</html>
