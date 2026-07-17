@@ -26,15 +26,20 @@ service cloud.firestore {
     // dodge the 2-day gate, or forge course completion. trialStartedAt is
     // created (not updated) at registration, so it is on the update-guard list
     // but NOT the create-guard list.
+    // cohortStatus burada MÜTLƏQDİR: client onu öz sənədinə yaza bilsəydi,
+    // 'pending' trial gate-i keçər, 'accepted' isə adminin "Başlat"ında
+    // təsdiqsiz kurs+premium verərdi. Yalnız server (redeemCode/startCohort,
+    // Admin SDK) və admin paneli yaza bilər.
     function isNotChangingPremiumFields() {
       return !request.resource.data.diff(resource.data).affectedKeys()
         .hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
-          'mode', 'startTick', 'cohortId', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil']);
+          'mode', 'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt',
+          'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil']);
     }
 
     function isNotCreatingPremiumFields() {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
-          'startTick', 'cohortId', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil'])
+          'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial');
     }

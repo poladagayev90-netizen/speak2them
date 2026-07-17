@@ -10,6 +10,7 @@ import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
+import { subscribeToCycle } from '../utils/cycle';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
@@ -81,10 +82,14 @@ export default function Home({ user }) {
   }, [location.search, navigate]);
 
 
+  // todayTopic MUST track the server cycle, not be captured once: on a cold
+  // start the appConfig/cycle snapshot hasn't landed yet, so getTodayContent()
+  // falls back to the local calendar formula — the intro modal then announces
+  // a different topic than the banner/material (which do subscribe and
+  // self-correct). Subscribing here keeps every surface on one truth.
+  useEffect(() => subscribeToCycle(() => setTodayTopic(getTodayContent())), []);
+
   useEffect(() => {
-    const content = getTodayContent();
-    setTodayTopic(content);
-    
     const todayDateStr = new Date().toDateString();
 
     const topicKey = `lastTopicIntroDate_v2_${user.uid}`;

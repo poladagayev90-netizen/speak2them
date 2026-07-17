@@ -111,6 +111,10 @@ async function readCycleIndex(db) {
 // trialStartedAt olmayan köhnə userlər də bloklanmır.
 function isTrialExpired(u) {
   if (!u) return false;
+  // Kohorta müraciəti gözlənilən user bloklanmır. Təhlükəsizdir, çünki
+  // firestore.rules cohortStatus-u client yazısından qoruyur — bu vəziyyətə
+  // yalnız redeemCode (etibarlı kodla) və admin sala bilər.
+  if (u.cohortStatus === "pending" || u.cohortStatus === "accepted") return false;
   if (u.isPremium) return false;
   if (u.freeAccessUntil && typeof u.freeAccessUntil.toMillis === "function"
     && u.freeAccessUntil.toMillis() > Date.now()) return false;
