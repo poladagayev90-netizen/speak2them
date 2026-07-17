@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
+import AdminCohorts from '../components/AdminCohorts';
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
 
@@ -11,6 +12,7 @@ export default function Admin({ user }) {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
+  const [adminTab, setAdminTab] = useState('premium'); // premium | cohorts
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -140,9 +142,32 @@ export default function Admin({ user }) {
             ← Geri
           </button>
           <h2 style={{ margin: 0, fontSize: '18px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>👑</span> Premium İdarəetmə
+            <span style={{ fontSize: '20px' }}>{adminTab === 'cohorts' ? '🧪' : '👑'}</span>
+            {adminTab === 'cohorts' ? 'Kohortlar' : 'Premium İdarəetmə'}
           </h2>
           <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
+        </div>
+
+        {/* Bölmə keçidi */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          {[
+            { id: 'premium', label: '👑 Premium' },
+            { id: 'cohorts', label: '🧪 Kohortlar' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setAdminTab(t.id)}
+              style={{
+                flex: 1, padding: '8px 12px',
+                background: adminTab === t.id ? '#7c6ff7' : '#1a1a2e',
+                color: adminTab === t.id ? '#fff' : '#94a3b8',
+                border: `1px solid ${adminTab === t.id ? '#7c6ff7' : '#2e2e50'}`,
+                borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
         {/* Stats */}
@@ -167,6 +192,8 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '20px 16px' }}>
+        {adminTab === 'cohorts' ? <AdminCohorts /> : (
+        <>
         {error && (
           <div style={{
             background: '#ef444422', border: '1px solid #ef444455', color: '#fecaca',
@@ -320,6 +347,8 @@ export default function Admin({ user }) {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   );
