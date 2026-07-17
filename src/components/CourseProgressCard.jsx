@@ -92,6 +92,32 @@ export default function CourseProgressCard({ user }) {
     );
   }
 
+  // Kohorta müraciət edib gözləyən / qəbul edilmiş — kurs hələ başlamayıb.
+  if (user.cohortStatus === 'accepted') {
+    return (
+      <div style={cardStyle}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)', marginBottom: '4px' }}>
+          ✅ Qəbul edildiniz!
+        </div>
+        <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
+          Kursun başlaması gözlənilir — admin başladan kimi mövzular açılacaq.
+        </div>
+      </div>
+    );
+  }
+  if (user.cohortStatus === 'pending') {
+    return (
+      <div style={cardStyle}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)', marginBottom: '4px' }}>
+          ⏳ Müraciətiniz göndərildi
+        </div>
+        <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
+          Admin təsdiqini gözləyin — qəbul ediləndə burada görünəcək.
+        </div>
+      </div>
+    );
+  }
+
   const daysLeft = getTrialDaysLeft(user);
   if (daysLeft === null) return null; // premium / pulsuz dövr / köhnə user — sakit ekran
 

@@ -49,6 +49,9 @@ export function getFinishDateStr(topicsCompleted, sessionConfig, nowMs = Date.no
 // eyni qaydalar, ekran heç vaxt serverin buraxdığı useri bloklamasın deyə.
 export function getTrialDaysLeft(user, nowMs = Date.now()) {
   if (!user) return null;
+  // Kohorta müraciət edib admin təsdiqini/başlanğıcını gözləyən user trial
+  // müddəti bitsə də bloklanmasın — gözləmə onun günahı deyil.
+  if (user.cohortStatus === 'pending' || user.cohortStatus === 'accepted') return null;
   if (user.isPremium) return null;
   const freeUntil = toMillis(user.freeAccessUntil);
   if (freeUntil && freeUntil > nowMs) return null;

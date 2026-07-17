@@ -577,48 +577,31 @@ exports.redeemCode = onRequest({ secrets: [] }, async (req, res) => {
       const userRef = db.collection("users").doc(decoded.uid);
       const userSnap = await tx.get(userRef);
       const u = userSnap.data() || {};
-      const cycleRef = db.collection("appConfig").doc("cycle");
-      const cycleSnap = await tx.get(cycleRef);
 
       if (cohort.status && cohort.status !== "active") return { error: "code_inactive" };
-      const maxUses = Number(cohort.maxUses) || 0;
-      if (maxUses > 0 && (Number(cohort.memberCount) || 0) >= maxUses) {
-        return { error: "code_exhausted" };
-      }
 
-      // İdempotent: artıq kurs modundadırsa startTick-ə TOXUNMA.
+      // İdempotent — user artıq bu axının bir mərhələsindədirsə heç nə əlavə
+      // etmə, sadəcə mövcud vəziyyəti qaytar (double-count olmasın).
       if (u.mode === "course" && Number.isFinite(u.startTick)) {
-        return { alreadyActive: true, cohortId: cohortRef.id, startTick: u.startTick };
+        return { alreadyActive: true, cohortId: cohortRef.id };
+      }
+      if (u.cohortId === cohortRef.id && (u.cohortStatus === "pending" || u.cohortStatus === "accepted")) {
+        return { alreadyApplied: true, cohortId: cohortRef.id, status: u.cohortStatus };
       }
 
-      // startTick üçün cycleTick; cycle sənədi hələ yoxdursa toxumla.
-      let startTick;
-      if (cycleSnap.exists && Number.isFinite(cycleSnap.data().cycleTick)) {
-        startTick = cycleSnap.data().cycleTick;
-      } else {
-        startTick = seedTickForDate(bakuDateStr());
-        tx.set(cycleRef, {
-          cycleTick: startTick,
-          currentTopicIndex: startTick % TOPIC_COUNT,
-          lastAdvancedDate: null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-      }
+      // maxUses = ümumi yer: gözləyənlər (pending+accepted) + aktiv üzvlər.
+      const maxUses = Number(cohort.maxUses) || 0;
+      const seats = (Number(cohort.pendingCount) || 0) + (Number(cohort.memberCount) || 0);
+      if (maxUses > 0 && seats >= maxUses) return { error: "code_exhausted" };
 
+      // Müraciət — kurs/premium AKTİVLƏŞMİR. Admin qəbul edib sonra başladır.
       tx.set(userRef, {
-        mode: "course",
         cohortId: cohortRef.id,
-        startTick,
-        // Kurs = avtomatik premium; unlimited plan metered deyil (isMetered).
-        subscriptionPlan: "unlimited",
-        isPremium: true,
-        premiumSince: admin.firestore.FieldValue.serverTimestamp(),
-        premiumPlan: "course",
-        courseActivatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        cohortStatus: "pending",
+        cohortAppliedAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
-
-      tx.update(cohortRef, { memberCount: admin.firestore.FieldValue.increment(1) });
-      return { activated: true, cohortId: cohortRef.id, startTick };
+      tx.update(cohortRef, { pendingCount: admin.firestore.FieldValue.increment(1) });
+      return { applied: true, cohortId: cohortRef.id, status: "pending" };
     });
 
     if (result.error) {
@@ -629,6 +612,84 @@ exports.redeemCode = onRequest({ secrets: [] }, async (req, res) => {
   } catch (e) {
     console.error("[redeemCode]", e);
     return res.status(500).json({ error: "redeem_failed" });
+  }
+});
+
+// ─── Kohortu Başlat (yalnız admin) ─────────────────────────────
+// Admin "başlat" deyəndə həmin kohortun BÜTÜN qəbul edilmiş (accepted)
+// üzvlərini eyni anda, ortaq startTick ilə aktivləşdirir: kurs + premium.
+// Beləcə kursun "başlanğıc günü" adminin əlindədir; user yalnız müraciət edir.
+exports.startCohort = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+
+  const cohortId = String((req.body && req.body.cohortId) || "").trim();
+  if (!cohortId) return res.status(400).json({ error: "cohortId_required" });
+
+  const db = admin.firestore();
+  try {
+    // Ortaq startTick — cycle sənədi yoxdursa toxumla.
+    const cycleRef = db.collection("appConfig").doc("cycle");
+    const cycleSnap = await cycleRef.get();
+    let startTick;
+    if (cycleSnap.exists && Number.isFinite(cycleSnap.data().cycleTick)) {
+      startTick = Number(cycleSnap.data().cycleTick);
+    } else {
+      startTick = seedTickForDate(bakuDateStr());
+      await cycleRef.set({
+        cycleTick: startTick,
+        currentTopicIndex: startTick % TOPIC_COUNT,
+        lastAdvancedDate: null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    }
+
+    // Kohortun üzvlərini bir sorğu ilə çək, accepted olanları yaddaşda süz
+    // (cohortId+cohortStatus kompozit indeks tələb etməsin — kohortlar kiçikdir).
+    const all = await db.collection("users").where("cohortId", "==", cohortId).get();
+    const acceptedDocs = all.docs.filter((d) => d.data().cohortStatus === "accepted");
+    if (acceptedDocs.length === 0) {
+      return res.status(200).json({ ok: true, started: 0, startTick });
+    }
+
+    let started = 0;
+    for (let i = 0; i < acceptedDocs.length; i += 400) {
+      const batch = db.batch();
+      acceptedDocs.slice(i, i + 400).forEach((d) => {
+        batch.set(d.ref, {
+          mode: "course",
+          startTick,
+          cohortStatus: "active",
+          subscriptionPlan: "unlimited",
+          isPremium: true,
+          premiumSince: admin.firestore.FieldValue.serverTimestamp(),
+          premiumPlan: "course",
+          courseActivatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      });
+      await batch.commit();
+      started += Math.min(400, acceptedDocs.length - i);
+    }
+
+    await db.collection("cohorts").doc(cohortId).set({
+      startedAt: admin.firestore.FieldValue.serverTimestamp(),
+      startTick,
+      memberCount: admin.firestore.FieldValue.increment(started),
+      pendingCount: admin.firestore.FieldValue.increment(-started),
+    }, { merge: true });
+
+    return res.status(200).json({ ok: true, started, startTick });
+  } catch (e) {
+    console.error("[startCohort]", e);
+    return res.status(500).json({ error: "start_failed" });
   }
 });
 

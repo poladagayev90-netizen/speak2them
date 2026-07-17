@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  collection, onSnapshot, query, where, doc, setDoc, updateDoc, serverTimestamp,
+  collection, onSnapshot, query, where, doc, setDoc, updateDoc, deleteField,
+  increment, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { authedFetch } from '../api';
+import { FUNCTIONS_BASE } from '../constants';
 import { subscribeToCycle } from '../utils/cycle';
 import {
   subscribeToSessionConfig, getActiveDays, bakuDateStr, bakuWeekday,
@@ -46,6 +49,7 @@ export default function AdminCohorts() {
   const [newMax, setNewMax] = useState('12');
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState('');
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => onSnapshot(collection(db, 'cohorts'), (snap) => {
     setCohorts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -127,6 +131,35 @@ export default function AdminCohorts() {
     } catch {}
   };
 
+  const acceptApplicant = async (m) => {
+    try { await updateDoc(doc(db, 'users', m.id), { cohortStatus: 'accepted' }); }
+    catch (err) { console.error('[AdminCohorts] accept', err); }
+  };
+  const rejectApplicant = async (m) => {
+    try {
+      await updateDoc(doc(db, 'users', m.id), { cohortStatus: deleteField(), cohortId: deleteField() });
+      await updateDoc(doc(db, 'cohorts', selectedId), { pendingCount: increment(-1) }).catch(() => {});
+    } catch (err) { console.error('[AdminCohorts] reject', err); }
+  };
+  const startSelectedCohort = async () => {
+    const acceptedN = members.filter((m) => m.cohortStatus === 'accepted').length;
+    if (acceptedN === 0) { alert('Qəbul edilmiş üzv yoxdur.'); return; }
+    if (!window.confirm(`${acceptedN} qəbul edilmiş üzv üçün kurs BU GÜN başlayacaq. Davam edilsin?`)) return;
+    setStarting(true);
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/startCohort`, {
+        method: 'POST', body: JSON.stringify({ cohortId: selectedId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'start_failed');
+      alert(`✅ Başladı! ${data.started} üzv aktivləşdi.`);
+    } catch (err) {
+      console.error('[AdminCohorts] start', err);
+      alert('Başlatma alınmadı: ' + (err.message || 'xəta'));
+    }
+    setStarting(false);
+  };
+
   const inputStyle = {
     flex: 1, minWidth: 0, padding: '10px 12px', background: '#1a1a2e',
     border: '1px solid #2e2e50', borderRadius: '10px', color: 'white',
@@ -181,7 +214,9 @@ export default function AdminCohorts() {
                 {c.status !== 'active' && <span style={{ color: '#f87171', fontSize: '11px' }}> · dayandırılıb</span>}
               </span>
               <span style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                👥 {Number(c.memberCount) || 0}{Number(c.maxUses) > 0 ? `/${c.maxUses}` : ''} üzv · kod: <b>{c.code}</b>
+                👥 {Number(c.memberCount) || 0}{Number(c.maxUses) > 0 ? `/${c.maxUses}` : ''} aktiv
+                {Number(c.pendingCount) > 0 && <span style={{ color: '#fbbf24' }}> · ⏳ {Number(c.pendingCount)} gözləyir</span>}
+                {' · '}kod: <b>{c.code}</b>
               </span>
             </button>
             <button onClick={() => copyCode(c)} style={{
@@ -207,17 +242,78 @@ export default function AdminCohorts() {
         )}
       </div>
 
-      {/* Üzvlər */}
-      {selectedId && (
+      {/* Müraciətçilər (pending + accepted) */}
+      {selectedId && (() => {
+        const pendingList = members.filter((m) => m.cohortStatus === 'pending');
+        const acceptedList = members.filter((m) => m.cohortStatus === 'accepted');
+        if (pendingList.length === 0 && acceptedList.length === 0) return null;
+        const applicantRow = (m, accepted) => (
+          <div key={m.id} style={{
+            background: '#1a1a2e', border: '1px solid #2e2e50', borderRadius: '12px',
+            padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px',
+          }}>
+            <span style={{ fontSize: '15px', flexShrink: 0 }}>{accepted ? '✅' : '🙋'}</span>
+            <p style={{ flex: 1, minWidth: 0, margin: 0, fontSize: '13px', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {m.name || m.email || m.id}
+            </p>
+            {accepted ? (
+              <button onClick={() => rejectApplicant(m)} style={{
+                padding: '5px 9px', background: 'none', color: '#f87171',
+                border: '1px solid #f8717155', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+              }}>Geri al</button>
+            ) : (
+              <>
+                <button onClick={() => acceptApplicant(m)} style={{
+                  padding: '5px 9px', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff',
+                  border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                }}>Qəbul et</button>
+                <button onClick={() => rejectApplicant(m)} style={{
+                  padding: '5px 9px', background: 'none', color: '#f87171',
+                  border: '1px solid #f8717155', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                }}>Rədd</button>
+              </>
+            )}
+          </div>
+        );
+        return (
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 10px' }}>
+              Müraciətlər · 🙋 {pendingList.length} yeni · ✅ {acceptedList.length} qəbul edilmiş
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {pendingList.map((m) => applicantRow(m, false))}
+              {acceptedList.map((m) => applicantRow(m, true))}
+            </div>
+            <button
+              onClick={startSelectedCohort}
+              disabled={starting || acceptedList.length === 0}
+              style={{
+                width: '100%', marginTop: '12px', padding: '12px',
+                background: acceptedList.length === 0 ? '#2a2a40' : 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+                color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px',
+                cursor: (starting || acceptedList.length === 0) ? 'default' : 'pointer',
+                opacity: starting ? 0.6 : 1,
+              }}
+            >
+              {starting ? 'Başladılır...' : `🚀 Kohortu Başlat (${acceptedList.length} qəbul edilmiş)`}
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* Aktiv üzvlər */}
+      {selectedId && (() => {
+        const activeList = decorated.filter((m) => m.mode === 'course' || m.cohortStatus === 'active');
+        return (
         <div>
           <p style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 4px' }}>
-            Üzvlər ({decorated.length})
+            Aktiv üzvlər ({activeList.length})
           </p>
           <p style={{ fontSize: '11px', color: '#64748b', margin: '0 0 10px' }}>
             🔴 = son 2 sessiyada iştirak etməyib (erkən müdaxilə siqnalı)
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {decorated.map((m) => (
+            {activeList.map((m) => (
               <div key={m.id} style={{
                 background: '#1a1a2e',
                 border: m.fading ? '1px solid #ef444488' : '1px solid #2e2e50',
@@ -244,14 +340,15 @@ export default function AdminCohorts() {
                 </span>
               </div>
             ))}
-            {decorated.length === 0 && (
+            {activeList.length === 0 && (
               <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                Bu kohortda hələ üzv yoxdur.
+                Hələ aktiv üzv yoxdur — qəbul edib "Başlat" deyin.
               </p>
             )}
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

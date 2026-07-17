@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { redeemCourseCode, SUPPORT_WHATSAPP } from '../utils/redeem';
-import { DEFAULT_SESSION_CONFIG, getNextSessionDay } from '../utils/sessionSchedule';
-import { formatAzDate } from '../utils/courseProgress';
 import Logo from '../components/Logo';
 
 export default function Redeem({ user }) {
@@ -33,67 +31,50 @@ export default function Redeem({ user }) {
       return;
     }
 
-    // Kohort kartı + ilk sessiya tarixi. Bunlar bəzək məlumatıdır — oxunma
-    // alınmasa da aktivləşmə uğurludur, ekran sadəcə daha az detal göstərir.
+    // Kurs artıq admin idarəsindədir: kod = kohorta MÜRACİƏT. Vəziyyəti
+    // serverin cavabından çıxarırıq (active > accepted > applied/pending).
+    const state = result.data.alreadyActive
+      ? 'active'
+      : (result.data.status === 'accepted' ? 'accepted' : 'applied');
+
     let cohort = null;
-    let nextSession = null;
     try {
       const snap = await getDoc(doc(db, 'cohorts', result.data.cohortId));
       if (snap.exists()) cohort = snap.data();
     } catch {}
-    try {
-      const cfgSnap = await getDoc(doc(db, 'appConfig', 'session'));
-      const cfg = cfgSnap.exists()
-        ? { ...DEFAULT_SESSION_CONFIG, ...cfgSnap.data() }
-        : DEFAULT_SESSION_CONFIG;
-      nextSession = getNextSessionDay(cfg);
-    } catch {}
 
     setWelcome({
-      alreadyActive: !!result.data.alreadyActive,
+      state,
       cohortName: (cohort && (cohort.name || cohort.title)) || 'SpeakLab kursu',
-      memberCount: cohort ? Number(cohort.memberCount) || 0 : 0,
-      nextSession,
     });
     setLoading(false);
   };
 
   if (welcome) {
+    const info = {
+      active: { emoji: '🎉', title: 'Kursunuz artıq aktivdir!', text: 'Ana səhifədə mövzu proqresinizi görə bilərsiniz.', btn: 'Başlayaq 🚀' },
+      accepted: { emoji: '✅', title: 'Qəbul edildiniz!', text: 'Kursun başlaması gözlənilir — admin başladan kimi mövzular açılacaq.', btn: 'Ana səhifə' },
+      applied: { emoji: '📨', title: 'Müraciətiniz göndərildi!', text: 'Admin təsdiqindən sonra kurs başlayacaq. Təsdiqlənəndə bu ekranda və bildirişlə xəbər veriləcək.', btn: 'Ana səhifə' },
+    }[welcome.state] || {};
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: '52px', marginBottom: '8px' }}>🎉</div>
-          <h2 style={{ marginBottom: '8px' }}>
-            {welcome.alreadyActive ? 'Kursunuz artıq aktivdir!' : 'Xoş gəldiniz!'}
-          </h2>
-          <p className="auth-sub" style={{ marginBottom: '20px' }}>
-            30 mövzuluq danışıq kursuna qoşuldunuz.
-          </p>
+          <div style={{ fontSize: '52px', marginBottom: '8px' }}>{info.emoji}</div>
+          <h2 style={{ marginBottom: '8px' }}>{info.title}</h2>
+          <p className="auth-sub" style={{ marginBottom: '20px' }}>{info.text}</p>
 
           <div style={{
             background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
             border: '1px solid #7c6ff755',
             borderRadius: '16px', padding: '18px', marginBottom: '20px', textAlign: 'left',
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 800 }}>
               🧪 {welcome.cohortName}
             </div>
-            {welcome.memberCount > 0 && (
-              <div style={{ fontSize: '14px', color: 'var(--text-secondary, #aaa)', marginBottom: '6px' }}>
-                👥 {welcome.memberCount} iştirakçı
-              </div>
-            )}
-            {welcome.nextSession && (
-              <div style={{ fontSize: '14px', color: 'var(--text-secondary, #aaa)' }}>
-                📅 İlk sessiya: {formatAzDate(welcome.nextSession.dateStr)},{' '}
-                {String(welcome.nextSession.time.hour).padStart(2, '0')}:
-                {String(welcome.nextSession.time.minute).padStart(2, '0')}
-              </div>
-            )}
           </div>
 
           <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-            Başlayaq 🚀
+            {info.btn}
           </button>
         </div>
       </div>
@@ -109,7 +90,7 @@ export default function Redeem({ user }) {
 
         <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Kodunuz var? 🎟️</h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: '20px' }}>
-          Kurs kodunuzu daxil edin — 30 mövzuluq danışıq kursu və tam giriş aktivləşsin.
+          Kodu daxil edib kohorta müraciət edin. Admin təsdiqindən sonra 30 mövzuluq danışıq kursu başlayacaq.
         </p>
 
         {error && (
@@ -142,7 +123,7 @@ export default function Redeem({ user }) {
             required
           />
           <button type="submit" className="btn-primary" disabled={loading || code.trim().length < 4}>
-            {loading ? 'Yoxlanılır...' : 'Aktivləşdir'}
+            {loading ? 'Göndərilir...' : 'Müraciət et'}
           </button>
         </form>
 

@@ -51,7 +51,7 @@ const Redeem = React.lazy(() => import('./pages/Redeem'));
 // bütün app-a çatdıran sahələr. Yalnız bunlar dəyişəndə user state yenilənir —
 // presence heartbeat-in hər 60 saniyəlik lastSeen yazısı re-render yaratmır.
 const LIVE_USER_FIELDS = [
-  'mode', 'startTick', 'cohortId', 'isPremium', 'subscriptionPlan',
+  'mode', 'startTick', 'cohortId', 'cohortStatus', 'isPremium', 'subscriptionPlan',
   'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
   'freeAccessUntil', 'surveyDone',
 ];
