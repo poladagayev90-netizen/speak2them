@@ -154,12 +154,12 @@ function App() {
       StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
       SafeArea.getSafeAreaInsets().then(({ insets }) => {
         document.documentElement.style.setProperty('--safe-area-top', `${insets.top}px`);
-        document.documentElement.style.setProperty('--safe-area-bottom', `${insets.bottom}px`);
+        document.documentElement.style.setProperty('--safe-area-bottom', `${Math.min(insets.bottom, 60)}px`);
       }).catch(() => {});
       
       SafeArea.addListener('safeAreaChanged', data => {
         document.documentElement.style.setProperty('--safe-area-top', `${data.insets.top}px`);
-        document.documentElement.style.setProperty('--safe-area-bottom', `${data.insets.bottom}px`);
+        document.documentElement.style.setProperty('--safe-area-bottom', `${Math.min(data.insets.bottom, 60)}px`);
       });
     }
   }, []);
