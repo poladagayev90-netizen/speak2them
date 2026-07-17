@@ -2,13 +2,17 @@ import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, where, onSnapshot, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { subscribeToBlocked } from '../utils/blocklist';
 
 export default function Chats({ user }) {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [blockedIds, setBlockedIds] = useState(() => new Set());
   const navigate = useNavigate();
 
   const userCacheRef = useRef({});
+
+  useEffect(() => subscribeToBlocked(user.uid, setBlockedIds), [user.uid]);
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -79,7 +83,7 @@ export default function Chats({ user }) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {chats.map(chat => (
+            {chats.filter(chat => !blockedIds.has(chat.peerId)).map(chat => (
               <div key={chat.chatId} onClick={() => navigate(`/chat/${chat.peerId}`)} style={{
                 display: 'flex', alignItems: 'center', gap: '12px',
                 padding: '14px 16px', cursor: 'pointer',

@@ -2,12 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
+import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 
 export default function UserProfile({ user: currentUser }) {
   const { uid } = useParams();
   const navigate = useNavigate();
   const [profileUser, setProfileUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [reported, setReported] = useState(false);
+
+  useEffect(() => {
+    if (!uid || !currentUser?.uid || uid === currentUser.uid) return undefined;
+    return onSnapshot(
+      doc(db, 'users', currentUser.uid, 'blocked', uid),
+      (snap) => setIsBlocked(snap.exists()),
+      () => {}
+    );
+  }, [uid, currentUser?.uid]);
+
+  const handleBlockToggle = async () => {
+    try {
+      if (isBlocked) {
+        await unblockUser(currentUser.uid, uid);
+      } else {
+        if (!window.confirm('Bu istifadəçini bloklayırsınız? Onu siyahılarda görməyəcək, zəng və mesajlarını almayacaqsınız.')) return;
+        await blockUser(currentUser.uid, uid, profileUser?.name);
+      }
+    } catch (e) { console.error('[UserProfile] block', e); }
+  };
+
+  const handleReport = async () => {
+    const reason = window.prompt('Şikayət səbəbini qısaca yazın (təhqir, spam, uyğunsuz davranış və s.):');
+    if (reason === null) return;
+    try {
+      await submitReport(currentUser.uid, uid, profileUser?.name, reason);
+      setReported(true);
+      alert('Şikayətiniz göndərildi — komandamız baxacaq. Təşəkkürlər.');
+    } catch (e) {
+      console.error('[UserProfile] report', e);
+      alert('Göndərilmədi, yenidən cəhd edin.');
+    }
+  };
 
   useEffect(() => {
     if (!uid) return;
@@ -84,12 +120,27 @@ export default function UserProfile({ user: currentUser }) {
 
         {/* Action Buttons */}
         {uid !== currentUser.uid && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+            {!isBlocked && (
+              <button
+                onClick={() => navigate(`/chat/${uid}`)}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                💬 Chat
+              </button>
+            )}
             <button
-              onClick={() => navigate(`/chat/${uid}`)}
-              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              onClick={handleBlockToggle}
+              style={{ background: 'none', border: '1px solid var(--border)', color: isBlocked ? 'var(--text-secondary)' : '#ef4444', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
             >
-              💬 Chat
+              {isBlocked ? '✓ Blokdan çıxar' : '🚫 Blokla'}
+            </button>
+            <button
+              onClick={reported ? undefined : handleReport}
+              disabled={reported}
+              style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: reported ? 'default' : 'pointer', opacity: reported ? 0.6 : 1 }}
+            >
+              {reported ? '✓ Şikayət göndərildi' : '⚠️ Şikayət et'}
             </button>
           </div>
         )}

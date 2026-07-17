@@ -11,6 +11,7 @@ import { getStreakInfo } from '../utils/streak';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
+import { subscribeToBlocked } from '../utils/blocklist';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
@@ -69,8 +70,11 @@ export default function Home({ user }) {
   const [journeyOpen, setJourneyOpen] = useState(false);
   const [pendingTopicIntro, setPendingTopicIntro] = useState(false);
   const [streakInfo] = useState(() => getStreakInfo(user));
+  const [blockedIds, setBlockedIds] = useState(() => new Set());
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => subscribeToBlocked(user.uid, setBlockedIds), [user.uid]);
 
   // The daily-question push deep-links to /?daily=1 — open the topic modal
   // and strip the param so refresh/back doesn't reopen it.
@@ -194,6 +198,7 @@ export default function Home({ user }) {
   const searcherNow = Date.now();
   const activeSearchers = rawSearchers.filter((t) =>
     t.uid && t.uid !== user.uid && !t.sessionId
+    && !blockedIds.has(t.uid)
     && searcherNow - lastAliveMs(t) <= SEARCH_STALE_MS);
 
   useEffect(() => {
@@ -207,7 +212,8 @@ export default function Home({ user }) {
 
   const browsableUsers = allUsers.filter(u => u.uid !== user.uid && u.id !== user.uid);
   const isPeopleTab = tab === 'online' || tab === 'all';
-  const baseList = tab === 'online' ? onlineUsers : browsableUsers;
+  const baseList = (tab === 'online' ? onlineUsers : browsableUsers)
+    .filter(u => !blockedIds.has(u.uid || u.id));
   const displayUsers = levelFilter === 'All' ? baseList : baseList.filter(u => u.level === levelFilter);
 
   return (

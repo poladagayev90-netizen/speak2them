@@ -197,6 +197,15 @@ exports.sendCallNotification = onRequest({ secrets: [] }, async (req, res) => {
   // The caller's name is resolved server-side, never trusted from the request,
   // so a client cannot spoof a "X is calling you" push to an arbitrary device.
   const db = admin.firestore();
+
+  // Blok: qəbul edən bu zəng edəni bloklayıbsa, push ümumiyyətlə göndərilmir
+  // (client onsuz da modalı göstərmir — bu, cihaz bildirişini də kəsir).
+  const blockSnap = await db.collection("users").doc(receiverId)
+    .collection("blocked").doc(callerId).get().catch(() => null);
+  if (blockSnap && blockSnap.exists) {
+    return res.status(200).json({ ok: true, blocked: true });
+  }
+
   const callerSnap = await db.collection("users").doc(callerId).get().catch(() => null);
   const rawName = (callerSnap && callerSnap.exists ? callerSnap.data().name : "") || "Someone";
   const callerName = String(rawName).slice(0, 40);

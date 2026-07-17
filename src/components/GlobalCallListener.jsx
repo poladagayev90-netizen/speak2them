@@ -4,12 +4,17 @@ import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate, useLocation } from 'react-router-dom';
 import IncomingCallModal from './IncomingCallModal';
+import { subscribeToBlocked } from '../utils/blocklist';
 
 export default function GlobalCallListener({ user }) {
   const [incomingCall, setIncomingCall] = useState(null);
   const ringtoneRef = useRef(null);
+  // Ref, state yox: zəng snapshot-u gələndə render gözləmədən oxunmalıdır.
+  const blockedRef = useRef(new Set());
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => subscribeToBlocked(user?.uid, (s) => { blockedRef.current = s; }), [user?.uid]);
 
   useEffect(() => {
     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1361/1361-preview.mp3');
@@ -29,6 +34,12 @@ export default function GlobalCallListener({ user }) {
     const unsub = onSnapshot(q, (snap) => {
       if (!snap.empty) {
         const callData = { ...snap.docs[0].data(), callDocId: snap.docs[0].id };
+        // Bloklanmış şəxsin zəngi: modal görünmür, zəng sənədi silinir ki,
+        // qarşı tərəf sonsuz "çalır" vəziyyətində qalmasın.
+        if (callData.callerId && blockedRef.current.has(callData.callerId)) {
+          deleteDoc(doc(db, 'calls', callData.callDocId)).catch(() => {});
+          return;
+        }
         setIncomingCall(callData);
         try { ringtoneRef.current?.play(); } catch (e) {}
       } else {

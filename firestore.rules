@@ -56,6 +56,26 @@ service cloud.firestore {
       match /fcmTokens/{tokenId} {
         allow read, write: if isOwnDoc(userId);
       }
+
+      // Blok siyahısı (Play UGC tələbi): sənədin mövcudluğu = blok. Yalnız
+      // sahibi görür/idarə edir; sendCallNotification Admin SDK ilə oxuyur.
+      match /blocked/{peerId} {
+        allow read, write: if isOwnDoc(userId);
+      }
+    }
+
+    // İstifadəçi şikayətləri (Play UGC tələbi). Client yalnız ÖZ adından
+    // yarada bilir; oxumaq/dəyişmək yalnız adminə açıqdır — şikayət olunan
+    // şəxs şikayəti görə bilməz.
+    match /reports/{reportId} {
+      allow create: if isSignedIn()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['reporterId', 'reportedId', 'reportedName', 'reason', 'createdAt', 'status'])
+        && request.resource.data.status == 'open'
+        && request.resource.data.reportedId is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 500;
+      allow read, update, delete: if isAdmin();
     }
 
     match /premiumRequests/{userId} {
