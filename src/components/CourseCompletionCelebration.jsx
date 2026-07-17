@@ -52,7 +52,7 @@ export default function CourseCompletionCelebration({ user }) {
   };
 
   const share = async () => {
-    const text = `🎉 SpeakLab-da 28 mövzuluq İngilis dili danışıq kursunu tamamladım! speaklab-app.vercel.app`;
+    const text = `🎉 SpeakLab-da 30 mövzuluq İngilis dili danışıq kursunu tamamladım! speaklab-app.vercel.app`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);
@@ -81,7 +81,7 @@ export default function CourseCompletionCelebration({ user }) {
           Təbriklər! {COURSE_TOPIC_COUNT}/{COURSE_TOPIC_COUNT} tamamladınız!
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: 1.5, margin: '0 0 18px' }}>
-          28 mövzuluq danışıq kursunun sonuna çatdınız — bu, böyük işdir. 👏
+          30 mövzuluq danışıq kursunun sonuna çatdınız — bu, böyük işdir. 👏
         </p>
 
         <div style={{

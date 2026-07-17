@@ -418,5 +418,35 @@
       "Will AI ever replace teachers, doctors, or lawyers?",
       "What is the biggest challenge humanity will face in the future?"
     ]
+  },
+  {
+    "topic": "Family & Home 🏡",
+    "questions": [
+      "How many people are there in your family?",
+      "Who are you closest to in your family?",
+      "What do you usually do together at home?",
+      "Do you prefer a big family or a small family?",
+      "What is your favourite room in your home and why?",
+      "How has the idea of \"family\" changed over the last 50 years?",
+      "Should adult children take care of their elderly parents at home?",
+      "Is it better to grow up with siblings or as an only child? Why?",
+      "How does the home environment shape a persons character?",
+      "Do you think living with extended family is a good idea? Discuss."
+    ]
+  },
+  {
+    "topic": "Holidays & Celebrations 🎉",
+    "questions": [
+      "What is your favourite holiday and why?",
+      "How do you usually celebrate your birthday?",
+      "What special food do you eat during celebrations?",
+      "Do you prefer big parties or small gatherings?",
+      "What was the best celebration you have ever been to?",
+      "How do celebrations bring a community closer together?",
+      "Have holidays become too commercial these days? Discuss.",
+      "Why is it important to keep cultural traditions alive?",
+      "Should new global holidays be created? Which one would you add?",
+      "How do the holidays a country celebrates reflect its values?"
+    ]
   }
 ]

@@ -67,7 +67,7 @@ export default function Redeem({ user }) {
             {welcome.alreadyActive ? 'Kursunuz artıq aktivdir!' : 'Xoş gəldiniz!'}
           </h2>
           <p className="auth-sub" style={{ marginBottom: '20px' }}>
-            28 mövzuluq danışıq kursuna qoşuldunuz.
+            30 mövzuluq danışıq kursuna qoşuldunuz.
           </p>
 
           <div style={{
@@ -109,7 +109,7 @@ export default function Redeem({ user }) {
 
         <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Kodunuz var? 🎟️</h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: '20px' }}>
-          Kurs kodunuzu daxil edin — 28 mövzuluq danışıq kursu və tam giriş aktivləşsin.
+          Kurs kodunuzu daxil edin — 30 mövzuluq danışıq kursu və tam giriş aktivləşsin.
         </p>
 
         {error && (

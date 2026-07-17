@@ -53,7 +53,7 @@ export default function TrialExpiredGate() {
             <h2 style={{ marginBottom: '8px' }}>Sınağınız bitdi</h2>
             <p className="auth-sub" style={{ marginBottom: '20px' }}>
               2 günlük pulsuz sınaq sona çatdı — bəyəndinizsə, davamı daha gözəldir.
-              Kurs kodu ilə 28 mövzuluq canlı danışıq kursuna qoşulun. Profiliniz və
+              Kurs kodu ilə 30 mövzuluq canlı danışıq kursuna qoşulun. Profiliniz və
               bütün irəliləyişiniz olduğu kimi qalır.
             </p>
 

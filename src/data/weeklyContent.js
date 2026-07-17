@@ -1121,6 +1121,86 @@ export const weeklyContent = [
       ],
     },
   },
+  {
+    day: 29,
+    topic: "Family & Home 🏡",
+    imageKeywords: [
+      "family dinner table together home",
+      "grandparents playing with grandchildren",
+      "cozy living room family evening",
+      "parents helping children homework",
+      "siblings cooking kitchen laughing"
+    ],
+    manualImageUrls: [],
+    vocabulary: [
+      { word: "Sibling", meaning: "A brother or a sister", meaningAZ: "Bacı və ya qardaş", example: "I have three siblings, all older than me." },
+      { word: "Upbringing", meaning: "The way a child is raised by parents", meaningAZ: "Uşağın valideynlər tərəfindən böyüdülmə tərzi", example: "Her strict upbringing made her very disciplined." },
+      { word: "Household", meaning: "All the people living together in one home", meaningAZ: "Bir evdə birlikdə yaşayan hamı", example: "In our household, everyone shares the chores." },
+      { word: "Relative", meaning: "A member of your extended family", meaningAZ: "Geniş ailənizin bir üzvü (qohum)", example: "All our relatives come over for the holidays." },
+      { word: "Bond", meaning: "A close emotional connection", meaningAZ: "Yaxın emosional bağ", example: "The bond between the twins is very strong." },
+    ],
+    idioms: [
+      { phrase: "The apple doesn't fall far from the tree", meaning: "Children resemble their parents", meaningAZ: "Uşaqlar valideynlərinə oxşayır", example: "He's stubborn like his dad — the apple doesn't fall far from the tree." },
+      { phrase: "Under one roof", meaning: "Living together in the same home", meaningAZ: "Eyni evdə birlikdə yaşamaq", example: "Three generations live under one roof in their house." },
+      { phrase: "Flesh and blood", meaning: "A close family member", meaningAZ: "Yaxın ailə üzvü (öz qanından)", example: "I have to help him — he's my own flesh and blood." },
+    ],
+    questions: {
+      easy: [
+        "How many people are there in your family?",
+        "Who are you closest to in your family?",
+        "What do you usually do together at home?",
+        "Do you prefer a big family or a small family?",
+        "What is your favourite room in your home and why?",
+      ],
+      hard: [
+        "How has the idea of 'family' changed over the last 50 years?",
+        "Should adult children take care of their elderly parents at home?",
+        "Is it better to grow up with siblings or as an only child? Why?",
+        "How does the home environment shape a person's character?",
+        "Do you think living with extended family is a good idea? Discuss.",
+      ],
+    },
+  },
+  {
+    day: 30,
+    topic: "Holidays & Celebrations 🎉",
+    imageKeywords: [
+      "people celebrating festival colorful lights",
+      "birthday party friends cake candles",
+      "traditional wedding celebration dance",
+      "new year fireworks crowd night",
+      "family holiday gift giving table"
+    ],
+    manualImageUrls: [],
+    vocabulary: [
+      { word: "Festivity", meaning: "A joyful celebration or event", meaningAZ: "Sevincli bayram və ya tədbir", example: "The whole town joined the festivities." },
+      { word: "Tradition", meaning: "A custom passed down over time", meaningAZ: "Zamanla ötürülən adət-ənənə", example: "Lighting candles is a family tradition for us." },
+      { word: "Gathering", meaning: "A meeting of people, often social", meaningAZ: "İnsanların toplantısı (çox vaxt sosial)", example: "We had a big family gathering for the holiday." },
+      { word: "Feast", meaning: "A large, special meal", meaningAZ: "Böyük, xüsusi yemək (ziyafət)", example: "Grandma prepared a feast for everyone." },
+      { word: "Anniversary", meaning: "The yearly date of a past event", meaningAZ: "Keçmiş bir hadisənin illik tarixi", example: "They celebrated their tenth wedding anniversary." },
+    ],
+    idioms: [
+      { phrase: "Paint the town red", meaning: "To go out and celebrate energetically", meaningAZ: "Çölə çıxıb coşğun şəkildə əylənmək", example: "After the exams, we painted the town red." },
+      { phrase: "Ring in the new year", meaning: "To celebrate the start of the new year", meaningAZ: "Yeni ili qarşılamaq / bayram etmək", example: "We rang in the new year with fireworks." },
+      { phrase: "The more the merrier", meaning: "More people make it more fun", meaningAZ: "Nə qədər çox olsa, o qədər əyləncəli", example: "Invite your friends too — the more the merrier!" },
+    ],
+    questions: {
+      easy: [
+        "What is your favourite holiday and why?",
+        "How do you usually celebrate your birthday?",
+        "What special food do you eat during celebrations?",
+        "Do you prefer big parties or small gatherings?",
+        "What was the best celebration you have ever been to?",
+      ],
+      hard: [
+        "How do celebrations bring a community closer together?",
+        "Have holidays become too commercial these days? Discuss.",
+        "Why is it important to keep cultural traditions alive?",
+        "Should new global holidays be created? Which one would you add?",
+        "How do the holidays a country celebrates reflect its values?",
+      ],
+    },
+  },
 ];
 
 // The current topic index. It now comes from the server-driven global cycle
