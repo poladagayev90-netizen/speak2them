@@ -10,7 +10,6 @@ import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
 import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
-import { getTodayPuzzleIndex } from '../data/puzzleWords';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
@@ -36,11 +35,6 @@ const HOME_TOUR_STEPS = [
     target: '#tour-daily-topic',
     title: 'Günün Mövzusu 📅',
     content: 'Zəngdən əvvəl günün mövzusu, yeni sözlər və hazır suallarla buradan tanış ol — zəngdə nədən danışacağını biləcəksən.',
-  },
-  {
-    target: '#tour-puzzle',
-    title: 'Günün Tapmacası 🧩',
-    content: 'Hər gün yeni söz tapmacası — ingilis sözlərini oyunla öyrən.',
   },
   {
     target: '#tour-filters',
@@ -368,42 +362,38 @@ export default function Home({ user }) {
         {/* Günün mövzusu girişi yuxarıdakı SessionDayBanner-dədir — burada
             ayrıca "Daily Topic" düyməsi eyni modalı açırdı və təkrar idi. */}
 
-        {/* Daily word puzzle entry — done-state comes from the puzzle page's
-            own localStorage record so no extra Firestore read is needed. */}
-        {(() => {
-          let solved = false;
-          try {
-            const raw = JSON.parse(localStorage.getItem('dailyPuzzle_v1') || 'null');
-            solved = !!raw && raw.dayIndex === getTodayPuzzleIndex() && raw.won;
-          } catch (e) {}
-          return (
-            <button
-              id="tour-puzzle"
-              onClick={() => navigate('/puzzle')}
-              style={{
-                width: '100%',
-                height: '44px',
-                borderRadius: '14px',
-                background: solved
-                  ? 'var(--bg-card)'
-                  : 'linear-gradient(135deg, #0ea5e9, #6366f1)',
-                color: solved ? 'var(--text-secondary)' : '#ffffff',
-                border: solved ? '1px solid var(--border)' : 'none',
-                fontSize: '15px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                marginTop: '16px',
-                marginBottom: '10px',
-                cursor: 'pointer',
-              }}
-            >
-              🧩 {solved ? 'Tapmaca həll edildi ✓ — Sabah yenisi!' : 'Günün Tapmacası'}
-            </button>
-          );
-        })()}
+        {/* Course-join CTA — replaces the daily puzzle. Only shown to users not
+            already in a cohort flow (trial/free); course + pending/accepted
+            users see their standing in CourseProgressCard instead, so a second
+            "join" prompt would be noise for them. */}
+        {user.mode !== 'course' && !user.cohortStatus && (
+          <button
+            onClick={() => navigate('/redeem')}
+            style={{
+              width: '100%',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+              color: '#ffffff',
+              border: 'none',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginTop: '16px',
+              marginBottom: '10px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(124,111,247,0.4)',
+              textAlign: 'left',
+            }}
+          >
+            <span style={{ fontSize: '22px', flexShrink: 0 }}>🎓</span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'block', fontSize: '15px', fontWeight: 800 }}>Kursa qoşul</span>
+              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9 }}>Kohorta müraciət et, danışığa başla</span>
+            </span>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>→</span>
+          </button>
+        )}
 
         <style>{`
           .filter-chip-wrapper::-webkit-scrollbar {
