@@ -272,8 +272,6 @@ export default function Home({ user }) {
 
         <SessionDayBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
 
-        <CourseProgressCard user={user} />
-
         <NotificationPrompt user={user} />
 
         {activeSearchers.length > 0 && !searching && (
@@ -361,6 +359,11 @@ export default function Home({ user }) {
 
         {/* Günün mövzusu girişi yuxarıdakı SessionDayBanner-dədir — burada
             ayrıca "Daily Topic" düyməsi eyni modalı açırdı və təkrar idi. */}
+
+        {/* Course standing lives BELOW the primary action — a status note
+            ("müraciət göndərildi", progress) must never push Find Random
+            Partner down the screen. */}
+        <CourseProgressCard user={user} />
 
         {/* Course-join CTA — replaces the daily puzzle. Only shown to users not
             already in a cohort flow (trial/free); course + pending/accepted
@@ -509,36 +512,21 @@ export default function Home({ user }) {
                 {displayUsers.map(u => (
                   <div key={u.id || u.uid} className="user-card" style={{
                     border: u.isPremium ? '1px solid #f59e0b55' : '1px solid #2e2e50',
-                    opacity: !user.isPremium && !u.isPremium ? 0.7 : 1,
                   }}>
                     <div className="user-avatar" style={{
                       boxShadow: u.isPremium ? '0 0 12px #f59e0b66' : undefined,
                     }}>
-                      {!user.isPremium ? (
-                        <div style={{
-                          width: '100%', height: '100%', borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #2e2e50, #1e1e30)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '20px',
-                        }}>🔒</div>
-                      ) : (
-                        u.photo
-                          ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                          : u.name?.charAt(0).toUpperCase()
-                      )}
+                      {u.photo
+                        ? <img src={u.photo} alt={u.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                        : u.name?.charAt(0).toUpperCase()}
                     </div>
 
                     <div className="user-info">
                       <h3>{u.name || 'User'}</h3>
-                      {!user.isPremium && (
-                        <div style={{ fontSize: '11px', color: '#7c6ff7', fontWeight: 700, marginTop: '2px' }}>
-                          Pro ilə tam profil
-                        </div>
-                      )}
                       <span className="user-level">
-                        {user.isPremium ? (u.level || 'English Speaker') : '???'}
+                        {u.level || 'English Speaker'}
                       </span>
-                      {user.isPremium && u.bio && (
+                      {u.bio && (
                         <p className="user-bio">
                           {(u.uid || u.id) === '6Djehd9KB8dTZUgVwVJfLoPI5dF3'
                             ? u.bio
@@ -546,16 +534,10 @@ export default function Home({ user }) {
                         </p>
                       )}
                       <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
-                        {user.isPremium ? (
-                          <>
-                            <span style={{ fontSize: '11px', color: '#888' }}>📞 {u.callCount || 0}</span>
-                            <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} dəq</span>
-                            {u.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</span>}
-                            {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
-                          </>
-                        ) : (
-                          <span style={{ fontSize: '11px', color: '#7c6ff7' }}>⭐ Pro al — tam gör</span>
-                        )}
+                        <span style={{ fontSize: '11px', color: '#888' }}>📞 {u.callCount || 0}</span>
+                        <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} dəq</span>
+                        {u.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</span>}
+                        {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
                       </div>
                       {(() => {
                         const presence = getPresence(u);

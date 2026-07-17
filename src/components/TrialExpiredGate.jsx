@@ -43,18 +43,18 @@ export default function TrialExpiredGate() {
 
         {activated ? (
           <>
-            <div style={{ fontSize: '52px', marginBottom: '8px' }}>🎉</div>
-            <h2 style={{ marginBottom: '8px' }}>Kurs aktivləşdi!</h2>
-            <p className="auth-sub">Bir saniyə — hər şey açılır…</p>
+            <div style={{ fontSize: '52px', marginBottom: '8px' }}>📨</div>
+            <h2 style={{ marginBottom: '8px' }}>Müraciətiniz göndərildi!</h2>
+            <p className="auth-sub">Bir saniyə — tətbiq açılır. Admin təsdiqindən sonra kurs başlayacaq.</p>
           </>
         ) : (
           <>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>⏳</div>
             <h2 style={{ marginBottom: '8px' }}>Sınağınız bitdi</h2>
             <p className="auth-sub" style={{ marginBottom: '20px' }}>
-              2 günlük pulsuz sınaq sona çatdı — bəyəndinizsə, davamı daha gözəldir.
-              Kurs kodu ilə 30 mövzuluq canlı danışıq kursuna qoşulun. Profiliniz və
-              bütün irəliləyişiniz olduğu kimi qalır.
+              2 günlük pulsuz sınaq sona çatdı — davamı üçün kohorta qoşulun.
+              Kodla müraciət edin, admin təsdiqindən sonra 30 mövzuluq canlı
+              danışıq kursu başlayır. Profiliniz və irəliləyişiniz olduğu kimi qalır.
             </p>
 
             {error && (
@@ -87,7 +87,7 @@ export default function TrialExpiredGate() {
                 required
               />
               <button type="submit" className="btn-primary" disabled={loading || code.trim().length < 4}>
-                {loading ? 'Yoxlanılır...' : 'Kursu aktivləşdir'}
+                {loading ? 'Göndərilir...' : 'Müraciət et'}
               </button>
             </form>
 

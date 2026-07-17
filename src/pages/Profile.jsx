@@ -243,25 +243,27 @@ export default function Profile({ user }) {
         </div>
       </div>
 
-      {/* PLAN INDICATOR */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>💎</div>
-          <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Plan</div>
-            <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
-              {isPremium ? (user.premiumPlan ? user.premiumPlan.charAt(0).toUpperCase() + user.premiumPlan.slice(1) : 'Pro') : 'Free Plan'}
-            </div>
+      {/* PLAN — satış yoxdur: yeni user hər şeyi açıq görür, yalnız burada
+          "Sınaq dövrü" yazılır. Kohortdan keçən avtomatik Kurs/Pro olur. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+        <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+          {mode === 'course' ? '🎓' : isPremium ? '💎' : '⏳'}
+        </div>
+        <div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Plan</div>
+          <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
+            {mode === 'course' ? 'Kurs iştirakçısı'
+              : isPremium ? 'Pro'
+              : user.cohortStatus === 'accepted' ? 'Kohort — qəbul edildi'
+              : user.cohortStatus === 'pending' ? 'Kohort — müraciət gözləyir'
+              : 'Sınaq dövrü'}
           </div>
         </div>
-        {!isPremium && (
-          <button onClick={() => navigate('/upgrade')} style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#1a1000', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Upgrade</button>
-        )}
       </div>
 
-      {/* COURSE CODE — kurs kodu olan istifadəçi onu istənilən vaxt buradan
-          aktivləşdirə bilir; artıq kurs modundadırsa sıra görünmür. */}
-      {mode !== 'course' && (
+      {/* COURSE CODE — kodla kohorta müraciət yolu; artıq kursda olan və ya
+          müraciəti gözləyən user üçün görünmür. */}
+      {mode !== 'course' && !user.cohortStatus && (
         <button
           onClick={() => navigate('/redeem')}
           style={{
@@ -273,7 +275,7 @@ export default function Profile({ user }) {
             cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left',
           }}
         >
-          🎟️ Kodunuz var? Kursu aktivləşdirin
+          🎟️ Kodunuz var? Kohorta müraciət edin
         </button>
       )}
 
