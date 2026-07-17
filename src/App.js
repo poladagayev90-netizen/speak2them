@@ -6,6 +6,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, watchFcmToken } from './firebase';
+import { isNativePush, watchNativePush } from './nativePush';
 import { isInCall } from './utils/presence';
 import { subscribeToCycle } from './utils/cycle';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -212,8 +213,10 @@ function App() {
         }, { merge: true });
 
         // Keep this device's FCM token fresh for the whole session, not just at
-        // load: re-mints on foreground return and on a periodic timer.
-        stopTokenWatch = watchFcmToken(uid);
+        // load: re-mints on foreground return and on a periodic timer. The two
+        // paths are mutually exclusive — the Android WebView has no Web Push,
+        // so native builds must take their token from the native FCM SDK.
+        stopTokenWatch = isNativePush() ? watchNativePush(uid) : watchFcmToken(uid);
 
         // Streak reset removed from app-load: Chat.jsx already resets streak
         // to 1 when there is a gap (lastCallDate is older than yesterday).

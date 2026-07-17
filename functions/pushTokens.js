@@ -18,12 +18,14 @@ const FAILURE_LIMIT = 3;
 // users who have not re-opened the app since the change; the two sources are
 // unioned and de-duplicated by token value.
 //
-// A "token entry" is: { token, uid, tokenRef, userRef, failCount }
+// A "token entry" is: { token, uid, tokenRef, userRef, failCount, platform }
 //   tokenRef  — the fcmTokens sub-doc (null when the value only exists in the
 //               legacy field); carries its own `failCount`
 //   userRef   — the parent user doc; the legacy field's failure count lives
 //               here as `fcmTokenFailCount`
 //   failCount — consecutive dead reports so far for this token
+//   platform  — 'web' | 'android'; decides the payload shape (see buildMessage).
+//               Tokens written before this field existed are web tokens.
 
 function isDeadTokenError(error) {
   const code = error && error.code;
@@ -39,11 +41,18 @@ async function getTokensForUser(db, uid, legacyToken, legacyFailCount) {
   snap.forEach((d) => {
     const t = d.data().token;
     if (typeof t === "string" && t.trim()) {
-      byToken.set(t, { token: t, uid, tokenRef: d.ref, userRef, failCount: d.data().failCount || 0 });
+      byToken.set(t, {
+        token: t, uid, tokenRef: d.ref, userRef,
+        failCount: d.data().failCount || 0,
+        platform: d.data().platform || "web",
+      });
     }
   });
   if (typeof legacyToken === "string" && legacyToken.trim() && !byToken.has(legacyToken)) {
-    byToken.set(legacyToken, { token: legacyToken, uid, tokenRef: null, userRef, failCount: legacyFailCount || 0 });
+    byToken.set(legacyToken, {
+      token: legacyToken, uid, tokenRef: null, userRef,
+      failCount: legacyFailCount || 0, platform: "web",
+    });
   }
   return [...byToken.values()];
 }
@@ -59,39 +68,82 @@ async function getAllTokens(db, usersWithLegacy) {
     const t = d.data().token;
     if (typeof t !== "string" || !t.trim()) return;
     const userRef = d.ref.parent.parent;
-    byToken.set(t, { token: t, uid: userRef.id, tokenRef: d.ref, userRef, failCount: d.data().failCount || 0 });
+    byToken.set(t, {
+      token: t, uid: userRef.id, tokenRef: d.ref, userRef,
+      failCount: d.data().failCount || 0,
+      platform: d.data().platform || "web",
+    });
   });
   for (const u of usersWithLegacy) {
     const t = u.fcmToken;
     if (typeof t === "string" && t.trim() && !byToken.has(t)) {
-      byToken.set(t, { token: t, uid: u.ref.id, tokenRef: null, userRef: u.ref, failCount: u.fcmTokenFailCount || 0 });
+      byToken.set(t, {
+        token: t, uid: u.ref.id, tokenRef: null, userRef: u.ref,
+        failCount: u.fcmTokenFailCount || 0, platform: "web",
+      });
     }
   }
   return [...byToken.values()];
 }
 
+// The payload has to differ per platform.
+//
+// Web: data-only on purpose. firebase-messaging-sw.js displays it from
+// onBackgroundMessage; adding an FCM `notification` block would make the
+// browser auto-display it *as well*, so the user sees the push twice.
+//
+// Android (native APK): a data-only message is delivered silently — the system
+// tray shows nothing while the app is backgrounded, which is exactly the case
+// that matters. It needs a real `notification` block for Android to render it.
+// `data` is still attached so the tap handler keeps its `url` deep link.
+function buildMessage(platform, tokens, data) {
+  if (platform !== "android") return { tokens, data };
+  return {
+    tokens,
+    data,
+    notification: {
+      title: data.title || "SpeakLab",
+      body: data.body || "",
+    },
+    android: {
+      priority: "high",
+      notification: { sound: "default" },
+    },
+  };
+}
+
 // One multicast pass, batched to FCM's 500-per-call limit (each batch already
-// fans out in parallel). Partitions the entries by outcome so the caller can
-// retry and reconcile.
+// fans out in parallel) and grouped by platform so each group gets the payload
+// shape it needs. Partitions the entries by outcome so the caller can retry and
+// reconcile.
 async function multicastOnce(entries, data) {
   let sent = 0;
   let failed = 0;
   const ok = [];
   const dead = [];
-  for (let i = 0; i < entries.length; i += MULTICAST_BATCH) {
-    const batch = entries.slice(i, i + MULTICAST_BATCH);
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens: batch.map((e) => e.token),
-      data,
-    });
-    sent += response.successCount;
-    failed += response.failureCount;
-    response.responses.forEach((r, idx) => {
-      if (r.success) ok.push(batch[idx]);
-      else if (isDeadTokenError(r.error)) dead.push(batch[idx]);
-      // Other (transient) errors — internal/unavailable/quota — are about the
-      // service, not the token: leave the token untouched, don't count it.
-    });
+
+  const byPlatform = new Map();
+  for (const e of entries) {
+    const platform = e.platform === "android" ? "android" : "web";
+    if (!byPlatform.has(platform)) byPlatform.set(platform, []);
+    byPlatform.get(platform).push(e);
+  }
+
+  for (const [platform, group] of byPlatform) {
+    for (let i = 0; i < group.length; i += MULTICAST_BATCH) {
+      const batch = group.slice(i, i + MULTICAST_BATCH);
+      const response = await admin.messaging().sendEachForMulticast(
+        buildMessage(platform, batch.map((e) => e.token), data)
+      );
+      sent += response.successCount;
+      failed += response.failureCount;
+      response.responses.forEach((r, idx) => {
+        if (r.success) ok.push(batch[idx]);
+        else if (isDeadTokenError(r.error)) dead.push(batch[idx]);
+        // Other (transient) errors — internal/unavailable/quota — are about the
+        // service, not the token: leave the token untouched, don't count it.
+      });
+    }
   }
   return { sent, failed, ok, dead };
 }

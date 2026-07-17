@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "8439038995",
+    "project_id": "speak2them-64f2b",
+    "storage_bucket": "speak2them-64f2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:8439038995:android:0c254a939498d4aac8abe6",
+        "android_client_info": {
+          "package_name": "com.speaklab.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "8439038995-kkn9qdfgveeeb3tp74cr4l6ob66etb8m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCanA1i6zOXma-nV_My9cy4JewghvhD918"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "8439038995-kkn9qdfgveeeb3tp74cr4l6ob66etb8m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

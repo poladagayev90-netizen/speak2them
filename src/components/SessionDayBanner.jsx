@@ -58,7 +58,7 @@ export default function SessionDayBanner({ user, onOpenTopic }) {
         cursor: 'pointer',
       }}
     >
-      <BookOpen size={18} /> Daily Topic
+      <BookOpen size={18} /> Günün Materialı — sözlər, suallar
     </button>
   );
 
@@ -113,6 +113,17 @@ export default function SessionDayBanner({ user, onOpenTopic }) {
         <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '13px', marginTop: '2px' }}>
           🕘 Sessiya saatı: {timesLabel}
         </div>
+        {/* Without this line the banner reads as session info only, and the
+            day's material (the reason to tap it) stays invisible. */}
+        {onOpenTopic && (
+          <div style={{
+            color: '#fff', fontSize: '12px', fontWeight: 700, marginTop: '6px',
+            background: 'rgba(255,255,255,0.18)', borderRadius: '8px',
+            padding: '4px 8px', display: 'inline-block',
+          }}>
+            📖 Günün materialı: sözlər · idiomlar · suallar
+          </div>
+        )}
       </div>
       {onOpenTopic && (
         <span style={{ color: '#fff', fontSize: '18px', flexShrink: 0 }}>›</span>

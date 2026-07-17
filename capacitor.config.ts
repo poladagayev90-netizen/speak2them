@@ -5,8 +5,7 @@ const config: CapacitorConfig = {
   appName: 'SpeakLab',
   webDir: 'build',
   server: {
-    androidScheme: 'https',
-    cleartext: true
+    androidScheme: 'https'
   },
   plugins: {
     Keyboard: {

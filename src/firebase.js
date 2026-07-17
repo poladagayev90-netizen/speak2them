@@ -47,7 +47,7 @@ const FCM_SW_SCOPE = '/firebase-cloud-messaging-push-scope';
 // meant only the most recently opened device received pushes). The doc id is a
 // stable hash of the token, so re-registering an unchanged token updates the
 // same doc instead of piling up duplicates.
-async function tokenDocId(token) {
+export async function tokenDocId(token) {
   try {
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
     return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -59,6 +59,25 @@ async function tokenDocId(token) {
     for (let i = 0; i < token.length; i++) h = ((h << 5) + h + token.charCodeAt(i)) >>> 0;
     return 'h' + h.toString(16);
   }
+}
+
+// Writes one device's token. `platform` tells the sender how to shape the
+// payload: a data-only message is displayed by our service worker on web, but
+// on native Android it would arrive silently — those tokens need an FCM
+// `notification` block instead (see functions/pushTokens.js). Tokens written
+// before this field existed are treated as 'web', which is what they were.
+export async function saveFcmToken(uid, token, platform = 'web') {
+  const id = await tokenDocId(token);
+  await setDoc(
+    doc(db, 'users', uid, 'fcmTokens', id),
+    {
+      token,
+      platform,
+      userAgent: (navigator.userAgent || '').slice(0, 300),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 }
 
 // Registers the messaging SW, mints a token, stores it, and wires the
@@ -77,12 +96,7 @@ async function registerTokenAndListener(uid) {
   });
 
   if (token) {
-    const id = await tokenDocId(token);
-    await setDoc(
-      doc(db, 'users', uid, 'fcmTokens', id),
-      { token, userAgent: (navigator.userAgent || '').slice(0, 300), updatedAt: serverTimestamp() },
-      { merge: true }
-    );
+    await saveFcmToken(uid, token, 'web');
   }
 
   // Data-only pushes that arrive while a tab is open never reach the SW's

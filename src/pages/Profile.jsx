@@ -10,6 +10,7 @@ import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
+import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -114,19 +115,31 @@ export default function Profile({ user }) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [showWordHistory, setShowWordHistory] = useState(false);
+  // Native reports permission asynchronously through the plugin; on web it is
+  // readable synchronously. Starting native at 'default' keeps the row tappable
+  // until the real state arrives a tick later.
   const [notifPerm, setNotifPerm] = useState(
-    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+    isNativePush() ? 'default' : (typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
   );
 
+  useEffect(() => {
+    if (!isNativePush()) return;
+    let cancelled = false;
+    getNativePushPermission().then((p) => { if (!cancelled) setNotifPerm(p); });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleEnableNotifications = async () => {
-    if (notifPerm !== 'default') return; // granted or denied: browser settings only now
-    const status = await enableNotifications(user.uid);
+    if (notifPerm !== 'default') return; // granted or denied: system settings only now
+    const status = isNativePush()
+      ? await enableNativePush(user.uid)
+      : await enableNotifications(user.uid);
     setNotifPerm(status);
   };
 
   const notifLabel = {
     granted: 'Aktiv',
-    denied: 'Brauzer parametrlərindən aç',
+    denied: isNativePush() ? 'Cihaz parametrlərindən aç' : 'Brauzer parametrlərindən aç',
     default: 'Aktivləşdir',
     unsupported: 'Bu cihazda mövcud deyil',
   }[notifPerm] || 'Aktivləşdir';
