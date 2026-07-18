@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tint Android applies to the (alpha-only) notification icon and app
+         name in the tray — brand violet. -->
+    <color name="notification_accent">#6C3EF4</color>
+</resources>

@@ -107,7 +107,10 @@ function buildMessage(platform, tokens, data) {
     },
     android: {
       priority: "high",
-      notification: { sound: "default" },
+      // icon = alpha-only tray silhouette (drawable/ic_stat_speaklab);
+      // explicit here as well as in the manifest meta-data so the brand mark
+      // shows regardless of which default the device honours.
+      notification: { sound: "default", icon: "ic_stat_speaklab", color: "#6C3EF4" },
     },
   };
 }

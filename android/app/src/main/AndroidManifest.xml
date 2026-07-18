@@ -30,6 +30,16 @@
 
         </activity>
 
+        <!-- FCM tray icon: must be an alpha-only silhouette — without this the
+             launcher icon is used and, being a fully opaque square, renders as
+             an empty box in the status bar. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_speaklab" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_accent" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
