@@ -41,7 +41,12 @@ export default function GlobalCallListener({ user }) {
           return;
         }
         setIncomingCall(callData);
-        try { ringtoneRef.current?.play(); } catch (e) {}
+        const playPromise = ringtoneRef.current?.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            console.warn('Autoplay prevented. User interaction required.');
+          });
+        }
       } else {
         setIncomingCall(null);
         ringtoneRef.current?.pause();
