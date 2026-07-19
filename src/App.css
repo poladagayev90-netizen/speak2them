@@ -814,9 +814,23 @@ body {
 }
 .level-filter {
   display: flex;
-  flex-wrap: wrap;
+  /* wrap yox: C2 tək başına ikinci sətrə düşüb yığını dağıdırdı — tək
+     sürüşən sətir, filter-chip-wrapper ilə eyni davranış. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+}
+
+.level-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.level-filter .level-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .level-btn {

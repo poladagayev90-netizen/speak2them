@@ -34,7 +34,7 @@ export default function CourseProgressCard({ user }) {
     border: '1px solid rgba(124,111,247,0.35)',
     borderRadius: '16px',
     padding: '14px 16px',
-    marginTop: '16px',
+    marginTop: '12px',
     marginBottom: '12px',
     backdropFilter: 'blur(10px)',
     WebkitBackdropFilter: 'blur(10px)',
@@ -46,43 +46,38 @@ export default function CourseProgressCard({ user }) {
     const pct = Math.round((completed / COURSE_TOPIC_COUNT) * 100);
     const done = completed >= COURSE_TOPIC_COUNT;
 
+    // Yığcam: bir başlıq sətri, nazik bar, bir alt sətir — Home yığını
+    // hündür kartlarla qarışmasın.
     return (
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
+      <div style={{ ...cardStyle, padding: '12px 14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '7px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
             📖 Mövzu {completed}/{COURSE_TOPIC_COUNT}
           </span>
           <span style={{ fontSize: '12px', fontWeight: 700, color: '#7c6ff7' }}>{pct}%</span>
         </div>
 
         <div style={{
-          height: '8px', borderRadius: '4px', overflow: 'hidden',
-          background: 'rgba(124,111,247,0.15)', marginBottom: '8px',
+          height: '6px', borderRadius: '3px', overflow: 'hidden',
+          background: 'rgba(124,111,247,0.15)',
         }}>
           <div style={{
             height: '100%', width: `${pct}%`,
             background: 'linear-gradient(90deg, #7c6ff7, #5b4de8)',
-            borderRadius: '4px',
-            boxShadow: '0 0 8px rgba(124,111,247,0.6)',
+            borderRadius: '3px',
             transition: 'width 0.6s ease',
           }} />
         </div>
 
-        <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
-          {done
-            ? '🏁 Kurs tamamlandı!'
-            : 'Hər sessiya günü bir mövzu irəliləyirsiniz'}
-        </div>
-
-        {cohort && (
+        {(done || cohort) && (
           <div style={{
-            marginTop: '10px', paddingTop: '10px',
-            borderTop: '1px solid rgba(124,111,247,0.2)',
-            fontSize: '12px', color: 'var(--text-secondary, #aaa)',
-            display: 'flex', alignItems: 'center', gap: '6px',
+            marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary, #aaa)',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
-            🧪 <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
-            {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} iştirakçı</>}
+            {done
+              ? '🏁 Kurs tamamlandı!'
+              : <>🧪 <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
+                  {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} iştirakçı</>}</>}
           </div>
         )}
       </div>

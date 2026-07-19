@@ -12,7 +12,7 @@ import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import { subscribeToBlocked } from '../utils/blocklist';
-import AnalysisReadyCard from '../components/AnalysisReadyCard';
+import AnalysisReadyModal from '../components/AnalysisReadyModal';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
@@ -377,8 +377,6 @@ export default function Home({ user }) {
             Partner down the screen. */}
         <CourseProgressCard user={user} />
 
-        <AnalysisReadyCard user={user} />
-
         {/* Course-join CTA — replaces the daily puzzle. Only shown to users not
             already in a cohort flow (trial/free); course + pending/accepted
             users see their standing in CourseProgressCard instead, so a second
@@ -575,6 +573,10 @@ export default function Home({ user }) {
         )}
       </div>
       <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} />
+      <AnalysisReadyModal
+        user={user}
+        suppressed={streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || searching}
+      />
       <StreakModal
         open={streakModalOpen}
         streakInfo={streakInfo}
