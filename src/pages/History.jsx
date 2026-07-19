@@ -52,6 +52,13 @@ export default function History({ user }) {
           return tB - tA;
         });
         setHistory(results);
+
+        // Home-dakı "analiziniz hazırdır" kartı bu açara baxır — səhifəyə
+        // girmək ən yenisini "görülmüş" sayır, kart özbaşına qayıtmır.
+        const newestDone = results.find(d => d.status === 'done');
+        if (newestDone?.timestamp?.seconds) {
+          localStorage.setItem(`analysisSeen_v1_${user.uid}`, String(newestDone.timestamp.seconds * 1000));
+        }
       } catch (e) {
         console.error('Error fetching history:', e);
       } finally {

@@ -12,6 +12,7 @@ import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import { subscribeToBlocked } from '../utils/blocklist';
+import AnalysisReadyCard from '../components/AnalysisReadyCard';
 import { AchievementsPanel } from '../components/BadgeSystem';
 import Logo from '../components/Logo';
 import { useMatchmaking } from '../hooks/useMatchmaking';
@@ -375,6 +376,8 @@ export default function Home({ user }) {
             ("müraciət göndərildi", progress) must never push Find Random
             Partner down the screen. */}
         <CourseProgressCard user={user} />
+
+        <AnalysisReadyCard user={user} />
 
         {/* Course-join CTA — replaces the daily puzzle. Only shown to users not
             already in a cohort flow (trial/free); course + pending/accepted
