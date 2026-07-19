@@ -42,6 +42,11 @@ const CHAT_TOUR_STEPS = [
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
 
+// Ceiling for the authoritative (timestamp-derived) call length written to
+// leaderboard stats. Mirrors the server's CALL_CAP_SECONDS so a pathological
+// start timestamp can never inflate a user's minutes.
+const AUTHORITATIVE_CALL_CAP_SECONDS = 20 * 60;
+
 export default function Chat({ user }) {
   const { peerId } = useParams();
   const navigate = useNavigate();
@@ -642,14 +647,40 @@ export default function Chat({ user }) {
           user.uid, peerId,
         ].filter(Boolean));
         const uniqueParticipants = Array.from(participantSet).slice(0, 2);
-        const durationMinutes = Math.ceil(secondsTalked / 60);
-        const shouldApplyStats = secondsTalked > 5 && !callData[`statsApplied_${user.uid}`] && uniqueParticipants.length === 2;
+
+        // Authoritative call length — shared by BOTH participants so their
+        // leaderboard stats can never diverge. It is derived from the call's own
+        // start timestamp, NOT from each client's local stopwatch
+        // (callSecondsRef): that stopwatch stops only when this client's own
+        // endCall runs, so when the "ended" signal is slow to reach the peer
+        // (mobile backgrounded, network drop, Agora drop) the peer keeps
+        // counting and records ~2x the minutes — the 40-vs-20 leaderboard bug.
+        // The first participant to end computes the value and pins it on the
+        // call doc; the second reuses the stored value verbatim.
+        const startMs = callData.matchedAt?.toMillis?.()
+          || callData.createdAt?.toMillis?.()
+          || callData.timestamp?.toMillis?.()
+          || null;
+        let durationSeconds;
+        if (typeof callData.authoritativeDurationSec === 'number') {
+          durationSeconds = callData.authoritativeDurationSec;
+        } else if (startMs) {
+          durationSeconds = Math.min(
+            Math.max(0, Math.floor((Date.now() - startMs) / 1000)),
+            AUTHORITATIVE_CALL_CAP_SECONDS,
+          );
+        } else {
+          durationSeconds = secondsTalked; // legacy calls with no start timestamp
+        }
+        const durationMinutes = Math.ceil(durationSeconds / 60);
+        const shouldApplyStats = durationSeconds > 5 && !callData[`statsApplied_${user.uid}`] && uniqueParticipants.length === 2;
 
         const callSessionUpdate = {
           userA: uniqueParticipants[0] || user.uid,
           userB: uniqueParticipants[1] || peerId,
-          duration: secondsTalked,
+          duration: durationSeconds,
           durationMinutes,
+          authoritativeDurationSec: durationSeconds, // pin so the peer reuses it
           timestamp: callData.timestamp || serverTimestamp(),
           endedAt: serverTimestamp(),
           status: 'ended',
@@ -696,7 +727,7 @@ export default function Chat({ user }) {
           currentWeekMinutes: newWeekMinutes,
         };
         const badgeCallData = {
-          duration: secondsTalked,
+          duration: durationSeconds,
           matchTime: callData.matchTimeSeconds || callData.matchTime || 999,
           hour: new Date().getHours(),
         };
