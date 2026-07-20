@@ -237,8 +237,39 @@ body {
   border-color: var(--accent);
 }
 
+/* The lobby card avatar had NO rule at all, so the <img> (width/height:100%)
+   sized to the photo's own aspect ratio and rendered as a stretched rectangle.
+   A fixed circle + object-fit:cover crops any photo cleanly and centers the
+   fallback initial. */
+.user-avatar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+/* Photos must fill their circular frame without distortion everywhere an
+   avatar shows a user-supplied image. */
+.user-avatar img,
+.chat-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .user-info {
   flex: 1;
+  min-width: 0;
 }
 
 .user-info h3 {
@@ -869,7 +900,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  /* The panel is position:fixed;top:0 and the native status bar overlays the
+     webview, so a flat 16px top padding put the topic title under the clock and
+     battery. Add the safe-area inset so the header always clears the status bar. */
+  padding: calc(16px + var(--safe-area-top, 0px)) 20px 16px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
 }

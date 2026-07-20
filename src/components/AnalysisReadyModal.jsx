@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// Analiz hazır olanda BİR DƏFƏ görünən modal (topic-intro üslubunda). Əvvəlki
-// versiya Home-a daimi zolaq əlavə edirdi və yığını qarışdırırdı — istənən
-// davranış: hazır olanda modal çıxsın, açılandan (və ya "Sonra"dan) sonra bir
-// daha görünməsin. "Görüldü" açarı History səhifəsi ilə paylaşılır.
+// Analiz hazır olanda BİR DƏFƏ görünən modal (topic-intro üslubunda). İstənən
+// davranış: hazır olanda çıxsın, GÖRÜLƏNDƏN sonra bir daha görünməsin.
+//
+// Əvvəlki versiyanın buqu: "görüldü" açarı YALNIZ düymə klikində yazılırdı.
+// İstifadəçi modalı aşağı-nav/geri düyməsi ilə bağlayanda (səhifə unmount) və
+// ya üstündən başqa modal açıb bağlayanda açar yazılmırdı, ona görə modal
+// təkrar-təkrar çıxırdı. İndi HƏR bağlanma yolunda (düymə, örtülmə, naviqasiya)
+// "görüldü" yazılır. Açar History səhifəsi ilə paylaşılır.
 const seenKey = (uid) => `analysisSeen_v1_${uid}`;
 const tsMillis = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : 0);
 
 export default function AnalysisReadyModal({ user, suppressed }) {
   const [latest, setLatest] = useState(null);
-  const [, setTick] = useState(0);
+  const [seenTs, setSeenTs] = useState(() => Number(localStorage.getItem(seenKey(user.uid)) || 0));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,17 +33,35 @@ export default function AnalysisReadyModal({ user, suppressed }) {
     );
   }, [user?.uid]);
 
+  const ts = tsMillis(latest?.timestamp);
   // Streak/mövzu modalları açıq ikən görünmə — iki modal üst-üstə düşməsin.
-  if (suppressed || !latest || latest.status !== 'done') return null;
+  const visible = !suppressed && latest?.status === 'done' && !!ts && ts > seenTs;
 
-  const ts = tsMillis(latest.timestamp);
-  if (!ts || ts <= Number(localStorage.getItem(seenKey(user.uid)) || 0)) return null;
-
-  const dismiss = () => {
-    localStorage.setItem(seenKey(user.uid), String(ts));
-    setTick((t) => t + 1);
+  // Cari analizi "görüldü" kimi qeyd et. localStorage → növbəti mount-da da
+  // çıxmasın; state → bu mount-da suppressor açılıb-bağlananda təkrar çıxmasın.
+  const persistSeen = (value) => {
+    if (!value) return;
+    localStorage.setItem(seenKey(user.uid), String(value));
+    setSeenTs((prev) => Math.max(prev, value));
   };
-  const open = () => { dismiss(); navigate('/history'); };
+
+  // Modal görünüb sonra HƏR HANSI səbəblə itəndə (örtülmə və ya səhifə
+  // unmount/naviqasiya) görüldü kimi yaz. tsRef son görünən dəyəri saxlayır ki,
+  // unmount cleanup-ı köhnəlmiş closure oxumasın.
+  const tsRef = useRef(ts);
+  useEffect(() => { tsRef.current = ts; }, [ts]);
+  useEffect(() => {
+    if (!visible) return undefined;
+    return () => {
+      const t = tsRef.current;
+      if (t) localStorage.setItem(seenKey(user.uid), String(t));
+    };
+  }, [visible, user.uid]);
+
+  if (!visible) return null;
+
+  const dismiss = () => persistSeen(ts);
+  const open = () => { persistSeen(ts); navigate('/history'); };
 
   return (
     <div className="topic-intro-overlay">
