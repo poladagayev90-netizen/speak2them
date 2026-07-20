@@ -104,6 +104,7 @@ export default function AdminCohorts() {
         code,
         maxUses: Math.max(0, Number(newMax) || 0),
         memberCount: 0,
+        pendingCount: 0,
         status: 'active',
         createdAt: serverTimestamp(),
       });
@@ -242,111 +243,155 @@ export default function AdminCohorts() {
         )}
       </div>
 
-      {/* Müraciətçilər (pending + accepted) */}
+      {/* Seçilmiş kohortun İDARƏ OTAĞI */}
       {selectedId && (() => {
+        const selected = cohorts.find((c) => c.id === selectedId) || {};
         const pendingList = members.filter((m) => m.cohortStatus === 'pending');
         const acceptedList = members.filter((m) => m.cohortStatus === 'accepted');
-        if (pendingList.length === 0 && acceptedList.length === 0) return null;
+        const activeList = decorated.filter((m) => m.mode === 'course' || m.cohortStatus === 'active');
+        const maxUses = Number(selected.maxUses) || 0;
+        const seatsUsed = pendingList.length + acceptedList.length + activeList.length;
+
+        const stat = (emoji, label, n, color) => (
+          <div style={{ flex: 1, textAlign: 'center', padding: '10px 4px' }}>
+            <div style={{ fontSize: '22px', fontWeight: 800, color }}>{n}</div>
+            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{emoji} {label}</div>
+          </div>
+        );
+
         const applicantRow = (m, accepted) => (
           <div key={m.id} style={{
-            background: '#1a1a2e', border: '1px solid #2e2e50', borderRadius: '12px',
-            padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px',
+            background: '#15152a', border: '1px solid #2e2e50', borderRadius: '14px',
+            padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '10px',
           }}>
-            <span style={{ fontSize: '15px', flexShrink: 0 }}>{accepted ? '✅' : '🙋'}</span>
-            <p style={{ flex: 1, minWidth: 0, margin: 0, fontSize: '13px', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {m.name || m.email || m.id}
-            </p>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>{accepted ? '✅' : '🙋'}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {m.name || m.email || m.id}
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: accepted ? '#34d399' : '#fbbf24' }}>
+                {accepted ? 'Qəbul edildi — başlamağı gözləyir' : 'Yeni müraciət'}
+              </p>
+            </div>
             {accepted ? (
               <button onClick={() => rejectApplicant(m)} style={{
-                padding: '5px 9px', background: 'none', color: '#f87171',
-                border: '1px solid #f8717155', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                padding: '9px 14px', background: 'none', color: '#f87171',
+                border: '1px solid #f8717155', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', flexShrink: 0,
               }}>Geri al</button>
             ) : (
-              <>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                 <button onClick={() => acceptApplicant(m)} style={{
-                  padding: '5px 9px', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff',
-                  border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                  padding: '9px 14px', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff',
+                  border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
                 }}>Qəbul et</button>
                 <button onClick={() => rejectApplicant(m)} style={{
-                  padding: '5px 9px', background: 'none', color: '#f87171',
-                  border: '1px solid #f8717155', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                  padding: '9px 12px', background: 'none', color: '#f87171',
+                  border: '1px solid #f8717155', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
                 }}>Rədd</button>
-              </>
+              </div>
             )}
           </div>
         );
+
         return (
-          <div style={{ marginBottom: '20px' }}>
-            <p style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 10px' }}>
-              Müraciətlər · 🙋 {pendingList.length} yeni · ✅ {acceptedList.length} qəbul edilmiş
+          <div style={{
+            background: '#141428', border: '1px solid #2e2e50', borderRadius: '18px',
+            padding: '16px', marginBottom: '20px',
+          }}>
+            <p style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800, color: '#f8fafc' }}>
+              🧪 {selected.name || selectedId}
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {pendingList.map((m) => applicantRow(m, false))}
-              {acceptedList.map((m) => applicantRow(m, true))}
+
+            {/* Həqiqi xülasə — sayğaclardan yox, üzv sənədlərindən hesablanır. */}
+            <div style={{
+              display: 'flex', background: '#0f0f1e', borderRadius: '14px',
+              border: '1px solid #24243e', marginBottom: '16px', overflow: 'hidden',
+            }}>
+              {stat('🙋', 'Yeni', pendingList.length, '#fbbf24')}
+              <div style={{ width: '1px', background: '#24243e' }} />
+              {stat('✅', 'Qəbul', acceptedList.length, '#34d399')}
+              <div style={{ width: '1px', background: '#24243e' }} />
+              {stat('🎓', 'Aktiv', activeList.length, '#7c6ff7')}
+              <div style={{ width: '1px', background: '#24243e' }} />
+              {stat('🪑', maxUses > 0 ? 'Limit' : 'Yer', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, '#e2e8f0')}
             </div>
+
+            {/* Başlat düyməsi — hər zaman görünür (nə edəcəyi aydın olsun). */}
             <button
               onClick={startSelectedCohort}
               disabled={starting || acceptedList.length === 0}
               style={{
-                width: '100%', marginTop: '12px', padding: '12px',
-                background: acceptedList.length === 0 ? '#2a2a40' : 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
-                color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px',
+                width: '100%', padding: '15px', marginBottom: acceptedList.length > 0 || pendingList.length > 0 ? '18px' : '0',
+                background: acceptedList.length === 0 ? '#20203a' : 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+                color: acceptedList.length === 0 ? '#64748b' : '#fff',
+                border: 'none', borderRadius: '14px', fontWeight: 800, fontSize: '15px',
                 cursor: (starting || acceptedList.length === 0) ? 'default' : 'pointer',
                 opacity: starting ? 0.6 : 1,
+                boxShadow: acceptedList.length === 0 ? 'none' : '0 4px 16px rgba(124,111,247,0.4)',
               }}
             >
-              {starting ? 'Başladılır...' : `🚀 Kohortu Başlat (${acceptedList.length} qəbul edilmiş)`}
+              {starting ? 'Başladılır...'
+                : acceptedList.length === 0 ? '🚀 Başlatmaq üçün əvvəlcə qəbul edin'
+                : `🚀 Kohortu Başlat — ${acceptedList.length} nəfər aktivləşəcək`}
             </button>
-          </div>
-        );
-      })()}
 
-      {/* Aktiv üzvlər */}
-      {selectedId && (() => {
-        const activeList = decorated.filter((m) => m.mode === 'course' || m.cohortStatus === 'active');
-        return (
-        <div>
-          <p style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 4px' }}>
-            Aktiv üzvlər ({activeList.length})
-          </p>
-          <p style={{ fontSize: '11px', color: '#64748b', margin: '0 0 10px' }}>
-            🔴 = son 2 sessiyada iştirak etməyib (erkən müdaxilə siqnalı)
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {activeList.map((m) => (
-              <div key={m.id} style={{
-                background: '#1a1a2e',
-                border: m.fading ? '1px solid #ef444488' : '1px solid #2e2e50',
-                borderRadius: '12px', padding: '10px 12px',
-                display: 'flex', alignItems: 'center', gap: '10px',
-              }}>
-                <span style={{ fontSize: '16px', flexShrink: 0 }}>{m.fading ? '🔴' : '🟢'}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: m.fading ? '#fca5a5' : '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {m.name || m.email || m.id}
-                  </p>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#94a3b8' }}>
-                    Son iştirak: {m.callMs
-                      ? new Intl.DateTimeFormat('az', { day: 'numeric', month: 'short' }).format(new Date(m.callMs))
-                      : 'heç vaxt'}
-                    {' · '}📞 {m.callCount || 0} zəng
-                  </p>
+            {/* Müraciətlər */}
+            {(pendingList.length > 0 || acceptedList.length > 0) && (
+              <>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 10px' }}>
+                  Müraciətlər
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+                  {pendingList.map((m) => applicantRow(m, false))}
+                  {acceptedList.map((m) => applicantRow(m, true))}
                 </div>
-                <span style={{
-                  flexShrink: 0, fontSize: '12px', fontWeight: 800,
-                  color: m.completed !== null ? '#7c6ff7' : '#64748b',
-                }}>
-                  {m.completed !== null ? `${m.completed}/${COURSE_TOPIC_COUNT}` : '—'}
-                </span>
-              </div>
-            ))}
-            {activeList.length === 0 && (
-              <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                Hələ aktiv üzv yoxdur — qəbul edib "Başlat" deyin.
+              </>
+            )}
+
+            {/* Aktiv üzvlər */}
+            <p style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 4px' }}>
+              Aktiv üzvlər ({activeList.length})
+            </p>
+            {activeList.length > 0 && (
+              <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 10px' }}>
+                🔴 = son 2 sessiyada iştirak etməyib (erkən müdaxilə siqnalı)
               </p>
             )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {activeList.map((m) => (
+                <div key={m.id} style={{
+                  background: '#15152a',
+                  border: m.fading ? '1px solid #ef444488' : '1px solid #2e2e50',
+                  borderRadius: '14px', padding: '13px 14px',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                }}>
+                  <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.fading ? '🔴' : '🟢'}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: m.fading ? '#fca5a5' : '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {m.name || m.email || m.id}
+                    </p>
+                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>
+                      Son iştirak: {m.callMs
+                        ? new Intl.DateTimeFormat('az', { day: 'numeric', month: 'short' }).format(new Date(m.callMs))
+                        : 'heç vaxt'}
+                      {' · '}📞 {m.callCount || 0} zəng
+                    </p>
+                  </div>
+                  <span style={{
+                    flexShrink: 0, fontSize: '14px', fontWeight: 800,
+                    color: m.completed !== null ? '#7c6ff7' : '#64748b',
+                  }}>
+                    {m.completed !== null ? `${m.completed}/${COURSE_TOPIC_COUNT}` : '—'}
+                  </span>
+                </div>
+              ))}
+              {activeList.length === 0 && (
+                <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px', padding: '8px 0' }}>
+                  Hələ aktiv üzv yoxdur — qəbul edib "Başlat" deyin.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
         );
       })()}
     </div>

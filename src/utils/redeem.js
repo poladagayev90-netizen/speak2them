@@ -10,6 +10,7 @@ export const REDEEM_ERROR_TEXT = {
   code_not_found: 'Bu kod tapılmadı. Hərf səhvi ola bilər — kodu olduğu kimi yazın.',
   code_inactive: 'Bu kod artıq aktiv deyil. Yeni kod üçün bizə yazın.',
   code_exhausted: 'Bu qrup dolub. Bizə yazın — sizi növbəti dalğaya əlavə edək.',
+  already_applied_elsewhere: 'Siz artıq başqa kohorta müraciət etmisiniz. Əvvəlcə onu ləğv edin və ya adminlə əlaqə saxlayın.',
   rate_limited: 'Çox cəhd etdiniz. Bir az gözləyib yenidən yoxlayın.',
 };
 

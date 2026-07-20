@@ -413,13 +413,41 @@ exports.streakReminder = onSchedule({
   console.log("[StreakReminder]", { atRisk: atRisk.length, sent, urgent, invalidTokensRemoved: removed });
 });
 
+// Dev aləti. Əvvəllər BÜTÜN istifadəçilərə yayımlanırdı və auth-suz idi —
+// indi yalnız verilən uid-in öz cihazlarına gedir, yayım imkanı yoxdur.
 exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
-  const db = admin.firestore();
-  const usersSnap = await db.collection("users").get();
-  const users = usersSnap.docs.map(d => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
-  const tokenEntries = await getAllTokens(db, users);
+  let uid = String(req.query.uid || (req.body && req.body.uid) || "").trim();
+  const email = String(req.query.email || (req.body && req.body.email) || "").trim().toLowerCase();
+  if (!uid && !email) return res.status(400).json({ error: "uid or email required" });
 
-  if (tokenEntries.length === 0) return res.status(200).json({ error: "No users with tokens" });
+  const db = admin.firestore();
+  if (!uid) {
+    const q = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (q.empty) return res.status(404).json({ error: "user not found by email" });
+    uid = q.docs[0].id;
+  }
+  const userSnap = await db.collection("users").doc(uid).get();
+  if (!userSnap.exists) return res.status(404).json({ error: "user not found" });
+  const u = userSnap.data();
+  const tokenEntries = await getTokensForUser(db, uid, u.fcmToken, u.fcmTokenFailCount);
+
+  // debug=1 → göndərmədən token inventarını göstər (platforma, yaş, quyruq).
+  if (String(req.query.debug || "") === "1") {
+    const docs = await db.collection("users").doc(uid).collection("fcmTokens").get();
+    return res.status(200).json({
+      uid,
+      subcollection: docs.docs.map((d) => ({
+        id: d.id.slice(0, 8),
+        platform: d.data().platform || "(yox)",
+        tokenTail: String(d.data().token || "").slice(-8),
+        updatedAt: d.data().updatedAt ? d.data().updatedAt.toDate().toISOString() : null,
+        userAgent: String(d.data().userAgent || "").slice(0, 60),
+      })),
+      legacyField: u.fcmToken ? "var" : "yox",
+    });
+  }
+
+  if (tokenEntries.length === 0) return res.status(200).json({ error: "no tokens for this user" });
 
   const { sent, failed } = await sendPush(tokenEntries, {
     title: "🛠️ SpeakLab Test Mesajı",
@@ -428,7 +456,7 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
     url: "/",
   });
 
-  res.status(200).json({ sent, failed, tokens: tokenEntries.length });
+  res.status(200).json({ sent, failed, tokens: tokenEntries.length, platforms: tokenEntries.map((e) => e.platform) });
 });
 
 // ─── Trial / Subscription ────────────────────────────────────
@@ -598,8 +626,14 @@ exports.redeemCode = onRequest({ secrets: [] }, async (req, res) => {
       if (u.mode === "course" && Number.isFinite(u.startTick)) {
         return { alreadyActive: true, cohortId: cohortRef.id };
       }
-      if (u.cohortId === cohortRef.id && (u.cohortStatus === "pending" || u.cohortStatus === "accepted")) {
+      const alreadyWaiting = u.cohortStatus === "pending" || u.cohortStatus === "accepted";
+      if (alreadyWaiting && u.cohortId === cohortRef.id) {
         return { alreadyApplied: true, cohortId: cohortRef.id, status: u.cohortStatus };
+      }
+      // BAŞQA kohortda gözləyir: keçidə icazə vermirik. Əks halda köhnə kohortun
+      // pendingCount-u azalmadan qalır (kabus sayğac) — bir anda bir müraciət.
+      if (alreadyWaiting && u.cohortId && u.cohortId !== cohortRef.id) {
+        return { error: "already_applied_elsewhere" };
       }
 
       // maxUses = ümumi yer: gözləyənlər (pending+accepted) + aktiv üzvlər.
@@ -618,7 +652,7 @@ exports.redeemCode = onRequest({ secrets: [] }, async (req, res) => {
     });
 
     if (result.error) {
-      const map = { code_inactive: 400, code_exhausted: 409 };
+      const map = { code_inactive: 400, code_exhausted: 409, already_applied_elsewhere: 409 };
       return res.status(map[result.error] || 400).json({ error: result.error });
     }
     return res.status(200).json({ ok: true, ...result });
