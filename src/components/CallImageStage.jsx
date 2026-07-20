@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
 
-// In-call synchronized picture stage. Both parties see the exact same image
-// (deterministic ?lock= seeded URLs) and either side can advance the index,
-// which is synced through the call doc's imageStage field.
+// In-call synchronized picture stage. Both parties see the exact same image —
+// the list is a pure function of the topic (deterministic picsum seed URLs,
+// no per-peer fallback), and the index is synced through the call doc's
+// imageStage field — so neither the picture nor its order can drift apart.
 export default function CallImageStage({ content, imageIndex, onNext, onClose }) {
   const [images, setImages] = useState([]);
   // Per-image load bookkeeping, keyed by image id:
