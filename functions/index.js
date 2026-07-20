@@ -475,6 +475,12 @@ exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) 
     subscriptionPlan: "trial",
     availableTrialMinutes: TRIAL_MINUTES,
     trialGrantedAt: admin.firestore.FieldValue.serverTimestamp(),
+    // trialStartedAt burada — HƏR yeni userin keçdiyi yeganə nöqtə. Əvvəllər
+    // yalnız Register client-ində yazılırdı; Login-dən Google ilə girən (və ya
+    // App.js user sənədini əvvəl yaradan) yeni userdə boş qalırdı və
+    // isTrialExpired heç vaxt işə düşmürdü → sonsuz pulsuz giriş. Client onu
+    // yazmasa da (yaza da bilər — eyni an), gate indi mütləq işləyir.
+    trialStartedAt: data.trialStartedAt || admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
 });
 
