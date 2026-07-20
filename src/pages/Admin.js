@@ -125,7 +125,7 @@ export default function Admin({ user }) {
     });
 
   return (
-    <div className="profile-page" style={{ background: '#0f0f17', minHeight: '100vh', paddingBottom: '80px' }}>
+    <div className="profile-page" style={{ background: '#0f0f17', minHeight: '100vh', paddingBottom: 'calc(120px + var(--safe-area-bottom, 0px))' }}>
       <div style={{ 
         padding: '20px 16px', 
         background: 'linear-gradient(135deg, #161625, #1e1e30)',
