@@ -22,7 +22,7 @@ import { ADMIN_UID } from '../constants';
 import { getPresence, ONLINE_WINDOW_MS } from '../utils/presence';
 import GuidedTour from '../components/GuidedTour';
 import CourseProgressCard from '../components/CourseProgressCard';
-import SessionDayBanner from '../components/SessionDayBanner';
+import DailyTopicBanner from '../components/DailyTopicBanner';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
@@ -282,7 +282,7 @@ export default function Home({ user }) {
 
         <CourseCompletionCelebration user={user} />
 
-        <SessionDayBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
+        <DailyTopicBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
 
         <NotificationPrompt user={user} />
 
@@ -369,7 +369,7 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {/* Günün mövzusu girişi yuxarıdakı SessionDayBanner-dədir — burada
+        {/* Günün mövzusu girişi yuxarıdakı DailyTopicBanner-dədir — burada
             ayrıca "Daily Topic" düyməsi eyni modalı açırdı və təkrar idi. */}
 
         {/* Course standing lives BELOW the primary action — a status note
