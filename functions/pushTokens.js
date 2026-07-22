@@ -97,7 +97,15 @@ async function getAllTokens(db, usersWithLegacy) {
 // that matters. It needs a real `notification` block for Android to render it.
 // `data` is still attached so the tap handler keeps its `url` deep link.
 function buildMessage(platform, tokens, data) {
-  if (platform !== "android") return { tokens, data };
+  // Web stays data-only (the SW displays it — a notification block would make
+  // the browser show it a second time). But without an explicit Urgency the
+  // Web Push spec treats the message as "normal", which Chrome may defer while
+  // the browser is backgrounded and only deliver when it next wakes — i.e. when
+  // the user opens the app. Urgency:high delivers promptly even while dozing;
+  // TTL caps how long FCM holds an undelivered one so stale reminders expire.
+  if (platform !== "android") {
+    return { tokens, data, webpush: { headers: { Urgency: "high", TTL: "3600" } } };
+  }
   return {
     tokens,
     data,
