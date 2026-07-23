@@ -1,3 +1,8 @@
+---
+name: verify
+description: Build, serve, and drive the real SpeakLab app headlessly (Playwright) against production Firebase — register test accounts, match two users, make a real call, then clean up. Use to verify a change end-to-end in the actual app.
+---
+
 # Verify: speak2them (CRA + Firebase + Agora)
 
 Build, serve, and drive the real app headlessly against production Firebase.
