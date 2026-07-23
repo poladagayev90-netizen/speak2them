@@ -415,7 +415,22 @@ exports.streakReminder = onSchedule({
 
 // Dev aləti. Əvvəllər BÜTÜN istifadəçilərə yayımlanırdı və auth-suz idi —
 // indi yalnız verilən uid-in öz cihazlarına gedir, yayım imkanı yoxdur.
+// Auth: YALNIZ admin. Auth-suz olduğu müddətdə URL-i bilən hər kəs istənilən
+// istifadəçiyə push göndərə, `email` ilə hesabın mövcudluğunu yoxlaya
+// (enumeration) və `debug=1` ilə cihaz metadatasını (userAgent, token quyruğu,
+// tarixlər) oxuya bilirdi. Alət hələ lazımdır (native Android push real cihazda
+// təsdiqlənməyib), ona görə silinmir — admin ilə kilidlənir.
 exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res, "GET, POST");
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+
+  try {
+    const decoded = await verifyAuth(req);
+    if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
   let uid = String(req.query.uid || (req.body && req.body.uid) || "").trim();
   const email = String(req.query.email || (req.body && req.body.email) || "").trim().toLowerCase();
   if (!uid && !email) return res.status(400).json({ error: "uid or email required" });
