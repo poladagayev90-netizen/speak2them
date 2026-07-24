@@ -218,7 +218,8 @@ export default function TeacherUnlock({ user }) {
       <div className="home-header">
         <div className="home-logo">👩‍🏫 Müəllim Paneli</div>
       </div>
-      <div className="home-body" style={{ paddingBottom: '90px' }}>
+      {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
+      <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
 
         {/* Dəvət bölməsi */}
         <div style={{
@@ -297,9 +298,13 @@ export default function TeacherUnlock({ user }) {
             {students.map((s, i) => (
               <div
                 key={s.id}
+                onClick={() => navigate(`/teacher/student/${s.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/teacher/student/${s.id}`); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '13px 16px',
+                  padding: '13px 16px', cursor: 'pointer',
                   borderBottom: i < students.length - 1 ? '1px solid var(--border)' : 'none',
                 }}
               >
@@ -336,6 +341,7 @@ export default function TeacherUnlock({ user }) {
                 }}>
                   {s.status === 'active' ? 'Aktiv' : 'Passiv'}
                 </span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span>
               </div>
             ))}
           </div>

@@ -166,7 +166,9 @@ export default function History({ user }) {
   );
 }
 
-function AnalysisDetail({ analysis, onClose }) {
+// Export: TeacherStudent səhifəsi şagird analizini EYNİ görünüşdə göstərir —
+// müəllimin gördüyü, şagirdin gördüyünün birə-bir kopyasıdır.
+export function AnalysisDetail({ analysis, onClose }) {
   // Rendered as large text on a theme surface, so these follow the theme.
   const scoreColor = (s) => (s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)');
 
