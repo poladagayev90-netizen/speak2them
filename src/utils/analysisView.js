@@ -41,7 +41,23 @@ export function toAnalysisView(analysis) {
     // Old suggestions carried an Azerbaijani meaning where the example now goes.
     : arr(analysis.vocabularySuggestions).map((v) => ({ word: v.word, example: v.meaning }));
 
+  // Yeni "elite" analiz sahələri — köhnə sənədlərdə yoxdur, UI şərti göstərir.
+  const hw = analysis.homework && typeof analysis.homework === 'object' ? analysis.homework : null;
+  const homework = hw ? {
+    multipleChoice: arr(hw.multiple_choice).filter(
+      (q) => q && q.question && Array.isArray(q.options) && q.options.includes(q.correct_answer)
+    ),
+    wordOrder: arr(hw.word_order).filter(
+      (w) => w && w.correct_sentence && Array.isArray(w.scrambled) && w.scrambled.length >= 2
+    ),
+    correction: arr(hw.correction).filter((f) => f && f.original && f.corrected),
+  } : null;
+
   return {
+    reportMarkdown: typeof analysis.reportMarkdown === 'string' ? analysis.reportMarkdown : '',
+    homework: homework && (homework.multipleChoice.length || homework.wordOrder.length || homework.correction.length)
+      ? homework
+      : null,
     recap: analysis.recap || analysis.encouragement || '',
     overallScore: Number.isFinite(analysis.overallScore) ? analysis.overallScore : 0,
     scores: {

@@ -1520,48 +1520,56 @@ const ANALYSIS_INVOCATION_BUDGET_MS = 200 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
 const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
 
-const ANALYSIS_PROMPT = `You are the learner's warm, supportive English speaking PARTNER — a close friend who practised with them, not a teacher and not a school. Talk to them like a friend who is genuinely happy about their progress and wants to help them get better.
+const ANALYSIS_PROMPT = `You are an Elite Linguistic Analyst and Expert English Pedagogical Consultant. Your feedback is world-class: precise, deeply structured, and genuinely empathetic. You are also fluent in Azerbaijani and understand exactly which English mistakes Azerbaijani speakers make because of their mother tongue (L1 transfer). Two people will read your report: the learner themself and, possibly, their real teacher — it must be flawless for both.
 
 TRANSCRIPT:
 """{{TRANSCRIPT}}"""
 
-Return ONLY a valid JSON object. No markdown, no text outside the JSON.
+Return ONLY a valid JSON object. No text outside the JSON.
 
 VOICE (Azerbaijani text fields):
-- Write in warm, friendly, modern spoken Azerbaijani, addressing them informally as "sən".
-- NEVER call them "Müəllim" or "Şagird". Never address, label, or lecture them as a pupil, and never speak as a teacher/school. You are a peer and friend.
-- Sound human and encouraging, never clinical or robotic.
+- Write in warm, modern, natural Azerbaijani, addressing the learner informally as "sən".
+- NEVER address them as "Müəllim" or "Şagird". Encourage like a brilliant mentor, never lecture, never sound clinical or robotic.
 
 IGNORE MICROPHONE NOISE:
 - The transcript is auto-generated and may contain garbled, non-English, or nonsensical tokens from mic noise (e.g. "Já, þess", random symbols, foreign gibberish). These are NOT things the learner said.
-- Do NOT correct, mention, or put such noise in feedback. Analyze only the intelligible English speech and silently skip the rest.
+- Do NOT correct, mention, or put such noise anywhere. Analyze only the intelligible English speech and silently skip the rest.
 
 Rules:
 - Correct ONLY real grammatical or lexical mistakes. If a sentence is already correct, leave it alone.
 - Never rewrite for style: do not swap "is not" for "isn't", do not reorder correct clauses, do not offer alternatives to correct sentences.
-- feedback: at most 5 items, the most valuable ones. original = the learner's exact sentence, corrected = the fixed sentence, reason = why it was wrong. Empty array if there are no real mistakes.
+- report_markdown: an Executive Summary in Azerbaijani, in Markdown, 120-180 words. CRITICAL: every heading and every bullet MUST be on its own line — put a real newline ("\\n") between them, never run them together on one line. Follow this exact skeleton:
+"## 👋 Salam!\\n\\n<one warm sentence referencing what they actually talked about>\\n\\n### 💪 Güclü tərəflərin\\n- <concrete moment from THIS conversation>\\n- <another one>\\n\\n### 🌱 İnkişaf sahələrin\\n- **<pattern name>** — <one specific sentence>\\n- **<pattern name>** — <one specific sentence>\\n\\n<one short closing motivation sentence>"
+  Use **bold** for key phrases. No headings other than these.
 - scores: fluency = flow and natural delivery; grammar = correctness; vocabulary = range and level. Integers 0-100.
+- feedback: at most 5 items, the most valuable ones. original = the learner's exact sentence, corrected = the fixed sentence, reason = why it was wrong, in Azerbaijani, 1-2 sentences; when the mistake comes from Azerbaijani interference, SAY SO and explain the contrast (e.g. "Azərbaycan dilində artikl yoxdur, ona görə..."). Empty array if there are no real mistakes.
 - recap: 1-2 sentences on what the learner talked about.
 - strengths: 1-2 concrete things they genuinely did well in this conversation.
-- tips: 2-3 tips that are SPECIFIC to mistakes actually made in THIS transcript — name the concrete pattern (e.g. a missing article before a specific noun, a specific past-tense slip) and give a usable mini-technique or tiny example. Do NOT give generic filler such as "qorxma", "sadə saxla", or "daha çox danış".
+- tips: 2-3 tips SPECIFIC to mistakes actually made in THIS transcript — name the concrete pattern and give a usable mini-technique or tiny example. No generic filler such as "qorxma" or "daha çox danış".
 - vocabulary: 3-4 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words.
-- recap, reason, strengths and tips must be written in Azerbaijani. word and example stay in English.
+- homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
+  - multiple_choice: up to 3 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = Azerbaijani, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
+  - word_order: up to 3 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = Azerbaijani, and it must NAME the specific grammar point this sentence practises (e.g. "keçmiş zaman 'went'", "'for' + müddət") — never a generic line like "sıranı bilmək lazımdır".
+- Every explanation must teach something concrete. Write natural, correct, modern Azerbaijani — if you are not sure a morphological form is right, use a simpler phrasing.
+- recap, reason, strengths, tips and every explanation must be in Azerbaijani. word, example, question, options and sentences stay in English.
 - corrected sentences and example sentences must sound like simple, natural, modern native-speaker English.
-- Keep every text field to one sentence. Base everything on the transcript; invent nothing.
-- Be encouraging and honest — a friend who cheers real progress and points out real mistakes gently.`;
+- Base everything on the transcript; invent nothing about the conversation.
+- Be encouraging and honest — celebrate real progress, point out real mistakes with warmth.`;
 
 // Whisper can return very long transcripts; the JSON answer must still fit in
 // the completion budget, so the model only sees a bounded slice.
 const MAX_TRANSCRIPT_CHARS = 6000;
 
 // Strict schema enforced at the Groq API level (structured outputs).
-// maxItems is what keeps the completion small: with these caps a full answer is
-// ~600 output tokens, which is why ANALYSIS_MAX_TOKENS can start low.
+// maxItems is what keeps the completion bounded: with these caps a full answer
+// (report + homework daxil) ~1600-2000 output token edir — ANALYSIS_MAX_TOKENS
+// ona görə qaldırılıb.
 const ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["recap", "scores", "feedback", "strengths", "tips", "vocabulary"],
+  required: ["report_markdown", "recap", "scores", "feedback", "strengths", "tips", "vocabulary", "homework"],
   properties: {
+    report_markdown: { type: "string" },
     recap: { type: "string" },
     scores: {
       type: "object",
@@ -1599,6 +1607,42 @@ const ANALYSIS_SCHEMA = {
         properties: {
           word: { type: "string" },
           example: { type: "string" },
+        },
+      },
+    },
+    homework: {
+      type: "object",
+      additionalProperties: false,
+      required: ["multiple_choice", "word_order"],
+      properties: {
+        multiple_choice: {
+          type: "array",
+          maxItems: 3,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["question", "options", "correct_answer", "explanation"],
+            properties: {
+              question: { type: "string" },
+              options: { type: "array", minItems: 3, maxItems: 3, items: { type: "string" } },
+              correct_answer: { type: "string" },
+              explanation: { type: "string" },
+            },
+          },
+        },
+        word_order: {
+          type: "array",
+          maxItems: 3,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["scrambled", "correct_sentence", "explanation"],
+            properties: {
+              scrambled: { type: "array", minItems: 2, maxItems: 12, items: { type: "string" } },
+              correct_sentence: { type: "string" },
+              explanation: { type: "string" },
+            },
+          },
         },
       },
     },
@@ -1714,7 +1758,66 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     .map((v) => ({ word: asStr(v?.word), example: asStr(v?.example) }))
     .filter((v) => v.word).slice(0, 4);
 
+  // ── Homework normalizasiyası ──────────────────────────────────
+  // Söz sırası tapşırığında scrambled HƏMİŞƏ serverdə yenidən qurulur:
+  // modelin qarışdırması tez-tez ya söz itirir, ya da düz sıranı "qarışdırır".
+  // Deterministik seed → eyni analiz üçün eyni tapşırıq (retry-lar sabit qalır).
+  const seededShuffle = (words, seed) => {
+    const a = [...words];
+    let s = seed;
+    for (let i = a.length - 1; i > 0; i--) {
+      s = (s * 9301 + 49297) % 233280;
+      const j = Math.floor((s / 233280) * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    // Qarışdırma təsadüfən düz sıraya düşdüsə, ilk iki sözü çevir.
+    if (a.join(" ") === words.join(" ") && a.length > 1) [a[0], a[1]] = [a[1], a[0]];
+    return a;
+  };
+  const sentenceWords = (s) => asStr(s).replace(/[.!?]+$/, "").split(/\s+/).filter(Boolean);
+
+  const hw = obj.homework && typeof obj.homework === "object" ? obj.homework : {};
+  const multipleChoice = (Array.isArray(hw.multiple_choice) ? hw.multiple_choice : [])
+    .map((q) => ({
+      question: asStr(q?.question),
+      options: (Array.isArray(q?.options) ? q.options : []).map(asStr).filter(Boolean).slice(0, 3),
+      correct_answer: asStr(q?.correct_answer),
+      explanation: asStr(q?.explanation),
+    }))
+    // correct_answer mütləq variantlardan biri olmalıdır — əks halda sual oynanıla bilməz.
+    .filter((q) => q.question && q.options.length === 3 && q.options.includes(q.correct_answer))
+    .slice(0, 3);
+
+  let wordOrder = (Array.isArray(hw.word_order) ? hw.word_order : [])
+    .map((w, i) => {
+      const words = sentenceWords(w?.correct_sentence);
+      return {
+        correct_sentence: asStr(w?.correct_sentence),
+        scrambled: seededShuffle(words, 7 + i),
+        explanation: asStr(w?.explanation),
+      };
+    })
+    .filter((w) => w.scrambled.length >= 3 && w.scrambled.length <= 12)
+    .slice(0, 3);
+
+  // Model word_order verməyibsə, amma real səhvlər varsa — düzəldilmiş
+  // cümlələrdən özümüz qururuq: tapşırıqsız "homework" bölməsi boş görünməsin.
+  if (wordOrder.length === 0 && feedback.length > 0) {
+    wordOrder = feedback
+      .map((f, i) => ({ words: sentenceWords(f.corrected), corrected: f.corrected, i }))
+      .filter((x) => x.words.length >= 3 && x.words.length <= 10)
+      .slice(0, 2)
+      .map((x) => ({
+        correct_sentence: x.corrected,
+        scrambled: seededShuffle(x.words, 13 + x.i),
+        explanation: "Bu, sənin öz cümlənin düzəldilmiş formasıdır — sıranı yadda saxla.",
+      }));
+  }
+
   return {
+    // Hesabat müəllim panelində də birə-bir göstərilir (TeacherStudent →
+    // AnalysisDetail) — markdown hər iki oxucu üçün eyni mənbədir.
+    reportMarkdown: asStr(obj.report_markdown).slice(0, 4000),
     recap: asStr(obj.recap) || "Söhbətiniz analiz olundu.",
     // Derived, not asked of the model: one less field to hallucinate, and it can
     // never contradict the three scores it is supposed to summarise.
@@ -1725,6 +1828,13 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     tips: strList(obj.tips, 3),
     vocabulary,
     speakingPace: computeSpeakingPace(transcript, analyzeSeconds),
+    homework: {
+      multiple_choice: multipleChoice,
+      word_order: wordOrder,
+      // Spec: homework öz-özlüyündə tam olsun deyə düzəlişlər bura da daxil
+      // edilir (feedback ilə eyni obyektlər — token xərci yoxdur, sürüşmə yoxdur).
+      correction: feedback,
+    },
   };
 }
 
@@ -1734,9 +1844,55 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
 // Escalating completion budgets: the observed production failure was
 // "max completion tokens reached before generating a valid document" — the
 // answer was cut mid-JSON, so retrying with the same budget can never succeed.
-// A full answer under ANALYSIS_SCHEMA's maxItems is ~600 tokens, so the first
-// attempt has ample headroom; the ladder exists only for the rare overrun.
-const ANALYSIS_MAX_TOKENS = [1200, 1700, 2200];
+// A full answer under ANALYSIS_SCHEMA's maxItems (report_markdown + homework
+// daxil) is ~1600-2000 tokens, so the first attempt has ample headroom; the
+// ladder exists only for the rare overrun. Keyfiyyət qərarı: token xərci
+// bilərəkdən artırılıb — analiz məhsulun "WOW" anıdır.
+const ANALYSIS_MAX_TOKENS = [3000, 3800, 4600];
+
+// DeepSeek V3 — analizin ƏSAS modeli. Səbəb: Llama-nın Azərbaycan dili real
+// istifadədə pozulur ("alıb-san" kimi morfologiya, mənasız izahlar); DeepSeek
+// AZ-də qat-qat təbii yazır və pedaqoji izahları dərindir (bax ai-pipeline
+// skill: post-call analysis üçün tövsiyə olunan model elə budur). json_schema
+// dəstəyi yoxdur → json_object + parseJsonLoose + normalizeAnalysis onsuz da
+// hər sahəni yoxlayır. Xəta halında Groq fallback (aşağıda) işə düşür.
+const DEEPSEEK_CHAT_TIMEOUT_MS = 90000;
+
+async function callDeepSeekChat(userContent) {
+  const res = await fetchWithTimeout("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${DEEPSEEK_API_KEY.value()}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: userContent }],
+      temperature: 0.3,
+      max_tokens: 4000,
+      response_format: { type: "json_object" },
+    }),
+  }, DEEPSEEK_CHAT_TIMEOUT_MS, "DeepSeek chat");
+
+  if (!res.ok) {
+    const errText = (await res.text().catch(() => "")).slice(0, 300);
+    throw Object.assign(new Error("DeepSeek error " + res.status + ": " + errText), {
+      retryable: isRetryableStatus(res.status),
+    });
+  }
+  return parseJsonLoose((await res.json()).choices?.[0]?.message?.content);
+}
+
+// Əsas: DeepSeek. O yıxılsa (açar/limit/timeout) — Groq strict-schema yolu.
+// Analiz asinxron növbədədir, latency fərqi istifadəçiyə görünmür.
+async function callAnalysisLLM(userContent) {
+  try {
+    return await callDeepSeekChat(userContent);
+  } catch (e) {
+    console.warn("[Analysis] DeepSeek failed, falling back to Groq:", e.message);
+    return callGroqChat(userContent);
+  }
+}
 
 async function callGroqChat(userContent) {
   const messages = [{ role: "user", content: userContent }];
@@ -1773,7 +1929,7 @@ async function callGroqChat(userContent) {
       // Answer was truncated mid-JSON → next attempt gets a bigger budget and
       // an explicit order to shrink the arrays.
       if (/max completion tokens|max_tokens/i.test(errText)) {
-        messages.push({ role: "system", content: "Cavab çox uzun idi və kəsildi. Massivləri qısalt: grammarFixes ən çox 3, vocabularyUsed ən çox 5, vocabularySuggestions ən çox 3, exampleSentences 2. İzahlar 8 sözdən uzun olmasın." });
+        messages.push({ role: "system", content: "Cavab çox uzun idi və kəsildi. Qısalt: report_markdown maksimum 100 söz, feedback ən çox 3, multiple_choice ən çox 2, word_order ən çox 2, izahlar 1 cümlə." });
         lastErr = Object.assign(new Error("json_truncated"), { retryable: true });
         continue;
       }
@@ -1930,7 +2086,7 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm") {
   const promptTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
     ? transcript.slice(0, MAX_TRANSCRIPT_CHARS)
     : transcript;
-  const raw = await callGroqChat(ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", promptTranscript));
+  const raw = await callAnalysisLLM(ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", promptTranscript));
   const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
   return { transcript, analysis };
 }
@@ -1938,7 +2094,8 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm") {
 exports.processAnalysisQueue = onSchedule({
   schedule: "every 1 minutes",
   timeZone: "Asia/Baku",
-  secrets: [GROQ_API_KEY],
+  // DEEPSEEK: analiz LLM-i (əsas); GROQ: Whisper STT + LLM fallback.
+  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY],
   memory: "1GiB",
   timeoutSeconds: 540,
 }, async () => {

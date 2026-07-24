@@ -3,7 +3,9 @@ import { collection, query, where, getDocs, orderBy, limit } from 'firebase/fire
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ChevronLeft } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
+import AnalysisHomework from '../components/AnalysisHomework';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 
 const PROFILE_TOUR_STEPS = [
@@ -185,6 +187,30 @@ export function AnalysisDetail({ analysis, onClose }) {
 
   // Old and new analysis documents share one view model.
   const view = toAnalysisView(analysis);
+
+  // Markdown hesabatın premium tipoqrafiyası — ReactMarkdown-un elementləri
+  // mövzu dəyişənlərinə bağlanır ki, dark/light hər ikisində otursun.
+  const mdComponents = {
+    h2: ({ children }) => (
+      <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 900, margin: '0 0 10px', lineHeight: 1.35 }}>{children}</h2>
+    ),
+    h3: ({ children }) => (
+      <h3 style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 800, margin: '16px 0 8px' }}>{children}</h3>
+    ),
+    p: ({ children }) => (
+      <p style={{ color: 'var(--text-primary)', fontSize: 14, lineHeight: 1.65, margin: '0 0 8px' }}>{children}</p>
+    ),
+    ul: ({ children }) => (
+      <ul style={{ margin: '0 0 8px', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>{children}</ul>
+    ),
+    li: ({ children }) => (
+      <li style={{ color: 'var(--text-primary)', fontSize: 14, lineHeight: 1.55 }}>{children}</li>
+    ),
+    strong: ({ children }) => (
+      <strong style={{ color: 'var(--accent)', fontWeight: 800 }}>{children}</strong>
+    ),
+  };
+
   const tiles = [
     { label: 'Ümumi Bal', value: view.overallScore },
     { label: 'Axıcılıq', value: view.scores.fluency },
@@ -203,6 +229,18 @@ export function AnalysisDetail({ analysis, onClose }) {
         </button>
         <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>Analiz Nəticəsi</h2>
       </div>
+
+      {/* Elite hesabat — AI-nin markdown icmalı. Müəllim panelində də eyni
+          komponent açıldığı üçün müəllim şagirdlə EYNİ hesabatı oxuyur. */}
+      {view.reportMarkdown && (
+        <div style={{
+          background: 'linear-gradient(135deg, #7c6ff71a, #5b4de81a)',
+          border: '1px solid #7c6ff744', borderRadius: 20,
+          padding: '20px 18px', marginBottom: 24,
+        }}>
+          <ReactMarkdown components={mdComponents}>{view.reportMarkdown}</ReactMarkdown>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
         {tiles.map((t) => (
@@ -230,20 +268,32 @@ export function AnalysisDetail({ analysis, onClose }) {
         </div>
       )}
 
-      <h3 style={h3}>Səhvlər</h3>
-      {view.feedback.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-          {view.feedback.map((item, idx) => (
-            <div key={idx} style={panel}>
-              <div style={{ color: 'var(--danger)', fontSize: 14, textDecoration: 'line-through', marginBottom: 4 }}>{item.original}</div>
-              <div style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{item.corrected}</div>
-              {item.reason && (
-                <div style={{ color: 'var(--text-secondary)', fontSize: 13, background: 'var(--bg-card)', padding: 8, borderRadius: 8 }}>{item.reason}</div>
-              )}
+      {/* Yeni analizlərdə düzəlişlər aşağıda, interaktiv tapşırıq blokunun
+          "Müqayisə et" bölməsində göstərilir — eyni siyahını iki dəfə vermirik.
+          Köhnə sənədlərdə (homework yoxdur) bu klassik bölmə qalır. */}
+      {!view.homework && (
+        <>
+          <h3 style={h3}>Səhvlər</h3>
+          {view.feedback.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+              {view.feedback.map((item, idx) => (
+                <div key={idx} style={panel}>
+                  <div style={{ color: 'var(--danger)', fontSize: 14, textDecoration: 'line-through', marginBottom: 4 }}>{item.original}</div>
+                  <div style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{item.corrected}</div>
+                  {item.reason && (
+                    <div style={{ color: 'var(--text-secondary)', fontSize: 13, background: 'var(--bg-card)', padding: 8, borderRadius: 8 }}>{item.reason}</div>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
+          ) : (
+            <div style={{ ...panel, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
+              Real qrammatik səhv tapılmadı! 🎉
+            </div>
+          )}
+        </>
+      )}
+      {view.homework && view.feedback.length === 0 && (
         <div style={{ ...panel, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
           Real qrammatik səhv tapılmadı! 🎉
         </div>
@@ -313,6 +363,9 @@ export function AnalysisDetail({ analysis, onClose }) {
           </div>
         </>
       )}
+
+      {/* İnteraktiv ev tapşırığı — şagirdin bu zəngdəki öz səhvlərindən. */}
+      <AnalysisHomework homework={view.homework} />
     </div>
   );
 }
