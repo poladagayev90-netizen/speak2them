@@ -479,6 +479,17 @@ const TRIAL_MINUTES = 100;
 const CALL_CAP_SECONDS = 20 * 60; // calls are capped at 20 minutes
 const METERED_PLANS = new Set(["free", "trial"]);
 
+// ─── Müəllim funnel-i ────────────────────────────────────────
+// Müəllim qeydiyyatda "müəllim" seçmir: normal istifadəçi kimi danışır, öz AI
+// analizini alır, yalnız 3 həqiqi sessiyadan sonra şagird izləmə açılır. Bu,
+// heç bir yoxlama sistemi olmadan saxta müəllimlərin qarşısını alır.
+const SESSION_MIN_SECONDS = 120;       // 2 dəq-dən qısa zəng sessiya sayılmır
+const TEACHER_ELIGIBLE_SESSIONS = 3;   // bu qədər sessiyadan sonra kod yaratmaq açılır
+const TEACHER_FREE_DAYS = 90;          // founding kohort üçün pulsuz dövr
+const TEACHER_STUDENT_CAP = 30;
+const MIN_LINK_AGE = 13;               // bundan kiçik heç bir halda bağlana bilməz
+const ADULT_AGE = 18;                  // bundan kiçikdirsə valideyn razılığı tələb olunur
+
 // Every new user starts on a 100-minute trial. Written server-side because
 // subscriptionPlan/availableTrialMinutes are locked to clients by the rules.
 exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) => {
@@ -543,6 +554,22 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
       const metered = METERED_PLANS.has(user.subscriptionPlan || "free");
 
       tx.update(callRef, { [billedFlag]: true });
+
+      // Müəllim funnel-i üçün sessiya sayğacı. billedSec zəngin ÖZ vaxt
+      // damğalarından gəlir (client saatından yox), ona görə üç dəfə dərhal
+      // qapatmaqla müəllim rolunu açmaq mümkün deyil.
+      //
+      // Bu blok qəsdən aşağıdakı erkən return-dən ƏVVƏLdir: return metered
+      // olmayan (kurs/premium) istifadəçilər üçün işə düşür, yəni məhz founding
+      // müəllim olmağa ən yaxın adamlar heç vaxt sessiya qazana bilməzdi.
+      if (billedSec >= SESSION_MIN_SECONDS) {
+        const done = (Number(user.completedSessions) || 0) + 1;
+        tx.set(userRef, {
+          completedSessions: done,
+          ...(done >= TEACHER_ELIGIBLE_SESSIONS ? { teacherEligible: true } : {}),
+        }, { merge: true });
+      }
+
       if (!metered || minutes <= 0) return null; // paid plans / no-op calls: mark billed, don't decrement
 
       const trial = Number(user.availableTrialMinutes) || 0;
@@ -936,6 +963,210 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
     const status = e.httpStatus || 500;
     if (status === 500) console.error("[updatePeerStats]", e.message);
     res.status(status).json({ error: e.message });
+  }
+});
+
+// ─── Müəllim ↔ Şagird bağlantısı ─────────────────────────────────
+// Doğum tarixindən yaş. Yalnız ciddi YYYY-MM-DD qəbul edilir; "2020-02-31"
+// kimi mövcud olmayan tarixi JS-in ISO parseri onsuz da Invalid Date edir.
+function ageFromBirthDate(iso) {
+  if (typeof iso !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const born = new Date(`${iso}T00:00:00Z`);
+  if (Number.isNaN(born.getTime())) return null;
+  const now = new Date();
+  if (born.getTime() > now.getTime()) return null; // gələcək tarix
+  let age = now.getUTCFullYear() - born.getUTCFullYear();
+  const monthDiff = now.getUTCMonth() - born.getUTCMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getUTCDate() < born.getUTCDate())) age--;
+  if (age > 120) return null;
+  return age;
+}
+
+// invoker: "public" — generateQuiz-dəki ilə eyni səbəb: Cloud Run brauzerin
+// Authorization başlığı olmayan OPTIONS preflight-ını handler-ə çatmamış rədd
+// edir. İstifadəçi aşağıda verifyAuth ilə yenə də doğrulanır.
+exports.createInviteCode = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const rawCode = req.body && req.body.code;
+  if (!rawCode || typeof rawCode !== "string") return res.status(400).json({ error: "invalid-code" });
+  const code = rawCode.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4,12}$/.test(code)) return res.status(400).json({ error: "invalid-code" });
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(uid, "createInviteCode", 10, 60 * 60 * 1000);
+
+    await db.runTransaction(async (tx) => {
+      const codeRef = db.collection("inviteCodes").doc(code);
+      const userRef = db.collection("users").doc(uid);
+      const teacherRef = db.collection("teachers").doc(uid);
+
+      // Bütün oxumalar yazılardan əvvəl (evdəki qayda — bax claimTicket).
+      const userSnap = await tx.get(userRef);
+      const codeSnap = await tx.get(codeRef);
+      const teacherSnap = await tx.get(teacherRef);
+
+      if (!userSnap.exists) throw fail(404, "user-not-found");
+      const user = userSnap.data() || {};
+      // teacherEligible yalnız server tərəfindən, 3 həqiqi sessiyadan sonra
+      // yazılır və rules ilə clientə bağlıdır.
+      if (user.teacherEligible !== true) throw fail(403, "not-eligible");
+      if (codeSnap.exists) throw fail(409, "code-taken");
+
+      if (!teacherSnap.exists) {
+        tx.set(teacherRef, {
+          displayName: user.name || "",
+          bio: user.bio || "",
+          cohort: "founding",
+          freeUntil: admin.firestore.Timestamp.fromMillis(
+            Date.now() + TEACHER_FREE_DAYS * 24 * 60 * 60 * 1000),
+          studentCap: TEACHER_STUDENT_CAP,
+          studentCount: 0,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+      // Kodun özü teachers/{uid}-də də saxlanılır: inviteCodes kolleksiyası
+      // clientə tamamilə bağlıdır (enumeration-un qarşısını almaq üçün), ona
+      // görə müəllim öz kodunu başqa cür geri oxuya bilməzdi.
+      tx.set(teacherRef, { inviteCode: code }, { merge: true });
+      tx.set(userRef, { role: "teacher" }, { merge: true });
+      tx.set(codeRef, {
+        teacherId: uid,
+        active: true,
+        uses: 0,
+        maxUses: TEACHER_STUDENT_CAP,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        expiresAt: null,
+      });
+    });
+
+    return res.status(200).json({ ok: true, code });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[createInviteCode]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// Şagird müəllimin kodunu istifadə edir. Rate limit burada TƏHLÜKƏSİZLİK
+// nəzarətidir, nəzakət deyil: 4 simvolluq kod sahəsi brute-force edilə bilər.
+exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const { code: rawCode, birthDate, consent, guardianConsent } = req.body || {};
+
+  if (!rawCode || typeof rawCode !== "string") return res.status(400).json({ error: "invalid-code" });
+  const code = rawCode.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4,12}$/.test(code)) return res.status(400).json({ error: "invalid-code" });
+
+  // Ucuz, oxumasız yoxlamalar tranzaksiyadan kənarda.
+  if (consent !== true) return res.status(400).json({ error: "consent-required" });
+  const age = ageFromBirthDate(birthDate);
+  if (age === null || age < MIN_LINK_AGE) return res.status(403).json({ error: "age-restricted" });
+  const isAdult = age >= ADULT_AGE;
+  // 13-17 yaş bağlana bilər, amma valideyn/qəyyum razılığı olmadan yox — məhz
+  // bu yaş qrupu üçün müəllim hesabatı valideynə göstərilir.
+  if (!isAdult && guardianConsent !== true) {
+    return res.status(400).json({ error: "guardian-consent-required" });
+  }
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(uid, "claimTeacherCode", 5, 60 * 60 * 1000);
+
+    const teacherId = await db.runTransaction(async (tx) => {
+      const codeRef = db.collection("inviteCodes").doc(code);
+      const userRef = db.collection("users").doc(uid);
+
+      const codeSnap = await tx.get(codeRef);
+      if (!codeSnap.exists) throw fail(404, "code-not-found");
+      const invite = codeSnap.data() || {};
+
+      if (invite.active !== true) throw fail(403, "code-inactive");
+      if (invite.expiresAt && invite.expiresAt.toMillis && invite.expiresAt.toMillis() <= Date.now()) {
+        throw fail(403, "code-expired");
+      }
+      if ((Number(invite.uses) || 0) >= (Number(invite.maxUses) || 0)) throw fail(409, "code-exhausted");
+      if (invite.teacherId === uid) throw fail(400, "self-link");
+
+      const userSnap = await tx.get(userRef);
+      if (!userSnap.exists) throw fail(404, "user-not-found");
+      const user = userSnap.data() || {};
+      if (user.teacherId) throw fail(409, "already-linked");
+
+      const teacherRef = db.collection("teachers").doc(invite.teacherId);
+      const teacherSnap = await tx.get(teacherRef);
+      if (!teacherSnap.exists) throw fail(404, "code-not-found");
+      const teacher = teacherSnap.data() || {};
+      if ((Number(teacher.studentCount) || 0) >= (Number(teacher.studentCap) || TEACHER_STUDENT_CAP)) {
+        throw fail(409, "teacher-full");
+      }
+
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      tx.set(userRef, {
+        teacherId: invite.teacherId,
+        teacherLinkedAt: now,
+        teacherConsentAt: now,
+        ageConfirmedAt: now,
+        isAdult,
+      }, { merge: true });
+
+      // Xam doğum tarixi users/{uid}-də SAXLANILMIR: o sənədi hər daxil olmuş
+      // istifadəçi oxuya bilir (firestore.rules). Hüquqi qeyd burada, yalnız
+      // sahibinin oxuya bildiyi private alt-kolleksiyada qalır.
+      tx.set(userRef.collection("private").doc("ageAttestation"), {
+        birthDate,
+        isAdult,
+        guardianConsent: guardianConsent === true,
+        attestedAt: now,
+      });
+
+      tx.set(teacherRef.collection("roster").doc(uid), {
+        displayName: user.name || "",
+        level: user.level || null,
+        joinedAt: now,
+        status: "active",
+        // Sonrakı fazada rollup writer dolduracaq.
+        lastActiveAt: null,
+        streak: 0,
+        sessionsLast7: 0,
+      });
+
+      tx.update(codeRef, { uses: admin.firestore.FieldValue.increment(1) });
+      tx.update(teacherRef, { studentCount: admin.firestore.FieldValue.increment(1) });
+
+      return invite.teacherId;
+    });
+
+    return res.status(200).json({ ok: true, teacherId });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[claimTeacherCode]", e.message);
+    return res.status(status).json({ error: e.message });
   }
 });
 

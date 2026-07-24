@@ -30,16 +30,25 @@ service cloud.firestore {
     // 'pending' trial gate-i keçər, 'accepted' isə adminin "Başlat"ında
     // təsdiqsiz kurs+premium verərdi. Yalnız server (redeemCode/startCohort,
     // Admin SDK) və admin paneli yaza bilər.
+    // Müəllim funnel-i sahələri də bu siyahıdadır. teacherEligible client
+    // tərəfindən yazıla bilsəydi, 3 sessiya şərtini keçib dərhal kod yarada
+    // bilərdi; teacherId isə özünü istənilən müəllimin siyahısına yazardı.
+    // Hamısı yalnız consumeTrialMinutes / claimTeacherCode / createInviteCode
+    // (Admin SDK) tərəfindən yazılır.
     function isNotChangingPremiumFields() {
       return !request.resource.data.diff(resource.data).affectedKeys()
         .hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'mode', 'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt',
-          'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil']);
+          'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
+          'role', 'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
+          'isAdult', 'completedSessions', 'teacherEligible']);
     }
 
     function isNotCreatingPremiumFields() {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
-          'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil'])
+          'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
+          'role', 'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
+          'isAdult', 'completedSessions', 'teacherEligible'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial');
     }
@@ -61,6 +70,15 @@ service cloud.firestore {
       // sahibi görür/idarə edir; sendCallNotification Admin SDK ilə oxuyur.
       match /blocked/{peerId} {
         allow read, write: if isOwnDoc(userId);
+      }
+
+      // Şəxsi məlumat (hazırda: yaş təsdiqi + valideyn razılığı). users/{uid}
+      // sənədini hər daxil olmuş istifadəçi oxuya bilir (yuxarıdakı read
+      // qaydası), ona görə xam doğum tarixi orada YOX, burada saxlanılır.
+      // Yalnız claimTeacherCode (Admin SDK) yazır.
+      match /private/{docId} {
+        allow read: if isOwnDoc(userId);
+        allow write: if false;
       }
     }
 
@@ -227,6 +245,25 @@ service cloud.firestore {
     match /wordHistory/{userId}/words/{wordId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Müəllim profili + şagird siyahısı. Yalnız müəllimin özü oxuyur; bütün
+    // yazılar createInviteCode / claimTeacherCode (Admin SDK) üzərindəndir —
+    // əks halda müəllim studentCap-ı və ya studentCount-u özü dəyişə bilərdi.
+    match /teachers/{teacherId} {
+      allow read: if isOwnDoc(teacherId);
+      allow write: if false;
+
+      match /roster/{studentId} {
+        allow read: if isOwnDoc(teacherId);
+        allow write: if false;
+      }
+    }
+
+    // DİQQƏT: inviteCodes üçün QƏSDƏN match bloku yoxdur. Aşağıdakı catch-all
+    // onu tam bağlayır və bu, tam olaraq istənilən davranışdır: kodu yoxlamaq
+    // yalnız serverdə (claimTeacherCode) baş verir, oxumağı bağlamaq isə
+    // kolleksiyanı sayıb işlək kod tapmağın (enumeration) qarşısını alır.
+    // Buraya "rahatlıq üçün" read əlavə etmək bütün kodları ifşa edər.
 
     match /{document=**} {
       allow read, write: if false;

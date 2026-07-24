@@ -279,6 +279,26 @@ export default function Profile({ user }) {
         </button>
       )}
 
+      {/* MÜƏLLİM — kilid açılan kimi görünür. Kilidli halda göstərmirik:
+          funnel-in mənası odur ki, təklif məhz 3 sessiyadan sonra gəlsin. */}
+      {(user.teacherEligible || user.role === 'teacher') && (
+        <button
+          onClick={() => navigate('/teacher')}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
+            border: '1px solid #7c6ff755', color: 'var(--text-primary)',
+            padding: '16px', borderRadius: '16px', marginBottom: '16px',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left',
+          }}
+        >
+          {user.role === 'teacher'
+            ? '🎓 Şagird kodum'
+            : '🔓 Müəllim rejimi açıldı — kod yaradın'}
+        </button>
+      )}
+
       {/* ÖYRƏNMƏ */}
       {sectionLabel('Öyrənmə')}
       <div style={listCard}>

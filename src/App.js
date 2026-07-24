@@ -15,6 +15,7 @@ import GlobalCallListener from './components/GlobalCallListener';
 import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
 import { ADMIN_UID } from './constants';
+import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode } from './utils/teacher';
 import Logo from './components/Logo';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
@@ -44,16 +45,23 @@ const Ranking = React.lazy(importRanking);
 const History = React.lazy(() => import('./pages/History'));
 const DailyPuzzle = React.lazy(() => import('./pages/DailyPuzzle'));
 const Redeem = React.lazy(() => import('./pages/Redeem'));
+const JoinTeacher = React.lazy(() => import('./pages/JoinTeacher'));
+const TeacherUnlock = React.lazy(() => import('./pages/TeacherUnlock'));
 
 // Shown INSIDE the layout while a page chunk loads — the bottom nav stays
 // mounted, so a tab switch never blanks the whole screen.
 // Vəziyyət keçidlərini (trial→kurs, kurs→bitmə, premium) reload OLMADAN
 // bütün app-a çatdıran sahələr. Yalnız bunlar dəyişəndə user state yenilənir —
 // presence heartbeat-in hər 60 saniyəlik lastSeen yazısı re-render yaratmır.
+// teacherEligible/completedSessions burada OLMALIDIR: 3-cü sessiya bitən kimi
+// müəllim kilidi reload olmadan açılmalıdır — funnel-in bütün gücü məhz o
+// andadır. Bu sahələr gündə bir neçə dəfə dəyişir, presence-in 60 saniyəlik
+// lastSeen yazısı kimi re-render seli yaratmır.
 const LIVE_USER_FIELDS = [
   'mode', 'startTick', 'cohortId', 'cohortStatus', 'isPremium', 'subscriptionPlan',
   'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
   'freeAccessUntil', 'surveyDone',
+  'role', 'teacherId', 'teacherEligible', 'completedSessions',
 ];
 
 const fieldValue = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : v);
@@ -74,7 +82,9 @@ const PageFallback = () => (
 // Trial-ı bitmiş user bu yollarda SƏRBƏST qalır: kodu daxil edə bilsin
 // (/redeem), hesabını idarə edə/silə bilsin (/profile — Play Store tələbi),
 // auth axını pozulmasın.
-const TRIAL_GATE_EXEMPT = ['/redeem', '/profile', '/login', '/register'];
+// /join burada olmalıdır ki, müəllimin göndərdiyi dəvət linki trial divarına
+// dəyib ölü-son olmasın; /teacher isə müəllimin öz kodunu itirməməsi üçün.
+const TRIAL_GATE_EXEMPT = ['/redeem', '/profile', '/login', '/register', '/join', '/teacher'];
 
 function AppShell({ user }) {
   const location = useLocation();
@@ -86,8 +96,28 @@ function AppShell({ user }) {
     return () => clearInterval(id);
   }, []);
 
+  // Dəvət linkini AŞAĞIDAKI route-lardan ƏVVƏL tut: hesabı olmayan biri
+  // /join?c=KOD açanda route dərhal /register-ə yönləndirir və kod URL-dən
+  // itərdi. Effekt bu render-in location-ını görür, ona görə yönləndirmə
+  // baş versə belə kod saxlanılır.
+  useEffect(() => {
+    if (!location.pathname.startsWith('/join')) return;
+    const c = readCodeFromLocation(location.search || window.location.search, window.location.hash);
+    if (c) setPendingJoinCode(c);
+  }, [location.pathname, location.search]);
+
   const gateExempt = TRIAL_GATE_EXEMPT.some((p) => location.pathname.startsWith(p));
   const showTrialGate = !!user && !gateExempt && isTrialExpiredClient(user);
+
+  // Qeydiyyatdan sonra axını davam etdir: gözləyən kod var, istifadəçi hələ
+  // heç bir müəllimə bağlı deyil → dəvət ekranına qaytar. JoinTeacher həm
+  // uğurda, həm "İndi yox"da kodu təmizləyir, ona görə dövr yaranmır.
+  const pendingJoin = user && !user.teacherId && !location.pathname.startsWith('/join')
+    ? getPendingJoinCode()
+    : '';
+  if (pendingJoin && user.surveyDone) {
+    return <Navigate to={`/join?c=${encodeURIComponent(pendingJoin)}`} replace />;
+  }
 
   const homeElement = user
     ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
@@ -119,6 +149,10 @@ function AppShell({ user }) {
           <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
           <Route path="/puzzle" element={user ? <DailyPuzzle user={user} /> : <Navigate to="/login" />} />
           <Route path="/redeem" element={user ? <Redeem user={user} /> : <Navigate to="/login" />} />
+          {/* Dəvət linki: hesabı olmayan biri açanda kod saxlanılır və
+              qeydiyyatdan sonra axın qaldığı yerdən davam edir. */}
+          <Route path="/join" element={user ? <JoinTeacher user={user} /> : <Navigate to="/register" />} />
+          <Route path="/teacher" element={user ? <TeacherUnlock user={user} /> : <Navigate to="/login" />} />
           <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
           <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
