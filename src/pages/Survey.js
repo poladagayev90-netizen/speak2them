@@ -17,14 +17,9 @@ const GOALS = [
   { value: 'Fun', label: '🎮 Just for fun' },
 ];
 
-const TIMES = [
-  { value: 'Morning', label: '🌅 Morning' },
-  { value: 'Day', label: '☀️ Day' },
-  { value: 'Evening', label: '🌆 Evening' },
-  { value: 'Night', label: '🌙 Night' },
-  { value: 'Weekend', label: '📅 Weekend' },
-];
-
+// Sorğu QƏSDƏN qısadır: əsas siqnal dil səviyyəsidir. Vaxt/sessiya-uzunluğu/
+// partnyor-seçimi bölmələri çıxarılıb — cavabları onsuz da default-larla
+// əvəzlənirdi və matching onlara 'Any'/'Evening' fallback-ları ilə baxır.
 const TOPICS = [
   { value: 'Technology', label: '💻 Technology' },
   { value: 'Movies', label: '🎬 Movies' },
@@ -35,27 +30,12 @@ const TOPICS = [
   { value: 'General', label: '💬 General talk' },
 ];
 
-const SESSIONS = [
-  { value: '10-15', label: '10–15 min' },
-  { value: '15-30', label: '15–30 min' },
-  { value: '30+', label: '30+ min' },
-];
-
-const PARTNERS = [
-  { value: 'Same', label: 'Same level' },
-  { value: 'Higher', label: 'Higher level' },
-  { value: 'Any', label: 'Does not matter' },
-];
-
 export default function Survey({ user }) {
   const navigate = useNavigate();
 
   const [level, setLevel] = useState('');
   const [goal, setGoal] = useState('');
-  const [availableTimes, setAvailableTimes] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [sessionLength, setSessionLength] = useState('');
-  const [partnerPreference, setPartnerPreference] = useState('');
   const [saving, setSaving] = useState(false);
 
   const currentUser = auth.currentUser || user;
@@ -98,10 +78,11 @@ export default function Survey({ user }) {
         : {
             level: level || 'B1 – Intermediate',
             goal: goal || 'Speaking',
-            availableTimes: availableTimes.length > 0 ? availableTimes : ['Evening'],
+            // Çıxarılmış bölmələrin default-ları — matching bu sahələri oxuyur.
+            availableTimes: ['Evening'],
             topics: topics.length > 0 ? topics : ['General'],
-            sessionLength: sessionLength || '15-30',
-            partnerPreference: partnerPreference || 'Any',
+            sessionLength: '15-30',
+            partnerPreference: 'Any',
             surveySkipped: false,
             surveyDone: true,
             surveyUpdatedAt: serverTimestamp(),
@@ -244,21 +225,6 @@ export default function Survey({ user }) {
         </div>
 
         <div style={sectionStyle}>
-          <p style={sectionTitleStyle}>🕒 When are you usually available?</p>
-          <p style={hintStyle}>Bir neçə seçim edə bilərsən.</p>
-          {TIMES.map(item => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => toggleItem(item.value, availableTimes, setAvailableTimes)}
-              style={optionButtonStyle(availableTimes.includes(item.value))}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={sectionStyle}>
           <p style={sectionTitleStyle}>💬 Favorite conversation topics</p>
           <p style={hintStyle}>Maksimum 3 mövzu seç.</p>
           {TOPICS.map(item => (
@@ -267,34 +233,6 @@ export default function Survey({ user }) {
               type="button"
               onClick={() => toggleItem(item.value, topics, setTopics, 3)}
               style={optionButtonStyle(topics.includes(item.value))}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={sectionStyle}>
-          <p style={sectionTitleStyle}>⏱️ Preferred session length</p>
-          {SESSIONS.map(item => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setSessionLength(item.value)}
-              style={optionButtonStyle(sessionLength === item.value)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={sectionStyle}>
-          <p style={sectionTitleStyle}>📊 Partner preference</p>
-          {PARTNERS.map(item => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setPartnerPreference(item.value)}
-              style={optionButtonStyle(partnerPreference === item.value)}
             >
               {item.label}
             </button>

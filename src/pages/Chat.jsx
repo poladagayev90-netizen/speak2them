@@ -45,7 +45,7 @@ const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
 // Ceiling for the authoritative (timestamp-derived) call length written to
 // leaderboard stats. Mirrors the server's CALL_CAP_SECONDS so a pathological
 // start timestamp can never inflate a user's minutes.
-const AUTHORITATIVE_CALL_CAP_SECONDS = 20 * 60;
+const AUTHORITATIVE_CALL_CAP_SECONDS = 30 * 60;
 
 export default function Chat({ user }) {
   const { peerId } = useParams();
@@ -61,6 +61,8 @@ export default function Chat({ user }) {
   const [muted, setMuted] = useState(false);
   const [callStatus, setCallStatus] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
+  // Limitə 1 dəq qalmış görünən keçici xəbərdarlıq banneri.
+  const [timeWarning, setTimeWarning] = useState(false);
   const [showDaily, setShowDaily] = useState(false);
   const [imageStage, setImageStage] = useState(null);
   const [tabooStage, setTabooStage] = useState(null);
@@ -130,9 +132,11 @@ export default function Chat({ user }) {
   const content = getTodayContent();
   
   // Hard cap on call length. Agora bills per participant-minute, so this is
-  // the single biggest lever on running cost; the recording also stays well
-  // under the 15 MB Storage rule and the analysis ticket's 1800s ceiling.
-  let maxCallSeconds = 20 * 60;
+  // the single biggest lever on running cost; a 30-min Opus recording is
+  // ~7-10 MB (15 MB Storage rule saxlanır), analiz onsuz da ilk 300 saniyəni
+  // götürür (ANALYSIS_MAX_SECONDS), ona görə 20→30 dəq artımı analiz xərcini
+  // dəyişmir. Serverdəki CALL_CAP_SECONDS ilə sinxron saxla.
+  let maxCallSeconds = 30 * 60;
 
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
@@ -467,6 +471,12 @@ export default function Chat({ user }) {
       timerRef.current = setInterval(() => {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
+        // Limitə 1 dəqiqə qalmış bloklamayan xəbərdarlıq — istifadəçi sözünü
+        // yekunlaşdıra bilsin. alert() YOX: söhbətin ortasında modal kobuddur.
+        if (maxCallSeconds !== Infinity && callSecondsRef.current === maxCallSeconds - 60) {
+          setTimeWarning(true);
+          setTimeout(() => setTimeWarning(false), 10000);
+        }
         if (maxCallSeconds !== Infinity && callSecondsRef.current >= maxCallSeconds) {
           // endCall is async and alert() blocks — without this the interval
           // keeps firing and stacks one alert per second.
@@ -964,10 +974,22 @@ export default function Chat({ user }) {
             <>
               {maxCallSeconds !== Infinity && (
                 <div style={{
-                  background: '#2e2e50', padding: '6px 12px', borderRadius: '20px',
-                  fontSize: '12px', color: '#a1a1aa', fontWeight: 600, marginTop: '8px'
+                  background: timeWarning ? '#f59e0b33' : '#2e2e50',
+                  border: timeWarning ? '1px solid #f59e0b' : 'none',
+                  padding: '6px 12px', borderRadius: '20px',
+                  fontSize: '12px', color: timeWarning ? '#f59e0b' : '#a1a1aa',
+                  fontWeight: 600, marginTop: '8px',
                 }}>
                   ⏰ {formatTime(Math.max(0, maxCallSeconds - callSeconds))} qaldı
+                </div>
+              )}
+              {timeWarning && (
+                <div style={{
+                  background: '#f59e0b', color: '#1e1e30', padding: '10px 16px',
+                  borderRadius: '14px', fontSize: '14px', fontWeight: 800,
+                  marginTop: '10px', animation: 'pulse 1s ease-in-out infinite',
+                }}>
+                  ⏳ 1 dəqiqə qaldı — sözünüzü yekunlaşdırın!
                 </div>
               )}
             </>

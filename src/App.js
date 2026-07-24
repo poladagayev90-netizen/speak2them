@@ -15,7 +15,7 @@ import GlobalCallListener from './components/GlobalCallListener';
 import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
 import { ADMIN_UID } from './constants';
-import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode } from './utils/teacher';
+import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
 import Logo from './components/Logo';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
@@ -131,7 +131,11 @@ function AppShell({ user }) {
   // Qeydiyyatdan sonra axını davam etdir: gözləyən kod var, istifadəçi hələ
   // heç bir müəllimə bağlı deyil → dəvət ekranına qaytar. JoinTeacher həm
   // uğurda, həm "İndi yox"da kodu təmizləyir, ona görə dövr yaranmır.
-  const pendingJoin = user && !user.teacherId && !location.pathname.startsWith('/join')
+  // MÜƏLLİM İSTİSNADIR: öz linkini sınayan müəllimin localStorage-ində kod
+  // qalırdı və hər açılışda (Dashboard daxil) onu register-ə oxşayan /join
+  // ekranına atırdı. Müəllim heç vaxt şagird kimi qoşulmur — kodu silirik.
+  if (isTeacherUser && getPendingJoinCode()) clearPendingJoinCode();
+  const pendingJoin = user && !user.teacherId && !isTeacherUser && !location.pathname.startsWith('/join')
     ? getPendingJoinCode()
     : '';
   if (pendingJoin && user.surveyDone) {

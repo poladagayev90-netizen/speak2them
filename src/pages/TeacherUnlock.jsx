@@ -314,9 +314,18 @@ export default function TeacherUnlock({ user }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '15px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.displayName || 'Şagird'}
+                    {Number(s.streak) > 0 && (
+                      <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 800, marginLeft: '6px' }}>
+                        🔥{s.streak}
+                      </span>
+                    )}
                   </div>
+                  {/* Proqres sətri: consumeTrialMinutes hər ≥2 dəq zəngdən sonra
+                      roster-ə denormalizə yazır (sessiya sayı + son aktivlik). */}
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    Qoşulub: {fmtDate(s.joinedAt)}{s.level ? ` · ${s.level}` : ''}
+                    {Number(s.completedSessions) > 0
+                      ? `${s.completedSessions} sessiya · son: ${fmtDate(s.lastActiveAt)}`
+                      : `Qoşulub: ${fmtDate(s.joinedAt)} · hələ zəng etməyib`}
                   </div>
                 </div>
                 <span style={{

@@ -1,22 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// Analiz hazır olanda BİR DƏFƏ görünən modal (topic-intro üslubunda). İstənən
-// davranış: hazır olanda çıxsın, GÖRÜLƏNDƏN sonra bir daha görünməsin.
+// Analiz hazır olanda görünən modal. Qaydalar (istifadəçi bezdirilməsin):
+//   1. Yalnız TƏZƏ analiz üçün çıxır (≤24 saat) — gecikmiş növbədən çıxan
+//      köhnə analizlər modal göndərmir.
+//   2. GÖRÜNƏN KİMİ "göstərildi" yazılır — düymə klikindən, unmount-dan və ya
+//      başqa heç nədən asılı deyil. Əvvəlki versiyalar bağlanma yollarından
+//      birini qaçırdıqda modal təkrar-təkrar çıxırdı ("ilişib" effekti).
+//   3. Baxılmayıbsa (History açılmayıbsa) ƏN ÇOXU BİR dəfə də xatırladır,
+//      o da ilk göstərilmədən ən azı 4 saat sonra. Cəmi 2 görünüş — son.
 //
-// Əvvəlki versiyanın buqu: "görüldü" açarı YALNIZ düymə klikində yazılırdı.
-// İstifadəçi modalı aşağı-nav/geri düyməsi ilə bağlayanda (səhifə unmount) və
-// ya üstündən başqa modal açıb bağlayanda açar yazılmırdı, ona görə modal
-// təkrar-təkrar çıxırdı. İndi HƏR bağlanma yolunda (düymə, örtülmə, naviqasiya)
-// "görüldü" yazılır. Açar History səhifəsi ilə paylaşılır.
+// İki localStorage açarı:
+//   analysisSeen_v1_{uid}  — "BAXILDI" (History səhifəsi də yazır)
+//   analysisNag_v2_{uid}   — {ts, count, lastShownAt} "GÖSTƏRİLDİ" sayğacı
 const seenKey = (uid) => `analysisSeen_v1_${uid}`;
+const nagKey = (uid) => `analysisNag_v2_${uid}`;
 const tsMillis = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : 0);
+
+const FRESH_MS = 24 * 60 * 60 * 1000;   // bundan köhnə analiz modal çıxarmır
+const REMIND_GAP_MS = 4 * 60 * 60 * 1000; // ikinci (son) görünüşə qədər fasilə
+const MAX_SHOWS = 2;
+
+const readNag = (uid) => {
+  try { return JSON.parse(localStorage.getItem(nagKey(uid))) || {}; } catch { return {}; }
+};
 
 export default function AnalysisReadyModal({ user, suppressed }) {
   const [latest, setLatest] = useState(null);
+  // localStorage-i state-ə köçürürük ki, yazandan sonra rerender baş versin.
   const [seenTs, setSeenTs] = useState(() => Number(localStorage.getItem(seenKey(user.uid)) || 0));
+  const [nag, setNag] = useState(() => readNag(user.uid));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,34 +49,40 @@ export default function AnalysisReadyModal({ user, suppressed }) {
   }, [user?.uid]);
 
   const ts = tsMillis(latest?.timestamp);
-  // Streak/mövzu modalları açıq ikən görünmə — iki modal üst-üstə düşməsin.
-  const visible = !suppressed && latest?.status === 'done' && !!ts && ts > seenTs;
+  const now = Date.now();
+  const sameAnalysis = nag.ts === ts;
+  const showCount = sameAnalysis ? (nag.count || 0) : 0;
+  const canShow =
+    latest?.status === 'done'
+    && !!ts
+    && ts > seenTs                      // hələ baxılmayıb
+    && now - ts < FRESH_MS              // köhnə analiz deyil
+    && showCount < MAX_SHOWS            // 2 dəfədən artıq heç vaxt
+    && (showCount === 0 || now - (nag.lastShownAt || 0) >= REMIND_GAP_MS);
 
-  // Cari analizi "görüldü" kimi qeyd et. localStorage → növbəti mount-da da
-  // çıxmasın; state → bu mount-da suppressor açılıb-bağlananda təkrar çıxmasın.
-  const persistSeen = (value) => {
-    if (!value) return;
-    localStorage.setItem(seenKey(user.uid), String(value));
-    setSeenTs((prev) => Math.max(prev, value));
-  };
+  const visible = !suppressed && canShow;
 
-  // Modal görünüb sonra HƏR HANSI səbəblə itəndə (örtülmə və ya səhifə
-  // unmount/naviqasiya) görüldü kimi yaz. tsRef son görünən dəyəri saxlayır ki,
-  // unmount cleanup-ı köhnəlmiş closure oxumasın.
-  const tsRef = useRef(ts);
-  useEffect(() => { tsRef.current = ts; }, [ts]);
+  // Görünən kimi sayğacı artır — modal bir renderdə göründüsə, artıq
+  // "göstərilib" sayılır və şərtlər onu öz-özünə təkrar çıxarmır.
   useEffect(() => {
-    if (!visible) return undefined;
-    return () => {
-      const t = tsRef.current;
-      if (t) localStorage.setItem(seenKey(user.uid), String(t));
-    };
-  }, [visible, user.uid]);
+    if (!visible) return;
+    const next = { ts, count: showCount + 1, lastShownAt: Date.now() };
+    localStorage.setItem(nagKey(user.uid), JSON.stringify(next));
+    // setNag QƏSDƏN çağırılmır: state dəyişsəydi visible dərhal sönərdi.
+    // Sayğac növbəti mount-da localStorage-dən oxunur.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, ts]);
 
   if (!visible) return null;
 
-  const dismiss = () => persistSeen(ts);
-  const open = () => { persistSeen(ts); navigate('/history'); };
+  const markSeen = () => {
+    localStorage.setItem(seenKey(user.uid), String(ts));
+    setSeenTs(ts);
+  };
+  // "Sonra" = bağla, amma BAXILDI sayma — 4 saatdan sonra bir dəfə də
+  // xatırladıla bilər (istifadəçinin istədiyi davranış).
+  const dismiss = () => setNag(readNag(user.uid));
+  const open = () => { markSeen(); navigate('/history'); };
 
   return (
     <div className="topic-intro-overlay">

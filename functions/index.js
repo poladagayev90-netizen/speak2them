@@ -476,7 +476,7 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
 
 // ─── Trial / Subscription ────────────────────────────────────
 const TRIAL_MINUTES = 100;
-const CALL_CAP_SECONDS = 20 * 60; // calls are capped at 20 minutes
+const CALL_CAP_SECONDS = 30 * 60; // calls are capped at 30 minutes (client maxCallSeconds ilə sinxron)
 const METERED_PLANS = new Set(["free", "trial"]);
 
 // ─── Müəllim funnel-i ────────────────────────────────────────
@@ -568,6 +568,24 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
           completedSessions: done,
           ...(done >= TEACHER_ELIGIBLE_SESSIONS ? { teacherEligible: true } : {}),
         }, { merge: true });
+
+        // Roster rollup: şagird müəllimə bağlıdırsa, müəllimin dashboard-u üçün
+        // proqres burada denormalizə olunur — dashboard hər açılışda bütün
+        // şagird sənədlərini gəzmir, hazır roster sətrini oxuyur. streak/ad
+        // client-yazılan sahələrdir, hesabat üçün kifayətdir (pul qərarı yox).
+        if (user.teacherId) {
+          tx.set(
+            db.collection("teachers").doc(user.teacherId).collection("roster").doc(uid),
+            {
+              displayName: user.name || "",
+              completedSessions: done,
+              lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+              streak: Number(user.streak) || 0,
+              status: "active",
+            },
+            { merge: true },
+          );
+        }
       }
 
       if (!metered || minutes <= 0) return null; // paid plans / no-op calls: mark billed, don't decrement
