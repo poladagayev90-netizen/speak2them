@@ -305,6 +305,29 @@ export default function Admin({ user }) {
                 </div>
                 
                 <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {isAdmin && !u.teacherEligible && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await updateDoc(doc(db, 'users', u.uid || u.id), {
+                            teacherEligible: true,
+                            role: 'teacher',
+                            completedSessions: 3
+                          });
+                          alert('Müəllim statusu verildi!');
+                        } catch (e) {
+                          alert('Xəta: ' + e.message);
+                        }
+                      }}
+                      style={{
+                        padding: '8px 16px', background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+                        color: '#fff', border: 'none', borderRadius: '10px',
+                        fontWeight: 700, cursor: 'pointer', fontSize: '12px'
+                      }}
+                    >
+                      Müəllim et
+                    </button>
+                  )}
                   {!isAdmin && (
                     u.isPremium ? (
                       <button
