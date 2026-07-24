@@ -282,7 +282,15 @@ export default function Home({ user }) {
 
         <CourseCompletionCelebration user={user} />
 
-        <DailyTopicBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
+        {/* onJoinSession: sessiya pəncərəsi açıq olanda "Qoşul" düyməsi adi
+            axtarışı başladır — matchmaking.js-ə görə sessiya növbəsi ilə anlıq
+            axtarış EYNİ hovuzdur, ona görə sessiyanı gözləyənlərlə cütləşir.
+            Artıq axtarış gedirsə düymə göstərilmir (təkrar start olmasın). */}
+        <DailyTopicBanner
+          user={user}
+          onOpenTopic={() => setDailyTopicOpen(true)}
+          onJoinSession={searching ? null : startSearch}
+        />
 
         <NotificationPrompt user={user} />
 

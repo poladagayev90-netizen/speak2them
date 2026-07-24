@@ -2177,9 +2177,13 @@ async function broadcastSessionReminder(db, startLabel, hour) {
 }
 
 // Same normalisation as the client (src/utils/sessionSchedule.js): a non-empty
-// `sessions` array wins, else the two standard daily sessions. Legacy single
-// hour/minute configs are intentionally upgraded to the two-session default.
-const DEFAULT_SESSION_TIMES = [{ hour: 16, minute: 0 }, { hour: 21, minute: 0 }];
+// `sessions` array wins, else the standard evening session. Legacy single
+// hour/minute configs are intentionally upgraded to the default.
+//
+// Praktika YALNIZ axşam 21:00-dır — günorta (16:00) sessiyası ləğv edildi.
+// matchSessionQueue bu siyahı üzərində dövr etdiyi üçün siyahıdan çıxan saat
+// avtomatik olaraq nə xatırlatma push-u/e-poçtu göndərir, nə də cütləşdirir.
+const DEFAULT_SESSION_TIMES = [{ hour: 21, minute: 0 }];
 function getSessionTimes(cfg) {
   const list = Array.isArray(cfg?.sessions) && cfg.sessions.length ? cfg.sessions : DEFAULT_SESSION_TIMES;
   return list

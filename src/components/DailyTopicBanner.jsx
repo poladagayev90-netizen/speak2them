@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { subscribeToCycle } from '../utils/cycle';
 import { getTodayContent } from '../data/weeklyContent';
 import { getTopicsCompleted } from '../utils/courseProgress';
+import SessionCountdown from './SessionCountdown';
 
 // Home-un YEGANƏ "günün mövzusu" girişi — ONE consistent look, always.
 //
@@ -14,7 +15,12 @@ import { getTopicsCompleted } from '../utils/courseProgress';
 //
 // İndi tək məzmun göstərilir: bugünün mövzusu — heç vaxt köhnəlmir, ona görə
 // vaxtdan asılı budaqlanmaya ehtiyac yoxdur.
-export default function DailyTopicBanner({ user, onOpenTopic }) {
+//
+// SessionCountdown eyni kartın içindədir, ayrı kart/modal kimi yox: Home-da
+// artıq streak modal → mövzu girişi → guided tour zənciri var, əlavə qat
+// istəmirik. Zolaq statik saat göstərmir, NÖVBƏTİ sessiyaya sayır — yəni
+// yuxarıdakı köhnəlmə problemini geri gətirmir (səbəb SessionCountdown.jsx-də).
+export default function DailyTopicBanner({ user, onOpenTopic, onJoinSession }) {
   const [cycle, setCycle] = useState(null);
   useEffect(() => subscribeToCycle(setCycle), []);
 
@@ -57,6 +63,7 @@ export default function DailyTopicBanner({ user, onOpenTopic }) {
         }}>
           📖 Sözlər · idiomlar · suallar
         </div>
+        <SessionCountdown onJoin={onJoinSession} />
       </div>
       {onOpenTopic && (
         <span style={{ color: '#fff', fontSize: '18px', flexShrink: 0 }}>›</span>

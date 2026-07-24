@@ -2,10 +2,18 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 // Session times are editable from Firestore without a code change. A config
-// with no `sessions` array falls back to the two standard daily sessions.
+// with no `sessions` array falls back to the single evening session.
+//
+// TƏK SAAT: 21:00. Günorta (16:00) sessiyası ləğv edildi — praktika yalnız
+// axşam olur, ona görə nə 16:00 xatırlatması gedir, nə də 16:00 pəncərəsi
+// cütləşdirir (matchSessionQueue bu siyahı üzərində dövr edir).
+//
 // sessionDays / bonusDays (weekday numbers, 0=Sunday … 6=Saturday) decide which
 // days the global topic cycle advances on — see advanceCycle in functions. They
 // live on the same appConfig/session doc and are admin-editable.
+//
+// DİQQƏT: Bazar = 0, 7 DEYİL. Konfiqə 7 yazılsa bakuWeekday (0–6) heç vaxt
+// uyğun gəlməyəcək və bazar səssizcə itəcək.
 export const DEFAULT_SESSION_DAYS = [1, 3, 5]; // Mon / Wed / Fri
 export const DEFAULT_BONUS_DAYS = [0];         // Sun — 7th day of the week (bonus)
 
@@ -13,7 +21,6 @@ export const DEFAULT_SESSION_CONFIG = {
   enabled: false,
   bufferMinutes: 10,
   sessions: [
-    { hour: 16, minute: 0 },
     { hour: 21, minute: 0 },
   ],
   sessionDays: DEFAULT_SESSION_DAYS,
@@ -29,9 +36,9 @@ export function subscribeToSessionConfig(cb) {
 }
 
 // Normalises a config into a sorted list of {hour, minute}. A non-empty
-// `sessions` array wins; otherwise the two standard sessions are used. Legacy
+// `sessions` array wins; otherwise the standard evening session is used. Legacy
 // single-time configs (bare hour/minute, no sessions) are intentionally
-// upgraded to the two-session default rather than preserved.
+// upgraded to the default rather than preserved.
 export function getSessionTimes(config) {
   const list = Array.isArray(config?.sessions) && config.sessions.length
     ? config.sessions
@@ -54,9 +61,13 @@ export function bakuDateStr(ms = Date.now()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baku' }).format(new Date(ms));
 }
 
+const bufferMsOf = (config) =>
+  (Number.isFinite(config?.bufferMinutes) ? config.bufferMinutes : 10) * 60 * 1000;
+
 function buildWindow(dateStr, time, bufferMs) {
   const startMs = Date.parse(`${dateStr}T${pad(time.hour)}:${pad(time.minute)}:00+04:00`);
   return {
+    dateStr,
     sessionId: `${dateStr}-${pad(time.hour)}`,
     hour: time.hour,
     minute: time.minute,
@@ -106,7 +117,7 @@ export function getNextSessionDay(config, nowMs = Date.now()) {
 // Returns the next relevant session: the earliest of today's sessions that has
 // not yet finished (including a short grace window), else tomorrow's first.
 export function getSessionWindow(config, nowMs = Date.now()) {
-  const bufferMs = (Number.isFinite(config?.bufferMinutes) ? config.bufferMinutes : 10) * 60 * 1000;
+  const bufferMs = bufferMsOf(config);
   const times = getSessionTimes(config);
   const today = bakuDateStr(nowMs);
 
@@ -117,4 +128,35 @@ export function getSessionWindow(config, nowMs = Date.now()) {
 
   const tomorrow = bakuDateStr(nowMs + 24 * 60 * 60 * 1000);
   return buildWindow(tomorrow, times[0], bufferMs);
+}
+
+// Home-dakı canlı geri sayımın oxuduğu pəncərə. getSessionWindow-dan İKİ fərqi:
+//
+//  1. ROLL_GRACE_MS yoxdur. getSessionWindow bitmiş pəncərəni bir müddət
+//     "matching…" vəziyyəti üçün saxlayır; geri sayım isə həmişə QABAĞA
+//     baxmalıdır (köhnəlməmək onun bütün mənasıdır), ona görə endMs keçən kimi
+//     sabaha sürüşür.
+//  2. Sessiya günü FİLTRİ yoxdur — 21:00 tövsiyə saatı HƏR GÜN göstərilir.
+//     sessionDays/bonusDays yalnız "əsas gün"ü işarələyir (isMainSessionDay),
+//     praktikanı məhdudlaşdırmır: istifadəçi istənilən gün, istənilən saat
+//     partnyor axtara bilər.
+export function getUpcomingSessionWindow(config, nowMs = Date.now()) {
+  const bufferMs = bufferMsOf(config);
+  const times = getSessionTimes(config);
+  if (times.length === 0) return null;
+
+  const today = bakuDateStr(nowMs);
+  for (const time of times) {
+    const win = buildWindow(today, time, bufferMs);
+    if (nowMs < win.endMs) return win;
+  }
+  const tomorrow = bakuDateStr(nowMs + 24 * 60 * 60 * 1000);
+  return buildWindow(tomorrow, times[0], bufferMs);
+}
+
+// Bu Bakı tarixi əsas sessiya günüdürmü (B.e/Çər/Cümə + bonus Bazar)? Əsas
+// günlərdə camaat toplaşır; digər günlərdə 21:00 yenə tövsiyə olunur, sadəcə
+// daha az adam olur. Heç bir halda qadağa deyil.
+export function isMainSessionDay(config, dateStr) {
+  return getActiveDays(config).has(bakuWeekday(dateStr));
 }
