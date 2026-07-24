@@ -1170,6 +1170,7 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
   }
 });
 
+
 // ─── AI Quiz Generation (DeepSeek proxy) ──────────────────────────
 // invoker: "public" is required, not optional. Cloud Run rejects the browser's
 // CORS preflight (an OPTIONS with no Authorization header) before our handler

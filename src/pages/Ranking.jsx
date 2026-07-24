@@ -11,6 +11,7 @@ let usersCache = { users: null, ts: 0 };
 
 export default function Ranking({ user }) {
   const [allUsers, setAllUsers] = useState(usersCache.users || []);
+  const [loading, setLoading] = useState(!usersCache.users);
   const [tab, setTab] = useState('weekly');
 
   // One-shot read: a leaderboard doesn't need realtime, and a live listener
@@ -21,6 +22,7 @@ export default function Ranking({ user }) {
   useEffect(() => {
     if (usersCache.users && Date.now() - usersCache.ts < CACHE_TTL_MS) return undefined;
     let cancelled = false;
+    setLoading(true);
     getDocs(query(
       collection(db, 'users'),
       orderBy('totalMinutes', 'desc'),
@@ -28,8 +30,11 @@ export default function Ranking({ user }) {
     )).then((snap) => {
       const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       usersCache = { users, ts: Date.now() };
-      if (!cancelled) setAllUsers(users);
-    }).catch((e) => console.error('[Ranking] load failed:', e));
+      if (!cancelled) { setAllUsers(users); setLoading(false); }
+    }).catch((e) => {
+      console.error('[Ranking] load failed:', e);
+      if (!cancelled) setLoading(false);
+    });
     return () => { cancelled = true; };
   }, []);
 
@@ -77,10 +82,15 @@ export default function Ranking({ user }) {
             Hər bazar ertəsi sıfırlanır — bu həftə hamı bərabər başlayır! 🚀
           </p>
         )}
-        {allUsers.length === 0 ? (
+        {loading ? (
           <div className="empty-state">
             <div className="empty-icon">⏳</div>
-            <p>Loading rankings...</p>
+            <p>Sıralama yüklənir...</p>
+          </div>
+        ) : allUsers.length === 0 ? (
+          <div className="empty-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
+            <div className="empty-icon" style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
+            <p style={{ color: 'var(--text-secondary)' }}>Hələ heç kim məşq etməyib. İlk sən ol!</p>
           </div>
         ) : (
           <HomeRanking users={allUsers} currentUserId={user.uid} mode={tab === 'weekly' ? 'weekly' : 'all'} />
