@@ -1,16 +1,22 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bot, Home, MessageCircle, Trophy, User } from 'lucide-react';
+import { Bot, Home, LayoutDashboard, MessageCircle, Trophy, User } from 'lucide-react';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
 
+  // Müəllim üçün AInur tabı Dashboard ilə əvəzlənir: müəllimin əsas işi
+  // şagirdləri izləməkdir, AI məşqi yox. `role` LIVE_USER_FIELDS-dədir,
+  // ona görə rol dəyişəndə nav reload olmadan yenilənir.
+  const isTeacher = user?.role === 'teacher';
   const tabs = [
     { icon: Home,          label: 'Lobby',   route: '/' },
     { icon: MessageCircle, label: 'Chats',   route: '/chats' },
-    { icon: Bot,           label: 'AI',      route: '/ai-chat', tourId: 'tour-ai-chat' },
+    isTeacher
+      ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
+      : { icon: Bot,             label: 'AI',        route: '/ai-chat', tourId: 'tour-ai-chat' },
     { icon: Trophy,        label: 'Ranking', route: '/ranking' },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];

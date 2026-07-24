@@ -30,27 +30,42 @@ service cloud.firestore {
     // 'pending' trial gate-i keçər, 'accepted' isə adminin "Başlat"ında
     // təsdiqsiz kurs+premium verərdi. Yalnız server (redeemCode/startCohort,
     // Admin SDK) və admin paneli yaza bilər.
-    // Müəllim funnel-i sahələri də bu siyahıdadır. teacherEligible client
-    // tərəfindən yazıla bilsəydi, 3 sessiya şərtini keçib dərhal kod yarada
-    // bilərdi; teacherId isə özünü istənilən müəllimin siyahısına yazardı.
-    // Hamısı yalnız consumeTrialMinutes / claimTeacherCode / createInviteCode
-    // (Admin SDK) tərəfindən yazılır.
+    // Müəllim sahələri: teacherId/completedSessions və s. yalnız server
+    // (consumeTrialMinutes / claimTeacherCode / createInviteCode, Admin SDK)
+    // tərəfindən yazılır. `role` və `teacherEligible` isə B2B2C onboarding-də
+    // qeydiyyatda AÇIQ seçilir — ona görə client onları yalnız BİR DƏFƏ
+    // (sahə hələ yoxdursa) və yalnız icazəli dəyərlərlə qoya bilər; sonradan
+    // dəyişmək yenə qadağandır (rol dəyişmək = server/admin işi).
+    function validRoleOneTimeSet() {
+      return (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+          || (!('role' in resource.data) && request.resource.data.role in ['student', 'teacher']))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['teacherEligible'])
+          || (!('teacherEligible' in resource.data)
+            && request.resource.data.teacherEligible == true
+            && request.resource.data.role == 'teacher'));
+    }
+
     function isNotChangingPremiumFields() {
       return !request.resource.data.diff(resource.data).affectedKeys()
         .hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'mode', 'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt',
           'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
-          'role', 'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
-          'isAdult', 'completedSessions', 'teacherEligible']);
+          'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
+          'isAdult', 'completedSessions'])
+        && validRoleOneTimeSet();
     }
 
     function isNotCreatingPremiumFields() {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
-          'role', 'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
-          'isAdult', 'completedSessions', 'teacherEligible'])
+          'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
+          'isAdult', 'completedSessions'])
         // A newly created doc may only self-declare the trial mode, never course.
-        && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial');
+        && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
+        // Rol yaradılışda seçilə bilər; teacherEligible yalnız teacher rolu ilə birgə.
+        && (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role in ['student', 'teacher'])
+        && (!request.resource.data.keys().hasAny(['teacherEligible'])
+          || (request.resource.data.teacherEligible == true && request.resource.data.role == 'teacher'));
     }
 
     match /users/{userId} {

@@ -106,6 +106,25 @@ function AppShell({ user }) {
     if (c) setPendingJoinCode(c);
   }, [location.pathname, location.search]);
 
+  // Müəllim şagird sorğusuna göndərilmir (aşağıda /survey route-u onu
+  // Dashboard-a yönləndirir), amma Lobby ona açıq qalır — özü də məşq edə
+  // bilər. Bu cüt yoxlama auth yarışını da bağlayır: Register-in setDoc-u
+  // App-ın ilk getDoc-undan gec çatanda müəllim əvvəl /survey-ə düşür, rol
+  // LIVE_USER_FIELDS onSnapshot-u ilə gələn kimi oradan /teacher-ə atılır.
+  const isTeacherUser = user?.role === 'teacher';
+  // Register-in yazdığı birdəfəlik açar (bax /register route-undakı şərh).
+  let postRegRole = null;
+  try { postRegRole = sessionStorage.getItem('slk_postreg_role'); } catch { /* private mode */ }
+  // Açar yalnız qeydiyyat→ilk yönləndirmə pəncərəsi üçündür; rol sənəddən
+  // gələn kimi ona ehtiyac qalmır və köhnəlmiş dəyər sonrakı sessiyada başqa
+  // rolla qeydiyyatı çaşdırmasın deyə silinir. Hook aşağıdakı erkən
+  // return-lərdən ƏVVƏL durmalıdır (rules-of-hooks).
+  useEffect(() => {
+    if (isTeacherUser && postRegRole) {
+      try { sessionStorage.removeItem('slk_postreg_role'); } catch { /* boş */ }
+    }
+  }, [isTeacherUser, postRegRole]);
+
   const gateExempt = TRIAL_GATE_EXEMPT.some((p) => location.pathname.startsWith(p));
   const showTrialGate = !!user && !gateExempt && isTrialExpiredClient(user);
 
@@ -120,7 +139,7 @@ function AppShell({ user }) {
   }
 
   const homeElement = user
-    ? (!user.surveyDone ? <Navigate to="/survey" /> : <Home user={user} />)
+    ? ((!user.surveyDone && !isTeacherUser) ? <Navigate to="/survey" /> : <Home user={user} />)
     : <Navigate to="/register" />;
 
   if (showTrialGate) {
@@ -137,8 +156,11 @@ function AppShell({ user }) {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-          <Route path="/survey" element={user ? <Survey user={user} /> : <Navigate to="/login" />} />
+          {/* Redirect hədəfi rol-agahdır: qeydiyyat zamanı Register sessionStorage-ə
+              rolu yazır; auth yarışında bu route-un stale Navigate effekti bizim
+              /teacher naviqasiyasından sonra işləsə belə, eyni hədəfə gedir. */}
+          <Route path="/register" element={!user ? <Register /> : <Navigate to={(isTeacherUser || postRegRole === 'teacher') ? '/teacher' : '/'} replace />} />
+          <Route path="/survey" element={user ? (isTeacherUser ? <Navigate to="/teacher" /> : <Survey user={user} />) : <Navigate to="/login" />} />
           <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
@@ -152,7 +174,12 @@ function AppShell({ user }) {
           {/* Dəvət linki: hesabı olmayan biri açanda kod saxlanılır və
               qeydiyyatdan sonra axın qaldığı yerdən davam edir. */}
           <Route path="/join" element={user ? <JoinTeacher user={user} /> : <Navigate to="/register" />} />
-          <Route path="/teacher" element={user ? <TeacherUnlock user={user} /> : <Navigate to="/login" />} />
+          {/* Qeydiyyat yarışı: Register navigate('/teacher') çağıranda App-ın
+              user state-i hələ boş ola bilir (onAuthStateChanged zənciri
+              bitməyib) və köhnə guard /login→/ bounce-u yaradırdı. Firebase-in
+              auth.currentUser-i sinxron dolu olur — auth VAR, state gecikirsə
+              yönləndirmə yox, loader göstəririk. */}
+          <Route path="/teacher" element={user ? <TeacherUnlock user={user} /> : (auth.currentUser ? <PageFallback /> : <Navigate to="/login" />)} />
           <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
           <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />

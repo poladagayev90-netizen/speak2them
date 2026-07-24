@@ -12,34 +12,65 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
+  // B2B2C onboarding: rol qeydiyyatdan ƏVVƏL açıq seçilir. null = hələ
+  // seçilməyib; seçilməyincə qeydiyyat düymələri bağlıdır. Rules bu sahənin
+  // yalnız BİR DƏFƏ (yaradılışda/ilk yazıda) qoyulmasına icazə verir.
+  const [role, setRole]         = useState(null);
   const navigate = useNavigate();
+
+  // Müəllim seçən üçün əlavə sahələr: teacherEligible dərhal true (3-sessiya
+  // qapısı bu axında yoxdur), surveyDone true (şagird sorğusu müəllimə aid
+  // deyil — əks halda Lobby onu sorğuya yönləndirərdi).
+  const roleFields = role === 'teacher'
+    ? { role: 'teacher', teacherEligible: true, surveyDone: true }
+    : { role: 'student' };
+
+  // Qeydiyyat bitəndə auth-state yarışı /register route-unun köhnə
+  // <Navigate to="/" /> effektini bizim navigate-dən SONRA işlədə bilir və
+  // müəllim Lobby-yə düşürdü. Rol bu açarla saxlanılır ki, route-un redirect
+  // hədəfi də eyni yerə baxsın (App.js-də oxunur).
+  const rememberPostRegRoute = () => {
+    try { sessionStorage.setItem('slk_postreg_role', role); } catch { /* private mode */ }
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    rememberPostRegRoute();
 
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
       await updateProfile(user, { displayName: name });
 
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        name,
-        email,
-        rating: 0,
-        ratingCount: 0,
-        surveyDone: false,
-        // Kodsuz giriş = trial. Kurs kodu ilə redeemCode bunu 'course'-a keçirir.
-        // trialStartedAt server-side 2 günlük yoxlamanın başlanğıc nöqtəsidir.
-        mode: 'trial',
-        trialStartedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        lastSeen: serverTimestamp(),
-      });
+      // YARIŞ: App.js-in auth bootstrap-ı sənədi bizdən qabaq yarada bilər.
+      // Onda bu tam setDoc UPDATE sayılır və mode/trialStartedAt update-guard-a
+      // dəyib bütünlüklə rədd olunur — rol da itərdi. Fallback: yalnız icazəli
+      // sahələri merge et (rol birdəfəlik qayda ilə keçir, trial sahələrini
+      // onsuz da initTrialForNewUser trigger-i server tərəfdən doldurur).
+      const userRef = doc(db, 'users', user.uid);
+      try {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name,
+          email,
+          rating: 0,
+          ratingCount: 0,
+          surveyDone: false,
+          // Kodsuz giriş = trial. Kurs kodu ilə redeemCode bunu 'course'-a keçirir.
+          // trialStartedAt server-side 2 günlük yoxlamanın başlanğıc nöqtəsidir.
+          mode: 'trial',
+          trialStartedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+          lastSeen: serverTimestamp(),
+          ...roleFields,
+        });
+      } catch {
+        await setDoc(userRef, { name, ...roleFields }, { merge: true });
+      }
 
-      navigate('/survey');
+      navigate(role === 'teacher' ? '/teacher' : '/survey');
     } catch (err) {
       setError(err.message);
     }
@@ -50,6 +81,7 @@ export default function Register() {
   const handleGoogleRegister = async () => {
     setError('');
     setLoading(true);
+    rememberPostRegRoute();
     try {
       const result = await signInWithGoogle();
       if (!result) return; // redirect fallback — the page is navigating away
@@ -58,24 +90,36 @@ export default function Register() {
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef);
       if (!snap.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid,
-          name: user.displayName || 'User',
-          email: user.email || '',
-          photo: user.photoURL || '',
-          bio: '',
-          online: true,
-          rating: 0,
-          ratingCount: 0,
-          surveyDone: false,
-          // Kodsuz giriş = trial (redeemCode 'course'-a keçirir).
-          mode: 'trial',
-          trialStartedAt: serverTimestamp(),
+        try {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName || 'User',
+            email: user.email || '',
+            photo: user.photoURL || '',
+            bio: '',
+            online: true,
+            rating: 0,
+            ratingCount: 0,
+            surveyDone: false,
+            // Kodsuz giriş = trial (redeemCode 'course'-a keçirir).
+            mode: 'trial',
+            trialStartedAt: serverTimestamp(),
             createdAt: serverTimestamp(),
-          lastSeen: serverTimestamp(),
-        });
+            lastSeen: serverTimestamp(),
+            ...roleFields,
+          });
+        } catch {
+          // getDoc-dan sonra bootstrap sənədi yaratdısa (dar yarış pəncərəsi),
+          // tam yazı update kimi rədd olunur — icazəli sahələri merge et.
+          await setDoc(userRef, roleFields, { merge: true });
+        }
+      } else if (!snap.data().role) {
+        // App.js-in auth bootstrap-ı sənədi bizdən qabaq yarada bilər (yarış).
+        // Rules rolun yalnız İLK yazılışına icazə verir, ona görə yalnız rol
+        // hələ yoxdursa merge edirik — mövcud user rolunu dəyişə bilməz.
+        await setDoc(userRef, roleFields, { merge: true });
       }
-      navigate('/survey');
+      navigate(role === 'teacher' ? '/teacher' : '/survey');
     } catch (err) {
       console.error('[GoogleRegister]', err);
       setError('Google auth error: ' + (err.message || 'Unknown error'));
@@ -105,10 +149,42 @@ export default function Register() {
 
           {error && <div className="error-box">{error}</div>}
 
+          {/* Rol seçimi — qeydiyyatın şərti. Sonradan dəyişilə bilmir
+              (rules yalnız ilk yazılışa icazə verir), ona görə açıq seçimdir. */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+            {[
+              { key: 'student', icon: '🎓', label: 'I am a Student', sub: 'Practice speaking' },
+              { key: 'teacher', icon: '👩‍🏫', label: 'I am a Teacher', sub: 'Track my students' },
+            ].map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setRole(opt.key)}
+                style={{
+                  flex: 1, padding: '14px 8px', borderRadius: '14px', cursor: 'pointer',
+                  border: role === opt.key ? '2px solid #7c6ff7' : '1px solid var(--border)',
+                  background: role === opt.key
+                    ? 'linear-gradient(135deg, #7c6ff722, #5b4de822)'
+                    : 'var(--bg-card)',
+                  color: 'var(--text-primary)', textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '24px', marginBottom: '4px' }}>{opt.icon}</div>
+                <div style={{ fontSize: '14px', fontWeight: 700 }}>{opt.label}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>{opt.sub}</div>
+              </button>
+            ))}
+          </div>
+          {!role && (
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '14px' }}>
+              Choose your role to continue
+            </p>
+          )}
+
           {!Capacitor.isNativePlatform() && (
-          <button 
-            onClick={handleGoogleRegister} 
-            disabled={loading}
+          <button
+            onClick={handleGoogleRegister}
+            disabled={loading || !role}
             style={{
               width: '100%',
               backgroundColor: '#ffffff',
@@ -169,7 +245,7 @@ export default function Register() {
             required
           />
 
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="btn-primary" disabled={loading || !role}>
             {loading ? 'Creating account...' : 'Get Started'}
           </button>
         </form>
