@@ -16,6 +16,7 @@ import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
+import i18n, { LANG_STORAGE_KEY } from './i18n';
 import Logo from './components/Logo';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
@@ -63,6 +64,7 @@ const LIVE_USER_FIELDS = [
   'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
   'freeAccessUntil', 'surveyDone',
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
+  'preferredLanguage',
 ];
 
 const fieldValue = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : v);
@@ -361,6 +363,16 @@ function App() {
         };
 
         setUser(appUser);
+
+        // Cihazlar arası dil sinxronu: sənəddəki preferredLanguage lokal
+        // seçimi üstələyir (istifadəçi başqa telefonda dili dəyişibsə burada
+        // da tətbiq olunsun). localStorage yalnız ilk render-in flash-ını
+        // önləyən keş rolundadır.
+        const docLang = freshUserData.preferredLanguage;
+        if ((docLang === 'az' || docLang === 'tr') && i18n.language !== docLang) {
+          i18n.changeLanguage(docLang);
+          try { localStorage.setItem(LANG_STORAGE_KEY, docLang); } catch { /* private mode */ }
+        }
 
         // Trial→kurs, tamamlanma və premium keçidləri serverdə yazılan kimi
         // ekranda görünsün (redeem-dən sonra reload tələb olunmasın).

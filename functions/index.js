@@ -1520,16 +1520,66 @@ const ANALYSIS_INVOCATION_BUDGET_MS = 200 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
 const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
 
-const ANALYSIS_PROMPT = `You are an Elite Linguistic Analyst and Expert English Pedagogical Consultant. Your feedback is world-class: precise, deeply structured, and genuinely empathetic. You are also fluent in Azerbaijani and understand exactly which English mistakes Azerbaijani speakers make because of their mother tongue (L1 transfer). Two people will read your report: the learner themself and, possibly, their real teacher — it must be flawless for both.
+// İstifadəçinin ana dili — hesabatın yazıldığı dil. users/{uid}.preferredLanguage
+// -dən gəlir; yoxdursa 'az'. Türkiyə bazarı üçün 'tr'.
+// Hər dil üçün KONKRET yerli lövbərlər. Yalnız dil adını ("Azerbaijani")
+// deməK kifayət etmir — model dil adını görüb uydurma orfoqrafiya yazır
+// (istehsalatda müşahidə olunub: "çöräkli cümlléşé", ə əvəzinə é). Yerli
+// başlıqlar + real L1 nümunəsi + hərf dəsti modeli düzgün yazıya bağlayır.
+const LANGUAGE_GUIDE = {
+  az: {
+    name: "Azerbaijani",
+    greeting: "Salam",
+    strengths: "Güclü tərəflərin",
+    growth: "İnkişaf sahələrin",
+    address: "sən",
+    letters: "ə, ı, ö, ü, ç, ş, ğ",
+    l1: 'Azərbaycan dilində artikl yoxdur, ona görə "a/the" düşür: "I went to bazaar" ✗ → "I went to the bazaar" ✓',
+    sample: "Keçmiş zaman formasını unutmusan — burada 'went' işlətmək lazımdır.",
+  },
+  tr: {
+    name: "Turkish",
+    greeting: "Merhaba",
+    strengths: "Güçlü yönlerin",
+    growth: "Gelişim alanların",
+    address: "sen",
+    letters: "ı, i, ö, ü, ç, ş, ğ",
+    l1: 'Türkçede artikel yoktur, bu yüzden "a/the" düşer: "I went to bazaar" ✗ → "I went to the bazaar" ✓',
+    sample: "Geçmiş zaman biçimini unutmuşsun — burada 'went' kullanman gerekiyor.",
+  },
+};
+
+// Geriyə uyğunluq: bəzi yerlərdə yalnız ad lazımdır.
+const LANGUAGE_NAMES = { az: "Azerbaijani", tr: "Turkish" };
+
+// Prompt-a dilə aid bütün lövbərləri yeridir.
+function buildAnalysisPrompt(transcript, lang) {
+  const g = LANGUAGE_GUIDE[lang] || LANGUAGE_GUIDE.az;
+  return ANALYSIS_PROMPT
+    .replace("{{TRANSCRIPT}}", transcript)
+    .replace(/\{\{LANGUAGE\}\}/g, g.name)
+    .replace(/\{\{GREETING\}\}/g, g.greeting)
+    .replace(/\{\{H_STRENGTHS\}\}/g, g.strengths)
+    .replace(/\{\{H_GROWTH\}\}/g, g.growth)
+    .replace(/\{\{ADDRESS\}\}/g, g.address)
+    .replace(/\{\{LETTERS\}\}/g, g.letters)
+    .replace(/\{\{L1_EXAMPLE\}\}/g, g.l1)
+    .replace(/\{\{SAMPLE\}\}/g, g.sample);
+}
+
+const ANALYSIS_PROMPT = `You are an Elite Linguistic Analyst and Expert English Pedagogical Consultant. Your feedback is world-class: precise, deeply structured, and genuinely empathetic. You are also fluent in {{LANGUAGE}} and understand exactly which English mistakes {{LANGUAGE}} speakers make because of their mother tongue (L1 transfer). Two people will read your report: the learner themself and, possibly, their real teacher — it must be flawless for both.
 
 TRANSCRIPT:
 """{{TRANSCRIPT}}"""
 
 Return ONLY a valid JSON object. No text outside the JSON.
 
-VOICE (Azerbaijani text fields):
-- Write in warm, modern, natural Azerbaijani, addressing the learner informally as "sən".
-- NEVER address them as "Müəllim" or "Şagird". Encourage like a brilliant mentor, never lecture, never sound clinical or robotic.
+VOICE ({{LANGUAGE}} text fields):
+- Write ALL feedback text in natural, warm, modern {{LANGUAGE}}, addressing the learner informally as "{{ADDRESS}}".
+- ORTHOGRAPHY IS CRITICAL. Use correct {{LANGUAGE}} letters ({{LETTERS}}) and correct native spelling. Never invent word forms, never substitute look-alike accented letters, never output half-{{LANGUAGE}} gibberish. If unsure of a word, choose a simpler word you are certain about.
+- This is the quality bar for every {{LANGUAGE}} sentence you write: "{{SAMPLE}}"
+- The learner reads only {{LANGUAGE}}. Never mix in another language.
+- Never address them as "teacher" or "pupil". Encourage like a brilliant mentor, never lecture, never sound clinical or robotic.
 
 IGNORE MICROPHONE NOISE:
 - The transcript is auto-generated and may contain garbled, non-English, or nonsensical tokens from mic noise (e.g. "Já, þess", random symbols, foreign gibberish). These are NOT things the learner said.
@@ -1538,20 +1588,20 @@ IGNORE MICROPHONE NOISE:
 Rules:
 - Correct ONLY real grammatical or lexical mistakes. If a sentence is already correct, leave it alone.
 - Never rewrite for style: do not swap "is not" for "isn't", do not reorder correct clauses, do not offer alternatives to correct sentences.
-- report_markdown: an Executive Summary in Azerbaijani, in Markdown, 120-180 words. CRITICAL: every heading and every bullet MUST be on its own line — put a real newline ("\\n") between them, never run them together on one line. Follow this exact skeleton:
-"## 👋 Salam!\\n\\n<one warm sentence referencing what they actually talked about>\\n\\n### 💪 Güclü tərəflərin\\n- <concrete moment from THIS conversation>\\n- <another one>\\n\\n### 🌱 İnkişaf sahələrin\\n- **<pattern name>** — <one specific sentence>\\n- **<pattern name>** — <one specific sentence>\\n\\n<one short closing motivation sentence>"
+- report_markdown: an Executive Summary in {{LANGUAGE}}, in Markdown, 120-180 words. CRITICAL: every heading and every bullet MUST be on its own line — put a real newline ("\\n") between them, never run them together on one line. Follow this exact skeleton:
+"## 👋 {{GREETING}}!\\n\\n<one warm sentence referencing what they actually talked about>\\n\\n### 💪 {{H_STRENGTHS}}\\n- <concrete moment from THIS conversation>\\n- <another one>\\n\\n### 🌱 {{H_GROWTH}}\\n- **<pattern name>** — <one specific sentence>\\n- **<pattern name>** — <one specific sentence>\\n\\n<one short closing motivation sentence>"
   Use **bold** for key phrases. No headings other than these.
 - scores: fluency = flow and natural delivery; grammar = correctness; vocabulary = range and level. Integers 0-100.
-- feedback: at most 5 items, the most valuable ones. original = the learner's exact sentence, corrected = the fixed sentence, reason = why it was wrong, in Azerbaijani, 1-2 sentences; when the mistake comes from Azerbaijani interference, SAY SO and explain the contrast (e.g. "Azərbaycan dilində artikl yoxdur, ona görə..."). Empty array if there are no real mistakes.
+- feedback: at most 5 items, the most valuable ones. original = the learner's exact sentence, corrected = the fixed sentence, reason = why it was wrong, in {{LANGUAGE}}, 1-2 sentences; when the mistake comes from {{LANGUAGE}} interference, SAY SO and explain the contrast. Example of the depth expected: {{L1_EXAMPLE}} Empty array if there are no real mistakes.
 - recap: 1-2 sentences on what the learner talked about.
 - strengths: 1-2 concrete things they genuinely did well in this conversation.
 - tips: 2-3 tips SPECIFIC to mistakes actually made in THIS transcript — name the concrete pattern and give a usable mini-technique or tiny example. No generic filler such as "qorxma" or "daha çox danış".
 - vocabulary: 3-4 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words.
 - homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
-  - multiple_choice: up to 3 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = Azerbaijani, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
-  - word_order: up to 3 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = Azerbaijani, and it must NAME the specific grammar point this sentence practises (e.g. "keçmiş zaman 'went'", "'for' + müddət") — never a generic line like "sıranı bilmək lazımdır".
-- Every explanation must teach something concrete. Write natural, correct, modern Azerbaijani — if you are not sure a morphological form is right, use a simpler phrasing.
-- recap, reason, strengths, tips and every explanation must be in Azerbaijani. word, example, question, options and sentences stay in English.
+  - multiple_choice: up to 3 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
+  - word_order: up to 3 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, and it must NAME the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration", named in {{LANGUAGE}}) — never a generic line like "you must know the order".
+- Every explanation must teach something concrete. Write natural, correct, modern {{LANGUAGE}} — if you are not sure a morphological form is right, use a simpler phrasing.
+- recap, reason, strengths, tips and every explanation must be in {{LANGUAGE}}. word, example, question, options and English sentences stay in English.
 - corrected sentences and example sentences must sound like simple, natural, modern native-speaker English.
 - Base everything on the transcript; invent nothing about the conversation.
 - Be encouraging and honest — celebrate real progress, point out real mistakes with warmth.`;
@@ -2057,7 +2107,37 @@ async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, messa
   });
 }
 
-async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm") {
+// ─── Transkripsiya: Deepgram nova-2 (əsas) → Groq Whisper (fallback) ──
+// nova-2 aksentli, qeyri-native ingiliscədə Whisper-dən nəzərəçarpacaq
+// dərəcədə dəqiqdir — analizin bütün keyfiyyəti transkriptdən asılıdır, ona
+// görə burada ən yaxşısını işlədirik. smart_format punktuasiya + böyük hərf
+// verir ki, LLM cümlə sərhədlərini düzgün görsün (düzəlişlər cümlə əsaslıdır).
+const DEEPGRAM_STT_TIMEOUT_MS = 120000;
+
+async function transcribeWithDeepgram(audioBuffer, ext) {
+  const mime = ext === "mp4" ? "audio/mp4" : "audio/webm";
+  const url = "https://api.deepgram.com/v1/listen"
+    + "?model=nova-2&language=en&smart_format=true&punctuate=true&filler_words=false";
+
+  const res = await fetchWithTimeout(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Token ${DEEPGRAM_API_KEY.value()}`,
+      "Content-Type": mime,
+    },
+    body: audioBuffer,
+  }, DEEPGRAM_STT_TIMEOUT_MS, "Deepgram STT");
+
+  if (!res.ok) {
+    const err = new Error("Deepgram error " + res.status + ": " + (await res.text().catch(() => "")).slice(0, 300));
+    err.retryable = isRetryableStatus(res.status);
+    throw err;
+  }
+  const json = await res.json();
+  return json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
+}
+
+async function transcribeWithGroqWhisper(audioBuffer, ext) {
   const mime = ext === "mp4" ? "audio/mp4" : "audio/webm";
   const blob = new Blob([audioBuffer], { type: mime });
   const groqForm = new FormData();
@@ -2075,18 +2155,31 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm") {
     err.retryable = isRetryableStatus(whisperRes.status);
     throw err;
   }
-  const transcript = (await whisperRes.json()).text;
+  return (await whisperRes.json()).text || "";
+}
+
+// `lang` = istifadəçinin ana dili ('az' | 'tr') — hesabat həmin dildə yazılır.
+async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az") {
+  let transcript = "";
+  try {
+    transcript = await transcribeWithDeepgram(audioBuffer, ext);
+  } catch (e) {
+    // Deepgram açarı/limiti/timeout — analiz tamamilə itməsin deyə Whisper-ə keç.
+    console.warn("[Analysis] Deepgram failed, falling back to Whisper:", e.message);
+    transcript = await transcribeWithGroqWhisper(audioBuffer, ext);
+  }
+
   if (!transcript || !transcript.trim()) {
     const err = new Error("no-speech: could not hear any speech in the audio");
     err.retryable = false;
     throw err;
   }
 
-  // 2. Analysis via Groq LLM — strict JSON schema, self-healing retries.
+  // 2. Analysis via DeepSeek (Groq fallback) — strict JSON, self-healing retries.
   const promptTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
     ? transcript.slice(0, MAX_TRANSCRIPT_CHARS)
     : transcript;
-  const raw = await callAnalysisLLM(ANALYSIS_PROMPT.replace("{{TRANSCRIPT}}", promptTranscript));
+  const raw = await callAnalysisLLM(buildAnalysisPrompt(promptTranscript, lang));
   const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
   return { transcript, analysis };
 }
@@ -2094,8 +2187,9 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm") {
 exports.processAnalysisQueue = onSchedule({
   schedule: "every 1 minutes",
   timeZone: "Asia/Baku",
-  // DEEPSEEK: analiz LLM-i (əsas); GROQ: Whisper STT + LLM fallback.
-  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY],
+  // DEEPGRAM: nova-2 STT (əsas); DEEPSEEK: analiz LLM-i (əsas);
+  // GROQ: Whisper STT + LLM fallback-ları.
+  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY, DEEPGRAM_API_KEY],
   memory: "1GiB",
   timeoutSeconds: 540,
 }, async () => {
@@ -2180,7 +2274,19 @@ exports.processAnalysisQueue = onSchedule({
       }
 
       const ext = (ticket.storagePath || "").includes(".mp4") ? "mp4" : "webm";
-      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds, ext);
+      // Hesabat istifadəçinin ana dilində yazılır. Dil ticket-də deyil, user
+      // sənədində saxlanılır (analysisQueue rules sahə siyahısı ilə bağlıdır və
+      // client-in göndərdiyi dilə güvənmək də lazım deyil) — bir oxu bahasına.
+      let lang = "az";
+      try {
+        const uSnap = await db.collection("users").doc(ticket.uid).get();
+        const pref = uSnap.exists ? uSnap.data().preferredLanguage : null;
+        if (pref === "tr" || pref === "az") lang = pref;
+      } catch (e) {
+        console.warn("[AnalysisQueue] lang lookup failed, defaulting to az:", e.message);
+      }
+
+      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds, ext, lang);
 
       await analysisRef.set({
         ...analysis,
@@ -2200,8 +2306,10 @@ exports.processAnalysisQueue = onSchedule({
       console.log("[AnalysisQueue] Done:", ticket.id);
 
       await sendPushToUser(db, ticket.uid, {
-        title: "Analiziniz hazırdır 🎓",
-        body: "Zəng analizin hazır oldu — nəticəyə bax!",
+        title: lang === "tr" ? "Analiziniz hazır 🎓" : "Analiziniz hazırdır 🎓",
+        body: lang === "tr"
+          ? "Görüşme analizin hazır — sonuca göz at!"
+          : "Zəng analizin hazır oldu — nəticəyə bax!",
         type: "analysis_ready",
         url: "/history",
       });

@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { translateText } from '../utils/translate';
 import { saveWordToHistory } from '../utils/wordHistory';
 
 export default function TranslateWidget({ userId, topic, onTranslate }) {
+  // Ana dil i18n-dən gəlir: AZ istifadəçi üçün az↔en, TR üçün tr↔en.
+  // Əvvəl 'az' hardcoded idi — türk istifadəçi öz sözünü tərcümə edə bilmirdi.
+  const { i18n } = useTranslation();
+  const nativeLang = i18n.language === 'tr' ? 'tr' : 'az';
+  const nativeLabel = nativeLang.toUpperCase();
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
@@ -22,13 +28,15 @@ export default function TranslateWidget({ userId, topic, onTranslate }) {
     }
     
     if (usedTranslations >= 10) {
-      alert('Siz bugünkü maksimum (10) tərcümə limitinizi doldurdunuz. Gündəlik limitsiz istifadə üçün səhifəmizi izləyin!');
+      alert(nativeLang === 'tr'
+        ? 'Bugünkü maksimum (10) çeviri limitinize ulaştınız. Sınırsız kullanım için sayfamızı takip edin!'
+        : 'Siz bugünkü maksimum (10) tərcümə limitinizi doldurdunuz. Gündəlik limitsiz istifadə üçün səhifəmizi izləyin!');
       return;
     }
 
     setLoading(true);
     setSaved(false);
-    const translated = await translateText(input.trim(), 'az', 'en');
+    const translated = await translateText(input.trim(), nativeLang, 'en');
     setLoading(false);
     if (translated) {
       localStorage.setItem('translate_used', (usedTranslations + 1).toString());
@@ -37,7 +45,7 @@ export default function TranslateWidget({ userId, topic, onTranslate }) {
       if (onTranslate) onTranslate({ original: input.trim(), translated });
       setSaved(true);
     } else {
-      setResult('Tərcümə alınmadı');
+      setResult(nativeLang === 'tr' ? 'Çeviri alınamadı' : 'Tərcümə alınmadı');
     }
   };
 
@@ -74,7 +82,7 @@ export default function TranslateWidget({ userId, topic, onTranslate }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <p style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 700, margin: 0 }}>
-          🌐 Tərcümə (AZ → EN)
+          🌐 {nativeLang === 'tr' ? 'Çeviri' : 'Tərcümə'} ({nativeLabel} → EN)
         </p>
         <button
           onClick={() => setExpanded(false)}
@@ -88,7 +96,7 @@ export default function TranslateWidget({ userId, topic, onTranslate }) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Sözü yazın..."
+          placeholder={nativeLang === 'tr' ? 'Kelimeyi yazın...' : 'Sözü yazın...'}
           autoFocus
           style={{
             flex: 1, padding: '10px 12px', borderRadius: 10,
@@ -118,7 +126,9 @@ export default function TranslateWidget({ userId, topic, onTranslate }) {
         }}>
           <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 600, margin: 0 }}>{result}</p>
           {saved && (
-            <p style={{ color: 'var(--success)', fontSize: 11, margin: '4px 0 0' }}>✓ Yadda saxlanıldı</p>
+            <p style={{ color: 'var(--success)', fontSize: 11, margin: '4px 0 0' }}>
+              ✓ {nativeLang === 'tr' ? 'Kaydedildi' : 'Yadda saxlanıldı'}
+            </p>
           )}
         </div>
       )}

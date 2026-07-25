@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { collection, query, where, onSnapshot, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { subscribeToBlocked } from '../utils/blocklist';
 
 export default function Chats({ user }) {
+  const { t } = useTranslation(['headers', 'ranking', 'teacher', 'common']);
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [blockedIds, setBlockedIds] = useState(() => new Set());
@@ -70,7 +72,7 @@ export default function Chats({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">💬 Chats</div>
+        <div className="home-logo">{t('headers:chats')}</div>
       </div>
       <div className="home-body" style={{ paddingBottom: '90px' }}>
         {loading ? (

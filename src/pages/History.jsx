@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Clock, ChevronLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
+import '../styles/analysisReport.css';
 
 const PROFILE_TOUR_STEPS = [
   {
@@ -22,6 +24,7 @@ export default function History({ user }) {
   const [loading, setLoading] = useState(true);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation(['analysis', 'common', 'headers']);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -85,27 +88,27 @@ export default function History({ user }) {
         <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>Analiz Tarixçəsi</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>{t('headers:analysisHistory')}</h2>
       </div>
 
       <GuidedTour user={user} steps={PROFILE_TOUR_STEPS} tourKey="tourDone_profile" />
 
       {loading ? (
-        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>Yüklənir...</div>
+        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{t('common:loading')}</div>
       ) : history.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📊</div>
-          <p style={{ color: 'var(--text-secondary)' }}>Hələ heç bir analiz tarixçəniz yoxdur.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>{t('analysis:noHistory')}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {history.map((call, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               onClick={() => setSelectedAnalysis(call)}
-              style={{ 
-                background: 'var(--bg-secondary)', 
-                borderRadius: '16px', 
+              style={{
+                background: 'var(--bg-secondary)',
+                borderRadius: '16px',
                 padding: '16px',
                 cursor: 'pointer',
                 display: 'flex',
@@ -118,12 +121,12 @@ export default function History({ user }) {
                   {call.peerName || 'Anonim'}
                 </div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock size={14} /> 
-                  {call.durationSeconds ? `${Math.floor(call.durationSeconds/60)}m ${call.durationSeconds%60}s` : 'Naməlum'} 
+                  <Clock size={14} />
+                  {call.durationSeconds ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s` : t('common:unknown')}
                   {call.timestamp && ` • ${new Date(call.timestamp.seconds * 1000).toLocaleDateString()}`}
                 </div>
               </div>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                 {call.overallScore ? (
                   <div style={{
@@ -137,7 +140,7 @@ export default function History({ user }) {
                     {call.overallScore}
                   </div>
                 ) : call.error ? (
-                   <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700 }}>Xəta</div>
+                  <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700 }}>{t('common:error')}</div>
                 ) : null}
                 <button
                   id={idx === 0 ? "tour-analyze" : undefined}
@@ -157,7 +160,7 @@ export default function History({ user }) {
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  Analyze Data
+                  {t('analysis:analyzeData')}
                 </button>
               </div>
             </div>
@@ -168,204 +171,256 @@ export default function History({ user }) {
   );
 }
 
-// Export: TeacherStudent səhifəsi şagird analizini EYNİ görünüşdə göstərir —
-// müəllimin gördüyü, şagirdin gördüyünün birə-bir kopyasıdır.
+// ═══════════════════════════════════════════════════════════════════
+// ANALİZ HESABATI — çap olunmuş sənəd görünüşü
+// ═══════════════════════════════════════════════════════════════════
+// Bu ekran qəsdən tətbiqin qalanına bənzəmir: ağ kağız, serif başlıqlar,
+// nömrələnmiş bölmələr, cədvəllər. Səbəb — müəllim bunu valideynə göstərir
+// və çap edir; "tətbiq ekranı" deyil, RƏSMİ HESABAT təsiri dəyəri satır.
+// Şagird və müəllim EYNİ komponenti görür (TeacherStudent bunu import edir).
 export function AnalysisDetail({ analysis, onClose }) {
-  // Rendered as large text on a theme surface, so these follow the theme.
-  const scoreColor = (s) => (s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)');
+  const { t, i18n } = useTranslation(['analysis', 'common', 'headers']);
+  const isTr = i18n.language === 'tr';
 
   if (analysis.error) return (
-    <div style={{ padding: 20, background: 'var(--bg-primary)', minHeight: '100vh' }}>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', marginBottom: 20, display: 'flex', alignItems: 'center', cursor: 'pointer' }}><ChevronLeft size={24}/> Geri</button>
-      <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>❌</div>
-      <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>Analiz alınmadı</p>
-      <p style={{ color: 'var(--danger-fg)', fontSize: 13, marginTop: 12, textAlign: 'center', background: 'var(--danger-bg)', padding: 12, borderRadius: 8 }}>
-        {analysisErrorMessage(analysis.error)}
-      </p>
+    <div className="analysis-doc">
+      <div className="analysis-doc-header">
+        <button className="analysis-doc-back" onClick={onClose} aria-label={t('common:back')}>
+          <ChevronLeft size={22} />
+        </button>
+        <div className="analysis-doc-title">{t('headers:analysisResult')}</div>
+      </div>
+      <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 44, marginBottom: 10 }}>❌</div>
+        <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{t('analysis:failed')}</p>
+        <p className="doc-note">{analysisErrorMessage(analysis.error)}</p>
+      </div>
     </div>
   );
 
-  // Old and new analysis documents share one view model.
   const view = toAnalysisView(analysis);
+  const scoreColor = (s) => (s >= 80 ? '#10B981' : s >= 60 ? '#E65100' : '#EF4444');
 
-  // Markdown hesabatın premium tipoqrafiyası — ReactMarkdown-un elementləri
-  // mövzu dəyişənlərinə bağlanır ki, dark/light hər ikisində otursun.
-  const mdComponents = {
-    h2: ({ children }) => (
-      <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 900, margin: '0 0 10px', lineHeight: 1.35 }}>{children}</h2>
-    ),
-    h3: ({ children }) => (
-      <h3 style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 800, margin: '16px 0 8px' }}>{children}</h3>
-    ),
-    p: ({ children }) => (
-      <p style={{ color: 'var(--text-primary)', fontSize: 14, lineHeight: 1.65, margin: '0 0 8px' }}>{children}</p>
-    ),
-    ul: ({ children }) => (
-      <ul style={{ margin: '0 0 8px', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>{children}</ul>
-    ),
-    li: ({ children }) => (
-      <li style={{ color: 'var(--text-primary)', fontSize: 14, lineHeight: 1.55 }}>{children}</li>
-    ),
-    strong: ({ children }) => (
-      <strong style={{ color: 'var(--accent)', fontWeight: 800 }}>{children}</strong>
-    ),
+  // Chrome az-AZ tarixi "2026 M07 25" kimi verir (ICU boşluğu) — ay adları
+  // əl ilə yazılır ki, sənədin başlığı hər cihazda düzgün görünsün.
+  const MONTHS = {
+    az: ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'],
+    tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+  };
+  const dateLabel = (() => {
+    if (!analysis.timestamp?.seconds) return '';
+    const d = new Date(analysis.timestamp.seconds * 1000);
+    const names = isTr ? MONTHS.tr : MONTHS.az;
+    return `${d.getDate()} ${names[d.getMonth()]} ${d.getFullYear()}`;
+  })();
+
+  // Bölmələr avtomatik nömrələnir — hansı blokların görünəcəyi analizin
+  // məzmunundan asılıdır, ona görə nömrə sabit yazıla bilməz.
+  let sectionNo = 0;
+  const section = (label) => {
+    sectionNo += 1;
+    return <div className="analysis-doc-section">{sectionNo}. {label}</div>;
   };
 
-  const tiles = [
-    { label: 'Ümumi Bal', value: view.overallScore },
-    { label: 'Axıcılıq', value: view.scores.fluency },
-    { label: 'Qrammatika', value: view.scores.grammar },
-    { label: 'Lüğət', value: view.scores.vocabulary },
-  ].filter((t) => Number.isFinite(t.value));
+  // Markdown → sənəd tipoqrafiyası. Ölçülər CSS-dədir (analysisReport.css),
+  // burada yalnız element eşlənməsi var.
+  const mdComponents = {
+    h1: ({ children }) => <h2>{children}</h2>,
+    h2: ({ children }) => <h2>{children}</h2>,
+    h3: ({ children }) => <h3>{children}</h3>,
+    p: ({ children }) => <p>{children}</p>,
+    ul: ({ children }) => <ul>{children}</ul>,
+    ol: ({ children }) => <ul>{children}</ul>,
+    li: ({ children }) => <li>{children}</li>,
+    strong: ({ children }) => <strong>{children}</strong>,
+    em: ({ children }) => <em>{children}</em>,
+    a: ({ children }) => <span>{children}</span>,
+  };
 
-  const h3 = { color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, marginBottom: 16 };
-  const panel = { background: 'var(--bg-secondary)', padding: 16, borderRadius: 16 };
+  const scoreTiles = [
+    { label: t('analysis:overallScore'), value: view.overallScore },
+    { label: t('analysis:fluency'), value: view.scores.fluency },
+    { label: t('analysis:grammar'), value: view.scores.grammar },
+    { label: t('analysis:vocabulary'), value: view.scores.vocabulary },
+  ].filter((x) => Number.isFinite(x.value));
+
+  // Bölmə başlıqları sənəd üslubunda BÖYÜK HƏRFLƏ və dilə uyğun.
+  const SEC = {
+    summary: isTr ? 'GENEL DEĞERLENDİRME' : 'ÜMUMİ DƏYƏRLƏNDİRMƏ',
+    scores: isTr ? 'PUANLAR' : 'BALLAR',
+    mistakes: isTr ? 'DÜZELTMELER' : 'DÜZƏLİŞLƏR',
+    strengths: isTr ? 'GÜÇLÜ YÖNLER' : 'GÜCLÜ TƏRƏFLƏR',
+    tips: isTr ? 'ÖNERİLER' : 'TÖVSİYƏLƏR',
+    vocab: isTr ? 'KELİME HAZİNESİ' : 'LÜĞƏT',
+    homework: isTr ? 'ALIŞTIRMALAR' : 'TAPŞIRIQLAR',
+  };
+  const TH = {
+    wrong: isTr ? 'Söylediğin' : 'Dediyin',
+    right: isTr ? 'Doğrusu' : 'Düzgünü',
+    why: isTr ? 'Açıklama' : 'İzah',
+    word: isTr ? 'Kelime' : 'Söz',
+    example: isTr ? 'Örnek cümle' : 'Nümunə cümlə',
+  };
 
   return (
-    <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', padding: '20px 16px 40px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
-          <ChevronLeft size={24} />
+    <div className="analysis-doc">
+      <div className="analysis-doc-header">
+        <button className="analysis-doc-back" onClick={onClose} aria-label={t('common:back')}>
+          <ChevronLeft size={22} />
         </button>
-        <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>Analiz Nəticəsi</h2>
+        <div className="analysis-doc-title">SpeakLab · {t('headers:analysisResult')}</div>
+        {dateLabel && <div className="analysis-doc-meta">{dateLabel}</div>}
       </div>
 
-      {/* Elite hesabat — AI-nin markdown icmalı. Müəllim panelində də eyni
-          komponent açıldığı üçün müəllim şagirdlə EYNİ hesabatı oxuyur. */}
-      {view.reportMarkdown && (
-        <div style={{
-          background: 'linear-gradient(135deg, #7c6ff71a, #5b4de81a)',
-          border: '1px solid #7c6ff744', borderRadius: 20,
-          padding: '20px 18px', marginBottom: 24,
-        }}>
-          <ReactMarkdown components={mdComponents}>{view.reportMarkdown}</ReactMarkdown>
-        </div>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
-        {tiles.map((t) => (
-          <div key={t.label} style={{ ...panel, textAlign: 'center' }}>
-            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 4 }}>{t.label}</div>
-            <div style={{ color: scoreColor(t.value), fontSize: 32, fontWeight: 800 }}>{t.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {view.recap && (
-        <div style={{ ...panel, marginBottom: 24 }}>
-          <p style={{ color: 'var(--text-primary)', fontSize: 14, margin: 0, display: 'flex', gap: 8, lineHeight: 1.5 }}>
-            <span>📝</span> {view.recap}
-          </p>
-        </div>
-      )}
-
-      {view.speakingPace?.wpm > 0 && (
-        <div style={{ ...panel, marginBottom: 24, textAlign: 'center' }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Danışıq sürəti: </span>
-          <span style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700 }}>
-            {view.speakingPace.wpm} wpm ({view.speakingPace.label})
-          </span>
-        </div>
-      )}
-
-      {/* Yeni analizlərdə düzəlişlər aşağıda, interaktiv tapşırıq blokunun
-          "Müqayisə et" bölməsində göstərilir — eyni siyahını iki dəfə vermirik.
-          Köhnə sənədlərdə (homework yoxdur) bu klassik bölmə qalır. */}
-      {!view.homework && (
+      {/* 1. İcmal — AI-nin markdown hesabatı */}
+      {view.reportMarkdown ? (
         <>
-          <h3 style={h3}>Səhvlər</h3>
-          {view.feedback.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-              {view.feedback.map((item, idx) => (
-                <div key={idx} style={panel}>
-                  <div style={{ color: 'var(--danger)', fontSize: 14, textDecoration: 'line-through', marginBottom: 4 }}>{item.original}</div>
-                  <div style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{item.corrected}</div>
-                  {item.reason && (
-                    <div style={{ color: 'var(--text-secondary)', fontSize: 13, background: 'var(--bg-card)', padding: 8, borderRadius: 8 }}>{item.reason}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ ...panel, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
-              Real qrammatik səhv tapılmadı! 🎉
-            </div>
+          {section(SEC.summary)}
+          <div className="analysis-doc-card">
+            <ReactMarkdown components={mdComponents}>{view.reportMarkdown}</ReactMarkdown>
+          </div>
+        </>
+      ) : view.recap ? (
+        <>
+          {section(SEC.summary)}
+          <div className="analysis-doc-card"><p>{view.recap}</p></div>
+        </>
+      ) : null}
+
+      {/* 2. Ballar */}
+      {scoreTiles.length > 0 && (
+        <>
+          {section(SEC.scores)}
+          <div className="analysis-doc-scores">
+            {scoreTiles.map((s) => (
+              <div key={s.label} className="analysis-doc-score">
+                <div className="analysis-doc-score-label">{s.label}</div>
+                <div className="analysis-doc-score-value" style={{ color: scoreColor(s.value) }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+          {view.speakingPace?.wpm > 0 && (
+            <p className="doc-note" style={{ marginTop: 12 }}>
+              {t('analysis:speakingPace')}: <strong>{view.speakingPace.wpm} wpm</strong> ({view.speakingPace.label})
+            </p>
           )}
         </>
       )}
-      {view.homework && view.feedback.length === 0 && (
-        <div style={{ ...panel, textAlign: 'center', color: 'var(--success)', fontWeight: 700, marginBottom: 32 }}>
-          Real qrammatik səhv tapılmadı! 🎉
-        </div>
+
+      {/* 3. Düzəlişlər — cədvəl (sənəd hissini verən əsas element) */}
+      {view.feedback.length > 0 ? (
+        <>
+          {section(SEC.mistakes)}
+          <div className="analysis-doc-table-wrap">
+            <table className="analysis-doc-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '32%' }}>{TH.wrong}</th>
+                  <th style={{ width: '32%' }}>{TH.right}</th>
+                  <th>{TH.why}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.feedback.map((f, i) => (
+                  <tr key={i}>
+                    <td><span className="doc-wrong">{f.original}</span></td>
+                    <td><span className="doc-right">{f.corrected}</span></td>
+                    <td><span className="doc-note">{f.reason}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {view.tips.length > 0 && (
+            <div className="analysis-doc-critical">
+              <span className="analysis-doc-critical-label">
+                {isTr ? 'Kritik Kural' : 'Kritik Qayda'}
+              </span>
+              {view.tips[0]}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {section(SEC.mistakes)}
+          <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
+            <span className="doc-right" style={{ fontSize: 15 }}>{t('analysis:noMistakes')}</span>
+          </div>
+        </>
       )}
 
+      {/* 4. Güclü tərəflər */}
       {view.strengths.length > 0 && (
         <>
-          <h3 style={h3}>Güclü tərəflərin</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-            {view.strengths.map((s, idx) => (
-              <div key={idx} style={{ background: 'var(--success-bg)', color: 'var(--success-fg)', padding: 12, borderRadius: 12, fontSize: 13, lineHeight: 1.5 }}>{s}</div>
-            ))}
-          </div>
+          {section(SEC.strengths)}
+          <ul className="analysis-doc-list">
+            {view.strengths.map((s, i) => <li key={i}>{s}</li>)}
+          </ul>
         </>
       )}
 
+      {/* 5. Tövsiyələr */}
       {view.tips.length > 0 && (
         <>
-          <h3 style={h3}>Tövsiyələr</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-            {view.tips.map((t, idx) => (
-              <div key={idx} style={{ ...panel, display: 'flex', gap: 8, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{idx + 1}.</span>
-                <span>{t}</span>
-              </div>
-            ))}
-          </div>
+          {section(SEC.tips)}
+          <ul className="analysis-doc-list numbered">
+            {view.tips.map((tip, i) => <li key={i}>{tip}</li>)}
+          </ul>
         </>
       )}
 
+      {/* 6. Lüğət cədvəli */}
       {view.vocabulary.length > 0 && (
         <>
-          <h3 style={h3}>Lüğət</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-            {view.vocabulary.map((v, idx) => (
-              <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12 }}>
-                <div style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{v.word}</div>
-                {v.example && <div style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>{v.example}</div>}
-              </div>
-            ))}
+          {section(SEC.vocab)}
+          <div className="analysis-doc-table-wrap">
+            <table className="analysis-doc-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '28%' }}>{TH.word}</th>
+                  <th>{TH.example}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.vocabulary.map((v, i) => (
+                  <tr key={i}>
+                    <td><span className="analysis-doc-word">{v.word}</span></td>
+                    <td><span className="analysis-doc-example">{v.example}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </>
       )}
 
+      {/* Köhnə sənədlərin sahələri */}
       {view.legacyVocabularyUsed.length > 0 && (
         <>
-          <h3 style={h3}>İstifadə edilən Sözlər</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-            {view.legacyVocabularyUsed.map((word, idx) => (
-              <span key={idx} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>
-                {word}
-              </span>
-            ))}
-          </div>
+          {section(SEC.vocab)}
+          <p className="doc-note">{view.legacyVocabularyUsed.join(' · ')}</p>
         </>
       )}
-
       {view.legacyExamples.length > 0 && (
+        <ul className="analysis-doc-list">
+          {view.legacyExamples.map((s, i) => <li key={i}><em>{s}</em></li>)}
+        </ul>
+      )}
+
+      {/* 7. İnteraktiv tapşırıqlar — sənədin davamı. Düzəlişlər yuxarıdakı
+          cədvəldə olduğu üçün burada təkrarlanmır (showCorrections=false). */}
+      {view.homework && (
         <>
-          <h3 style={h3}>Nümunə Cümlələr</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-            {view.legacyExamples.map((s, idx) => (
-              <div key={idx} style={{ background: 'var(--bg-secondary)', padding: 12, borderRadius: 12, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
-                “{s}”
-              </div>
-            ))}
+          {section(SEC.homework)}
+          <div className="homework-scope">
+            <AnalysisHomework homework={view.homework} showCorrections={false} showBanner={false} />
           </div>
         </>
       )}
 
-      {/* İnteraktiv ev tapşırığı — şagirdin bu zəngdəki öz səhvlərindən. */}
-      <AnalysisHomework homework={view.homework} />
+      <div className="analysis-doc-footer">
+        SpeakLab · {isTr ? 'Yapay zekâ destekli konuşma analizi' : 'Süni intellekt dəstəkli danışıq analizi'}
+      </div>
     </div>
   );
 }

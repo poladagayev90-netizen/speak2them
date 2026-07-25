@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -14,6 +15,7 @@ import {
 //   2) Köhnə funnel: şagird kimi başlayıb 3 sessiyadan sonra açılan istifadəçi.
 // Kod yaradılana qədər kod formu, sonra tam dashboard: dəvət linki + roster.
 export default function TeacherUnlock({ user }) {
+  const { t } = useTranslation(['headers', 'ranking', 'teacher', 'common']);
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -156,8 +158,8 @@ export default function TeacherUnlock({ user }) {
           <div style={{ fontSize: '46px', textAlign: 'center' }}>🔓</div>
           <h2 style={{ textAlign: 'center', marginBottom: '6px' }}>
             {isTeacher && done < TEACHER_SESSIONS_REQUIRED
-              ? 'Xoş gəldiniz, müəllim!'
-              : 'Müəllim rejimi açıldı'}
+              ? t('teacher:welcomeTeacher')
+              : t('teacher:unlockedTitle')}
           </h2>
           <p style={{
             textAlign: 'center', color: 'var(--text-secondary, #888)',
@@ -170,7 +172,7 @@ export default function TeacherUnlock({ user }) {
           {error && <div className="error-box">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            <label>Şagird kodunuz</label>
+            <label>{t('teacher:yourStudentCode')}</label>
             <input
               type="text"
               placeholder="MƏS: AYTAC01"
@@ -190,7 +192,7 @@ export default function TeacherUnlock({ user }) {
               4–12 hərf və ya rəqəm. Şagirdlərinizin yadda saxlaya biləcəyi bir şey seçin.
             </p>
             <button type="submit" className="btn-primary" disabled={loading || code.trim().length < 4}>
-              {loading ? 'Yaradılır...' : 'Kodu yarat'}
+              {loading ? t('teacher:creatingCode') : t('teacher:createCode')}
             </button>
           </form>
           {back}
@@ -216,7 +218,7 @@ export default function TeacherUnlock({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">👩‍🏫 Müəllim Paneli</div>
+        <div className="home-logo">{t('headers:teacherPanel')}</div>
       </div>
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
@@ -228,7 +230,7 @@ export default function TeacherUnlock({ user }) {
           padding: '18px', marginBottom: '16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700 }}>Dəvət kodunuz</span>
+            <span style={{ fontSize: '14px', fontWeight: 700 }}>{t('teacher:inviteCode')}</span>
             <span style={{
               fontSize: '22px', fontWeight: 900, letterSpacing: '2px',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
@@ -246,7 +248,7 @@ export default function TeacherUnlock({ user }) {
                 color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700,
               }}
             >
-              {copied === 'link' ? '✅ Kopyalandı' : '🔗 Linki kopyala'}
+              {copied === 'link' ? `✅ ${t('common:copied')}` : t('teacher:copyLink')}
             </button>
             <a
               href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
@@ -269,25 +271,25 @@ export default function TeacherUnlock({ user }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           margin: '4px 2px 8px',
         }}>
-          <span style={{ fontSize: '15px', fontWeight: 800 }}>Şagirdlərim</span>
+          <span style={{ fontSize: '15px', fontWeight: 800 }}>{t('teacher:myStudents')}</span>
           <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-            {roster === null ? '' : `${students.length} nəfər`}
+            {roster === null ? '' : `${students.length} ${t('common:people')}`}
           </span>
         </div>
 
         {roster === null ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">⏳</div>
-            <p style={{ color: 'var(--text-secondary)' }}>Yüklənir...</p>
+            <p style={{ color: 'var(--text-secondary)' }}>{t('common:loading')}</p>
           </div>
         ) : students.length === 0 ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">🪺</div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Hələ şagirdiniz yoxdur.
+              {t('teacher:noStudents')}
             </p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Yuxarıdakı linki şagirdlərinizə göndərin — qoşulan kimi burada görünəcəklər.
+              {t('teacher:noStudentsHint')}
             </p>
           </div>
         ) : (
@@ -329,8 +331,8 @@ export default function TeacherUnlock({ user }) {
                       roster-ə denormalizə yazır (sessiya sayı + son aktivlik). */}
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                     {Number(s.completedSessions) > 0
-                      ? `${s.completedSessions} sessiya · son: ${fmtDate(s.lastActiveAt)}`
-                      : `Qoşulub: ${fmtDate(s.joinedAt)} · hələ zəng etməyib`}
+                      ? `${s.completedSessions} ${t('teacher:sessions')} · ${t('teacher:lastActive')}: ${fmtDate(s.lastActiveAt)}`
+                      : `${t('teacher:joined')}: ${fmtDate(s.joinedAt)} · ${t('teacher:notCalledYet')}`}
                   </div>
                 </div>
                 <span style={{
@@ -339,7 +341,7 @@ export default function TeacherUnlock({ user }) {
                   background: s.status === 'active' ? '#22c55e22' : '#f59e0b22',
                   color: s.status === 'active' ? '#16a34a' : '#d97706',
                 }}>
-                  {s.status === 'active' ? 'Aktiv' : 'Passiv'}
+                  {s.status === 'active' ? t('teacher:active') : t('teacher:inactive')}
                 </span>
                 <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span>
               </div>
@@ -351,7 +353,7 @@ export default function TeacherUnlock({ user }) {
           fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center',
           marginTop: '14px', lineHeight: 1.5,
         }}>
-          Şagird proqresi və analiz hesabatları növbəti mərhələdə burada olacaq.
+          {t('teacher:reportsSoon')}
         </p>
       </div>
     </div>

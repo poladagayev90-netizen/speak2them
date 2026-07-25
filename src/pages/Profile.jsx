@@ -11,6 +11,8 @@ import { getStreakInfo } from '../utils/streak';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
+import { useTranslation } from 'react-i18next';
+import { LANGUAGES, setLanguage } from '../i18n';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -31,6 +33,21 @@ export default function Profile({ user }) {
   const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
   const [docId, setDocId] = useState(null);
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['profile', 'common']);
+
+  // Dil dəyişimi: dərhal UI + localStorage (i18n modulu), sonra Firestore-a
+  // yazılır ki, digər cihazlarda da tətbiq olunsun. Firestore yazısı uğursuz
+  // olsa belə lokal seçim qalır — dil dəyişmək heç vaxt "uğursuz" görünməsin.
+  const changeLanguage = async (code) => {
+    if (code === i18n.language) return;
+    setLanguage(code);
+    try {
+      const targetId = docId || user.uid;
+      if (targetId) await updateDoc(doc(db, 'users', targetId), { preferredLanguage: code });
+    } catch (e) {
+      console.warn('[Profile] preferredLanguage save failed:', e.message);
+    }
+  };
 
   useEffect(() => {
     let unsub = null;
@@ -294,28 +311,55 @@ export default function Profile({ user }) {
           }}
         >
           {user.role === 'teacher'
-            ? '🎓 Şagird kodum'
-            : '🔓 Müəllim rejimi açıldı — kod yaradın'}
+            ? t('profile:teacherCode')
+            : t('profile:teacherUnlocked')}
         </button>
       )}
 
+      {/* DİL — Türkiyə bazarı üçün. Seçim dərhal tətbiq olunur və
+          users/{uid}.preferredLanguage-ə yazılır (cihazlar arası sinxron). */}
+      {sectionLabel(t('profile:language'))}
+      <div style={{ ...listCard, display: 'flex', gap: '8px', padding: '10px' }}>
+        {LANGUAGES.map((lng) => {
+          const active = i18n.language === lng.code;
+          return (
+            <button
+              key={lng.code}
+              type="button"
+              onClick={() => changeLanguage(lng.code)}
+              style={{
+                flex: 1, padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
+                border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+                background: active ? 'var(--accent-soft)' : 'transparent',
+                color: 'var(--text-primary)', fontSize: '14px', fontWeight: active ? 800 : 600,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>{lng.flag}</span>
+              {lng.label}
+              {active && <span style={{ color: 'var(--accent)' }}>✓</span>}
+            </button>
+          );
+        })}
+      </div>
+
       {/* ÖYRƏNMƏ */}
-      {sectionLabel('Öyrənmə')}
+      {sectionLabel(t('profile:sectionLearning'))}
       <div style={listCard}>
-        {row({ icon: '📚', label: 'Mənim Sözlərim', onClick: () => setShowWordHistory(true), notLast: true })}
-        {row({ icon: '🔥', label: 'Streak Səyahəti', onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
-        {row({ icon: '📊', label: 'Analiz Tarixçəsi', onClick: () => navigate('/history') })}
+        {row({ icon: '📚', label: t('profile:myWords'), onClick: () => setShowWordHistory(true), notLast: true })}
+        {row({ icon: '🔥', label: t('profile:streakJourney'), onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
+        {row({ icon: '📊', label: t('profile:analysisHistory'), onClick: () => navigate('/history') })}
       </div>
 
       {/* MƏLUMAT */}
-      {sectionLabel('Məlumat')}
+      {sectionLabel(t('profile:sectionInfo'))}
       <div style={listCard}>
-        {row({ icon: '💬', label: 'İngilis səviyyəsi', right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
+        {row({ icon: '💬', label: t('profile:englishLevel'), right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
         {row({ icon: '✉️', label: user.email || 'Hidden', value: 'Email' })}
       </div>
 
       {/* TƏNZİMLƏMƏLƏR */}
-      {sectionLabel('Tənzimləmələr')}
+      {sectionLabel(t('profile:sectionSettings'))}
       <div style={listCard}>
         {row({
           icon: isDark ? <Moon size={17} /> : <Sun size={17} />,
@@ -346,7 +390,7 @@ export default function Profile({ user }) {
 
       {/* HESAB — Google Play requires an in-app privacy link and a way to
           delete the account together with its data. */}
-      {sectionLabel('Hesab')}
+      {sectionLabel(t('profile:sectionAccount'))}
       <div style={listCard}>
         {row({ icon: '🔒', label: 'Məxfilik Siyasəti', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
         {row({ icon: '🗑️', label: deleting ? 'Silinir…' : 'Hesabı Sil', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}

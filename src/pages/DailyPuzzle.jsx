@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { doc, setDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -50,6 +51,7 @@ function loadState(dayIndex) {
 }
 
 export default function DailyPuzzle({ user }) {
+  const { t } = useTranslation(['headers', 'ranking', 'teacher', 'common']);
   const navigate = useNavigate();
   const dayIndex = getTodayPuzzleIndex();
   const puzzle = useMemo(() => getTodayPuzzle(), []);
@@ -153,7 +155,7 @@ export default function DailyPuzzle({ user }) {
         >
           <ArrowLeft size={22} />
         </button>
-        <div className="home-logo">🧩 Günün Tapmacası</div>
+        <div className="home-logo">{t('headers:puzzle')}</div>
       </div>
 
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: 420, margin: '0 auto', position: 'relative' }}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './i18n';
 import { ThemeProvider } from './context/ThemeContext';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './App.css';

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 
 // AI-nin şagirdin ÖZ səhvlərindən qurduğu interaktiv ev tapşırığı.
@@ -12,6 +13,7 @@ const cardStyle = {
 
 // ─── 1. Test sualı ───────────────────────────────────────────────
 function MultipleChoice({ item, index }) {
+  const { t } = useTranslation(['analysis']);
   const [picked, setPicked] = useState(null);
   const answered = picked !== null;
   const isCorrect = picked === item.correct_answer;
@@ -19,7 +21,7 @@ function MultipleChoice({ item, index }) {
   return (
     <div style={cardStyle}>
       <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '8px' }}>
-        Sual {index + 1}
+        {t('analysis:question')} {index + 1}
       </div>
       <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px', lineHeight: 1.5 }}>
         {item.question}
@@ -56,7 +58,7 @@ function MultipleChoice({ item, index }) {
           border: `1px solid ${isCorrect ? '#22c55e44' : 'var(--border)'}`,
         }}>
           <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? '#16a34a' : 'var(--text-primary)', marginBottom: '4px' }}>
-            {isCorrect ? '🎉 Düzdür!' : `Düzgün cavab: ${item.correct_answer}`}
+            {isCorrect ? t('analysis:correct') : `${t('analysis:correctAnswerIs')}: ${item.correct_answer}`}
           </div>
           {item.explanation && (
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
@@ -71,6 +73,7 @@ function MultipleChoice({ item, index }) {
 
 // ─── 2. Söz sırası ───────────────────────────────────────────────
 function WordOrder({ item, index }) {
+  const { t } = useTranslation(['analysis']);
   // Hər söz mənbə massivindəki indeksi ilə izlənir — təkrarlanan sözlər
   // ("the ... the") bir-birinin yerinə işlənə bilsin, açar da stabil qalsın.
   const [chosen, setChosen] = useState([]); // seçilmiş scrambled-indeksləri sırayla
@@ -90,7 +93,7 @@ function WordOrder({ item, index }) {
   return (
     <div style={cardStyle}>
       <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '8px' }}>
-        Cümləni qur {index + 1}
+        {t('analysis:buildSentence')} {index + 1}
       </div>
 
       {/* Qurulan cümlə */}
@@ -103,7 +106,7 @@ function WordOrder({ item, index }) {
         display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center',
       }}>
         {chosen.length === 0 && (
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Sözlərə toxunaraq cümləni qur...</span>
+          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{t('analysis:tapWordsHint')}</span>
         )}
         {chosen.map((i) => (
           <button
@@ -155,7 +158,7 @@ function WordOrder({ item, index }) {
             fontSize: '14px', fontWeight: 800, cursor: complete ? 'pointer' : 'default',
           }}
         >
-          Yoxla
+          {t('analysis:check')}
         </button>
       ) : (
         <div>
@@ -165,7 +168,7 @@ function WordOrder({ item, index }) {
             border: `1px solid ${isCorrect ? '#22c55e44' : '#ef444444'}`,
           }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? '#16a34a' : '#dc2626', marginBottom: '4px' }}>
-              {isCorrect ? '🎉 Mükəmməl!' : 'Düzgün cümlə:'}
+              {isCorrect ? t('analysis:perfect') : `${t('analysis:correctSentence')}:`}
             </div>
             {!isCorrect && (
               <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -188,7 +191,7 @@ function WordOrder({ item, index }) {
                 color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
               }}
             >
-              🔄 Yenidən yoxla
+              {t('analysis:tryAgain')}
             </button>
           )}
         </div>
@@ -216,7 +219,8 @@ function CorrectionCompare({ item }) {
   );
 }
 
-export default function AnalysisHomework({ homework, showCorrections = true }) {
+export default function AnalysisHomework({ homework, showCorrections = true, showBanner = true }) {
+  const { t } = useTranslation(['analysis', 'common']);
   if (!homework) return null;
   const { multipleChoice = [], wordOrder = [], correction = [] } = homework;
   if (!multipleChoice.length && !wordOrder.length && !(showCorrections && correction.length)) return null;
@@ -225,22 +229,22 @@ export default function AnalysisHomework({ homework, showCorrections = true }) {
 
   return (
     <div>
-      <div style={{
+      {showBanner && <div style={{
         background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
         border: '1px solid #7c6ff755', borderRadius: '16px',
         padding: '16px', marginBottom: '20px',
       }}>
         <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>
-          📝 Sənin üçün hazırlanmış tapşırıqlar
+          {t('analysis:homeworkTitle')}
         </div>
         <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-          Bu tapşırıqlar məhz bu zəngdəki öz səhvlərindən qurulub — həll et, pattern beyninə otursun.
+          {t('analysis:homeworkIntro')}
         </div>
-      </div>
+      </div>}
 
       {multipleChoice.length > 0 && (
         <>
-          <h3 style={h3}>🎯 Doğru variantı seç</h3>
+          <h3 style={h3}>{t('analysis:mcqTitle')}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
             {multipleChoice.map((q, i) => <MultipleChoice key={i} item={q} index={i} />)}
           </div>
@@ -249,7 +253,7 @@ export default function AnalysisHomework({ homework, showCorrections = true }) {
 
       {wordOrder.length > 0 && (
         <>
-          <h3 style={h3}>🧩 Sözləri düz</h3>
+          <h3 style={h3}>{t('analysis:wordOrderTitle')}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
             {wordOrder.map((w, i) => <WordOrder key={i} item={w} index={i} />)}
           </div>
@@ -258,7 +262,7 @@ export default function AnalysisHomework({ homework, showCorrections = true }) {
 
       {showCorrections && correction.length > 0 && (
         <>
-          <h3 style={h3}>🔍 Müqayisə et və yadda saxla</h3>
+          <h3 style={h3}>{t('analysis:compareTitle')}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
             {correction.map((c, i) => <CorrectionCompare key={i} item={c} />)}
           </div>
