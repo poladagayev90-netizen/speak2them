@@ -30,6 +30,13 @@
   font-size: 15px;
   line-height: 1.8;
   min-height: 100vh;
+  /* .main-content sabit hündürlüklü SÜTUN flex konteyneridir (overflow-y:auto).
+     Flex uşağı default olaraq flex-shrink:1 alır və uzun sənəd konteynerin
+     hündürlüyünə (100vh) SIXILIR — ağ fon 100vh-də kəsilir, qalan mətn tətbiqin
+     tünd fonu üzərinə düşür. flex:1 də kömək etmir, çünki flex-basis:0% eyni
+     nəticəni verir. Düzgün həll: sıxılmanı söndür, hündürlük kontentdən gəlsin. */
+  flex: 0 0 auto;
+  width: 100%;
   /* Geniş ekranda mərkəzlənmiş "səhifə", telefonda tam en. */
   max-width: 780px;
   margin: 0 auto;

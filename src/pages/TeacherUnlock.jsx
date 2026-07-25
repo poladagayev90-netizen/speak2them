@@ -184,6 +184,18 @@ export default function TeacherUnlock({ user }) {
               maxLength={12}
               disabled={checking}
               required
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: '12px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-input)',
+                color: 'var(--text-primary)',
+                fontSize: '16px',
+                fontWeight: 600,
+                marginTop: '8px',
+                outline: 'none',
+              }}
             />
             <p style={{
               fontSize: '13px', color: 'var(--text-secondary, #888)',

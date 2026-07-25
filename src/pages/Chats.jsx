@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { collection, query, where, onSnapshot, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDocs, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { subscribeToBlocked } from '../utils/blocklist';
@@ -21,8 +21,7 @@ export default function Chats({ user }) {
       query(
         collection(db, 'chats'),
         where('participants', 'array-contains', user.uid),
-        orderBy('updatedAt', 'desc'),
-        limit(30)
+        limit(50)
       ),
       async (snap) => {
         try {
@@ -64,6 +63,10 @@ export default function Chats({ user }) {
         } finally {
           setLoading(false);
         }
+      },
+      (error) => {
+        console.error("Chats onSnapshot error:", error);
+        setLoading(false);
       }
     );
     return unsub;

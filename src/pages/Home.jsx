@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { collection, doc, getDocs, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -55,6 +56,7 @@ const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermedi
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
 export default function Home({ user }) {
+  const { t } = useTranslation(['common']);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
 
@@ -336,8 +338,8 @@ export default function Home({ user }) {
           }}
         >
           {searching
-            ? <><X size={20} /> Axtarılır... (ləğv et)</>
-            : <><Shuffle size={20} /> Find Random Partner</>
+            ? <><X size={20} /> {t('common:searchingCancel')}</>
+            : <><Shuffle size={20} /> {t('common:findRandomPartner')}</>
           }
         </button>
 
@@ -525,7 +527,7 @@ export default function Home({ user }) {
             {displayUsers.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">😴</div>
-                <p>{tab === 'online' ? 'No one online.' : 'No users yet.'}</p>
+                <p>{tab === 'online' ? t('common:noOneOnline') : t('common:noUsersYet')}</p>
               </div>
             ) : (
               <div className="users-grid">

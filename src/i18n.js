@@ -35,6 +35,10 @@ const az = {
     people: 'nəfər',
     unknown: 'Naməlum',
     error: 'Xəta',
+    findRandomPartner: 'Təsadüfi partnyor tap',
+    searchingCancel: 'Axtarılır... (ləğv et)',
+    noOneOnline: 'Heç kim onlayn deyil.',
+    noUsersYet: 'Hələ istifadəçi yoxdur.',
   },
   nav: {
     lobby: 'Lobby',
@@ -148,6 +152,10 @@ const tr = {
     people: 'kişi',
     unknown: 'Bilinmiyor',
     error: 'Hata',
+    findRandomPartner: 'Rastgele partner bul',
+    searchingCancel: 'Aranıyor... (iptal et)',
+    noOneOnline: 'Kimse çevrimiçi değil.',
+    noUsersYet: 'Henüz kullanıcı yok.',
   },
   nav: {
     lobby: 'Lobi',
