@@ -2066,7 +2066,7 @@ function hasForeignScript(value) {
 
 // Əsas: DeepSeek. O yıxılsa (açar/limit/timeout) — Groq strict-schema yolu.
 // Analiz asinxron növbədədir, latency fərqi istifadəçiyə görünmür.
-async function callAnalysisLLM(userContent) {
+async function callAnalysisLLM(userContent, db) {
   try {
     const first = await callDeepSeekChat(userContent);
     if (!hasForeignScript(first)) return first;
@@ -2086,6 +2086,8 @@ async function callAnalysisLLM(userContent) {
     return second;
   } catch (e) {
     console.warn("[Analysis] DeepSeek failed, falling back to Groq:", e.message);
+    // Səssiz keçid ən təhlükəli haldır — admin dərhal xəbər tutmalıdır.
+    if (db) await alertProviderIssue(db, "deepseek-down", e.message);
     return callGroqChat(userContent);
   }
 }
@@ -2181,6 +2183,95 @@ async function sendPushToUser(db, uid, { title, body, type, url }) {
   }
 }
 
+// ─── Provayder nasazlığı xəbərdarlığı ────────────────────────────
+// 2026-07-26-da DEEPSEEK_API_KEY etibarsız oldu və sistem SƏSSİZCƏ Groq-a
+// keçdi: bir qisim istifadəçi zəif dilli hesabat aldı, Groq günlük limiti
+// dolandan sonra isə 3 analiz tamamilə itdi. Heç bir siqnal yox idi — problem
+// yalnız loglara baxanda göründü. Bu funksiya həmin boşluğu bağlayır.
+//
+// opsAlerts kolleksiyası catch-all deny ilə clientə tamamilə bağlıdır:
+// sistemin hansı provayderdə problem yaşadığı istifadəçiyə göstərilməməlidir.
+const PROVIDER_ALERT_THROTTLE_MS = 60 * 60 * 1000; // eyni problem üçün saatda 1
+
+async function alertProviderIssue(db, kind, detail) {
+  try {
+    const ref = db.collection("opsAlerts").doc("providers");
+    const now = Date.now();
+
+    // Nasazlıq hər biletdə təkrarlanır — throttle olmasa yüzlərlə e-poçt gedər.
+    const shouldSend = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const data = snap.exists ? snap.data() : {};
+      const prev = data[kind];
+      const last = prev && prev.toMillis ? prev.toMillis() : 0;
+      if (now - last < PROVIDER_ALERT_THROTTLE_MS) return false;
+      tx.set(ref, { [kind]: admin.firestore.Timestamp.fromMillis(now) }, { merge: true });
+      return true;
+    });
+    if (!shouldSend) return;
+
+    const text = String(detail || "").slice(0, 400);
+    console.error("[OpsAlert]", kind, text);
+
+    await sendPushToUser(db, ADMIN_UID, {
+      title: "⚠️ SpeakLab: AI provayder problemi",
+      body: `${kind} — analiz keyfiyyəti düşüb. Detallar e-poçtda.`,
+      type: "ops_alert",
+      url: "/history",
+    }).catch(() => null);
+
+    // E-poçt push-dan etibarlıdır: admin cihazında token olmaya bilər.
+    const gmailUser = GMAIL_USER.value();
+    const gmailPass = GMAIL_APP_PASSWORD.value();
+    if (!gmailUser || !gmailPass) return;
+
+    let to = gmailUser;
+    try {
+      const adminSnap = await db.collection("users").doc(ADMIN_UID).get();
+      if (adminSnap.exists && adminSnap.data().email) to = adminSnap.data().email;
+    } catch (e) { /* gmailUser-ə göndəririk */ }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: gmailUser, pass: gmailPass },
+    });
+    await transporter.sendMail({
+      from: `"SpeakLab Ops" <${gmailUser}>`,
+      to,
+      subject: `⚠️ SpeakLab: ${kind}`,
+      text: `Analiz pipeline-ında problem aşkarlandı.
+
+NÖV: ${kind}
+DETAL: ${text}
+
+`
+        + `TƏSİRİ: DeepSeek işləmirsə analizlər Groq-a keçir — Azərbaycan/türk dili`
+        + ` nəzərəçarpacaq dərəcədə zəifləyir, Groq günlük limiti dolanda isə`
+        + ` analizlər tamamilə uğursuz olur.
+
+`
+        + `NƏ ETMƏLİ:
+`
+        + `1. platform.deepseek.com -> balans və API açarını yoxla
+`
+        + `2. Yeni açar lazımdırsa:
+`
+        + `   firebase functions:secrets:set DEEPSEEK_API_KEY --project speak2them-64f2b
+`
+        + `3. Sonra mütləq deploy et:
+`
+        + `   firebase deploy --only functions:processAnalysisQueue --project speak2them-64f2b
+
+`
+        + `Bu xəbərdarlıq eyni problem üçün saatda bir dəfə göndərilir.`,
+    });
+    console.log("[OpsAlert] email sent to", to);
+  } catch (e) {
+    // Xəbərdarlıq göndərə bilməmək analizi dayandırmamalıdır.
+    console.warn("[OpsAlert] failed:", e.message);
+  }
+}
+
 // Transactionally flips one pending ticket to processing if the hourly
 // audio budget allows it. Returns the ticket data or null when skipped.
 async function claimTicket(db, ticketRef) {
@@ -2240,6 +2331,8 @@ async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, messa
     await admin.storage().bucket().file(ticketData.storagePath).delete().catch(() => null);
   }
   console.error("[AnalysisQueue] Failed permanently:", ticketId, text);
+  // İstifadəçi analizsiz qaldı — bu, həmişə bilinməlidir.
+  await alertProviderIssue(db, "analysis-failed", `${ticketId}: ${text}`);
 
   // Silence is the worst outcome: without this the user waits for a result that
   // is never coming, because History only ever showed finished analyses.
@@ -2306,13 +2399,14 @@ async function transcribeWithGroqWhisper(audioBuffer, ext) {
 }
 
 // `lang` = istifadəçinin ana dili ('az' | 'tr') — hesabat həmin dildə yazılır.
-async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az") {
+async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az", db = null) {
   let transcript = "";
   try {
     transcript = await transcribeWithDeepgram(audioBuffer, ext);
   } catch (e) {
     // Deepgram açarı/limiti/timeout — analiz tamamilə itməsin deyə Whisper-ə keç.
     console.warn("[Analysis] Deepgram failed, falling back to Whisper:", e.message);
+    if (db) await alertProviderIssue(db, "deepgram-down", e.message);
     transcript = await transcribeWithGroqWhisper(audioBuffer, ext);
   }
 
@@ -2326,7 +2420,7 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang =
   const promptTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
     ? transcript.slice(0, MAX_TRANSCRIPT_CHARS)
     : transcript;
-  const raw = await callAnalysisLLM(buildAnalysisPrompt(promptTranscript, lang));
+  const raw = await callAnalysisLLM(buildAnalysisPrompt(promptTranscript, lang), db);
   const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
   return { transcript, analysis };
 }
@@ -2336,7 +2430,7 @@ exports.processAnalysisQueue = onSchedule({
   timeZone: "Asia/Baku",
   // DEEPGRAM: nova-2 STT (əsas); DEEPSEEK: analiz LLM-i (əsas);
   // GROQ: Whisper STT + LLM fallback-ları.
-  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY, DEEPGRAM_API_KEY],
+  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY, DEEPGRAM_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD],
   memory: "1GiB",
   timeoutSeconds: 540,
 }, async () => {
@@ -2439,7 +2533,7 @@ exports.processAnalysisQueue = onSchedule({
         console.warn("[AnalysisQueue] lang lookup failed, defaulting to az:", e.message);
       }
 
-      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds, ext, lang);
+      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds, ext, lang, db);
 
       await analysisRef.set({
         ...analysis,
