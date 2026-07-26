@@ -233,15 +233,20 @@ export default function TeacherUnlock({ user }) {
                 border: '1px solid var(--border)',
                 background: 'var(--bg-input)',
                 color: 'var(--text-primary)',
-                fontSize: '16px',
-                fontWeight: 600,
+                fontSize: '17px',
+                fontWeight: 700,
+                letterSpacing: '2px',
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
                 marginTop: '8px',
                 outline: 'none',
               }}
             />
+            {/* Əvvəl marginTop:-6px idi — ipucu input-un dibinə yapışırdı və
+                bir yerdə oxunurdu. İndi ayrı sətir kimi nəfəs alır. */}
             <p style={{
-              fontSize: '13px', color: 'var(--text-secondary, #888)',
-              marginTop: '-6px', marginBottom: '14px',
+              fontSize: '12.5px', lineHeight: 1.55,
+              color: 'var(--text-secondary, #888)',
+              margin: '10px 2px 18px',
             }}>
               4–12 hərf və ya rəqəm. Şagirdlərinizin yadda saxlaya biləcəyi bir şey seçin.
             </p>

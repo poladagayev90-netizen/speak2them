@@ -1,3 +1,5 @@
+import { describeImages } from '../data/describeImages';
+
 // Zəngdə "şəkli birlikdə təsvir et" mərhələsi üçün şəkil siyahısı. İki tərəf
 // EYNİ şəkli görməlidir — ona görə mənbə tam DETERMİNİSTİK olmalıdır: eyni
 // giriş → eyni URL → eyni şəkil, hər cihazda, hər regionda, hər zaman.
@@ -18,14 +20,13 @@ export async function fetchTopicImages(imageKeywords, manualImageUrls = []) {
     }));
   }
 
-  if (!imageKeywords || imageKeywords.length === 0) return [];
-
-  // Hər açar söz üçün stabil, unikal seed → hər ikisində eyni, amma bir-birindən
-  // fərqli 5 şəkil. Picsum sürətli global CDN-dir (fallback lazım deyil).
-  return imageKeywords.map((kw, i) => ({
-    id: `picsum-${i}`,
-    url: `https://picsum.photos/seed/${encodeURIComponent(kw)}-${i}/800/600`,
-    alt: kw,
-    credit: 'Picsum',
-  }));
+  // Picsum ARTIQ İŞLƏDİLMİR: seed yalnız "eyni seed → eyni təsadüfi foto"
+  // deməkdir, açar sözlə əlaqəsi yoxdur. Ekranda morj görünüb altında başqa söz
+  // yazılmasının səbəbi məhz bu idi, üstəlik təsadüfi fotoların çoxu təsvir
+  // edilə bilməyən boş mənzərə olurdu.
+  //
+  // İndi əl ilə seçilmiş dəst işlədilir: hər şəkildə insan/hərəkət/obyekt var
+  // və açar sözlər şəklin ÖZ məzmunundandır. Siyahı statikdir, ona görə
+  // determinizm (və deməli iki tərəfin sinxronu) daha da güclüdür.
+  return describeImages;
 }

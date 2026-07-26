@@ -34,11 +34,9 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
   const src = failed[image.id] && image.fallbackUrl ? image.fallbackUrl : image.url;
   const isDead = !!dead[image.id];
   const isLoading = !isDead && loadedUrl !== src;
-  const vocab = content.vocabulary || [];
-  const start = vocab.length ? (safeIndex * 2) % vocab.length : 0;
-  const keywords = vocab.length
-    ? [vocab[start], vocab[(start + 1) % vocab.length]].filter(Boolean)
-    : [];
+  // Açar sözlər ŞƏKLİN ÖZÜNDƏN gəlir. Əvvəl mövzu lüğətindən götürülürdü və
+  // ekrandakı şəkillə heç bir əlaqəsi olmurdu (morj şəkli + tamam başqa sözlər).
+  const keywords = Array.isArray(image.keywords) ? image.keywords : [];
 
   return (
     <div style={{
@@ -115,7 +113,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
         {keywords.length > 0 && (
           <div style={{ padding: '12px 16px 4px' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Açar sözlər
+              Açar sözlər · {safeIndex + 1}/{images.length}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {keywords.map((v, i) => (

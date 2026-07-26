@@ -361,7 +361,26 @@ export default function Profile({ user }) {
       {sectionLabel(t('profile:sectionInfo'))}
       <div style={listCard}>
         {row({ icon: '💬', label: t('profile:englishLevel'), right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
-        {row({ icon: '✉️', label: user.email || 'Hidden', value: 'Email' })}
+        {/* E-poçt AÇIQ göstərilir: müəllim şagirdi məhz e-poçtla dəvət edir,
+            şagird isə onu tapa bilmirdi. Uzun ünvan sətri sındırmasın deyə
+            kəsilir, yanında kopyalama var. */}
+        {row({
+          icon: '✉️',
+          label: 'E-poçt',
+          right: (
+            <span
+              onClick={() => { navigator.clipboard?.writeText(user.email || '').catch(() => {}); }}
+              title={user.email || ''}
+              style={{
+                color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600,
+                maxWidth: '58%', overflow: 'hidden', textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap', cursor: 'pointer',
+              }}
+            >
+              {user.email || '—'} 📋
+            </span>
+          ),
+        })}
       </div>
 
       {/* TƏNZİMLƏMƏLƏR */}
