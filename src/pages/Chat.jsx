@@ -110,6 +110,9 @@ export default function Chat({ user }) {
   };
 
   const callSecondsRef = useRef(0);
+  // Zəngin divar-saatı başlanğıcı — müddət bundan hesablanır (bax timer effekti).
+  const callStartedAtRef = useRef(0);
+  const warnedRef = useRef(false);
   const endCallRef = useRef(null);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);  // mic track — created on user gesture
@@ -468,18 +471,37 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (inCall) {
+      // KRİTİK: müddət tick SAYMAQLA hesablanmır, divar saatından çıxarılır.
+      //
+      // Əvvəl `callSecondsRef.current += 1` idi. Brauzer arxa fonda
+      // setInterval-ı boğur (mobil: ekran sönəndə və ya başqa tətbiqə
+      // keçəndə tick-lər dayana bilər) — telefonu qulağına tutan istifadəçi
+      // üçün bu, normal haldır. Nəticədə 30 dəqiqəlik zəng ~80 tick yığırdı
+      // və hər yerə "1 dəq 20 san" kimi düşürdü: ekrandakı saymac, 1 saatlıq
+      // limit (heç vaxt işə düşmürdü) və analizin audioSeconds sahəsi
+      // (müəllim panelində yanlış müddət + şişirdilmiş danışıq sürəti).
+      //
+      // Date.now() boğulmur, ona görə tick-lər geciksə də dəyər düzgün qalır.
+      const startedAt = Date.now();
+      callStartedAtRef.current = startedAt;
+      warnedRef.current = false;
       setCallSeconds(0);
       callSecondsRef.current = 0;
+
       timerRef.current = setInterval(() => {
-        callSecondsRef.current += 1;
-        setCallSeconds(callSecondsRef.current);
-        // Limitə 1 dəqiqə qalmış bloklamayan xəbərdarlıq — istifadəçi sözünü
-        // yekunlaşdıra bilsin. alert() YOX: söhbətin ortasında modal kobuddur.
-        if (maxCallSeconds !== Infinity && callSecondsRef.current === maxCallSeconds - 60) {
+        const elapsed = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+        callSecondsRef.current = elapsed;
+        setCallSeconds(elapsed);
+
+        // Limitə 1 dəqiqə qalmış bloklamayan xəbərdarlıq. Bərabərlik yox,
+        // ARALIQ yoxlanılır: boğulmuş tick dəqiq saniyəni atlaya bilər.
+        if (maxCallSeconds !== Infinity && !warnedRef.current
+          && elapsed >= maxCallSeconds - 60 && elapsed < maxCallSeconds) {
+          warnedRef.current = true;
           setTimeWarning(true);
           setTimeout(() => setTimeWarning(false), 10000);
         }
-        if (maxCallSeconds !== Infinity && callSecondsRef.current >= maxCallSeconds) {
+        if (maxCallSeconds !== Infinity && elapsed >= maxCallSeconds) {
           // endCall is async and alert() blocks — without this the interval
           // keeps firing and stacks one alert per second.
           clearInterval(timerRef.current);
@@ -575,7 +597,12 @@ export default function Chat({ user }) {
       callTimeoutRef.current = null;
     }
 
-    const secondsTalked = callSecondsRef.current;
+    // Divar saatından hesablanır — boğulmuş timer-ə güvənmirik. callSeconds
+    // artıq düzgündür, amma zəng interval tick-i olmadan bitsə (dərhal
+    // qapatma, arxa fon) bu, yeganə etibarlı mənbədir.
+    const secondsTalked = callStartedAtRef.current
+      ? Math.max(0, Math.floor((Date.now() - callStartedAtRef.current) / 1000))
+      : callSecondsRef.current;
 
     // Stop recording; if the call was long enough to analyze, upload it to
     // Storage and create the queue ticket the scheduled worker picks up.

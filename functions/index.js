@@ -1537,7 +1537,7 @@ const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
 // margin, and a normal ticket takes ~30s, so all three still fit in a tick.
 const ANALYSIS_INVOCATION_BUDGET_MS = 200 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
-const ANALYSIS_HOURLY_AUDIO_BUDGET = 5760;
+const ANALYSIS_HOURLY_AUDIO_BUDGET = 21600; // 6 saat audio/saat — 50% analiz üçün 5760 çox dar idi
 
 // İstifadəçinin ana dili — hesabatın yazıldığı dil. users/{uid}.preferredLanguage
 // -dən gəlir; yoxdursa 'az'. Türkiyə bazarı üçün 'tr'.
@@ -1627,7 +1627,7 @@ Rules:
 
 // Whisper can return very long transcripts; the JSON answer must still fit in
 // the completion budget, so the model only sees a bounded slice.
-const MAX_TRANSCRIPT_CHARS = 6000;
+const MAX_TRANSCRIPT_CHARS = 32000; // ~30 dəq nitq. 6000 idi: LLM yalnız ilk ~7 dəqiqəni görürdü
 
 // Strict schema enforced at the Groq API level (structured outputs).
 // maxItems is what keeps the completion bounded: with these caps a full answer
@@ -2026,16 +2026,21 @@ async function callGroqChat(userContent) {
   throw lastErr || Object.assign(new Error("Groq JSON failed after retries"), { retryable: true });
 }
 
-// Only the first 5 minutes of a call are analyzed. A byte-prefix of a WebM is
-// still decodable, so this is a contiguous, real 5-minute recording — not a
-// stitched sample. Shorter calls are analyzed in full. Capping here (rather
-// than at a fraction of the call) keeps the per-ticket cost constant, which is
-// what makes the queue drain predictably on the free Groq audio budget.
-const ANALYSIS_MAX_SECONDS = 300;
+// Zəngin YARISI analiz olunur (əvvəl sabit 5 dəqiqə idi — 30 dəqiqəlik
+// söhbətin 83%-i heç vaxt görünmürdü). WebM-in bayt-prefiksi dekodlana bilir,
+// ona görə bu, real və bütöv bir parçadır, yamaq deyil.
+//   • qısa zənglər (<= ANALYSIS_FULL_UNDER) TAM analiz olunur — 4 dəqiqəlik
+//     söhbətin yarısı mənalı geri-bildirim üçün azdır;
+//   • uzun zənglər 50%, amma ANALYSIS_MAX_SECONDS tavanı ilə — bir nəfər
+//     saatlıq zənglə bütün saatlıq audio budcəsini yeyə bilməsin.
+const ANALYSIS_RATIO = 0.5;
+const ANALYSIS_FULL_UNDER = 300;   // 5 dəqiqəyə qədər tam
+const ANALYSIS_MAX_SECONDS = 1800; // ən çox 30 dəq (1 saatlıq zəngin yarısı)
 
 function effectiveAnalyzeSeconds(audioSeconds) {
   if (!audioSeconds) return 0;
-  return Math.min(audioSeconds, ANALYSIS_MAX_SECONDS);
+  if (audioSeconds <= ANALYSIS_FULL_UNDER) return audioSeconds;
+  return Math.min(Math.round(audioSeconds * ANALYSIS_RATIO), ANALYSIS_MAX_SECONDS);
 }
 
 // Data-only push to one user's device (the messaging SW displays it and
