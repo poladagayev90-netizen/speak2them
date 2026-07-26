@@ -229,13 +229,20 @@ service cloud.firestore {
         && request.resource.data.retryCount == 0
         && request.resource.data.audioSeconds is number
         && request.resource.data.audioSeconds > 0
-        && request.resource.data.audioSeconds <= 1800
+        && request.resource.data.audioSeconds <= 3600
         && request.resource.data.callDocId is string
         && request.resource.data.sessionId is string
-        && request.resource.data.storagePath ==
-          'callRecordings/' + request.auth.uid + '/'
-          + request.resource.data.callDocId + '_'
-          + request.resource.data.sessionId + '.webm';
+        // Uzantı .webm VƏ YA .mp4 ola bilər: iOS Safari webm dəstəkləmir və
+        // MediaRecorder mp4 yazır. Yalnız .webm tələb edildiyi üçün həmin
+        // istifadəçilərin ticket-i rədd olunurdu — analiz heç vaxt gəlmirdi.
+        && (request.resource.data.storagePath ==
+              'callRecordings/' + request.auth.uid + '/'
+              + request.resource.data.callDocId + '_'
+              + request.resource.data.sessionId + '.webm'
+            || request.resource.data.storagePath ==
+              'callRecordings/' + request.auth.uid + '/'
+              + request.resource.data.callDocId + '_'
+              + request.resource.data.sessionId + '.mp4');
       allow read: if isSignedIn() && docId.split('_')[0] == request.auth.uid;
       allow update, delete: if false;
     }

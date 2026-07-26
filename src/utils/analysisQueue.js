@@ -32,7 +32,10 @@ export async function enqueueCallAnalysis({ uid, callDocId, sessionId, storagePa
     storagePath,
     // Used only for the worker's hourly audio budget; the full file is
     // analyzed regardless. Clamped to the 1800s cap enforced by rules.
-    audioSeconds: Math.min(Math.max(1, Math.round(audioSeconds)), 1800),
+    // Tavan firestore.rules-dakı `audioSeconds <= 3600` ilə SİNXRON olmalıdır.
+    // 1800 idi: 1 saatlıq zəng 30 dəq kimi yazılırdı və analiz nisbəti səhv
+    // hesablanırdı (bayt-prefiks düsturu totalSeconds-a bölür).
+    audioSeconds: Math.min(Math.max(1, Math.round(audioSeconds)), 3600),
     uid,
     callDocId,
     sessionId: String(sessionId),
