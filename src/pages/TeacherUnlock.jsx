@@ -150,7 +150,25 @@ export default function TeacherUnlock({ user }) {
     );
   }
 
-  // ─── 2. Açıqdır, kod hələ yoxdur — kod formu ───────────────────
+  // ─── 2. Kod hələ yüklənir ──────────────────────────────────────
+  // Bu gate OLMADAN hər dashboard açılışında kod formu ~0.2 saniyə yanıb-sönür:
+  // myCode Firestore-dan asinxron gəlir, ilk render-də isə hələ null olur və
+  // aşağıdakı "kod yarat" ekranı göstərilir. Kodu olan müəllim üçün bu ekran
+  // heç vaxt görünməməlidir.
+  if (checking) {
+    return (
+      <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
+        <div className="auth-card" style={{ ...cardStyle, textAlign: 'center' }}>
+          <div className="loading-logo" style={{ fontSize: '34px' }}>🎙️</div>
+          <p style={{ color: 'var(--text-secondary, #888)', fontSize: '14px', marginTop: '12px', marginBottom: 0 }}>
+            {t('common:loading')}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── 3. Açıqdır, kod hələ yoxdur — kod formu ───────────────────
   if (!myCode) {
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
@@ -213,7 +231,7 @@ export default function TeacherUnlock({ user }) {
     );
   }
 
-  // ─── 3. Dashboard: dəvət + roster ──────────────────────────────
+  // ─── 4. Dashboard: dəvət + roster ──────────────────────────────
   const link = buildJoinLink(myCode);
   const shareText = `Salam! SpeakLab-da İngilis dili danışıq praktikası üçün mənim şagird kodum: ${myCode}\n${link}`;
   const students = roster || [];

@@ -129,7 +129,9 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* .auth-card default padding-i 40px-dir — rol seçimi ilə birlikdə bu,
+          formanı ekrandan kənara çıxarırdı. Yalnız bu səhifədə sıxılır. */}
+      <div className="auth-card" style={{ position: 'relative', overflow: 'hidden', padding: '16px 18px' }}>
         <div style={{
           position: 'absolute',
           top: '-50px',
@@ -141,17 +143,21 @@ export default function Register() {
           zIndex: 0
         }}></div>
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div className="auth-logo" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
-            <Logo width={160} />
+          <div className="auth-logo" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '6px' }}>
+            <Logo width={116} />
           </div>
-          <h2 style={{ fontSize: '28px', marginBottom: '8px', lineHeight: '1.2' }}>Start Speaking <br/><span style={{ color: '#7c6ff7' }}>Today</span></h2>
-          <p className="auth-sub" style={{ fontSize: '14px', marginBottom: '20px' }}>Join the fastest growing English community.</p>
+          {/* Rol seçimi əlavə olunandan sonra forma bir ekrana sığmırdı:
+              başlıq tək sətirə salındı, alt yazı çıxarıldı, boşluqlar
+              sıxıldı — scroll olmadan hamısı görünür. */}
+          <h2 style={{ fontSize: '20px', marginBottom: '10px', lineHeight: '1.2' }}>
+            Start Speaking <span style={{ color: '#7c6ff7' }}>Today</span>
+          </h2>
 
           {error && <div className="error-box">{error}</div>}
 
           {/* Rol seçimi — qeydiyyatın şərti. Sonradan dəyişilə bilmir
               (rules yalnız ilk yazılışa icazə verir), ona görə açıq seçimdir. */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
             {[
               { key: 'student', icon: '🎓', label: 'I am a Student', sub: 'Practice speaking' },
               { key: 'teacher', icon: '👩‍🏫', label: 'I am a Teacher', sub: 'Track my students' },
@@ -161,7 +167,7 @@ export default function Register() {
                 type="button"
                 onClick={() => setRole(opt.key)}
                 style={{
-                  flex: 1, padding: '14px 8px', borderRadius: '14px', cursor: 'pointer',
+                  flex: 1, padding: '10px 6px', borderRadius: '12px', cursor: 'pointer',
                   border: role === opt.key ? '2px solid #7c6ff7' : '1px solid var(--border)',
                   background: role === opt.key
                     ? 'linear-gradient(135deg, #7c6ff722, #5b4de822)'
@@ -169,14 +175,13 @@ export default function Register() {
                   color: 'var(--text-primary)', textAlign: 'center',
                 }}
               >
-                <div style={{ fontSize: '24px', marginBottom: '4px' }}>{opt.icon}</div>
-                <div style={{ fontSize: '14px', fontWeight: 700 }}>{opt.label}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>{opt.sub}</div>
+                <div style={{ fontSize: '20px', marginBottom: '2px' }}>{opt.icon}</div>
+                <div style={{ fontSize: '13px', fontWeight: 700 }}>{opt.label}</div>
               </button>
             ))}
           </div>
           {!role && (
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '14px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', margin: '0 0 10px' }}>
               Choose your role to continue
             </p>
           )}
@@ -193,13 +198,13 @@ export default function Register() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              padding: '12px',
+              padding: '10px',
               borderRadius: '12px',
               border: 'none',
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',
-              marginBottom: '16px'
+              marginBottom: '10px'
             }}
           >
             <svg width="20" height="20" viewBox="0 0 48 48">
@@ -212,7 +217,7 @@ export default function Register() {
           </button>
         )}
 
-        <div style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '10px', color: 'var(--text-secondary)', fontSize: '12px' }}>
           or register with email
         </div>
 
@@ -250,7 +255,7 @@ export default function Register() {
           </button>
         </form>
 
-        <p className="auth-footer">
+        <p className="auth-footer" style={{ marginTop: '10px', fontSize: '13px' }}>
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
         </div>

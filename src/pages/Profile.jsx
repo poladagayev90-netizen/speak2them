@@ -104,13 +104,19 @@ export default function Profile({ user }) {
   const [deleting, setDeleting] = useState(false);
 
   const handleDeleteAccount = async () => {
-    // Two-step confirmation: an explicit warning, then a typed word, so the
-    // account can never be destroyed by a single accidental tap.
+    // İki addımlı təsdiq — YAZMA tələbi YOXDUR.
+    //
+    // Əvvəl istifadəçidən "SİL" yazmaq istənilirdi və yoxlama belə idi:
+    //     typed.toUpperCase() !== 'SİL'
+    // JS-in default toUpperCase() metodu 'i' hərfini NÖQTƏSİZ 'I'-ya çevirir,
+    // yəni "sil" → "SIL" ≠ "SİL". Nəticədə şərt heç vaxt ödənmirdi və hesab
+    // silinmirdi. İki ayrı təsdiq təsadüfi toxunuşdan qorunmaq üçün kifayətdir.
     if (!window.confirm(
       'Hesabınız və bütün datanız (profil, söz tarixçəsi, zəng analizləri, səs qeydləri) həmişəlik silinəcək. Bu əməliyyat geri qaytarıla bilməz. Davam edilsin?'
     )) return;
-    const typed = window.prompt('Təsdiq üçün "SİL" yazın:');
-    if ((typed || '').trim().toUpperCase() !== 'SİL') return;
+    if (!window.confirm(
+      'Son təsdiq: hesabınız indi həmişəlik silinsin?'
+    )) return;
 
     setDeleting(true);
     try {

@@ -21,15 +21,22 @@ export function startLocalRecording(localAgoraTrack) {
     // remoteGainNode = audioContext.createGain();
     // remoteGainNode.connect(mixedDestination);
 
-    let options = { mimeType: 'audio/webm;codecs=opus' };
+    // Bitrate AÇIQ təyin olunur: brauzerin default dəyəri (bəzi cihazlarda
+    // 128 kbps) 1 saatlıq zəngdə ~57 MB verir və storage.rules limitini keçib
+    // yükləməni səssizcə sındırır — analiz heç vaxt gəlmir. 32 kbps mono Opus
+    // nitq üçün kifayətdir (WhatsApp səsli mesajları ~16-24 kbps) və 1 saat
+    // ≈ 14 MB edir. STT dəqiqliyinə təsiri yoxdur.
+    const AUDIO_BITS_PER_SECOND = 32000;
+
+    let options = { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: AUDIO_BITS_PER_SECOND };
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      options = { mimeType: 'audio/webm' };
+      options = { mimeType: 'audio/webm', audioBitsPerSecond: AUDIO_BITS_PER_SECOND };
     }
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      options = { mimeType: 'audio/mp4' };
+      options = { mimeType: 'audio/mp4', audioBitsPerSecond: AUDIO_BITS_PER_SECOND };
     }
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      options = {};
+      options = { audioBitsPerSecond: AUDIO_BITS_PER_SECOND };
     }
 
     mediaRecorder = new MediaRecorder(mixedDestination.stream, options);

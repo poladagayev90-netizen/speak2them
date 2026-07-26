@@ -45,7 +45,7 @@ const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
 // Ceiling for the authoritative (timestamp-derived) call length written to
 // leaderboard stats. Mirrors the server's CALL_CAP_SECONDS so a pathological
 // start timestamp can never inflate a user's minutes.
-const AUTHORITATIVE_CALL_CAP_SECONDS = 30 * 60;
+const AUTHORITATIVE_CALL_CAP_SECONDS = 60 * 60;
 
 export default function Chat({ user }) {
   const { peerId } = useParams();
@@ -132,11 +132,13 @@ export default function Chat({ user }) {
   const content = getTodayContent();
   
   // Hard cap on call length. Agora bills per participant-minute, so this is
-  // the single biggest lever on running cost; a 30-min Opus recording is
-  // ~7-10 MB (15 MB Storage rule saxlanır), analiz onsuz da ilk 300 saniyəni
-  // götürür (ANALYSIS_MAX_SECONDS), ona görə 20→30 dəq artımı analiz xərcini
-  // dəyişmir. Serverdəki CALL_CAP_SECONDS ilə sinxron saxla.
-  let maxCallSeconds = 30 * 60;
+  // the single biggest lever on running cost. 1 saatlıq yazı üçün MediaRecorder
+  // bitrate-i localRecorder.js-də AÇIQ təyin olunub (32 kbps ≈ 14 MB/saat) —
+  // brauzerin default bitrate-i ilə 1 saat Storage limitini keçib yükləməni
+  // sındırırdı. Analiz onsuz da ilk 300 saniyəni götürür (ANALYSIS_MAX_SECONDS),
+  // ona görə uzun zəng analiz xərcini artırmır.
+  // Serverdəki CALL_CAP_SECONDS ilə sinxron saxla.
+  let maxCallSeconds = 60 * 60;
 
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);

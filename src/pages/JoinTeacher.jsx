@@ -3,25 +3,20 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../components/Logo';
 import {
   claimTeacherCode,
-  ageFromBirthDate,
   readCodeFromLocation,
   getPendingJoinCode,
   clearPendingJoinCode,
-  MIN_LINK_AGE,
-  ADULT_AGE,
 } from '../utils/teacher';
 
 // Şagirdin müəllimə qoşulma ekranı. Link (/join?c=KOD) və ya əl ilə kod.
-// Yaş + razılıq burada toplanır; server onu YENİDƏN yoxlayır — bu forma
-// yalnız istifadəçiyə düzgün sualı vaxtında vermək üçündür.
+// Yalnız razılıq toplanır (müəllim analizləri görəcək); server onu yenidən
+// yoxlayır. Doğum tarixi sahəsi çıxarılıb — bax aşağıdakı şərh.
 export default function JoinTeacher({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [code, setCode] = useState('');
-  const [birthDate, setBirthDate] = useState('');
   const [consent, setConsent] = useState(false);
-  const [guardianConsent, setGuardianConsent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -38,16 +33,8 @@ export default function JoinTeacher({ user }) {
     if (resolved) setCode(resolved);
   }, [location.search]);
 
-  const age = ageFromBirthDate(birthDate);
-  const isMinor = age !== null && age < ADULT_AGE;
-  const tooYoung = age !== null && age < MIN_LINK_AGE;
-
-  const canSubmit = code.trim().length >= 4
-    && age !== null
-    && !tooYoung
-    && consent
-    && (!isMinor || guardianConsent)
-    && !loading;
+  // Doğum tarixi sahəsi çıxarıldı — yeganə şərt kod + razılıqdır.
+  const canSubmit = code.trim().length >= 4 && consent && !loading;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,9 +43,7 @@ export default function JoinTeacher({ user }) {
     setLoading(true);
     const result = await claimTeacherCode({
       code: code.trim().toUpperCase(),
-      birthDate,
       consent,
-      guardianConsent,
     });
     if (!result.ok) {
       setError(result.errorText);
@@ -160,30 +145,13 @@ export default function JoinTeacher({ user }) {
             required
           />
 
-          <label>Doğum tarixiniz</label>
-          <input
-            type="date"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            max={new Date().toISOString().slice(0, 10)}
-            required
-          />
-          {tooYoung && (
-            <p style={{ color: '#e5484d', fontSize: '13px', marginTop: '-6px', marginBottom: '12px' }}>
-              Bu xidmət {MIN_LINK_AGE} yaşdan yuxarı istifadəçilər üçündür.
-            </p>
-          )}
-
-          <div style={{ marginTop: '6px', marginBottom: '4px' }}>
+          {/* Doğum tarixi sahəsi qəsdən yoxdur: əlavə sürtünmə yaradırdı və
+              Google hesabı doğum tarixini vermir. Müəllimin analizə baxma
+              icazəsi isə AÇIQ razılıq kimi qalır — funnel-in əsası budur. */}
+          <div style={{ marginTop: '14px', marginBottom: '4px' }}>
             {checkboxRow(consent, setConsent, (
               <>Müəllimimin danışıq proqresimi və zəng analizlərimi görməsinə razıyam.</>
             ), 'consent')}
-
-            {/* Yalnız 18 yaşdan kiçiklərə görünür — məhz bu yaş qrupu üçün
-                hesabat valideynə göstərilir. */}
-            {isMinor && !tooYoung && checkboxRow(guardianConsent, setGuardianConsent, (
-              <>18 yaşım tamam deyil və valideynim/qəyyumum bu razılıqdan xəbərdardır.</>
-            ), 'guardian')}
           </div>
 
           <button type="submit" className="btn-primary" disabled={!canSubmit}>

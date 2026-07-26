@@ -68,7 +68,7 @@ async function enforceRateLimit(uid, key, maxCalls, windowMs) {
 // topicIndex = cycleTick % TOPIC_COUNT. Proqres per-user YAZILMIR — client
 // currentCycleTick - startTick ilə hesablayır.
 const TOPIC_COUNT = require("./dailyQuestions.json").length; // src/data/weeklyContent.js ilə eyni
-const TRIAL_DAYS = 2;              // kodsuz trial: ilk girişdən 2 gün
+const TRIAL_DAYS = 30;             // kodsuz trial: ilk girişdən 1 ay
 const COURSE_FREE_MONTHS = 6;      // kurs bitəndən sonra pulsuz dövr
 // Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Admin appConfig/session-da dəyişir.
 const DEFAULT_SESSION_DAYS = [1, 3, 5];   // B.e / Çər / Cümə
@@ -153,7 +153,7 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
     return;
   }
 
-  // Kodsuz trial 2 gündən sonra zəngi serverdə bloklayır — token verilmir.
+  // Kodsuz trial TRIAL_DAYS gündən sonra zəngi serverdə bloklayır — token verilmir.
   const uDoc = await admin.firestore().collection("users").doc(decoded.uid).get().catch(() => null);
   if (isTrialExpired(uDoc && uDoc.exists ? uDoc.data() : null)) {
     res.status(403).json({ error: "trial_expired" });
@@ -320,8 +320,13 @@ exports.topicReminder = onSchedule({
   timeZone: "Asia/Baku",
 }, async () => {
   const db = admin.firestore();
+  // Müəllimlər gündəlik mövzu xatırlatmalarını ALMIR: onlar tətbiqi məşq üçün
+  // deyil, şagird izləmək üçün açırlar — gündə 3 push spam kimi qəbul olunurdu.
+  // Müəllimə gedən yeganə bildiriş: "şagirdinizin analizi hazırdır".
   const usersSnap = await db.collection("users").get();
-  const users = usersSnap.docs.map(d => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
+  const users = usersSnap.docs
+    .filter((d) => d.data().role !== "teacher")
+    .map(d => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
 
   // A concrete question pulls far better than a bare topic name: the reader
@@ -372,6 +377,8 @@ exports.streakReminder = onSchedule({
 
   const atRisk = snap.docs
     .map((d) => ({ ref: d.ref, ...d.data() }))
+    // Müəllimlərə streak təzyiqi göndərilmir (bax topicReminder şərhi).
+    .filter((u) => u.role !== "teacher")
     .filter((u) => u.lastCallDate && u.lastCallDate !== today);
 
   if (atRisk.length === 0) {
@@ -476,7 +483,7 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
 
 // ─── Trial / Subscription ────────────────────────────────────
 const TRIAL_MINUTES = 100;
-const CALL_CAP_SECONDS = 30 * 60; // calls are capped at 30 minutes (client maxCallSeconds ilə sinxron)
+const CALL_CAP_SECONDS = 60 * 60; // calls are capped at 60 minutes (client maxCallSeconds ilə sinxron)
 const METERED_PLANS = new Set(["free", "trial"]);
 
 // ─── Müəllim funnel-i ────────────────────────────────────────
@@ -1099,14 +1106,23 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
   if (!/^[A-Z0-9]{4,12}$/.test(code)) return res.status(400).json({ error: "invalid-code" });
 
   // Ucuz, oxumasız yoxlamalar tranzaksiyadan kənarda.
+  // Razılıq HƏR HALDA tələb olunur — müəllim şagirdin analizlərini görəcək.
   if (consent !== true) return res.status(400).json({ error: "consent-required" });
-  const age = ageFromBirthDate(birthDate);
-  if (age === null || age < MIN_LINK_AGE) return res.status(403).json({ error: "age-restricted" });
-  const isAdult = age >= ADULT_AGE;
-  // 13-17 yaş bağlana bilər, amma valideyn/qəyyum razılığı olmadan yox — məhz
-  // bu yaş qrupu üçün müəllim hesabatı valideynə göstərilir.
-  if (!isAdult && guardianConsent !== true) {
-    return res.status(400).json({ error: "guardian-consent-required" });
+
+  // Doğum tarixi artıq MƏCBURİ DEYİL: qoşulma ekranından çıxarıldı (əlavə
+  // sürtünmə yaradırdı). Google hesabı doğum tarixini vermir — bunun üçün
+  // People API + ayrıca `birthday` icazəsi lazımdır və istifadəçilərin
+  // əksəriyyətində bu sahə gizlidir — ona görə avtomatik doldurmaq mümkün deyil.
+  // Göndərilibsə yenə də yoxlanılır (köhnə client-lər və gələcək istifadə üçün).
+  let age = null;
+  let isAdult = null;
+  if (birthDate) {
+    age = ageFromBirthDate(birthDate);
+    if (age === null || age < MIN_LINK_AGE) return res.status(403).json({ error: "age-restricted" });
+    isAdult = age >= ADULT_AGE;
+    if (!isAdult && guardianConsent !== true) {
+      return res.status(400).json({ error: "guardian-consent-required" });
+    }
   }
 
   const db = admin.firestore();
@@ -1149,19 +1165,22 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
         teacherId: invite.teacherId,
         teacherLinkedAt: now,
         teacherConsentAt: now,
-        ageConfirmedAt: now,
-        isAdult,
+        // Yaş sahələri yalnız doğum tarixi göndərilibsə yazılır — sahə artıq
+        // məcburi deyil, `undefined` yazmaq isə Firestore-da xətadır.
+        ...(birthDate ? { ageConfirmedAt: now, isAdult } : {}),
       }, { merge: true });
 
       // Xam doğum tarixi users/{uid}-də SAXLANILMIR: o sənədi hər daxil olmuş
       // istifadəçi oxuya bilir (firestore.rules). Hüquqi qeyd burada, yalnız
       // sahibinin oxuya bildiyi private alt-kolleksiyada qalır.
-      tx.set(userRef.collection("private").doc("ageAttestation"), {
-        birthDate,
-        isAdult,
-        guardianConsent: guardianConsent === true,
-        attestedAt: now,
-      });
+      if (birthDate) {
+        tx.set(userRef.collection("private").doc("ageAttestation"), {
+          birthDate,
+          isAdult,
+          guardianConsent: guardianConsent === true,
+          attestedAt: now,
+        });
+      }
 
       tx.set(teacherRef.collection("roster").doc(uid), {
         displayName: user.name || "",
@@ -2278,10 +2297,16 @@ exports.processAnalysisQueue = onSchedule({
       // sənədində saxlanılır (analysisQueue rules sahə siyahısı ilə bağlıdır və
       // client-in göndərdiyi dilə güvənmək də lazım deyil) — bir oxu bahasına.
       let lang = "az";
+      let studentTeacherId = null;
+      let studentName = "";
       try {
         const uSnap = await db.collection("users").doc(ticket.uid).get();
-        const pref = uSnap.exists ? uSnap.data().preferredLanguage : null;
+        const u = uSnap.exists ? uSnap.data() : {};
+        const pref = u.preferredLanguage;
         if (pref === "tr" || pref === "az") lang = pref;
+        // Eyni oxudan müəllim bildirişi üçün lazım olanları da götürürük.
+        studentTeacherId = u.teacherId || null;
+        studentName = u.name || "";
       } catch (e) {
         console.warn("[AnalysisQueue] lang lookup failed, defaulting to az:", e.message);
       }
@@ -2313,6 +2338,27 @@ exports.processAnalysisQueue = onSchedule({
         type: "analysis_ready",
         url: "/history",
       });
+
+      // Müəllimə gedən YEGANƏ push: bağlı şagirdin analizi hazırdır.
+      // Müəllim mövzu/streak/sessiya xatırlatmalarından azaddır (bax
+      // topicReminder), ona görə bu bildiriş itmir və spam kimi görünmür.
+      if (studentTeacherId) {
+        try {
+          const tSnap = await db.collection("users").doc(studentTeacherId).get();
+          const tLang = tSnap.exists && tSnap.data().preferredLanguage === "tr" ? "tr" : "az";
+          const who = studentName || (tLang === "tr" ? "Öğrencinizin" : "Şagirdinizin");
+          await sendPushToUser(db, studentTeacherId, {
+            title: tLang === "tr" ? "Öğrenci analizi hazır 🎓" : "Şagird analizi hazırdır 🎓",
+            body: tLang === "tr"
+              ? `${who} yeni konuşma analizi hazır — panelden inceleyin.`
+              : `${who} yeni danışıq analizi hazırdır — paneldən baxın.`,
+            type: "student_analysis_ready",
+            url: `/teacher/student/${ticket.uid}`,
+          });
+        } catch (e) {
+          console.warn("[AnalysisQueue] teacher push failed:", e.message);
+        }
+      }
     } catch (error) {
       const retryCount = (ticket.retryCount || 0) + 1;
       const retryable = error.retryable !== false && retryCount < ANALYSIS_MAX_RETRIES;
@@ -2448,7 +2494,10 @@ async function broadcastSessionReminder(db, startLabel, hour) {
     : "Axşam sessiyasına az qaldı! 🌙";
 
   const usersSnap = await db.collection("users").get();
-  const users = usersSnap.docs.map((d) => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
+  // Müəllimlər sessiya xatırlatması almır (bax topicReminder şərhi).
+  const users = usersSnap.docs
+    .filter((d) => d.data().role !== "teacher")
+    .map((d) => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
 
   const { sent, removed } = await sendPush(tokenEntries, {
@@ -2781,11 +2830,43 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
   const db = admin.firestore();
 
   try {
+    // 0) Müəllim/şagird bağlantısını silməzdən ƏVVƏL oxu — user sənədi
+    //    silindikdən sonra bu məlumat itir.
+    let userData = {};
+    try {
+      const uSnap = await db.collection("users").doc(uid).get();
+      if (uSnap.exists) userData = uSnap.data() || {};
+    } catch (e) {
+      console.warn("[deleteAccount] user read failed:", e.message);
+    }
+
     // 1) Owned documents (+ their sub-collections).
-    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens"]);
+    //    'blocked' və 'private' (yaş təsdiqi) də silinməlidir — əks halda
+    //    silinmiş hesabın şəxsi qeydləri Firestore-da qalır.
+    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "private"]);
     await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
     await db.collection("premiumRequests").doc(uid).delete().catch(() => null);
+
+    // 1b) Müəllim funnel-i məlumatları.
+    try {
+      // Şagird idisə — müəllimin siyahısından çıxar, sayğacı azalt. Bunsuz
+      // silinmiş şagird müəllimin panelində "kabus sətir" kimi qalırdı.
+      if (userData.teacherId) {
+        await db.collection("teachers").doc(userData.teacherId)
+          .collection("roster").doc(uid).delete().catch(() => null);
+        await db.collection("teachers").doc(userData.teacherId).update({
+          studentCount: admin.firestore.FieldValue.increment(-1),
+        }).catch(() => null);
+      }
+      // Müəllim idisə — profili, şagird siyahısı və dəvət kodları silinir.
+      if (userData.role === "teacher") {
+        await deleteDocDeep(db.collection("teachers").doc(uid), ["roster"]);
+        await deleteByQuery(db.collection("inviteCodes").where("teacherId", "==", uid));
+      }
+    } catch (e) {
+      console.warn("[deleteAccount] teacher-link cleanup failed:", e.message);
+    }
 
     // 2) Owned collections keyed by a uid field.
     await deleteByQuery(db.collection("callAnalysis").where("userId", "==", uid));
