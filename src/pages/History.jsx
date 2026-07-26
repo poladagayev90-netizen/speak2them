@@ -307,8 +307,52 @@ export function AnalysisDetail({ analysis, onClose }) {
         </>
       )}
 
-      {/* 3. Düzəlişlər — cədvəl (sənəd hissini verən əsas element) */}
-      {view.feedback.length > 0 ? (
+      {/* 3. Düzəlişlər. Yeni analizlərdə səhvlər MÖVZUYA görə qruplaşdırılır:
+          hər mövzunun adı + bir qızıl qayda + həmin naxışın real nümunələri.
+          Köhnə sənədlərdə mövzu yoxdur — onlar düz cədvəllə göstərilir. */}
+      {view.errorThemes.length > 0 ? (
+        <>
+          {section(SEC.mistakes)}
+          {view.errorThemes.map((theme, ti) => (
+            <div key={ti} style={{ marginBottom: 28 }}>
+              <h3 style={{
+                fontFamily: "'PT Serif', Georgia, serif", fontSize: 17,
+                fontWeight: 700, margin: '0 0 10px',
+              }}>
+                {String.fromCharCode(65 + ti)}. {theme.title}
+              </h3>
+              {theme.rule && (
+                <div className="analysis-doc-critical">
+                  <span className="analysis-doc-critical-label">
+                    {isTr ? 'Kritik Kural' : 'Kritik Qayda'}
+                  </span>
+                  {theme.rule}
+                </div>
+              )}
+              <div className="analysis-doc-table-wrap">
+                <table className="analysis-doc-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '32%' }}>{TH.wrong}</th>
+                      <th style={{ width: '32%' }}>{TH.right}</th>
+                      <th>{TH.why}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {theme.items.map((f, i) => (
+                      <tr key={i}>
+                        <td><span className="doc-wrong">{f.original}</span></td>
+                        <td><span className="doc-right">{f.corrected}</span></td>
+                        <td><span className="doc-note">{f.reason}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </>
+      ) : view.feedback.length > 0 ? (
         <>
           {section(SEC.mistakes)}
           <div className="analysis-doc-table-wrap">
@@ -331,14 +375,6 @@ export function AnalysisDetail({ analysis, onClose }) {
               </tbody>
             </table>
           </div>
-          {view.tips.length > 0 && (
-            <div className="analysis-doc-critical">
-              <span className="analysis-doc-critical-label">
-                {isTr ? 'Kritik Kural' : 'Kritik Qayda'}
-              </span>
-              {view.tips[0]}
-            </div>
-          )}
         </>
       ) : (
         <>

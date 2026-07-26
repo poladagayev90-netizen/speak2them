@@ -53,7 +53,18 @@ export function toAnalysisView(analysis) {
     correction: arr(hw.correction).filter((f) => f && f.original && f.corrected),
   } : null;
 
+  // Mövzu qrupları (yeni analizlər). Köhnə sənədlərdə yoxdur — o halda UI
+  // düz `feedback` cədvəlinə qayıdır.
+  const errorThemes = arr(analysis.errorThemes)
+    .map((t) => ({
+      title: t?.title || '',
+      rule: t?.rule || '',
+      items: arr(t?.items).filter((i) => i && i.original && i.corrected),
+    }))
+    .filter((t) => t.title && t.items.length > 0);
+
   return {
+    errorThemes,
     reportMarkdown: typeof analysis.reportMarkdown === 'string' ? analysis.reportMarkdown : '',
     homework: homework && (homework.multipleChoice.length || homework.wordOrder.length || homework.correction.length)
       ? homework

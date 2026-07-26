@@ -1555,6 +1555,9 @@ const LANGUAGE_GUIDE = {
     letters: "ə, ı, ö, ü, ç, ş, ğ",
     l1: 'Azərbaycan dilində artikl yoxdur, ona görə "a/the" düşür: "I went to bazaar" ✗ → "I went to the bazaar" ✓',
     sample: "Keçmiş zaman formasını unutmusan — burada 'went' işlətmək lazımdır.",
+    goodTitles: '"Am/Is/Are ilə əsas felin qarışdırılması", "Keçmiş zamanda felin ikinci formasının unudulması", "Sayıla bilən isimlərdə too much–too many qarışıqlığı"',
+    badTitles: '"Zaman formaları", "Söz ehtiyatı", "Cümlə quruluşu"',
+    goodRule: '"Cümlədə əsl fel varsa, am/is/are İŞLƏNMİR: I am go ✗ → I go ✓"',
   },
   tr: {
     name: "Turkish",
@@ -1565,6 +1568,9 @@ const LANGUAGE_GUIDE = {
     letters: "ı, i, ö, ü, ç, ş, ğ",
     l1: 'Türkçede artikel yoktur, bu yüzden "a/the" düşer: "I went to bazaar" ✗ → "I went to the bazaar" ✓',
     sample: "Geçmiş zaman biçimini unutmuşsun — burada 'went' kullanman gerekiyor.",
+    goodTitles: '"Am/Is/Are ile esas fiilin karıştırılması", "Geçmiş zamanda fiilin ikinci hâlinin unutulması", "Sayılabilen isimlerde too much–too many karışıklığı"',
+    badTitles: '"Zaman biçimleri", "Söz varlığı", "Cümle yapısı"',
+    goodRule: '"Cümlede eylem varsa am/is/are KULLANILMAZ: I am go ✗ → I go ✓"',
   },
 };
 
@@ -1583,7 +1589,10 @@ function buildAnalysisPrompt(transcript, lang) {
     .replace(/\{\{ADDRESS\}\}/g, g.address)
     .replace(/\{\{LETTERS\}\}/g, g.letters)
     .replace(/\{\{L1_EXAMPLE\}\}/g, g.l1)
-    .replace(/\{\{SAMPLE\}\}/g, g.sample);
+    .replace(/\{\{SAMPLE\}\}/g, g.sample)
+    .replace(/\{\{GOOD_TITLES\}\}/g, g.goodTitles)
+    .replace(/\{\{BAD_TITLES\}\}/g, g.badTitles)
+    .replace(/\{\{GOOD_RULE\}\}/g, g.goodRule);
 }
 
 const ANALYSIS_PROMPT = `You are an Elite Linguistic Analyst and Expert English Pedagogical Consultant. Your feedback is world-class: precise, deeply structured, and genuinely empathetic. You are also fluent in {{LANGUAGE}} and understand exactly which English mistakes {{LANGUAGE}} speakers make because of their mother tongue (L1 transfer). Two people will read your report: the learner themself and, possibly, their real teacher — it must be flawless for both.
@@ -1598,27 +1607,45 @@ VOICE ({{LANGUAGE}} text fields):
 - ORTHOGRAPHY IS CRITICAL. Use correct {{LANGUAGE}} letters ({{LETTERS}}) and correct native spelling. Never invent word forms, never substitute look-alike accented letters, never output half-{{LANGUAGE}} gibberish. If unsure of a word, choose a simpler word you are certain about.
 - This is the quality bar for every {{LANGUAGE}} sentence you write: "{{SAMPLE}}"
 - The learner reads only {{LANGUAGE}}. Never mix in another language.
+- SCRIPT LOCK: write using ONLY the {{LANGUAGE}} alphabet and plain English words. NEVER output Chinese, Japanese, Korean, Arabic or Cyrillic characters anywhere — not even a single word. If a concept is easier in another language, express it in {{LANGUAGE}} instead.
 - Never address them as "teacher" or "pupil". Encourage like a brilliant mentor, never lecture, never sound clinical or robotic.
 
 IGNORE MICROPHONE NOISE:
 - The transcript is auto-generated and may contain garbled, non-English, or nonsensical tokens from mic noise (e.g. "Já, þess", random symbols, foreign gibberish). These are NOT things the learner said.
 - Do NOT correct, mention, or put such noise anywhere. Analyze only the intelligible English speech and silently skip the rest.
 
+HONESTY — THE MOST IMPORTANT RULE:
+- NEVER invent a mistake. Every "original" you quote MUST be a real, near-verbatim phrase from the transcript above. It is checked automatically against the transcript and silently dropped if it is not there — a fabricated example simply disappears and makes your report worse.
+- If the learner spoke well and made few real errors, report FEW errors. A short honest report beats a padded one.
+- If there are no real errors at all, return an empty error_themes array and say so warmly in the report. Never manufacture a problem to fill space.
+- Do not turn a correct sentence into a "mistake" by rewriting it in your preferred style.
+
 Rules:
 - Correct ONLY real grammatical or lexical mistakes. If a sentence is already correct, leave it alone.
 - Never rewrite for style: do not swap "is not" for "isn't", do not reorder correct clauses, do not offer alternatives to correct sentences.
+- error_themes: THIS IS THE HEART OF THE REPORT. Do not produce a flat list of unrelated fixes. Read the WHOLE transcript, find the PATTERNS the learner repeats, and group the errors into at most 5 named themes, strongest pattern first.
+  Each theme = one recurring habit, e.g. "using am/is/are together with a main verb", "past tense forms", "countable vs uncountable quantifiers", "unnecessary preposition after a verb", "{{LANGUAGE}} word-for-word translation (L1 transfer)".
+  - title: the theme name in {{LANGUAGE}} — name the ACTUAL structure, not a school subject.
+    Titles MUST be written in {{LANGUAGE}} only — never borrow a word from a related language.
+    GOOD: {{GOOD_TITLES}}
+    BAD: {{BAD_TITLES}} — too broad to act on.
+  - rule: ONE memorable, IMPERATIVE rule in {{LANGUAGE}} that prevents every error in this theme — a teacher's golden rule, not a description.
+    GOOD: {{GOOD_RULE}}
+    BAD: a vague description like "word choice is important" / "pay attention to tenses" — these teach nothing.
+    Write the rule so that a learner who memorises just that one line stops making every error in this theme. If you show a wrong→right pair, use REAL English examples, never the placeholder symbols alone.
+  - items: 1-4 real examples of THIS theme from the transcript. original = near-verbatim from the transcript; corrected = the fixed sentence; explanation = {{LANGUAGE}}, 1-2 sentences saying WHY, and naming the {{LANGUAGE}} interference when that is the cause. Example of the depth expected: {{L1_EXAMPLE}}
+  - A theme with only ONE example is fine if the error is important. A theme with zero real examples must NOT exist.
 - report_markdown: an Executive Summary in {{LANGUAGE}}, in Markdown, 120-180 words. CRITICAL: every heading and every bullet MUST be on its own line — put a real newline ("\\n") between them, never run them together on one line. Follow this exact skeleton:
 "## 👋 {{GREETING}}!\\n\\n<one warm sentence referencing what they actually talked about>\\n\\n### 💪 {{H_STRENGTHS}}\\n- <concrete moment from THIS conversation>\\n- <another one>\\n\\n### 🌱 {{H_GROWTH}}\\n- **<pattern name>** — <one specific sentence>\\n- **<pattern name>** — <one specific sentence>\\n\\n<one short closing motivation sentence>"
   Use **bold** for key phrases. No headings other than these.
 - scores: fluency = flow and natural delivery; grammar = correctness; vocabulary = range and level. Integers 0-100.
-- feedback: at most 5 items, the most valuable ones. original = the learner's exact sentence, corrected = the fixed sentence, reason = why it was wrong, in {{LANGUAGE}}, 1-2 sentences; when the mistake comes from {{LANGUAGE}} interference, SAY SO and explain the contrast. Example of the depth expected: {{L1_EXAMPLE}} Empty array if there are no real mistakes.
 - recap: 1-2 sentences on what the learner talked about.
 - strengths: 1-2 concrete things they genuinely did well in this conversation.
-- tips: 2-3 tips SPECIFIC to mistakes actually made in THIS transcript — name the concrete pattern and give a usable mini-technique or tiny example. No generic filler such as "qorxma" or "daha çox danış".
-- vocabulary: 3-4 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words.
+- tips: 2-3 NAMED practice techniques, each tied to a theme above. Give each one a short memorable name the learner can repeat to themselves, then one sentence on how to do it. Model them on: "Am/Is/Are detoksu — danışarkən cümlədə hərəkət varsa, am/is/are demədən keç." or "Kölgələmə (Shadowing) — videonu dayandır, eyni cümləni eyni ahənglə səsli təkrarla." No generic filler such as "qorxma" or "daha çox danış".
+- vocabulary: 3-5 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words.
 - homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
-  - multiple_choice: up to 3 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
-  - word_order: up to 3 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, and it must NAME the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration", named in {{LANGUAGE}}) — never a generic line like "you must know the order".
+  - multiple_choice: up to 5 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
+  - word_order: up to 4 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, naming the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration"). State ONLY rules that are true of English — never invent word-order rules (English is Subject-Verb-Object; the verb does NOT go at the end). If unsure, just name the tense or structure being practised.
 - Every explanation must teach something concrete. Write natural, correct, modern {{LANGUAGE}} — if you are not sure a morphological form is right, use a simpler phrasing.
 - recap, reason, strengths, tips and every explanation must be in {{LANGUAGE}}. word, example, question, options and English sentences stay in English.
 - corrected sentences and example sentences must sound like simple, natural, modern native-speaker English.
@@ -1636,7 +1663,7 @@ const MAX_TRANSCRIPT_CHARS = 32000; // ~30 dəq nitq. 6000 idi: LLM yalnız ilk 
 const ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["report_markdown", "recap", "scores", "feedback", "strengths", "tips", "vocabulary", "homework"],
+  required: ["report_markdown", "recap", "scores", "error_themes", "strengths", "tips", "vocabulary", "homework"],
   properties: {
     report_markdown: { type: "string" },
     recap: { type: "string" },
@@ -1650,25 +1677,42 @@ const ANALYSIS_SCHEMA = {
         vocabulary: { type: "integer", minimum: 0, maximum: 100 },
       },
     },
-    feedback: {
+    // Səhvlər MÖVZUYA görə qruplaşdırılır — hesabatın "peşəkar" hissi məhz
+    // buradan gəlir: fərdi düzəliş siyahısı yox, təkrarlanan naxışın adı +
+    // bir qızıl qayda + həmin naxışın real nümunələri.
+    error_themes: {
       type: "array",
       maxItems: 5,
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["original", "corrected", "reason"],
+        required: ["title", "rule", "items"],
         properties: {
-          original: { type: "string" },
-          corrected: { type: "string" },
-          reason: { type: "string" },
+          title: { type: "string" },
+          rule: { type: "string" },
+          items: {
+            type: "array",
+            minItems: 1,
+            maxItems: 4,
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["original", "corrected", "explanation"],
+              properties: {
+                original: { type: "string" },
+                corrected: { type: "string" },
+                explanation: { type: "string" },
+              },
+            },
+          },
         },
       },
     },
-    strengths: { type: "array", maxItems: 2, items: { type: "string" } },
+    strengths: { type: "array", maxItems: 3, items: { type: "string" } },
     tips: { type: "array", maxItems: 3, items: { type: "string" } },
     vocabulary: {
       type: "array",
-      maxItems: 4,
+      maxItems: 5,
       items: {
         type: "object",
         additionalProperties: false,
@@ -1686,7 +1730,7 @@ const ANALYSIS_SCHEMA = {
       properties: {
         multiple_choice: {
           type: "array",
-          maxItems: 3,
+          maxItems: 5,
           items: {
             type: "object",
             additionalProperties: false,
@@ -1701,7 +1745,7 @@ const ANALYSIS_SCHEMA = {
         },
         word_order: {
           type: "array",
-          maxItems: 3,
+          maxItems: 4,
           items: {
             type: "object",
             additionalProperties: false,
@@ -1812,11 +1856,63 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
   const asStr = (v) => (typeof v === "string" ? v.trim() : "");
   const strList = (v, max) => (Array.isArray(v) ? v : []).map(asStr).filter(Boolean).slice(0, max);
 
-  const rawFeedback = (Array.isArray(obj.feedback) ? obj.feedback : [])
-    .map((f) => ({ original: asStr(f?.original), corrected: asStr(f?.corrected), reason: asStr(f?.reason) }));
-  const feedback = rawFeedback.filter(isRealCorrection).slice(0, 5);
-  const dropped = rawFeedback.length - feedback.length;
-  if (dropped > 0) console.log("[Analysis] dropped", dropped, "non-corrections (style-only rewrites)");
+  // ── Mövzu qrupları + UYDURMA YOXLAMASI ────────────────────────
+  // Modelə "uydurma" deməK kifayət deyil — yoxlanılır. Sitat gətirilən hər
+  // `original` transkriptdə HƏQİQƏTƏN olmalıdır; yoxdursa atılır. Bu, "AI
+  // özündən hoqqa çıxarır" probleminin determinik həllidir.
+  const normText = (v) => String(v || "").toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  const haystack = normText(transcript);
+
+  const quotedInTranscript = (original) => {
+    const needle = normText(original);
+    if (!needle) return false;
+    if (haystack.includes(needle)) return true;
+    // Model sitatı bir az təmizləyə bilər (dolğu sözlər, təkrarlar) — ona görə
+    // tam uyğunluq tələb etmirik, sözlərin çoxu transkriptdə olmalıdır.
+    const words = needle.split(" ").filter((w) => w.length > 2);
+    if (words.length === 0) return haystack.includes(needle);
+    const hits = words.filter((w) => haystack.includes(w)).length;
+    return hits / words.length >= 0.7;
+  };
+
+  const themeItem = (f) => ({
+    original: asStr(f?.original),
+    corrected: asStr(f?.corrected),
+    reason: asStr(f?.explanation) || asStr(f?.reason),
+  });
+
+  let invented = 0;
+  const errorThemes = (Array.isArray(obj.error_themes) ? obj.error_themes : [])
+    .map((t) => ({
+      title: asStr(t?.title),
+      rule: asStr(t?.rule),
+      items: (Array.isArray(t?.items) ? t.items : [])
+        .map(themeItem)
+        .filter(isRealCorrection)
+        .filter((it) => {
+          const ok = quotedInTranscript(it.original);
+          if (!ok) invented += 1;
+          return ok;
+        })
+        .slice(0, 4),
+    }))
+    // Nümunəsi qalmayan mövzu göstərilmir — boş başlıq hesabatı zəiflədir.
+    .filter((t) => t.title && t.items.length > 0)
+    .slice(0, 5);
+
+  if (invented > 0) {
+    console.log("[Analysis] dropped", invented, "quotes not found in transcript (hallucinated)");
+  }
+
+  // Köhnə UI və homework.correction düz siyahı gözləyir — mövzulardan düzəldilir.
+  const rawFeedback = errorThemes.length
+    ? errorThemes.flatMap((t) => t.items)
+    : (Array.isArray(obj.feedback) ? obj.feedback : [])
+      .map((f) => ({ original: asStr(f?.original), corrected: asStr(f?.corrected), reason: asStr(f?.reason) }))
+      .filter(isRealCorrection)
+      .filter((it) => quotedInTranscript(it.original));
+  const feedback = rawFeedback.slice(0, 12);
 
   const scores = obj.scores && typeof obj.scores === "object" ? obj.scores : {};
   const fluency = clampScore(scores.fluency);
@@ -1892,6 +1988,7 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     // never contradict the three scores it is supposed to summarise.
     overallScore: Math.round((fluency + grammar + vocabScore) / 3),
     scores: { fluency, grammar, vocabulary: vocabScore },
+    errorThemes,
     feedback,
     strengths: strList(obj.strengths, 2),
     tips: strList(obj.tips, 3),
@@ -1917,7 +2014,13 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
 // daxil) is ~1600-2000 tokens, so the first attempt has ample headroom; the
 // ladder exists only for the rare overrun. Keyfiyyət qərarı: token xərci
 // bilərəkdən artırılıb — analiz məhsulun "WOW" anıdır.
-const ANALYSIS_MAX_TOKENS = [3000, 3800, 4600];
+const ANALYSIS_MAX_TOKENS = [6000, 7000, 8000]; // mövzu qrupları + böyüdülmüş tapşırıqlar
+
+// Groq YALNIZ ehtiyat yoldur və günlük token limiti var (TPD). Əsas büdcə ilə
+// eyni səxavəti versək, DeepSeek sıradan çıxan gün limit bir neçə analizdən
+// sonra tükənir və HEÇ KİM analiz almır. Ehtiyat yol qəsdən daha qənaətcildir:
+// hesabat bir az qısa olur, amma işləyir.
+const GROQ_FALLBACK_MAX_TOKENS = [3000, 3600, 4200];
 
 // DeepSeek V3 — analizin ƏSAS modeli. Səbəb: Llama-nın Azərbaycan dili real
 // istifadədə pozulur ("alıb-san" kimi morfologiya, mənasız izahlar); DeepSeek
@@ -1952,11 +2055,35 @@ async function callDeepSeekChat(userContent) {
   return parseJsonLoose((await res.json()).choices?.[0]?.message?.content);
 }
 
+// DeepSeek bəzən Azərbaycan/Türk mətninin ortasına Çin ieroqlifi qoyur
+// (istehsalatda görüldü: "否定 cümleleri 'doesn't' şeklinde..."). Prompt-dakı
+// qadağa bunu azaldır, amma zəmanət vermir — ona görə çıxış BURADA yoxlanılır.
+const CJK_OR_FOREIGN = /[぀-ヿ㐀-䶿一-鿿가-힯؀-ۿЀ-ӿ]/;
+
+function hasForeignScript(value) {
+  return CJK_OR_FOREIGN.test(JSON.stringify(value || ""));
+}
+
 // Əsas: DeepSeek. O yıxılsa (açar/limit/timeout) — Groq strict-schema yolu.
 // Analiz asinxron növbədədir, latency fərqi istifadəçiyə görünmür.
 async function callAnalysisLLM(userContent) {
   try {
-    return await callDeepSeekChat(userContent);
+    const first = await callDeepSeekChat(userContent);
+    if (!hasForeignScript(first)) return first;
+
+    // Bir dəfə təkrar cəhd — analiz ~$0.005-dir, sınıq hesabat isə istifadəçiyə
+    // birbaşa görünür. Təkrar da uğursuz olsa, heç nədənsə bu yaxşıdır.
+    console.warn("[Analysis] foreign script in output, retrying once");
+    const second = await callDeepSeekChat(
+      userContent
+      + "\n\nCRITICAL: your previous answer contained characters from another"
+      + " writing system (Chinese/Japanese/Korean/Arabic/Cyrillic). Rewrite it"
+      + " using ONLY the target language alphabet and plain English words."
+    );
+    if (hasForeignScript(second)) {
+      console.warn("[Analysis] foreign script persisted after retry");
+    }
+    return second;
   } catch (e) {
     console.warn("[Analysis] DeepSeek failed, falling back to Groq:", e.message);
     return callGroqChat(userContent);
@@ -1981,7 +2108,7 @@ async function callGroqChat(userContent) {
         temperature: 0,
         top_p: 1,
         seed: 7,
-        max_tokens: ANALYSIS_MAX_TOKENS[attempt - 1],
+        max_tokens: GROQ_FALLBACK_MAX_TOKENS[attempt - 1],
         response_format: useSchema
           ? { type: "json_schema", json_schema: { name: "speech_analysis", strict: true, schema: ANALYSIS_SCHEMA } }
           : { type: "json_object" },
