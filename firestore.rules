@@ -288,6 +288,18 @@ service cloud.firestore {
       }
     }
 
+    // Birbaşa müəllim dəvətləri. Yalnız iki tərəf oxuya bilir; bütün yazılar
+    // serverdən (inviteStudentByEmail / respondTeacherInvite, Admin SDK) —
+    // əks halda şagird özünü istənilən müəllimə bağlaya, müəllim isə saxta
+    // "qəbul edildi" yaza bilərdi.
+    match /teacherInvites/{inviteId} {
+      allow read: if isSignedIn() && resource != null && (
+        resource.data.studentUid == request.auth.uid ||
+        resource.data.teacherId == request.auth.uid
+      );
+      allow write: if false;
+    }
+
     // DİQQƏT: inviteCodes üçün QƏSDƏN match bloku yoxdur. Aşağıdakı catch-all
     // onu tam bağlayır və bu, tam olaraq istənilən davranışdır: kodu yoxlamaq
     // yalnız serverdə (claimTeacherCode) baş verir, oxumağı bağlamaq isə

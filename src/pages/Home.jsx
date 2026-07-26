@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import { collection, doc, getDocs, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -281,6 +282,8 @@ export default function Home({ user }) {
       </div>
 
       <div className="home-body">
+        {/* Müəllimin birbaşa dəvəti — şagird heç nə yazmadan qəbul edir. */}
+        <TeacherInviteBanner user={user} />
 
         <CourseCompletionCelebration user={user} />
 

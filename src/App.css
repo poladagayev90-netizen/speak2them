@@ -148,7 +148,14 @@ body {
 }
 
 .btn-primary:disabled {
-  opacity: 0.6;
+  /* opacity:0.6 idi: bənövşəyi qradiyent üzərində ağ mətn solğunlaşıb
+     OXUNMAZ olurdu, düymə isə hələ də "aktiv" görünürdü (bax müəllim
+     kod ekranının skrinşotu). Sönülü düymə həm açıq şəkildə sönülü
+     görünməli, həm də yazısı oxunmalıdır. */
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  opacity: 1;
   cursor: not-allowed;
 }
 

@@ -28,6 +28,9 @@ const APP_URL = defineString("APP_URL", {
 });
 
 const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
+// Ops xəbərdarlıqlarının getdiyi əsas qutu (ADMIN_UID sənədindəki e-poçt
+// başqa hesaba aiddir, ona görə açıq yazılır).
+const OPS_ALERT_EMAIL = "poladagayev90@gmail.com";
 
 function setCors(res, methods = "POST") {
   res.set("Access-Control-Allow-Origin", "*");
@@ -1208,6 +1211,198 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
 });
 
 
+// ─── Birbaşa şagird dəvəti ───────────────────────────────────────
+// Kod paylaşmaq həmişə işləmir: link mesajda itir, şagird kodu səhv yazır.
+// Bu axında müəllim şagirdin e-poçtunu yazır, dəvət ŞAGİRDİN HESABINA düşür
+// və push bildirişi gedir. Şagird qəbul edəndə bağlantı avtomatik qurulur —
+// kod yazmağa ehtiyac qalmır.
+//
+// Razılıq yenə AÇIQdır: qəbul düyməsinin yanında müəllimin analizləri görəcəyi
+// yazılır, qəbul özü razılıq sayılır (kod axınındakı checkbox ilə eyni).
+exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const teacherId = decoded.uid;
+  const rawEmail = (req.body && req.body.email) || "";
+  const email = String(rawEmail).trim().toLowerCase();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return res.status(400).json({ error: "invalid-email" });
+  }
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(teacherId, "inviteStudent", 30, 60 * 60 * 1000);
+
+    const teacherSnap = await db.collection("users").doc(teacherId).get();
+    const teacher = teacherSnap.exists ? teacherSnap.data() : {};
+    if (teacher.role !== "teacher" && teacher.teacherEligible !== true) {
+      throw fail(403, "not-a-teacher");
+    }
+
+    // Şagirdi e-poçta görə tap. Firestore-da e-poçt users sənədində saxlanılır.
+    const found = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (found.empty) throw fail(404, "student-not-found");
+    const studentDoc = found.docs[0];
+    const studentUid = studentDoc.id;
+    const student = studentDoc.data() || {};
+
+    if (studentUid === teacherId) throw fail(400, "self-invite");
+    if (student.teacherId === teacherId) throw fail(409, "already-your-student");
+    if (student.teacherId) throw fail(409, "already-linked");
+
+    // Bir cütlük üçün bir dəvət: sənəd id-si sabitdir, təkrar dəvət köhnəni
+    // yeniləyir — şagirdin qutusu eyni dəvətlə dolmur.
+    const inviteId = `${teacherId}_${studentUid}`;
+    const inviteRef = db.collection("teacherInvites").doc(inviteId);
+
+    await inviteRef.set({
+      teacherId,
+      teacherName: teacher.name || "",
+      studentUid,
+      studentEmail: email,
+      status: "pending",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    // "Sorğu çatmır" probleminin əsas həlli: şagird bildirişlə xəbər tutur.
+    await sendPushToUser(db, studentUid, {
+      title: "🎓 Müəllim dəvəti",
+      body: `${teacher.name || "Müəlliminiz"} sizi şagird kimi əlavə etmək istəyir — baxın.`,
+      type: "teacher_invite",
+      url: "/",
+    }).catch(() => null);
+
+    return res.status(200).json({
+      ok: true,
+      inviteId,
+      studentName: student.name || "",
+      studentUid,
+    });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[inviteStudentByEmail]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// Şagird dəvəti qəbul edir və ya rədd edir. Qəbul halında bağlantı
+// claimTeacherCode ilə EYNİ yazıları edir — iki fərqli bağlanma yolu
+// olmasın deyə sahələr birə-bir eynidir.
+exports.respondTeacherInvite = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const { inviteId, accept } = req.body || {};
+  if (!inviteId || typeof inviteId !== "string") {
+    return res.status(400).json({ error: "invalid-invite" });
+  }
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(uid, "respondTeacherInvite", 20, 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const inviteRef = db.collection("teacherInvites").doc(inviteId);
+      const inviteSnap = await tx.get(inviteRef);
+      if (!inviteSnap.exists) throw fail(404, "invite-not-found");
+      const invite = inviteSnap.data() || {};
+
+      // Yalnız dəvət olunan şagird cavab verə bilər.
+      if (invite.studentUid !== uid) throw fail(403, "not-your-invite");
+      if (invite.status !== "pending") throw fail(409, "already-answered");
+
+      if (accept !== true) {
+        tx.update(inviteRef, {
+          status: "declined",
+          respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { linked: false };
+      }
+
+      const userRef = db.collection("users").doc(uid);
+      const teacherRef = db.collection("teachers").doc(invite.teacherId);
+      const userSnap = await tx.get(userRef);
+      const teacherSnap = await tx.get(teacherRef);
+      if (!userSnap.exists) throw fail(404, "user-not-found");
+      const user = userSnap.data() || {};
+      if (user.teacherId) throw fail(409, "already-linked");
+
+      const teacher = teacherSnap.exists ? teacherSnap.data() : {};
+      const cap = Number(teacher.studentCap) || TEACHER_STUDENT_CAP;
+      if ((Number(teacher.studentCount) || 0) >= cap) throw fail(409, "teacher-full");
+
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      tx.set(userRef, {
+        teacherId: invite.teacherId,
+        teacherLinkedAt: now,
+        teacherConsentAt: now,
+      }, { merge: true });
+
+      tx.set(teacherRef.collection("roster").doc(uid), {
+        displayName: user.name || "",
+        level: user.level || null,
+        joinedAt: now,
+        status: "active",
+        lastActiveAt: null,
+        streak: 0,
+        sessionsLast7: 0,
+      });
+
+      // Müəllim sənədi hələ yoxdursa yaradılır (kod yaratmamış müəllim də
+      // birbaşa dəvət göndərə bilir).
+      tx.set(teacherRef, {
+        studentCount: admin.firestore.FieldValue.increment(1),
+        ...(teacherSnap.exists ? {} : {
+          cohort: "founding",
+          studentCap: TEACHER_STUDENT_CAP,
+          createdAt: now,
+        }),
+      }, { merge: true });
+
+      tx.update(inviteRef, { status: "accepted", respondedAt: now });
+      return { linked: true, teacherId: invite.teacherId };
+    });
+
+    if (result.linked) {
+      const uSnap = await db.collection("users").doc(uid).get();
+      const name = uSnap.exists ? (uSnap.data().name || "") : "";
+      await sendPushToUser(db, result.teacherId, {
+        title: "✅ Şagird qoşuldu",
+        body: `${name || "Şagirdiniz"} dəvətinizi qəbul etdi.`,
+        type: "invite_accepted",
+        url: `/teacher/student/${uid}`,
+      }).catch(() => null);
+    }
+
+    return res.status(200).json({ ok: true, ...result });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[respondTeacherInvite]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
 // ─── AI Quiz Generation (DeepSeek proxy) ──────────────────────────
 // invoker: "public" is required, not optional. Cloud Run rejects the browser's
 // CORS preflight (an OPTIONS with no Authorization header) before our handler
@@ -2225,11 +2420,7 @@ async function alertProviderIssue(db, kind, detail) {
     const gmailPass = GMAIL_APP_PASSWORD.value();
     if (!gmailUser || !gmailPass) return;
 
-    let to = gmailUser;
-    try {
-      const adminSnap = await db.collection("users").doc(ADMIN_UID).get();
-      if (adminSnap.exists && adminSnap.data().email) to = adminSnap.data().email;
-    } catch (e) { /* gmailUser-ə göndəririk */ }
+    const to = OPS_ALERT_EMAIL || gmailUser;
 
     const transporter = nodemailer.createTransport({
       service: "gmail",

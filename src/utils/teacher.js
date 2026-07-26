@@ -66,6 +66,29 @@ export function createInviteCode(code) {
   return callTeacherFn('createInviteCode', { code }, CREATE_CODE_ERROR_TEXT);
 }
 
+// ── Birbaşa dəvət ───────────────────────────────────────────────
+export const INVITE_ERROR_TEXT = {
+  'invalid-email': 'E-poçt formatı yanlışdır.',
+  'not-a-teacher': 'Bu əməliyyat yalnız müəllimlər üçündür.',
+  'student-not-found': 'Bu e-poçtla qeydiyyatdan keçmiş istifadəçi tapılmadı. Əvvəlcə tətbiqə qeydiyyatdan keçməlidir.',
+  'self-invite': 'Özünüzü dəvət edə bilməzsiniz.',
+  'already-your-student': 'Bu şagird artıq sizin siyahınızdadır.',
+  'already-linked': 'Bu istifadəçi artıq başqa müəllimə bağlıdır.',
+  'teacher-full': 'Şagird limitiniz dolub.',
+  'invite-not-found': 'Dəvət tapılmadı.',
+  'not-your-invite': 'Bu dəvət sizə aid deyil.',
+  'already-answered': 'Bu dəvətə artıq cavab verilib.',
+  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+};
+
+export function inviteStudentByEmail(email) {
+  return callTeacherFn('inviteStudentByEmail', { email }, INVITE_ERROR_TEXT);
+}
+
+export function respondTeacherInvite(inviteId, accept) {
+  return callTeacherFn('respondTeacherInvite', { inviteId, accept }, INVITE_ERROR_TEXT);
+}
+
 export function claimTeacherCode({ code, birthDate, consent, guardianConsent }) {
   return callTeacherFn(
     'claimTeacherCode',

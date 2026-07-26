@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import {
   createInviteCode,
   buildJoinLink,
+  inviteStudentByEmail,
   TEACHER_SESSIONS_REQUIRED,
 } from '../utils/teacher';
 
@@ -26,6 +27,10 @@ export default function TeacherUnlock({ user }) {
   // null = hələ yüklənir; [] = yüklənib, boşdur. İkisini ayırmaq vacibdir —
   // əks halda boş roster əbədi "yüklənir" kimi görünərdi (Ranking dərsi).
   const [roster, setRoster] = useState(null);
+  // Birbaşa dəvət: kod paylaşmaq həmişə işləmir (link itir, kod səhv yazılır).
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState(null); // {ok, text}
 
   const done = Number(user?.completedSessions) || 0;
   const isTeacher = user?.role === 'teacher';
@@ -68,6 +73,25 @@ export default function TeacherUnlock({ user }) {
     setMyCode(result.data.code);
     setRoster((r) => r || []);
     setLoading(false);
+  };
+
+  const sendInvite = async (e) => {
+    e.preventDefault();
+    const email = inviteEmail.trim();
+    if (!email) return;
+    setInviting(true);
+    setInviteMsg(null);
+    const res = await inviteStudentByEmail(email);
+    if (!res.ok) {
+      setInviteMsg({ ok: false, text: res.errorText });
+    } else {
+      setInviteMsg({
+        ok: true,
+        text: `${res.data.studentName || email} adlı şagirdə dəvət göndərildi — tətbiqdə bildiriş alacaq.`,
+      });
+      setInviteEmail('');
+    }
+    setInviting(false);
   };
 
   const copy = async (text, what) => {
@@ -295,6 +319,59 @@ export default function TeacherUnlock({ user }) {
             </a>
           </div>
         </div>
+
+        {/* Birbaşa dəvət — linkin çatmadığı hallar üçün */}
+        <form onSubmit={sendInvite} style={{
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+          borderRadius: '16px', padding: '16px', marginBottom: '16px',
+        }}>
+          <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            ✉️ Şagirdi birbaşa dəvət et
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '10px', lineHeight: 1.5 }}>
+            Şagirdin tətbiqdə qeydiyyatdan keçdiyi e-poçtu yazın — dəvət onun ekranına düşəcək.
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="sagird@gmail.com"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              style={{
+                flex: 1, padding: '11px 12px', borderRadius: '12px',
+                border: '1px solid var(--border)', background: 'var(--bg-input)',
+                color: 'var(--text-primary)', fontSize: '14px', outline: 'none',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={inviting || !inviteEmail.trim()}
+              style={{
+                padding: '11px 16px', borderRadius: '12px', border: 'none',
+                background: (inviting || !inviteEmail.trim())
+                  ? 'var(--bg-card)'
+                  : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                color: (inviting || !inviteEmail.trim()) ? 'var(--text-muted)' : '#fff',
+                fontSize: '14px', fontWeight: 800,
+                cursor: (inviting || !inviteEmail.trim()) ? 'default' : 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {inviting ? '...' : 'Dəvət et'}
+            </button>
+          </div>
+          {inviteMsg && (
+            <div style={{
+              marginTop: '10px', fontSize: '13px', lineHeight: 1.5,
+              color: inviteMsg.ok ? 'var(--success)' : 'var(--danger)',
+            }}>
+              {inviteMsg.ok ? '✅ ' : '⚠️ '}{inviteMsg.text}
+            </div>
+          )}
+        </form>
 
         {/* Roster */}
         <div style={{
