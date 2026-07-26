@@ -2026,21 +2026,17 @@ async function callGroqChat(userContent) {
   throw lastErr || Object.assign(new Error("Groq JSON failed after retries"), { retryable: true });
 }
 
-// Zəngin YARISI analiz olunur (əvvəl sabit 5 dəqiqə idi — 30 dəqiqəlik
-// söhbətin 83%-i heç vaxt görünmürdü). WebM-in bayt-prefiksi dekodlana bilir,
-// ona görə bu, real və bütöv bir parçadır, yamaq deyil.
-//   • qısa zənglər (<= ANALYSIS_FULL_UNDER) TAM analiz olunur — 4 dəqiqəlik
-//     söhbətin yarısı mənalı geri-bildirim üçün azdır;
-//   • uzun zənglər 50%, amma ANALYSIS_MAX_SECONDS tavanı ilə — bir nəfər
-//     saatlıq zənglə bütün saatlıq audio budcəsini yeyə bilməsin.
-const ANALYSIS_RATIO = 0.5;
-const ANALYSIS_FULL_UNDER = 300;   // 5 dəqiqəyə qədər tam
-const ANALYSIS_MAX_SECONDS = 1800; // ən çox 30 dəq (1 saatlıq zəngin yarısı)
+// Sadə qayda: 30 dəqiqəyə qədər zəng TAM analiz olunur, daha uzunu isə
+// ilk 30 dəqiqə. Faiz məntiqi qəsdən yoxdur — istifadəçi üçün proqnozlaşdırıla
+// biləndir ("30 dəqiqəyə qədər hər şey analiz olunur") və tavan bir nəfərin
+// saatlıq audio budcəsini tək zənglə yeməsinin qarşısını alır.
+// WebM-in bayt-prefiksi dekodlana bilir, ona görə kəsilmiş hissə real və
+// bütöv bir parçadır, yamaq deyil.
+const ANALYSIS_MAX_SECONDS = 1800; // 30 dəqiqə
 
 function effectiveAnalyzeSeconds(audioSeconds) {
   if (!audioSeconds) return 0;
-  if (audioSeconds <= ANALYSIS_FULL_UNDER) return audioSeconds;
-  return Math.min(Math.round(audioSeconds * ANALYSIS_RATIO), ANALYSIS_MAX_SECONDS);
+  return Math.min(audioSeconds, ANALYSIS_MAX_SECONDS);
 }
 
 // Data-only push to one user's device (the messaging SW displays it and
