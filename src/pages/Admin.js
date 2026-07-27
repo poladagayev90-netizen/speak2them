@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
 import AdminCohorts from '../components/AdminCohorts';
+import { setTutorVerification } from '../utils/teacher';
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
 
@@ -23,6 +24,18 @@ export default function Admin({ user }) {
     });
     return unsub;
   }, []);
+
+  // Tutor nişanı. Serverdən keçir, çünki teachers/{tid} sənədi rules-da hər kəsə
+  // (admin daxil) yazılmazdır və users/{tid}.teacherVerified ilə birgə atomik
+  // yenilənməlidir. Siyahı onSnapshot ilə canlıdır — əl ilə yeniləmə lazım deyil.
+  const verifyTutor = async (u, verified) => {
+    const userId = u.uid || u.id;
+    if (!userId) return;
+    setLoading(prev => ({ ...prev, [userId]: true }));
+    const res = await setTutorVerification(userId, verified);
+    setLoading(prev => ({ ...prev, [userId]: false }));
+    if (!res.ok) alert('Xəta: ' + res.errorText);
+  };
 
   const setPremium = async (u, value, planType = 'pro') => {
     const userId = u.uid || u.id;
@@ -302,9 +315,40 @@ export default function Admin({ user }) {
                       </span>
                     )}
                   </div>
+                  {u.tutorProfile && (
+                    <p style={{ fontSize: '11px', color: '#22d3ee', margin: '6px 0 0', lineHeight: 1.45 }}>
+                      🎓 {u.tutorProfile.displayName || u.name}
+                      {Array.isArray(u.tutorProfile.specialties) && u.tutorProfile.specialties.length > 0
+                        ? ` · ${u.tutorProfile.specialties.join(', ')}` : ''}
+                      {u.tutorProfile.yearsExperience ? ` · ${u.tutorProfile.yearsExperience} il` : ''}
+                      {u.teacherVerified ? ' · ✅ təsdiqli' : ' · ⏳ gözləyir'}
+                    </p>
+                  )}
                 </div>
                 
                 <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {/* Tutor təsdiqi. teachers/{tid} adminə də oxunmur, ona görə
+                      qərar üçün lazım olan profil users/{uid}.tutorProfile-dan
+                      göstərilir (server güzgüləyir). */}
+                  {!isAdmin && (u.role === 'teacher' || u.teacherEligible) && (
+                    <button
+                      onClick={() => verifyTutor(u, !u.teacherVerified)}
+                      disabled={loading[u.uid || u.id]}
+                      style={{
+                        padding: '8px 12px', borderRadius: '10px', fontWeight: 700,
+                        fontSize: '12px', cursor: 'pointer', width: '130px',
+                        border: u.teacherVerified ? '1px solid rgba(239,68,68,0.3)' : 'none',
+                        background: u.teacherVerified
+                          ? 'rgba(239, 68, 68, 0.1)'
+                          : 'linear-gradient(135deg, #22d3ee, #0891b2)',
+                        color: u.teacherVerified ? '#ef4444' : '#062a3a',
+                      }}
+                    >
+                      {loading[u.uid || u.id]
+                        ? '...'
+                        : (u.teacherVerified ? 'Nişanı ləğv et' : '🎓 Tutoru təsdiqlə')}
+                    </button>
+                  )}
                   {isAdmin && !u.teacherEligible && (
                     <button
                       onClick={async () => {

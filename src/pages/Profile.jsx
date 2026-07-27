@@ -7,6 +7,7 @@ import { Moon, Sun, Bell } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 import StreakJourney from '../components/StreakJourney';
+import TutorBadge from '../components/TutorBadge';
 import { getStreakInfo } from '../utils/streak';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
@@ -240,7 +241,10 @@ export default function Profile({ user }) {
         </div>
 
         {/* Name & Bio */}
-        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>{name || 'User'}</h2>
+        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {name || 'User'}
+          {user.teacherVerified && <TutorBadge />}
+        </h2>
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px 0' }}>{bio || 'No time to die'}</p>
 
         {/* Horizontal Stats */}

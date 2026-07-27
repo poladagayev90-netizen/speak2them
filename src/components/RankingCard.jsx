@@ -1,5 +1,6 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
+import TutorBadge from './TutorBadge';
 import { useNavigate } from 'react-router-dom';
 
 export default function RankingCard({ user, rank, isCurrentUser = false, displayMinutes }) {
@@ -58,7 +59,7 @@ export default function RankingCard({ user, rank, isCurrentUser = false, display
       </div>
       <div style={{ flex: 1 }}>
         <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
-          {user.name}{isCurrentUser && <span style={{ color: 'var(--accent)', marginLeft: 6 }}>(you)</span>}{user.isPremium && <PremiumBadge />}
+          {user.name}{isCurrentUser && <span style={{ color: 'var(--accent)', marginLeft: 6 }}>(you)</span>}{user.teacherVerified && <TutorBadge />}{user.isPremium && <PremiumBadge />}
         </p>
         <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.level || 'English Speaker'}</p>
       </div>

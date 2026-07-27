@@ -10,6 +10,7 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import PremiumBadge from '../components/PremiumBadge';
+import TutorBadge from '../components/TutorBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
@@ -990,6 +991,7 @@ export default function Chat({ user }) {
           </div>
           <h2 className="call-peer-name">
             {peer?.name}
+            {peer?.teacherVerified && <TutorBadge />}
             {peer?.isPremium && <PremiumBadge />}
           </h2>
           <p className="call-status-text">
@@ -1221,6 +1223,7 @@ export default function Chat({ user }) {
           <div>
             <h3 style={{ display: 'flex', alignItems: 'center' }}>
               {peer?.name}
+              {peer?.teacherVerified && <TutorBadge />}
               {peer?.isPremium && <PremiumBadge />}
             </h3>
             <span>{peer?.level || 'English Speaker'}</span>

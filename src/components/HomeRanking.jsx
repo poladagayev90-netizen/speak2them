@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import RankingCard from './RankingCard';
+import TutorBadge from './TutorBadge';
 import { getUserRank, sortUsersForRanking, weeklyMinutesOf } from '../utils/ranking';
 import { useNavigate } from 'react-router-dom';
 import './Ranking.css';
@@ -21,7 +22,7 @@ function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
           : user.name?.charAt(0).toUpperCase()}
       </div>
       <p className="ranking-podium-name">
-        {user.name}{isCurrentUser && ' (you)'}
+        {user.name}{isCurrentUser && ' (you)'}{user.teacherVerified && <TutorBadge />}
       </p>
       <p className="ranking-podium-minutes">{displayMinutes ?? (user.totalMinutes || 0)} min</p>
       <div className="ranking-podium-bar" style={{ height: heights[rank] }}>

@@ -36,6 +36,11 @@ service cloud.firestore {
     // qeydiyyatda AÇIQ seçilir — ona görə client onları yalnız BİR DƏFƏ
     // (sahə hələ yoxdursa) və yalnız icazəli dəyərlərlə qoya bilər; sonradan
     // dəyişmək yenə qadağandır (rol dəyişmək = server/admin işi).
+    // teacherVerified/tutorProfile/tutorStudentCount/tutorMinutesCoached isə
+    // MÜTLƏQ server-onlydır: `role` qeydiyyatda açıq seçildiyi üçün nişanı ona
+    // bağlamaq olmaz — nişanın yeganə şərti teacherVerified-dir və o, yalnız
+    // adminin setTutorVerification funksiyasından gəlir. Sayğaclar da publik
+    // profildə göstərilir, yəni client onları yazsaydı statistika uydurula bilərdi.
     function validRoleOneTimeSet() {
       return (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
           || (!('role' in resource.data) && request.resource.data.role in ['student', 'teacher']))
@@ -51,7 +56,8 @@ service cloud.firestore {
           'mode', 'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt',
           'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
-          'isAdult', 'completedSessions'])
+          'isAdult', 'completedSessions',
+          'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached'])
         && validRoleOneTimeSet();
     }
 
@@ -59,7 +65,8 @@ service cloud.firestore {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
-          'isAdult', 'completedSessions'])
+          'isAdult', 'completedSessions',
+          'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
         // Rol yaradılışda seçilə bilər; teacherEligible yalnız teacher rolu ilə birgə.

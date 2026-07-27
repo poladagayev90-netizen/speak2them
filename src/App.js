@@ -64,6 +64,8 @@ const LIVE_USER_FIELDS = [
   'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
   'freeAccessUntil', 'surveyDone',
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
+  // Admin təsdiq edən kimi Tutor nişanı reload olmadan görünsün.
+  'teacherVerified',
   'preferredLanguage',
 ];
 

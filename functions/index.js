@@ -497,6 +497,9 @@ const SESSION_MIN_SECONDS = 120;       // 2 dəq-dən qısa zəng sessiya sayıl
 const TEACHER_ELIGIBLE_SESSIONS = 3;   // bu qədər sessiyadan sonra kod yaratmaq açılır
 const TEACHER_FREE_DAYS = 90;          // founding kohort üçün pulsuz dövr
 const TEACHER_STUDENT_CAP = 30;
+// Roster sətrində saxlanılan son səhv-mövzu başlıqlarının sayı. Sinif
+// analitikası bu massivlərdən qurulur; sonsuz böyüməsin deyə pəncərə dardır.
+const ROSTER_THEME_MEMORY = 6;
 const MIN_LINK_AGE = 13;               // bundan kiçik heç bir halda bağlana bilməz
 const ADULT_AGE = 18;                  // bundan kiçikdirsə valideyn razılığı tələb olunur
 
@@ -595,6 +598,12 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
             },
             { merge: true },
           );
+
+          // Publik tutor profilində göstərilən "koçluq dəqiqəsi". Mənbə
+          // billedSec-dir, yəni zəngin öz vaxt damğaları — client saymır.
+          tx.set(db.collection("users").doc(user.teacherId), {
+            tutorMinutesCoached: admin.firestore.FieldValue.increment(minutes),
+          }, { merge: true });
         }
       }
 
@@ -1198,6 +1207,12 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
 
       tx.update(codeRef, { uses: admin.firestore.FieldValue.increment(1) });
       tx.update(teacherRef, { studentCount: admin.firestore.FieldValue.increment(1) });
+      // studentCount teachers/{tid}-dədir, o sənəd isə yalnız sahibinə oxunandır.
+      // Publik tutor profilində şagird sayını göstərmək üçün users/{tid}-ə güzgü
+      // saxlanılır — profil ekranı o sənədi onsuz da yükləyir.
+      tx.set(db.collection("users").doc(invite.teacherId), {
+        tutorStudentCount: admin.firestore.FieldValue.increment(1),
+      }, { merge: true });
 
       return invite.teacherId;
     });
@@ -1370,14 +1385,28 @@ exports.respondTeacherInvite = onRequest({ secrets: [], invoker: "public" }, asy
       });
 
       // Müəllim sənədi hələ yoxdursa yaradılır (kod yaratmamış müəllim də
-      // birbaşa dəvət göndərə bilir).
+      // birbaşa dəvət göndərə bilir). Sahələr createInviteCode-dakı ilə BİRƏ-BİR
+      // eyni olmalıdır: əks halda ilk şagirdini e-poçt dəvəti ilə alan müəllimin
+      // sənədi natamam qalır (displayName/bio/freeUntil olmadan) və profil
+      // redaktoru boş sənəd üzərində açılır.
       tx.set(teacherRef, {
         studentCount: admin.firestore.FieldValue.increment(1),
         ...(teacherSnap.exists ? {} : {
+          // Müəllimin adı users/{tid}-dən deyil, dəvətin özündən götürülür —
+          // burada oxunan userRef ŞAGİRDİNdir, müəllimin deyil.
+          displayName: invite.teacherName || "",
+          bio: "",
           cohort: "founding",
+          freeUntil: admin.firestore.Timestamp.fromMillis(
+            Date.now() + TEACHER_FREE_DAYS * 24 * 60 * 60 * 1000),
           studentCap: TEACHER_STUDENT_CAP,
           createdAt: now,
         }),
+      }, { merge: true });
+
+      // Publik profil üçün güzgü sayğac — bax claimTeacherCode.
+      tx.set(db.collection("users").doc(invite.teacherId), {
+        tutorStudentCount: admin.firestore.FieldValue.increment(1),
       }, { merge: true });
 
       tx.update(inviteRef, { status: "accepted", respondedAt: now });
@@ -1400,6 +1429,165 @@ exports.respondTeacherInvite = onRequest({ secrets: [], invoker: "public" }, asy
     const status = e.httpStatus || 500;
     if (status === 500) console.error("[respondTeacherInvite]", e.message);
     return res.status(status).json({ error: e.message });
+  }
+});
+
+// ─── Tutor profili və təsdiqi ─────────────────────────────────────
+// Nişan (badge) YALNIZ təsdiqlənmiş müəllimdə görünür. Səbəb: `role: "teacher"`
+// qeydiyyatda istifadəçinin öz seçimidir (firestore.rules bir dəfəlik yazmağa
+// icazə verir) — nişanı `role`-a bağlasaq onu hər kəs beş saniyəyə alar və nişan
+// dəyərsizləşər. Təsdiq admin qərarıdır: `users/{uid}.teacherVerified`.
+//
+// Publik sahələr users/{uid}-ə GÜZGÜLƏNİR, teachers/{tid}-dən oxunmur: teachers
+// sənədi yalnız sahibinə oxunandır və içində inviteCode var — onu publik etmək
+// dəvət kodunu hər kəsə açardı (maxUses tükədilə bilər). Üstəlik nişanın
+// görünəcəyi hər ekran (sıralama, lobbi, zəng, profil) tam users sənədini onsuz
+// da yükləyir → əlavə Firestore oxusu sıfır.
+
+// Sərbəst mətn əvəzinə qapalı siyahı: ixtisas publik profildə görünür, client isə
+// istənilən sətri göndərə bilər. Siyahı UI-dakı chip seçimi ilə eynidir.
+const TUTOR_SPECIALTIES = [
+  "IELTS", "TOEFL", "Speaking", "Business English",
+  "Grammar", "Kids", "Beginner", "Exam Prep",
+];
+
+exports.updateTeacherProfile = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const body = req.body || {};
+
+  const displayName = String(body.displayName || "").trim().slice(0, 60);
+  const bio = String(body.bio || "").trim().slice(0, 400);
+  const specialties = Array.isArray(body.specialties)
+    ? [...new Set(body.specialties.filter((s) => TUTOR_SPECIALTIES.includes(s)))].slice(0, 5)
+    : [];
+  const yearsRaw = Number(body.yearsExperience);
+  const yearsExperience = Number.isFinite(yearsRaw)
+    ? Math.min(60, Math.max(0, Math.round(yearsRaw)))
+    : 0;
+
+  if (!displayName) return res.status(400).json({ error: "name-required" });
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(uid, "teacherProfile", 20, 60 * 60 * 1000);
+
+    const nextStatus = await db.runTransaction(async (tx) => {
+      const userRef = db.collection("users").doc(uid);
+      const teacherRef = db.collection("teachers").doc(uid);
+      const userSnap = await tx.get(userRef);
+      const teacherSnap = await tx.get(teacherRef);
+
+      if (!userSnap.exists) throw fail(404, "user-not-found");
+      const user = userSnap.data() || {};
+      if (user.role !== "teacher" && user.teacherEligible !== true) {
+        throw fail(403, "not-a-teacher");
+      }
+
+      const teacher = teacherSnap.exists ? teacherSnap.data() : {};
+      // Təsdiqlənmiş müəllim profilini redaktə edəndə status İTMİR — nişan
+      // sönüb-yanmır. Dəyişiklik profileUpdatedAt-a düşür, admin paneli isə
+      // profileUpdatedAt > verifiedAt olanları yenidən baxış üçün işarələyir.
+      const status = teacher.verificationStatus === "verified" ? "verified" : "pending";
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      tx.set(teacherRef, {
+        displayName, bio, specialties, yearsExperience,
+        verificationStatus: status,
+        profileUpdatedAt: now,
+        // Kod yaratmamış müəllim də profil doldura bilir — sənəd sahələri
+        // createInviteCode-dakı ilə eyni olmalıdır.
+        ...(teacherSnap.exists ? {} : {
+          cohort: "founding",
+          freeUntil: admin.firestore.Timestamp.fromMillis(
+            Date.now() + TEACHER_FREE_DAYS * 24 * 60 * 60 * 1000),
+          studentCap: TEACHER_STUDENT_CAP,
+          studentCount: 0,
+          createdAt: now,
+        }),
+      }, { merge: true });
+
+      // Publik alt-dəst. teacherVerified BURADA YAZILMIR — o, yalnız adminin
+      // setTutorVerification çağırışından gəlir.
+      tx.set(userRef, {
+        tutorProfile: { displayName, bio, specialties, yearsExperience },
+      }, { merge: true });
+
+      return status;
+    });
+
+    return res.status(200).json({ ok: true, verificationStatus: nextStatus });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[updateTeacherProfile]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// Təsdiq/ləğv — YALNIZ admin. Ayrıca funksiya lazımdır: teachers sənədi rules-da
+// hər kəsə (admin daxil) yazılmazdır, üstəlik iki sənəd —
+// teachers/{tid}.verificationStatus və users/{tid}.teacherVerified — bir-birindən
+// ayrı düşməməlidir, ona görə tək batch ilə atomik yazılır.
+exports.setTutorVerification = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+
+  const { teacherId, verified } = req.body || {};
+  if (!teacherId || typeof teacherId !== "string") {
+    return res.status(400).json({ error: "invalid-teacher" });
+  }
+
+  const db = admin.firestore();
+
+  try {
+    const isVerified = verified === true;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+
+    const batch = db.batch();
+    batch.set(db.collection("teachers").doc(teacherId), {
+      verificationStatus: isVerified ? "verified" : "rejected",
+      verifiedAt: isVerified ? now : null,
+    }, { merge: true });
+    batch.set(db.collection("users").doc(teacherId), {
+      teacherVerified: isVerified,
+      // Təsdiq edilən şəxs mütləq müəllim rejimində olmalıdır (admin panelindən
+      // birbaşa təsdiq edilə bilər, o halda rol hələ qoyulmamış ola bilər).
+      ...(isVerified ? { role: "teacher", teacherEligible: true } : {}),
+    }, { merge: true });
+    await batch.commit();
+
+    if (isVerified) {
+      await sendPushToUser(db, teacherId, {
+        title: "🎓 Tutor profiliniz təsdiqləndi",
+        body: "Adınızın yanında Tutor nişanı artıq görünür.",
+        type: "tutor_verified",
+        url: "/teacher",
+      }).catch(() => null);
+    }
+
+    return res.status(200).json({ ok: true, verified: isVerified });
+  } catch (e) {
+    console.error("[setTutorVerification]", e.message);
+    return res.status(500).json({ error: e.message });
   }
 });
 
@@ -2752,6 +2940,44 @@ exports.processAnalysisQueue = onSchedule({
         url: "/history",
       });
 
+      // Sinif analitikası üçün roster rollup-u. Müəllim paneli 30 şagirdin
+      // analizlərini bir-bir sorğulasaydı, callAnalysis rules-undakı
+      // get(users/{userId}) səbəbindən yüzlərlə əlavə oxu olardı. Əvəzinə
+      // nəticə elə burada — analizin bitdiyi yerdə — roster sətrinə yazılır;
+      // panel onsuz da yüklədiyi roster ilə bütün sinfi ƏLAVƏ OXUSUZ hesablayır.
+      if (studentTeacherId) {
+        try {
+          const rosterRef = db.collection("teachers").doc(studentTeacherId)
+            .collection("roster").doc(ticket.uid);
+          const themes = Array.isArray(analysis.errorThemes)
+            ? analysis.errorThemes
+              .map((t) => String((t && t.title) || "").trim())
+              .filter(Boolean)
+            : [];
+          const score = Number(analysis.overallScore);
+
+          await db.runTransaction(async (tx) => {
+            const snap = await tx.get(rosterRef);
+            const prev = snap.exists ? (snap.data() || {}) : {};
+            const prevThemes = Array.isArray(prev.recentThemes) ? prev.recentThemes : [];
+            tx.set(rosterRef, {
+              displayName: studentName || prev.displayName || "",
+              lastAnalysisAt: admin.firestore.FieldValue.serverTimestamp(),
+              recentThemes: [...themes, ...prevThemes].slice(0, ROSTER_THEME_MEMORY),
+              // scoreSum/scoreCount ayrı saxlanılır ki, panel ortalamanı
+              // bölmə ilə çıxarsın — keçmiş analizləri yenidən oxumadan.
+              ...(Number.isFinite(score) ? {
+                lastScore: score,
+                scoreSum: (Number(prev.scoreSum) || 0) + score,
+                scoreCount: (Number(prev.scoreCount) || 0) + 1,
+              } : {}),
+            }, { merge: true });
+          });
+        } catch (e) {
+          console.warn("[AnalysisQueue] roster rollup failed:", e.message);
+        }
+      }
+
       // Müəllimə gedən YEGANƏ push: bağlı şagirdin analizi hazırdır.
       // Müəllim mövzu/streak/sessiya xatırlatmalarından azaddır (bax
       // topicReminder), ona görə bu bildiriş itmir və spam kimi görünmür.
@@ -2842,6 +3068,11 @@ async function sendSessionEmails(db, startLabel, hour) {
     const email = typeof u.email === "string" ? u.email.trim() : "";
     const lastSeen = u.lastSeen && u.lastSeen.toMillis ? u.lastSeen.toMillis() : 0;
     if (!email || !email.includes("@")) continue;
+    // Müəllimlər şagird xatırlatmalarından azaddır — push tərəfində bu filtr
+    // artıq var (topicReminder, streakReminder, broadcastSessionReminder), amma
+    // e-poçt dövründə yox idi: müəllim "sessiyaya 15 dəqiqə qaldı" məktubu
+    // alırdı. Peşəkar görünmür, üstəlik bildirişi dəyərsizləşdirir.
+    if (u.role === "teacher") continue;
     if (lastSeen < cutoff) continue;
     const key = email.toLowerCase();
     if (seen.has(key)) continue;
@@ -3271,6 +3502,11 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
         await db.collection("teachers").doc(userData.teacherId).update({
           studentCount: admin.firestore.FieldValue.increment(-1),
         }).catch(() => null);
+        // Publik profildəki güzgü sayğac da azalmalıdır, yoxsa tutor profili
+        // olmayan şagirdi saymağa davam edər.
+        await db.collection("users").doc(userData.teacherId).set({
+          tutorStudentCount: admin.firestore.FieldValue.increment(-1),
+        }, { merge: true }).catch(() => null);
       }
       // Müəllim idisə — profili, şagird siyahısı və dəvət kodları silinir.
       if (userData.role === "teacher") {

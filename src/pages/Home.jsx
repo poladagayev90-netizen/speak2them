@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
+import TutorBadge from '../components/TutorBadge';
 import { collection, doc, getDocs, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -547,7 +548,10 @@ export default function Home({ user }) {
                     </div>
 
                     <div className="user-info">
-                      <h3>{u.name || 'User'}</h3>
+                      <h3 style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {u.name || 'User'}
+                        {u.teacherVerified && <TutorBadge />}
+                      </h3>
                       <span className="user-level">
                         {u.level || 'English Speaker'}
                       </span>

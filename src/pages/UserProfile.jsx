@@ -3,6 +3,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
+import TutorBadge from '../components/TutorBadge';
 
 export default function UserProfile({ user: currentUser }) {
   const { uid } = useParams();
@@ -75,8 +76,16 @@ export default function UserProfile({ user: currentUser }) {
     );
   }
 
-  const name = profileUser.name || 'User';
-  const bio = profileUser.bio || 'No bio provided';
+  // Tutor sahələri server-yazılıdır (firestore.rules-da clientə bağlıdır), ona
+  // görə publik profildə göstərilməsi təhlükəsizdir — istifadəçi öz statistikasını
+  // və ya nişanını uydura bilməz.
+  const isTutor = profileUser.teacherVerified === true;
+  const tutor = profileUser.tutorProfile || {};
+  const specialties = Array.isArray(tutor.specialties) ? tutor.specialties : [];
+  const years = Number(tutor.yearsExperience) || 0;
+
+  const name = (isTutor && tutor.displayName) || profileUser.name || 'User';
+  const bio = (isTutor && tutor.bio) || profileUser.bio || 'No bio provided';
   const level = profileUser.level || 'B1 – Intermediate';
   const isPremium = profileUser.isPremium || false;
   const premiumPlan = profileUser.premiumPlan || 'Pro';
@@ -115,7 +124,38 @@ export default function UserProfile({ user: currentUser }) {
         </div>
 
         {/* Name & Bio */}
-        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>{name}</h2>
+        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {name}
+          {isTutor && <TutorBadge />}
+        </h2>
+
+        {/* Tutor başlığı — nişana toxunan adam kimlə üzləşdiyini burada görür. */}
+        {isTutor && (
+          <>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: '#0891b2', margin: '0 0 6px 0' }}>
+              Təsdiqlənmiş English Tutor
+            </p>
+            {(specialties.length > 0 || years > 0) && (
+              <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                {specialties.map((s) => (
+                  <span key={s} style={{
+                    fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '20px',
+                    background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+                    border: '1px solid var(--border)',
+                  }}>{s}</span>
+                ))}
+                {years > 0 && (
+                  <span style={{
+                    fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '20px',
+                    background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+                    border: '1px solid var(--border)',
+                  }}>{years} il təcrübə</span>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px 0' }}>{bio}</p>
 
         {/* Action Buttons */}
@@ -145,26 +185,30 @@ export default function UserProfile({ user: currentUser }) {
           </div>
         )}
 
-        {/* Horizontal Stats */}
+        {/* Horizontal Stats — tutor üçün peşəkar göstəricilər, adi istifadəçi
+            üçün köhnə üçlük. Tutorda ULDUZ REYTİNQİ QƏSDƏN YOXDUR: rating zəngdən
+            sonrakı peer qiymətidir, zəng etməyən müəllimdə boş qalır və "reytinqsiz
+            müəllim" təəssüratı yaradır. */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '24px' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
-              <span>💬</span> Feedback
+          {(isTutor
+            ? [
+              { icon: '🎓', label: 'Şagird', value: Number(profileUser.tutorStudentCount) || 0 },
+              { icon: '🕐', label: 'Koçluq dəq.', value: Number(profileUser.tutorMinutesCoached) || 0 },
+              { icon: '📅', label: 'Təcrübə', value: years > 0 ? `${years} il` : '—' },
+            ]
+            : [
+              { icon: '💬', label: 'Feedback', value: avgRating },
+              { icon: '📞', label: 'Talks', value: stats.calls },
+              { icon: '🕐', label: 'Mins', value: stats.totalMinutes },
+            ]
+          ).map((tile) => (
+            <div key={tile.label} style={{ textAlign: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
+                <span>{tile.icon}</span> {tile.label}
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{tile.value}</div>
             </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{avgRating}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
-              <span>📞</span> Talks
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.calls}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
-              <span>🕐</span> Mins
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.totalMinutes}</div>
-          </div>
+          ))}
         </div>
       </div>
 

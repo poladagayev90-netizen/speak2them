@@ -7,8 +7,20 @@ import {
   createInviteCode,
   buildJoinLink,
   inviteStudentByEmail,
+  updateTeacherProfile,
   TEACHER_SESSIONS_REQUIRED,
+  TUTOR_SPECIALTIES,
 } from '../utils/teacher';
+import TutorBadge from '../components/TutorBadge';
+
+// Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
+// müsbətdir: müdafiə cümləsi ("şagirdinizi almırıq") qorxunu adlandırıb yaradır.
+const VERIFICATION_TEXT = {
+  verified: { text: 'Təsdiqlənib — adınızın yanında Tutor nişanı görünür.', color: 'var(--success)' },
+  pending: { text: 'Baxılır — təsdiqdən sonra adınızın yanında Tutor nişanı görünəcək.', color: '#d97706' },
+  rejected: { text: 'Profil natamamdır — məlumatları tamamlayıb yenidən göndərin.', color: 'var(--danger)' },
+  none: { text: 'Profilinizi doldurun — SpeakLab tədris keyfiyyətinizi və məhsuldarlığınızı artıran alətdir.', color: 'var(--text-secondary)' },
+};
 
 // Müəllim Dashboard-u. İki giriş yolu var:
 //   1) B2B2C onboarding: qeydiyyatda "I am a Teacher" seçən — role='teacher',
@@ -31,6 +43,19 @@ export default function TeacherUnlock({ user }) {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState(null); // {ok, text}
+  // Tutor profili. Başlanğıc dəyər user-dən bir dəfə (lazy initializer) götürülür
+  // ki, effect-in asılılıq siyahısına user.name/bio girməsin və redaktə zamanı
+  // sıfırlanma riski olmasın.
+  const [profile, setProfile] = useState(() => ({
+    displayName: user?.name || '',
+    bio: user?.bio || '',
+    specialties: [],
+    yearsExperience: 0,
+  }));
+  const [verification, setVerification] = useState('none');
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMsg, setProfileMsg] = useState(null); // {ok, text}
 
   const done = Number(user?.completedSessions) || 0;
   const isTeacher = user?.role === 'teacher';
@@ -45,7 +70,24 @@ export default function TeacherUnlock({ user }) {
       if (!user?.uid || !eligible) { setChecking(false); return; }
       try {
         const snap = await getDoc(doc(db, 'teachers', user.uid));
-        if (alive && snap.exists()) setMyCode(snap.data().inviteCode || null);
+        if (alive && snap.exists()) {
+          const d = snap.data();
+          setMyCode(d.inviteCode || null);
+          setVerification(d.verificationStatus || 'none');
+          // Sənəddə profil varsa onu göstər; yoxdursa lazy initializer-dəki
+          // user adı qalsın (boş forma yerinə hazır ad).
+          if (d.displayName || d.bio || d.specialties || d.yearsExperience) {
+            // Funksional forma qəsdəndir: `p.displayName` lazy initializer-dən
+            // gələn user adıdır, ona görə effect-in user.name-dən asılılığı
+            // (və deməli redaktə zamanı sıfırlanma riski) yaranmır.
+            setProfile((p) => ({
+              displayName: d.displayName || p.displayName,
+              bio: d.bio || '',
+              specialties: Array.isArray(d.specialties) ? d.specialties : [],
+              yearsExperience: Number(d.yearsExperience) || 0,
+            }));
+          }
+        }
       } catch { /* teachers sənədi hələ yoxdursa forma göstərilir */ }
       try {
         const rs = await getDocs(collection(db, 'teachers', user.uid, 'roster'));
@@ -92,6 +134,41 @@ export default function TeacherUnlock({ user }) {
       setInviteEmail('');
     }
     setInviting(false);
+  };
+
+  const toggleSpecialty = (s) => {
+    setProfile((p) => {
+      const has = p.specialties.includes(s);
+      if (has) return { ...p, specialties: p.specialties.filter((x) => x !== s) };
+      if (p.specialties.length >= 5) return p; // server də 5-də kəsir
+      return { ...p, specialties: [...p.specialties, s] };
+    });
+  };
+
+  const saveProfile = async (e) => {
+    e.preventDefault();
+    if (!profile.displayName.trim()) return;
+    setSavingProfile(true);
+    setProfileMsg(null);
+    const res = await updateTeacherProfile({
+      displayName: profile.displayName.trim(),
+      bio: profile.bio.trim(),
+      specialties: profile.specialties,
+      yearsExperience: Number(profile.yearsExperience) || 0,
+    });
+    if (!res.ok) {
+      setProfileMsg({ ok: false, text: res.errorText });
+    } else {
+      setVerification(res.data.verificationStatus || 'pending');
+      setProfileMsg({
+        ok: true,
+        text: res.data.verificationStatus === 'verified'
+          ? 'Profiliniz yeniləndi.'
+          : 'Profiliniz təsdiqə göndərildi.',
+      });
+      setProfileOpen(false);
+    }
+    setSavingProfile(false);
   };
 
   const copy = async (text, what) => {
@@ -274,6 +351,54 @@ export default function TeacherUnlock({ user }) {
     return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]}`;
   };
 
+  // ─── Sinif analitikası ────────────────────────────────────────
+  // Mənbə roster sənədlərinin ÖZÜDÜR: analiz nəticələri serverdə
+  // (processAnalysisQueue) buraya denormalizə olunur. Şagird başına callAnalysis
+  // sorğusu etsəydik, rules-dakı get(users/{userId}) səbəbindən 30 şagird üçün
+  // yüzlərlə əlavə oxu olardı — burada isə əlavə sorğu SIFIRDIR.
+  const scored = students.filter((s) => Number(s.scoreCount) > 0);
+  const classAvg = scored.length
+    ? Math.round(scored.reduce(
+      (sum, s) => sum + (Number(s.scoreSum) || 0) / Number(s.scoreCount), 0,
+    ) / scored.length)
+    : null;
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const activeThisWeek = students.filter((s) => {
+    const ms = s.lastActiveAt && s.lastActiveAt.toMillis ? s.lastActiveAt.toMillis() : 0;
+    return ms > weekAgo;
+  }).length;
+
+  // Mövzu histoqramı. Açar `trim().toLowerCase()` ilə qurulur —
+  // toLocaleLowerCase('az') İŞLƏDİLMİR: o, "I" hərfini "ı"ya çevirib ingilis
+  // qrammatika başlıqlarını ("Articles", "Past Simple") tanınmaz hala salır.
+  const themeCounts = new Map();
+  students.forEach((s) => {
+    (Array.isArray(s.recentThemes) ? s.recentThemes : []).forEach((raw) => {
+      const title = String(raw || '').trim();
+      if (!title) return;
+      const key = title.toLowerCase();
+      const prev = themeCounts.get(key);
+      themeCounts.set(key, {
+        title: prev ? prev.title : title,
+        count: (prev ? prev.count : 0) + 1,
+      });
+    });
+  });
+  const topThemes = [...themeCounts.values()]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  // Nişanın həqiqət mənbəyi user.teacherVerified-dir (server-yazılı, canlı
+  // sinxronlaşır); teachers sənədindəki status ondan geri qala bilər.
+  const verifState = user?.teacherVerified ? 'verified' : (verification || 'none');
+  const verifInfo = VERIFICATION_TEXT[verifState] || VERIFICATION_TEXT.none;
+  const fieldStyle = {
+    width: '100%', padding: '11px 12px', borderRadius: '12px',
+    border: '1px solid var(--border)', background: 'var(--bg-input)',
+    color: 'var(--text-primary)', fontSize: '14px', outline: 'none',
+    fontFamily: 'inherit', boxSizing: 'border-box',
+  };
+
   return (
     <div className="home-page">
       <div className="home-header">
@@ -281,6 +406,142 @@ export default function TeacherUnlock({ user }) {
       </div>
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
+
+        {/* Tutor profili — nişanın arxasındakı məzmun. Yığcam status sətri +
+            açılan forma: gündəlik işi (dəvət, roster) yuxarıdan itələməsin. */}
+        <div style={{
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+          borderRadius: '16px', padding: '16px', marginBottom: '16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)',
+                display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+              }}>
+                🎓 Tutor profiliniz
+                {verifState === 'verified' && <TutorBadge />}
+              </div>
+              <div style={{ fontSize: '12px', color: verifInfo.color, marginTop: '4px', lineHeight: 1.5 }}>
+                {verifInfo.text}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setProfileOpen((o) => !o); setProfileMsg(null); }}
+              style={{
+                flexShrink: 0, padding: '8px 14px', borderRadius: '10px',
+                border: '1px solid var(--border)', background: 'var(--bg-card)',
+                color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              {profileOpen ? 'Bağla' : 'Redaktə et'}
+            </button>
+          </div>
+
+          {profileMsg && !profileOpen && (
+            <div style={{
+              marginTop: '10px', fontSize: '13px',
+              color: profileMsg.ok ? 'var(--success)' : 'var(--danger)',
+            }}>
+              {profileMsg.ok ? '✅ ' : '⚠️ '}{profileMsg.text}
+            </div>
+          )}
+
+          {profileOpen && (
+            <form onSubmit={saveProfile} style={{ marginTop: '14px' }}>
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                Profildə görünən ad
+              </label>
+              <input
+                type="text"
+                value={profile.displayName}
+                onChange={(e) => setProfile((p) => ({ ...p, displayName: e.target.value }))}
+                maxLength={60}
+                placeholder="Aytac Məmmədova"
+                style={fieldStyle}
+              />
+
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', margin: '14px 0 6px' }}>
+                İxtisas (5-ə qədər)
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {TUTOR_SPECIALTIES.map((s) => {
+                  const on = profile.specialties.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => toggleSpecialty(s)}
+                      style={{
+                        padding: '7px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
+                        cursor: 'pointer',
+                        border: on ? '1px solid #0891b2' : '1px solid var(--border)',
+                        background: on ? '#22d3ee22' : 'var(--bg-card)',
+                        color: on ? '#0891b2' : 'var(--text-secondary)',
+                      }}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', margin: '14px 0 6px' }}>
+                Təcrübə (il)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="60"
+                value={profile.yearsExperience}
+                onChange={(e) => setProfile((p) => ({ ...p, yearsExperience: e.target.value }))}
+                style={{ ...fieldStyle, maxWidth: '140px' }}
+              />
+
+              <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', margin: '14px 0 6px' }}>
+                Haqqınızda
+              </label>
+              <textarea
+                value={profile.bio}
+                onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
+                maxLength={400}
+                rows={3}
+                placeholder="Nə tədris edirsiniz, kimlərlə işləyirsiniz?"
+                style={{ ...fieldStyle, resize: 'vertical' }}
+              />
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right', marginTop: '4px' }}>
+                {profile.bio.length}/400
+              </div>
+
+              {profileMsg && (
+                <div style={{
+                  marginTop: '10px', fontSize: '13px', lineHeight: 1.5,
+                  color: profileMsg.ok ? 'var(--success)' : 'var(--danger)',
+                }}>
+                  {profileMsg.ok ? '✅ ' : '⚠️ '}{profileMsg.text}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={savingProfile || !profile.displayName.trim()}
+                style={{
+                  width: '100%', marginTop: '14px', padding: '12px', borderRadius: '12px', border: 'none',
+                  background: (savingProfile || !profile.displayName.trim())
+                    ? 'var(--bg-card)'
+                    : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                  color: (savingProfile || !profile.displayName.trim()) ? 'var(--text-muted)' : '#fff',
+                  fontSize: '14px', fontWeight: 800,
+                  cursor: (savingProfile || !profile.displayName.trim()) ? 'default' : 'pointer',
+                }}
+              >
+                {savingProfile ? '...' : (verifState === 'verified' ? 'Yadda saxla' : 'Təsdiqə göndər')}
+              </button>
+            </form>
+          )}
+        </div>
 
         {/* Dəvət bölməsi */}
         <div style={{
@@ -377,6 +638,69 @@ export default function TeacherUnlock({ user }) {
             </div>
           )}
         </form>
+
+        {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
+        {students.length > 0 && (
+          <div style={{
+            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+            borderRadius: '16px', padding: '16px', marginBottom: '16px',
+          }}>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px' }}>
+              📊 Sinfiniz bu həftə
+            </div>
+
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))',
+              gap: '10px',
+            }}>
+              {[
+                { label: 'Aktiv şagird', value: `${activeThisWeek}/${students.length}` },
+                { label: 'Sinif ortalaması', value: classAvg ?? '—' },
+                { label: 'Analiz edilən', value: scored.length },
+              ].map((tile) => (
+                <div key={tile.label} style={{
+                  background: 'var(--bg-card)', borderRadius: '12px',
+                  padding: '12px 8px', textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text-primary)' }}>{tile.value}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>{tile.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {topThemes.length > 0 ? (
+              <>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: '16px 2px 8px' }}>
+                  Ən çox təkrarlanan mövzular
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {topThemes.map((th, i) => (
+                    <div key={th.title} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      background: 'var(--bg-card)', borderRadius: '10px', padding: '10px 12px',
+                    }}>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: '#7c6ff7', minWidth: '16px' }}>{i + 1}</span>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', flex: 1, minWidth: 0 }}>
+                        {th.title}
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        {th.count}×
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55, margin: '10px 2px 0' }}>
+                  Bu mövzuları növbəti dərsinizdə vurğulasanız, sinfinizin ən çox təkrarladığı
+                  səhvləri bir dəfəyə həll edəcəksiniz.
+                </p>
+              </>
+            ) : (
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55, margin: '14px 2px 0' }}>
+                Şagirdləriniz danışdıqca burada sinfin ən çox təkrarladığı səhv mövzuları görünəcək.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Roster */}
         <div style={{

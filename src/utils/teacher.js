@@ -89,6 +89,37 @@ export function respondTeacherInvite(inviteId, accept) {
   return callTeacherFn('respondTeacherInvite', { inviteId, accept }, INVITE_ERROR_TEXT);
 }
 
+// ── Tutor profili və təsdiqi ────────────────────────────────────
+// Siyahı SERVERDƏKİ TUTOR_SPECIALTIES ilə eyni olmalıdır — server siyahıdan
+// kənar dəyərləri sükutla atır, yəni burada əlavə edilən yeni ixtisas serverdə
+// də əlavə edilməsə heç vaxt yadda saxlanmaz.
+export const TUTOR_SPECIALTIES = [
+  'IELTS', 'TOEFL', 'Speaking', 'Business English',
+  'Grammar', 'Kids', 'Beginner', 'Exam Prep',
+];
+
+export const TUTOR_PROFILE_ERROR_TEXT = {
+  'name-required': 'Adınızı yazın — profildə bu ad görünəcək.',
+  'not-a-teacher': 'Bu bölmə yalnız müəllimlər üçündür.',
+  'user-not-found': 'Profiliniz tapılmadı. Səhifəni yeniləyib yenidən cəhd edin.',
+  forbidden: 'Bu əməliyyat üçün icazəniz yoxdur.',
+  'invalid-teacher': 'Müəllim tapılmadı.',
+  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+};
+
+export function updateTeacherProfile({ displayName, bio, specialties, yearsExperience }) {
+  return callTeacherFn(
+    'updateTeacherProfile',
+    { displayName, bio, specialties, yearsExperience },
+    TUTOR_PROFILE_ERROR_TEXT,
+  );
+}
+
+// Yalnız admin panelindən çağırılır; server ADMIN_UID yoxlaması edir.
+export function setTutorVerification(teacherId, verified) {
+  return callTeacherFn('setTutorVerification', { teacherId, verified }, TUTOR_PROFILE_ERROR_TEXT);
+}
+
 export function claimTeacherCode({ code, birthDate, consent, guardianConsent }) {
   return callTeacherFn(
     'claimTeacherCode',
