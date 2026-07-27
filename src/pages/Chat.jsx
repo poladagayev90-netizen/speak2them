@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, limitToLast, serverTimestamp,
-  doc, getDoc, setDoc, updateDoc, runTransaction, increment
+  doc, getDoc, setDoc, updateDoc, runTransaction, increment, arrayUnion
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
@@ -25,6 +25,7 @@ import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import CallTabooStage from '../components/CallTabooStage';
+import CallQuestionStage from '../components/CallQuestionStage';
 import { tabooWords } from '../data/tabooWords';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallRoadmap from '../components/CallRoadmap';
@@ -68,6 +69,7 @@ export default function Chat({ user }) {
   const [showDaily, setShowDaily] = useState(false);
   const [imageStage, setImageStage] = useState(null);
   const [tabooStage, setTabooStage] = useState(null);
+  const [questionStage, setQuestionStage] = useState(null);
   // The post-call flow is a queue of full-screen stages. Normally it holds just
   // 'insights' (the single summary screen); 'quiz' is pushed only when the user
   // asks for it from that screen.
@@ -432,6 +434,10 @@ export default function Chat({ user }) {
       // Synced Taboo game: same channel, but explainerUid decides which half
       // of the UI each peer gets.
       setTabooStage(data.tabooStage || null);
+
+      // Synced speaking cards: difficulty, deck and the open card all live in
+      // the doc, so neither peer can end up looking at a different question.
+      setQuestionStage(data.questionStage || null);
 
       // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
@@ -1033,7 +1039,26 @@ export default function Chat({ user }) {
                   <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
                     📅<span>Daily</span>
                   </button>
-                  {!imageStage?.active && !tabooStage?.active && (
+                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && (
+                    <button
+                      className="call-btn-big"
+                      onClick={() => {
+                        // Same contentIndex pinning as the picture stage: the
+                        // topic must not be recomputed per device mid-call.
+                        updateDoc(doc(db, 'calls', callDocId), {
+                          questionStage: {
+                            active: true, contentIndex: getTodayIndex(),
+                            difficulty: null, cardIndex: null, seen: [],
+                          },
+                          'imageStage.active': false,
+                          'tabooStage.active': false,
+                        }).catch((e) => console.error('[Chat] questionStage start failed:', e));
+                      }}
+                    >
+                      🗣️<span>Suallar</span>
+                    </button>
+                  )}
+                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && (
                     <button
                       className="call-btn-big"
                       onClick={() => {
@@ -1047,13 +1072,14 @@ export default function Chat({ user }) {
                             contentIndex: getTodayIndex(),
                           },
                           'tabooStage.active': false,
+                          'questionStage.active': false,
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
                     >
                       🖼️<span>Şəkil</span>
                     </button>
                   )}
-                  {!tabooStage?.active && !imageStage?.active && (
+                  {!tabooStage?.active && !imageStage?.active && !questionStage?.active && (
                     <button
                       className="call-btn-big"
                       onClick={() => {
@@ -1065,6 +1091,7 @@ export default function Chat({ user }) {
                             score: 0,
                           },
                           'imageStage.active': false,
+                          'questionStage.active': false,
                         }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
                       }}
                     >
@@ -1124,6 +1151,48 @@ export default function Chat({ user }) {
         />
       )}
 
+      {inCall && questionStage?.active && content && (
+        <CallQuestionStage
+          content={questionStage.contentIndex != null
+            ? getContentByIndex(questionStage.contentIndex)
+            : content}
+          difficulty={questionStage.difficulty || null}
+          cardIndex={questionStage.cardIndex}
+          seen={questionStage.seen || []}
+          onPickDifficulty={(d) => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'questionStage.difficulty': d,
+              'questionStage.cardIndex': null,
+              'questionStage.seen': [],
+            }).catch((e) => console.error('[Chat] questionStage difficulty failed:', e));
+          }}
+          onOpenCard={(i) => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'questionStage.cardIndex': i,
+              // arrayUnion keeps the mark if both peers open the same card at
+              // once; writing the whole array would let one overwrite the other.
+              'questionStage.seen': arrayUnion(i),
+            }).catch((e) => console.error('[Chat] questionStage open failed:', e));
+          }}
+          onBackToDeck={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'questionStage.cardIndex': null,
+            }).catch((e) => console.error('[Chat] questionStage back failed:', e));
+          }}
+          onBackToDifficulty={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'questionStage.difficulty': null,
+              'questionStage.cardIndex': null,
+            }).catch((e) => console.error('[Chat] questionStage difficulty reset failed:', e));
+          }}
+          onClose={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'questionStage.active': false,
+            }).catch((e) => console.error('[Chat] questionStage close failed:', e));
+          }}
+        />
+      )}
+
       {inCall && tabooStage?.active && (
         <CallTabooStage
           cardIndex={tabooStage.cardIndex || 0}
@@ -1151,7 +1220,7 @@ export default function Chat({ user }) {
         />
       )}
 
-      {inCall && showRoadmap && !imageStage?.active && !tabooStage?.active && (
+      {inCall && showRoadmap && !imageStage?.active && !tabooStage?.active && !questionStage?.active && (
         <CallRoadmap
           content={content}
           onStart={() => setShowRoadmap(false)}

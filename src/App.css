@@ -811,6 +811,8 @@ body {
   gap: 16px;
   justify-content: center;
   align-items: center;
+  /* Dörd düymə (Daily / Suallar / Şəkil / Taboo) 320px ekrana sığmır. */
+  flex-wrap: wrap;
 }
 
 .call-btn-big {
