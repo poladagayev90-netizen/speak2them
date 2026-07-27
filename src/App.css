@@ -2060,7 +2060,8 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
   /* Cards are keyed on cardIndex, so a new word remounts and deals itself in. */
-  .taboo-card {
+  .taboo-card,
+  .qstage-card {
     animation: tabooCardIn 420ms cubic-bezier(0.34, 1.32, 0.5, 1) both;
   }
 

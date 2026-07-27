@@ -3,14 +3,13 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   collection, addDoc, onSnapshot,
   query, orderBy, limitToLast, serverTimestamp,
-  doc, getDoc, setDoc, updateDoc, runTransaction, increment, arrayUnion
+  doc, getDoc, setDoc, updateDoc, runTransaction, increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import PremiumBadge from '../components/PremiumBadge';
-import SpeakingCards from '../components/SpeakingCards';
 import TutorBadge from '../components/TutorBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
@@ -76,8 +75,7 @@ export default function Chat({ user }) {
   const [postCallStages, setPostCallStages] = useState([]);
   // Whether this call was long enough (3+ min) for the inline rating block.
   const [ratingEligible, setRatingEligible] = useState(false);
-  const [dailyTab, setDailyTab] = useState('questions');
-  const [difficulty, setDifficulty] = useState('easy');
+  const [dailyTab, setDailyTab] = useState('vocabulary');
   const [flipped, setFlipped] = useState({});
   const [incomingCallData, setIncomingCallData] = useState(null);
   const [newBadge, setNewBadge] = useState(null);
@@ -1037,7 +1035,7 @@ export default function Chat({ user }) {
               {inCall && (
                 <>
                   <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
-                    📅<span>Daily</span>
+                    📖<span>Lüğət</span>
                   </button>
                   {!imageStage?.active && !tabooStage?.active && !questionStage?.active && (
                     <button
@@ -1048,7 +1046,7 @@ export default function Chat({ user }) {
                         updateDoc(doc(db, 'calls', callDocId), {
                           questionStage: {
                             active: true, contentIndex: getTodayIndex(),
-                            difficulty: null, cardIndex: null, seen: [],
+                            difficulty: null, cardIndex: 0,
                           },
                           'imageStage.active': false,
                           'tabooStage.active': false,
@@ -1157,32 +1155,23 @@ export default function Chat({ user }) {
             ? getContentByIndex(questionStage.contentIndex)
             : content}
           difficulty={questionStage.difficulty || null}
-          cardIndex={questionStage.cardIndex}
-          seen={questionStage.seen || []}
+          cardIndex={questionStage.cardIndex || 0}
           onPickDifficulty={(d) => {
+            // Səviyyə seçilən kimi birinci kart açılır — aralıq dəstə yoxdur.
             updateDoc(doc(db, 'calls', callDocId), {
               'questionStage.difficulty': d,
-              'questionStage.cardIndex': null,
-              'questionStage.seen': [],
+              'questionStage.cardIndex': 0,
             }).catch((e) => console.error('[Chat] questionStage difficulty failed:', e));
           }}
-          onOpenCard={(i) => {
+          onGo={(i) => {
             updateDoc(doc(db, 'calls', callDocId), {
               'questionStage.cardIndex': i,
-              // arrayUnion keeps the mark if both peers open the same card at
-              // once; writing the whole array would let one overwrite the other.
-              'questionStage.seen': arrayUnion(i),
-            }).catch((e) => console.error('[Chat] questionStage open failed:', e));
-          }}
-          onBackToDeck={() => {
-            updateDoc(doc(db, 'calls', callDocId), {
-              'questionStage.cardIndex': null,
-            }).catch((e) => console.error('[Chat] questionStage back failed:', e));
+            }).catch((e) => console.error('[Chat] questionStage move failed:', e));
           }}
           onBackToDifficulty={() => {
             updateDoc(doc(db, 'calls', callDocId), {
               'questionStage.difficulty': null,
-              'questionStage.cardIndex': null,
+              'questionStage.cardIndex': 0,
             }).catch((e) => console.error('[Chat] questionStage difficulty reset failed:', e));
           }}
           onClose={() => {
@@ -1231,24 +1220,16 @@ export default function Chat({ user }) {
       {showDaily && (
         <div className="daily-panel">
           <div className="daily-panel-header">
-            <h3>📅 {content.topic}</h3>
+            <h3>📖 {content.topic}</h3>
             <button className="daily-close" onClick={() => setShowDaily(false)}>✕</button>
           </div>
+          {/* Zəng içində suallar artıq sinxron 🗣️ stage-indədir; bu panel yalnız
+              lüğət kimi qalır, yoxsa iki ayrı sual siyahısı bir-birini kəsirdi. */}
           <div className="daily-panel-tabs">
-            <button className={`dp-tab ${dailyTab === 'questions' ? 'active' : ''}`} onClick={() => setDailyTab('questions')}>🗣️ Questions</button>
             <button className={`dp-tab ${dailyTab === 'vocabulary' ? 'active' : ''}`} onClick={() => setDailyTab('vocabulary')}>📚 Vocab</button>
             <button className={`dp-tab ${dailyTab === 'idioms' ? 'active' : ''}`} onClick={() => setDailyTab('idioms')}>💬 Idioms</button>
           </div>
           <div className="daily-panel-body">
-            {dailyTab === 'questions' && (
-              <div>
-                <div className="difficulty-toggle" style={{ marginBottom: 12 }}>
-                  <button className={`diff-btn ${difficulty === 'easy' ? 'active' : ''}`} onClick={() => setDifficulty('easy')}>🟢 Easy</button>
-                  <button className={`diff-btn ${difficulty === 'hard' ? 'active' : ''}`} onClick={() => setDifficulty('hard')}>🔴 Hard</button>
-                </div>
-                <SpeakingCards questions={content.questions[difficulty]} />
-              </div>
-            )}
             {dailyTab === 'vocabulary' && (
               <div className="vocab-list">
                 {content.vocabulary.map((v, i) => (
