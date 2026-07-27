@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
 import PictureDescribing from './PictureDescribing';
+import SpeakingCards from './SpeakingCards';
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
@@ -247,14 +248,7 @@ export default function DailyTopicModal({ open, onClose }) {
                   🔴 Çətin
                 </button>
               </div>
-              <div className="dt-questions-list">
-                {content.questions[difficulty].map((q, i) => (
-                  <div key={i} className="dt-question-card">
-                    <span className="dt-q-num">{i + 1}</span>
-                    <p className="dt-q-text">{q}</p>
-                  </div>
-                ))}
-              </div>
+              <SpeakingCards questions={content.questions[difficulty]} />
             </div>
           )}
 

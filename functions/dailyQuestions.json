@@ -7,11 +7,21 @@
       "What do you always pack when you travel?",
       "Have you ever been on a plane? How was it?",
       "What is the best food you tried while travelling?",
+      "Where did you go on your last holiday?",
+      "Do you prefer the sea, the mountains or the city?",
+      "How do you usually book your trips?",
+      "What is one place in your country every visitor should see?",
+      "Who do you normally travel with?",
       "How does travelling abroad change a person's perspective on life?",
       "Do you think budget travel is better than luxury travel? Why?",
       "What are the pros and cons of solo travel?",
       "How has social media changed the way people travel?",
-      "Should governments invest more in tourism? Discuss."
+      "Should governments invest more in tourism? Discuss.",
+      "Is mass tourism destroying the places people love to visit?",
+      "Should countries limit the number of tourists they accept each year?",
+      "Do you learn more from travelling or from reading about a place?",
+      "How should travellers behave in a culture very different from their own?",
+      "Will virtual reality ever replace real travel? Why or why not?"
     ]
   },
   {
@@ -22,11 +32,21 @@
       "What is your favourite app and why?",
       "Do you prefer texting or calling people?",
       "What was the first device you ever owned?",
+      "What do you use your computer for most?",
+      "How do you feel when your internet stops working?",
+      "Do you play video games? Which ones?",
+      "What new gadget would you like to buy?",
+      "Do you read instructions or just try a new device?",
       "Is technology making us more or less social?",
       "Should children under 12 be allowed to use smartphones?",
       "How will AI affect employment in the next 10 years?",
       "Do you think social media does more harm than good?",
-      "Should there be global regulations on artificial intelligence?"
+      "Should there be global regulations on artificial intelligence?",
+      "Should people have the right to disconnect from work technology?",
+      "Is our personal data safe with big technology companies?",
+      "Does technology make learning easier or just faster?",
+      "Should countries build their own technology instead of importing it?",
+      "What technology do you think we will regret inventing?"
     ]
   },
   {
@@ -37,11 +57,21 @@
       "What food do you dislike and why?",
       "Have you ever tried food from another country?",
       "How important is food in your culture?",
+      "What did you eat yesterday?",
+      "Can you cook? What is your best dish?",
+      "Do you eat with your family or alone?",
+      "What is a popular street food in your country?",
+      "Do you prefer sweet or salty food?",
       "How does food reflect the culture and history of a country?",
       "Should fast food companies be taxed more heavily?",
       "Is veganism a practical lifestyle for everyone?",
       "How has globalisation changed local food traditions?",
-      "Should schools teach students how to cook?"
+      "Should schools teach students how to cook?",
+      "Should restaurants be required to show the calories in every dish?",
+      "Is expensive food really better than simple home cooking?",
+      "How does the food we eat affect the environment?",
+      "Should traditional recipes be protected by law?",
+      "Why do people connect food so strongly with memory and family?"
     ]
   },
   {
@@ -52,11 +82,21 @@
       "How do you study for an exam?",
       "Who was your favourite teacher and why?",
       "Do you think homework is useful?",
+      "How long did you spend at school each day?",
+      "What subject was hardest for you?",
+      "Do you learn better in the morning or at night?",
+      "What is something new you learned recently?",
+      "Do you like exams or projects more?",
       "Is university education necessary for success in life?",
       "How should schools prepare students for the modern world?",
       "Should education be free for everyone globally?",
       "Does the current education system encourage creativity?",
-      "How has online learning permanently changed education?"
+      "How has online learning permanently changed education?",
+      "Should students choose their own subjects from the age of 14?",
+      "Are grades a fair way to measure a student's ability?",
+      "Should teachers be paid according to their students' results?",
+      "Is it better to study what you love or what pays well?",
+      "How much should parents be involved in a child's education?"
     ]
   },
   {
@@ -67,11 +107,21 @@
       "What do you eat for breakfast?",
       "How many hours do you sleep each night?",
       "What do you do when you feel stressed?",
+      "How often do you walk during the day?",
+      "What is your favourite way to relax?",
+      "Do you drink enough water?",
+      "When did you last see a doctor?",
+      "What habit would you like to change?",
       "Should governments ban junk food advertising to children?",
       "How can societies better support people with mental health issues?",
       "Is a work-life balance achievable in today's world?",
       "Should employers be responsible for employees' mental health?",
-      "How has modern life negatively affected human health?"
+      "How has modern life negatively affected human health?",
+      "Should healthcare be completely free for everyone?",
+      "Is the fitness industry helping people or selling insecurity?",
+      "How much responsibility does a person have for their own health?",
+      "Should mental health days count as sick days at work?",
+      "Do social media beauty standards damage people's wellbeing?"
     ]
   },
   {
@@ -82,11 +132,21 @@
       "Do you use public transport? Why or why not?",
       "Have you seen any environmental problems near you?",
       "What small things can people do to help the planet?",
+      "What is the weather usually like where you live?",
+      "Do you like spending time in nature?",
+      "How do you get to work or school?",
+      "Do you turn off the lights when you leave a room?",
+      "Is there a park or green space near your home?",
       "Who is more responsible for climate change — individuals or governments?",
       "Should petrol cars be banned completely?",
       "Is economic growth compatible with environmental protection?",
       "How can developing countries grow without harming the environment?",
-      "Should there be a global carbon tax?"
+      "Should there be a global carbon tax?",
+      "Should recycling be made compulsory by law?",
+      "Are electric cars really the solution to pollution?",
+      "How can we convince people to change their daily habits?",
+      "Should rich countries pay poorer countries for climate damage?",
+      "Is it fair to ask ordinary people to sacrifice comfort for the planet?"
     ]
   },
   {
@@ -97,11 +157,21 @@
       "What skills do you think are important for any job?",
       "Would you prefer working for a company or being your own boss?",
       "How do you handle a difficult day at work?",
+      "What job did you want as a child?",
+      "Do you prefer working alone or in a team?",
+      "What time do you usually start your day?",
+      "What makes a good boss?",
+      "Have you ever had a part-time job?",
       "Will remote work permanently change office culture?",
       "Should the working week be reduced to 4 days?",
       "How important is job satisfaction compared to salary?",
       "Is it ethical for companies to monitor employees at home?",
-      "How should people prepare for job automation in the future?"
+      "How should people prepare for job automation in the future?",
+      "Is loyalty to one company still valuable today?",
+      "Should salaries be public inside a company?",
+      "How do you know when it is time to change career?",
+      "Are internships fair if they are unpaid?",
+      "Does hard work always lead to success? Discuss."
     ]
   },
   {
@@ -112,11 +182,21 @@
       "Have you ever posted something that got a lot of attention?",
       "Do you follow any influencers? Who and why?",
       "What is the best thing you have seen on social media recently?",
+      "What was the last thing you posted online?",
+      "Do you read the comments under posts?",
+      "Which app do you open first in the morning?",
+      "Do you prefer photos or short videos?",
+      "Have you ever taken a break from social media?",
       "Should social media platforms be held responsible for fake news?",
       "Does social media help or hurt mental health? Give examples.",
       "Should there be an age limit for using social media?",
       "Is the influencer lifestyle realistic or dangerous to promote?",
-      "How has social media changed the way we form relationships?"
+      "How has social media changed the way we form relationships?",
+      "Should social media companies pay users for their content?",
+      "Is online popularity a real form of success?",
+      "How does comparing ourselves online affect self-confidence?",
+      "Should political advertising be banned on social platforms?",
+      "Will people eventually get tired of social media? Why?"
     ]
   },
   {
@@ -127,11 +207,21 @@
       "Do you prefer paying by cash or card?",
       "What is something you saved up to buy?",
       "Do you think it is important to talk about money with friends?",
+      "What did you last spend money on?",
+      "Do you write down what you spend?",
+      "Is it easy to save money in your country?",
+      "What is a good gift that does not cost much?",
+      "Do you lend money to friends?",
       "Is it better to save money or invest it? Discuss.",
       "Should wealthy people pay more taxes? Why?",
       "How does money affect personal relationships?",
       "Should financial education be taught in schools?",
-      "Is it possible to be happy without much money?"
+      "Is it possible to be happy without much money?",
+      "Does having more money always bring more freedom?",
+      "Should there be a maximum salary as well as a minimum one?",
+      "Is buying a home better than renting? Discuss.",
+      "How does growing up poor or rich shape a person's view of money?",
+      "Should governments give every citizen a basic income?"
     ]
   },
   {
@@ -142,11 +232,21 @@
       "What genre do you enjoy the most — action, comedy, drama?",
       "Have you ever watched a film in another language?",
       "Who is your favourite actor or actress?",
+      "What was the last film you watched?",
+      "Do you watch films with subtitles?",
+      "Do you like watching a series slowly or all at once?",
+      "What film have you seen more than twice?",
+      "Do you prefer films or series? Why?",
       "How do films and series influence society's values?",
       "Do you think streaming platforms have killed cinema?",
       "Should violent or explicit content be allowed on streaming platforms?",
       "How do films portray different cultures — fairly or unfairly?",
-      "What makes a truly great film?"
+      "What makes a truly great film?",
+      "Are remakes and sequels a sign that creativity is dying?",
+      "Should films from other countries be dubbed or subtitled?",
+      "Can a film change someone's opinion about a serious issue?",
+      "Do awards like the Oscars really reflect quality?",
+      "Should streaming platforms show how their algorithm chooses films?"
     ]
   },
   {
@@ -157,11 +257,21 @@
       "Do you play any musical instrument?",
       "What song always puts you in a good mood?",
       "Do you prefer live concerts or recorded music?",
+      "When do you listen to music during the day?",
+      "What was the first concert you wanted to attend?",
+      "Do you sing when you are alone?",
+      "What music do people in your family like?",
+      "Do you listen to music while studying or working?",
       "How does music affect your emotions and mental state?",
       "Should music streaming services pay artists more?",
       "Has AI-generated music changed the industry for better or worse?",
       "Do you think lyrics can influence young people's behaviour?",
-      "Is music a universal language? Explain your view."
+      "Is music a universal language? Explain your view.",
+      "Should song lyrics ever be censored?",
+      "Is it fair that some artists become famous through one viral song?",
+      "How does music from other countries help you learn a language?",
+      "Do concert ticket prices exclude ordinary fans?",
+      "Will people still value albums in ten years, or only single songs?"
     ]
   },
   {
@@ -172,11 +282,21 @@
       "What famous person do you admire the most?",
       "Have you ever met someone famous?",
       "What do you think is the hardest part of being famous?",
+      "Which famous person would you invite to dinner?",
+      "Do you follow any celebrity news?",
+      "Who is the most famous person from your country?",
+      "Would you want your face to be recognised everywhere?",
+      "What talent would you like to be famous for?",
       "Do celebrities have a responsibility to be good role models?",
       "Does fame change a person's personality? How?",
       "Should celebrities be involved in politics?",
       "Is the media too invasive when reporting on famous people?",
-      "Why do we idolise certain people in modern culture?"
+      "Why do we idolise certain people in modern culture?",
+      "Do we expect too much from people who are simply good at their job?",
+      "Should celebrities be paid to advertise products they do not use?",
+      "Is cancel culture fair to public figures?",
+      "How does constant attention affect a young person's mental health?",
+      "Are influencers replacing traditional celebrities? Is that better?"
     ]
   },
   {
@@ -187,11 +307,21 @@
       "Do you prefer indoor or outdoor hobbies?",
       "Have you ever tried a hobby and given up?",
       "Would you teach your hobby to others?",
+      "What do you do on a free Sunday?",
+      "Do you have a hobby that costs nothing?",
+      "What hobby would you like to try one day?",
+      "Do you share your hobby with anyone?",
+      "How much free time do you have each week?",
       "Can hobbies turn into successful careers? Give examples.",
       "How do hobbies contribute to a person's mental wellbeing?",
       "Do people have enough free time in modern life?",
       "Should schools offer more time for creative hobbies?",
-      "Is it better to have one deep hobby or many varied interests?"
+      "Is it better to have one deep hobby or many varied interests?",
+      "Is it a problem that we feel guilty about doing nothing?",
+      "Should every hobby be turned into income? Why or why not?",
+      "Do screens take away time we used to spend on real hobbies?",
+      "How do hobbies help people build a social life?",
+      "Should companies give employees time for personal projects?"
     ]
   },
   {
@@ -202,11 +332,21 @@
       "What is your favourite item of clothing?",
       "How much do you spend on clothes each month?",
       "Do you think what you wear affects how people see you?",
+      "What are you wearing today?",
+      "Where do you usually buy your clothes?",
+      "Do you wear the same style every day?",
+      "What colour do you wear most often?",
+      "Do you keep old clothes or give them away?",
       "Is the fashion industry harmful to the environment?",
       "Should we move away from fast fashion? How?",
       "Does fashion reflect a person's identity or just their wealth?",
       "Is it right that fashion models are expected to look a certain way?",
-      "How has social media changed the fashion industry?"
+      "How has social media changed the fashion industry?",
+      "Should schools and workplaces have a dress code?",
+      "Is buying second-hand clothing the future of fashion?",
+      "Do people judge others too quickly by appearance?",
+      "Should fashion brands show where and how clothes are made?",
+      "Is following trends a form of creativity or of pressure?"
     ]
   },
   {
@@ -217,11 +357,21 @@
       "Who is your favourite animated character?",
       "What do you think makes a cartoon funny?",
       "Have you ever watched a cartoon in English?",
+      "Did you watch cartoons in the morning as a child?",
+      "What cartoon character are you most like?",
+      "Do you know any cartoons from other countries?",
+      "Do children in your family watch cartoons now?",
+      "What cartoon song do you still remember?",
       "Are modern cartoons better or worse than older ones? Why?",
       "Can animated films teach important life lessons? Give examples.",
       "Is it strange for adults to enjoy cartoons? Discuss.",
       "How do cartoons reflect society's values and problems?",
-      "Should cartoons always have a positive message for children?"
+      "Should cartoons always have a positive message for children?",
+      "Can animation tell serious stories better than live action?",
+      "Should cartoons show difficult topics like loss or illness?",
+      "Do cartoon characters influence how children see gender roles?",
+      "Is AI-made animation a threat to real animators?",
+      "Why do some cartoons stay popular for generations?"
     ]
   },
   {
@@ -232,11 +382,21 @@
       "Do you enjoy scary films? Why or why not?",
       "What scared you most as a child?",
       "Does anyone in your family have a funny fear?",
+      "Are you afraid of the dark?",
+      "How do you feel about speaking in front of people?",
+      "What do you do when you feel nervous?",
+      "Are you afraid of any animal or insect?",
+      "Do you like heights?",
       "Is fear ever a useful emotion? Explain.",
       "How can phobias negatively affect a person's life?",
       "Should people try to overcome their fears or accept them?",
       "Why do some people enjoy being scared, like on rollercoasters?",
-      "Can social media create new fears in young people?"
+      "Can social media create new fears in young people?",
+      "Where does the fear of failure come from?",
+      "Should children be protected from everything that frightens them?",
+      "Can facing a fear in public actually make it worse?",
+      "Is fear used too often in news and advertising?",
+      "How does the fear of other people's opinions limit our choices?"
     ]
   },
   {
@@ -247,11 +407,21 @@
       "How do you usually meet new people?",
       "Do you prefer spending time with family or friends?",
       "Have you ever had an argument with a close friend?",
+      "Who was your first friend?",
+      "How often do you see your friends?",
+      "What do you and your friends do together?",
+      "Is it easy for you to say sorry?",
+      "Do you keep in touch with old classmates?",
       "Can men and women truly be just friends? Discuss.",
       "How has social media changed the nature of friendship?",
       "Is it possible to maintain close friendships as you get older?",
       "What makes a relationship healthy or unhealthy?",
-      "Should couples share all their passwords? Why or why not?"
+      "Should couples share all their passwords? Why or why not?",
+      "Is it better to have a few deep friendships or many light ones?",
+      "Can a friendship survive when one person becomes very successful?",
+      "Should you always tell a friend an uncomfortable truth?",
+      "Do online friendships count as real friendships?",
+      "How do you know when a relationship is no longer good for you?"
     ]
   },
   {
@@ -262,11 +432,21 @@
       "Do you think sport is important for children?",
       "Who is your favourite sports player?",
       "Have you ever watched a live sports event?",
+      "Do you watch football or another sport on TV?",
+      "What sport would you like to learn?",
+      "Do you exercise with other people or alone?",
+      "What is the most popular sport in your country?",
+      "Have you ever won a competition?",
       "Should professional athletes be paid so much money?",
       "Is competition healthy or harmful for children?",
       "Should performance-enhancing drugs be allowed in sport?",
       "How does sport bring nations together?",
-      "Is mental strength more important than physical in sport?"
+      "Is mental strength more important than physical in sport?",
+      "Should hosting the Olympics be worth the cost for a country?",
+      "Is it fair to separate sports by gender?",
+      "How should sport deal with racism among fans?",
+      "Do young athletes give up too much of their childhood?",
+      "Is losing more useful than winning? Explain."
     ]
   },
   {
@@ -277,11 +457,21 @@
       "Would you prefer a dog or a cat?",
       "Have you ever been to a zoo? What did you think?",
       "What animal would you be if you could choose?",
+      "Did you have a pet as a child?",
+      "What animal is common where you live?",
+      "Are you afraid of any animals?",
+      "Would you adopt a street animal?",
+      "What animal do you find funny?",
       "Should keeping animals in zoos be banned?",
       "Is it ethical to have exotic animals as pets?",
       "How should governments protect endangered species?",
       "Do animals have the same rights as humans? Discuss.",
-      "Should animal testing for medicine or cosmetics be allowed?"
+      "Should animal testing for medicine or cosmetics be allowed?",
+      "Should cities do more to protect street animals?",
+      "Is eating meat morally acceptable? Discuss.",
+      "Do pets improve their owners' mental health?",
+      "Should people need a licence to keep a pet?",
+      "How much should we spend on saving one endangered species?"
     ]
   },
   {
@@ -292,11 +482,21 @@
       "Have you ever tried a tradition from another culture?",
       "What traditional food do you love?",
       "How do people in your country celebrate weddings?",
+      "What tradition do you enjoy the most?",
+      "How do people greet each other in your country?",
+      "What do families usually do at the weekend where you live?",
+      "Is there a tradition you find strange?",
+      "What music or dance is traditional in your culture?",
       "How important is it to preserve traditional culture in modern life?",
       "Should immigrants be expected to adopt the culture of their new country?",
       "Is globalisation destroying local cultures?",
       "Which traditions do you think should be abandoned and why?",
-      "How can younger generations keep traditions alive?"
+      "How can younger generations keep traditions alive?",
+      "Can a tradition ever be a good reason to do something harmful?",
+      "How do families pass culture on to children born abroad?",
+      "Is national identity becoming weaker in a connected world?",
+      "Should tourists be allowed to take part in sacred traditions?",
+      "What new tradition would you like your country to create?"
     ]
   },
   {
@@ -307,11 +507,21 @@
       "Would you travel to space if you had the chance?",
       "Do you believe there is life on other planets?",
       "What invention do you think has changed the world the most?",
+      "Did you like science at school?",
+      "Have you ever looked at the stars at night?",
+      "Do you watch science videos or documentaries?",
+      "What machine in your home amazes you most?",
+      "Would you like to meet an astronaut?",
       "Should governments spend more money on space exploration?",
       "Is it ethical to send humans to Mars knowing the risks?",
       "How has scientific progress improved daily life?",
       "Do you think science can answer all of life's questions?",
-      "Should private companies like SpaceX control space travel?"
+      "Should private companies like SpaceX control space travel?",
+      "Should scientists be allowed to edit human genes?",
+      "Why do many people no longer trust scientific experts?",
+      "Is space exploration a distraction from problems on Earth?",
+      "Who should own the resources found on the Moon?",
+      "How should science be explained to ordinary people?"
     ]
   },
   {
@@ -322,11 +532,21 @@
       "Would you prefer to live in a big city or a quiet village?",
       "What are three good things about city life?",
       "What do you miss when you are away from home?",
+      "How long have you lived in your city or village?",
+      "Is your area noisy or quiet?",
+      "Where do people meet in your neighbourhood?",
+      "Do you know your neighbours?",
+      "What is missing in the place where you live?",
       "What are the biggest challenges facing modern cities?",
       "Is countryside life becoming less attractive to young people? Why?",
       "How should governments manage population growth in cities?",
       "Does where you live affect your happiness and opportunities?",
-      "Should cities invest more in public transport? Why?"
+      "Should cities invest more in public transport? Why?",
+      "Why do young people leave villages, and can that be reversed?",
+      "Are big cities becoming too expensive to live in?",
+      "Should remote work push people back to smaller towns?",
+      "Does city life make people lonelier?",
+      "How can a city grow without losing its character?"
     ]
   },
   {
@@ -337,11 +557,21 @@
       "Do you prefer physical books or e-books?",
       "Who is your favourite author?",
       "How often do you read in a week?",
+      "Where do you like to read?",
+      "Did you read a lot as a child?",
+      "Do you finish every book you start?",
+      "What book would you recommend to a friend?",
+      "Do you prefer stories or real-life books?",
       "Is reading becoming less popular in the digital age?",
       "Can books change a person's life? Give an example.",
       "Should schools require students to read more classic literature?",
       "Do you think films based on books are usually better or worse?",
-      "How does reading in English help someone improve the language?"
+      "How does reading in English help someone improve the language?",
+      "Should some books be removed from school libraries?",
+      "Is listening to an audiobook the same as reading?",
+      "Why do people say reading fiction builds empathy?",
+      "Will short online content destroy our ability to read long texts?",
+      "Should authors be responsible for how readers use their ideas?"
     ]
   },
   {
@@ -352,11 +582,21 @@
       "What is the hardest thing about learning English?",
       "Do you think you communicate better in writing or speaking?",
       "What language would you most like to learn and why?",
+      "When did you start learning English?",
+      "Do you speak English outside the classroom?",
+      "What English word do you find funny?",
+      "Are you shy when you speak a new language?",
+      "How do you learn new words?",
       "Is English becoming the world's only important language?",
       "Should everyone learn a second language at school?",
       "How does language shape the way we think?",
       "Is it possible to fully understand a culture without speaking its language?",
-      "Will translation technology ever replace human language learners?"
+      "Will translation technology ever replace human language learners?",
+      "Does making mistakes help you learn faster? Explain.",
+      "Should small languages be saved even if few people speak them?",
+      "Is an accent something to fix or something to keep?",
+      "How does body language change the meaning of our words?",
+      "Are we communicating more but understanding each other less?"
     ]
   },
   {
@@ -367,11 +607,21 @@
       "What is the most expensive thing you have ever bought?",
       "Do you ever buy things you don't really need?",
       "What is your favourite place to shop?",
+      "What did you buy last week?",
+      "Do you make a list before shopping?",
+      "Do you compare prices before buying?",
+      "What shop do you visit most often?",
+      "Do you like shopping with other people?",
       "Has online shopping harmed local businesses?",
       "Is consumerism making us happier or more unhappy?",
       "Should luxury goods be taxed more heavily?",
       "How can people become more mindful consumers?",
-      "Is it wrong to spend a lot on fashion or luxury items?"
+      "Is it wrong to spend a lot on fashion or luxury items?",
+      "Do advertisements create needs that we never had?",
+      "Should shops be closed one day a week? Why or why not?",
+      "Is fast delivery worth its human and environmental cost?",
+      "How do sales and discounts change our behaviour?",
+      "Would you buy less if products lasted twice as long?"
     ]
   },
   {
@@ -382,11 +632,21 @@
       "What is one goal you want to achieve this year?",
       "Who inspires you to work hard?",
       "What is your biggest achievement so far?",
+      "What do you want to do next year?",
+      "What small goal did you finish recently?",
+      "Do you write your goals down?",
+      "What do you do when you feel lazy?",
+      "Who supports your dreams the most?",
       "Is it better to have realistic goals or dream big?",
       "How much does luck play a role in achieving success?",
       "Do social pressures influence people's ambitions?",
       "Can ambition be harmful? When?",
-      "What advice would you give to someone who has lost motivation?"
+      "What advice would you give to someone who has lost motivation?",
+      "Should you follow your passion or build a stable life first?",
+      "How do you deal with a dream that did not come true?",
+      "Do parents push their own dreams onto their children?",
+      "Is comparing your progress with others ever helpful?",
+      "What does success actually mean to you?"
     ]
   },
   {
@@ -397,11 +657,21 @@
       "Who is a historical figure you admire?",
       "Do you enjoy watching historical films or documentaries?",
       "What event in history do you find most interesting?",
+      "What did you learn about your country's history at school?",
+      "Do you know a story about your grandparents' life?",
+      "Have you seen an old photo that surprised you?",
+      "Is there a museum you would like to visit?",
+      "What century would you like to see for one day?",
       "Should countries apologise for historical wrongs?",
       "How does understanding history help us today?",
       "Do we learn enough history in schools?",
       "Is it possible to view history objectively?",
-      "How should nations deal with controversial historical monuments?"
+      "How should nations deal with controversial historical monuments?",
+      "Who decides which version of history is taught?",
+      "Do people repeat the mistakes of the past? Give examples.",
+      "Should old buildings be protected even if they block development?",
+      "How does a nation heal after a painful period in its history?",
+      "Can we judge people of the past by today's values?"
     ]
   },
   {
@@ -412,11 +682,21 @@
       "Would you like to live on another planet?",
       "What invention do you hope will exist in the future?",
       "Are you optimistic or pessimistic about the future?",
+      "What do you hope will change in your city?",
+      "Do you make plans or decide day by day?",
+      "What job do you think will disappear soon?",
+      "How do you think shopping will look in 20 years?",
+      "What would you like to learn in the future?",
       "Will humans ever live on Mars? Should we try?",
       "How will climate change affect the world in 50 years?",
       "Is technological progress always a good thing?",
       "Will AI ever replace teachers, doctors, or lawyers?",
-      "What is the biggest challenge humanity will face in the future?"
+      "What is the biggest challenge humanity will face in the future?",
+      "Should we let machines make important decisions about people?",
+      "Will future generations live better or worse than us?",
+      "How should countries prepare for jobs that do not exist yet?",
+      "Is it dangerous to be too optimistic about the future?",
+      "If you could send one message to the year 2100, what would it say?"
     ]
   },
   {
@@ -427,11 +707,21 @@
       "What do you usually do together at home?",
       "Do you prefer a big family or a small family?",
       "What is your favourite room in your home and why?",
+      "Who does the cooking in your home?",
+      "Do you live near your relatives?",
+      "What do you do together on special days?",
+      "Do you help with housework?",
+      "What makes a house feel like a home?",
       "How has the idea of \"family\" changed over the last 50 years?",
       "Should adult children take care of their elderly parents at home?",
       "Is it better to grow up with siblings or as an only child? Why?",
       "How does the home environment shape a persons character?",
-      "Do you think living with extended family is a good idea? Discuss."
+      "Do you think living with extended family is a good idea? Discuss.",
+      "Should parents be strict or friendly with their children?",
+      "At what age should young people leave the family home?",
+      "How do you keep family peace when opinions are very different?",
+      "Is it fair that housework is often unequally shared?",
+      "How much should family influence big life decisions?"
     ]
   },
   {
@@ -442,11 +732,21 @@
       "What special food do you eat during celebrations?",
       "Do you prefer big parties or small gatherings?",
       "What was the best celebration you have ever been to?",
+      "When is the next holiday in your country?",
+      "Do you give presents or prefer to receive them?",
+      "Who organises the celebrations in your family?",
+      "What do you wear on special days?",
+      "Do you decorate your home for holidays?",
       "How do celebrations bring a community closer together?",
       "Have holidays become too commercial these days? Discuss.",
       "Why is it important to keep cultural traditions alive?",
       "Should new global holidays be created? Which one would you add?",
-      "How do the holidays a country celebrates reflect its values?"
+      "How do the holidays a country celebrates reflect its values?",
+      "Should workers be paid more for working on public holidays?",
+      "Do we celebrate the right things as a society?",
+      "Is it acceptable to skip a family celebration? When?",
+      "How do celebrations change when people move abroad?",
+      "Should countries have fewer but longer public holidays?"
     ]
   }
 ]

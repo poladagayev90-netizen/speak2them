@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTodayContent } from '../data/weeklyContent';
+import SpeakingCards from '../components/SpeakingCards';
 
 export default function DailyHub() {
   const navigate = useNavigate();
@@ -63,14 +64,7 @@ export default function DailyHub() {
                 🔴 Hard (Type B)
               </button>
             </div>
-            <div className="questions-list">
-              {content.questions[difficulty].map((q, i) => (
-                <div key={i} className="question-card">
-                  <span className="question-number">{i + 1}</span>
-                  <p>{q}</p>
-                </div>
-              ))}
-            </div>
+            <SpeakingCards questions={content.questions[difficulty]} />
           </div>
         )}
 

@@ -10,6 +10,7 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import PremiumBadge from '../components/PremiumBadge';
+import SpeakingCards from '../components/SpeakingCards';
 import TutorBadge from '../components/TutorBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
@@ -1176,12 +1177,7 @@ export default function Chat({ user }) {
                   <button className={`diff-btn ${difficulty === 'easy' ? 'active' : ''}`} onClick={() => setDifficulty('easy')}>🟢 Easy</button>
                   <button className={`diff-btn ${difficulty === 'hard' ? 'active' : ''}`} onClick={() => setDifficulty('hard')}>🔴 Hard</button>
                 </div>
-                {content.questions[difficulty].map((q, i) => (
-                  <div key={i} className="question-card" style={{ marginBottom: 10 }}>
-                    <span className="question-number">{i + 1}</span>
-                    <p>{q}</p>
-                  </div>
-                ))}
+                <SpeakingCards questions={content.questions[difficulty]} />
               </div>
             )}
             {dailyTab === 'vocabulary' && (
