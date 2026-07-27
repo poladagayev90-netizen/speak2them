@@ -62,6 +62,10 @@ export default function Chat({ user }) {
   const [inCall, setInCall] = useState(false);
   const [muted, setMuted] = useState(false);
   const [callStatus, setCallStatus] = useState('');
+  // Kanalda tək olub-olmadığımız. Randevu ilə gələn zənglərdə kanalın ÖZÜ
+  // gözləmə otağıdır: birinci gələn qoşulub gözləyir, ikinci gələn kimi səs
+  // açılır. Ayrıca "rendezvous" maşını qurmağa ehtiyac qalmır.
+  const [peerJoined, setPeerJoined] = useState(false);
   const [callSeconds, setCallSeconds] = useState(0);
   // Limitə 1 dəq qalmış görünən keçici xəbərdarlıq banneri.
   const [timeWarning, setTimeWarning] = useState(false);
@@ -131,6 +135,7 @@ export default function Chat({ user }) {
   const inCallRef = useRef(false);
 
   const stateCallId = location.state?.callId;
+  const slotId = location.state?.slotId || null;
   const isMatchedCall = location.state?.matchedCall === true;
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = stateCallId || `call_${chatId}`;
@@ -265,6 +270,7 @@ export default function Chat({ user }) {
             // Add remote audio to recording
             addRemoteStream(remoteUser.audioTrack);
             setCallStatus('connected');
+            setPeerJoined(true);
           }
         } catch (e) { console.error('[Chat] Subscribe error:', e); }
       });
@@ -290,6 +296,18 @@ export default function Chat({ user }) {
       inCallRef.current = true;
       setCallStatus('connected');
       joinedRef.current = true;
+
+      // Randevu ilə gəlmişiksə, gəlişimizi slot üzvlüyünə yazırıq. Bu, no-show
+      // xatırlatmasının YEGANƏ siqnalıdır: planlaşdırıcı start+10dəq-də biri
+      // gəlib digəri gəlməyibsə nəzakətli mesaj qoyur. Rules bu sənəddə yalnız
+      // `arrivedAt` sahəsinə icazə verir.
+      if (slotId) {
+        setDoc(
+          doc(db, 'practiceSlots', slotId, 'members', user.uid),
+          { arrivedAt: serverTimestamp() },
+          { merge: true },
+        ).catch((e) => console.warn('[Chat] arrivedAt yazılmadı:', e.message));
+      }
       // The "how to start" roadmap is only useful for newcomers. Show it for a
       // user's first few calls, then never again — surfacing it on every call
       // is just noise for experienced users. Counter is per-device (localStorage).
@@ -381,7 +399,7 @@ export default function Chat({ user }) {
         await updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' });
       } catch (e) {}
     }
-  }, []);
+  }, [slotId, user.uid]);
 
   // Location state — caller joins after accepted (matched calls)
   useEffect(() => {
@@ -1001,7 +1019,9 @@ export default function Chat({ user }) {
           </h2>
           <p className="call-status-text">
             {callStatus === 'calling' && '📞 Calling...'}
-            {callStatus === 'connected' && `🟢 ${formatTime(callSeconds)}`}
+            {/* Kanaldayıq, amma qarşı tərəf hələ qoşulmayıb — gözləmə otağı. */}
+            {callStatus === 'connected' && !peerJoined && '⏳ Partnyor gözlənilir…'}
+            {callStatus === 'connected' && peerJoined && `🟢 ${formatTime(callSeconds)}`}
             {callStatus === 'left' && '⚠️ Partner left'}
             {callStatus === 'rejected' && '❌ Rədd edildi'}
             {callStatus === 'error' && '❌ Error'}

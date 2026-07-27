@@ -41,6 +41,11 @@ service cloud.firestore {
     // bağlamaq olmaz — nişanın yeganə şərti teacherVerified-dir və o, yalnız
     // adminin setTutorVerification funksiyasından gəlir. Sayğaclar da publik
     // profildə göstərilir, yəni client onları yazsaydı statistika uydurula bilərdi.
+    // practiceSlotIds/recurringSlots/upcomingCall/missedSlots də server-onlydır:
+    // randevunu və tələb sayğaclarını client yazsaydı, lövhədəki "2 nəfər
+    // gözləyir" uydurula bilərdi. `slotNoticePending` isə QƏSDƏN siyahıda
+    // DEYİL — nəzakətli xatırlatmanı bağlamaq üçün client onu silməlidir və ən
+    // pis halda istifadəçi öz xatırlatmasını gizlədir (təhlükəsizlik təsiri yox).
     function validRoleOneTimeSet() {
       return (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
           || (!('role' in resource.data) && request.resource.data.role in ['student', 'teacher']))
@@ -57,7 +62,8 @@ service cloud.firestore {
           'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions',
-          'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached'])
+          'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots'])
         && validRoleOneTimeSet();
     }
 
@@ -66,7 +72,8 @@ service cloud.firestore {
           'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions',
-          'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached'])
+          'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
         // Rol yaradılışda seçilə bilər; teacherEligible yalnız teacher rolu ilə birgə.
@@ -306,6 +313,34 @@ service cloud.firestore {
       );
       allow write: if false;
     }
+
+    // Praktika slotları. Valideyn sənəddə QƏSDƏN yalnız SAYLAR var (ad yoxdur):
+    // lövhə "14:00-da 2 nəfər gözləyir" göstərir, kimin olduğunu yox. Qoşulma
+    // düyməsi şəxsə yox, bloka basılır — deməli cherry-picking və rədd edilmə
+    // mümkün deyil. Adlar members alt-kolleksiyasındadır və onları YALNIZ
+    // sahibi oxuya bilir.
+    //
+    // Bütün yazılar server tərəfindədir (joinPracticeSlot / leavePracticeSlot /
+    // practiceSlotTick): saylar client-yazılan olsaydı, lövhədəki tələb
+    // uydurula bilərdi. Yeganə istisna `arrivedAt` — gözləmə otağına girişin
+    // qeydi; o da matchQueue-dakı ilə eyni hasOnly pattern-i ilə kilidlənib və
+    // ən pis halda nəzakətli xatırlatmaya təsir edir.
+    match /practiceSlots/{slotId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+
+      match /members/{memberId} {
+        allow read: if isOwnDoc(memberId);
+        allow create, delete: if false;
+        allow update: if isOwnDoc(memberId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['arrivedAt']);
+      }
+    }
+
+    // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız
+    // "bu push artıq göndərilib" markerləridir, client-in nə oxumağa, nə də
+    // yazmağa ehtiyacı var. Client yaza bilsəydi, xatırlatmaları susdura bilərdi.
 
     // DİQQƏT: inviteCodes üçün QƏSDƏN match bloku yoxdur. Aşağıdakı catch-all
     // onu tam bağlayır və bu, tam olaraq istənilən davranışdır: kodu yoxlamaq

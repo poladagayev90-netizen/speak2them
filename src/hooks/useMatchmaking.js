@@ -12,18 +12,20 @@ import {
   subscribeToSearchingQueue,
 } from '../utils/matchmaking';
 
-// With a small user base the odds of two people searching inside the same
-// 30-second window are poor, and a premature give-up reads as "the app is
-// broken". Two minutes costs one queue doc and a listener.
-const SEARCH_TIMEOUT_MS = 120000;
+// Canlı axtarış artıq 2 dəqiqə deyil, 60 saniyədir. Səbəb: uzun gözləmə heç nə
+// qazandırmır — həmin dəqiqədə başqası axtarmırsa, bir dəqiqə də axtarmayacaq.
+// Vaxt bitəndə istifadəçi boş ekranda qalmır: niyyəti cari blokun slotuna
+// YAZILIR (onNoMatch), yəni 5 dəqiqə sonra gələn adam onu görüb qoşula bilir.
+// Əvvəl bilet sadəcə silinirdi və niyyətdən heç bir iz qalmırdı.
+const SEARCH_TIMEOUT_MS = 60000;
 
 export function useMatchmaking({
   user,
   levelFilter,
   onMatched,
+  onNoMatch,
 }) {
   const [searching, setSearching] = useState(false);
-  const [compensationMsg, setCompensationMsg] = useState('');
   const searchingRef = useRef(false);
   const matchingRef = useRef(false);
   const ownUnsubRef = useRef(null);
@@ -74,13 +76,6 @@ export function useMatchmaking({
     }
   }, [user.uid, userLevel, user.topics]);
 
-  // No minute compensation anymore (Free/Premium model) — the consolation is
-  // the AInur fallback CTA the message drives.
-  const showNoMatchFallback = useCallback(() => {
-    setCompensationMsg('Partnyor tapılmadı. İstərsəniz AInur ilə (Süni İntellekt) dərhal praktika edə bilərsiniz!');
-    setTimeout(() => setCompensationMsg(''), 10000);
-  }, []);
-
   const cancelSearch = useCallback(async () => {
     setSearching(false);
     matchingRef.current = false;
@@ -129,14 +124,14 @@ export function useMatchmaking({
       }
     });
 
-    // Axtarış timeout-u — partner tapılmasa AInur fallback-ı göstər
+    // Vaxt bitdi — niyyəti itirmirik, slota yazırıq (bax yuxarıdakı şərh).
     timeoutRef.current = setTimeout(async () => {
       if (searchingRef.current) {
-        showNoMatchFallback();
         setSearching(false);
         matchingRef.current = false;
         cleanupListeners();
         await leaveSearchQueue(user.uid);
+        if (onNoMatch) onNoMatch();
       }
     }, SEARCH_TIMEOUT_MS);
   }, [
@@ -151,7 +146,7 @@ export function useMatchmaking({
     tryMatchWithCandidates,
     cleanupListeners,
     onMatched,
-    showNoMatchFallback,
+    onNoMatch,
   ]);
 
   useEffect(() => () => {
@@ -161,5 +156,5 @@ export function useMatchmaking({
     }
   }, [cleanupListeners, user.uid]);
 
-  return { searching, startSearch, cancelSearch, compensationMsg };
+  return { searching, startSearch, cancelSearch };
 }

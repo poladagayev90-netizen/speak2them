@@ -1591,6 +1591,523 @@ exports.setTutorVerification = onRequest({ secrets: [], invoker: "public" }, asy
   }
 });
 
+// ─── Praktika slotları: koordinasiya ──────────────────────────────
+// 20 nəfərlik bazada "aç → indi kimsə tap" işləmir: istənilən anda onlayn adam
+// sayı ~0–2-dir. Problem az istifadəçi DEYİL — sistem niyyəti yaddaşa yazmırdı:
+// axtarış bileti 2 dəqiqədən sonra silinirdi, deməli Səbinənin 14:00-dakı
+// cəhdindən Rümeysanın xəbər tutması fiziki olaraq mümkün deyildi.
+//
+// Model: istifadəçi 2 saatlıq bloka "müsaitəm" yazır. İki nəfər eyni bloka
+// düşəndə sistem onları AVTOMATİK cütləşdirir — sorğu/qəbul mərhələsi yoxdur,
+// ona görə rədd edilmək də mümkün deyil (özgüvən qorunur). Lövhədə ad görünmür,
+// yalnız say: düymə ŞƏXSƏ yox, BLOKA basılır, deməli cherry-picking yoxdur.
+//
+// SƏVİYYƏ QAPISI QƏSDƏN YOXDUR: bir blokda iki nəfər varsa, eşləşirlər. Nöqtə.
+// Az istifadəçi ilə istənilən filtr eşləşmə şansını sıfıra endirir; A2-nin B2
+// ilə danışması heç danışmamaqdan qat-qat yaxşıdır. Səviyyə yalnız eşləşmədən
+// SONRA, bildiriş mətnini seçmək üçün oxunur.
+const SLOT_BLOCK_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
+const SLOT_BLOCK_MS = 2 * 60 * 60 * 1000;
+const SLOT_HORIZON_DAYS = 3;
+const SLOT_REMINDER_MS = 10 * 60 * 1000;
+const SLOT_NOSHOW_GRACE_MS = 10 * 60 * 1000;
+const SLOT_MAX_MEMBERS = 60;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// slotId = "YYYY-MM-DD-HH" (Bakı saatı, UTC+4, DST yoxdur) — hər cihaz eyni
+// sətri hesablasın deyə saat İKİ rəqəmlə doldurulur.
+function parseSlotId(slotId) {
+  const m = /^(\d{4}-\d{2}-\d{2})-(\d{2})$/.exec(String(slotId || ""));
+  if (!m) return null;
+  const hour = Number(m[2]);
+  if (!SLOT_BLOCK_HOURS.includes(hour)) return null;
+  const startMs = Date.parse(`${m[1]}T${m[2]}:00:00+04:00`);
+  if (!Number.isFinite(startMs)) return null;
+  return { slotId, date: m[1], hour, startMs, endMs: startMs + SLOT_BLOCK_MS };
+}
+
+const slotIdOf = (date, hour) => `${date}-${String(hour).padStart(2, "0")}`;
+const callIdForPair = (a, b) => `call_${[a, b].sort().join("_")}`;
+
+// Bloka qoşulma nüvəsi. HTTP funksiyası da, təkrarlanan slotları materiallaşdıran
+// planlaşdırıcı da eyni məntiqi işlədir — iki fərqli qoşulma yolu olmasın deyə.
+// Tranzaksiya daxilində çağırılır; push commit-dən SONRA göndərilir.
+async function joinSlotTx(db, tx, slot, uid, user) {
+  const slotRef = db.collection("practiceSlots").doc(slot.slotId);
+  const membersRef = slotRef.collection("members");
+
+  const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+  const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+  if (members.some((m) => m.id === uid)) return { already: true };
+
+  const partner = members.find((m) => m.id !== uid && m.status === "waiting") || null;
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const usersCol = db.collection("users");
+
+  tx.set(membersRef.doc(uid), {
+    uid,
+    name: user.name || "",
+    level: user.level || null,
+    joinedAt: now,
+    status: partner ? "matched" : "waiting",
+    ...(partner ? { pairedWith: partner.id, callId: callIdForPair(uid, partner.id) } : {}),
+  });
+
+  tx.set(usersCol.doc(uid), {
+    practiceSlotIds: admin.firestore.FieldValue.arrayUnion(slot.slotId),
+    ...(partner ? {
+      upcomingCall: {
+        slotId: slot.slotId, startMs: slot.startMs,
+        peerUid: partner.id, peerName: partner.name || "",
+        callId: callIdForPair(uid, partner.id),
+      },
+    } : {}),
+  }, { merge: true });
+
+  if (partner) {
+    const callId = callIdForPair(uid, partner.id);
+    const sorted = [uid, partner.id].sort();
+
+    tx.set(membersRef.doc(partner.id), {
+      status: "matched", pairedWith: uid, callId,
+    }, { merge: true });
+
+    tx.set(usersCol.doc(partner.id), {
+      upcomingCall: {
+        slotId: slot.slotId, startMs: slot.startMs,
+        peerUid: uid, peerName: user.name || "", callId,
+      },
+    }, { merge: true });
+
+    // status "accepted" QƏSDƏNDİR: "calling" olsaydı GlobalCallListener qarşı
+    // tərəfin telefonunu ELƏ İNDİ çaldırardı. Randevu gələcəkdədir — hər iki
+    // tərəf öz vaxtında bu kanala qoşulur (Chat.jsx matchedCall yolu).
+    tx.set(db.collection("calls").doc(callId), {
+      userA: sorted[0], userB: sorted[1],
+      callerId: uid, receiverId: partner.id,
+      status: "accepted", source: "slot_match",
+      slotId: slot.slotId, createdAt: now,
+    }, { merge: true });
+  }
+
+  const others = members.filter((m) => m.id !== uid);
+  const waitingOthers = others.filter((m) => m.status === "waiting").length;
+  const matchedOthers = others.filter((m) => m.status === "matched").length;
+
+  tx.set(slotRef, {
+    date: slot.date,
+    startHour: slot.hour,
+    startMs: slot.startMs,
+    // Lövhə YALNIZ bu sənədi oxuyur — burada ad yoxdur, ona görə anonimlik
+    // əlavə sorğu olmadan qorunur.
+    waitingCount: partner ? waitingOthers - 1 : waitingOthers + 1,
+    matchedCount: partner ? matchedOthers + 2 : matchedOthers,
+    updatedAt: now,
+  }, { merge: true });
+
+  return {
+    matched: !!partner,
+    partnerId: partner ? partner.id : null,
+    partnerName: partner ? (partner.name || "") : "",
+    partnerLevel: partner ? (partner.level || null) : null,
+    callId: partner ? callIdForPair(uid, partner.id) : null,
+  };
+}
+
+// CEFR sıralaması — yalnız ego-boost mətnini seçmək üçün. Eşləşməyə TƏSİR ETMİR.
+const CEFR_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const cefrRank = (level) => {
+  const code = String(level || "").trim().slice(0, 2).toUpperCase();
+  const i = CEFR_ORDER.indexOf(code);
+  return i === -1 ? null : i;
+};
+
+function slotMatchPush(hourLabel, peerName, myRank, peerRank) {
+  // Səviyyəsi daha yüksək tərəf zəngi ləğv etməsin deyə mentorluq çərçivəsi.
+  const mentor = myRank !== null && peerRank !== null && myRank > peerRank;
+  return {
+    title: "✅ Zənginiz təsdiqləndi",
+    body: mentor
+      ? `${hourLabel} — ${peerName} ilə. Partnyorunuz sizdən öyrənməyə həvəslidir; sizin axıcılığınız bugünkü söhbətdə ona böyük dəstək olacaq.`
+      : `${hourLabel} — ${peerName} ilə. Vaxtında qoşulun!`,
+    type: "slot_matched",
+    url: "/",
+  };
+}
+
+// Blok saatının insan oxunaqlı etiketi: "Bu gün 14:00" / "Sabah 20:00".
+function slotHourLabel(slot, nowMs = Date.now()) {
+  const today = bakuDateStr(nowMs);
+  const tomorrow = bakuDateStr(nowMs + DAY_MS);
+  const hh = `${String(slot.hour).padStart(2, "0")}:00`;
+  if (slot.date === today) return `Bu gün ${hh}`;
+  if (slot.date === tomorrow) return `Sabah ${hh}`;
+  return `${slot.date} ${hh}`;
+}
+
+exports.joinPracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const slot = parseSlotId(req.body && req.body.slotId);
+  if (!slot) return res.status(400).json({ error: "invalid-slot" });
+
+  const now = Date.now();
+  // Bitmiş bloka qoşulmaq mənasızdır; üfüqdən kənar slot lövhədə görünmür.
+  if (slot.endMs <= now) return res.status(400).json({ error: "slot-past" });
+  if (slot.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+    return res.status(400).json({ error: "slot-too-far" });
+  }
+
+  const db = admin.firestore();
+
+  try {
+    await enforceRateLimit(uid, "practiceSlot", 60, 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const userSnap = await tx.get(db.collection("users").doc(uid));
+      if (!userSnap.exists) throw Object.assign(new Error("user-not-found"), { httpStatus: 404 });
+      return joinSlotTx(db, tx, slot, uid, userSnap.data() || {});
+    });
+
+    if (result.matched) {
+      const label = slotHourLabel(slot, now);
+      const meSnap = await db.collection("users").doc(uid).get();
+      const me = meSnap.exists ? meSnap.data() : {};
+      const myRank = cefrRank(me.level);
+      const peerRank = cefrRank(result.partnerLevel);
+      await Promise.all([
+        sendPushToUser(db, uid, slotMatchPush(label, result.partnerName || "Partnyorunuz", myRank, peerRank)),
+        sendPushToUser(db, result.partnerId, slotMatchPush(label, me.name || "Partnyorunuz", peerRank, myRank)),
+      ]).catch(() => null);
+    }
+
+    return res.status(200).json({ ok: true, ...result });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[joinPracticeSlot]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const slot = parseSlotId(req.body && req.body.slotId);
+  if (!slot) return res.status(400).json({ error: "invalid-slot" });
+
+  const db = admin.firestore();
+
+  try {
+    await enforceRateLimit(uid, "practiceSlot", 60, 60 * 60 * 1000);
+
+    const released = await db.runTransaction(async (tx) => {
+      const slotRef = db.collection("practiceSlots").doc(slot.slotId);
+      const membersRef = slotRef.collection("members");
+      const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+      const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+      const mine = members.find((m) => m.id === uid);
+      if (!mine) return null;
+      const partnerId = mine.pairedWith || null;
+      const others = members.filter((m) => m.id !== uid);
+      // Azad olan tərəf üçün blokda başqa gözləyən varsa, DƏRHAL yeni cüt
+      // qurulur. Bunsuz iki nəfər eyni blokda "gözləyir" statusunda qalıb
+      // bir-birini heç vaxt görmürdü — koordinasiya probleminin özü qayıdırdı.
+      const partner = partnerId ? others.find((m) => m.id === partnerId) : null;
+      const rematch = partner
+        ? others.find((m) => m.id !== partnerId && m.status === "waiting") || null
+        : null;
+
+      const usersCol = db.collection("users");
+      const del = admin.firestore.FieldValue.delete();
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      tx.delete(membersRef.doc(uid));
+      tx.set(usersCol.doc(uid), {
+        practiceSlotIds: admin.firestore.FieldValue.arrayRemove(slot.slotId),
+        // upcomingCall yalnız BU slota aiddirsə silinir — başqa blokdakı
+        // randevu təsadüfən uçmasın.
+        ...(mine.status === "matched" ? { upcomingCall: del } : {}),
+      }, { merge: true });
+
+      if (partner && rematch) {
+        const newCallId = callIdForPair(partnerId, rematch.id);
+        const sorted = [partnerId, rematch.id].sort();
+        for (const [a, b] of [[partnerId, rematch], [rematch.id, partner]]) {
+          tx.set(membersRef.doc(a), { status: "matched", pairedWith: b.id, callId: newCallId }, { merge: true });
+          tx.set(usersCol.doc(a), {
+            upcomingCall: {
+              slotId: slot.slotId, startMs: slot.startMs,
+              peerUid: b.id, peerName: b.name || "", callId: newCallId,
+            },
+          }, { merge: true });
+        }
+        tx.set(db.collection("calls").doc(newCallId), {
+          userA: sorted[0], userB: sorted[1],
+          callerId: partnerId, receiverId: rematch.id,
+          status: "accepted", source: "slot_match",
+          slotId: slot.slotId, createdAt: now,
+        }, { merge: true });
+      } else if (partner) {
+        tx.set(membersRef.doc(partnerId), {
+          status: "waiting", pairedWith: del, callId: del,
+        }, { merge: true });
+        tx.set(usersCol.doc(partnerId), { upcomingCall: del }, { merge: true });
+      }
+
+      // Sayğaclar son vəziyyətdən yenidən hesablanır — increment zənciri
+      // sürüşsə də sənəd özünü bərpa edir.
+      let waitingCount = 0;
+      let matchedCount = 0;
+      for (const m of others) {
+        let status = m.status;
+        if (partner && m.id === partnerId) status = rematch ? "matched" : "waiting";
+        else if (rematch && m.id === rematch.id) status = "matched";
+        if (status === "waiting") waitingCount += 1;
+        else if (status === "matched") matchedCount += 1;
+      }
+      tx.set(slotRef, { waitingCount, matchedCount, updatedAt: now }, { merge: true });
+
+      return {
+        partnerId,
+        partnerName: partner ? (partner.name || "") : "",
+        rematchId: rematch ? rematch.id : null,
+        rematchName: rematch ? (rematch.name || "") : "",
+      };
+    });
+
+    if (released && released.partnerId) {
+      const label = slotHourLabel(slot);
+      if (released.rematchId) {
+        // Yeni cüt quruldu — "planı dəyişdi" mesajı yanlış olardı, birbaşa
+        // təsdiq göndərilir.
+        await Promise.all([
+          sendPushToUser(db, released.partnerId, {
+            title: "✅ Zənginiz təsdiqləndi",
+            body: `${label} — ${released.rematchName || "Partnyorunuz"} ilə.`,
+            type: "slot_matched", url: "/",
+          }),
+          sendPushToUser(db, released.rematchId, {
+            title: "✅ Zənginiz təsdiqləndi",
+            body: `${label} — ${released.partnerName || "Partnyorunuz"} ilə.`,
+            type: "slot_matched", url: "/",
+          }),
+        ]).catch(() => null);
+      } else {
+        // ÜZÜ QORUYAN mətn: rədd olunma və ad KEÇMİR. "X səni rədd etdi" hissi
+        // istifadəçini tətbiqdən uzaqlaşdırır — bax plan sənədindəki qərar.
+        await sendPushToUser(db, released.partnerId, {
+          title: "Slotunuz yenidən açıldı",
+          body: `Partnyorunuzun planı dəyişdi — ${label} slotunuz yenidən axtarışa açıldı.`,
+          type: "slot_released", url: "/",
+        }).catch(() => null);
+      }
+    }
+
+    return res.status(200).json({
+      ok: true,
+      released: !!(released && released.partnerId),
+      rematched: !!(released && released.rematchId),
+    });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[leavePracticeSlot]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// Təkrarlanan qrafik: "hər gün 14:00" / "hər Çərşənbə 20:00". Bir dəfə qurulur,
+// planlaşdırıcı hər gün növbəti günləri özü doldurur — lövhə iki həftədən sonra
+// özü-özünü doldurur və heç kim hər gün yenidən vaxt seçmir.
+exports.setRecurringSlots = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const raw = (req.body && req.body.recurringSlots) || [];
+  if (!Array.isArray(raw)) return res.status(400).json({ error: "invalid-schedule" });
+
+  const seen = new Set();
+  const recurringSlots = [];
+  for (const item of raw) {
+    const hour = Number(item && item.hour);
+    const day = item && item.day;
+    const dayOk = day === "daily" || (Number.isInteger(Number(day)) && Number(day) >= 0 && Number(day) <= 6);
+    if (!SLOT_BLOCK_HOURS.includes(hour) || !dayOk) continue;
+    const key = `${day}-${hour}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recurringSlots.push({ day: day === "daily" ? "daily" : Number(day), hour });
+    if (recurringSlots.length >= 14) break;
+  }
+
+  try {
+    await enforceRateLimit(decoded.uid, "practiceSlot", 60, 60 * 60 * 1000);
+    await admin.firestore().collection("users").doc(decoded.uid)
+      .set({ recurringSlots }, { merge: true });
+    return res.status(200).json({ ok: true, recurringSlots });
+  } catch (e) {
+    if (e.httpStatus !== 429) console.error("[setRecurringSlots]", e.message);
+    return res.status(e.httpStatus || 500).json({ error: e.message });
+  }
+});
+
+// Bir dəfə iddia edilən marker — eyni push hər dəqiqə təkrarlanmasın deyə.
+// matchSessionQueue-dakı sessionRuns pattern-inin eynisi.
+async function claimSlotRun(db, id) {
+  const ref = db.collection("slotRuns").doc(id);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (snap.exists) return false;
+    tx.set(ref, { at: admin.firestore.FieldValue.serverTimestamp() });
+    return true;
+  });
+}
+
+exports.practiceSlotTick = onSchedule(
+  { schedule: "every 1 minutes", timeZone: "Asia/Baku" },
+  async () => {
+    const db = admin.firestore();
+    const now = Date.now();
+    const today = bakuDateStr(now);
+    const dates = [];
+    for (let i = 0; i < SLOT_HORIZON_DAYS; i++) dates.push(bakuDateStr(now + i * DAY_MS));
+
+    // ① Gündə bir dəfə: təkrarlanan qrafikləri materiallaşdır + köhnəni təmizlə.
+    if (await claimSlotRun(db, `${today}_daily`)) {
+      try {
+        const usersSnap = await db.collection("users").get();
+        for (const uDoc of usersSnap.docs) {
+          const u = uDoc.data() || {};
+          const rec = Array.isArray(u.recurringSlots) ? u.recurringSlots : [];
+          if (rec.length === 0) continue;
+          for (const dateStr of dates) {
+            const wd = bakuWeekday(dateStr);
+            for (const r of rec) {
+              if (r.day !== "daily" && Number(r.day) !== wd) continue;
+              const slot = parseSlotId(slotIdOf(dateStr, r.hour));
+              if (!slot || slot.endMs <= now) continue;
+              try {
+                await db.runTransaction((tx) => joinSlotTx(db, tx, slot, uDoc.id, u));
+              } catch (e) {
+                console.warn("[SlotTick] recurring join failed:", uDoc.id, slot.slotId, e.message);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[SlotTick] materialize failed:", e.message);
+      }
+
+      // Keçmiş slotları sil (sənəd + üzvlər). Yalnız TAM tarixlə sorğu —
+      // kolleksiya yolu ilə toplu silmə heç vaxt.
+      try {
+        const oldDate = bakuDateStr(now - 2 * DAY_MS);
+        const oldSnap = await db.collection("practiceSlots").where("date", "<", oldDate).limit(200).get();
+        for (const d of oldSnap.docs) {
+          const mem = await d.ref.collection("members").limit(SLOT_MAX_MEMBERS).get();
+          await Promise.all(mem.docs.map((m) => m.ref.delete()));
+          await d.ref.delete();
+        }
+      } catch (e) {
+        console.warn("[SlotTick] cleanup failed:", e.message);
+      }
+    }
+
+    // ② Xatırlatma / başlanğıc / no-show — bu gün və sabahın blokları bəsdir.
+    const window = [...new Set([dates[0], dates[1]].filter(Boolean))];
+    const slotsSnap = await db.collection("practiceSlots").where("date", "in", window).get();
+
+    for (const doc of slotsSnap.docs) {
+      const slot = parseSlotId(doc.id);
+      if (!slot) continue;
+      const untilStart = slot.startMs - now;
+
+      const matchedMembers = async () => {
+        const snap = await doc.ref.collection("members")
+          .where("status", "==", "matched").limit(SLOT_MAX_MEMBERS).get();
+        return snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      };
+
+      try {
+        // 10 dəqiqə qalmış xatırlatma. Yalnız EŞLƏŞMİŞ üzvlərə — tək gözləyənə
+        // "hələ təksən" yazmaq ruhdan salır və spam kimi oxunur.
+        if (untilStart <= SLOT_REMINDER_MS && untilStart > SLOT_REMINDER_MS - 60000) {
+          if (await claimSlotRun(db, `${doc.id}_reminder`)) {
+            for (const m of await matchedMembers()) {
+              await sendPushToUser(db, m.id, {
+                title: "⏰ 10 dəqiqəyə praktika",
+                body: `${slotHourLabel(slot, now)} — zənginiz başlamaq üzrədir.`,
+                type: "slot_reminder", url: "/",
+              }).catch(() => null);
+            }
+          }
+        }
+
+        // Randevu anı.
+        if (untilStart <= 0 && untilStart > -60000) {
+          if (await claimSlotRun(db, `${doc.id}_start`)) {
+            for (const m of await matchedMembers()) {
+              await sendPushToUser(db, m.id, {
+                title: "🎙️ Praktika vaxtıdır",
+                body: "Partnyorunuz sizi gözləyir — tətbiqi açın.",
+                type: "slot_start", url: "/",
+              }).catch(() => null);
+            }
+          }
+        }
+
+        // No-show: biri gəlib, digəri gəlməyibsə nəzakətli xatırlatma qoyulur.
+        // Cəza YOXDUR — icma yeni formalaşır, ban insanları qaçırar.
+        const sinceStart = now - slot.startMs;
+        if (sinceStart >= SLOT_NOSHOW_GRACE_MS && sinceStart < SLOT_NOSHOW_GRACE_MS + 60000) {
+          if (await claimSlotRun(db, `${doc.id}_noshow`)) {
+            const members = await matchedMembers();
+            const byId = new Map(members.map((m) => [m.id, m]));
+            for (const m of members) {
+              const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
+              if (!peer) continue;
+              if (peer.arrivedAt && !m.arrivedAt) {
+                await db.collection("users").doc(m.id).set({
+                  missedSlots: admin.firestore.FieldValue.increment(1),
+                  slotNoticePending: true,
+                }, { merge: true });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[SlotTick] slot pass failed:", doc.id, e.message);
+      }
+    }
+  },
+);
+
 // ─── AI Quiz Generation (DeepSeek proxy) ──────────────────────────
 // invoker: "public" is required, not optional. Cloud Run rejects the browser's
 // CORS preflight (an OPTIONS with no Authorization header) before our handler
@@ -3352,16 +3869,25 @@ exports.matchSessionQueue = onSchedule({
   }
 });
 
-// ─── "Someone is looking for a partner" push ───────────────────────
-// With a small user base the bottleneck is not the matching algorithm, it is
-// that two people are rarely searching at the same minute. When somebody joins
-// the on-demand queue and nobody else is in it, nudge the users who are online
-// and free. Guarded by a global cooldown so this can never become a spam loop.
+// ─── "Someone is looking for a partner" push — SÖNDÜRÜLÜB ─────────
+// Bu bildiriş strukturca işləyə bilmirdi: alıcı siyahısı `lastSeen` son 5
+// dəqiqə ilə məhdud idi, yəni YALNIZ onsuz da tətbiqdə olanlara gedirdi. Sənə
+// lazım olan adam — oflayn olan — heç vaxt xəbər tutmurdu. Üstəlik bütün tətbiq
+// üçün 10 dəqiqəlik ümumi cooldown vardı, deməli ikinci axtarış susdurulurdu.
+//
+// Yerini praktika slotları tutdu: axtarış tapmadıqda istifadəçi cari blokun
+// üzvü olur, sonrakı adam bloka qoşulanda push YALNIZ həmin bir nəfərə gedir
+// (joinPracticeSlot). Hədəflənmiş, spam deyil, oflayn adamı da tutur.
+//
+// Funksiya silinmək əvəzinə erkən return edir: silmək deploy-da `--force`
+// tələb edir və trigger-in birdən yox olması təhlükəlidir.
 const SEARCH_PING_COOLDOWN_MS = 10 * 60 * 1000;
 const SEARCH_PING_MAX_RECIPIENTS = 30;
 const PRESENCE_FRESH_MS = 5 * 60 * 1000;
+const SEARCH_PING_ENABLED = false;
 
 exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event) => {
+  if (!SEARCH_PING_ENABLED) return;
   const before = event.data.before.exists ? event.data.before.data() : null;
   const after = event.data.after.exists ? event.data.after.data() : null;
 

@@ -27,7 +27,13 @@ import GuidedTour from '../components/GuidedTour';
 import CourseProgressCard from '../components/CourseProgressCard';
 import DailyTopicBanner from '../components/DailyTopicBanner';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
-import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
+import PracticeBoard from '../components/PracticeBoard';
+import SlotNoticeModal from '../components/SlotNoticeModal';
+import {
+  currentBlockSlotId, joinPracticeSlot, subscribeToMySlots,
+  parseSlotId, dayLabel, hourLabel,
+} from '../utils/practiceSlots';
+import { Award, Shuffle, X, Globe, Shield, BookOpen, CalendarClock } from 'lucide-react';
 
 // Ordered to match the screen top-to-bottom, ending on the bottom nav.
 const HOME_TOUR_STEPS = [
@@ -67,6 +73,10 @@ export default function Home({ user }) {
   const [userBadges, setUserBadges] = useState(user.badges || []);
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const [rawSearchers, setRawSearchers] = useState([]);
+  // Praktika slotları: mine = {slotIds, recurringSlots, upcomingCall, slotNoticePending}
+  const [mine, setMine] = useState(null);
+  const [boardOpen, setBoardOpen] = useState(true);
+  const [slotToast, setSlotToast] = useState('');
   // Value unused — bumping it only forces the staleness re-filter below.
   const [, setSearcherTick] = useState(0);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
@@ -135,11 +145,34 @@ export default function Home({ user }) {
     });
   }, [navigate]);
 
-  const { searching, startSearch, cancelSearch, compensationMsg } = useMatchmaking({
+  // Canlı axtarış partnyor tapmayanda niyyət İTMİR: istifadəçi cari 2 saatlıq
+  // blokun üzvü olur və lövhə açılır. Səbinə 14:03-də boş görüb çıxsa belə,
+  // Rümeysa 14:07-də "1 nəfər gözləyir" görüb qoşulur → dərhal eşləşmə.
+  // Əvvəl bilet silinirdi və bu ssenari FİZİKİ olaraq mümkün deyildi.
+  const handleNoMatch = useCallback(async () => {
+    setBoardOpen(true);
+    const slotId = currentBlockSlotId();
+    if (!slotId) return; // gecə saatları — blok yoxdur, sadəcə lövhə açılır
+    const res = await joinPracticeSlot(slotId);
+    if (res.ok && res.data?.matched) {
+      setSlotToast(`✅ ${res.data.partnerName || 'Partnyorunuz'} ilə zənginiz təsdiqləndi!`);
+    } else {
+      setSlotToast('Hazırda kimsə yoxdur — vaxtınızı yazdıq. Kimsə qoşulan kimi bildiriş alacaqsınız.');
+    }
+    setTimeout(() => setSlotToast(''), 8000);
+  }, []);
+
+  const { searching, startSearch, cancelSearch } = useMatchmaking({
     user,
     levelFilter,
     onMatched: handleMatched,
+    onNoMatch: handleNoMatch,
   });
+
+  // Randevu / öz slotlarım / nəzakətli xatırlatma — hamısı öz user sənədimdə.
+  // App.js-in canlı sahə siyahısına salına bilmirlər (obyekt və massiv `!==`
+  // müqayisəsini heç vaxt keçmir, hər heartbeat-də bütün tətbiq render olardı).
+  useEffect(() => subscribeToMySlots(user.uid, setMine), [user.uid]);
 
   // Polled instead of a live listener: with a live query every user's
   // presence heartbeat would be re-streamed to every Home viewer (read
@@ -288,6 +321,54 @@ export default function Home({ user }) {
 
         <CourseCompletionCelebration user={user} />
 
+        {/* Nəzakətli xatırlatma — cəza YOX. İcma yeni formalaşır, ban insanları
+            qaçırardı; bir dəfəlik xahiş kifayətdir. */}
+        {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
+
+        {/* Yaxınlaşan randevu ekranın ən yuxarısındadır: ciddiyyət qatır və
+            "bu gün kimsə məni gözləyir" hissi gəlmə ehtimalını qaldırır. */}
+        {mine?.upcomingCall && (() => {
+          const uc = mine.upcomingCall;
+          const parsed = parseSlotId(uc.slotId);
+          const startMs = Number(uc.startMs) || parsed?.startMs || 0;
+          const openable = Date.now() >= startMs - 5 * 60 * 1000;
+          const when = parsed
+            ? `${dayLabel(parsed.date)} ${hourLabel(parsed.hour)}`
+            : '';
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
+              border: '1px solid #7c6ff755', borderRadius: '16px',
+              padding: '16px', marginBottom: '12px',
+              display: 'flex', alignItems: 'center', gap: '12px',
+            }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '3px' }}>
+                  Yaxınlaşan zəng
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  {when} — {uc.peerName || 'Partnyorunuz'} ilə
+                </div>
+              </div>
+              {openable && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/chat/${uc.peerUid}`, {
+                    state: { acceptedCall: true, callId: uc.callId, matchedCall: true, slotId: uc.slotId },
+                  })}
+                  style={{
+                    flexShrink: 0, padding: '11px 16px', borderRadius: '12px', border: 'none',
+                    background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                    color: '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer',
+                  }}
+                >
+                  Qoşul
+                </button>
+              )}
+            </div>
+          );
+        })()}
+
         {/* onJoinSession: sessiya pəncərəsi açıq olanda "Qoşul" düyməsi adi
             axtarışı başladır — matchmaking.js-ə görə sessiya növbəsi ilə anlıq
             axtarış EYNİ hovuzdur, ona görə sessiyanı gözləyənlərlə cütləşir.
@@ -300,6 +381,10 @@ export default function Home({ user }) {
 
         <NotificationPrompt user={user} />
 
+        {/* AD QƏSDƏN GÖSTƏRİLMİR. Kim olduğunu bilmək seçicilik (cherry-picking)
+            yaradır: aşağı səviyyəli istifadəçi yuxarı səviyyəlini görüb
+            qoşulmaqdan çəkinir, rədd təcrübəsi isə özgüvəni qırır. Qoşulma
+            şəxsə deyil, gözləyən HOVUZA olur. */}
         {activeSearchers.length > 0 && !searching && (
           <div style={{
             background: 'rgba(124,111,247,0.10)',
@@ -310,8 +395,7 @@ export default function Home({ user }) {
           }}>
             <span style={{ fontSize: '22px' }}>🔎</span>
             <p style={{ flex: 1, color: 'var(--text-primary, #fff)', fontSize: '14px', margin: 0, lineHeight: 1.4 }}>
-              <b>{activeSearchers[0].name || 'Bir istifadəçi'}</b>
-              {activeSearchers.length > 1 ? ` və daha ${activeSearchers.length - 1} nəfər` : ''} indi partnyor axtarır!
+              <b>{activeSearchers.length} nəfər</b> indi partnyor axtarır — qoşulsanız dərhal bağlanacaq!
             </p>
             <button
               onClick={startSearch}
@@ -355,33 +439,37 @@ export default function Home({ user }) {
           cancelLabel="Axtarışı dayandır"
         />
 
-        {compensationMsg && (
+        {slotToast && (
           <div style={{
             background: 'linear-gradient(135deg, #065f46, #047857)',
-            border: '1px solid #10b98155',
-            borderRadius: '14px',
-            padding: '14px 18px',
-            marginTop: '10px',
-            textAlign: 'center',
+            border: '1px solid #10b98155', borderRadius: '14px',
+            padding: '14px 18px', marginTop: '10px', textAlign: 'center',
             animation: 'fadeInUp 0.4s ease',
           }}>
-            <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px', margin: 0 }}>
-              🎁 {compensationMsg}
+            <p style={{ color: '#fff', fontWeight: 700, fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
+              {slotToast}
             </p>
-            <button 
-              onClick={() => navigate('/ai-chat')}
-              style={{
-                marginTop: '10px', background: '#10b981', color: '#fff',
-                border: 'none', borderRadius: '8px', padding: '8px 16px',
-                fontWeight: 'bold', cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', gap: '6px',
-                width: '100%', fontSize: '14px'
-              }}
-            >
-              🤖 AInur-a Zəng Et 📞
-            </button>
           </div>
         )}
+
+        {/* Lövhə əsas mexanizmdir, gizli menyuda deyil — açıq durur. */}
+        <div style={{ marginTop: '12px' }}>
+          <button
+            type="button"
+            onClick={() => setBoardOpen((o) => !o)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '8px', padding: '11px', borderRadius: '12px', cursor: 'pointer',
+              border: '1px solid var(--border)', background: 'var(--bg-card)',
+              color: 'var(--text-primary)', fontSize: '14px', fontWeight: 700,
+              marginBottom: boardOpen ? '12px' : 0,
+            }}
+          >
+            <CalendarClock size={18} />
+            {boardOpen ? 'Vaxt cədvəlini gizlət' : 'Nə vaxt müsaitsiniz?'}
+          </button>
+          {boardOpen && <PracticeBoard user={user} mine={mine} />}
+        </div>
 
         {/* Günün mövzusu girişi yuxarıdakı DailyTopicBanner-dədir — burada
             ayrıca "Daily Topic" düyməsi eyni modalı açırdı və təkrar idi. */}
