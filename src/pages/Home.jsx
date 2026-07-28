@@ -31,6 +31,7 @@ import PracticeBoard from '../components/PracticeBoard';
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
+import LabBuddy from '../components/LabBuddy';
 import {
   currentBlockSlotId, joinPracticeSlot, leavePracticeSlot, subscribeToMySlots,
   subscribeToSlotChange,
@@ -346,6 +347,10 @@ export default function Home({ user }) {
         {/* Nəzakətli xatırlatma — cəza YOX. İcma yeni formalaşır, ban insanları
             qaçırardı; bir dəfəlik xahiş kifayətdir. */}
         {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
+
+        {/* Kolba — deyəcək sözü olanda küncdən boylanır, sonra yox olur.
+            Yalnız Lobby-də: hər ekranda çıxsa, personaj deyil, maneə olur. */}
+        <LabBuddy user={user} mine={mine} />
 
         {/* Partnyorun vaxt təklifi randevu kartından ƏVVƏL: cavab verilməmiş
             sual ekranın yuxarısında dayanmalıdır. */}
