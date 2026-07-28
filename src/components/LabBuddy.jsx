@@ -1,36 +1,42 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { parseSlotId, hourLabel } from '../utils/practiceSlots';
-import { sfxStep, sfxPop, sfxBlip } from '../utils/sfx';
+import { sfxStep, sfxPop, sfxBlip, sfxBoing, sfxGiggle, sfxPeek } from '../utils/sfx';
 
-// Kolba — SpeakLab-ın canlı personajı: qolları, ayaqları var, ekranın altında
-// gəzir, bəzən dayanıb bir söz deyir və gedir.
+// Kolba — SpeakLab-ın canlı personajı.
 //
-// İKİ REJİM var və bu ayrılıq vacibdir:
-//   • gəzinti — heç nə demir, sadəcə yaşayır. Tez-tez ola bilər, çünki heç nə
-//     tələb etmir və heç nəyi kəsmir.
-//   • danışıq — nadirdir (gündə ən çox 2 dəfə) və yalnız DEYƏCƏK SÖZÜ olanda.
-// Əvvəlki versiyada yalnız danışıq vardı, ona görə personaj "bildiriş qutusu"
-// kimi hiss olunurdu, canlı varlıq kimi yox.
+// DÖRD REJİM, hər birinin öz məqsədi var:
+//   • peek  — küncdən yarımçıq boylanır, ətrafa baxır, geri gizlənir. Zarafat.
+//   • walk  — ekranın altından keçir. Sadəcə yaşayır.
+//   • talk  — dayanıb SUAL verir. Nadir: gündə ən çox 2 dəfə.
+//   • poke  — toxunulanda tullanır və reaksiya verir. Hər rejimin üstündən keçir.
 //
-// NİYƏ 3D DEYİL: three.js ən azı ~150KB və daimi GPU dövrü deməkdir. Bundle
-// onsuz da 672KB-dır, tətbiq ucuz Android telefonlarda işləyir. Küncdəki 54px
-// personaj üçün üçüncü ölçü ekranda heç nə qazandırmır, batareya yeyir.
+// ANİMASİYA PRİNSİPLƏRİ (canlılıq hissi bunlardan gəlir, sadəcə hərəkətdən yox):
+//   – anticipation: tullanmadan əvvəl bir anlıq yastılaşır;
+//   – squash & stretch: qalxanda uzanır, yerə düşəndə yastılanır;
+//   – overshoot & settle: hədəfi bir az keçib geri oturur;
+//   – secondary action: maye gövdədə ləngiyərək çalxalanır, gözlər qırpır.
+// Hamısı CSS keyframe-lərdədir — JS-də kadr dövrü yoxdur, telefonu yormur.
+//
+// NİYƏ 3D DEYİL: three.js ~150KB + daimi GPU dövrü. Bundle onsuz da 672KB-dır
+// və tətbiq ucuz Android telefonlarda işləyir; küncdəki personaj üçün üçüncü
+// ölçü ekranda heç nə qazandırmır.
 //
 // NİYƏ CANLI AI DEYİL: dediyi hər cümlə tətbiqin ONSUZ DA bildiyi faktdır —
-// token xərci, gecikmə və uydurma riski yoxdur. Bu, praktika partnyoru deyil,
-// bələdçidir. AI cümlə istənilsə, yalnız `pickMessage` dəyişir.
+// token xərci, gecikmə və uydurma riski yoxdur. Bələdçidir, partnyor deyil.
 const STORE_KEY = 'speaklab_buddy_v1';
 const MAX_TALKS_PER_DAY = 2;
 const MIN_TALK_GAP_MS = 3 * 60 * 60 * 1000;
-const TALK_DELAY_MS = 6000;
-const TALK_VISIBLE_MS = 11000;
+const TALK_DELAY_MS = 5000;
+const TALK_VISIBLE_MS = 14000;
 
-const WALK_MS = 15000;          // bir keçidin müddəti
-const FIRST_WALK_MS = 22000;    // səhifə oturduqdan sonra ilk gəzinti
-const WALK_GAP_MIN_MS = 95000;  // gəzintilər arası ən azı
-const WALK_GAP_MAX_MS = 165000; // və ən çox
-const STEP_MS = 260;            // addım səsinin ritmi (yeriş dövrü ilə uyğun)
+const WALK_MS = 15000;
+const PEEK_MS = 4200;
+const FIRST_ANTIC_MS = 20000;
+const GAP_MIN_MS = 62000;
+const GAP_MAX_MS = 118000;
+const STEP_MS = 260;
+const POKE_MS = 900;
 
 const reducedMotion = () => typeof window !== 'undefined'
   && window.matchMedia
@@ -55,9 +61,13 @@ function bumpQuota() {
   } catch { /* private mode */ }
 }
 
-// Yalnız REAL vəziyyətdən doğan cümlələr. Prioritet sırası ilə — ilk uyğun gələn
-// seçilir, heç biri uyğun gəlmirsə personaj danışmır (gəzintisi qalır).
-function pickMessage(user, mine, navigate) {
+// Toxunuş replikaları — sayı artdıqca personaj "bezir". Kiçik detaldır, amma
+// təkrar toxunanda eyni cavabı almaq personajı dərhal cansız göstərir.
+const POKE_LINES = ['Ay!', 'Yenə?', 'Qıdıqlanıram!', 'Bəsdir də 😅', 'Başım gicəllənir…'];
+
+// Yalnız REAL vəziyyətdən doğan suallar. Heç biri uyğun gəlmirsə personaj
+// danışmır — gəzintisi və boylanması qalır.
+function pickMessage(user, mine, navigate, openBoard) {
   const uc = mine?.upcomingCall;
   if (uc) {
     const parsed = parseSlotId(uc.slotId);
@@ -66,7 +76,7 @@ function pickMessage(user, mine, navigate) {
     if (mins > 0 && mins <= 90) {
       return {
         text: `${hourLabel(parsed?.hour ?? 0)} zənginə ${mins} dəqiqə qalıb. Hazırsan?`,
-        action: { label: 'Bax', run: () => navigate('/') },
+        actions: [{ label: 'Hazıram 💪', run: () => {} }],
       };
     }
     return null;
@@ -74,16 +84,19 @@ function pickMessage(user, mine, navigate) {
 
   if (!mine?.slotIds?.length) {
     return {
-      text: 'Bu gün hələ vaxt seçməmisən. Bir blok seç, kimsə qoşulan kimi xəbər verərəm.',
-      action: { label: 'Vaxt seç', run: () => navigate('/') },
+      text: 'Bu gün üçün slot seçmisən?',
+      actions: [
+        { label: 'Hələ yox — seçək', run: openBoard },
+        { label: 'Sonra', run: () => {} },
+      ],
     };
   }
 
   const streak = Number(user?.streak) || 0;
   if (streak > 0 && user?.lastCallDate !== new Date().toDateString()) {
     return {
-      text: `${streak} günlük seriyan var — bu gün hələ danışmamısan.`,
-      action: { label: 'Partnyor tap', run: () => navigate('/') },
+      text: `${streak} günlük seriyan var — bu gün hələ danışmamısan. Partnyor tapaq?`,
+      actions: [{ label: 'Tapaq', run: () => navigate('/') }],
     };
   }
 
@@ -91,28 +104,34 @@ function pickMessage(user, mine, navigate) {
 }
 
 // ─── Personajın rəsmi ────────────────────────────────────────────
-// Logonun kolbası: dairə gövdə, boyun, maye. Üstünə göz, ağız, qol və ayaq.
-function Character({ walking }) {
+function Character({ walking, face, size = 76 }) {
   const limb = walking ? 'buddyLimb .52s linear infinite' : 'none';
   const limbAlt = walking ? 'buddyLimbAlt .52s linear infinite' : 'none';
+  const h = Math.round(size * 1.42);
+
+  // Baxış istiqaməti — boylananda göz bəbəkləri yana sürüşür, "ətrafa baxır".
+  const look = face === 'peek' ? 2.6 : 0;
+  const wide = face === 'surprised';
+  const dizzy = face === 'dizzy';
+  const eyeR = wide ? 7 : 5;
+
   return (
     <svg
-      width="58" height="82" viewBox="18 28 92 132" aria-hidden="true"
-      style={{ display: 'block', filter: 'drop-shadow(0 6px 14px rgba(124,111,247,.35))' }}
+      width={size} height={h} viewBox="18 28 92 132" aria-hidden="true"
+      style={{ display: 'block', filter: 'drop-shadow(0 8px 18px rgba(124,111,247,.4))' }}
     >
       <defs>
-        {/* gradientUnits="userSpaceOnUse" MƏCBURİDİR. Standart olan
-            objectBoundingBox qradiyenti hər formanın öz sərhəd qutusuna görə
-            hesablayır; ayaq ŞAQULİ, pəncə isə ÜFÜQİ xəttdir, yəni qutunun bir
-            ölçüsü sıfırdır → qradiyent təyinsiz qalır və xətt heç çəkilmir.
-            Personaj ona görə yalnız başdan ibarət görünürdü. Koordinatlar
-            viewBox-a bağlananda bütün üzvlər eyni qradiyenti paylaşır. */}
+        {/* gradientUnits="userSpaceOnUse" MƏCBURİDİR: standart objectBoundingBox
+            qradiyenti hər formanın öz sərhəd qutusuna görə hesablayır, ayaq isə
+            ŞAQULİ, pəncə ÜFÜQİ xəttdir — qutunun bir ölçüsü sıfır olur,
+            qradiyent təyinsiz qalır və xətt HEÇ ÇƏKİLMİR. Personaj bir versiya
+            boyu yalnız başdan ibarət görünürdü, səbəb məhz bu idi. */}
         <linearGradient id="buddy-grad" x1="20" y1="30" x2="108" y2="158" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#38BDF8" />
           <stop offset="0.55" stopColor="#6D3BEB" />
           <stop offset="1" stopColor="#A855F7" />
         </linearGradient>
-        <linearGradient id="buddy-liq" x1="0" y1="1" x2="1" y2="0">
+        <linearGradient id="buddy-liq" x1="30" y1="128" x2="100" y2="90" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#12BBD6" />
           <stop offset="1" stopColor="#7C4DFF" />
         </linearGradient>
@@ -120,10 +139,9 @@ function Character({ walking }) {
       </defs>
 
       <g style={{
-        transformOrigin: '64px 100px',
+        transformOrigin: '64px 140px',
         animation: walking ? 'buddyStride .52s ease-in-out infinite' : 'buddyBob 3.4s ease-in-out infinite',
       }}>
-        {/* Ayaqlar — gövdənin ARXASINDA çəkilir ki, birləşmə yeri görünməsin. */}
         <g style={{ transformOrigin: '57px 114px', animation: limb }}>
           <line x1="57" y1="112" x2="57" y2="140" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
           <line x1="57" y1="141" x2="48" y2="141" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
@@ -133,92 +151,126 @@ function Character({ walking }) {
           <line x1="71" y1="141" x2="62" y2="141" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
         </g>
 
-        {/* Qollar — ayaqlarla ƏKS fazada yellənir, təbii yeriş belə alınır. */}
-        <g style={{ transformOrigin: '38px 90px', animation: limbAlt }}>
+        {/* Qollar ayaqlarla ƏKS fazada — təbii yeriş belə alınır. Təəccüblənəndə
+            hər ikisi yuxarı qalxır. */}
+        <g style={{ transformOrigin: '38px 90px', animation: wide ? 'buddyArmUpL .5s ease forwards' : limbAlt }}>
           <line x1="38" y1="90" x2="24" y2="104" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
         </g>
-        <g style={{ transformOrigin: '90px 90px', animation: limb }}>
+        <g style={{ transformOrigin: '90px 90px', animation: wide ? 'buddyArmUpR .5s ease forwards' : limb }}>
           <line x1="90" y1="90" x2="104" y2="104" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
         </g>
 
-        {/* Gövdə = kolba */}
+        {/* Maye — gövdədən bir az GECİKMƏ ilə çalxalanır (secondary action). */}
         <g clipPath="url(#buddy-body)">
-          <rect x="30" y="94" width="70" height="40" fill="url(#buddy-liq)" opacity="0.3" />
+          <g style={{ transformOrigin: '64px 110px', animation: 'buddySlosh 2.6s ease-in-out infinite' }}>
+            <rect x="26" y="94" width="78" height="42" fill="url(#buddy-liq)" opacity="0.32" />
+          </g>
         </g>
         <circle cx="64" cy="88" r="30" fill="var(--bg-primary)" fillOpacity="0.55" />
         <circle cx="64" cy="88" r="30" fill="none" stroke="url(#buddy-grad)" strokeWidth="6.5" />
         <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="url(#buddy-grad)" strokeWidth="6.5" strokeLinecap="round" />
         <line x1="47" y1="36" x2="81" y2="36" stroke="url(#buddy-grad)" strokeWidth="6.5" strokeLinecap="round" />
 
-        <g style={{ transformOrigin: '64px 84px', animation: 'buddyBlink 4.6s infinite' }}>
-          <circle cx="55" cy="84" r="5" fill="#0f1020" />
-          <circle cx="73" cy="84" r="5" fill="#0f1020" />
-          <circle cx="56.6" cy="82.2" r="1.7" fill="#fff" />
-          <circle cx="74.6" cy="82.2" r="1.7" fill="#fff" />
-        </g>
-        <path d="M57,97 Q64,102 71,97" fill="none" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />
+        {dizzy ? (
+          <>
+            <path d="M50,80 L60,88 M60,80 L50,88" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />
+            <path d="M68,80 L78,88 M78,80 L68,88" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />
+            <ellipse cx="64" cy="99" rx="6" ry="4" fill="#0f1020" />
+          </>
+        ) : (
+          <>
+            <g style={{ transformOrigin: '64px 84px', animation: 'buddyBlink 4.6s infinite' }}>
+              <circle cx="55" cy="84" r={eyeR} fill="#0f1020" />
+              <circle cx="73" cy="84" r={eyeR} fill="#0f1020" />
+              <circle cx={56.6 + look} cy="82.2" r="1.9" fill="#fff" />
+              <circle cx={74.6 + look} cy="82.2" r="1.9" fill="#fff" />
+            </g>
+            {wide
+              ? <ellipse cx="64" cy="99" rx="5" ry="6" fill="#0f1020" />
+              : <path d="M56,96 Q64,103 72,96" fill="none" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />}
+          </>
+        )}
       </g>
     </svg>
   );
 }
 
-export default function LabBuddy({ user, mine }) {
-  const [mode, setMode] = useState(null); // null | 'walk' | 'talk'
-  const [dir, setDir] = useState(1);      // 1 = sağa, -1 = sola
+export default function LabBuddy({ user, mine, onOpenBoard }) {
+  const [mode, setMode] = useState(null);   // null | 'peek' | 'walk' | 'talk'
+  const [dir, setDir] = useState(1);        // 1 = sağ, -1 = sol
+  const [top, setTop] = useState(null);     // boylanma hündürlüyü (%)
   const [msg, setMsg] = useState(null);
   const [leaving, setLeaving] = useState(false);
+  const [poke, setPoke] = useState(null);   // {line, dizzy}
   const modeRef = useRef(null);
+  const pokeCount = useRef(0);
   const navigate = useNavigate();
 
   modeRef.current = mode;
 
-  const endWalk = useCallback(() => {
-    if (modeRef.current === 'walk') setMode(null);
+  const clearAmbient = useCallback(() => {
+    if (modeRef.current === 'walk' || modeRef.current === 'peek') setMode(null);
   }, []);
 
-  // ── Gəzinti dövrü ──────────────────────────────────────────────
+  // ── Zarafat dövrü: növbə ilə boylanma və gəzinti ───────────────
   useEffect(() => {
     if (reducedMotion()) return undefined;
-    let walkTimer;
+    let endTimer;
     let nextTimer;
+    let turn = 0;
 
     const schedule = (delay) => {
       nextTimer = setTimeout(() => {
-        // Danışırsa gəzintini keçirik — iki rejim üst-üstə düşməməlidir.
-        if (modeRef.current === null) {
-          setDir(Math.random() < 0.5 ? 1 : -1);
-          setMode('walk');
-          walkTimer = setTimeout(endWalk, WALK_MS);
+        // Personaj məşğuldursa (sual göstərir) növbəti tam fasiləni gözləmirik —
+        // qısa müddətdən sonra yenidən cəhd edilir. Əks halda tətbiqi açan adam
+        // ilk zarafatı ümumiyyətlə görmürdü: planlayıcı 20-ci saniyədə giriş
+        // sualına ilişib buraxırdı və növbəti şans 1–2 dəqiqə sonra gəlirdi.
+        if (modeRef.current !== null) {
+          schedule(12000);
+          return;
         }
-        schedule(WALK_GAP_MIN_MS + Math.random() * (WALK_GAP_MAX_MS - WALK_GAP_MIN_MS));
+        // Boylanma daha tez-tez olur: qısadır, kənardadır, heç nəyi kəsmir.
+        // Hər üçüncü dəfə tam gəzintiyə çıxır.
+        const peeking = turn % 3 !== 2;
+        turn += 1;
+        setDir(Math.random() < 0.5 ? 1 : -1);
+        if (peeking) {
+          setTop(24 + Math.random() * 46);
+          setMode('peek');
+          sfxPeek();
+          endTimer = setTimeout(clearAmbient, PEEK_MS);
+        } else {
+          setMode('walk');
+          endTimer = setTimeout(clearAmbient, WALK_MS);
+        }
+        schedule(GAP_MIN_MS + Math.random() * (GAP_MAX_MS - GAP_MIN_MS));
       }, delay);
     };
 
-    schedule(FIRST_WALK_MS);
-    return () => { clearTimeout(nextTimer); clearTimeout(walkTimer); };
-  }, [endWalk]);
+    schedule(FIRST_ANTIC_MS);
+    return () => { clearTimeout(nextTimer); clearTimeout(endTimer); };
+  }, [clearAmbient]);
 
-  // Addım səsi yalnız gəzinti zamanı və yeriş ritmində.
   useEffect(() => {
     if (mode !== 'walk') return undefined;
     const id = setInterval(sfxStep, STEP_MS);
     return () => clearInterval(id);
   }, [mode]);
 
-  // ── Danışıq ────────────────────────────────────────────────────
+  // ── Sual ───────────────────────────────────────────────────────
   useEffect(() => {
     const q = readQuota();
     if (q.count >= MAX_TALKS_PER_DAY) return undefined;
     if (Date.now() - (q.lastMs || 0) < MIN_TALK_GAP_MS) return undefined;
 
     const t = setTimeout(() => {
-      const picked = pickMessage(user, mine, navigate);
+      const picked = pickMessage(user, mine, navigate, onOpenBoard);
       if (!picked) return;
       setMsg(picked);
       setMode('talk');
       bumpQuota();
       sfxPop();
-      setTimeout(sfxBlip, 260);
+      setTimeout(sfxBlip, 280);
     }, TALK_DELAY_MS);
     return () => clearTimeout(t);
     // Bir dəfə qərar verilir: `mine` hər snapshot-da dəyişir, asılılığa salsaq
@@ -238,110 +290,183 @@ export default function LabBuddy({ user, mine }) {
     return () => clearTimeout(t);
   }, [leaving]);
 
+  // ── Toxunuş reaksiyası ─────────────────────────────────────────
+  const handlePoke = useCallback((e) => {
+    e.stopPropagation();
+    pokeCount.current += 1;
+    const n = pokeCount.current;
+    const dizzy = n >= POKE_LINES.length;
+    setPoke({ line: POKE_LINES[Math.min(n - 1, POKE_LINES.length - 1)], dizzy });
+    if (n === 1) sfxBoing(); else sfxGiggle();
+    setTimeout(() => setPoke(null), POKE_MS + 500);
+  }, []);
+
   if (!mode) return null;
 
   const walking = mode === 'walk';
+  const peeking = mode === 'peek';
+  const face = poke ? (poke.dizzy ? 'dizzy' : 'surprised') : (peeking ? 'peek' : 'normal');
+
+  // Boylanma ekranın kənarındadır; gəzinti aşağıda; sual sağ küncdə.
+  const placement = peeking
+    ? {
+      top: `${top}%`,
+      ...(dir === 1 ? { right: 0 } : { left: 0 }),
+      animation: `${dir === 1 ? 'buddyPeekR' : 'buddyPeekL'} ${PEEK_MS}ms cubic-bezier(.3,1.3,.4,1) forwards`,
+    }
+    : walking
+      ? {
+        left: 0,
+        bottom: 'calc(72px + var(--safe-area-bottom, 0px))',
+        animation: `${dir === 1 ? 'buddyCrossR' : 'buddyCrossL'} ${WALK_MS}ms linear forwards`,
+      }
+      : {
+        right: '10px',
+        bottom: 'calc(76px + var(--safe-area-bottom, 0px))',
+        animation: leaving ? 'buddyOut .4s ease forwards' : 'buddyIn .55s cubic-bezier(.2,1.4,.4,1)',
+      };
 
   return (
     <div
       style={{
-        position: 'fixed',
-        bottom: 'calc(76px + var(--safe-area-bottom, 0px))',
-        zIndex: 1200,
+        position: 'fixed', zIndex: 1200,
         display: 'flex', alignItems: 'flex-end', gap: '8px',
-        // Gəzərkən heç nəyə toxunulmur; yalnız danışıq baloncuğu tıklanır.
         pointerEvents: 'none',
-        ...(walking
-          ? { left: 0, animation: `${dir === 1 ? 'buddyCrossR' : 'buddyCrossL'} ${WALK_MS}ms linear forwards` }
-          : {
-            right: '10px',
-            animation: leaving ? 'buddyOut .4s ease forwards' : 'buddyIn .5s cubic-bezier(.2,.9,.3,1.2)',
-          }),
+        ...placement,
       }}
     >
-      {msg && !walking && (
+      {msg && mode === 'talk' && (
         <div style={{
           pointerEvents: 'auto',
-          maxWidth: '224px', background: 'var(--bg-card)',
+          maxWidth: '228px', background: 'var(--bg-card)',
           border: '1px solid #7c6ff755', borderRadius: '14px',
-          padding: '11px 12px', boxShadow: '0 10px 30px rgba(0,0,0,.35)',
-          marginBottom: '10px',
+          padding: '12px', boxShadow: '0 12px 34px rgba(0,0,0,.4)',
+          marginBottom: '14px',
         }}>
-          <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.5, color: 'var(--text-primary)' }}>
+          <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.5, color: 'var(--text-primary)', fontWeight: 600 }}>
             {msg.text}
           </p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-            <button
-              type="button"
-              onClick={() => { msg.action.run(); setLeaving(true); }}
-              style={{
-                padding: '6px 11px', borderRadius: '8px', border: 'none',
-                background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
-                color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer',
-              }}
-            >
-              {msg.action.label}
-            </button>
-            <button
-              type="button"
-              onClick={() => setLeaving(true)}
-              style={{
-                padding: '6px 10px', borderRadius: '8px',
-                border: '1px solid var(--border)', background: 'transparent',
-                color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              Bağla
-            </button>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+            {msg.actions.map((a, i) => (
+              <button
+                key={a.label}
+                type="button"
+                onClick={() => { a.run(); setLeaving(true); }}
+                style={{
+                  padding: '6px 11px', borderRadius: '8px',
+                  border: i === 0 ? 'none' : '1px solid var(--border)',
+                  background: i === 0
+                    ? 'linear-gradient(135deg, var(--accent), var(--accent-strong))'
+                    : 'transparent',
+                  color: i === 0 ? '#fff' : 'var(--text-secondary)',
+                  fontSize: '12px', fontWeight: 800, cursor: 'pointer',
+                }}
+              >
+                {a.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
 
       <div
+        data-buddy={mode}
         style={{
-          pointerEvents: walking ? 'none' : 'auto',
-          cursor: walking ? 'default' : 'pointer',
-          // Getdiyi tərəfə baxır.
+          position: 'relative',
+          // Toxunuş HƏR rejimdə işləyir — gəzərkən də tutmaq olar.
+          pointerEvents: 'auto', cursor: 'pointer',
           transform: dir === -1 && walking ? 'scaleX(-1)' : 'none',
+          // Küncdə yarımçıq görünsün deyə boylanmada bir az kənara çıxır.
+          animation: poke ? `buddyPoke ${POKE_MS}ms cubic-bezier(.3,1.5,.5,1)` : 'none',
         }}
-        onClick={() => { if (!walking) setLeaving(true); }}
+        onPointerDown={handlePoke}
       >
-        <Character walking={walking} />
+        {poke && (
+          <span style={{
+            position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+            background: '#fff', color: '#0f1020', fontSize: '12px', fontWeight: 800,
+            padding: '3px 9px', borderRadius: '20px', whiteSpace: 'nowrap',
+            animation: 'buddyShout .5s cubic-bezier(.2,1.6,.4,1)',
+            boxShadow: '0 4px 12px rgba(0,0,0,.3)',
+          }}>
+            {poke.line}
+          </span>
+        )}
+        <Character walking={walking} face={face} size={peeking ? 68 : 76} />
       </div>
 
       <style>{`
         @keyframes buddyIn {
-          from { opacity: 0; transform: translateY(26px) scale(.9); }
+          from { opacity: 0; transform: translateY(30px) scale(.85); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes buddyOut {
           from { opacity: 1; transform: translateY(0) scale(1); }
-          to   { opacity: 0; transform: translateY(26px) scale(.9); }
+          to   { opacity: 0; transform: translateY(30px) scale(.85); }
         }
         @keyframes buddyCrossR {
-          from { transform: translateX(-80px); }
+          from { transform: translateX(-90px); }
           to   { transform: translateX(100vw); }
         }
         @keyframes buddyCrossL {
           from { transform: translateX(100vw); }
-          to   { transform: translateX(-80px); }
+          to   { transform: translateX(-90px); }
+        }
+        /* Boylanma: çıxır, bir az geri çəkilir (overshoot), baxır, gizlənir. */
+        @keyframes buddyPeekR {
+          0%   { transform: translateX(100%); }
+          20%  { transform: translateX(34%); }
+          30%  { transform: translateX(44%); }
+          72%  { transform: translateX(38%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes buddyPeekL {
+          0%   { transform: translateX(-100%); }
+          20%  { transform: translateX(-34%); }
+          30%  { transform: translateX(-44%); }
+          72%  { transform: translateX(-38%); }
+          100% { transform: translateX(-100%); }
+        }
+        /* Toxunuş: yastılanır (anticipation) → uzanaraq tullanır → yerə düşəndə
+           yenə yastılanır → kiçik sıçrayışla oturur. */
+        @keyframes buddyPoke {
+          0%   { transform: translateY(0) scale(1, 1); }
+          12%  { transform: translateY(2px) scale(1.16, .84); }
+          38%  { transform: translateY(-30px) scale(.88, 1.14); }
+          62%  { transform: translateY(0) scale(1.14, .88); }
+          80%  { transform: translateY(-8px) scale(.97, 1.04); }
+          100% { transform: translateY(0) scale(1, 1); }
+        }
+        @keyframes buddyShout {
+          from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(.6); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
         @keyframes buddyBob {
           0%, 100% { transform: translateY(0) rotate(-2deg); }
           50%      { transform: translateY(-5px) rotate(2deg); }
         }
-        /* Yerişdə gövdə hər addımda bir az qalxıb-enir. */
         @keyframes buddyStride {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-3px); }
+          0%, 100% { transform: translateY(0) scaleY(1); }
+          50%      { transform: translateY(-4px) scaleY(1.03); }
+        }
+        /* Maye gövdədən gec çatır — kütlə hissi yaradan detal. */
+        @keyframes buddySlosh {
+          0%, 100% { transform: rotate(-4deg) translateY(0); }
+          50%      { transform: rotate(4deg) translateY(-2px); }
         }
         @keyframes buddyLimb {
-          0%, 100% { transform: rotate(20deg); }
-          50%      { transform: rotate(-20deg); }
+          0%, 100% { transform: rotate(22deg); }
+          50%      { transform: rotate(-22deg); }
         }
         @keyframes buddyLimbAlt {
-          0%, 100% { transform: rotate(-20deg); }
-          50%      { transform: rotate(20deg); }
+          0%, 100% { transform: rotate(-22deg); }
+          50%      { transform: rotate(22deg); }
+        }
+        @keyframes buddyArmUpL {
+          to { transform: rotate(-115deg); }
+        }
+        @keyframes buddyArmUpR {
+          to { transform: rotate(115deg); }
         }
         @keyframes buddyBlink {
           0%, 92%, 100% { transform: scaleY(1); }

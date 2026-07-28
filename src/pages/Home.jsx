@@ -350,7 +350,11 @@ export default function Home({ user }) {
 
         {/* Kolba — deyəcək sözü olanda küncdən boylanır, sonra yox olur.
             Yalnız Lobby-də: hər ekranda çıxsa, personaj deyil, maneə olur. */}
-        <LabBuddy user={user} mine={mine} />
+        <LabBuddy
+          user={user}
+          mine={mine}
+          onOpenBoard={() => setBoardOpenSignal((n) => n + 1)}
+        />
 
         {/* Partnyorun vaxt təklifi randevu kartından ƏVVƏL: cavab verilməmiş
             sual ekranın yuxarısında dayanmalıdır. */}

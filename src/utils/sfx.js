@@ -73,3 +73,27 @@ export function sfxBlip() {
   tone({ from: 660, to: 660, ms: 80, gain: 0.04, type: 'square' });
   setTimeout(() => tone({ from: 920, to: 920, ms: 90, gain: 0.035, type: 'square' }), 95);
 }
+
+// Toxunuş reaksiyası — aşağı-yuxarı əyilən "boing". Tullanma ilə eyni vaxtda
+// getdiyi üçün qısa və kəskindir.
+export function sfxBoing() {
+  if (blocked()) return;
+  tone({ from: 220, to: 620, ms: 110, gain: 0.055, type: 'triangle' });
+  setTimeout(() => tone({ from: 620, to: 300, ms: 130, gain: 0.04, type: 'triangle' }), 100);
+}
+
+// Gülüş — üç sürətli qalxan not. Təkrar toxunuşlarda işlədilir.
+export function sfxGiggle() {
+  if (blocked()) return;
+  [0, 90, 180].forEach((delay, i) => {
+    setTimeout(() => tone({
+      from: 700 + i * 160, to: 780 + i * 160, ms: 70, gain: 0.032, type: 'square',
+    }), delay);
+  });
+}
+
+// Küncdən boylanma — yumşaq, qısa "swoosh" əvəzi alçaq not.
+export function sfxPeek() {
+  if (blocked()) return;
+  tone({ from: 420, to: 560, ms: 150, gain: 0.03, type: 'sine' });
+}
