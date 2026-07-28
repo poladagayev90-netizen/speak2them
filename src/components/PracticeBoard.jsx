@@ -91,6 +91,26 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
 
   const activeDate = dates[dayIndex] || dates[0];
 
+  // "Biri 18:00-a, biri 21:00-a yazılıb" problemi. İkisi də tək qalır, çünki
+  // cüt yalnız EYNİ blokda qurulur. Burada tək gözləyən adama başqa blokdakı
+  // tək gözləyəni göstəririk: bir toxunuşla ora da yazılır və zəng dərhal
+  // təsdiqlənir. Push-a arxalanmır — istifadəçi tətbiqi açanda onsuz da görür.
+  const myWaitingSlot = mySlotIds.find((id) => id !== upcoming?.slotId);
+  const bridge = (() => {
+    if (!myWaitingSlot) return null;
+    for (const dateStr of dates) {
+      for (const hour of SLOT_BLOCK_HOURS) {
+        const id = slotIdOf(dateStr, hour);
+        if (id === myWaitingSlot || mySlotIds.includes(id)) continue;
+        if (slotStartMs(dateStr, hour) + SLOT_BLOCK_MS <= now) continue;
+        if ((Number(board[id]?.waitingCount) || 0) > 0) {
+          return { slotId: id, date: dateStr, hour };
+        }
+      }
+    }
+    return null;
+  })();
+
   return (
     <div style={{
       background: 'var(--bg-secondary)', border: '1px solid var(--border)',
@@ -126,6 +146,31 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </span>
       </button>
+
+      {bridge && (
+        <div style={{
+          marginTop: '12px', padding: '12px',
+          background: '#f59e0b14', border: '1px solid #f59e0b44', borderRadius: '12px',
+          display: 'flex', alignItems: 'center', gap: '10px',
+        }}>
+          <div style={{ flex: 1, minWidth: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+            <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.hour)}</b> blokunda bir nəfər
+            gözləyir — ora da yazılsanız zəng dərhal təsdiqlənəcək.
+          </div>
+          <button
+            type="button"
+            onClick={() => toggleSlot(bridge.slotId, false, false)}
+            disabled={busy === bridge.slotId}
+            style={{
+              flexShrink: 0, padding: '9px 12px', borderRadius: '9px', border: 'none',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#1a1000',
+              fontSize: '12px', fontWeight: 800, cursor: 'pointer',
+            }}
+          >
+            {busy === bridge.slotId ? '...' : 'Ora da yazıl'}
+          </button>
+        </div>
+      )}
 
       {expanded && (
         <>

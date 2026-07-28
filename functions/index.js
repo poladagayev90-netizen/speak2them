@@ -1774,6 +1774,43 @@ async function joinSlotTx(db, tx, slot, uid, user) {
   };
 }
 
+// Fərqli bloklarda tək qalanları bir-birindən xəbərdar edir.
+//
+// Ssenari: biri 18:00-a, digəri 21:00-a yazılır. İkisi də "müsaitəm" deyib, ikisi
+// də zəng istəyir, amma sistem heç nə edə bilmir — bloklar fərqlidir və eyni
+// blokda iki nəfər olmadan cüt qurulmur. Nəticədə hər ikisi tək qalır.
+//
+// Həll: yeni gələn tək qalanda, HƏMİN GÜN başqa blokda tək gözləyənlərə bildiriş
+// gedir. Onlar bir blok da əlavə etsə, cüt dərhal qurulur. Marker sayəsində
+// hər istifadəçi gündə ƏN ÇOX BİR belə bildiriş alır — əks halda hər qoşulma
+// bütün gözləyənlərə push atardı.
+async function nudgeLoneWaiters(db, slot, joinerUid) {
+  try {
+    const snap = await db.collection("practiceSlots").where("date", "==", slot.date).get();
+    for (const d of snap.docs) {
+      if (d.id === slot.slotId) continue;
+      if ((Number((d.data() || {}).waitingCount) || 0) <= 0) continue;
+      const other = parseSlotId(d.id);
+      if (!other || other.endMs <= Date.now()) continue;
+
+      const waiting = await d.ref.collection("members")
+        .where("status", "==", "waiting").limit(5).get();
+      for (const m of waiting.docs) {
+        if (m.id === joinerUid) continue;
+        if (!(await claimSlotRun(db, `${slot.date}_nudge_${m.id}`))) continue;
+        await sendPushToUser(db, m.id, {
+          title: "Yaxın vaxtda da adam var",
+          body: `${slotHourLabel(slot)} blokunda bir nəfər gözləyir — ora da yazılsanız zəng dərhal təsdiqlənəcək.`,
+          type: "slot_nearby",
+          url: "/",
+        }).catch(() => null);
+      }
+    }
+  } catch (e) {
+    console.warn("[SlotNudge] failed:", e.message);
+  }
+}
+
 // CEFR sıralaması — yalnız ego-boost mətnini seçmək üçün. Eşləşməyə TƏSİR ETMİR.
 const CEFR_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const cefrRank = (level) => {
@@ -1848,6 +1885,9 @@ exports.joinPracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (
         sendPushToUser(db, uid, slotMatchPush(label, result.partnerName || "Partnyorunuz", myRank, peerRank)),
         sendPushToUser(db, result.partnerId, slotMatchPush(label, me.name || "Partnyorunuz", peerRank, myRank)),
       ]).catch(() => null);
+    } else if (!result.already) {
+      // Tək qaldıq — həmin gün başqa blokda tək gözləyənlərə xəbər ver.
+      await nudgeLoneWaiters(db, slot, uid);
     }
 
     return res.status(200).json({ ok: true, ...result });
