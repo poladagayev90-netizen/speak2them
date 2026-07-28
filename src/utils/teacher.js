@@ -85,6 +85,12 @@ export function inviteStudentByEmail(email) {
   return callTeacherFn('inviteStudentByEmail', { email }, INVITE_ERROR_TEXT);
 }
 
+// Panel siyahısından birbaşa dəvət. E-poçt yazmaqdan etibarlıdır: bir hərf
+// səhvi "istifadəçi tapılmadı" verirdi və müəllim səbəbini bilmirdi.
+export function inviteStudentByUid(studentUid) {
+  return callTeacherFn('inviteStudentByEmail', { studentUid }, INVITE_ERROR_TEXT);
+}
+
 export function respondTeacherInvite(inviteId, accept) {
   return callTeacherFn('respondTeacherInvite', { inviteId, accept }, INVITE_ERROR_TEXT);
 }

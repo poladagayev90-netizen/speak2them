@@ -143,7 +143,12 @@ function AppShell({ user }) {
   const pendingJoin = user && !user.teacherId && !isTeacherUser && !location.pathname.startsWith('/join')
     ? getPendingJoinCode()
     : '';
-  if (pendingJoin && user.surveyDone) {
+  // `surveyDone` ŞƏRTİ QƏSDƏN YOXDUR. Əvvəl qoşulma sorğunun bitməsini
+  // gözləyirdi: müəllimin linki ilə gələn adam /survey-də qalıb sorğunu
+  // tamamlamasa, kod localStorage-də ölü qalırdı və o şəxs müəllimə HEÇ VAXT
+  // qoşulmurdu. Müəllimə bağlanmaq sorğudan vacibdir — JoinTeacher-də "İndi
+  // yox" çıxışı var, ona görə heç kim burada qıfıllanmır.
+  if (pendingJoin) {
     return <Navigate to={`/join?c=${encodeURIComponent(pendingJoin)}`} replace />;
   }
 

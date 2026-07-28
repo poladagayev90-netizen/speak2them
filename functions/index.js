@@ -1246,9 +1246,13 @@ exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, asy
   }
 
   const teacherId = decoded.uid;
+  // İki giriş yolu: e-poçt (müəllim əl ilə yazır) və uid (müəllim panelindəki
+  // istifadəçi siyahısından bir toxunuşla). uid yolu daha etibarlıdır — səhv
+  // yazılmış e-poçt "student-not-found" verirdi və müəllim səbəbini bilmirdi.
+  const directUid = (req.body && req.body.studentUid) || "";
   const rawEmail = (req.body && req.body.email) || "";
   const email = String(rawEmail).trim().toLowerCase();
-  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+  if (!directUid && (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) {
     return res.status(400).json({ error: "invalid-email" });
   }
 
@@ -1264,12 +1268,20 @@ exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, asy
       throw fail(403, "not-a-teacher");
     }
 
-    // Şagirdi e-poçta görə tap. Firestore-da e-poçt users sənədində saxlanılır.
-    const found = await db.collection("users").where("email", "==", email).limit(1).get();
-    if (found.empty) throw fail(404, "student-not-found");
-    const studentDoc = found.docs[0];
-    const studentUid = studentDoc.id;
-    const student = studentDoc.data() || {};
+    let studentUid;
+    let student;
+    if (directUid) {
+      const snap = await db.collection("users").doc(String(directUid)).get();
+      if (!snap.exists) throw fail(404, "student-not-found");
+      studentUid = snap.id;
+      student = snap.data() || {};
+    } else {
+      // Şagirdi e-poçta görə tap. Firestore-da e-poçt users sənədində saxlanılır.
+      const found = await db.collection("users").where("email", "==", email).limit(1).get();
+      if (found.empty) throw fail(404, "student-not-found");
+      studentUid = found.docs[0].id;
+      student = found.docs[0].data() || {};
+    }
 
     if (studentUid === teacherId) throw fail(400, "self-invite");
     if (student.teacherId === teacherId) throw fail(409, "already-your-student");
@@ -1284,7 +1296,7 @@ exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, asy
       teacherId,
       teacherName: teacher.name || "",
       studentUid,
-      studentEmail: email,
+      studentEmail: student.email || email || "",
       status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });

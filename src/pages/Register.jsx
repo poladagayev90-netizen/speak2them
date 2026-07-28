@@ -5,8 +5,15 @@ import { auth, db, signInWithGoogle } from '../firebase';
 import { Capacitor } from '@capacitor/core';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import { getPendingJoinCode } from '../utils/teacher';
 
 export default function Register() {
+  // Müəllimin dəvət linki ilə gəlmişiksə rol SEÇİLMİR — dəvət olunan adam
+  // tərifinə görə şagirddir. Əvvəl rol seçicisi burada da görünürdü və həmin
+  // adam "I am a Teacher" seçəndə App.js gözləyən kodu SİLİRDİ (müəllim heç
+  // vaxt şagird kimi qoşulmur qaydası), yəni müəllimin linki səssizcə ölürdü.
+  // Müəllimin şikayəti ("link atıram, adam kabinetimə düşmür") məhz bu idi.
+  const invitedByTeacher = !!getPendingJoinCode();
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +22,7 @@ export default function Register() {
   // B2B2C onboarding: rol qeydiyyatdan ƏVVƏL açıq seçilir. null = hələ
   // seçilməyib; seçilməyincə qeydiyyat düymələri bağlıdır. Rules bu sahənin
   // yalnız BİR DƏFƏ (yaradılışda/ilk yazıda) qoyulmasına icazə verir.
-  const [role, setRole]         = useState(null);
+  const [role, setRole]         = useState(invitedByTeacher ? 'student' : null);
   const navigate = useNavigate();
 
   // Müəllim seçən üçün əlavə sahələr: teacherEligible dərhal true (3-sessiya
@@ -70,7 +77,7 @@ export default function Register() {
         await setDoc(userRef, { name, ...roleFields }, { merge: true });
       }
 
-      navigate(role === 'teacher' ? '/teacher' : '/survey');
+      navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/survey'));
     } catch (err) {
       setError(err.message);
     }
@@ -119,7 +126,7 @@ export default function Register() {
         // hələ yoxdursa merge edirik — mövcud user rolunu dəyişə bilməz.
         await setDoc(userRef, roleFields, { merge: true });
       }
-      navigate(role === 'teacher' ? '/teacher' : '/survey');
+      navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/survey'));
     } catch (err) {
       console.error('[GoogleRegister]', err);
       setError('Google auth error: ' + (err.message || 'Unknown error'));
@@ -155,8 +162,22 @@ export default function Register() {
 
           {error && <div className="error-box">{error}</div>}
 
+          {/* Müəllim dəvəti ilə gələn üçün rol seçimi göstərilmir — o, şagirddir. */}
+          {invitedByTeacher && (
+            <div style={{
+              background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
+              border: '1px solid #7c6ff755', borderRadius: '12px',
+              padding: '12px 14px', marginBottom: '12px',
+              fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5,
+            }}>
+              🎓 Müəllim dəvəti ilə qoşulursunuz — qeydiyyatdan dərhal sonra
+              müəlliminizə bağlanacaqsınız.
+            </div>
+          )}
+
           {/* Rol seçimi — qeydiyyatın şərti. Sonradan dəyişilə bilmir
               (rules yalnız ilk yazılışa icazə verir), ona görə açıq seçimdir. */}
+          {!invitedByTeacher && (
           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
             {[
               { key: 'student', icon: '🎓', label: 'I am a Student', sub: 'Practice speaking' },
@@ -180,6 +201,7 @@ export default function Register() {
               </button>
             ))}
           </div>
+          )}
           {!role && (
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', margin: '0 0 10px' }}>
               Choose your role to continue

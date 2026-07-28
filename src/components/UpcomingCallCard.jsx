@@ -155,30 +155,27 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
       </div>
 
       {/* Vaxtı dəyişmək TƏKBAŞINA mümkün deyil — təklif gedir, partnyor
-          təsdiqləyir. Uzun müzakirə üçün çat düyməsi yanındadır. */}
-      <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
-        <button
-          type="button"
-          onClick={() => { setPicking((p) => !p); setNotice(''); }}
-          style={{
-            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-            color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 700,
-            textDecoration: 'underline',
-          }}
-        >
-          🕘 Vaxtı dəyiş
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate(`/chat/${call.peerUid}`)}
-          style={{
-            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-            color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 700,
-            textDecoration: 'underline',
-          }}
-        >
-          💬 Yazış
-        </button>
+          təsdiqləyir. Uzun müzakirə üçün chat düyməsi yanındadır.
+          Altdan xətt QƏSDƏN yoxdur: veb-link görünüşü tətbiq içində ucuz
+          görünür, ikinci dərəcəli hərəkət sakit çip kimi verilir. */}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+        {[
+          { key: 'time', label: '🕘 Vaxtı dəyiş', onClick: () => { setPicking((p) => !p); setNotice(''); } },
+          { key: 'chat', label: '💬 Chat', onClick: () => navigate(`/chat/${call.peerUid}`) },
+        ].map((action) => (
+          <button
+            key={action.key}
+            type="button"
+            onClick={action.onClick}
+            style={{
+              padding: '7px 12px', borderRadius: '9px', cursor: 'pointer',
+              border: '1px solid var(--border)', background: 'transparent',
+              color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 700,
+            }}
+          >
+            {action.label}
+          </button>
+        ))}
       </div>
 
       {notice && (

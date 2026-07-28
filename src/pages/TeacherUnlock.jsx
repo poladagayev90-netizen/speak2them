@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
   createInviteCode,
   buildJoinLink,
   inviteStudentByEmail,
+  inviteStudentByUid,
   updateTeacherProfile,
   TEACHER_SESSIONS_REQUIRED,
   TUTOR_SPECIALTIES,
@@ -56,6 +57,11 @@ export default function TeacherUnlock({ user }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState(null); // {ok, text}
+  // İstifadəçi kataloqu — e-poçt yazmadan bir toxunuşla dəvət.
+  const [directory, setDirectory] = useState(null);
+  const [dirOpen, setDirOpen] = useState(false);
+  const [dirSearch, setDirSearch] = useState('');
+  const [invitedUids, setInvitedUids] = useState(() => new Set());
 
   const done = Number(user?.completedSessions) || 0;
   const isTeacher = user?.role === 'teacher';
@@ -134,6 +140,32 @@ export default function TeacherUnlock({ user }) {
       setInviteEmail('');
     }
     setInviting(false);
+  };
+
+  // Kataloq yalnız açılanda yüklənir — panelin ilk açılışını ağırlaşdırmasın.
+  const openDirectory = async () => {
+    setDirOpen((o) => !o);
+    if (directory !== null) return;
+    try {
+      const qs = await getDocs(query(collection(db, 'users'), limit(200)));
+      setDirectory(qs.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (e) {
+      console.error('[TeacherDirectory]', e);
+      setDirectory([]);
+    }
+  };
+
+  const inviteFromDirectory = async (u) => {
+    setInviting(u.id);
+    setInviteMsg(null);
+    const res = await inviteStudentByUid(u.id);
+    setInviting(false);
+    if (!res.ok) {
+      setInviteMsg({ ok: false, text: `${u.name || 'İstifadəçi'}: ${res.errorText}` });
+      return;
+    }
+    setInvitedUids((prev) => new Set(prev).add(u.id));
+    setInviteMsg({ ok: true, text: `${u.name || 'İstifadəçi'} adlı şagirdə dəvət göndərildi.` });
   };
 
   const toggleSpecialty = (s) => {
@@ -638,6 +670,117 @@ export default function TeacherUnlock({ user }) {
             </div>
           )}
         </form>
+
+        {/* İstifadəçi kataloqu — e-poçt yazmadan bir toxunuşla dəvət.
+            Müəllimin şikayəti: "link atıram çatmır, e-poçtu tapa bilmirəm".
+            Burada axtarıb düyməyə basmaq kifayətdir; dəvət şagirdin ekranına
+            banner + push kimi düşür. */}
+        <div style={{
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+          borderRadius: '16px', padding: '14px', marginBottom: '16px',
+        }}>
+          <button
+            type="button"
+            onClick={openDirectory}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+              background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                👥 İstifadəçilərdən seç
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Siyahıdan birbaşa dəvət göndərin — e-poçt yazmağa ehtiyac yoxdur
+              </div>
+            </div>
+            <span style={{ color: 'var(--text-muted)', fontSize: '18px', flexShrink: 0 }}>
+              {dirOpen ? '⌃' : '⌄'}
+            </span>
+          </button>
+
+          {dirOpen && (
+            <div style={{ marginTop: '12px' }}>
+              <input
+                type="text"
+                value={dirSearch}
+                onChange={(e) => setDirSearch(e.target.value)}
+                placeholder="Ad ilə axtarın…"
+                style={{ ...fieldStyle, marginBottom: '10px' }}
+              />
+              {directory === null ? (
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('common:loading')}</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '320px', overflowY: 'auto' }}>
+                  {directory
+                    .filter((u) => u.id !== user.uid && u.role !== 'teacher')
+                    .filter((u) => !dirSearch
+                      || String(u.name || '').toLowerCase().includes(dirSearch.trim().toLowerCase()))
+                    .slice(0, 60)
+                    .map((u) => {
+                      const isMine = u.teacherId === user.uid;
+                      const otherTeacher = !!u.teacherId && !isMine;
+                      const sent = invitedUids.has(u.id);
+                      return (
+                        <div key={u.id} style={{
+                          display: 'flex', alignItems: 'center', gap: '10px',
+                          background: 'var(--bg-card)', borderRadius: '11px', padding: '9px 11px',
+                        }}>
+                          <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
+                            background: 'linear-gradient(135deg, #7c6ff733, #5b4de833)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 800, color: '#7c6ff7', fontSize: '13px',
+                          }}>
+                            {(u.name || '?').charAt(0).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                              fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)',
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>
+                              {u.name || 'İstifadəçi'}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                              {u.level || 'Səviyyə qeyd edilməyib'}
+                            </div>
+                          </div>
+                          {isMine ? (
+                            <span style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 700, flexShrink: 0 }}>
+                              ✓ Şagirdiniz
+                            </span>
+                          ) : otherTeacher ? (
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', flexShrink: 0 }}>
+                              Başqa müəllimdə
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => inviteFromDirectory(u)}
+                              disabled={inviting === u.id || sent}
+                              style={{
+                                flexShrink: 0, padding: '7px 12px', borderRadius: '9px',
+                                fontSize: '12px', fontWeight: 800,
+                                cursor: (inviting === u.id || sent) ? 'default' : 'pointer',
+                                border: sent ? '1px solid var(--border)' : 'none',
+                                background: sent
+                                  ? 'transparent'
+                                  : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                                color: sent ? 'var(--text-secondary)' : '#fff',
+                              }}
+                            >
+                              {inviting === u.id ? '...' : sent ? 'Göndərildi' : 'Dəvət et'}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
         {students.length > 0 && (
