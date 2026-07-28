@@ -104,6 +104,14 @@ const SLOT_ERROR_TEXT = {
   'slot-too-far': 'Bu qədər irəli vaxt seçmək olmur.',
   'user-not-found': 'Profiliniz tapılmadı. Səhifəni yeniləyin.',
   'invalid-schedule': 'Qrafik yadda saxlanılmadı.',
+  'same-slot': 'Bu, artıq mövcud vaxtdır.',
+  'not-in-slot': 'Bu blokda deyilsiniz.',
+  'not-matched': 'Bu zəng hələ təsdiqlənməyib.',
+  'already-in-target': 'Sizin və ya partnyorunuzun həmin blokda artıq yazısı var.',
+  'request-not-found': 'Təklif tapılmadı.',
+  'not-your-request': 'Bu təklif sizə aid deyil.',
+  'already-answered': 'Bu təklifə artıq cavab verilib.',
+  'pair-gone': 'Aralıqda zəng ləğv edilib — köçürmək üçün cüt qalmayıb.',
   unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
 };
 
@@ -129,6 +137,38 @@ async function callSlotFn(path, body) {
     return { ok: false, errorText: 'Şəbəkə xətası. İnternetinizi yoxlayın.' };
   }
 }
+
+// Gələcək bloklar — vaxt dəyişikliyi seçicisi üçün (keçmiş və cari üfüq daxili).
+export function upcomingBlocks(nowMs = Date.now(), excludeSlotId = null) {
+  const out = [];
+  for (const dateStr of boardDates(nowMs)) {
+    for (const hour of SLOT_BLOCK_HOURS) {
+      const slotId = slotIdOf(dateStr, hour);
+      const startMs = slotStartMs(dateStr, hour);
+      if (startMs + SLOT_BLOCK_MS <= nowMs) continue;
+      if (slotId === excludeSlotId) continue;
+      out.push({ slotId, date: dateStr, hour, startMs });
+    }
+  }
+  return out;
+}
+
+export function subscribeToSlotChange(uid, cb) {
+  return onSnapshot(
+    query(
+      collection(db, 'slotChanges'),
+      where('peerUid', '==', uid),
+      where('status', '==', 'pending'),
+    ),
+    (snap) => cb(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() }),
+    () => cb(null),
+  );
+}
+
+export const proposeSlotChange = (fromSlotId, toSlotId) =>
+  callSlotFn('proposeSlotChange', { fromSlotId, toSlotId });
+export const respondSlotChange = (requestId, accept) =>
+  callSlotFn('respondSlotChange', { requestId, accept });
 
 export const joinPracticeSlot = (slotId) => callSlotFn('joinPracticeSlot', { slotId });
 export const leavePracticeSlot = (slotId) => callSlotFn('leavePracticeSlot', { slotId });

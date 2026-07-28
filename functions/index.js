@@ -1432,6 +1432,53 @@ exports.respondTeacherInvite = onRequest({ secrets: [], invoker: "public" }, asy
   }
 });
 
+// ─── Çat mesajı bildirişi ─────────────────────────────────────────
+// Bu YOX idi: kimsə mesaj yazanda qarşı tərəfə heç bir siqnal getmirdi. Yeganə
+// öyrənmə yolu həmin adamın profilinə girib çata açmaq idi — yəni mesajlaşma
+// praktiki olaraq işləmirdi.
+//
+// Oxunmamış sayğac SERVERDƏ artırılır: client-in öz sayğacını qaldırması
+// mənasız, qarşı tərəfinkini qaldırması isə sui-istifadədir. Client yalnız
+// AÇANDA öz sayını sıfırlayır (rules bunu birbaşa məhdudlaşdırır).
+exports.notifyChatMessage = onDocumentCreated("chats/{chatId}/messages/{messageId}", async (event) => {
+  const msg = event.data ? event.data.data() : null;
+  if (!msg || !msg.senderId) return;
+
+  const db = admin.firestore();
+  const chatId = event.params.chatId;
+  const chatRef = db.collection("chats").doc(chatId);
+
+  try {
+    const chatSnap = await chatRef.get();
+    const participants = chatSnap.exists ? (chatSnap.data().participants || []) : [];
+    // participants yoxdursa sənəd id-sindən çıxarırıq (id = sıralanmış uid cütü).
+    const pair = participants.length === 2 ? participants : chatId.split("_");
+    const recipient = pair.find((p) => p && p !== msg.senderId);
+    if (!recipient) return;
+
+    // Oxunmamış sayğac hər halda artır — bloklanmış olsa belə siyahı düzgün
+    // qalsın deyə; yalnız PUSH bloklanır.
+    await chatRef.set({
+      unread: { [recipient]: admin.firestore.FieldValue.increment(1) },
+    }, { merge: true });
+
+    const blocked = await db.collection("users").doc(recipient)
+      .collection("blocked").doc(msg.senderId).get();
+    if (blocked.exists) return;
+
+    const body = String(msg.text || "").slice(0, 120);
+    await sendPushToUser(db, recipient, {
+      title: msg.senderName || "Yeni mesaj",
+      body: body || "Yeni mesaj",
+      type: "chat_message",
+      // Birbaşa həmin söhbətə aparır — istifadəçi mesajı axtarmamalıdır.
+      url: `/chat/${msg.senderId}`,
+    });
+  } catch (e) {
+    console.warn("[ChatPush] failed:", chatId, e.message);
+  }
+});
+
 // ─── Tutor profili və təsdiqi ─────────────────────────────────────
 // Nişan (badge) YALNIZ təsdiqlənmiş müəllimdə görünür. Səbəb: `role: "teacher"`
 // qeydiyyatda istifadəçinin öz seçimidir (firestore.rules bir dəfəlik yazmağa
@@ -1974,6 +2021,205 @@ exports.setRecurringSlots = onRequest({ secrets: [], invoker: "public" }, async 
   } catch (e) {
     if (e.httpStatus !== 429) console.error("[setRecurringSlots]", e.message);
     return res.status(e.httpStatus || 500).json({ error: e.message });
+  }
+});
+
+// ─── Randevu vaxtının dəyişdirilməsi (qarşı tərəfin razılığı ilə) ──
+// Vaxtı təkbaşına dəyişmək olmaz: randevunun bütün dəyəri qarşı tərəfin ona
+// güvənməsidir. Ona görə axın təklif → razılıq şəklindədir. Rədd halında heç
+// nə dəyişmir və KÖHNƏ randevu olduğu kimi qalır — yəni "yox" demək zəngi
+// itirmək demək deyil, bu da rədd etməyi asanlaşdırır.
+exports.proposeSlotChange = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const from = parseSlotId(req.body && req.body.fromSlotId);
+  const to = parseSlotId(req.body && req.body.toSlotId);
+  if (!from || !to) return res.status(400).json({ error: "invalid-slot" });
+  if (from.slotId === to.slotId) return res.status(400).json({ error: "same-slot" });
+
+  const now = Date.now();
+  if (to.endMs <= now) return res.status(400).json({ error: "slot-past" });
+  if (to.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+    return res.status(400).json({ error: "slot-too-far" });
+  }
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(uid, "slotChange", 20, 60 * 60 * 1000);
+
+    const meRef = db.collection("practiceSlots").doc(from.slotId).collection("members").doc(uid);
+    const meSnap = await meRef.get();
+    if (!meSnap.exists) throw fail(404, "not-in-slot");
+    const me = meSnap.data() || {};
+    if (me.status !== "matched" || !me.pairedWith) throw fail(409, "not-matched");
+
+    // Hədəf blokda tərəflərdən biri onsuz da varsa köçürmə mürəkkəbləşir
+    // (orada başqası ilə cütləşmiş ola bilər) — bu halı sadəcə rədd edirik.
+    const targetMembers = db.collection("practiceSlots").doc(to.slotId).collection("members");
+    const [meThere, peerThere] = await Promise.all([
+      targetMembers.doc(uid).get(),
+      targetMembers.doc(me.pairedWith).get(),
+    ]);
+    if (meThere.exists || peerThere.exists) throw fail(409, "already-in-target");
+
+    const requestId = `${from.slotId}_${uid}`;
+    await db.collection("slotChanges").doc(requestId).set({
+      fromSlotId: from.slotId,
+      toSlotId: to.slotId,
+      proposerUid: uid,
+      proposerName: me.name || "",
+      peerUid: me.pairedWith,
+      status: "pending",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await sendPushToUser(db, me.pairedWith, {
+      title: "🕘 Vaxt dəyişikliyi təklifi",
+      body: `${me.name || "Partnyorunuz"} zəngi ${slotHourLabel(to, now)} vaxtına keçirmək istəyir.`,
+      type: "slot_change_request",
+      url: "/",
+    }).catch(() => null);
+
+    return res.status(200).json({ ok: true, requestId });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[proposeSlotChange]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const { requestId, accept } = req.body || {};
+  if (!requestId || typeof requestId !== "string") {
+    return res.status(400).json({ error: "invalid-request" });
+  }
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    await enforceRateLimit(uid, "slotChange", 20, 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const reqRef = db.collection("slotChanges").doc(requestId);
+      const reqSnap = await tx.get(reqRef);
+      if (!reqSnap.exists) throw fail(404, "request-not-found");
+      const r = reqSnap.data() || {};
+      if (r.peerUid !== uid) throw fail(403, "not-your-request");
+      if (r.status !== "pending") throw fail(409, "already-answered");
+
+      const now = admin.firestore.FieldValue.serverTimestamp();
+
+      if (accept !== true) {
+        tx.update(reqRef, { status: "declined", respondedAt: now });
+        return { accepted: false, proposerUid: r.proposerUid, toSlotId: r.toSlotId };
+      }
+
+      const from = parseSlotId(r.fromSlotId);
+      const to = parseSlotId(r.toSlotId);
+      if (!from || !to) throw fail(400, "invalid-slot");
+      if (to.endMs <= Date.now()) throw fail(400, "slot-past");
+
+      const fromRef = db.collection("practiceSlots").doc(from.slotId);
+      const toRef = db.collection("practiceSlots").doc(to.slotId);
+      const [fromMembersSnap, toMembersSnap] = await Promise.all([
+        tx.get(fromRef.collection("members").limit(SLOT_MAX_MEMBERS)),
+        tx.get(toRef.collection("members").limit(SLOT_MAX_MEMBERS)),
+      ]);
+      const fromMembers = fromMembersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+      const toMembers = toMembersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+      const a = fromMembers.find((m) => m.id === r.proposerUid);
+      const b = fromMembers.find((m) => m.id === uid);
+      if (!a || !b || a.pairedWith !== uid || b.pairedWith !== r.proposerUid) {
+        // Aralıqda biri ləğv edibsə köçürüləcək cüt yoxdur.
+        throw fail(409, "pair-gone");
+      }
+
+      const callId = callIdForPair(a.id, b.id);
+      const usersCol = db.collection("users");
+
+      // Köhnə blokdan çıxar.
+      tx.delete(fromRef.collection("members").doc(a.id));
+      tx.delete(fromRef.collection("members").doc(b.id));
+      const fromOthers = fromMembers.filter((m) => m.id !== a.id && m.id !== b.id);
+      tx.set(fromRef, {
+        waitingCount: fromOthers.filter((m) => m.status === "waiting").length,
+        matchedCount: fromOthers.filter((m) => m.status === "matched").length,
+        updatedAt: now,
+      }, { merge: true });
+
+      // Yeni bloka cüt olaraq köçür. Hədəfdə gözləyən varsa o, gözləməkdə
+      // qalır — bu cüt artıq bir-birinə bağlıdır.
+      for (const [x, y] of [[a, b], [b, a]]) {
+        tx.set(toRef.collection("members").doc(x.id), {
+          uid: x.id, name: x.name || "", level: x.level || null,
+          joinedAt: now, status: "matched", pairedWith: y.id, callId,
+        });
+        tx.set(usersCol.doc(x.id), {
+          practiceSlotIds: admin.firestore.FieldValue.arrayRemove(from.slotId),
+        }, { merge: true });
+        tx.set(usersCol.doc(x.id), {
+          practiceSlotIds: admin.firestore.FieldValue.arrayUnion(to.slotId),
+          upcomingCall: {
+            slotId: to.slotId, startMs: to.startMs,
+            peerUid: y.id, peerName: y.name || "", callId,
+          },
+        }, { merge: true });
+      }
+      tx.set(toRef, {
+        date: to.date, startHour: to.hour, startMs: to.startMs,
+        waitingCount: toMembers.filter((m) => m.status === "waiting").length,
+        matchedCount: toMembers.filter((m) => m.status === "matched").length + 2,
+        updatedAt: now,
+      }, { merge: true });
+
+      tx.set(db.collection("calls").doc(callId), { slotId: to.slotId }, { merge: true });
+      tx.update(reqRef, { status: "accepted", respondedAt: now });
+
+      return { accepted: true, proposerUid: r.proposerUid, toSlotId: r.toSlotId };
+    });
+
+    const to = parseSlotId(result.toSlotId);
+    await sendPushToUser(db, result.proposerUid, result.accepted
+      ? {
+        title: "✅ Vaxt dəyişdirildi",
+        body: `Zənginiz ${to ? slotHourLabel(to) : "yeni vaxta"} keçirildi.`,
+        type: "slot_change_accepted", url: "/",
+      }
+      : {
+        title: "Vaxt dəyişikliyi baş tutmadı",
+        body: "Partnyorunuz üçün bu vaxt uyğun deyil — köhnə vaxt qüvvədə qalır.",
+        type: "slot_change_declined", url: "/",
+      }).catch(() => null);
+
+    return res.status(200).json({ ok: true, accepted: result.accepted });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[respondSlotChange]", e.message);
+    return res.status(status).json({ error: e.message });
   }
 });
 

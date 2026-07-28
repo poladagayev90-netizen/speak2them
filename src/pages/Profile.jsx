@@ -288,8 +288,9 @@ export default function Profile({ user }) {
         </div>
       </div>
 
-      {/* COURSE CODE — kodla kohorta müraciət yolu; artıq kursda olan və ya
-          müraciəti gözləyən user üçün görünmür. */}
+      {/* KURSA QOŞUL — kohorta yeganə girişdir. Əvvəl eyni /redeem düyməsi həm
+          burada, həm ana səhifədə vardı; ana səhifədəki silindi, mətn isə
+          oradakı kimi izahlı hala gətirildi ki, məna itməsin. */}
       {mode !== 'course' && !user.cohortStatus && (
         <button
           onClick={() => navigate('/redeem')}
@@ -299,10 +300,17 @@ export default function Profile({ user }) {
             border: '1px solid #7c6ff755', color: 'var(--text-primary)',
             padding: '16px', borderRadius: '16px', marginBottom: '16px',
             display: 'flex', alignItems: 'center', gap: '12px',
-            cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left',
+            cursor: 'pointer', textAlign: 'left',
           }}
         >
-          🎟️ Kodunuz var? Kohorta müraciət edin
+          <span style={{ fontSize: '22px', flexShrink: 0 }}>🎓</span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>Kursa qoşul</span>
+            <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              Kodunuz varsa kohorta müraciət edin
+            </span>
+          </span>
+          <span style={{ fontSize: '18px', flexShrink: 0, color: 'var(--text-secondary)' }}>→</span>
         </button>
       )}
 

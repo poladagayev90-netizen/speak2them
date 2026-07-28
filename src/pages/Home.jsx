@@ -30,8 +30,10 @@ import CourseCompletionCelebration from '../components/CourseCompletionCelebrati
 import PracticeBoard from '../components/PracticeBoard';
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
+import SlotChangeBanner from '../components/SlotChangeBanner';
 import {
   currentBlockSlotId, joinPracticeSlot, leavePracticeSlot, subscribeToMySlots,
+  subscribeToSlotChange,
 } from '../utils/practiceSlots';
 import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
@@ -80,6 +82,7 @@ export default function Home({ user }) {
   const [boardOpenSignal, setBoardOpenSignal] = useState(0);
   const [slotToast, setSlotToast] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [slotChange, setSlotChange] = useState(null);
   // Value unused — bumping it only forces the staleness re-filter below.
   const [, setSearcherTick] = useState(0);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
@@ -191,6 +194,7 @@ export default function Home({ user }) {
   // App.js-in canlı sahə siyahısına salına bilmirlər (obyekt və massiv `!==`
   // müqayisəsini heç vaxt keçmir, hər heartbeat-də bütün tətbiq render olardı).
   useEffect(() => subscribeToMySlots(user.uid, setMine), [user.uid]);
+  useEffect(() => subscribeToSlotChange(user.uid, setSlotChange), [user.uid]);
 
   // Polled instead of a live listener: with a live query every user's
   // presence heartbeat would be re-streamed to every Home viewer (read
@@ -343,6 +347,10 @@ export default function Home({ user }) {
             qaçırardı; bir dəfəlik xahiş kifayətdir. */}
         {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
 
+        {/* Partnyorun vaxt təklifi randevu kartından ƏVVƏL: cavab verilməmiş
+            sual ekranın yuxarısında dayanmalıdır. */}
+        <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
+
         {/* Təsdiqlənmiş randevu ekranın ƏSAS elementidir: məhsulun bütün vədi
             budur — "bu gün filan saatda səni kimsə gözləyir". */}
         <UpcomingCallCard
@@ -449,38 +457,9 @@ export default function Home({ user }) {
             Partner down the screen. */}
         <CourseProgressCard user={user} />
 
-        {/* Course-join CTA — replaces the daily puzzle. Only shown to users not
-            already in a cohort flow (trial/free); course + pending/accepted
-            users see their standing in CourseProgressCard instead, so a second
-            "join" prompt would be noise for them. */}
-        {user.mode !== 'course' && !user.cohortStatus && (
-          <button
-            onClick={() => navigate('/redeem')}
-            style={{
-              width: '100%',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
-              color: '#ffffff',
-              border: 'none',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginTop: '16px',
-              marginBottom: '10px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(124,111,247,0.4)',
-              textAlign: 'left',
-            }}
-          >
-            <span style={{ fontSize: '22px', flexShrink: 0 }}>🎓</span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: 'block', fontSize: '15px', fontWeight: 800 }}>Kursa qoşul</span>
-              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9 }}>Kohorta müraciət et, danışığa başla</span>
-            </span>
-            <span style={{ fontSize: '18px', flexShrink: 0 }}>→</span>
-          </button>
-        )}
+        {/* "Kursa qoşul" kartı buradan ÇIXARILDI — eyni /redeem girişi Profildə
+            onsuz da var idi, yəni ana səhifədə dublikat idi. Ana səhifə indi
+            yalnız praktikaya aid elementləri saxlayır. */}
 
         <style>{`
           .filter-chip-wrapper::-webkit-scrollbar {

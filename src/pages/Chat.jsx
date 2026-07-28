@@ -20,6 +20,7 @@ import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../uti
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag } from '../utils/presence';
+import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
 import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
@@ -66,6 +67,8 @@ export default function Chat({ user }) {
   // gözləmə otağıdır: birinci gələn qoşulub gözləyir, ikinci gələn kimi səs
   // açılır. Ayrıca "rendezvous" maşını qurmağa ehtiyac qalmır.
   const [peerJoined, setPeerJoined] = useState(false);
+  // Toxunulmuş öz mesajım — silmə düyməsi yalnız onun altında görünür.
+  const [selectedMsg, setSelectedMsg] = useState(null);
   const [callSeconds, setCallSeconds] = useState(0);
   // Limitə 1 dəq qalmış görünən keçici xəbərdarlıq banneri.
   const [timeWarning, setTimeWarning] = useState(false);
@@ -202,11 +205,13 @@ export default function Chat({ user }) {
 
   useEffect(() => {
     if (!chatId || !user.uid || !peerId) return;
-    const participants = [user.uid, peerId].sort();
-    setDoc(doc(db, 'chats', chatId), {
-      participants,
-      updatedAt: serverTimestamp(),
-    }, { merge: true }).catch(console.error);
+    // Çat sənədi BURADA YARADILMIR. Əvvəl sadəcə birinin profilinə girmək
+    // sənəd yaradırdı və söhbətlər siyahısı "Hələ mesaj yoxdur" kabus sətirləri
+    // ilə dolurdu. Sənəd yalnız ilk mesajla yaranır (sendMessage → touchChat).
+    //
+    // Açılış = oxundu: öz oxunmamış sayğacımı sıfırlayıram. Rules qarşı
+    // tərəfinkinə toxunmağa icazə vermir.
+    markChatRead(chatId, user.uid);
 
     // Unbounded, this re-read every message in the thread on every mount and
     // streamed the whole history to each participant.
@@ -917,12 +922,9 @@ export default function Chat({ user }) {
     const senderName = user.displayName || user.name || 'User';
     setText('');
     try {
-      await setDoc(doc(db, 'chats', chatId), {
-        participants: [user.uid, peerId].sort(),
-        updatedAt: serverTimestamp(),
-        lastMessage: messageText,
-        lastSenderId: user.uid,
-      }, { merge: true });
+      // Sənəd əvvəl yazılır: notifyChatMessage trigger-i mesaj yarananda çat
+      // sənədindən participants oxuyur, ona görə o, mesajdan ƏVVƏL mövcud olmalıdır.
+      await touchChat({ chatId, myUid: user.uid, peerId, lastMessage: messageText });
       await addDoc(collection(db, 'chats', chatId, 'messages'), {
         text: messageText,
         senderId: user.uid,
@@ -1306,15 +1308,43 @@ export default function Chat({ user }) {
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-empty-hint">
-            <p>👋 Say hello and start practicing!</p>
+            <p>👋 Salamlaşın və praktikaya başlayın!</p>
           </div>
         ) : (
-          messages.map(m => (
-            <div key={m.id} className={`message ${m.senderId === user.uid ? 'mine' : 'theirs'}`}>
-              {m.senderId !== user.uid && <span className="message-sender">{m.senderName}</span>}
-              <p>{m.text}</p>
-            </div>
-          ))
+          messages.map((m) => {
+            const isMine = m.senderId === user.uid;
+            const selected = selectedMsg === m.id;
+            return (
+              <div key={m.id} className={`message ${isMine ? 'mine' : 'theirs'}`}>
+                {!isMine && <span className="message-sender">{m.senderName}</span>}
+                {m.deleted ? (
+                  <p style={{ fontStyle: 'italic', opacity: 0.6 }}>Bu mesaj silindi</p>
+                ) : (
+                  <p
+                    onClick={() => isMine && setSelectedMsg(selected ? null : m.id)}
+                    style={{ cursor: isMine ? 'pointer' : 'default' }}
+                  >
+                    {m.text}
+                  </p>
+                )}
+                {/* Silmə yalnız öz mesajında və toxunuşdan sonra görünür —
+                    hər baloncuğun yanında daimi zibil qutusu söhbəti qarışdırır. */}
+                {isMine && selected && !m.deleted && (
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedMsg(null); deleteMessage(chatId, m.id); }}
+                    style={{
+                      marginTop: '6px', padding: '5px 10px', borderRadius: '8px',
+                      border: '1px solid #ef444455', background: '#ef444418',
+                      color: '#ef4444', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    🗑 Hamı üçün sil
+                  </button>
+                )}
+              </div>
+            );
+          })
         )}
         <div ref={bottomRef} />
       </div>
@@ -1322,11 +1352,11 @@ export default function Chat({ user }) {
       <form className="chat-input" onSubmit={sendMessage}>
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder="Mesaj yazın..."
           value={text}
           onChange={e => setText(e.target.value)}
         />
-        <button type="submit">Send ➤</button>
+        <button type="submit">Göndər ➤</button>
       </form>
       
       {postCallStage === 'quiz' && (

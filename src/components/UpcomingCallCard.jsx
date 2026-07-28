@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { parseSlotId, dayLabel, hourLabel } from '../utils/practiceSlots';
+import { useNavigate } from 'react-router-dom';
+import {
+  parseSlotId, dayLabel, hourLabel, blockLabel, upcomingBlocks, proposeSlotChange,
+} from '../utils/practiceSlots';
 
 // Təsdiqlənmiş randevu — ana səhifənin ƏSAS elementi.
 //
@@ -24,6 +27,10 @@ function countdownText(startMs, now) {
 
 export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
   const [now, setNow] = useState(Date.now());
+  const [picking, setPicking] = useState(false);
+  const [sending, setSending] = useState('');
+  const [notice, setNotice] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -31,6 +38,17 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
   }, []);
 
   if (!call) return null;
+
+  const propose = async (toSlotId) => {
+    setSending(toSlotId);
+    const res = await proposeSlotChange(call.slotId, toSlotId);
+    setSending('');
+    setPicking(false);
+    setNotice(res.ok
+      ? 'Təklif göndərildi — partnyorunuz təsdiqləyəndə vaxt dəyişəcək.'
+      : `⚠️ ${res.errorText}`);
+    setTimeout(() => setNotice(''), 8000);
+  };
 
   const parsed = parseSlotId(call.slotId);
   const startMs = Number(call.startMs) || parsed?.startMs || 0;
@@ -135,6 +153,70 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
           {busy ? '...' : 'Ləğv et'}
         </button>
       </div>
+
+      {/* Vaxtı dəyişmək TƏKBAŞINA mümkün deyil — təklif gedir, partnyor
+          təsdiqləyir. Uzun müzakirə üçün çat düyməsi yanındadır. */}
+      <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
+        <button
+          type="button"
+          onClick={() => { setPicking((p) => !p); setNotice(''); }}
+          style={{
+            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 700,
+            textDecoration: 'underline',
+          }}
+        >
+          🕘 Vaxtı dəyiş
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate(`/chat/${call.peerUid}`)}
+          style={{
+            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 700,
+            textDecoration: 'underline',
+          }}
+        >
+          💬 Yazış
+        </button>
+      </div>
+
+      {notice && (
+        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '10px', lineHeight: 1.5 }}>
+          {notice}
+        </div>
+      )}
+
+      {picking && (
+        <div style={{ marginTop: '12px' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            Yeni vaxt seçin — partnyorunuza təklif gedəcək.
+          </div>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '6px',
+            maxHeight: '176px', overflowY: 'auto',
+          }}>
+            {upcomingBlocks(now, call.slotId).map((b) => (
+              <button
+                key={b.slotId}
+                type="button"
+                onClick={() => propose(b.slotId)}
+                disabled={!!sending}
+                style={{
+                  padding: '7px 11px', borderRadius: '9px', fontSize: '12px', fontWeight: 700,
+                  border: '1px solid var(--border)', background: 'var(--bg-card)',
+                  color: 'var(--text-primary)', cursor: sending ? 'default' : 'pointer',
+                  opacity: sending && sending !== b.slotId ? 0.5 : 1,
+                }}
+              >
+                {sending === b.slotId
+                  ? '...'
+                  : `${dayLabel(b.date, now)} ${blockLabel(b.hour)}`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

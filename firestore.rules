@@ -143,21 +143,43 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    match /chats/{chatId} {
-      allow read, write: if request.auth.uid != null && (
-        chatId == request.auth.uid + "_" ||
+    // Çat sənədinin id-si sıralanmış uid cütüdür, ona görə üzvlük id-dən
+    // çıxarılır (participants massivinə güvənmək olmaz — onu da client yazır).
+    function isChatMember(chatId) {
+      return isSignedIn() && (
         chatId.split("_")[0] == request.auth.uid ||
         chatId.split("_")[1] == request.auth.uid
       );
+    }
+    function chatPeer(chatId) {
+      return chatId.split("_")[0] == request.auth.uid
+        ? chatId.split("_")[1]
+        : chatId.split("_")[0];
+    }
+
+    match /chats/{chatId} {
+      allow read: if isChatMember(chatId);
+      allow create: if isChatMember(chatId);
+      // Oxunmamış sayğac: hər kəs YALNIZ öz sayını sıfırlaya bilər. Qarşı
+      // tərəfinki toxunulmazdır — əks halda mesaj göndərən adam qarşı tərəfin
+      // "oxunmamış" nişanını silib bildirişi gizlədə bilərdi. Sayğacı artıran
+      // yeganə yer serverdir (notifyChatMessage).
+      allow update: if isChatMember(chatId)
+        && request.resource.data.get('unread', {}).get(chatPeer(chatId), 0)
+           == resource.data.get('unread', {}).get(chatPeer(chatId), 0);
+      allow delete: if false;
 
       match /messages/{messageId} {
-        allow read: if request.auth.uid != null && (
-          chatId == request.auth.uid + "_" ||
-          chatId.split("_")[0] == request.auth.uid ||
-          chatId.split("_")[1] == request.auth.uid
-        );
-        allow create: if request.auth.uid == request.resource.data.senderId;
-        allow update, delete: if request.auth.uid == resource.data.senderId;
+        allow read: if isChatMember(chatId);
+        allow create: if isChatMember(chatId)
+          && request.auth.uid == request.resource.data.senderId;
+        // "Hamı üçün sil" = mətnin boşaldılması + deleted bayrağı. Yalnız bu iki
+        // sahəyə icazə var: əks halda göndərən köhnə mesajın mətnini sonradan
+        // tamamilə dəyişib söhbətin gedişini saxtalaşdıra bilərdi.
+        allow update: if request.auth.uid == resource.data.senderId
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['deleted', 'text']);
+        allow delete: if request.auth.uid == resource.data.senderId;
       }
     }
 
@@ -336,6 +358,17 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['arrivedAt']);
       }
+    }
+
+    // Vaxt dəyişikliyi təklifi — teacherInvites ilə eyni pattern: iki tərəf
+    // oxuyur, yazmaq YALNIZ serverdədir. Client yaza bilsəydi, qarşı tərəfin
+    // razılığını saxtalaşdırıb randevunu təkbaşına köçürə bilərdi.
+    match /slotChanges/{requestId} {
+      allow read: if isSignedIn() && resource != null && (
+        resource.data.proposerUid == request.auth.uid ||
+        resource.data.peerUid == request.auth.uid
+      );
+      allow write: if false;
     }
 
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız
