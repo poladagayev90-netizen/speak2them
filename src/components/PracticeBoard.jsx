@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Repeat, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   SLOT_BLOCK_HOURS,
@@ -24,16 +24,30 @@ import {
 //
 // Həftəlik grid qəsdən işlədilmir — 390px ekranda oxunmur. Gün tabları +
 // şaquli blok siyahısı eyni məlumatı telefonda oxunaqlı verir.
+const BOARD_OPEN_KEY = 'speaklab_board_open';
+
 export default function PracticeBoard({ mine, openSignal = 0 }) {
   const [board, setBoard] = useState({});
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [dayIndex, setDayIndex] = useState(0);
   const [now, setNow] = useState(Date.now());
-  // Qayıdan istifadəçi üçün yığcam: artıq vaxtı varsa siyahı bağlı gəlir,
-  // amma başlıqdakı tələb xülasəsi ("2 blokda adam var") görünməyə davam edir —
-  // yəni bağlı olsa da hərəkətə çağıran siqnal itmir.
-  const [open, setOpen] = useState(null);
+  // Açıq/bağlı seçimi localStorage-də saxlanılır. Tab dəyişəndə Home tamamilə
+  // unmount olur, ona görə yalnız state-də saxlansaydı istifadəçinin bağlaması
+  // hər qayıdışda unudulurdu — məhz bildirilən problem.
+  // null = istifadəçi hələ seçim etməyib; o halda ilk açılışda aşağıdakı
+  // qayda işləyir (vaxtı olmayan üçün açıq, olan üçün bağlı).
+  const [open, setOpen] = useState(() => {
+    try {
+      const v = localStorage.getItem(BOARD_OPEN_KEY);
+      return v === null ? null : v === '1';
+    } catch { return null; }
+  });
+
+  const setOpenPersist = useCallback((next) => {
+    setOpen(next);
+    try { localStorage.setItem(BOARD_OPEN_KEY, next ? '1' : '0'); } catch { /* private mode */ }
+  }, []);
 
   const dates = useMemo(() => boardDates(now), [now]);
 
@@ -47,7 +61,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
   useEffect(() => subscribeToBoard(boardDates(), setBoard), []);
 
   // Axtarış partnyor tapmayanda Home siqnal göndərir — lövhə mütləq görünməlidir.
-  useEffect(() => { if (openSignal > 0) setOpen(true); }, [openSignal]);
+  useEffect(() => { if (openSignal > 0) setOpenPersist(true); }, [openSignal, setOpenPersist]);
 
   const mySlotIds = mine?.slotIds || [];
   const recurring = mine?.recurringSlots || [];
@@ -118,7 +132,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
     }}>
       <button
         type="button"
-        onClick={() => setOpen(!expanded)}
+        onClick={() => setOpenPersist(!expanded)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
           background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',

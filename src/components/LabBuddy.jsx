@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { parseSlotId, hourLabel } from '../utils/practiceSlots';
 import { sfxStep, sfxPop, sfxBlip, sfxBoing, sfxGiggle, sfxPeek } from '../utils/sfx';
+import KolbaFigure from './KolbaFigure';
 
 // Kolba — SpeakLab-ın canlı personajı.
 //
@@ -101,98 +102,6 @@ function pickMessage(user, mine, navigate, openBoard) {
   }
 
   return null;
-}
-
-// ─── Personajın rəsmi ────────────────────────────────────────────
-function Character({ walking, face, size = 76 }) {
-  const limb = walking ? 'buddyLimb .52s linear infinite' : 'none';
-  const limbAlt = walking ? 'buddyLimbAlt .52s linear infinite' : 'none';
-  const h = Math.round(size * 1.42);
-
-  // Baxış istiqaməti — boylananda göz bəbəkləri yana sürüşür, "ətrafa baxır".
-  const look = face === 'peek' ? 2.6 : 0;
-  const wide = face === 'surprised';
-  const dizzy = face === 'dizzy';
-  const eyeR = wide ? 7 : 5;
-
-  return (
-    <svg
-      width={size} height={h} viewBox="18 28 92 132" aria-hidden="true"
-      style={{ display: 'block', filter: 'drop-shadow(0 8px 18px rgba(124,111,247,.4))' }}
-    >
-      <defs>
-        {/* gradientUnits="userSpaceOnUse" MƏCBURİDİR: standart objectBoundingBox
-            qradiyenti hər formanın öz sərhəd qutusuna görə hesablayır, ayaq isə
-            ŞAQULİ, pəncə ÜFÜQİ xəttdir — qutunun bir ölçüsü sıfır olur,
-            qradiyent təyinsiz qalır və xətt HEÇ ÇƏKİLMİR. Personaj bir versiya
-            boyu yalnız başdan ibarət görünürdü, səbəb məhz bu idi. */}
-        <linearGradient id="buddy-grad" x1="20" y1="30" x2="108" y2="158" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#38BDF8" />
-          <stop offset="0.55" stopColor="#6D3BEB" />
-          <stop offset="1" stopColor="#A855F7" />
-        </linearGradient>
-        <linearGradient id="buddy-liq" x1="30" y1="128" x2="100" y2="90" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#12BBD6" />
-          <stop offset="1" stopColor="#7C4DFF" />
-        </linearGradient>
-        <clipPath id="buddy-body"><circle cx="64" cy="88" r="30" /></clipPath>
-      </defs>
-
-      <g style={{
-        transformOrigin: '64px 140px',
-        animation: walking ? 'buddyStride .52s ease-in-out infinite' : 'buddyBob 3.4s ease-in-out infinite',
-      }}>
-        <g style={{ transformOrigin: '57px 114px', animation: limb }}>
-          <line x1="57" y1="112" x2="57" y2="140" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
-          <line x1="57" y1="141" x2="48" y2="141" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
-        </g>
-        <g style={{ transformOrigin: '71px 114px', animation: limbAlt }}>
-          <line x1="71" y1="112" x2="71" y2="140" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
-          <line x1="71" y1="141" x2="62" y2="141" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
-        </g>
-
-        {/* Qollar ayaqlarla ƏKS fazada — təbii yeriş belə alınır. Təəccüblənəndə
-            hər ikisi yuxarı qalxır. */}
-        <g style={{ transformOrigin: '38px 90px', animation: wide ? 'buddyArmUpL .5s ease forwards' : limbAlt }}>
-          <line x1="38" y1="90" x2="24" y2="104" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
-        </g>
-        <g style={{ transformOrigin: '90px 90px', animation: wide ? 'buddyArmUpR .5s ease forwards' : limb }}>
-          <line x1="90" y1="90" x2="104" y2="104" stroke="url(#buddy-grad)" strokeWidth="6" strokeLinecap="round" />
-        </g>
-
-        {/* Maye — gövdədən bir az GECİKMƏ ilə çalxalanır (secondary action). */}
-        <g clipPath="url(#buddy-body)">
-          <g style={{ transformOrigin: '64px 110px', animation: 'buddySlosh 2.6s ease-in-out infinite' }}>
-            <rect x="26" y="94" width="78" height="42" fill="url(#buddy-liq)" opacity="0.32" />
-          </g>
-        </g>
-        <circle cx="64" cy="88" r="30" fill="var(--bg-primary)" fillOpacity="0.55" />
-        <circle cx="64" cy="88" r="30" fill="none" stroke="url(#buddy-grad)" strokeWidth="6.5" />
-        <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="url(#buddy-grad)" strokeWidth="6.5" strokeLinecap="round" />
-        <line x1="47" y1="36" x2="81" y2="36" stroke="url(#buddy-grad)" strokeWidth="6.5" strokeLinecap="round" />
-
-        {dizzy ? (
-          <>
-            <path d="M50,80 L60,88 M60,80 L50,88" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />
-            <path d="M68,80 L78,88 M78,80 L68,88" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />
-            <ellipse cx="64" cy="99" rx="6" ry="4" fill="#0f1020" />
-          </>
-        ) : (
-          <>
-            <g style={{ transformOrigin: '64px 84px', animation: 'buddyBlink 4.6s infinite' }}>
-              <circle cx="55" cy="84" r={eyeR} fill="#0f1020" />
-              <circle cx="73" cy="84" r={eyeR} fill="#0f1020" />
-              <circle cx={56.6 + look} cy="82.2" r="1.9" fill="#fff" />
-              <circle cx={74.6 + look} cy="82.2" r="1.9" fill="#fff" />
-            </g>
-            {wide
-              ? <ellipse cx="64" cy="99" rx="5" ry="6" fill="#0f1020" />
-              : <path d="M56,96 Q64,103 72,96" fill="none" stroke="#0f1020" strokeWidth="3" strokeLinecap="round" />}
-          </>
-        )}
-      </g>
-    </svg>
-  );
 }
 
 export default function LabBuddy({ user, mine, onOpenBoard }) {
@@ -392,7 +301,7 @@ export default function LabBuddy({ user, mine, onOpenBoard }) {
             {poke.line}
           </span>
         )}
-        <Character walking={walking} face={face} size={peeking ? 68 : 76} />
+        <KolbaFigure pose={walking ? 'walk' : 'stand'} face={face} size={peeking ? 70 : 78} />
       </div>
 
       <style>{`

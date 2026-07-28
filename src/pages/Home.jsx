@@ -32,6 +32,7 @@ import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import LabBuddy from '../components/LabBuddy';
+import BuddySwing from '../components/BuddySwing';
 import {
   currentBlockSlotId, joinPracticeSlot, leavePracticeSlot, subscribeToMySlots,
   subscribeToSlotChange,
@@ -575,9 +576,10 @@ export default function Home({ user }) {
         {isPeopleTab && (
           <>
             {displayUsers.length === 0 ? (
+              /* Boş ekran ən pis andır — 😴 emoji yerinə yellənçəkdə oturan
+                 Kolba. Gəlişinə reaksiya verir, sonra sakitcə yellənir. */
               <div className="empty-state">
-                <div className="empty-icon">😴</div>
-                <p>{tab === 'online' ? t('common:noOneOnline') : t('common:noUsersYet')}</p>
+                <BuddySwing label={tab === 'online' ? t('common:noOneOnline') : t('common:noUsersYet')} />
               </div>
             ) : (
               <div className="users-grid">
