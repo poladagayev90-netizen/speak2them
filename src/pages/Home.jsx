@@ -29,11 +29,11 @@ import DailyTopicBanner from '../components/DailyTopicBanner';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import PracticeBoard from '../components/PracticeBoard';
 import SlotNoticeModal from '../components/SlotNoticeModal';
+import UpcomingCallCard from '../components/UpcomingCallCard';
 import {
-  currentBlockSlotId, joinPracticeSlot, subscribeToMySlots,
-  parseSlotId, dayLabel, hourLabel,
+  currentBlockSlotId, joinPracticeSlot, leavePracticeSlot, subscribeToMySlots,
 } from '../utils/practiceSlots';
-import { Award, Shuffle, X, Globe, Shield, BookOpen, CalendarClock } from 'lucide-react';
+import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 
 // Ordered to match the screen top-to-bottom, ending on the bottom nav.
 const HOME_TOUR_STEPS = [
@@ -75,8 +75,11 @@ export default function Home({ user }) {
   const [rawSearchers, setRawSearchers] = useState([]);
   // Praktika slotları: mine = {slotIds, recurringSlots, upcomingCall, slotNoticePending}
   const [mine, setMine] = useState(null);
-  const [boardOpen, setBoardOpen] = useState(true);
+  // Lövhə öz açılma vəziyyətini özü idarə edir; bu sayğac yalnız "zorla aç"
+  // siqnalıdır (axtarış partnyor tapmayanda lövhə görünməlidir).
+  const [boardOpenSignal, setBoardOpenSignal] = useState(0);
   const [slotToast, setSlotToast] = useState('');
+  const [cancelBusy, setCancelBusy] = useState(false);
   // Value unused — bumping it only forces the staleness re-filter below.
   const [, setSearcherTick] = useState(0);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
@@ -150,7 +153,7 @@ export default function Home({ user }) {
   // Rümeysa 14:07-də "1 nəfər gözləyir" görüb qoşulur → dərhal eşləşmə.
   // Əvvəl bilet silinirdi və bu ssenari FİZİKİ olaraq mümkün deyildi.
   const handleNoMatch = useCallback(async () => {
-    setBoardOpen(true);
+    setBoardOpenSignal((n) => n + 1);
     const slotId = currentBlockSlotId();
     if (!slotId) return; // gecə saatları — blok yoxdur, sadəcə lövhə açılır
     const res = await joinPracticeSlot(slotId);
@@ -168,6 +171,21 @@ export default function Home({ user }) {
     onMatched: handleMatched,
     onNoMatch: handleNoMatch,
   });
+
+  // Randevunu ləğv etmək YOLU OLMALIDIR: çıxışı olmayan öhdəlik istifadəçini
+  // sıxır və nəticədə heç kim slot qoymur. Partnyora gedən mətndə rədd və ad
+  // keçmir (leavePracticeSlot), yəni ləğv utandırıcı hala çevrilmir.
+  const cancelUpcoming = useCallback(async () => {
+    const uc = mine?.upcomingCall;
+    if (!uc) return;
+    if (!window.confirm('Bu zəngi ləğv edirsiniz? Partnyorunuza bildiriş gedəcək.')) return;
+    setCancelBusy(true);
+    const res = await leavePracticeSlot(uc.slotId);
+    setCancelBusy(false);
+    if (!res.ok) setSlotToast(`⚠️ ${res.errorText}`);
+    else setSlotToast('Zəng ləğv edildi.');
+    setTimeout(() => setSlotToast(''), 6000);
+  }, [mine]);
 
   // Randevu / öz slotlarım / nəzakətli xatırlatma — hamısı öz user sənədimdə.
   // App.js-in canlı sahə siyahısına salına bilmirlər (obyekt və massiv `!==`
@@ -325,58 +343,23 @@ export default function Home({ user }) {
             qaçırardı; bir dəfəlik xahiş kifayətdir. */}
         {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
 
-        {/* Yaxınlaşan randevu ekranın ən yuxarısındadır: ciddiyyət qatır və
-            "bu gün kimsə məni gözləyir" hissi gəlmə ehtimalını qaldırır. */}
-        {mine?.upcomingCall && (() => {
-          const uc = mine.upcomingCall;
-          const parsed = parseSlotId(uc.slotId);
-          const startMs = Number(uc.startMs) || parsed?.startMs || 0;
-          const openable = Date.now() >= startMs - 5 * 60 * 1000;
-          const when = parsed
-            ? `${dayLabel(parsed.date)} ${hourLabel(parsed.hour)}`
-            : '';
-          return (
-            <div style={{
-              background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-              border: '1px solid #7c6ff755', borderRadius: '16px',
-              padding: '16px', marginBottom: '12px',
-              display: 'flex', alignItems: 'center', gap: '12px',
-            }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '3px' }}>
-                  Yaxınlaşan zəng
-                </div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  {when} — {uc.peerName || 'Partnyorunuz'} ilə
-                </div>
-              </div>
-              {openable && (
-                <button
-                  type="button"
-                  onClick={() => navigate(`/chat/${uc.peerUid}`, {
-                    state: { acceptedCall: true, callId: uc.callId, matchedCall: true, slotId: uc.slotId },
-                  })}
-                  style={{
-                    flexShrink: 0, padding: '11px 16px', borderRadius: '12px', border: 'none',
-                    background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
-                    color: '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer',
-                  }}
-                >
-                  Qoşul
-                </button>
-              )}
-            </div>
-          );
-        })()}
+        {/* Təsdiqlənmiş randevu ekranın ƏSAS elementidir: məhsulun bütün vədi
+            budur — "bu gün filan saatda səni kimsə gözləyir". */}
+        <UpcomingCallCard
+          call={mine?.upcomingCall}
+          busy={cancelBusy}
+          onJoin={() => {
+            const uc = mine.upcomingCall;
+            navigate(`/chat/${uc.peerUid}`, {
+              state: { acceptedCall: true, callId: uc.callId, matchedCall: true, slotId: uc.slotId },
+            });
+          }}
+          onCancel={cancelUpcoming}
+        />
 
-        {/* onJoinSession: sessiya pəncərəsi açıq olanda "Qoşul" düyməsi adi
-            axtarışı başladır — matchmaking.js-ə görə sessiya növbəsi ilə anlıq
-            axtarış EYNİ hovuzdur, ona görə sessiyanı gözləyənlərlə cütləşir.
-            Artıq axtarış gedirsə düymə göstərilmir (təkrar start olmasın). */}
         <DailyTopicBanner
           user={user}
           onOpenTopic={() => setDailyTopicOpen(true)}
-          onJoinSession={searching ? null : startSearch}
         />
 
         <NotificationPrompt user={user} />
@@ -452,23 +435,10 @@ export default function Home({ user }) {
           </div>
         )}
 
-        {/* Lövhə əsas mexanizmdir, gizli menyuda deyil — açıq durur. */}
+        {/* Lövhənin öz açılan başlığı var — ayrıca tam enli düymə ana səhifədə
+            lazımsız yer tuturdu. */}
         <div style={{ marginTop: '12px' }}>
-          <button
-            type="button"
-            onClick={() => setBoardOpen((o) => !o)}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '8px', padding: '11px', borderRadius: '12px', cursor: 'pointer',
-              border: '1px solid var(--border)', background: 'var(--bg-card)',
-              color: 'var(--text-primary)', fontSize: '14px', fontWeight: 700,
-              marginBottom: boardOpen ? '12px' : 0,
-            }}
-          >
-            <CalendarClock size={18} />
-            {boardOpen ? 'Vaxt cədvəlini gizlət' : 'Nə vaxt müsaitsiniz?'}
-          </button>
-          {boardOpen && <PracticeBoard user={user} mine={mine} />}
+          <PracticeBoard mine={mine} openSignal={boardOpenSignal} />
         </div>
 
         {/* Günün mövzusu girişi yuxarıdakı DailyTopicBanner-dədir — burada

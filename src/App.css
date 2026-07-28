@@ -301,17 +301,23 @@ body {
   opacity: 0.9;
 }
 
+/* Brend rəngi — əvvəl qırmızı-narıncı idi (#c2410c → #b91c1c) və ana səhifədə
+   hər şeydən yüksək səslə qışqırırdı: brendin bənövşəyisi ilə toqquşurdu,
+   üstəlik qırmızı "dayan/təhlükə" siqnalıdır, halbuki bu, əsas müsbət
+   hərəkətdir. Ölçü də bir qədər kiçildildi ki, təsdiqlənmiş randevu kartı
+   səhifənin əsas elementi olaraq qalsın. */
 .btn-random {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #c2410c, #b91c1c);
+  padding: 15px;
+  background: linear-gradient(135deg, #7c6ff7, #5b4de8);
   color: white;
   border: none;
   border-radius: 12px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s;
+  box-shadow: 0 4px 16px rgba(124, 111, 247, 0.28);
 }
 
 .btn-random:hover {
