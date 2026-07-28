@@ -3,7 +3,8 @@ import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'f
 import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth, enableNotifications } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, Bell } from 'lucide-react';
+import { Moon, Sun, Bell, Volume2, VolumeX } from 'lucide-react';
+import { sfxEnabled, setSfxEnabled, sfxPop } from '../utils/sfx';
 import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 import StreakJourney from '../components/StreakJourney';
@@ -145,6 +146,7 @@ export default function Profile({ user }) {
   const [notifPerm, setNotifPerm] = useState(
     isNativePush() ? 'default' : (typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
   );
+  const [sfx, setSfx] = useState(() => sfxEnabled());
 
   useEffect(() => {
     if (!isNativePush()) return;
@@ -410,6 +412,25 @@ export default function Profile({ user }) {
           label: 'Push bildirişləri',
           onClick: handleEnableNotifications,
           right: <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: notifPerm === 'granted' ? 'var(--success)' : 'var(--accent)' }}>{notifLabel}</span>,
+          notLast: true,
+        })}
+        {/* Personajın səsi söndürülə bilməlidir — səssiz mühitdə tətbiq açan
+            adam üçün gözlənilməz səs ən pis təəssüratdır. Zəng zamanı səs
+            onsuz da avtomatik kəsilir (bax utils/sfx.js). */}
+        {row({
+          icon: sfx ? <Volume2 size={17} /> : <VolumeX size={17} />,
+          label: 'Səs effektləri',
+          onClick: () => {
+            const next = !sfx;
+            setSfxEnabled(next);
+            setSfx(next);
+            if (next) sfxPop();
+          },
+          right: (
+            <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: sfx ? 'var(--success)' : 'var(--text-muted)' }}>
+              {sfx ? 'Açıq' : 'Bağlı'}
+            </span>
+          ),
           notLast: true,
         })}
         {row({
