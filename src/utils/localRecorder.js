@@ -20,6 +20,7 @@ let vadProcessor = null;
 let vadSink = null;
 let voicedSamples = 0;
 let noiseFloor = 0.01;
+let speechPeak = 0;
 let lastSpeechAt = 0;
 let onVisibility = null;
 
@@ -31,8 +32,15 @@ const SILENCE_HANGOVER_MS = 1500;
 // Meyl bilərəkdən audio saxlamağa yönəlib: yanlış "danışıq" bir neçə
 // saniyəlik xərcdir, yanlış "sükut" isə itmiş sözdür.
 const SPEECH_OVER_FLOOR = 2.5;
-const ABSOLUTE_FLOOR_RMS = 0.004;
-const VAD_BUFFER_SIZE = 2048; // ~46 ms @44.1 kHz — sözün başlanğıcını tutmaq üçün kifayət qədər tez
+// Hədd HƏM DƏ müşahidə olunan dinamik diapazondan çıxarılır: döşəmə ilə nitq
+// zirvəsi arasındakı məsafənin bu hissəsi. Sabit mütləq hədd sakit danışanı
+// (uzaq mikrofon, alçaq səs) tamamilə sükut sayıb sözlərini atırdı — nisbi
+// hədd isə həm bağıran, həm pıçıldayan üçün özünü eyni cür kalibrləyir.
+const SPEECH_RANGE_FRACTION = 0.2;
+// Bu, nitq həddi DEYİL — yalnız rəqəmsal sükutdan (tam sıfır siqnal)
+// qorunma. Nitq həddi kimi işlənsəydi sakit danışan yenə kəsilərdi.
+const SANITY_FLOOR_RMS = 0.0008;
+const VAD_BUFFER_SIZE = 1024; // ~23 ms @44.1 kHz — nə qədər kiçikdirsə, sözün başlanğıcı bir o qədər az kəsilir
 
 function recorderIsRecording() {
   return mediaRecorder && mediaRecorder.state === 'recording';
@@ -82,7 +90,17 @@ function startVad() {
     if (rms < noiseFloor) noiseFloor = rms;
     else noiseFloor += (rms - noiseFloor) * 0.0005;
 
-    const threshold = Math.max(noiseFloor * SPEECH_OVER_FLOOR, ABSOLUTE_FLOOR_RMS);
+    // Nitq zirvəsi: dərhal qalxır, çox yavaş sönür (~1 dəqiqə). Yavaş sönmə
+    // qapı çırpılması kimi təsadüfi bir gurultunun həddi uzun müddət yuxarı
+    // dartıb sonrakı sakit cümlələri kəsməsinin qarşısını alır.
+    if (rms > speechPeak) speechPeak = rms;
+    else speechPeak += (rms - speechPeak) * 0.0003;
+
+    const threshold = Math.max(
+      SANITY_FLOOR_RMS,
+      noiseFloor * SPEECH_OVER_FLOOR,
+      noiseFloor + (speechPeak - noiseFloor) * SPEECH_RANGE_FRACTION,
+    );
     const nowMs = e.playbackTime * 1000;
 
     if (rms > threshold) {
@@ -130,6 +148,7 @@ export function startLocalRecording(localAgoraTrack) {
     audioChunks = [];
     voicedSamples = 0;
     noiseFloor = 0.01;
+    speechPeak = 0;
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     mixedDestination = audioContext.createMediaStreamDestination();
 
@@ -217,7 +236,13 @@ export function stopLocalRecording() {
       remoteGainNode = null;
       mediaRecorder = null;
 
-      console.log(`[Recorder] Stopped. Size: ${audioBlob.size}, Mime: ${actualMime}, voiced: ${voicedSeconds.toFixed(1)}s`);
+      // Səviyyələr də loglanır: canlı zəngdən sonra "söz kəsildimi?" sualına
+      // yalnız bu üç rəqəm cavab verir. speechPeak döşəməyə çox yaxındırsa,
+      // istifadəçi sakit danışandır və hədd onun üçün çox yuxarı qalıb.
+      console.log(
+        `[Recorder] Stopped. Size: ${audioBlob.size}, Mime: ${actualMime}, ` +
+        `voiced: ${voicedSeconds.toFixed(1)}s, floor: ${noiseFloor.toFixed(5)}, peak: ${speechPeak.toFixed(5)}`,
+      );
       if (audioBlob.size < 100) {
         return resolve({ blob: null, voicedSeconds: 0 });
       }
