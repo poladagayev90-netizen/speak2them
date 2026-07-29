@@ -24,18 +24,30 @@ async function withRetry(label, fn, attempts = 3) {
 //
 // Order matters: the ticket first. Writing the "queued" doc first would leave a
 // user staring at a queued screen for a job nobody will ever run.
-export async function enqueueCallAnalysis({ uid, callDocId, sessionId, storagePath, audioSeconds, peerName }) {
+export async function enqueueCallAnalysis({ uid, callDocId, sessionId, storagePath, audioSeconds, callSeconds, peerName }) {
   const docId = `${uid}_${callDocId}_${sessionId}`;
+
+  // Rules `audioSeconds <= callSeconds` tələb edir. Nəzəri olaraq bu onsuz da
+  // doğrudur, amma iki müddət iki ayrı mənbədən gəlir (audio saatı vs divar
+  // saatı) və yuvarlaqlaşma bir saniyəlik fərq yarada bilər. Sıxmasaq həmin
+  // nadir hal ticket-i tamamilə rədd etdirər və analiz heç vaxt gəlməz.
+  const callSec = Math.min(Math.max(1, Math.round(callSeconds || audioSeconds)), 3600);
+  const audioSec = Math.min(Math.max(1, Math.round(audioSeconds)), callSec);
 
   await withRetry('ticket write', () => setDoc(doc(db, 'analysisQueue', docId), {
     status: 'pending',
     storagePath,
-    // Used only for the worker's hourly audio budget; the full file is
-    // analyzed regardless. Clamped to the 1800s cap enforced by rules.
+    // Yüklənən FAYLIN uzunluğu (sükut kəsildikdən sonra). Worker-in saatlıq
+    // audio büdcəsi və qismən-analiz bayt-prefiksi buna bölür — ona görə bu
+    // rəqəm zəngin uzunluğu deyil, faylın uzunluğu olmalıdır.
     // Tavan firestore.rules-dakı `audioSeconds <= 3600` ilə SİNXRON olmalıdır.
     // 1800 idi: 1 saatlıq zəng 30 dəq kimi yazılırdı və analiz nisbəti səhv
-    // hesablanırdı (bayt-prefiks düsturu totalSeconds-a bölür).
-    audioSeconds: Math.min(Math.max(1, Math.round(audioSeconds)), 3600),
+    // hesablanırdı.
+    audioSeconds: audioSec,
+    // Zəngin divar saatı ilə müddəti — yalnız istifadəçiyə göstərmək üçün
+    // (History, müəllim paneli). Sükut kəsmədən sonra audioSeconds bundan
+    // xeyli kiçik olur, ona görə ikisi ayrı daşınır.
+    callSeconds: callSec,
     uid,
     callDocId,
     sessionId: String(sessionId),

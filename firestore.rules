@@ -257,15 +257,22 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && docId.split('_')[0] == request.auth.uid
         && request.resource.data.keys().hasOnly([
-          'status', 'storagePath', 'audioSeconds', 'uid', 'callDocId',
-          'sessionId', 'peerName', 'retryCount', 'createdAt'
+          'status', 'storagePath', 'audioSeconds', 'callSeconds', 'uid',
+          'callDocId', 'sessionId', 'peerName', 'retryCount', 'createdAt'
         ])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.retryCount == 0
+        // audioSeconds = yüklənən faylın uzunluğu (sükut kəsildikdən sonra),
+        // callSeconds = zəngin divar saatı müddəti. Sükut kəsmə səbəbindən
+        // birincisi ikincidən kiçik ola bilər, amma böyük OLA BİLMƏZ.
         && request.resource.data.audioSeconds is number
         && request.resource.data.audioSeconds > 0
         && request.resource.data.audioSeconds <= 3600
+        && request.resource.data.callSeconds is number
+        && request.resource.data.callSeconds > 0
+        && request.resource.data.callSeconds <= 3600
+        && request.resource.data.audioSeconds <= request.resource.data.callSeconds
         && request.resource.data.callDocId is string
         && request.resource.data.sessionId is string
         // Uzantı .webm VƏ YA .mp4 ola bilər: iOS Safari webm dəstəkləmir və

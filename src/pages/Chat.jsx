@@ -148,8 +148,8 @@ export default function Chat({ user }) {
   // the single biggest lever on running cost. 1 saatlıq yazı üçün MediaRecorder
   // bitrate-i localRecorder.js-də AÇIQ təyin olunub (32 kbps ≈ 14 MB/saat) —
   // brauzerin default bitrate-i ilə 1 saat Storage limitini keçib yükləməni
-  // sındırırdı. Analiz onsuz da ilk 300 saniyəni götürür (ANALYSIS_MAX_SECONDS),
-  // ona görə uzun zəng analiz xərcini artırmır.
+  // sındırırdı. Analiz tavanı 1800 saniyədir (ANALYSIS_MAX_SECONDS) və yazıdan
+  // sükut kəsildiyi üçün uzun zəngdə belə tavana nadir hallarda çatılır.
   // Serverdəki CALL_CAP_SECONDS ilə sinxron saxla.
   let maxCallSeconds = 60 * 60;
 
@@ -635,11 +635,11 @@ export default function Chat({ user }) {
 
     // Stop recording; if the call was long enough to analyze, upload it to
     // Storage and create the queue ticket the scheduled worker picks up.
-    const recordingBlob = await stopLocalRecording();
+    const { blob: recordingBlob, voicedSeconds } = await stopLocalRecording();
     if (recordingBlob && secondsTalked > 3) {
       audioBlobRef.current = recordingBlob;
       const sessionId = sessionIdRef.current;
-      console.log('[Chat] Recording stored, size:', recordingBlob.size);
+      console.log('[Chat] Recording stored, size:', recordingBlob.size, 'voiced:', voicedSeconds);
       setEnqueueFailed(false);
       uploadCallRecording(recordingBlob, user.uid, callDocId, sessionId)
         .then((storagePath) => enqueueCallAnalysis({
@@ -647,7 +647,11 @@ export default function Chat({ user }) {
           callDocId,
           sessionId,
           storagePath,
-          audioSeconds: secondsTalked,
+          // Sükut kəsildiyi üçün faylın uzunluğu artıq zəngin uzunluğu deyil.
+          // audioSeconds FAYLI təsvir etməlidir (serverin bayt-prefiks düsturu
+          // ona bölür), callSeconds isə istifadəçiyə göstərilən zəng müddətidir.
+          audioSeconds: voicedSeconds > 0 ? voicedSeconds : secondsTalked,
+          callSeconds: secondsTalked,
           peerName: peer?.name || null,
         }))
         .catch((e) => {

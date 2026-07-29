@@ -3519,7 +3519,7 @@ async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, messa
     userId: ticketData.uid,
     // Without these the History row renders as "Anonim / Naməlum".
     peerName: ticketData.peerName || null,
-    durationSeconds: ticketData.audioSeconds || 0,
+    durationSeconds: ticketData.callSeconds || ticketData.audioSeconds || 0,
   }, { merge: true });
   if (ticketData.storagePath) {
     await admin.storage().bucket().file(ticketData.storagePath).delete().catch(() => null);
@@ -3736,7 +3736,11 @@ exports.processAnalysisQueue = onSchedule({
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         userId: ticket.uid,
         peerName: ticket.peerName || null,
-        durationSeconds: ticket.audioSeconds || 0,
+        // İstifadəçiyə göstərilən müddət zəngin özününküdür. audioSeconds
+        // sükut kəsildikdən sonrakı FAYL uzunluğudur — onu göstərsək 30
+        // dəqiqəlik zəng History-də 12 dəqiqə kimi görünərdi. Köhnə
+        // ticket-lərdə callSeconds yoxdur, onlar üçün geriyə uyğunluq.
+        durationSeconds: ticket.callSeconds || ticket.audioSeconds || 0,
         analyzedSeconds: analyzeSeconds,
       }, { merge: true });
       await ticket.ref.update({
