@@ -70,7 +70,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
           </button>
         </div>
 
-        <div style={{ position: 'relative', width: '100%', height: 190, background: 'var(--bg-input, #14132b)' }}>
+        <div style={{ position: 'relative', width: '100%', height: 230, background: '#000' }}>
           {isDead ? (
             <div style={{
               position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
@@ -94,7 +94,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
                 }
               }}
               style={{
-                width: '100%', height: 190, objectFit: 'cover', display: 'block',
+                width: '100%', height: 230, objectFit: 'contain', display: 'block',
                 opacity: isLoading ? 0 : 1, transition: 'opacity 200ms ease',
               }}
             />

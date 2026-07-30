@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  parseSlotId, dayLabel, hourLabel, blockLabel, upcomingBlocks, proposeSlotChange,
+  parseSlotId, dayLabel, hourLabel, blockLabel, upcomingBlocks, proposeSlotChange, SLOT_BLOCK_MS,
 } from '../utils/practiceSlots';
 
 // Təsdiqlənmiş randevu — ana səhifənin ƏSAS elementi.
@@ -38,6 +38,14 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
   }, []);
 
   if (!call) return null;
+
+  // Randevu blokunun sonu keçibsə kartı GÖSTƏRMƏ. upcomingCall yalnız əl ilə
+  // ləğvdə təmizlənirdi (backend heç vaxt avtomatik silmirdi), ona görə heç kim
+  // qoşulmayan köhnə zəng ekranda ilişib qalırdı ("Çərşənbə 20:00" günlərlə
+  // dururdu). Blok bitəndən sonra bu, keçmiş öhdəlikdir — client burada susdurur;
+  // backend (practiceSlotTick) də sənədi təmizləyir və xəbərdarlıq göndərir.
+  const cardStartMs = Number(call.startMs) || parseSlotId(call.slotId)?.startMs || 0;
+  if (cardStartMs && Date.now() > cardStartMs + SLOT_BLOCK_MS) return null;
 
   const propose = async (toSlotId) => {
     setSending(toSlotId);

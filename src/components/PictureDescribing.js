@@ -90,7 +90,7 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
             <img
               src={images[currentIndex]?.url}
               alt={images[currentIndex]?.alt}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
             {/* Nav arrows for desktop */}
             {currentIndex > 0 && (

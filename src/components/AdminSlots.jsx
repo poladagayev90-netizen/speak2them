@@ -3,10 +3,13 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { boardDates, subscribeToBoard, parseSlotId, dayLabel, blockLabel, POPULAR_HOUR } from '../utils/practiceSlots';
 
-// Bir slotun üzvlərini oxuyur, göstərir və sayları yuxarı ötürür (onCount) ki,
-// gün başlığı və ümumi xülasə cəmləri hesablaya bilsin. members subkolleksiyası
-// admin üçün rules-da açıqdır (isAdmin) — bax firestore.rules practiceSlots.
-function AdminSlotMembers({ slotId, usersMap, onCount }) {
+// Bir slotun üzvlərini oxuyur və göstərir. members subkolleksiyası admin üçün
+// rules-da açıqdır (isAdmin) — bax firestore.rules practiceSlots.
+//
+// SCROLL QEYDİ: bu listener PARENT state-inə heç nə YAZMIR (əvvəl onCount ilə
+// sayları yuxarı ötürürdü → hər snapshot bütün siyahını yenidən render edirdi
+// və scroll ilişirdi). Saylar artıq slot sənədinin özündən (board) oxunur.
+function AdminSlotMembers({ slotId, usersMap }) {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
@@ -16,33 +19,69 @@ function AdminSlotMembers({ slotId, usersMap, onCount }) {
     return unsub;
   }, [slotId]);
 
-  useEffect(() => {
-    const paired = members.filter((m) => m.pairedWith).length;
-    onCount(slotId, { total: members.length, paired });
-  }, [members, slotId, onCount]);
-
   if (members.length === 0) return <span style={{ color: '#64748b', fontSize: '13px' }}>Boşdur</span>;
+
+  // Eyni ad birdən çox üzvdə varsa (məs. 3 "Sebine") kimin-kim olduğu qarışırdı.
+  // Ad təkrarlanırsa fərqləndirici əlavə olunur: email prefiksi, yoxsa qısa uid.
+  const nameCounts = {};
+  members.forEach((m) => {
+    const n = (usersMap[m.uid]?.name || 'Anonim').toLowerCase();
+    nameCounts[n] = (nameCounts[n] || 0) + 1;
+  });
+  const labelOf = (uid) => {
+    const u = usersMap[uid] || {};
+    const name = u.name || 'Anonim';
+    if (nameCounts[name.toLowerCase()] > 1) {
+      const tag = (u.email ? u.email.split('@')[0] : uid).slice(0, 6);
+      return `${name} · ${tag}`;
+    }
+    return name;
+  };
+  const levelOf = (uid) => usersMap[uid]?.level || '?';
+
+  // Eşləşmişləri CÜTLƏRƏ topla (A ↔ B bir sətir), tək gözləyənləri ayrıca göstər.
+  const byId = new Map(members.map((m) => [m.uid, m]));
+  const seen = new Set();
+  const pairs = [];
+  const waiting = [];
+  members.forEach((m) => {
+    if (m.pairedWith && byId.has(m.pairedWith)) {
+      const key = [m.uid, m.pairedWith].sort().join('_');
+      if (seen.has(key)) return;
+      seen.add(key);
+      pairs.push([m, byId.get(m.pairedWith)]);
+    } else if (!m.pairedWith) {
+      waiting.push(m);
+    }
+  });
+
+  const nameStyle = { color: '#f8fafc', fontWeight: 600 };
+  const lvlStyle = { color: '#94a3b8', fontSize: '12px', fontWeight: 400 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-      {members.map((m) => {
-        const u = usersMap[m.uid] || {};
-        return (
-          <div key={m.uid} style={{
-            background: m.pairedWith ? '#052e16' : '#422006',
-            border: `1px solid ${m.pairedWith ? '#166534' : '#854d0e'}`,
-            padding: '8px 12px', borderRadius: '8px', fontSize: '14px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}>
-            <span style={{ color: '#f8fafc', fontWeight: 500 }}>
-              {u.name || 'Anonim'} <span style={{ color: '#94a3b8', fontSize: '12px' }}>({u.level || '?'})</span>
-            </span>
-            <span style={{ color: m.pairedWith ? '#4ade80' : '#facc15', fontWeight: 600, fontSize: '13px' }}>
-              {m.pairedWith ? `✓ Eşləşib (${usersMap[m.pairedWith]?.name || '?'})` : '⏳ Gözləyir'}
-            </span>
-          </div>
-        );
-      })}
+      {pairs.map(([a, b]) => (
+        <div key={a.uid + b.uid} style={{
+          background: '#052e16', border: '1px solid #166534',
+          padding: '10px 12px', borderRadius: '8px', fontSize: '14px',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ color: '#4ade80', fontWeight: 800 }}>✓</span>
+          <span style={nameStyle}>{labelOf(a.uid)} <span style={lvlStyle}>({levelOf(a.uid)})</span></span>
+          <span style={{ color: '#4ade80', flexShrink: 0 }}>↔</span>
+          <span style={nameStyle}>{labelOf(b.uid)} <span style={lvlStyle}>({levelOf(b.uid)})</span></span>
+        </div>
+      ))}
+      {waiting.map((m) => (
+        <div key={m.uid} style={{
+          background: '#422006', border: '1px solid #854d0e',
+          padding: '8px 12px', borderRadius: '8px', fontSize: '14px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span style={nameStyle}>{labelOf(m.uid)} <span style={lvlStyle}>({levelOf(m.uid)})</span></span>
+          <span style={{ color: '#facc15', fontWeight: 600, fontSize: '13px' }}>⏳ Tək gözləyir</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -61,7 +100,6 @@ function StatPill({ label, value, color }) {
 
 export default function AdminSlots({ users }) {
   const [board, setBoard] = useState({});
-  const [counts, setCounts] = useState({}); // slotId -> { total, paired }
 
   const usersMap = useMemo(() => {
     const map = {};
@@ -74,13 +112,14 @@ export default function AdminSlots({ users }) {
     return subscribeToBoard(dates, setBoard);
   }, []);
 
-  const onCount = useCallback((slotId, c) => {
-    setCounts((prev) => {
-      const cur = prev[slotId];
-      if (cur && cur.total === c.total && cur.paired === c.paired) return prev; // dəyişməyibsə re-render yox
-      return { ...prev, [slotId]: c };
-    });
-  }, []);
+  // Saylar slot sənədinin ÖZÜNDƏN gəlir (waitingCount/matchedCount) — üzv
+  // listener-lərindən yuxarı ötürülmür, ona görə render scroll zamanı sabit qalır.
+  const countOf = useCallback((slotId) => {
+    const d = board[slotId] || {};
+    const paired = Number(d.matchedCount) || 0;
+    const total = paired + (Number(d.waitingCount) || 0);
+    return { total, paired };
+  }, [board]);
 
   // slotId-ləri günə görə qruplaşdır, hər gün daxilində saata görə sırala.
   const byDay = useMemo(() => {
@@ -98,16 +137,20 @@ export default function AdminSlots({ users }) {
 
   const totals = useMemo(() => {
     let people = 0, paired = 0;
-    for (const c of Object.values(counts)) { people += c.total; paired += c.paired; }
+    Object.values(board).forEach((d) => {
+      const p = Number(d.matchedCount) || 0;
+      people += p + (Number(d.waitingCount) || 0);
+      paired += p;
+    });
     return { people, paired, waiting: people - paired };
-  }, [counts]);
+  }, [board]);
 
   if (dates.length === 0) {
     return <div style={{ color: '#94a3b8', padding: '20px', textAlign: 'center' }}>Gələcək 3 gün üçün hələ heç kim vaxt seçməyib.</div>;
   }
 
   const dayTotals = (date) => byDay[date].reduce((acc, s) => {
-    const c = counts[s.slotId] || { total: 0, paired: 0 };
+    const c = countOf(s.slotId);
     acc.total += c.total; acc.paired += c.paired; return acc;
   }, { total: 0, paired: 0 });
 
@@ -139,7 +182,7 @@ export default function AdminSlots({ users }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {byDay[date].map((s) => {
-                const c = counts[s.slotId] || { total: 0, paired: 0 };
+                const c = countOf(s.slotId);
                 const popular = s.hour === POPULAR_HOUR;
                 return (
                   <div key={s.slotId} style={{
@@ -159,7 +202,7 @@ export default function AdminSlots({ users }) {
                         {c.total ? `${c.total} nəfər${c.paired ? ` · ${c.paired} eşləşib` : ''}` : 'boş'}
                       </span>
                     </div>
-                    <AdminSlotMembers slotId={s.slotId} usersMap={usersMap} onCount={onCount} />
+                    <AdminSlotMembers slotId={s.slotId} usersMap={usersMap} />
                   </div>
                 );
               })}

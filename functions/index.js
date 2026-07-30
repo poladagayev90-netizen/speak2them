@@ -2302,6 +2302,18 @@ exports.practiceSlotTick = onSchedule(
         const usersSnap = await db.collection("users").get();
         for (const uDoc of usersSnap.docs) {
           const u = uDoc.data() || {};
+          // Janitor: bloku artıq bitmiş upcomingCall ilişib qalmasın. Blok-bağlama
+          // keçidi yalnız bugün/sabah pəncərəsini işləyir, ona görə köhnə
+          // (keçmiş günlərdən qalan) randevular bura düşür və gündə bir dəfə silinir.
+          const uc = u.upcomingCall;
+          if (uc && uc.slotId) {
+            const ucSlot = parseSlotId(uc.slotId);
+            if (ucSlot && ucSlot.startMs + SLOT_BLOCK_MS < now) {
+              await uDoc.ref.set(
+                { upcomingCall: admin.firestore.FieldValue.delete() }, { merge: true },
+              ).catch(() => null);
+            }
+          }
           const rec = Array.isArray(u.recurringSlots) ? u.recurringSlots : [];
           if (rec.length === 0) continue;
           for (const dateStr of dates) {
@@ -2395,6 +2407,40 @@ exports.practiceSlotTick = onSchedule(
                   missedSlots: admin.firestore.FieldValue.increment(1),
                   slotNoticePending: true,
                 }, { merge: true });
+              }
+            }
+          }
+        }
+
+        // Blok bitdi: randevu qapanır. upcomingCall əvvəllər YALNIZ əl ilə ləğvdə
+        // silinirdi → heç kim qoşulmayan zəng həm home kartında, həm admin
+        // panelində ilişib qalırdı. İndi blok bitəndə upcomingCall (yalnız BU
+        // slota aid olanı) təmizlənir, ölü "accepted" zəng sənədi "expired"
+        // edilir və heç kim qoşulmayan cütə nəzakətli xəbərdarlıq gedir.
+        if (sinceStart >= SLOT_BLOCK_MS && sinceStart < SLOT_BLOCK_MS + 60000) {
+          if (await claimSlotRun(db, `${doc.id}_close`)) {
+            const members = await matchedMembers();
+            const byId = new Map(members.map((m) => [m.id, m]));
+            const del = admin.firestore.FieldValue.delete();
+            for (const m of members) {
+              const uref = db.collection("users").doc(m.id);
+              const usnap = await uref.get();
+              const uc = usnap.exists ? (usnap.data() || {}).upcomingCall : null;
+              if (uc && uc.slotId === doc.id) {
+                await uref.set({ upcomingCall: del }, { merge: true }).catch(() => null);
+              }
+              const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
+              const nobodyCame = !m.arrivedAt && (!peer || !peer.arrivedAt);
+              if (nobodyCame) {
+                await sendPushToUser(db, m.id, {
+                  title: "🔕 Praktika keçmədi",
+                  body: `${slotHourLabel(slot, now)} zənginə heç kim qoşulmadı. Növbəti dəfə vaxtında qoşulmağa çalış!`,
+                  type: "slot_missed", url: "/",
+                }).catch(() => null);
+              }
+              if (m.callId) {
+                await db.collection("calls").doc(m.callId)
+                  .set({ status: "expired" }, { merge: true }).catch(() => null);
               }
             }
           }
