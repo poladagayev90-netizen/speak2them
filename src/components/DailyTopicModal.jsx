@@ -283,9 +283,9 @@ export default function DailyTopicModal({ open, onClose }) {
       {showPictureDescribing && (
         <PictureDescribing
           topic={content.topic}
+          day={content.day}
           imageKeywords={content.imageKeywords}
           manualImageUrls={content.manualImageUrls}
-          vocabulary={content.vocabulary}
           onClose={() => setShowPictureDescribing(false)}
         />
       )}

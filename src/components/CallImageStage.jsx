@@ -16,7 +16,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
   const [loadedUrl, setLoadedUrl] = useState('');
 
   useEffect(() => {
-    fetchTopicImages(content.imageKeywords, content.manualImageUrls).then(setImages);
+    fetchTopicImages(content.day, content.imageKeywords, content.manualImageUrls).then(setImages);
   }, [content]);
 
   // Warm the next picture while the current one is on screen, so "Növbəti"

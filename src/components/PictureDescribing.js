@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
 
-export default function PictureDescribing({ topic, imageKeywords, manualImageUrls, vocabulary, onClose }) {
+export default function PictureDescribing({ topic, day, imageKeywords, manualImageUrls, onClose }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -9,11 +9,11 @@ export default function PictureDescribing({ topic, imageKeywords, manualImageUrl
 
   useEffect(() => {
     setLoading(true);
-    fetchTopicImages(imageKeywords, manualImageUrls).then((imgs) => {
+    fetchTopicImages(day, imageKeywords, manualImageUrls).then((imgs) => {
       setImages(imgs);
       setLoading(false);
     });
-  }, [imageKeywords, manualImageUrls]);
+  }, [day, imageKeywords, manualImageUrls]);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -30,11 +30,12 @@ export default function PictureDescribing({ topic, imageKeywords, manualImageUrl
     }
   };
 
-  // Show 3 relevant vocabulary words per image (cycle through topic vocab)
+  // Açar sözlər ŞƏKLİN ÖZÜNDƏN gəlir — eynilə CallImageStage kimi. Əvvəl mövzu
+  // lüğətindən dövr edilirdi (getVocabForImage), ona görə ekrandakı şəkillə heç
+  // bir əlaqəsi olmurdu (morj şəkli + tamam başqa sözlər).
   const getVocabForImage = (index) => {
-    if (!vocabulary || vocabulary.length === 0) return [];
-    const start = (index * 2) % vocabulary.length;
-    return [vocabulary[start], vocabulary[(start + 1) % vocabulary.length]].filter(Boolean);
+    const kw = images[index]?.keywords;
+    return Array.isArray(kw) ? kw : [];
   };
 
   return (
@@ -138,7 +139,7 @@ export default function PictureDescribing({ topic, imageKeywords, manualImageUrl
                   borderRadius: 20, padding: '6px 14px',
                   fontSize: 13, fontWeight: 600
                 }}>
-                  {v?.word}
+                  {v?.word || v}
                 </span>
               ))}
             </div>
