@@ -26,6 +26,15 @@ import {
 // şaquli blok siyahısı eyni məlumatı telefonda oxunaqlı verir.
 const BOARD_OPEN_KEY = 'speaklab_board_open';
 
+// Calendly-üslub: 8 bloku günün hissələrinə görə qruplaşdırıb çip grid kimi
+// göstəririk. Şaquli 8-sətirlik siyahı monotondu; qruplu çip skan etməyi
+// asanlaşdırır və peşəkar görünür.
+const DAY_PARTS = [
+  { label: 'Səhər', hours: [8, 10] },
+  { label: 'Gündüz', hours: [12, 14, 16] },
+  { label: 'Axşam', hours: [18, 20, 22] },
+];
+
 export default function PracticeBoard({ mine, openSignal = 0 }) {
   const [board, setBoard] = useState({});
   const [busy, setBusy] = useState('');
@@ -43,6 +52,9 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
       return v === null ? null : v === '1';
     } catch { return null; }
   });
+  // Təkrarlanan vaxtlar irəli xüsusiyyətdir — əsas görünüşü qarışdırmasın deyə
+  // ayrıca yığcam bölmədə, defolt bağlı.
+  const [recurOpen, setRecurOpen] = useState(false);
 
   const setOpenPersist = useCallback((next) => {
     setOpen(next);
@@ -188,21 +200,25 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
 
       {expanded && (
         <>
-          <div style={{ display: 'flex', gap: '6px', margin: '14px 0 10px' }}>
+          {/* Gün tabları — nisbi ad + tarix nömrəsi (Calendly kimi konkretlik). */}
+          <div style={{ display: 'flex', gap: '6px', margin: '14px 0 12px' }}>
             {dates.map((d, i) => (
               <button
                 key={d}
                 type="button"
                 onClick={() => setDayIndex(i)}
                 style={{
-                  flex: 1, padding: '8px 4px', borderRadius: '9px', fontSize: '13px', fontWeight: 700,
-                  cursor: 'pointer',
+                  flex: 1, padding: '7px 4px', borderRadius: '10px', cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px',
                   border: i === dayIndex ? '1px solid var(--accent)' : '1px solid var(--border)',
                   background: i === dayIndex ? 'var(--accent-soft)' : 'transparent',
                   color: i === dayIndex ? 'var(--accent)' : 'var(--text-secondary)',
                 }}
               >
-                {dayLabel(d, now)}
+                <span style={{ fontSize: '13px', fontWeight: 800 }}>{dayLabel(d, now)}</span>
+                <span style={{ fontSize: '10px', opacity: 0.75, fontVariantNumeric: 'tabular-nums' }}>
+                  {d.slice(5).replace('-', '.')}
+                </span>
               </button>
             ))}
           </div>
@@ -211,130 +227,147 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
             <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '8px' }}>⚠️ {error}</div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            {SLOT_BLOCK_HOURS.map((hour) => {
-              const slotId = slotIdOf(activeDate, hour);
-              const startMs = slotStartMs(activeDate, hour);
-              const past = startMs + SLOT_BLOCK_MS <= now;
-              const isNow = now >= startMs && !past;
-              const waiting = Number(board[slotId]?.waitingCount) || 0;
-              const joined = mySlotIds.includes(slotId);
-              const iAmMatched = upcoming?.slotId === slotId;
-              const working = busy === slotId;
-              const isRecurring = recurringHours.has(hour);
+          {/* Vaxt çipləri — günün hissəsinə görə qruplu grid. */}
+          {DAY_PARTS.map((part) => (
+            <div key={part.label} style={{ marginBottom: '10px' }}>
+              <div style={{
+                fontSize: '10px', fontWeight: 800, letterSpacing: '0.6px',
+                textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 2px 6px',
+              }}>
+                {part.label}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '7px' }}>
+                {part.hours.map((hour) => {
+                  const slotId = slotIdOf(activeDate, hour);
+                  const startMs = slotStartMs(activeDate, hour);
+                  const past = startMs + SLOT_BLOCK_MS <= now;
+                  const isNow = now >= startMs && !past;
+                  const waiting = Number(board[slotId]?.waitingCount) || 0;
+                  const joined = mySlotIds.includes(slotId);
+                  const iAmMatched = upcoming?.slotId === slotId;
+                  const working = busy === slotId;
+                  const popular = hour === POPULAR_HOUR;
+                  // Öz sətrimi saymıram — "1 nəfər gözləyir" görüb özümü
+                  // gözlədiyimi düşünməyim deyə.
+                  const othersWaiting = joined && !iAmMatched ? Math.max(0, waiting - 1) : waiting;
+                  const hot = !joined && othersWaiting > 0 && !past;
 
-              // Öz sətrimi saymıram — "1 nəfər gözləyir" görüb özümü
-              // gözlədiyimi düşünməyim deyə.
-              const othersWaiting = joined && !iAmMatched ? Math.max(0, waiting - 1) : waiting;
+                  let border = 'var(--border)';
+                  let bg = 'var(--bg-card)';
+                  let status = null;
+                  if (iAmMatched) {
+                    border = 'var(--success)'; bg = 'rgba(34,197,94,0.12)';
+                    status = { text: `✓ ${upcoming.peerName || 'Təsdiqləndi'}`, color: 'var(--success)' };
+                  } else if (joined) {
+                    border = 'var(--accent)'; bg = 'var(--accent-soft)';
+                    status = { text: 'Gözlənilir', color: 'var(--accent)' };
+                  } else if (hot) {
+                    border = '#f59e0b66'; bg = '#f59e0b18';
+                    status = { text: `${othersWaiting} nəfər gözləyir`, color: '#f59e0b' };
+                  } else if (!past) {
+                    status = { text: 'Müsaitəm', color: 'var(--text-muted)' };
+                  }
 
-              // Boş blokda alt sətir HEÇ NƏ göstərmir. Əvvəl hər sətirdə "—"
-              // vardı və səkkiz sətir boyu təkrarlanan tire lövhəni doldurulmuş
-              // kimi göstərib əsl siqnalı (kimin gözlədiyini) batırırdı.
-              let sub = null;
-              if (iAmMatched) {
-                sub = { text: `${upcoming.peerName || 'Partnyorunuz'} ilə təsdiqləndi`, color: 'var(--success)' };
-              } else if (joined) {
-                sub = { text: 'Yazıldınız — partnyor gözlənilir', color: 'var(--accent)' };
-              } else if (othersWaiting > 0) {
-                sub = { text: `${othersWaiting} nəfər gözləyir`, color: '#f59e0b' };
-              }
-              // "İsti" blok = kimsə gözləyir və hələ qoşulmamışam. Yalnız bu
-              // sətirdə düymə dolu olur; qalan səkkiz sətir sakit qalır, yoxsa
-              // eyni parlaqlıqda səkkiz düymə divarı yaranır və heç biri
-              // diqqət çəkmir.
-              const hot = !joined && othersWaiting > 0 && !past;
-
-              return (
-                <div
-                  key={slotId}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    // Adam gözləyən blok fərqlənir — göz düymələrə yox,
-                    // hərəkət lazım olan sətrə düşməlidir.
-                    background: hot ? '#f59e0b14' : 'var(--bg-card)',
-                    borderRadius: '11px',
-                    padding: sub ? '9px 11px' : '11px',
-                    border: iAmMatched
-                      ? '1px solid var(--success)'
-                      : hot ? '1px solid #f59e0b44' : '1px solid transparent',
-                    opacity: past ? 0.38 : 1,
-                  }}
-                >
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{
-                      fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)',
-                      display: 'flex', alignItems: 'center', gap: '6px',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}>
-                      {blockLabel(hour)}
-                      {hour === POPULAR_HOUR && <span title="Ən çox adam bu saatda">⭐</span>}
-                      {isNow && (
+                  return (
+                    <button
+                      key={slotId}
+                      type="button"
+                      onClick={() => !past && toggleSlot(slotId, joined, iAmMatched)}
+                      disabled={past || working}
+                      aria-label={`${blockLabel(hour)} — ${joined ? 'ləğv et' : 'müsaitəm ol'}`}
+                      style={{
+                        textAlign: 'left', cursor: past ? 'default' : 'pointer',
+                        borderRadius: '12px', padding: '10px 11px', minWidth: 0,
+                        border: `1px solid ${border}`, background: bg,
+                        opacity: past ? 0.4 : 1,
+                        display: 'flex', flexDirection: 'column', gap: '3px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
                         <span style={{
-                          fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '20px',
-                          background: 'var(--accent-soft)', color: 'var(--accent)', letterSpacing: '0.5px',
-                        }}>İNDİ</span>
-                      )}
-                    </div>
-                    {sub && (
-                      <div style={{ fontSize: '12px', color: sub.color, marginTop: '2px' }}>
-                        {sub.text}
+                          fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}>
+                          {hourLabel(hour)}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                          –{hourLabel((hour + 2) % 24)}
+                        </span>
+                        {popular && <span title="Ən çox adam bu saatda" style={{ fontSize: '11px' }}>⭐</span>}
+                        {isNow && (
+                          <span style={{
+                            fontSize: '8px', fontWeight: 800, padding: '2px 5px', borderRadius: '20px',
+                            background: 'var(--accent-soft)', color: 'var(--accent)', letterSpacing: '0.5px',
+                          }}>İNDİ</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {!past && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => toggleRecurring(hour)}
-                        disabled={busy === `rec-${hour}`}
-                        aria-label="Hər gün təkrarla"
-                        title="Hər gün bu saatda təkrarla"
-                        style={{
-                          width: '30px', height: '30px', borderRadius: '9px', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                          border: isRecurring ? '1px solid var(--accent)' : '1px solid var(--border)',
-                          background: isRecurring ? 'var(--accent-soft)' : 'transparent',
-                          color: isRecurring ? 'var(--accent)' : 'var(--text-muted)',
-                        }}
-                      >
-                        <Repeat size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleSlot(slotId, joined, iAmMatched)}
-                        disabled={working}
-                        style={{
-                          minWidth: '76px', padding: '8px 10px', borderRadius: '9px',
-                          fontSize: '12px', fontWeight: 800, cursor: working ? 'default' : 'pointer',
-                          flexShrink: 0,
-                          border: hot ? 'none' : '1px solid var(--border)',
-                          background: hot
-                            ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-                            : 'transparent',
-                          color: hot
-                            ? '#1a1000'
-                            : joined ? 'var(--text-secondary)' : 'var(--accent)',
-                        }}
-                      >
-                        {working ? '...' : joined ? 'Ləğv et' : hot ? 'Qoşul' : 'Müsaitəm'}
-                      </button>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {recurringHours.size > 0 && (
-            <div style={{
-              fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5,
-              marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px',
-            }}>
-              <Repeat size={13} />
-              Hər gün {[...recurringHours].sort((a, b) => a - b).map(hourLabel).join(', ')} —
-              avtomatik seçilir.
+                      <span style={{
+                        fontSize: '12px', fontWeight: 600,
+                        color: working ? 'var(--text-muted)' : (status ? status.color : 'var(--text-muted)'),
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {working ? '...' : past ? 'Keçdi' : (status ? status.text : '')}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+          ))}
+
+          {/* Təkrarlanan vaxtlar — yığcam, açılıb-bağlanan bölmə. */}
+          <button
+            type="button"
+            onClick={() => setRecurOpen((v) => !v)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'none', border: 'none', padding: '8px 2px 4px', cursor: 'pointer',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <Repeat size={14} />
+            <span style={{ fontSize: '13px', fontWeight: 700, flex: 1, textAlign: 'left' }}>
+              Hər gün təkrarla
+            </span>
+            {recurringHours.size > 0 && (
+              <span style={{
+                fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '20px',
+                background: 'var(--accent-soft)', color: 'var(--accent)',
+              }}>
+                {recurringHours.size}
+              </span>
+            )}
+            {recurOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          {recurOpen && (
+            <>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 2px 8px', lineHeight: 1.5 }}>
+                Seçdiyiniz saatlar hər gün avtomatik “müsaitəm” kimi qeyd olunur.
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                {SLOT_BLOCK_HOURS.map((hour) => {
+                  const on = recurringHours.has(hour);
+                  return (
+                    <button
+                      key={hour}
+                      type="button"
+                      onClick={() => toggleRecurring(hour)}
+                      disabled={busy === `rec-${hour}`}
+                      style={{
+                        padding: '8px 4px', borderRadius: '9px', cursor: 'pointer',
+                        fontSize: '12px', fontWeight: 800, fontVariantNumeric: 'tabular-nums',
+                        border: on ? '1px solid var(--accent)' : '1px solid var(--border)',
+                        background: on ? 'var(--accent-soft)' : 'transparent',
+                        color: on ? 'var(--accent)' : 'var(--text-secondary)',
+                      }}
+                    >
+                      {busy === `rec-${hour}` ? '...' : hourLabel(hour)}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </>
       )}
