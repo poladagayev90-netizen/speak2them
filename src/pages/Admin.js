@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
 import AdminCohorts from '../components/AdminCohorts';
+import AdminSlots from '../components/AdminSlots';
 import { setTutorVerification } from '../utils/teacher';
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
@@ -13,7 +14,7 @@ export default function Admin({ user }) {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
-  const [adminTab, setAdminTab] = useState('premium'); // premium | cohorts
+  const [adminTab, setAdminTab] = useState('premium'); // premium | cohorts | slots
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -155,8 +156,10 @@ export default function Admin({ user }) {
             ← Geri
           </button>
           <h2 style={{ margin: 0, fontSize: '18px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>{adminTab === 'cohorts' ? '🧪' : '👑'}</span>
-            {adminTab === 'cohorts' ? 'Kohortlar' : 'Premium İdarəetmə'}
+            <span style={{ fontSize: '20px' }}>
+              {{ cohorts: '🧪', slots: '📅' }[adminTab] || '👑'}
+            </span>
+            {{ cohorts: 'Kohortlar', slots: 'Görüşlər' }[adminTab] || 'Premium İdarəetmə'}
           </h2>
           <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
         </div>
@@ -164,8 +167,9 @@ export default function Admin({ user }) {
         {/* Bölmə keçidi */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {[
-            { id: 'premium', label: '👑 Premium' },
+            { id: 'premium', label: '👑 Tələbələr' },
             { id: 'cohorts', label: '🧪 Kohortlar' },
+            { id: 'slots', label: '📅 Görüşlər' },
           ].map((t) => (
             <button
               key={t.id}
@@ -205,7 +209,7 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '20px 16px' }}>
-        {adminTab === 'cohorts' ? <AdminCohorts /> : (
+        {adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts /> : (
         <>
         {error && (
           <div style={{

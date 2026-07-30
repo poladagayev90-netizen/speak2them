@@ -359,7 +359,9 @@ service cloud.firestore {
       allow write: if false;
 
       match /members/{memberId} {
-        allow read: if isOwnDoc(memberId);
+        // Öz üzvlüyünü hər kəs oxuyur; admin isə slot nəzarəti üçün BÜTÜN
+        // üzvləri oxuya bilir (kim hansı bloka yazılıb — Admin › Görüşlər).
+        allow read: if isOwnDoc(memberId) || isAdmin();
         allow create, delete: if false;
         allow update: if isOwnDoc(memberId)
           && request.resource.data.diff(resource.data).affectedKeys()
