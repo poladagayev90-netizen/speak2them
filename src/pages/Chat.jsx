@@ -633,10 +633,13 @@ export default function Chat({ user }) {
       ? Math.max(0, Math.floor((Date.now() - callStartedAtRef.current) / 1000))
       : callSecondsRef.current;
 
-    // Stop recording; if the call was long enough to analyze, upload it to
-    // Storage and create the queue ticket the scheduled worker picks up.
+    // Stop recording; only calls of at least 2 MINUTES get analyzed. Shorter
+    // calls carry too little speech to score usefully and just burn STT/LLM
+    // cost, so we neither upload, queue, nor notify for them (no ticket ⇒ the
+    // worker never runs ⇒ no "analysis ready" push either).
+    const MIN_ANALYSIS_SECONDS = 120; // 2 dəqiqə
     const { blob: recordingBlob, voicedSeconds } = await stopLocalRecording();
-    if (recordingBlob && secondsTalked > 3) {
+    if (recordingBlob && secondsTalked >= MIN_ANALYSIS_SECONDS) {
       audioBlobRef.current = recordingBlob;
       const sessionId = sessionIdRef.current;
       console.log('[Chat] Recording stored, size:', recordingBlob.size, 'voiced:', voicedSeconds);
@@ -854,8 +857,10 @@ export default function Chat({ user }) {
 
       // One post-call screen: the insights summary. Rating lives inline inside
       // it and the word quiz is opt-in from a button there, so the user is
-      // never marched through a chain of full-screen modals.
-      if (secondsTalked > 3) {
+      // never marched through a chain of full-screen modals. Only shown for
+      // calls that were actually analyzed (>= 2 min) — a shorter call gets no
+      // analysis, so it also gets no post-call screen and no notification.
+      if (secondsTalked >= MIN_ANALYSIS_SECONDS) {
         setRatingEligible(secondsTalked >= 180);
         setPostCallStages(['insights']);
       }
