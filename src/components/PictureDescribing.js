@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
+import DescribeFrames from './DescribeFrames';
 
 export default function PictureDescribing({ topic, day, imageKeywords, manualImageUrls, onClose }) {
   const [images, setImages] = useState([]);
@@ -82,9 +83,12 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             style={{
-              flex: 1, position: 'relative', overflow: 'hidden',
+              flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: '#000'
+              // Şəkil `contain` ilə oturur, yəni ətrafında boş zolaq qalır. Bu
+              // zolaq əvvəl sabit #000 idi — light mode-da ekranın ortasında qara
+              // qutu kimi görünürdü. İndi tema səthidir, hər iki rejimdə oturur.
+              background: 'var(--bg-secondary)'
             }}
           >
             <img
@@ -127,22 +131,30 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
             ))}
           </div>
 
-          {/* Vocabulary chips for current image */}
-          <div style={{ padding: '0 20px 24px' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 8 }}>
-              Bu sözlərdən istifadə et:
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {getVocabForImage(currentIndex).map((v, i) => (
-                <span key={i} style={{
-                  background: 'var(--accent)', color: '#fff',
-                  borderRadius: 20, padding: '6px 14px',
-                  fontSize: 13, fontWeight: 600
-                }}>
-                  {v?.word || v}
-                </span>
-              ))}
+          {/* Alt panel: şəklin sözləri + danışıq qəlibləri. Öz içində sürüşür,
+              yoxsa qəliblər açılanda şəkli ekrandan itələyirdi. */}
+          <div style={{
+            flexShrink: 0, maxHeight: '45vh', overflowY: 'auto',
+            paddingBottom: 'calc(16px + var(--safe-area-bottom, 0px))',
+            borderTop: '1px solid var(--border)',
+          }}>
+            <div style={{ padding: '12px 20px 8px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Bu sözlərdən istifadə et
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {getVocabForImage(currentIndex).map((v, i) => (
+                  <span key={i} style={{
+                    background: 'var(--accent)', color: '#fff',
+                    borderRadius: 20, padding: '6px 14px',
+                    fontSize: 13, fontWeight: 600
+                  }}>
+                    {v?.word || v}
+                  </span>
+                ))}
+              </div>
             </div>
+            <DescribeFrames prompts={images[currentIndex]?.prompts || []} />
           </div>
         </>
       )}

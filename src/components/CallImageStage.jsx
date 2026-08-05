@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
+import DescribeFrames from './DescribeFrames';
 
 // In-call synchronized picture stage. Both parties see the exact same image —
 // the list is a pure function of the topic (deterministic picsum seed URLs,
@@ -70,7 +71,9 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
           </button>
         </div>
 
-        <div style={{ position: 'relative', width: '100%', height: 230, background: '#000' }}>
+        {/* `contain` şəklin ətrafında boş zolaq qoyur; zolaq sabit #000 idi və
+            light mode-da kartın ortasında qara qutu kimi görünürdü. */}
+        <div style={{ position: 'relative', width: '100%', height: 230, background: 'var(--bg-secondary)' }}>
           {isDead ? (
             <div style={{
               position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
@@ -128,6 +131,12 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
             </div>
           </div>
         )}
+
+        {/* Zəngdə yer azdır — qəliblər yığılı gəlir, şagird lazım olanda açır.
+            Kart uzanmasın deyə bu blok öz içində sürüşür. */}
+        <div style={{ maxHeight: '30vh', overflowY: 'auto' }}>
+          <DescribeFrames compact prompts={image.prompts || []} />
+        </div>
 
         <div style={{ display: 'flex', gap: 10, padding: '14px 16px 16px' }}>
           <button
