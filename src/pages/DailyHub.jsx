@@ -55,13 +55,13 @@ export default function DailyHub() {
                 className={`diff-btn ${difficulty === 'easy' ? 'active' : ''}`}
                 onClick={() => setDifficulty('easy')}
               >
-                🟢 Easy (Type A)
+                Easy
               </button>
               <button
                 className={`diff-btn ${difficulty === 'hard' ? 'active' : ''}`}
                 onClick={() => setDifficulty('hard')}
               >
-                🔴 Hard (Type B)
+                Hard
               </button>
             </div>
             <SpeakingCards questions={content.questions[difficulty]} />

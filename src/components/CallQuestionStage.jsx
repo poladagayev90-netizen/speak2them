@@ -23,23 +23,45 @@ const PANEL = {
   overflow: 'hidden',
 };
 
-const LEVEL_BTN = {
-  width: '100%',
-  height: 76,
-  border: 'none',
-  borderRadius: 16,
+// Səviyyə rəngləri brend palitrasındandır, svetofor yaşıl/qırmızısı DEYİL.
+// Əvvəl Easy tam doymuş yaşıl, Hard tam doymuş qırmızı gradient idi (76px
+// hündürlük, 24px şrift, 26px emoji dairə) — ucuz görünürdü və «qırmızı = səhv»
+// assosiasiyası yaradırdı, halbuki Hard səhv deyil, sadəcə daha ağır seçimdir.
+const LEVEL_ACCENT = {
+  easy: '#12BBD6',  // Neon Cyan
+  hard: '#6D3BEB',  // Lab Violet
+};
+
+const LEVEL_CARD = {
+  flex: 1,
+  minWidth: 0,
+  padding: '14px 12px 16px',
+  borderRadius: 14,
   cursor: 'pointer',
   fontFamily: 'inherit',
-  color: '#fff',
-  fontSize: 24,
-  fontWeight: 800,
-  letterSpacing: '0.5px',
+  textAlign: 'left',
+  background: 'var(--bg-secondary)',
+  border: '1px solid var(--border)',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 12,
-  textShadow: '0 2px 8px rgba(0,0,0,0.35)',
+  flexDirection: 'column',
+  gap: 8,
+  transition: 'border-color 0.15s, background 0.15s',
 };
+
+// Çətinliyi YALNIZ rənglə göstərmirik — iki zolaqdan neçəsinin dolu olduğu
+// rəng görməyən istifadəçi üçün də oxunur.
+function LevelBars({ level, colour }) {
+  return (
+    <span style={{ display: 'flex', gap: 3 }} aria-hidden="true">
+      {[0, 1].map((i) => (
+        <span key={i} style={{
+          width: 16, height: 4, borderRadius: 2,
+          background: (level === 'hard' || i === 0) ? colour : 'var(--border)',
+        }} />
+      ))}
+    </span>
+  );
+}
 
 const FOOT_BTN = {
   flex: 1,
@@ -107,19 +129,32 @@ export default function CallQuestionStage({
             {content?.topic ? `${content.topic} — ` : ''}
             səviyyəni seçin, kartlar ikinizə də açılacaq.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <button
-              onClick={() => onPickDifficulty('easy')}
-              style={{ ...LEVEL_BTN, background: 'linear-gradient(135deg, #22c55e, #15803d)' }}
-            >
-              <span aria-hidden="true" style={{ fontSize: 26 }}>🟢</span> Easy
-            </button>
-            <button
-              onClick={() => onPickDifficulty('hard')}
-              style={{ ...LEVEL_BTN, background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}
-            >
-              <span aria-hidden="true" style={{ fontSize: 26 }}>🔴</span> Hard
-            </button>
+          {/* Yan-yana iki kart: hər biri 76px-lik tam enli düymədən kiçikdir,
+              amma adı + bir sətirlik izahı daşıdığı üçün seçim daha aydındır. */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            {[
+              { key: 'easy', name: 'Easy', hint: 'Gündəlik suallar' },
+              { key: 'hard', name: 'Hard', hint: 'Dərin müzakirə' },
+            ].map(({ key, name, hint }) => (
+              <button
+                key={key}
+                onClick={() => onPickDifficulty(key)}
+                style={LEVEL_CARD}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = LEVEL_ACCENT[key]; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+              >
+                <LevelBars level={key} colour={LEVEL_ACCENT[key]} />
+                <span style={{
+                  color: 'var(--text-primary)', fontSize: 16, fontWeight: 700,
+                  letterSpacing: '0.2px',
+                }}>
+                  {name}
+                </span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.35 }}>
+                  {hint}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </Overlay>
@@ -149,9 +184,9 @@ export default function CallQuestionStage({
               {safeIndex + 1} / {questions.length}
             </span>
             <span style={{
-              background: difficulty === 'easy'
-                ? 'linear-gradient(135deg, #22c55e, #15803d)'
-                : 'linear-gradient(135deg, #ef4444, #b91c1c)',
+              // Seçim ekranındakı ilə eyni brend rəngi — nişan orada seçilən
+              // səviyyəni təkrarlayır, ona görə rəng də təkrarlanmalıdır.
+              background: LEVEL_ACCENT[difficulty],
               color: '#fff', borderRadius: 20, padding: '4px 12px',
               fontSize: 12, fontWeight: 800, letterSpacing: '1px',
             }}>

@@ -273,6 +273,10 @@ i18n
 export function setLanguage(code) {
   const lang = code === 'tr' ? 'tr' : 'az';
   i18n.changeLanguage(lang);
+  // <html lang> də dəyişməlidir: CSS `text-transform: uppercase` dil-həssasdır,
+  // sənəd "en" qalsa `şəkil` → `ŞƏKIL` (nöqtəsiz I) olur. az və tr-nin ikisi də
+  // nöqtəli İ tələb edir, ona görə hər iki dildə düzgün işləyir.
+  try { document.documentElement.lang = lang; } catch { /* SSR/test */ }
   try { localStorage.setItem(LANG_STORAGE_KEY, lang); } catch { /* private mode */ }
   return lang;
 }

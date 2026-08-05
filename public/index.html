@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- lang azərbaycancadır, çünki interfeys azərbaycancadır. Bu, kosmetik deyil:
+     CSS `text-transform: uppercase` DİL-HƏSSASdır — sənəd "en" elan olunanda
+     brauzer `şəkil` → `ŞƏKIL` edir (nöqtəsiz I), `az`/`tr`-də isə düzgün
+     `ŞƏKİL`. Tətbiqdə 53 yerdə uppercase var, hamısı bundan asılıdır.
+     Dil dəyişəndə setLanguage() bu atributu yeniləyir. -->
+<html lang="az">
   <head>
     <!-- Analiz hesabatı (AnalysisDetail) çap olunmuş sənəd kimi görünür:
          başlıqlar serif (PT Serif), mətn Inter. Şrift yüklənməsə də sistem

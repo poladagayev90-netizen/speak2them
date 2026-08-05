@@ -239,13 +239,13 @@ export default function DailyTopicModal({ open, onClose }) {
                   className={`dt-diff-btn ${difficulty === 'easy' ? 'active' : ''}`}
                   onClick={() => setDifficulty('easy')}
                 >
-                  🟢 Asan
+                  Easy
                 </button>
                 <button
                   className={`dt-diff-btn ${difficulty === 'hard' ? 'active' : ''}`}
                   onClick={() => setDifficulty('hard')}
                 >
-                  🔴 Çətin
+                  Hard
                 </button>
               </div>
               <SpeakingCards questions={content.questions[difficulty]} />

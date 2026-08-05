@@ -17,20 +17,38 @@ export default function DescribeFrames({ compact = false, prompts = [] }) {
 
   return (
     <div style={{ padding: compact ? '4px 16px 0' : '0 20px 8px' }}>
+      {/* Bu, ekranda BASILA BİLƏN yeganə şeydir, ona görə düymə kimi görünməlidir:
+          səthi, kənarı və basılma reaksiyası var. Əvvəl fon/kənarsız, kiçik boz
+          böyük-hərf yazı idi — başlıq kimi oxunurdu, heç kim ona toxunmurdu. */}
       <button
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         style={{
-          display: 'flex', alignItems: 'center', gap: 6, width: '100%',
-          background: 'transparent', border: 'none', padding: '4px 0',
-          color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600,
-          textTransform: 'uppercase', letterSpacing: '0.5px',
-          cursor: 'pointer', textAlign: 'left',
+          display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+          background: expanded ? 'var(--accent-soft)' : 'var(--bg-secondary)',
+          border: `1px solid ${expanded ? 'var(--accent)' : 'var(--border)'}`,
+          borderRadius: 12,
+          padding: compact ? '9px 12px' : '11px 14px',
+          color: expanded ? 'var(--accent)' : 'var(--text-primary)',
+          fontSize: compact ? 13 : 14,
+          fontWeight: 700,
+          fontFamily: 'inherit',
+          cursor: 'pointer',
+          textAlign: 'left',
+          transition: 'background 0.15s, border-color 0.15s, color 0.15s',
         }}
       >
-        💬 Danışıq qəlibləri
-        <span aria-hidden="true" style={{ marginLeft: 'auto', fontSize: 13 }}>
-          {expanded ? '▾' : '▸'}
+        <span aria-hidden="true" style={{ fontSize: 15 }}>💬</span>
+        Danışıq qəlibləri
+        <span
+          aria-hidden="true"
+          style={{
+            marginLeft: 'auto', fontSize: 11, opacity: 0.75,
+            transform: expanded ? 'rotate(90deg)' : 'none',
+            transition: 'transform 0.15s',
+          }}
+        >
+          ▶
         </span>
       </button>
 
@@ -38,7 +56,8 @@ export default function DescribeFrames({ compact = false, prompts = [] }) {
         <>
           {/* Qrup seçicisi — eyni anda yalnız bir addımın qəlibləri açıqdır. */}
           <div style={{
-            display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6,
+            display: 'flex', gap: 6, overflowX: 'auto',
+            marginTop: 10, paddingBottom: 6,
             scrollbarWidth: 'none',
           }}>
             {describeFrames.map((g) => {
