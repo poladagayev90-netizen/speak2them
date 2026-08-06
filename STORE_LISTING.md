@@ -2,7 +2,7 @@
 
 **Məqsəd:** Verifikasiya gözlənilərkən Play Console-a hazır, kopyala-yapışdır mətnlər + qrafika spesifikasiyaları + anket cavabları.
 **Paket:** `com.speaklab.app` · versionCode 3 / versionName 1.2 (1 və 2 hər ikisi Play tərəfindən yandırıldı — draft release-i silmək versionCode-u geri qaytarmır)
-**Default dil:** Azərbaycan (az-AZ). İngilis (en-US) versiyası da aşağıda — istəsən əlavə dil kimi qoşarsan.
+**Default dil:** Azərbaycan (az-AZ). **Türkcə (tr-TR)** əlavə dil kimi §2.1-də hazırdır — grafikalar dublikat etmək lazım deyil, Play tərcümə edilmiş dildə şəkil yoxdursa default dilin qrafikasını avtomatik işlədir. (Qeyd: bu sətir əvvəl "İngilis versiyası aşağıda" deyirdi — bu, heç vaxt yazılmamış boş vəd idi, silindi. İngilis mağaza səhifəsi qəsdən əlavə edilmir, çünki tətbiqin UI-si yalnız az/tr dəstəkləyir — ingiliscə mağaza + azərbaycanca UI mənfi rəylərə səbəb olardı.)
 
 **Ad qərarı (2026-08-06):** App Store-da "AI English Tutor - SpeakLab" adlı canlı rəqib var (İLM/Istanbul Language Center, speaklabai.com) — AI ilə İngilis danışıq praktikası, konsept demək olar eynidir. Polad bu adla qarışdırılmaq istəmir, çünki SpeakLab-ın əsas məhsulu **real insan-insan praktikasıdır**, AInur yalnız yardımçı funksiyadır. Ona görə Play başlığı bare "SpeakLab" yox, domenə bağlı **"SpeakLab.az"** oldu — bu, həm hüquqi/qarışıqlıq riskini azaldır, həm "canlı/real" fərqini önə çıxarır. Gələcəkdə App Store-a müraciət ediləndə də eyni adla getmək tövsiyə olunur.
 
@@ -71,6 +71,53 @@ speaklab.az
 - **Teqlər:** language learning, English, speaking practice, conversation, education
 - **Email (dəstək):** *(qeydiyyat emailin — məs. poladagayev90@gmail.com)*
 - **Vebsayt:** https://speaklab-app.vercel.app
+
+---
+
+## 2.1 TÜRKCƏ MAĞAZA SƏHİFƏSİ (tr-TR, 2026-08-06 əlavə edildi)
+
+Niyə: tətbiqin UI-si həqiqətən türkcəni dəstəkləyir (`src/i18n.js`), ona görə Türkiyə istifadəçisi
+quraşdıranda gördüyü ilə mağaza vədi üst-üstə düşür — ingiliscədən fərqli olaraq saxta gözlənti yaratmır.
+Qrafika (icon, feature graphic, screenshot-lar) TƏKRARLANMIR — Play tərcümə edilmiş dildə qrafika
+yoxdursa default dilinkini avtomatik göstərir.
+
+### Başlıq (max 30 simvol)
+```
+SpeakLab.az: Gerçek İnsanlarla
+```
+*(30 simvol, tam limitdə — az-AZ başlığın türkcə qarşılığı, eyni "gerçək insanlarla" fərqləndirməsini daşıyır)*
+
+### Qısa təsvir (max 80 simvol)
+```
+Canlı sesli aramalarla İngilizce konuşma pratiği — gerçek partnerlerle.
+```
+*(71 simvol)*
+
+### Tam təsvir (max 4000 simvol)
+```
+İngilizce konuşarak öğrenmenin en hızlı yolu — SpeakLab. 🎙️
+
+Gramer kitaplarını bir kenara bırak. SpeakLab seni seviyene (A1–C2) uygun GERÇEK insanlarla canlı sesli bir aramaya bağlar — tek dokunuşla partner bulunur ve konuşma hemen başlar.
+
+🎯 NEDEN SPEAKLAB?
+• Tek tuş — canlı partner. Seviyene uygun biriyle eşleşirsin, arama otomatik başlar.
+• Her gün yeni bir konu. Seyahat, iş, arkadaşlık, teknoloji — hazır sorular, kelime ve deyimlerle aramaya hazır gel.
+• Yapay zeka analizi. Aramadan sonra telaffuzun, kelime dağarcığın ve gramerin hakkında kişisel öneriler al.
+• AInur ile pratik. Gerçek biriyle konuşmaya henüz hazır değilsen, yapay zeka öğretmenle istediğin zaman sesli pratik yap.
+• Seri ve sıralama. Her gün konuş, serini büyüt, liderlik tablosunda yüksel.
+• Günün bulmacası ve kısa testler. Oyunla yeni kelimeler öğren.
+
+🧪 YAPILANDIRILMIŞ KURS
+Kohort tabanlı 30 konulu konuşma kursu — haftada birkaç canlı oturum, net bir ilerleme ve bitiş çizgisi. Kursu tamamlayanlara özel ödül.
+
+💬 KİMLER İÇİN?
+İngilizce okuyup yazabilen ama KONUŞMAKTAN çekinen herkes için. Konuşma engelini gerçek deneyimle aşıyoruz.
+
+Bugün konuşmaya başla — SpeakLab seni bekliyor. 🚀
+
+speaklab.az
+```
+*(~900 simvol)*
 
 ---
 
