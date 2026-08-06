@@ -109,7 +109,7 @@ async function readCycleIndex(db) {
 // Kodsuz trial ilk girişdən TRIAL_DAYS gün sonra bitir. Premium / pullu plan
 // heç vaxt bloklanmır. Müstəsna yalnız rules-qorunan sahələrə (isPremium,
 // subscriptionPlan) əsaslanır — client-yazıla bilən `mode` sahəsinə GÜVƏNMİRİK,
-// yoxsa dəyişdirilmiş client mode:'course' qoyub 2 günlük limiti keçərdi.
+// yoxsa dəyişdirilmiş client mode:'course' qoyub TRIAL_DAYS limitini keçərdi.
 // (Kurs istifadəçiləri redeemCode-da isPremium:true alır, ona görə müstəsnadır.)
 // trialStartedAt olmayan köhnə userlər də bloklanmır.
 function isTrialExpired(u) {
