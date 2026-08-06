@@ -1,8 +1,10 @@
 # SpeakLab — Play Store Listinq Paketi
 
 **Məqsəd:** Verifikasiya gözlənilərkən Play Console-a hazır, kopyala-yapışdır mətnlər + qrafika spesifikasiyaları + anket cavabları.
-**Paket:** `com.speaklab.app` · versionCode 1 / versionName 1.0
+**Paket:** `com.speaklab.app` · versionCode 2 / versionName 1.1 (versionCode 1 Play-də "artıq işlənib" xətası verdi — Play bir versionCode-u bir dəfə görəndən sonra əbədi kilidləyir, hətta uğursuz/draft cəhddən olsa belə)
 **Default dil:** Azərbaycan (az-AZ). İngilis (en-US) versiyası da aşağıda — istəsən əlavə dil kimi qoşarsan.
+
+**Ad qərarı (2026-08-06):** App Store-da "AI English Tutor - SpeakLab" adlı canlı rəqib var (İLM/Istanbul Language Center, speaklabai.com) — AI ilə İngilis danışıq praktikası, konsept demək olar eynidir. Polad bu adla qarışdırılmaq istəmir, çünki SpeakLab-ın əsas məhsulu **real insan-insan praktikasıdır**, AInur yalnız yardımçı funksiyadır. Ona görə Play başlığı bare "SpeakLab" yox, domenə bağlı **"SpeakLab.az"** oldu — bu, həm hüquqi/qarışıqlıq riskini azaldır, həm "canlı/real" fərqini önə çıxarır. Gələcəkdə App Store-a müraciət ediləndə də eyni adla getmək tövsiyə olunur.
 
 ---
 
@@ -10,17 +12,17 @@
 
 | Element | Status | Qeyd |
 |---|---|---|
-| İmzalı AAB | ✅ Hazır | `android/app/build/outputs/bundle/release/app-release.aab` |
+| İmzalı AAB | ✅ Hazır | Desktop-da `SpeakLab-play-v1.aab` |
 | Privacy Policy URL | ✅ Canlı (200) | https://speaklab-app.vercel.app/privacy.html |
 | Hesab silmə URL | ✅ Canlı (200) | https://speaklab-app.vercel.app/delete-account.html |
-| App icon 512×512 | ✅ Hazır | `public/logo512.png` (512×512, 32-bit PNG, 50KB) |
+| App icon 512×512 | ✅ Hazır | `store_assets/app-icon-512.png` (dolu, alfasız — `public/logo512.png`-i YÜKLƏMƏ, o 85% şəffafdır) |
+| Feature graphic 1024×500 | ✅ Hazır | `store_assets/feature-graphic-1024x500.png` |
+| Telefon screenshot-ları | ✅ Hazır (5 ədəd) | `store_assets/screenshot-01..05.png` — əsl tətbiqdən, canlı zəng daxil |
 | Başlıq / qısa / tam təsvir | ✅ Bu sənəddə | §2 |
 | Content rating cavabları | ✅ Bu sənəddə | §4 |
 | Data Safety cavabları | ✅ Bu sənəddə | §5 |
-| **Feature graphic 1024×500** | ❌ **Lazımdır** | Canva — §3 |
-| **Telefon screenshot-ları (min 2)** | ❌ **Lazımdır** | Canva mockup — §3 |
 
-**Nəticə:** yükləmə üçün yalnız **2 vizual** çatışmır (feature graphic + screenshot-lar). Qalan hər şey hazırdır.
+**Nəticə:** yükləmə üçün lazım olan hər şey hazırdır. Qalan: Console-da forma doldurma + App access test hesabı.
 
 ---
 
@@ -28,9 +30,9 @@
 
 ### Başlıq (max 30 simvol)
 ```
-SpeakLab — İngilis Danışıq
+SpeakLab.az — Real İnsanlarla
 ```
-*(26 simvol)*
+*(29 simvol — Polad-ın tələbi: "real insanlarla" ifadəsi başlıqda qalsın, çünki AI-tutor rəqiblərindən (İLM/SpeakLab AI) fərqli olaraq əsas məhsul real insan-insan praktikasıdır. "İngilis dili praktikası" hissəsi 30 simvola sığmadığı üçün qısa təsvirə keçdi — o mətn onsuz da bunu deyir.)*
 
 ### Qısa təsvir (max 80 simvol)
 ```
@@ -141,7 +143,7 @@ Kodda təsdiqlənmiş data toplama (APP_STORE_AUDIT.md §3.4-dən):
 
 ## 6. YÜKLƏMƏ GÜNÜ CHECKLIST (verifikasiya bitəndən sonra)
 
-1. AAB yüklə: `app-release.aab` (versionCode 1).
+1. AAB yüklə: Desktop-da `SpeakLab-play-v2.aab` (versionCode 2).
 2. Store listing: §2 mətnləri + §3 qrafika.
 3. Privacy Policy URL: https://speaklab-app.vercel.app/privacy.html
 4. Content rating anketi: §4.
