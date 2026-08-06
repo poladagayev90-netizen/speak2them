@@ -1,7 +1,7 @@
 # SpeakLab — Play Store Listinq Paketi
 
 **Məqsəd:** Verifikasiya gözlənilərkən Play Console-a hazır, kopyala-yapışdır mətnlər + qrafika spesifikasiyaları + anket cavabları.
-**Paket:** `com.speaklab.app` · versionCode 2 / versionName 1.1 (versionCode 1 Play-də "artıq işlənib" xətası verdi — Play bir versionCode-u bir dəfə görəndən sonra əbədi kilidləyir, hətta uğursuz/draft cəhddən olsa belə)
+**Paket:** `com.speaklab.app` · versionCode 3 / versionName 1.2 (1 və 2 hər ikisi Play tərəfindən yandırıldı — draft release-i silmək versionCode-u geri qaytarmır)
 **Default dil:** Azərbaycan (az-AZ). İngilis (en-US) versiyası da aşağıda — istəsən əlavə dil kimi qoşarsan.
 
 **Ad qərarı (2026-08-06):** App Store-da "AI English Tutor - SpeakLab" adlı canlı rəqib var (İLM/Istanbul Language Center, speaklabai.com) — AI ilə İngilis danışıq praktikası, konsept demək olar eynidir. Polad bu adla qarışdırılmaq istəmir, çünki SpeakLab-ın əsas məhsulu **real insan-insan praktikasıdır**, AInur yalnız yardımçı funksiyadır. Ona görə Play başlığı bare "SpeakLab" yox, domenə bağlı **"SpeakLab.az"** oldu — bu, həm hüquqi/qarışıqlıq riskini azaldır, həm "canlı/real" fərqini önə çıxarır. Gələcəkdə App Store-a müraciət ediləndə də eyni adla getmək tövsiyə olunur.
@@ -12,7 +12,7 @@
 
 | Element | Status | Qeyd |
 |---|---|---|
-| İmzalı AAB | ✅ Hazır | Desktop-da `SpeakLab-play-v1.aab` |
+| İmzalı AAB | ✅ Hazır | Desktop-da `SpeakLab-play-v3.aab` |
 | Privacy Policy URL | ✅ Canlı (200) | https://speaklab-app.vercel.app/privacy.html |
 | Hesab silmə URL | ✅ Canlı (200) | https://speaklab-app.vercel.app/delete-account.html |
 | App icon 512×512 | ✅ Hazır | `store_assets/app-icon-512.png` (dolu, alfasız — `public/logo512.png`-i YÜKLƏMƏ, o 85% şəffafdır) |
@@ -143,7 +143,7 @@ Kodda təsdiqlənmiş data toplama (APP_STORE_AUDIT.md §3.4-dən):
 
 ## 6. YÜKLƏMƏ GÜNÜ CHECKLIST (verifikasiya bitəndən sonra)
 
-1. AAB yüklə: Desktop-da `SpeakLab-play-v2.aab` (versionCode 2).
+1. AAB yüklə: Desktop-da `SpeakLab-play-v3.aab` (versionCode 3). Hər növbəti dəfə versionCode-u BİR DƏFƏ görülən kimi Play əbədi yandırır — draft release-i silmək bunu geri qaytarmır, ona görə hər cəhddə yeni ədəd lazımdır.
 2. Store listing: §2 mətnləri + §3 qrafika.
 3. Privacy Policy URL: https://speaklab-app.vercel.app/privacy.html
 4. Content rating anketi: §4.
