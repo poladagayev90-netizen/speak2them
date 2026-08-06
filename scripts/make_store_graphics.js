@@ -162,6 +162,40 @@ async function framedShot(srcPath, caption, outPath) {
   if (meta.width !== W || meta.height !== H) console.log('  XƏBƏRDARLIQ: ölçü səhvdir');
   if (meta.hasAlpha) console.log('  XƏBƏRDARLIQ: alfa kanalı var, Play şəffaflığı qəbul etmir');
 
+  // ── Play listinq ikonu (512×512, ŞƏFFAFLIQSIZ) ──
+  // public/logo512.png 85% şəffafdır — maskot boş fonda. PWA manifest üçün bu
+  // düzgündür, amma Play listinq ikonu tam dolu kvadrat olmalıdır: Play öz künc
+  // maskasını özü tətbiq edir, şəffaf ikon pozuq görünür. Ona görə AYRI fayl
+  // qurulur, tətbiqin öz loqosuna toxunulmur.
+  const ICON = 512;
+  const iconBg = Buffer.from(`
+    <svg width="${ICON}" height="${ICON}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ib" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#171538"/>
+          <stop offset="100%" stop-color="#0B0A1C"/>
+        </linearGradient>
+        <radialGradient id="ig" cx="50%" cy="38%" r="58%">
+          <stop offset="0%"   stop-color="${VIOLET}" stop-opacity="0.42"/>
+          <stop offset="100%" stop-color="${VIOLET}" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="${ICON}" height="${ICON}" fill="url(#ib)"/>
+      <rect width="${ICON}" height="${ICON}" fill="url(#ig)"/>
+    </svg>`);
+  const mark = await sharp(LOGO).resize(360, 360, { fit: 'contain',
+    background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+  const iconOut = path.join(dir, 'app-icon-512.png');
+  await sharp(iconBg)
+    .composite([{ input: mark, left: (ICON - 360) / 2, top: (ICON - 360) / 2 }])
+    .flatten({ background: '#0B0A1C' })
+    .removeAlpha()
+    .png({ compressionLevel: 9 })
+    .toFile(iconOut);
+  const im2 = await sharp(iconOut).metadata();
+  console.log(`${iconOut}`);
+  console.log(`  ${im2.width}×${im2.height}, ${im2.channels} kanal, alpha: ${im2.hasAlpha}`);
+
   // Screenshot-lar: xam fayllar --shots <qovluq> ilə verilir (Playwright çıxışı).
   const si = process.argv.indexOf('--shots');
   if (si < 0) { console.log('\n(--shots verilmədi, screenshot çərçivəsi atlandı)'); return; }
