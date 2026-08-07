@@ -30,9 +30,9 @@
 
 ### Başlıq (max 30 simvol)
 ```
-SpeakLab.az — Real İnsanlarla
+SpeakLab.az
 ```
-*(29 simvol — Polad-ın tələbi: "real insanlarla" ifadəsi başlıqda qalsın, çünki AI-tutor rəqiblərindən (İLM/SpeakLab AI) fərqli olaraq əsas məhsul real insan-insan praktikasıdır. "İngilis dili praktikası" hissəsi 30 simvola sığmadığı üçün qısa təsvirə keçdi — o mətn onsuz da bunu deyir.)*
+*(Yekun qərar 2026-08-06: Polad sadə adı seçdi — hər iki dildə (az/tr) eyni, "Real İnsanlarla" əlavəsi lazım deyil. `.az` domeni özü artıq İLM-in "SpeakLab AI" adından fərqləndirir, bu, ad qərarının məqsədini ödəyir. "Real insanlarla" fərqi qısa təsvirdə qalır.)*
 
 ### Qısa təsvir (max 80 simvol)
 ```
@@ -83,9 +83,9 @@ yoxdursa default dilinkini avtomatik göstərir.
 
 ### Başlıq (max 30 simvol)
 ```
-SpeakLab.az: Gerçek İnsanlarla
+SpeakLab.az
 ```
-*(30 simvol, tam limitdə — az-AZ başlığın türkcə qarşılığı, eyni "gerçək insanlarla" fərqləndirməsini daşıyır)*
+*(Polad qərarı: iki dildə eyni sadə ad)*
 
 ### Qısa təsvir (max 80 simvol)
 ```
