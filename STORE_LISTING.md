@@ -22,7 +22,14 @@
 | Content rating cavabları | ✅ Bu sənəddə | §4 |
 | Data Safety cavabları | ✅ Bu sənəddə | §5 |
 
-**Nəticə:** yükləmə üçün lazım olan hər şey hazırdır. Qalan: Console-da forma doldurma + App access test hesabı.
+**Nəticə:** yükləmə üçün lazım olan hər şey hazırdır. Qalan: Console-da forma doldurma.
+
+**App access test hesabı (2026-08-06 yaradıldı, SİLMƏ):**
+```
+Email:  speaklab.playreview@example.com
+Şifrə:  PlayReview2026!
+```
+Google Sign-In native buildda gizlədilir (`Login.jsx`), reviewer yalnız bu email/parolla girə bilər. `@example.com` — IANA-rezerv domendir (RFC 2606), real insana məxsus deyil, Firebase e-poçt təsdiqi tələb etmədiyi üçün işləyir. Login-dən Home-a qədər Playwright ilə təsdiqləndi. **Bu hesabı digər `TestVerify*` test hesabları ilə birlikdə TƏMİZLƏMƏ** — Play review istənilən vaxt yenidən yoxlaya bilər.
 
 ---
 
