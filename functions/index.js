@@ -627,6 +627,168 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
+// Monday-of-the-week "YYYY-MM-DD", computed from Baku's calendar date rather
+// than the server's own clock — mirrors src/utils/ranking.js:getWeekKey, which
+// runs on the user's device (assumed Baku, same as the rest of the backend's
+// day-boundary logic). Pure calendar math on the (y,m,d) triple, no real TZ
+// conversion, so it stays correct across month/year rollovers.
+function bakuWeekKey(ms = Date.now()) {
+  const todayStr = bakuDateStr(ms);
+  const [y, m, d] = todayStr.split("-").map(Number);
+  const weekday = bakuWeekday(todayStr); // 0=Sun..6=Sat
+  const diffToMonday = weekday === 0 ? 6 : weekday - 1;
+  const monday = new Date(Date.UTC(y, m - 1, d - diffToMonday));
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${monday.getUTCFullYear()}-${pad(monday.getUTCMonth() + 1)}-${pad(monday.getUTCDate())}`;
+}
+
+// Shared by the trigger and the one-time backfill below: credits ONE
+// participant's leaderboard stats for a finished call, guarded by the same
+// statsApplied_{uid} flag the client writes in Chat.jsx's endCall. Re-reads
+// both docs inside the transaction, so it is safe to call from multiple
+// places (or multiple times) without double-crediting.
+async function applyMissingCallStats(db, callRef, uid, durationMinutes) {
+  await db.runTransaction(async (tx) => {
+    const freshCallSnap = await tx.get(callRef);
+    if (!freshCallSnap.exists) return;
+    const freshCall = freshCallSnap.data() || {};
+    if (freshCall[`statsApplied_${uid}`]) return; // already credited by the client or a prior run
+
+    const userRef = db.collection("users").doc(uid);
+    const userSnap = await tx.get(userRef);
+    if (!userSnap.exists) return;
+    const userData = userSnap.data() || {};
+
+    const todayStr = bakuDateStr();
+    const yesterdayStr = bakuDateStr(Date.now() - 86400000);
+    const today = new Date(`${todayStr}T00:00:00Z`).toDateString();
+    const yesterday = new Date(`${yesterdayStr}T00:00:00Z`).toDateString();
+    let streak = userData.streak || 0;
+    if (userData.lastCallDate === today) {
+      // already counted today
+    } else if (userData.lastCallDate === yesterday) {
+      streak += 1;
+    } else {
+      streak = 1;
+    }
+
+    const currentMonthStr = new Date().toISOString().slice(0, 7);
+    const isSameMonth = userData.currentMonth === currentMonthStr;
+    const newMonthMinutes = (isSameMonth ? (userData.currentMonthMinutes || 0) : 0) + durationMinutes;
+
+    const weekKey = bakuWeekKey();
+    const isSameWeek = userData.currentWeek === weekKey;
+    const newWeekMinutes = (isSameWeek ? (userData.currentWeekMinutes || 0) : 0) + durationMinutes;
+
+    tx.set(userRef, {
+      callCount: (userData.callCount || 0) + 1,
+      totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
+      streak,
+      lastCallDate: today,
+      currentMonth: currentMonthStr,
+      currentMonthMinutes: newMonthMinutes,
+      currentWeek: weekKey,
+      currentWeekMinutes: newWeekMinutes,
+    }, { merge: true });
+
+    tx.set(callRef, {
+      [`statsApplied_${uid}`]: true,
+      [`statsAppliedAt_${uid}`]: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  });
+}
+
+// Safety net for leaderboard stats (totalMinutes/callCount/streak/weekly &
+// monthly minutes). The client normally applies these itself when its own
+// endCall() runs — but that requires the participant's OWN device to still be
+// alive at hangup. If their app was backgrounded, killed, or crashed before
+// that transaction ran, their side of the call was never credited: not wrong
+// stats, ZERO stats, and they silently vanish from the leaderboard even
+// though the call happened (observed 2026-08-08 — a full hour call where one
+// side got nothing).
+//
+// This mirrors the exact statsApplied_{uid} flag the client writes in
+// Chat.jsx's endCall, so whichever side runs first (a client, or this
+// trigger) wins and the other is a no-op — safe to have both.
+exports.reconcileCallStats = onDocumentWritten("calls/{callId}", async (event) => {
+  const after = event.data?.after;
+  if (!after?.exists) return;
+  const call = after.data() || {};
+  if (call.status !== "ended") return;
+  if (typeof call.authoritativeDurationSec !== "number") return;
+
+  const durationSeconds = call.authoritativeDurationSec;
+  if (durationSeconds <= 5) return; // matches the client's shouldApplyStats gate
+
+  const participants = Array.from(new Set(
+    [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean),
+  )).slice(0, 2);
+  if (participants.length < 2) return;
+
+  const durationMinutes = Math.ceil(durationSeconds / 60);
+  const db = admin.firestore();
+  const callRef = after.ref;
+
+  for (const uid of participants) {
+    if (call[`statsApplied_${uid}`]) continue; // client already handled this side
+    try {
+      await applyMissingCallStats(db, callRef, uid, durationMinutes);
+    } catch (e) {
+      console.error("[reconcileCallStats] failed for", uid, e.message);
+    }
+  }
+});
+
+// One-time admin action: scans every call doc that already finished
+// ('ended' + a pinned authoritativeDurationSec) for a participant whose
+// statsApplied_{uid} flag was never set — i.e. calls that happened BEFORE
+// reconcileCallStats existed, where one side's own client never ran endCall.
+// Safe to run more than once: applyMissingCallStats re-checks the flag inside
+// its own transaction, so an already-applied side is a no-op.
+exports.backfillMissingCallStats = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
+
+  const db = admin.firestore();
+  const snap = await db.collection("calls").where("status", "==", "ended").get();
+
+  let scanned = 0;
+  let fixed = 0;
+  const fixedDetails = [];
+  for (const docSnap of snap.docs) {
+    scanned++;
+    const call = docSnap.data() || {};
+    if (typeof call.authoritativeDurationSec !== "number" || call.authoritativeDurationSec <= 5) continue;
+
+    const participants = Array.from(new Set(
+      [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean),
+    )).slice(0, 2);
+    if (participants.length < 2) continue;
+
+    const durationMinutes = Math.ceil(call.authoritativeDurationSec / 60);
+    for (const uid of participants) {
+      if (call[`statsApplied_${uid}`]) continue;
+      try {
+        await applyMissingCallStats(db, docSnap.ref, uid, durationMinutes);
+        fixed++;
+        fixedDetails.push({ callId: docSnap.id, uid, durationMinutes });
+      } catch (e) {
+        console.error("[backfillMissingCallStats] failed for", docSnap.id, uid, e.message);
+      }
+    }
+  }
+
+  return res.status(200).json({ ok: true, scanned, fixed, fixedDetails });
+});
+
 // One-time admin action: put every pre-existing user who has no plan yet onto
 // the trial. Skips users who already have a plan or are premium, so it is safe
 // to run more than once.
