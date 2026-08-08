@@ -167,16 +167,18 @@ async function framedShot(srcPath, caption, outPath) {
   // düzgündür, amma Play listinq ikonu tam dolu kvadrat olmalıdır: Play öz künc
   // maskasını özü tətbiq edir, şəffaf ikon pozuq görünür. Ona görə AYRI fayl
   // qurulur, tətbiqin öz loqosuna toxunulmur.
+  // Light mode: ağ fon + çox yüngül bənövşəyi halə (tünd fon deyil). Tətbiqin
+  // light tema dəyərləri ilə eyni (--bg-primary: #f6f6fb).
   const ICON = 512;
   const iconBg = Buffer.from(`
     <svg width="${ICON}" height="${ICON}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="ib" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%"   stop-color="#171538"/>
-          <stop offset="100%" stop-color="#0B0A1C"/>
+          <stop offset="0%"   stop-color="#FFFFFF"/>
+          <stop offset="100%" stop-color="#F0EEFB"/>
         </linearGradient>
         <radialGradient id="ig" cx="50%" cy="38%" r="58%">
-          <stop offset="0%"   stop-color="${VIOLET}" stop-opacity="0.42"/>
+          <stop offset="0%"   stop-color="${VIOLET}" stop-opacity="0.14"/>
           <stop offset="100%" stop-color="${VIOLET}" stop-opacity="0"/>
         </radialGradient>
       </defs>
@@ -188,7 +190,7 @@ async function framedShot(srcPath, caption, outPath) {
   const iconOut = path.join(dir, 'app-icon-512.png');
   await sharp(iconBg)
     .composite([{ input: mark, left: (ICON - 360) / 2, top: (ICON - 360) / 2 }])
-    .flatten({ background: '#0B0A1C' })
+    .flatten({ background: '#FFFFFF' })
     .removeAlpha()
     .png({ compressionLevel: 9 })
     .toFile(iconOut);
@@ -207,6 +209,7 @@ async function framedShot(srcPath, caption, outPath) {
     ['12-question-card.png',  'Hər zəngə hazır sual kartları'],
     ['14-picture-frames.png', 'Şəkli təsvir et — söz və qəliblərlə'],
     ['03-questions.png',      'Gündəlik mövzu: söz, idiom, sual'],
+    ['taboo-raw.png',         'Taboo — sözü izah et, partnyor tapsın'],
   ];
 
   console.log('');
