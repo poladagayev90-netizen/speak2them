@@ -156,8 +156,11 @@ export default function Register() {
           {/* Rol seçimi əlavə olunandan sonra forma bir ekrana sığmırdı:
               başlıq tək sətirə salındı, alt yazı çıxarıldı, boşluqlar
               sıxıldı — scroll olmadan hamısı görünür. */}
+          {/* "Danışmağa başla" TeacherUnlock.jsx-də artıq işlənən ifadədir —
+              qeydiyyat ekranı da eyni konvensiyaya keçdi (əvvəl ingiliscə idi,
+              tətbiqin qalanı azərbaycancadır). */}
           <h2 style={{ fontSize: '20px', marginBottom: '10px', lineHeight: '1.2' }}>
-            Start Speaking <span style={{ color: '#7c6ff7' }}>Today</span>
+            Danışmağa <span style={{ color: '#7c6ff7' }}>başla</span>
           </h2>
 
           {error && <div className="error-box">{error}</div>}
