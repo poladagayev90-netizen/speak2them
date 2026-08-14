@@ -406,7 +406,18 @@ export default function Chat({ user }) {
     }
   }, [slotId, user.uid]);
 
-  // Location state — caller joins after accepted (matched calls)
+  // Location state — zəng qəbul ediləndən sonra qoşulma.
+  //
+  // DEPS-LƏR KRİTİKDİR (əvvəl `[]` idi və bu, ƏSL BUG İDİ):
+  // GlobalCallListener qəbul edəndə `navigate('/chat/<caller>', {acceptedCall:true})`
+  // çağırır. İstifadəçi ARTIQ hər hansı bir `/chat/:peerId` səhifəsindədirsə,
+  // React Router eyni route pattern-i üçün komponenti YENİDƏN MOUNT ETMİR —
+  // yalnız params/state dəyişir. Boş deps ilə effekt təkrar işləmirdi, deməli
+  // joinCall() heç vaxt çağırılmırdı: istifadəçi zəngi qəbul edir, amma zəng
+  // ekranı açılmır və söhbət səhifəsində ilişib qalırdı (istifadəçi şikayəti:
+  // "cavabla deyirik, amma zəng səhifəsinə keçmir, sohbette kalıyor").
+  // `location.key` hər naviqasiyada — eyni ünvana belə — dəyişir, ona görə
+  // qəbul hər dəfə etibarlı şəkildə tutulur. `joinedRef` ikiqat qoşulmanı saxlayır.
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
@@ -415,7 +426,7 @@ export default function Chat({ user }) {
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.key, location.state?.acceptedCall, peerId]);
 
   useEffect(() => {
     if (!isMatchedCall || !stateCallId) return;
