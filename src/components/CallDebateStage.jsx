@@ -61,10 +61,19 @@ const SOLID_BTN = {
   boxShadow: '0 6px 18px rgba(124,111,247,0.28)',
 };
 
+// Dek sadə və orta mövzuları növbələşdirir. Nişan olmasa istifadəçi bunu
+// görmür — kartın niyə birdən yüngülləşdiyi anlaşılmır. Rənglər
+// CallQuestionStage-dəki səviyyə rəngləri ilə eynidir (svetofor DEYİL).
+const LEVEL_META = {
+  simple: { text: 'SADƏ', colour: '#12BBD6' },   // Neon Cyan
+  normal: { text: 'ORTA', colour: '#6D3BEB' },   // Lab Violet
+};
+
 export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose }) {
   const topic = debateTopics[topicIndex % debateTopics.length];
   const mine = side === 'B' ? topic.sideB : topic.sideA;
   const theirLabel = side === 'B' ? topic.sideA.label : topic.sideB.label;
+  const level = LEVEL_META[topic.level];
 
   return (
     <div style={{
@@ -93,12 +102,25 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
         </div>
 
         <div style={{ padding: '0 16px 6px', flexShrink: 0 }}>
-          <p style={{
-            color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700,
-            textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px', textAlign: 'center',
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 8, margin: '0 0 6px',
           }}>
-            Mövzu
-          </p>
+            <p style={{
+              color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '1px', margin: 0,
+            }}>
+              Mövzu
+            </p>
+            {level && (
+              <span style={{
+                background: level.colour, color: '#fff', borderRadius: 20,
+                padding: '2px 9px', fontSize: 10, fontWeight: 800, letterSpacing: '0.8px',
+              }}>
+                {level.text}
+              </span>
+            )}
+          </div>
           <p style={{
             color: 'var(--text-primary)', fontSize: 17, fontWeight: 700, lineHeight: 1.4,
             margin: 0, textAlign: 'center',
