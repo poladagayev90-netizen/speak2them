@@ -26,7 +26,9 @@ import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import CallTabooStage from '../components/CallTabooStage';
 import CallQuestionStage from '../components/CallQuestionStage';
+import CallDebateStage from '../components/CallDebateStage';
 import { tabooWords } from '../data/tabooWords';
+import { debateTopics } from '../data/debateTopics';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallRoadmap from '../components/CallRoadmap';
 import CallInsights from '../components/CallInsights';
@@ -76,6 +78,7 @@ export default function Chat({ user }) {
   const [imageStage, setImageStage] = useState(null);
   const [tabooStage, setTabooStage] = useState(null);
   const [questionStage, setQuestionStage] = useState(null);
+  const [debateStage, setDebateStage] = useState(null);
   // The post-call flow is a queue of full-screen stages. Normally it holds just
   // 'insights' (the single summary screen); 'quiz' is pushed only when the user
   // asks for it from that screen.
@@ -470,6 +473,10 @@ export default function Chat({ user }) {
       // Synced speaking cards: difficulty, deck and the open card all live in
       // the doc, so neither peer can end up looking at a different question.
       setQuestionStage(data.questionStage || null);
+
+      // Synced Debate game: same channel, but sideAUid decides which side's
+      // talking points each peer gets — same split as Taboo's explainerUid.
+      setDebateStage(data.debateStage || null);
 
       // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
@@ -1079,7 +1086,7 @@ export default function Chat({ user }) {
                   <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
                     📖<span>Lüğət</span>
                   </button>
-                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && (
+                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
                       className="call-btn-big"
                       onClick={() => {
@@ -1092,13 +1099,14 @@ export default function Chat({ user }) {
                           },
                           'imageStage.active': false,
                           'tabooStage.active': false,
+                          'debateStage.active': false,
                         }).catch((e) => console.error('[Chat] questionStage start failed:', e));
                       }}
                     >
                       🗣️<span>Suallar</span>
                     </button>
                   )}
-                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && (
+                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
                       className="call-btn-big"
                       onClick={() => {
@@ -1113,13 +1121,14 @@ export default function Chat({ user }) {
                           },
                           'tabooStage.active': false,
                           'questionStage.active': false,
+                          'debateStage.active': false,
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
                     >
                       🖼️<span>Şəkil</span>
                     </button>
                   )}
-                  {!tabooStage?.active && !imageStage?.active && !questionStage?.active && (
+                  {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
                       className="call-btn-big"
                       onClick={() => {
@@ -1132,10 +1141,30 @@ export default function Chat({ user }) {
                           },
                           'imageStage.active': false,
                           'questionStage.active': false,
+                          'debateStage.active': false,
                         }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
                       }}
                     >
                       🎭<span>Taboo</span>
+                    </button>
+                  )}
+                  {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
+                    <button
+                      className="call-btn-big"
+                      onClick={() => {
+                        updateDoc(doc(db, 'calls', callDocId), {
+                          debateStage: {
+                            active: true,
+                            topicIndex: Math.floor(Math.random() * debateTopics.length),
+                            sideAUid: user.uid,
+                          },
+                          'imageStage.active': false,
+                          'tabooStage.active': false,
+                          'questionStage.active': false,
+                        }).catch((e) => console.error('[Chat] debateStage start failed:', e));
+                      }}
+                    >
+                      💬<span>Debat</span>
                     </button>
                   )}
                 </>
@@ -1251,7 +1280,33 @@ export default function Chat({ user }) {
         />
       )}
 
-      {inCall && showRoadmap && !imageStage?.active && !tabooStage?.active && !questionStage?.active && (
+      {inCall && debateStage?.active && (
+        <CallDebateStage
+          topicIndex={debateStage.topicIndex || 0}
+          side={debateStage.sideAUid === user.uid ? 'A' : 'B'}
+          onNextTopic={() => {
+            // Növbəti mövzu ardıcıl gedir, random DEYİL: random seçim eyni
+            // mövzunu təkrar verə bilirdi və düymə «işləmir» kimi görünürdü.
+            // imageStage-dəki kimi açıq dəyər yazılır (increment yox), ona görə
+            // hər iki peer eyni anda basanda mövzu bir dəfə irəliləyir.
+            //
+            // Tərəflər hər mövzuda yer dəyişir: başladan həmişə sideA qalsaydı,
+            // bir nəfər heç vaxt əks mövqeyi müdafiə etməzdi — debatın bütün
+            // dil faydası isə məhz orada.
+            updateDoc(doc(db, 'calls', callDocId), {
+              'debateStage.topicIndex': (debateStage.topicIndex || 0) + 1,
+              'debateStage.sideAUid': debateStage.sideAUid === user.uid ? peerId : user.uid,
+            }).catch((e) => console.error('[Chat] debateStage next failed:', e));
+          }}
+          onClose={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'debateStage.active': false,
+            }).catch((e) => console.error('[Chat] debateStage close failed:', e));
+          }}
+        />
+      )}
+
+      {inCall && showRoadmap && !imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
         <CallRoadmap
           content={content}
           onStart={() => setShowRoadmap(false)}

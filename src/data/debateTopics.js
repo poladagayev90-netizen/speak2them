@@ -1,0 +1,350 @@
+// In-call Debate game. Each topic has two easy, everyday sides — cats vs dogs,
+// not politics — so any A2+ pair can jump in. Each side gets a short list of
+// talking points in English (the language being practiced); UI chrome around
+// it stays Azerbaijani like the rest of the app.
+//
+// Both peers see `topic` (CallDebateStage shows it to everyone). Only your own
+// side's `points` are ever rendered on your screen — same trick as Taboo's
+// forbidden words, just flipped: you see your own hand, not your opponent's.
+export const debateTopics = [
+  {
+    topic: "Cats or dogs — which pet is better?",
+    sideA: { label: "Cats 🐱", points: [
+      "Cats are independent and don't need daily walks.",
+      "Cats are cheaper to keep — less food, no dog walker.",
+      "Cats clean themselves.",
+      "Cats are quiet and fit well in small apartments.",
+      "Cats can be left alone for a full day without stress.",
+    ]},
+    sideB: { label: "Dogs 🐶", points: [
+      "Dogs are loyal and always happy to see you.",
+      "Dogs protect the house and the family.",
+      "Dogs get you outside and moving every day.",
+      "Dogs can be trained to do useful things.",
+      "Dogs are better company for children.",
+    ]},
+  },
+  {
+    topic: "Winter or summer — which season is better?",
+    sideA: { label: "Winter ❄️", points: [
+      "Snow makes everything look beautiful.",
+      "You can drink hot tea and stay cozy at home.",
+      "Winter holidays like New Year feel special.",
+      "No mosquitoes or extreme heat.",
+      "Skiing and snowball fights are fun.",
+    ]},
+    sideB: { label: "Summer ☀️", points: [
+      "Long, sunny days give you more free time outside.",
+      "You can swim in the sea or a pool.",
+      "Summer holidays are longer.",
+      "Fresh fruit and barbecues taste better.",
+      "No heavy coats or icy roads.",
+    ]},
+  },
+  {
+    topic: "Tea or coffee — which drink is better?",
+    sideA: { label: "Tea 🍵", points: [
+      "Tea has less caffeine, so it's calmer.",
+      "There are hundreds of flavours to try.",
+      "Tea is a big part of Azerbaijani culture.",
+      "It's gentler on your stomach.",
+      "You can drink it any time of day.",
+    ]},
+    sideB: { label: "Coffee ☕", points: [
+      "Coffee wakes you up fast in the morning.",
+      "It helps you focus while working or studying.",
+      "Coffee shops are great places to meet friends.",
+      "There are so many ways to make it — espresso, latte, cold brew.",
+      "The smell alone makes people happier.",
+    ]},
+  },
+  {
+    topic: "City life or village life — which is better?",
+    sideA: { label: "City 🏙️", points: [
+      "More jobs and higher salaries.",
+      "Better hospitals, schools and universities.",
+      "Restaurants, cinemas and events are close by.",
+      "Public transport takes you everywhere.",
+      "You meet more people and ideas.",
+    ]},
+    sideB: { label: "Village 🌾", points: [
+      "Fresh air and quiet — no traffic noise.",
+      "Fresh, homegrown food.",
+      "Life is cheaper.",
+      "Everyone knows each other; strong community.",
+      "Less stress, slower pace of life.",
+    ]},
+  },
+  {
+    topic: "Books or movies — which tells a story better?",
+    sideA: { label: "Books 📚", points: [
+      "You imagine the characters yourself.",
+      "Books go deeper into a character's thoughts.",
+      "Reading improves your vocabulary.",
+      "A book can be enjoyed at your own pace.",
+      "The book is almost always better than the film.",
+    ]},
+    sideB: { label: "Movies 🎬", points: [
+      "Movies tell a full story in two hours.",
+      "Music and visuals add emotion words can't.",
+      "You can watch a movie with friends together.",
+      "Great acting brings characters to life.",
+      "Movies are easier to enjoy after a tiring day.",
+    ]},
+  },
+  {
+    topic: "Morning person or night owl — which is better?",
+    sideA: { label: "Early bird 🌅", points: [
+      "Mornings are quiet, so it's easier to focus.",
+      "You get things done before the day gets busy.",
+      "Waking up early means an earlier, better sleep too.",
+      "Sunrise is a great way to start the day.",
+      "Most schools and jobs start early anyway.",
+    ]},
+    sideB: { label: "Night owl 🌙", points: [
+      "Nights are calm — no calls, no interruptions.",
+      "Creative ideas often come late at night.",
+      "You can relax after everyone else is asleep.",
+      "Some of the best conversations happen late at night.",
+      "Not everyone's brain works the same — mornings aren't for everyone.",
+    ]},
+  },
+  {
+    topic: "Beach holiday or mountain holiday — which is better?",
+    sideA: { label: "Beach 🏖️", points: [
+      "Swimming in the sea is the best way to relax.",
+      "Sunbathing and sea breeze reduce stress.",
+      "Beach towns usually have great food nearby.",
+      "Easy holiday — you just lie down and relax.",
+      "Beautiful sunsets over the water.",
+    ]},
+    sideB: { label: "Mountains ⛰️", points: [
+      "Fresh, cool air is better for your health.",
+      "Hiking keeps you active on holiday.",
+      "Mountain views are more dramatic and unique.",
+      "Fewer crowds than a popular beach.",
+      "You can enjoy both summer and winter mountain activities.",
+    ]},
+  },
+  {
+    topic: "Texting or calling — which is the better way to talk?",
+    sideA: { label: "Texting 💬", points: [
+      "You can reply whenever you're free.",
+      "It's quieter — you can text anywhere, even in class.",
+      "You can think about your words before sending.",
+      "Easy to share photos, links and voice notes too.",
+      "It doesn't interrupt what the other person is doing.",
+    ]},
+    sideB: { label: "Calling 📞", points: [
+      "You hear tone of voice, so less misunderstanding.",
+      "Calls are faster than typing a long message.",
+      "It feels more personal and warm.",
+      "You can solve a problem in one call instead of ten texts.",
+      "Some things are just easier to explain out loud.",
+    ]},
+  },
+  {
+    topic: "Cooking at home or eating out — which is better?",
+    sideA: { label: "Cooking at home 🍳", points: [
+      "It's much cheaper than restaurants.",
+      "You control exactly what goes into your food.",
+      "Cooking together is a nice family activity.",
+      "Home food is usually healthier.",
+      "You can cook exactly what you're craving.",
+    ]},
+    sideB: { label: "Eating out 🍽️", points: [
+      "You save time — no cooking or washing dishes.",
+      "You can try foods you don't know how to cook.",
+      "Restaurants are good for meeting friends.",
+      "Professional chefs often cook better than we can.",
+      "It feels like a treat, especially after a long week.",
+    ]},
+  },
+  {
+    topic: "Online shopping or shopping in a store — which is better?",
+    sideA: { label: "Online 🛒", points: [
+      "You can shop anytime, even at midnight.",
+      "Prices are easier to compare between stores.",
+      "No traffic, no crowds, no queues.",
+      "Items get delivered straight to your door.",
+      "Huge choice — way more than one store can offer.",
+    ]},
+    sideB: { label: "In-store 🏬", points: [
+      "You can try clothes on before buying.",
+      "You get the item immediately, no waiting for delivery.",
+      "You can ask staff questions right away.",
+      "No risk of the item looking different than the photo.",
+      "Shopping in person can be a fun outing with friends.",
+    ]},
+  },
+  {
+    topic: "Football or basketball — which sport is better?",
+    sideA: { label: "Football ⚽", points: [
+      "It's the most popular sport in the world.",
+      "You only need a ball and some space to play.",
+      "Matches build incredible team spirit.",
+      "Ninety minutes of constant tension and excitement.",
+      "Huge stadiums and passionate fans everywhere.",
+    ]},
+    sideB: { label: "Basketball 🏀", points: [
+      "Games have much more non-stop scoring and action.",
+      "It rewards speed, skill and clever teamwork.",
+      "You can play it indoors in any weather.",
+      "Even one-on-one games are fun.",
+      "Players show amazing individual skill and creativity.",
+    ]},
+  },
+  {
+    topic: "Pizza or burgers — which food wins?",
+    sideA: { label: "Pizza 🍕", points: [
+      "So many topping combinations to choose from.",
+      "Great for sharing with a group.",
+      "Good both hot and cold the next day.",
+      "Feels a bit lighter than a heavy burger.",
+      "Goes with almost any drink or side dish.",
+    ]},
+    sideB: { label: "Burgers 🍔", points: [
+      "Juicy, filling and satisfying in one bite.",
+      "Comes with fries — a perfect combo.",
+      "Easy to customize — cheese, sauce, extra patty.",
+      "Faster to eat when you're in a hurry.",
+      "Great at a barbecue with friends.",
+    ]},
+  },
+  {
+    topic: "Sweet food or salty food — which do you prefer?",
+    sideA: { label: "Sweet 🍰", points: [
+      "Sweet food instantly lifts your mood.",
+      "Desserts make celebrations feel special.",
+      "There's a huge variety — cakes, chocolate, fruit.",
+      "A little something sweet is the perfect end to a meal.",
+      "Sweet snacks give a quick boost of energy.",
+    ]},
+    sideB: { label: "Salty 🍟", points: [
+      "Salty snacks are perfect with drinks or during a movie.",
+      "You don't get tired of salty food as quickly.",
+      "Savoury meals feel more like real food, not just a treat.",
+      "Salty food pairs well with almost every cuisine.",
+      "Chips and nuts are easy, satisfying snacks.",
+    ]},
+  },
+  {
+    topic: "Working from home or working in the office — which is better?",
+    sideA: { label: "From home 🏠", points: [
+      "No time wasted commuting every day.",
+      "You can work in a comfortable, quiet space.",
+      "More flexible hours around your own life.",
+      "You save money on transport and eating out.",
+      "Fewer interruptions from coworkers.",
+    ]},
+    sideB: { label: "In the office 🏢", points: [
+      "Face-to-face talks solve problems faster.",
+      "It's easier to build friendships with coworkers.",
+      "A clear separation between work and home life.",
+      "Fewer distractions from things at home.",
+      "New employees learn faster by watching others.",
+    ]},
+  },
+  {
+    topic: "Saving money or spending money now — which is smarter?",
+    sideA: { label: "Saving 💰", points: [
+      "Savings protect you when something unexpected happens.",
+      "You can afford bigger goals later — a home, a trip.",
+      "It reduces stress about the future.",
+      "Small savings add up a lot over time.",
+      "It gives you more freedom to make choices later.",
+    ]},
+    sideB: { label: "Spending now 🛍️", points: [
+      "Life is happening now, not only in the future.",
+      "Experiences today create memories you keep forever.",
+      "You never know what tomorrow brings, so enjoy today.",
+      "Spending on yourself can improve your daily happiness.",
+      "Money saved for too long can lose value over time.",
+    ]},
+  },
+  {
+    topic: "Reading books or watching TV — which is a better way to relax?",
+    sideA: { label: "Reading 📖", points: [
+      "Reading improves focus and imagination.",
+      "It's a quiet activity that helps you fall asleep after.",
+      "You learn new words and ideas as you go.",
+      "A good book stays with you longer than a show.",
+      "You can read anywhere, even without electricity.",
+    ]},
+    sideB: { label: "Watching TV 📺", points: [
+      "It's an easy way to relax after a tiring day.",
+      "Great for watching together with family or friends.",
+      "Visual storytelling can be very powerful.",
+      "There's something for every mood — comedy, drama, documentaries.",
+      "You don't need to concentrate hard to enjoy it.",
+    ]},
+  },
+  {
+    topic: "Living alone or living with family — which is better?",
+    sideA: { label: "Living alone 🏡", points: [
+      "You get full independence and privacy.",
+      "You can decorate and organize things your own way.",
+      "No arguments about chores or schedules.",
+      "It teaches responsibility fast.",
+      "You choose exactly how to spend your evenings.",
+    ]},
+    sideB: { label: "With family 👨‍👩‍👧", points: [
+      "You're never alone when something goes wrong.",
+      "Meals and chores are shared, so it's easier.",
+      "It's usually cheaper to live together.",
+      "Strong family bonds grow from daily time together.",
+      "There's always someone to talk to.",
+    ]},
+  },
+  {
+    topic: "Phone or laptop — which do you need more?",
+    sideA: { label: "Phone 📱", points: [
+      "It's always with you, in your pocket.",
+      "Great for quick messages, calls and photos.",
+      "Apps for almost everything you need daily.",
+      "Easier to use while walking or traveling.",
+      "Battery lasts long enough for a full day.",
+    ]},
+    sideB: { label: "Laptop 💻", points: [
+      "A bigger screen makes work much easier.",
+      "A real keyboard is faster for typing.",
+      "Better for studying, writing or coding.",
+      "More powerful for serious tasks.",
+      "Easier to have multiple windows open at once.",
+    ]},
+  },
+  {
+    topic: "Weekend at home or weekend outside — which is better?",
+    sideA: { label: "At home 🛋️", points: [
+      "It's the perfect time to fully rest.",
+      "No money spent, no crowds to deal with.",
+      "You can catch up on sleep, shows or hobbies.",
+      "Comfortable and stress-free.",
+      "Great for recharging before the new week.",
+    ]},
+    sideB: { label: "Outside 🌳", points: [
+      "Fresh air and movement are good for your health.",
+      "You make more memories doing something new.",
+      "It's a great chance to see friends.",
+      "Sitting at home all weekend can feel boring.",
+      "New places and people keep life interesting.",
+    ]},
+  },
+  {
+    topic: "Traveling solo or traveling with friends — which is better?",
+    sideA: { label: "Solo 🎒", points: [
+      "You decide everything — no compromises.",
+      "It builds confidence and independence.",
+      "You meet more new people on the way.",
+      "You can change plans anytime you want.",
+      "It's easier to really relax on your own schedule.",
+    ]},
+    sideB: { label: "With friends 👯", points: [
+      "Memories are better when you share them.",
+      "It's safer to travel in a group.",
+      "You can split costs like hotels and taxis.",
+      "Friends help when something goes wrong.",
+      "Trying new food and activities is more fun together.",
+    ]},
+  },
+];
