@@ -88,10 +88,10 @@ export default function NotificationPrompt({ user }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
-          Bildirişləri aç
+          Turn on notifications
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.4 }}>
-          Sessiya və analiz hazır olanda xəbərdar olmaq üçün icazə ver.
+          Allow notifications so you know when a session starts and your report is ready.
         </div>
       </div>
       <button
@@ -104,11 +104,11 @@ export default function NotificationPrompt({ user }) {
           cursor: busy ? 'default' : 'pointer', whiteSpace: 'nowrap',
         }}
       >
-        {busy ? '...' : 'Aç'}
+        {busy ? '...' : 'Open'}
       </button>
       <button
         onClick={dismiss}
-        aria-label="Bağla"
+        aria-label="Close"
         style={{
           flexShrink: 0, border: 'none', background: 'none',
           color: 'var(--text-secondary)', cursor: 'pointer', padding: 4,

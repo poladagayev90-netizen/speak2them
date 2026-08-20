@@ -30,9 +30,9 @@ const BOARD_OPEN_KEY = 'speaklab_board_open';
 // göstəririk. Şaquli 8-sətirlik siyahı monotondu; qruplu çip skan etməyi
 // asanlaşdırır və peşəkar görünür.
 const DAY_PARTS = [
-  { label: 'Səhər', hours: [8, 10] },
-  { label: 'Gündüz', hours: [12, 14, 16] },
-  { label: 'Axşam', hours: [18, 20, 22] },
+  { label: 'Morning', hours: [8, 10] },
+  { label: 'Afternoon', hours: [12, 14, 16] },
+  { label: 'Evening', hours: [18, 20, 22] },
 ];
 
 export default function PracticeBoard({ mine, openSignal = 0 }) {
@@ -91,11 +91,16 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
     return count + (!past && Math.max(0, w - (mineHere ? 1 : 0)) > 0 ? 1 : 0);
   }, 0);
 
-  const expanded = open === null ? (mySlotIds.length === 0 && !upcoming) : open;
+  // Collapsed until asked for. It used to default OPEN for anyone with no slots
+  // booked -- which is every new user -- so the first thing a new account saw
+  // was a grid of grey "Passed" blocks, i.e. "there is nothing here". The home
+  // screen now leads with something you can actually do, and this board sells
+  // itself from its own header.
+  const expanded = open === null ? false : open;
 
   const toggleSlot = async (slotId, joined, matched) => {
     if (matched && !window.confirm(
-      'Bu zəngi ləğv edirsiniz? Partnyorunuza bildiriş gedəcək.',
+      'Cancel this call? Your partner will be notified.',
     )) return;
     setBusy(slotId);
     setError('');
@@ -152,12 +157,12 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
       >
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Nə vaxt müsaitsiniz?
+            When are you free?
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
             {todayWaiting > 0
-              ? `Bu gün ${todayWaiting} blokda adam gözləyir`
-              : 'Vaxtınızı seçin — ikinci nəfər qoşulan kimi təsdiqlənəcək'}
+              ? `${todayWaiting} blocks have someone waiting today`
+              : 'Pick a time — it is confirmed as soon as a second person joins'}
           </div>
         </div>
         {todayWaiting > 0 && !expanded && (
@@ -180,8 +185,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
           <div style={{ flex: 1, minWidth: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-            <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.hour)}</b> blokunda bir nəfər
-            gözləyir — ora da yazılsanız zəng dərhal təsdiqlənəcək.
+            <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.hour)}</b> block has someone waiting — join it and your call is confirmed straight away.
           </div>
           <button
             type="button"
@@ -193,7 +197,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
               fontSize: '12px', fontWeight: 800, cursor: 'pointer',
             }}
           >
-            {busy === bridge.slotId ? '...' : 'Ora da yazıl'}
+            {busy === bridge.slotId ? '...' : 'Join that one too'}
           </button>
         </div>
       )}
@@ -257,15 +261,15 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                   let status = null;
                   if (iAmMatched) {
                     border = 'var(--success)'; bg = 'rgba(34,197,94,0.12)';
-                    status = { text: `✓ ${upcoming.peerName || 'Təsdiqləndi'}`, color: 'var(--success)' };
+                    status = { text: `✓ ${upcoming.peerName || 'Confirmed'}`, color: 'var(--success)' };
                   } else if (joined) {
                     border = 'var(--accent)'; bg = 'var(--accent-soft)';
-                    status = { text: 'Gözlənilir', color: 'var(--accent)' };
+                    status = { text: 'Pending', color: 'var(--accent)' };
                   } else if (hot) {
                     border = '#f59e0b66'; bg = '#f59e0b18';
-                    status = { text: `${othersWaiting} nəfər gözləyir`, color: '#f59e0b' };
+                    status = { text: `${othersWaiting} waiting`, color: '#f59e0b' };
                   } else if (!past) {
-                    status = { text: 'Müsaitəm', color: 'var(--text-muted)' };
+                    status = { text: 'I am free', color: 'var(--text-muted)' };
                   }
 
                   return (
@@ -274,7 +278,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                       type="button"
                       onClick={() => !past && toggleSlot(slotId, joined, iAmMatched)}
                       disabled={past || working}
-                      aria-label={`${blockLabel(hour)} — ${joined ? 'ləğv et' : 'müsaitəm ol'}`}
+                      aria-label={`${blockLabel(hour)} — ${joined ? 'cancel' : 'mark me free'}`}
                       style={{
                         textAlign: 'left', cursor: past ? 'default' : 'pointer',
                         borderRadius: '12px', padding: '10px 11px', minWidth: 0,
@@ -293,12 +297,12 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                         <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                           –{hourLabel((hour + 2) % 24)}
                         </span>
-                        {popular && <span title="Ən çox adam bu saatda" style={{ fontSize: '11px' }}>⭐</span>}
+                        {popular && <span title="Most people are here at this hour" style={{ fontSize: '11px' }}>⭐</span>}
                         {isNow && (
                           <span style={{
                             fontSize: '8px', fontWeight: 800, padding: '2px 5px', borderRadius: '20px',
                             background: 'var(--accent-soft)', color: 'var(--accent)', letterSpacing: '0.5px',
-                          }}>İNDİ</span>
+                          }}>NOW</span>
                         )}
                       </div>
                       <span style={{
@@ -306,7 +310,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                         color: working ? 'var(--text-muted)' : (status ? status.color : 'var(--text-muted)'),
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
-                        {working ? '...' : past ? 'Keçdi' : (status ? status.text : '')}
+                        {working ? '...' : past ? 'Passed' : (status ? status.text : '')}
                       </span>
                     </button>
                   );
@@ -327,7 +331,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           >
             <Repeat size={14} />
             <span style={{ fontSize: '13px', fontWeight: 700, flex: 1, textAlign: 'left' }}>
-              Hər gün təkrarla
+              Repeat every day
             </span>
             {recurringHours.size > 0 && (
               <span style={{
@@ -343,7 +347,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           {recurOpen && (
             <>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 2px 8px', lineHeight: 1.5 }}>
-                Seçdiyiniz saatlar hər gün avtomatik “müsaitəm” kimi qeyd olunur.
+                The hours you pick are marked as free automatically, every day.
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                 {SLOT_BLOCK_HOURS.map((hour) => {

@@ -156,11 +156,10 @@ export default function Register() {
           {/* Rol seçimi əlavə olunandan sonra forma bir ekrana sığmırdı:
               başlıq tək sətirə salındı, alt yazı çıxarıldı, boşluqlar
               sıxıldı — scroll olmadan hamısı görünür. */}
-          {/* "Danışmağa başla" TeacherUnlock.jsx-də artıq işlənən ifadədir —
-              qeydiyyat ekranı da eyni konvensiyaya keçdi (əvvəl ingiliscə idi,
-              tətbiqin qalanı azərbaycancadır). */}
+          {/* The interface is English throughout; see feedbackLanguage.js for the
+              one thing that is not. */}
           <h2 style={{ fontSize: '20px', marginBottom: '10px', lineHeight: '1.2' }}>
-            Danışmağa <span style={{ color: '#7c6ff7' }}>başla</span>
+            Start <span style={{ color: 'var(--accent)' }}>speaking</span>
           </h2>
 
           {error && <div className="error-box">{error}</div>}
@@ -173,8 +172,7 @@ export default function Register() {
               padding: '12px 14px', marginBottom: '12px',
               fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5,
             }}>
-              🎓 Müəllim dəvəti ilə qoşulursunuz — qeydiyyatdan dərhal sonra
-              müəlliminizə bağlanacaqsınız.
+              🎓 You are joining through a teacher invitation — you will be connected right after you sign up.
             </div>
           )}
 

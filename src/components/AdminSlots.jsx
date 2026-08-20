@@ -19,7 +19,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
     return unsub;
   }, [slotId]);
 
-  if (members.length === 0) return <span style={{ color: '#64748b', fontSize: '13px' }}>Boşdur</span>;
+  if (members.length === 0) return <span style={{ color: '#64748b', fontSize: '13px' }}>Empty</span>;
 
   // Eyni ad birdən çox üzvdə varsa (məs. 3 "Sebine") kimin-kim olduğu qarışırdı.
   // Ad təkrarlanırsa fərqləndirici əlavə olunur: email prefiksi, yoxsa qısa uid.
@@ -79,7 +79,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span style={nameStyle}>{labelOf(m.uid)} <span style={lvlStyle}>({levelOf(m.uid)})</span></span>
-          <span style={{ color: '#facc15', fontWeight: 600, fontSize: '13px' }}>⏳ Tək gözləyir</span>
+          <span style={{ color: '#facc15', fontWeight: 600, fontSize: '13px' }}>⏳ Waiting alone</span>
         </div>
       ))}
     </div>
@@ -146,7 +146,7 @@ export default function AdminSlots({ users }) {
   }, [board]);
 
   if (dates.length === 0) {
-    return <div style={{ color: '#94a3b8', padding: '20px', textAlign: 'center' }}>Gələcək 3 gün üçün hələ heç kim vaxt seçməyib.</div>;
+    return <div style={{ color: '#94a3b8', padding: '20px', textAlign: 'center' }}>Nobody has picked a time for the next three days yet.</div>;
   }
 
   const dayTotals = (date) => byDay[date].reduce((acc, s) => {
@@ -158,9 +158,9 @@ export default function AdminSlots({ users }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       {/* Ümumi xülasə — 3 günün cəmi */}
       <div style={{ display: 'flex', gap: 8 }}>
-        <StatPill label="Yazılan" value={totals.people} color="#e2e8f0" />
-        <StatPill label="Eşləşib" value={totals.paired} color="#4ade80" />
-        <StatPill label="Gözləyir" value={totals.waiting} color="#facc15" />
+        <StatPill label="Signed up" value={totals.people} color="#e2e8f0" />
+        <StatPill label="Matched" value={totals.paired} color="#4ade80" />
+        <StatPill label="Waiting" value={totals.waiting} color="#facc15" />
       </div>
 
       {dates.map((date) => {
@@ -176,7 +176,7 @@ export default function AdminSlots({ users }) {
                 {dayLabel(date)} <span style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>{date}</span>
               </h3>
               <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>
-                {dt.total} nəfər · {dt.paired} eşləşib
+                {dt.total} people · {dt.paired} matched
               </span>
             </div>
 
@@ -199,7 +199,7 @@ export default function AdminSlots({ users }) {
                         {blockLabel(s.hour)}
                       </strong>
                       <span style={{ fontSize: 12, color: c.total ? '#94a3b8' : '#475569', fontWeight: 600 }}>
-                        {c.total ? `${c.total} nəfər${c.paired ? ` · ${c.paired} eşləşib` : ''}` : 'boş'}
+                        {c.total ? `${c.total} people${c.paired ? ` · ${c.paired} matched` : ''}` : 'empty'}
                       </span>
                     </div>
                     <AdminSlotMembers slotId={s.slotId} usersMap={usersMap} />

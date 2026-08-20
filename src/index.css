@@ -93,6 +93,60 @@
   --brand-gradient: linear-gradient(100deg, #38bdf8, #6d3beb, #a855f7);
 }
 
+/* -- Scales -----------------------------------------------------------------
+   Added for SpeakLab 2.0. Before this, radii (12/14/16/20/22px), font sizes
+   (10-34px) and z-indexes (1500, 9999) were hand-written per component, so
+   every screen ended up slightly different from the last. Use these instead of
+   raw px from here on. */
+:root {
+  /* Space -- 4pt base */
+  --s-1: 4px;  --s-2: 8px;   --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px;  --s-8: 32px; --s-10: 40px;
+
+  /* Radius */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-pill: 999px;
+
+  /* Type */
+  --fs-display: 28px; --fs-h1: 22px; --fs-h2: 18px;
+  --fs-body: 15px;    --fs-sm: 13px; --fs-xs: 11px;
+  --lh-tight: 1.2;    --lh-body: 1.5;
+
+  /* Elevation */
+  --e-1: 0 1px 2px var(--shadow);
+  --e-2: 0 4px 16px var(--shadow);
+  --e-3: 0 12px 40px var(--shadow);
+
+  /* Z -- one ladder for the whole app. Stage/modal used to be 1500 and 9999. */
+  --z-nav: 100; --z-sheet: 1000; --z-stage: 1500; --z-modal: 2000; --z-toast: 3000;
+}
+
+/* -- Who are you talking to? ------------------------------------------------
+   Colour carries meaning now: cyan is AInur, violet is a real person. No new
+   brand colour -- both already exist in the palette above.
+
+   Neon Cyan #12BBD6 is 7.3:1 on the dark card but only 2.3:1 on white, so light
+   mode uses a deeper teal that clears AA. Same reason --accent differs per theme.
+   --text-on-ai flips too: white reads on the light teal, but on bright cyan it
+   is 2.3:1, so dark mode puts dark ink on the fill. */
+:root,
+[data-theme="light"] {
+  --ai: #0f7d91;             /* 4.8:1 as text on white; white on it = 4.8:1 */
+  --ai-strong: #0b6274;
+  --ai-soft: rgba(15, 125, 145, 0.10);
+  --text-on-ai: #ffffff;
+  --peer: var(--accent);     /* real people keep the violet */
+  --peer-soft: var(--accent-soft);
+}
+
+[data-theme="dark"] {
+  --ai: #12bbd6;             /* 7.3:1 on --bg-card */
+  --ai-strong: #0e9db4;
+  --ai-soft: rgba(18, 187, 214, 0.16);
+  --text-on-ai: #06212a;     /* 7.2:1 on the cyan fill */
+  --peer: var(--accent);
+  --peer-soft: var(--accent-soft);
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }

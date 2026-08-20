@@ -91,10 +91,10 @@ export default function AdminCohorts() {
     const name = newName.trim();
     const code = newCode.trim().toUpperCase();
     setFormError('');
-    if (name.length < 2) { setFormError('Ad çox qısadır.'); return; }
-    if (code.length < 4 || code.length > 40) { setFormError('Kod 4–40 simvol olmalıdır.'); return; }
+    if (name.length < 2) { setFormError('That name is too short.'); return; }
+    if (code.length < 4 || code.length > 40) { setFormError('The code must be 4–40 characters.'); return; }
     if (cohorts.some((c) => (c.code || '').toUpperCase() === code)) {
-      setFormError('Bu kod artıq başqa kohortda var.');
+      setFormError('That code already belongs to another cohort.');
       return;
     }
     setCreating(true);
@@ -111,7 +111,7 @@ export default function AdminCohorts() {
       setNewName(''); setNewCode(''); setNewMax('12');
     } catch (err) {
       console.error('[AdminCohorts] create', err);
-      setFormError(err.message || 'Yaradılmadı.');
+      setFormError(err.message || 'Not created.');
     }
     setCreating(false);
   };
@@ -144,8 +144,8 @@ export default function AdminCohorts() {
   };
   const startSelectedCohort = async () => {
     const acceptedN = members.filter((m) => m.cohortStatus === 'accepted').length;
-    if (acceptedN === 0) { alert('Qəbul edilmiş üzv yoxdur.'); return; }
-    if (!window.confirm(`${acceptedN} qəbul edilmiş üzv üçün kurs BU GÜN başlayacaq. Davam edilsin?`)) return;
+    if (acceptedN === 0) { alert('No accepted members.'); return; }
+    if (!window.confirm(`The course will start TODAY for ${acceptedN} accepted members. Continue?`)) return;
     setStarting(true);
     try {
       const res = await authedFetch(`${FUNCTIONS_BASE}/startCohort`, {
@@ -153,10 +153,10 @@ export default function AdminCohorts() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'start_failed');
-      alert(`✅ Başladı! ${data.started} üzv aktivləşdi.`);
+      alert(`✅ Started. ${data.started} members activated.`);
     } catch (err) {
       console.error('[AdminCohorts] start', err);
-      alert('Başlatma alınmadı: ' + (err.message || 'xəta'));
+      alert('Could not start: ' + (err.message || 'error'));
     }
     setStarting(false);
   };
@@ -181,9 +181,9 @@ export default function AdminCohorts() {
           <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#f87171' }}>{formError}</p>
         )}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-          <input style={inputStyle} placeholder="Ad (məs: Dalğa 1)" value={newName}
+          <input style={inputStyle} placeholder="Name (e.g. Wave 1)" value={newName}
             onChange={(e) => setNewName(e.target.value)} />
-          <input style={inputStyle} placeholder="KOD (məs: SPEAK-A2-01)" value={newCode}
+          <input style={inputStyle} placeholder="CODE (e.g. SPEAK-A2-01)" value={newCode}
             onChange={(e) => setNewCode(e.target.value.toUpperCase())} />
           <input style={{ ...inputStyle, flex: '0 0 90px' }} type="number" min="0"
             placeholder="Limit" value={newMax} onChange={(e) => setNewMax(e.target.value)} />
@@ -212,11 +212,11 @@ export default function AdminCohorts() {
             >
               <span style={{ display: 'block', fontSize: '14px', fontWeight: 800, color: '#f8fafc' }}>
                 🧪 {c.name || c.id}
-                {c.status !== 'active' && <span style={{ color: '#f87171', fontSize: '11px' }}> · dayandırılıb</span>}
+                {c.status !== 'active' && <span style={{ color: '#f87171', fontSize: '11px' }}> · paused</span>}
               </span>
               <span style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
                 👥 {Number(c.memberCount) || 0}{Number(c.maxUses) > 0 ? `/${c.maxUses}` : ''} aktiv
-                {Number(c.pendingCount) > 0 && <span style={{ color: '#fbbf24' }}> · ⏳ {Number(c.pendingCount)} gözləyir</span>}
+                {Number(c.pendingCount) > 0 && <span style={{ color: '#fbbf24' }}> · ⏳ {Number(c.pendingCount)} waiting</span>}
                 {' · '}kod: <b>{c.code}</b>
               </span>
             </button>
@@ -224,7 +224,7 @@ export default function AdminCohorts() {
               padding: '6px 10px', background: '#2a2a40', color: copied === c.id ? '#34d399' : '#e2e8f0',
               border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
-              {copied === c.id ? '✓ Kopyalandı' : '📋 Kod'}
+              {copied === c.id ? '✓ Copied' : '📋 Kod'}
             </button>
             <button onClick={() => toggleStatus(c)} style={{
               padding: '6px 10px', background: 'none',
@@ -232,13 +232,13 @@ export default function AdminCohorts() {
               border: `1px solid ${c.status === 'active' ? '#f8717155' : '#34d39955'}`,
               borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
-              {c.status === 'active' ? 'Dayandır' : 'Aktivləşdir'}
+              {c.status === 'active' ? 'Stop' : 'Activate'}
             </button>
           </div>
         ))}
         {cohorts.length === 0 && (
           <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-            Hələ kohort yoxdur — yuxarıdan yaradın.
+            No cohorts yet — create one above.
           </p>
         )}
       </div>
@@ -270,7 +270,7 @@ export default function AdminCohorts() {
                 {m.name || m.email || m.id}
               </p>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: accepted ? '#34d399' : '#fbbf24' }}>
-                {accepted ? 'Qəbul edildi — başlamağı gözləyir' : 'Yeni müraciət'}
+                {accepted ? 'Accepted, waiting to start' : 'New application'}
               </p>
             </div>
             {accepted ? (
@@ -283,11 +283,11 @@ export default function AdminCohorts() {
                 <button onClick={() => acceptApplicant(m)} style={{
                   padding: '9px 14px', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff',
                   border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                }}>Qəbul et</button>
+                }}>Accept</button>
                 <button onClick={() => rejectApplicant(m)} style={{
                   padding: '9px 12px', background: 'none', color: '#f87171',
                   border: '1px solid #f8717155', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                }}>Rədd</button>
+                }}>Decline</button>
               </div>
             )}
           </div>
@@ -309,7 +309,7 @@ export default function AdminCohorts() {
             }}>
               {stat('🙋', 'Yeni', pendingList.length, '#fbbf24')}
               <div style={{ width: '1px', background: '#24243e' }} />
-              {stat('✅', 'Qəbul', acceptedList.length, '#34d399')}
+              {stat('✅', 'Accept', acceptedList.length, '#34d399')}
               <div style={{ width: '1px', background: '#24243e' }} />
               {stat('🎓', 'Aktiv', activeList.length, '#7c6ff7')}
               <div style={{ width: '1px', background: '#24243e' }} />
@@ -330,16 +330,16 @@ export default function AdminCohorts() {
                 boxShadow: acceptedList.length === 0 ? 'none' : '0 4px 16px rgba(124,111,247,0.4)',
               }}
             >
-              {starting ? 'Başladılır...'
-                : acceptedList.length === 0 ? '🚀 Başlatmaq üçün əvvəlcə qəbul edin'
-                : `🚀 Kohortu Başlat — ${acceptedList.length} nəfər aktivləşəcək`}
+              {starting ? 'Starting...'
+                : acceptedList.length === 0 ? '🚀 Accept members before starting'
+                : `🚀 Start cohort — ${acceptedList.length} members will be activated`}
             </button>
 
             {/* Müraciətlər */}
             {(pendingList.length > 0 || acceptedList.length > 0) && (
               <>
                 <p style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 10px' }}>
-                  Müraciətlər
+                  Applications
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
                   {pendingList.map((m) => applicantRow(m, false))}
@@ -350,11 +350,11 @@ export default function AdminCohorts() {
 
             {/* Aktiv üzvlər */}
             <p style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 4px' }}>
-              Aktiv üzvlər ({activeList.length})
+              Active members ({activeList.length})
             </p>
             {activeList.length > 0 && (
               <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 10px' }}>
-                🔴 = son 2 sessiyada iştirak etməyib (erkən müdaxilə siqnalı)
+                🔴 = missed the last 2 sessions
               </p>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -371,10 +371,10 @@ export default function AdminCohorts() {
                       {m.name || m.email || m.id}
                     </p>
                     <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>
-                      Son iştirak: {m.callMs
+                      Last seen: {m.callMs
                         ? new Intl.DateTimeFormat('az', { day: 'numeric', month: 'short' }).format(new Date(m.callMs))
-                        : 'heç vaxt'}
-                      {' · '}📞 {m.callCount || 0} zəng
+                        : 'never'}
+                      {' · '}📞 {m.callCount || 0} calls
                     </p>
                   </div>
                   <span style={{
@@ -387,7 +387,7 @@ export default function AdminCohorts() {
               ))}
               {activeList.length === 0 && (
                 <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px', padding: '8px 0' }}>
-                  Hələ aktiv üzv yoxdur — qəbul edib "Başlat" deyin.
+                  No active members yet — accept them and press Start.
                 </p>
               )}
             </div>

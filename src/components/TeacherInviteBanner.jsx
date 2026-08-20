@@ -52,10 +52,10 @@ export default function TeacherInviteBanner({ user }) {
       padding: '16px', marginBottom: '16px',
     }}>
       <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-        🎓 {invite.teacherName || 'Müəlliminiz'} sizi şagird kimi əlavə etmək istəyir
+        🎓 {invite.teacherName || 'Your teacher'} wants to add you as a student
       </div>
       <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
-        Qəbul etsəniz, müəlliminiz danışıq proqresinizi və zəng analizlərinizi görə biləcək.
+        If you accept, your teacher will be able to see your speaking progress and call analyses.
       </div>
 
       {error && <div className="error-box" style={{ marginBottom: '10px' }}>{error}</div>}
@@ -72,7 +72,7 @@ export default function TeacherInviteBanner({ user }) {
             fontSize: '14px', fontWeight: 800, cursor: busy ? 'default' : 'pointer',
           }}
         >
-          {busy ? 'Göndərilir...' : 'Qəbul et'}
+          {busy ? 'Sending...' : 'Accept'}
         </button>
         <button
           type="button"
@@ -85,7 +85,7 @@ export default function TeacherInviteBanner({ user }) {
             cursor: busy ? 'default' : 'pointer',
           }}
         >
-          İmtina
+          Decline
         </button>
       </div>
     </div>

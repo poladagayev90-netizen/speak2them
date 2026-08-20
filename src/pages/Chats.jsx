@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +13,6 @@ import { subscribeToChats, unreadFor, chatTimeLabel } from '../utils/chat';
 // girmək kifayət edirdi ki, siyahıda "Hələ mesaj yoxdur" kabus sətri yaransın.
 // Nəticədə kimsə sənə yazanda bunu bilməyin yolu yox idi.
 export default function Chats({ user }) {
-  const { t } = useTranslation(['headers', 'common']);
   const [chats, setChats] = useState(null); // null = yüklənir
   const [blockedIds, setBlockedIds] = useState(() => new Set());
   const [peers, setPeers] = useState({});
@@ -38,9 +36,9 @@ export default function Chats({ user }) {
       for (const pid of missing) {
         try {
           const snap = await getDocs(query(collection(db, 'users'), where('uid', '==', pid)));
-          peerCacheRef.current[pid] = snap.docs[0]?.data() || { name: 'İstifadəçi' };
+          peerCacheRef.current[pid] = snap.docs[0]?.data() || { name: 'User' };
         } catch {
-          peerCacheRef.current[pid] = { name: 'İstifadəçi' };
+          peerCacheRef.current[pid] = { name: 'User' };
         }
       }
       if (alive) setPeers({ ...peerCacheRef.current });
@@ -60,9 +58,9 @@ export default function Chats({ user }) {
   if (chats === null) {
     return (
       <div className="home-page">
-        <div className="home-header"><div className="home-logo">{t('headers:chats')}</div></div>
+        <div className="home-header"><div className="home-logo">{'Chats'}</div></div>
         <div className="home-body" style={{ paddingBottom: '90px' }}>
-          <div className="empty-state"><p>{t('common:loading')}</p></div>
+          <div className="empty-state"><p>{'Loading...'}</p></div>
         </div>
       </div>
     );
@@ -71,22 +69,22 @@ export default function Chats({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">{t('headers:chats')}</div>
+        <div className="home-logo">{'Chats'}</div>
       </div>
       <div className="home-body" style={{ paddingBottom: '90px' }}>
         {rows.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">💬</div>
-            <p>Hələ söhbətiniz yoxdur.</p>
+            <p>No conversations yet.</p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Partnyorunuzla zəngdən əvvəl və ya sonra buradan yazışa bilərsiniz.
+              Message your partner here before or after a call.
             </p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {rows.map((c) => {
               const unread = unreadFor(c, user.uid);
-              const name = c.peer.name || 'İstifadəçi';
+              const name = c.peer.name || 'User';
               const presence = c.peer.lastSeen ? getPresence(c.peer) : 'offline';
               const mine = c.lastSenderId === user.uid;
               return (

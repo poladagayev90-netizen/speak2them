@@ -16,7 +16,7 @@ import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
-import i18n, { LANG_STORAGE_KEY } from './i18n';
+import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
 import Logo from './components/Logo';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
@@ -35,6 +35,7 @@ const Home = React.lazy(importHome);
 const Chats = React.lazy(importChats);
 const Chat = React.lazy(() => import('./pages/Chat'));
 const AIChat = React.lazy(importAIChat);
+const AiActivity = React.lazy(() => import('./pages/AiActivity'));
 const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
@@ -75,7 +76,7 @@ const PageFallback = () => (
   <div style={{
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     minHeight: '60vh', color: 'var(--text-muted)', fontSize: 22,
-  }} aria-label="Yüklənir">
+  }} aria-label="Loading">
     <span className="loading-logo" style={{ fontSize: 34 }}>🎙️</span>
   </div>
 );
@@ -180,6 +181,9 @@ function AppShell({ user }) {
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
           <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
           <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
+          {/* A guided AInur session. Full-screen like a call, so it sits
+              outside the tab set rather than inside it. */}
+          <Route path="/practice" element={user ? <AiActivity user={user} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
           <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
           <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
@@ -376,8 +380,8 @@ function App() {
         // da tətbiq olunsun). localStorage yalnız ilk render-in flash-ını
         // önləyən keş rolundadır.
         const docLang = freshUserData.preferredLanguage;
-        if ((docLang === 'az' || docLang === 'tr') && i18n.language !== docLang) {
-          i18n.changeLanguage(docLang);
+        if (docLang === 'az' || docLang === 'tr') {
+          setFeedbackLanguage(docLang);
           try { localStorage.setItem(LANG_STORAGE_KEY, docLang); } catch { /* private mode */ }
         }
 

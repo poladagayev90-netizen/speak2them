@@ -25,7 +25,7 @@ export default function WordHistoryPanel({ userId, onClose }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h3 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, margin: 0 }}>
-          📚 Mənim Sözlərim
+          📚 My words
         </h3>
         <button onClick={onClose} style={{
           background: 'transparent', border: 'none',
@@ -37,8 +37,8 @@ export default function WordHistoryPanel({ userId, onClose }) {
         <div style={{ textAlign: 'center', marginTop: 60 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📖</div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Hələ heç bir söz yadda saxlanmayıb.<br/>
-            Zəng zamanı tərcümə düyməsini istifadə et!
+            No words saved yet.<br/>
+            Use the translate button during a call.
           </p>
         </div>
       ) : (
@@ -65,7 +65,7 @@ export default function WordHistoryPanel({ userId, onClose }) {
                           {w.original}
                         </p>
                         <p style={{ color: 'var(--text-secondary)', fontSize: 11, marginTop: 6 }}>
-                          Toxun — tərcüməni gör
+                          Tap to see the translation
                         </p>
                       </div>
                     ) : (

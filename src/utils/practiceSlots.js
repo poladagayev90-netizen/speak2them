@@ -59,11 +59,11 @@ export function currentBlockSlotId(nowMs = Date.now()) {
 }
 
 export function dayLabel(dateStr, nowMs = Date.now()) {
-  if (dateStr === bakuDateStr(nowMs)) return 'Bu gün';
-  if (dateStr === bakuDateStr(nowMs + DAY_MS)) return 'Sabah';
+  if (dateStr === bakuDateStr(nowMs)) return 'Today';
+  if (dateStr === bakuDateStr(nowMs + DAY_MS)) return 'Tomorrow';
   const [y, m, d] = dateStr.split('-').map(Number);
-  const AZ_DAYS = ['Bazar', 'B.e', 'Ç.a', 'Çərşənbə', 'C.a', 'Cümə', 'Şənbə'];
-  return AZ_DAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return DAY_NAMES[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 }
 
 export const hourLabel = (hour) => `${String(hour).padStart(2, '0')}:00`;
@@ -99,20 +99,20 @@ export function subscribeToMySlots(uid, cb) {
 }
 
 const SLOT_ERROR_TEXT = {
-  'invalid-slot': 'Bu vaxt artıq keçərli deyil.',
-  'slot-past': 'Bu blok artıq bitib.',
-  'slot-too-far': 'Bu qədər irəli vaxt seçmək olmur.',
-  'user-not-found': 'Profiliniz tapılmadı. Səhifəni yeniləyin.',
-  'invalid-schedule': 'Qrafik yadda saxlanılmadı.',
-  'same-slot': 'Bu, artıq mövcud vaxtdır.',
+  'invalid-slot': 'That time has passed.',
+  'slot-past': 'That block has ended.',
+  'slot-too-far': 'You cannot book that far ahead.',
+  'user-not-found': 'We could not load your profile. Refresh the page.',
+  'invalid-schedule': 'Your schedule was not saved.',
+  'same-slot': 'That time is already in your schedule.',
   'not-in-slot': 'Bu blokda deyilsiniz.',
-  'not-matched': 'Bu zəng hələ təsdiqlənməyib.',
-  'already-in-target': 'Sizin və ya partnyorunuzun həmin blokda artıq yazısı var.',
-  'request-not-found': 'Təklif tapılmadı.',
-  'not-your-request': 'Bu təklif sizə aid deyil.',
-  'already-answered': 'Bu təklifə artıq cavab verilib.',
-  'pair-gone': 'Aralıqda zəng ləğv edilib — köçürmək üçün cüt qalmayıb.',
-  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+  'not-matched': 'That call is not confirmed yet.',
+  'already-in-target': 'You or your partner are already booked in that block.',
+  'request-not-found': 'Request not found.',
+  'not-your-request': 'That request is not yours.',
+  'already-answered': 'That request has already been answered.',
+  'pair-gone': 'The call was cancelled in the meantime, so there is nothing to move.',
+  unauthorized: 'Your session has expired. Please sign in again.',
 };
 
 async function callSlotFn(path, body) {
@@ -127,14 +127,14 @@ async function callSlotFn(path, body) {
         ok: false,
         error: data.error,
         errorText: res.status === 429
-          ? 'Çox cəhd etdiniz. Bir azdan yenidən yoxlayın.'
-          : (SLOT_ERROR_TEXT[data.error] || 'Xəta baş verdi. Yenidən cəhd edin.'),
+          ? 'Too many attempts. Please try again shortly.'
+          : (SLOT_ERROR_TEXT[data.error] || 'Something went wrong. Please try again.'),
       };
     }
     return { ok: true, data };
   } catch (e) {
     console.error(`[${path}]`, e);
-    return { ok: false, errorText: 'Şəbəkə xətası. İnternetinizi yoxlayın.' };
+    return { ok: false, errorText: 'Network error. Check your connection.' };
   }
 }
 

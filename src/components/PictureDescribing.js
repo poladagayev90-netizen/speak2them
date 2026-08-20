@@ -53,7 +53,7 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
       }}>
         <div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: 0, textTransform: 'uppercase' }}>
-            Şəkli Təsvir Et
+            Describe the picture
           </p>
           <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, margin: 0 }}>
             {topic}
@@ -68,12 +68,12 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
       {/* Content */}
       {loading ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>Şəkillər yüklənir...</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading pictures...</p>
         </div>
       ) : images.length === 0 ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>
-            Şəkillər tapılmadı. İnternet bağlantısını yoxlayın.
+            No pictures found. Check your connection.
           </p>
         </div>
       ) : (
@@ -140,7 +140,7 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
           }}>
             <div style={{ padding: '12px 20px 8px' }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Bu sözlərdən istifadə et
+                Use these words
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {getVocabForImage(currentIndex).map((v, i) => (

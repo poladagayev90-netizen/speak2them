@@ -21,7 +21,7 @@ export default function PostCallQuizModal({ words, onClose }) {
         setErrorMsg(res.error);
         setLoading(false);
       } else if (!res || !Array.isArray(res) || res.length === 0) {
-        setErrorMsg('Süni intellekt uyğun sual hazırlaya bilmədi.');
+        setErrorMsg('AInur could not build a question this time.');
         setLoading(false);
       } else {
         setQuizData(res);
@@ -35,8 +35,8 @@ export default function PostCallQuizModal({ words, onClose }) {
       <div style={overlayStyle}>
         <div style={modalStyle}>
           <div className="spinner" style={{ margin: '0 auto 20px', borderTopColor: '#7c6ff7' }}></div>
-          <h3 style={{ color: '#fff' }}>Süni İntellekt Sınaq Hazırlayır...</h3>
-          <p style={{ color: '#a0a0b8', fontSize: 14 }}>Söhbət zamanı öyrəndiyiniz sözlərdən ibarət kiçik sınaq yaradılır.</p>
+          <h3 style={{ color: '#fff' }}>Building your quiz...</h3>
+          <p style={{ color: '#a0a0b8', fontSize: 14 }}>A short quiz from the words you looked up during the conversation.</p>
         </div>
       </div>
     );
@@ -46,9 +46,9 @@ export default function PostCallQuizModal({ words, onClose }) {
     return (
       <div style={overlayStyle}>
         <div style={modalStyle}>
-          <h3 style={{ color: '#ff4757', marginBottom: 10 }}>Xəta Baş Verdi</h3>
+          <h3 style={{ color: '#ff4757', marginBottom: 10 }}>Something went wrong</h3>
           <p style={{ color: '#a0a0b8', fontSize: 14, marginBottom: 20 }}>{errorMsg}</p>
-          <button style={btnStyle} onClick={onClose}>Bağla</button>
+          <button style={btnStyle} onClick={onClose}>Close</button>
         </div>
       </div>
     );
@@ -59,14 +59,14 @@ export default function PostCallQuizModal({ words, onClose }) {
       <div style={overlayStyle}>
         <div style={modalStyle}>
           <h2 style={{ fontSize: 48, marginBottom: 10 }}>{score === quizData.length ? '🏆' : '👏'}</h2>
-          <h3 style={{ color: '#fff', fontSize: 24, marginBottom: 10 }}>Nəticəniz</h3>
+          <h3 style={{ color: '#fff', fontSize: 24, marginBottom: 10 }}>Your result</h3>
           <p style={{ color: '#2ed573', fontSize: 20, fontWeight: 'bold', margin: '0 0 20px' }}>
-            {score} / {quizData.length} Düzgün
+            {score} / {quizData.length} Correct
           </p>
           <p style={{ color: '#a0a0b8', fontSize: 14, marginBottom: 30 }}>
-            Tərcümə edib öyrəndiyiniz sözləri praktika etmək yadda saxlamağınıza kömək edir!
+            Practising the words you looked up helps you remember them.
           </p>
-          <button style={btnStyle} onClick={onClose}>Əla, davam edək</button>
+          <button style={btnStyle} onClick={onClose}>Great, let us continue</button>
         </div>
       </div>
     );
@@ -95,7 +95,7 @@ export default function PostCallQuizModal({ words, onClose }) {
     <div style={overlayStyle}>
       <div style={{...modalStyle, textAlign: 'left', padding: '24px'}}>
         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a0a0b8', fontSize: 14, marginBottom: 20 }}>
-          <span style={{ fontWeight: 'bold', color: '#7c6ff7' }}>AI Sınağı</span>
+          <span style={{ fontWeight: 'bold', color: '#7c6ff7' }}>Quiz</span>
           <span>Sual {currentQ + 1}/{quizData.length}</span>
         </div>
         
@@ -139,7 +139,7 @@ export default function PostCallQuizModal({ words, onClose }) {
 
         {selected !== null && (
           <button style={btnStyle} onClick={handleNext}>
-            {currentQ < quizData.length - 1 ? 'Növbəti Sual' : 'Nəticəni Gör'}
+            {currentQ < quizData.length - 1 ? 'Next question' : 'See result'}
           </button>
         )}
       </div>

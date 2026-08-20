@@ -108,7 +108,7 @@ export function useSessionQueue({ user, onMatched }) {
         joinedRef.current = false;
         setJoined(false);
         cleanup();
-        setUnmatchedMsg('Bu sessiyada tərəfdaş tapılmadı — istərsən AInur ilə dərhal praktika et!');
+        setUnmatchedMsg('No partner this session — you can practise with AInur right now.');
         await leaveSearchQueue(user.uid);
       }
     });

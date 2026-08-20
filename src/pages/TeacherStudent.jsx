@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
@@ -13,9 +12,7 @@ import { AnalysisDetail } from './History';
 // Layout hər iki mühit üçün: maxWidth mərkəzləmə (PC) + dar ekranda sütun.
 export default function TeacherStudent({ user }) {
   const navigate = useNavigate();
-  const { studentId } = useParams();
-  const { t } = useTranslation(['teacher','headers','common','profile']);
-  const [student, setStudent] = useState(null);
+  const { studentId } = useParams();  const [student, setStudent] = useState(null);
   const [analyses, setAnalyses] = useState(null); // null=yüklənir, []=boş
   const [selected, setSelected] = useState(null);
   const [denied, setDenied] = useState(false);
@@ -77,7 +74,7 @@ export default function TeacherStudent({ user }) {
           >
             <ChevronLeft size={22} />
           </button>
-          👤 {student?.name || t('headers:student')}
+          👤 {student?.name || 'Student'}
         </div>
       </div>
 
@@ -91,10 +88,10 @@ export default function TeacherStudent({ user }) {
           gap: '10px', marginBottom: '18px',
         }}>
           {[
-            { label: t('teacher:speakingMinutes'), value: totalMinutes, icon: '⏱️' },
-            { label: t('teacher:sessionCount'), value: sessions, icon: '🎙️' },
-            { label: t('teacher:streak'), value: streak > 0 ? `🔥${streak}` : '—', icon: '' },
-            { label: t('teacher:avgScore'), value: avgScore ?? '—', icon: '📊' },
+            { label: 'Speaking minutes', value: totalMinutes, icon: '⏱️' },
+            { label: 'Sessions', value: sessions, icon: '🎙️' },
+            { label: 'Streak', value: streak > 0 ? `🔥${streak}` : '—', icon: '' },
+            { label: 'Average score', value: avgScore ?? '—', icon: '📊' },
           ].map((tile) => (
             <div key={tile.label} style={{ ...panel, textAlign: 'center', padding: '14px 8px' }}>
               <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--text-primary)' }}>
@@ -107,33 +104,33 @@ export default function TeacherStudent({ user }) {
 
         {student?.level && (
           <div style={{ ...panel, marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('profile:englishLevel')}</span>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{'English level'}</span>
             <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)' }}>{student.level}</span>
           </div>
         )}
 
         <div style={{ fontSize: '15px', fontWeight: 800, margin: '4px 2px 10px', color: 'var(--text-primary)' }}>
-          {t('teacher:aiAnalyses')}
+          {'AI analyses'}
         </div>
 
         {analyses === null ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">⏳</div>
-            <p style={{ color: 'var(--text-secondary)' }}>{t('common:loading')}</p>
+            <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
           </div>
         ) : denied ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">🔒</div>
             <p style={{ color: 'var(--text-secondary)' }}>
-              {t('teacher:notLinked')}
+              {'This student is not linked to you, so their analyses are not available.'}
             </p>
           </div>
         ) : analyses.length === 0 ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">📭</div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>{t('teacher:noAnalyses')}</p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>{'No analyses yet.'}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {t('teacher:noAnalysesHint')}
+              {'An analysis appears here a few minutes after your student finishes their first call.'}
             </p>
           </div>
         ) : (
@@ -152,7 +149,7 @@ export default function TeacherStudent({ user }) {
               >
                 <div style={{ minWidth: 0 }}>
                   <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 700, marginBottom: '4px' }}>
-                    {a.peerName ? `${a.peerName} ilə zəng` : 'Zəng'}
+                    {a.peerName ? `Call with ${a.peerName}` : 'Call'}
                   </div>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Clock size={14} />
@@ -170,7 +167,7 @@ export default function TeacherStudent({ user }) {
                     {a.overallScore}
                   </div>
                 ) : a.error ? (
-                  <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700, flexShrink: 0 }}>Xəta</div>
+                  <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700, flexShrink: 0 }}>Error</div>
                 ) : null}
               </div>
             ))}

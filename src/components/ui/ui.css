@@ -1,0 +1,221 @@
+/* SpeakLab UI primitives.
+   Everything here is built on the scales in index.css -- no raw px, no raw
+   colours. The reason these are classes and not inline styles: :hover, :active
+   and :focus-visible cannot be expressed inline, and those states are most of
+   what makes a control feel finished. */
+
+/* ---------------------------------------------------------------- Button -- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease, border-color 140ms ease,
+              transform 80ms ease, opacity 140ms ease;
+}
+.ui-btn:disabled,
+.ui-btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.ui-btn:not(:disabled):active { transform: scale(.97); }
+.ui-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* sizes */
+.ui-btn--sm { height: 34px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+.ui-btn--md { height: 44px; padding: 0 var(--s-4); font-size: var(--fs-body); }
+.ui-btn--lg { height: 52px; padding: 0 var(--s-5); font-size: var(--fs-h2); border-radius: var(--r-lg); }
+.ui-btn--full { width: 100%; }
+
+/* variants */
+.ui-btn--primary { background: var(--accent); color: var(--text-on-accent); }
+.ui-btn--primary:not(:disabled):hover { background: var(--accent-strong); }
+
+.ui-btn--ai { background: var(--ai); color: var(--text-on-ai); }
+.ui-btn--ai:not(:disabled):hover { background: var(--ai-strong); }
+
+.ui-btn--secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.ui-btn--secondary:not(:disabled):hover { border-color: var(--accent); }
+
+.ui-btn--ghost { background: transparent; color: var(--text-secondary); }
+.ui-btn--ghost:not(:disabled):hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+.ui-btn--danger { background: var(--danger); color: #fff; }
+.ui-btn--danger:not(:disabled):hover { filter: brightness(.92); }
+
+/* An icon-only button stays square so it never collapses to a sliver. */
+.ui-btn--icon { padding: 0; aspect-ratio: 1; }
+.ui-btn--icon.ui-btn--sm { width: 34px; }
+.ui-btn--icon.ui-btn--md { width: 44px; }
+.ui-btn--icon.ui-btn--lg { width: 52px; }
+
+/* ------------------------------------------------------------------ Card -- */
+.ui-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-1);
+}
+.ui-card--pad-sm { padding: var(--s-3); }
+.ui-card--pad-md { padding: var(--s-4); }
+.ui-card--pad-lg { padding: var(--s-5); }
+
+/* Tone is the "who am I talking to" signal: cyan = AInur, violet = a person. */
+.ui-card--ai   { border-color: var(--ai);   box-shadow: var(--e-1), 0 0 0 3px var(--ai-soft); }
+.ui-card--peer { border-color: var(--peer); box-shadow: var(--e-1), 0 0 0 3px var(--peer-soft); }
+
+.ui-card--interactive {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  transition: border-color 140ms ease, transform 80ms ease;
+}
+.ui-card--interactive:hover { border-color: var(--accent); }
+.ui-card--interactive:active { transform: scale(.99); }
+.ui-card--interactive:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ------------------------------------------------------------------ Pill -- */
+.ui-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.6;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.ui-pill--accent { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.ui-pill--ai     { background: var(--ai-soft);     border-color: var(--ai);     color: var(--ai); }
+
+/* The keyword mechanic: a pill lights up the moment the learner actually says
+   the word. Scored client-side against the transcript, so it costs nothing. */
+.ui-pill--hit {
+  background: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success-fg);
+  animation: ui-pill-pop 320ms ease;
+}
+@keyframes ui-pill-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-pill--hit { animation: none; }
+  .ui-btn, .ui-card--interactive { transition: none; }
+}
+
+/* ----------------------------------------------------------------- Sheet -- */
+.ui-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  background: var(--overlay);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: ui-fade 160ms ease;
+}
+.ui-sheet {
+  width: 100%;
+  max-width: var(--app-max-width, 480px);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  box-shadow: var(--e-3);
+  animation: ui-sheet-up 220ms cubic-bezier(.2, .8, .2, 1);
+  padding-bottom: var(--safe-area-bottom, 0px);
+}
+.ui-sheet--center {
+  align-self: center;
+  margin: auto var(--s-4);
+  width: auto;
+  border-radius: var(--r-xl);
+  border-bottom: 1px solid var(--border);
+}
+.ui-sheet-backdrop--center { align-items: center; padding: var(--s-4); }
+
+.ui-sheet-grip {
+  width: 36px; height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--border);
+  margin: var(--s-2) auto var(--s-1);
+  flex-shrink: 0;
+}
+.ui-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  flex-shrink: 0;
+}
+.ui-sheet-title {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+/* The body scrolls, the header and footer do not -- this is what kept the
+   Debate panel's button on screen at 320px. */
+.ui-sheet-body { overflow-y: auto; padding: 0 var(--s-4) var(--s-4); min-height: 0; }
+.ui-sheet-foot { padding: var(--s-3) var(--s-4) var(--s-4); flex-shrink: 0; }
+
+@keyframes ui-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ui-sheet-up { from { transform: translateY(12%); } to { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .ui-sheet, .ui-sheet-backdrop { animation: none; }
+}
+
+/* ------------------------------------------------------------------ Stat -- */
+.ui-stat { display: flex; flex-direction: column; gap: 2px; }
+.ui-stat-value {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+}
+.ui-stat-label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------- Section -- */
+.ui-section-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 var(--s-2);
+}

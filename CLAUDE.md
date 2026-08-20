@@ -13,7 +13,7 @@ English speaking-practice app: React PWA + Firebase + Agora voice calls, wrapped
 - **`git push origin main` auto-deploys the web app to production** (Vercel). There is no staging. Treat a push as shipping to real users.
 - **Default to showing the diff and asking before pushing**, unless the user explicitly says to deploy.
 - Cloud Functions deploy separately and manually: `npx firebase-tools deploy --only functions --project speak2them-64f2b`.
-- Functions live in **two regions**: Firestore triggers (`initTrialForNewUser`, `notifySearchingUser`) in `europe-west4`, everything else `us-central1`.
+- Functions live in **two regions**: **all four** Firestore triggers (`initTrialForNewUser`, `notifySearchingUser`, `reconcileCallStats`, `notifyChatMessage`) run in `europe-west4`; everything else `us-central1`.
 - `CI=true` makes ESLint warnings fatal — a warning breaks the deploy. Verify with `CI=true npx react-scripts build` (Bash tool; PowerShell mangles the env prefix).
 - Backend-only changes (`functions/`) do **not** require rebuilding the Android AAB.
 
@@ -30,13 +30,16 @@ Load the matching one instead of re-deriving: `firebase-deploy`, `android-releas
 
 ## Conventions
 - HTTP functions: `setCors(res, ...)` on every path, 204 short-circuit for `OPTIONS`, `verifyAuth(req)` for auth, and **`enforceRateLimit(...)` on every AI/paid endpoint**.
-- UI copy is **Azerbaijani**. Match surrounding code style; the codebase uses explanatory comments for non-obvious decisions — keep that habit.
+- **UI copy is English.** The whole interface was moved to English and `i18next` removed (2026-08-21). The ONE exception is the analysis report, which stays in the learner L1 (`users.preferredLanguage`, az/tr) — see `src/utils/feedbackLanguage.js`. `public/index.html` is `lang="en"`; do not set it back to `az` without also reverting the copy, or `text-transform: uppercase` breaks Azerbaijani text.
+- Use the design tokens in `src/index.css` (spacing `--s-*`, radius `--r-*`, type `--fs-*`, z `--z-*`) and the primitives in `src/components/ui/` — no raw px, no raw colours. **Colour carries meaning: `--ai` (cyan) = AInur, `--peer` (violet) = a real person.**
+- UI icons come from `lucide-react`, never emoji. Emoji are fine in CONTENT (a topic label), never as an icon.
+- Match surrounding code style; the codebase uses explanatory comments for non-obvious decisions — keep that habit.
 - No test suite is wired up; verify changes by running the app (see the `verify` skill). There is no Firebase emulator setup — the dev build talks to **production** Firebase.
 
 ## Project state docs
 `APP_STORE_AUDIT.md` (Play Store blockers), `HANDOFF_REPORT.md` (architecture + tech debt), `STORE_LISTING.md`.
 
 ## Known open debt
-- `src/utils/analyzeWithOpenAI.js` calls AI APIs with `REACT_APP_*` keys that ship in the browser bundle — move server-side **and rotate the keys** (deleting the file is not enough).
+- ~~`src/utils/analyzeWithOpenAI.js`~~ — the file no longer exists; the analysis is server-side. If those `REACT_APP_*` keys were ever real they are still in old build artifacts and should be rotated.
 - `testPush` (functions) is still **auth-less** — lock or remove before public release.
 - Web SW notifications share a `tag` per type, so same-type notifications replace each other.

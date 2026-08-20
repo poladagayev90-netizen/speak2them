@@ -38,7 +38,7 @@ export default function SpeakingCards({ questions = [] }) {
               <span className="sc-body">
                 <span className="sc-body-num">{i + 1}</span>
                 <span className="sc-question">{q}</span>
-                <span className="sc-hint">Bağlamaq üçün toxun</span>
+                <span className="sc-hint">Tap to close</span>
               </span>
             ) : (
               <span className="sc-face">

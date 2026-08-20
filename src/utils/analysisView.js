@@ -11,12 +11,12 @@ const arr = (v) => (Array.isArray(v) ? v : []);
 export function analysisErrorMessage(error) {
   const text = String(error || '');
   if (text.startsWith('no-speech')) {
-    return 'Danışıq eşidilmədi — zəng çox qısa ola bilər və ya mikrofon işləməyib.';
+    return 'No speech was picked up — the call may have been very short, or the microphone was off.';
   }
   if (text.startsWith('recording-missing')) {
-    return 'Səs yazısı tapılmadı — yükləmə yarımçıq qalmış ola bilər.';
+    return 'The recording was not found — the upload may not have finished.';
   }
-  return 'Texniki xəta baş verdi, komanda məlumatlandırıldı.';
+  return 'A technical problem occurred. The team has been notified.';
 }
 
 export function toAnalysisView(analysis) {

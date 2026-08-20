@@ -587,7 +587,7 @@ export function BadgeCard({ badgeId, earned=true }) {
         lineHeight:1.35,
         marginTop:6,
       }}>
-        Qazanmaq üçün: {b.conditionText || b.desc}
+        How to earn: {b.conditionText || b.desc}
       </div>
       {b.rewardText && (
         <div style={{
@@ -597,7 +597,7 @@ export function BadgeCard({ badgeId, earned=true }) {
           lineHeight:1.35,
           marginTop:5,
         }}>
-          Hədiyyə: {b.rewardText}
+          Reward: {b.rewardText}
         </div>
       )}
       {earned && (
@@ -618,7 +618,7 @@ export function BadgeGrid({ earnedBadges=[] }) {
         Badges · {earnedBadges.filter(id => BADGE_ORDER.includes(id)).length}/{BADGE_ORDER.length}
       </div>
       <div style={{fontSize:11,color:'#888',lineHeight:1.4,marginBottom:12}}>
-        Hər badge-in altında onu necə qazanmaq lazım olduğu yazılıb.
+        Each badge shows how to earn it.
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(98px,1fr))',gap:10}}>
         {BADGE_ORDER.map(id=>(

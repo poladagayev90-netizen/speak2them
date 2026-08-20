@@ -52,9 +52,9 @@ export default function Redeem({ user }) {
 
   if (welcome) {
     const info = {
-      active: { emoji: '🎉', title: 'Kursunuz artıq aktivdir!', text: 'Ana səhifədə mövzu proqresinizi görə bilərsiniz.', btn: 'Başlayaq 🚀' },
-      accepted: { emoji: '✅', title: 'Qəbul edildiniz!', text: 'Kursun başlaması gözlənilir — admin başladan kimi mövzular açılacaq.', btn: 'Ana səhifə' },
-      applied: { emoji: '📨', title: 'Müraciətiniz göndərildi!', text: 'Admin təsdiqindən sonra kurs başlayacaq. Təsdiqlənəndə bu ekranda və bildirişlə xəbər veriləcək.', btn: 'Ana səhifə' },
+      active: { emoji: '🎉', title: 'Your course is active.', text: 'You can follow your topic progress on the home screen.', btn: 'Let us begin 🚀' },
+      accepted: { emoji: '✅', title: 'You have been accepted.', text: 'Waiting for the course to start. Topics open as soon as an admin starts it.', btn: 'Home' },
+      applied: { emoji: '📨', title: 'Your application has been sent.', text: 'The course starts once an admin approves it. You will see it here and get a notification.', btn: 'Home' },
     }[welcome.state] || {};
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
@@ -90,7 +90,7 @@ export default function Redeem({ user }) {
 
         <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Kodunuz var? 🎟️</h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: '20px' }}>
-          Kodu daxil edib kohorta müraciət edin. Admin təsdiqindən sonra 30 mövzuluq danışıq kursu başlayacaq.
+          Enter your code to apply. Once an admin approves it, the 30-topic speaking course begins.
         </p>
 
         {error && (
@@ -98,12 +98,12 @@ export default function Redeem({ user }) {
             {error}
             {showSupport && (
               <a
-                href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Salam! Kurs koduma görə yazıram.')}`}
+                href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi! I am writing about my course code.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'block', marginTop: '8px', color: '#25D366', fontWeight: 700 }}
               >
-                💬 WhatsApp-da bizə yazın
+                💬 Message us on WhatsApp
               </a>
             )}
           </div>
@@ -113,7 +113,7 @@ export default function Redeem({ user }) {
           <label>Kurs kodu</label>
           <input
             type="text"
-            placeholder="MƏS: SPEAK-A2-01"
+            placeholder="E.G. SPEAK-A2-01"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             autoCapitalize="characters"
@@ -123,18 +123,18 @@ export default function Redeem({ user }) {
             required
           />
           <button type="submit" className="btn-primary" disabled={loading || code.trim().length < 4}>
-            {loading ? 'Göndərilir...' : 'Müraciət et'}
+            {loading ? 'Sending...' : 'Apply'}
           </button>
         </form>
 
         <p className="auth-footer" style={{ marginTop: '16px' }}>
           Kodunuz yoxdur?{' '}
           <a
-            href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Salam! SpeakLab kursuna qoşulmaq istəyirəm.')}`}
+            href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi! I would like to join the SpeakLab course.')}`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Bizə yazın
+            Message us
           </a>
         </p>
 

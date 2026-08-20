@@ -17,13 +17,13 @@ export const generateQuizFromWords = async (translatedItems) => {
       const explained = res.status === 429 || res.status === 422;
       return { error: explained && body.error
         ? body.error
-        : `Süni İntellekt serverində xəta baş verdi (${res.status})` };
+        : `The AI service returned an error (${res.status})` };
     }
 
     const data = await res.json();
     return data.quiz;
   } catch (error) {
     console.error('Error generating AI quiz:', error);
-    return { error: error.message || 'Quiz hazırlanarkən xəta baş verdi' };
+    return { error: error.message || 'Something went wrong while building the quiz' };
   }
 };

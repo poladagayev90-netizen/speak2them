@@ -306,21 +306,24 @@ body {
    seçilir. Bir dəfə brend bənövşəyisinə keçirilmişdi, geri qaytarıldı.
    Ölçü bir qədər kiçikdir ki, təsdiqlənmiş randevu kartı səhifənin əsas
    elementi olaraq qalsın. */
+/* Violet = a real person is on the other end (cyan = AInur). This used to be
+   an orange-to-red gradient, which shouted louder than anything else on the
+   home screen and matched no other surface in the app. */
 .btn-random {
   width: 100%;
   padding: 15px;
-  background: linear-gradient(135deg, #c2410c, #b91c1c);
-  color: white;
+  background: var(--peer, var(--accent));
+  color: var(--text-on-accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-size: 17px;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s;
 }
 
 .btn-random:hover {
-  opacity: 0.9;
+  background: var(--accent-strong);
 }
 
 .chat-page {

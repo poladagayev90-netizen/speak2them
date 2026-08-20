@@ -75,6 +75,6 @@ export function chatTimeLabel(ts) {
   const sameDay = d.toDateString() === now.toDateString();
   if (sameDay) return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   const yesterday = new Date(now.getTime() - 86400000);
-  if (d.toDateString() === yesterday.toDateString()) return 'Dünən';
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]}`;
 }

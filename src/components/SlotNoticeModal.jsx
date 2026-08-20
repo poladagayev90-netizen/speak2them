@@ -37,11 +37,10 @@ export default function SlotNoticeModal({ uid }) {
       }}>
         <div style={{ fontSize: '38px', marginBottom: '10px' }}>🕊️</div>
         <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
-          Son zənginizi qaçırdınız
+          You missed your last call
         </div>
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 18px' }}>
-          Partnyorunuz sizi gözlədi. Zəhmət olmasa, icmamızın vaxtına hörmət
-          edərək yalnız gələcəyinizə əmin olduğunuz saatları seçin.
+          Your partner waited for you. Please pick only the hours you are sure you can make.
         </p>
         <button
           type="button"
@@ -52,7 +51,7 @@ export default function SlotNoticeModal({ uid }) {
             color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
           }}
         >
-          Anladım
+          Got it
         </button>
       </div>
     </div>

@@ -62,7 +62,7 @@ export default function AIChat({ user }) {
     } catch (err) {
       console.error("Microphone error:", err);
       setStatus("idle");
-      alert("Mikrofona icazə verilmədi!");
+      alert("Microphone access was not granted.");
     }
   };
 
@@ -108,7 +108,7 @@ export default function AIChat({ user }) {
 
           if (!res.ok) {
             const errText = await res.text();
-            throw new Error(`Server xətası: ${errText}`);
+            throw new Error(`Server error: ${errText}`);
           }
 
           const data = await res.json();
@@ -130,7 +130,7 @@ export default function AIChat({ user }) {
     } catch (error) {
       console.error("FileReader error:", error);
       setStatus("idle");
-      alert("Xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.");
+      alert("Something went wrong. Please try again.");
     }
   };
 
@@ -182,9 +182,9 @@ export default function AIChat({ user }) {
           AInur
         </h2>
         <p className="call-status-text" style={{ color: "#a1a1aa" }}>
-          {status === "processing" && "Düşünür... 🤔"}
-          {status === "speaking" && "Danışır... 🔊"}
-          {status === "recording" && "Sizi dinləyir... 🎙️"}
+          {status === "processing" && "Thinking... 🤔"}
+          {status === "speaking" && "Speaking... 🔊"}
+          {status === "recording" && "Listening... 🎙️"}
           {status === "idle" && `🟢 ${formatTime(callSeconds)}`}
         </p>
 
@@ -226,7 +226,7 @@ export default function AIChat({ user }) {
       </div>
 
       <p style={{ textAlign: "center", color: "#888", fontSize: "14px", marginBottom: "40px" }}>
-        Danışmaq üçün mikrofona basıb saxlayın
+        Press and hold the microphone to speak
       </p>
 
     </div>

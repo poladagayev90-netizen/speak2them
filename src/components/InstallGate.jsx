@@ -72,7 +72,7 @@ export default function InstallGate() {
   };
 
   const openHelp = () => {
-    const msg = 'Salam! SpeakLab tətbiqini əsas ekrana əlavə etməkdə kömək lazımdır.';
+    const msg = 'Hi! I need help adding the SpeakLab app to my home screen.';
     window.open(`${SUPPORT_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -83,7 +83,7 @@ export default function InstallGate() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      window.prompt('Linki kopyala:', appUrl);
+      window.prompt('Copy link:', appUrl);
     }
   };
 
@@ -121,19 +121,17 @@ export default function InstallGate() {
         </div>
 
         <h2 style={{ color: '#fff', fontSize: 21, fontWeight: 800, textAlign: 'center', margin: '0 0 10px' }}>
-          {inApp ? 'Brauzerdə aç' : 'Tətbiqi əsas ekrana əlavə et'}
+          {inApp ? 'Open in browser' : 'Add the app to your home screen'}
         </h2>
         <p style={{ color: '#a9a9c4', fontSize: 14, lineHeight: 1.5, textAlign: 'center', margin: '0 0 22px' }}>
           {inApp ? (
             <>
-              Bu tətbiqi burada quraşdırmaq mümkün deyil. Linki
-              {' '}<b style={{ color: '#fff' }}>Safari</b> və ya <b style={{ color: '#fff' }}>Chrome</b> brauzerində açıb
-              əsas ekrana əlavə et — yoxsa <b style={{ color: '#f59e0b' }}>bildirişlər gəlməyəcək</b>.
+              This app cannot be installed here. Open the link in
+              {' '}<b style={{ color: '#fff' }}>Safari</b> or <b style={{ color: '#fff' }}>Chrome</b> and add it to your home screen — otherwise <b style={{ color: '#f59e0b' }}>notifications are off</b>.
             </>
           ) : (
             <>
-              SpeakLab-ı tam istifadə etmək və sessiya bildirişlərini almaq üçün tətbiqi əsas ekrana əlavə etməlisən.
-              Əks halda <b style={{ color: '#f59e0b' }}>bildirişlər gəlməyəcək</b> və sessiyaları qaçıracaqsan.
+              Add SpeakLab to your home screen to use it fully and get session notifications. Otherwise <b style={{ color: '#f59e0b' }}>notifications are off</b> and you will miss sessions.
             </>
           )}
         </p>
@@ -144,9 +142,9 @@ export default function InstallGate() {
         }}>
           {inApp ? (
             <>
-              {step(<MoreVertical size={18} />, 'Yuxarı küncdəki ⋯ menyusunu aç')}
-              {step(<ExternalLink size={18} />, '“Brauzerdə aç” (Open in browser) seç')}
-              {step(<Plus size={18} />, 'Brauzerdə əsas ekrana əlavə et')}
+              {step(<MoreVertical size={18} />, 'Open the ⋯ menu in the top corner')}
+              {step(<ExternalLink size={18} />, 'Choose “Open in browser”')}
+              {step(<Plus size={18} />, 'Add to home screen from the browser')}
               <button
                 onClick={copyLink}
                 style={{
@@ -156,24 +154,24 @@ export default function InstallGate() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 }}
               >
-                {copied ? <><Check size={16} /> Kopyalandı</> : <><Copy size={16} /> Linki kopyala</>}
+                {copied ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Linki kopyala</>}
               </button>
             </>
           ) : ios ? (
             <>
               {isIOSNonSafari() && (
                 <p style={{ color: '#f59e0b', fontSize: 13, margin: 0, fontWeight: 600 }}>
-                  Bu səhifəni əvvəlcə <b>Safari</b> brauzerində aç.
+                  First open this page in <b>Safari</b> .
                 </p>
               )}
-              {step(<Share size={18} />, 'Aşağıdakı Paylaş (Share) düyməsinə toxun')}
-              {step(<Plus size={18} />, '“Ana ekrana əlavə et” (Add to Home Screen) seç')}
-              {step(<Bell size={18} />, 'Tətbiqi əsas ekrandan aç və bildirişlərə icazə ver')}
+              {step(<Share size={18} />, 'Tap the Share button below')}
+              {step(<Plus size={18} />, 'Choose “Add to Home Screen”')}
+              {step(<Bell size={18} />, 'Open the app from your home screen and allow notifications')}
             </>
           ) : deferredPrompt ? (
             <>
               <p style={{ color: '#a9a9c4', fontSize: 13, margin: 0, textAlign: 'center' }}>
-                Bir toxunuşla quraşdır:
+                Install with one tap:
               </p>
               <button
                 onClick={handleInstall}
@@ -183,14 +181,14 @@ export default function InstallGate() {
                   fontSize: 16, fontWeight: 800, cursor: 'pointer', width: '100%',
                 }}
               >
-                Quraşdır
+                Install
               </button>
             </>
           ) : (
             <>
-              {step(<MoreVertical size={18} />, 'Brauzerin ⋮ menyusunu aç')}
-              {step(<Plus size={18} />, '“Tətbiqi quraşdır” və ya “Ana ekrana əlavə et” seç')}
-              {step(<Bell size={18} />, 'Tətbiqi əsas ekrandan aç və bildirişlərə icazə ver')}
+              {step(<MoreVertical size={18} />, "Open the browser’s ⋮ menu")}
+              {step(<Plus size={18} />, 'Choose “Install app” or “Add to Home Screen”')}
+              {step(<Bell size={18} />, 'Open the app from your home screen and allow notifications')}
             </>
           )}
         </div>
@@ -204,7 +202,7 @@ export default function InstallGate() {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >
-          <MessageCircle size={16} /> Kömək lazımdır?
+          <MessageCircle size={16} /> Need help?
         </button>
 
         <button
@@ -214,7 +212,7 @@ export default function InstallGate() {
             color: '#6b6b85', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}
         >
-          Hələlik davam et
+          Continue for now
         </button>
       </div>
     </div>

@@ -20,21 +20,21 @@ export function getStreakInfo(user) {
 // Visual/emotional tier for a given streak count. `effect` scales the celebration.
 export function streakTier(count) {
   if (count >= 30) {
-    return { key: 'legend', title: 'Əfsanə!', message: 'Aylıq streak! Sən dayanılmazsan! 👑', accent: '#a855f7', effect: 'crown' };
+    return { key: 'legend', title: 'Legend', message: 'A full month. Unstoppable. 👑', accent: '#a855f7', effect: 'crown' };
   }
   if (count >= 14) {
-    return { key: 'diamond', title: 'Möhtəşəm!', message: 'İki həftə! Sən artıq peşəkarsan! 💎', accent: '#22d3ee', effect: 'crown' };
+    return { key: 'diamond', title: 'Outstanding', message: 'Two weeks. You are in the habit now. 💎', accent: '#22d3ee', effect: 'crown' };
   }
   if (count >= 7) {
-    return { key: 'fire', title: 'Sən əfsanəsən!', message: 'Bir həftəlik streak! 🔥', accent: '#f59e0b', effect: 'confetti' };
+    return { key: 'fire', title: 'You are a legend', message: 'A full week 🔥', accent: '#f59e0b', effect: 'confetti' };
   }
   if (count >= 3) {
-    return { key: 'hot', title: 'Əla gedirsən!', message: 'Alov böyüyür — davam et! 🔥', accent: '#f97316', effect: 'flame-lg' };
+    return { key: 'hot', title: 'Going strong', message: 'The flame is growing — keep going 🔥', accent: '#f97316', effect: 'flame-lg' };
   }
   if (count >= 1) {
-    return { key: 'spark', title: 'Yaxşı başladın!', message: 'İlk qığılcım yandı — sabah da qayıt!', accent: '#fb923c', effect: 'flame-sm' };
+    return { key: 'spark', title: 'Good start', message: 'First spark lit — come back tomorrow.', accent: '#fb923c', effect: 'flame-sm' };
   }
-  return { key: 'start', title: 'Başla!', message: 'Bu gün birinci addımı at! 🚀', accent: '#7c6ff7', effect: 'none' };
+  return { key: 'start', title: 'Begin', message: 'Take the first step today 🚀', accent: '#7c6ff7', effect: 'none' };
 }
 
 // The next milestone above `count`, and how many days remain to it.

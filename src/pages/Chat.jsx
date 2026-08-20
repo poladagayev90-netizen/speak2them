@@ -38,7 +38,7 @@ const CHAT_TOUR_STEPS = [
   {
     target: '#tour-translate',
     title: 'Live Translate',
-    content: 'Zəng zamanı bilmədiyiniz sözləri və ya cümlələri anında tərcümə etmək üçün bu düymədən istifadə edin.',
+    content: 'Use this button to translate a word or sentence instantly during a call.',
     disableBeacon: true,
   }
 ];
@@ -314,7 +314,7 @@ export default function Chat({ user }) {
           doc(db, 'practiceSlots', slotId, 'members', user.uid),
           { arrivedAt: serverTimestamp() },
           { merge: true },
-        ).catch((e) => console.warn('[Chat] arrivedAt yazılmadı:', e.message));
+        ).catch((e) => console.warn('[Chat] arrivedAt not written:', e.message));
       }
       // The "how to start" roadmap is only useful for newcomers. Show it for a
       // user's first few calls, then never again — surfacing it on every call
@@ -553,7 +553,7 @@ export default function Chat({ user }) {
           // keeps firing and stacks one alert per second.
           clearInterval(timerRef.current);
           endCallRef.current?.();
-          alert('⏰ Bu zəng üçün vaxt limiti doldu. Yeni zənglə davam edə bilərsən!');
+          alert('⏰ Time is up for this call. Start a new one to keep going.');
         }
       }, 1000);
     } else {
@@ -587,7 +587,7 @@ export default function Chat({ user }) {
       const peerSnap = await getDoc(doc(db, 'users', peerId));
       const peerData = peerSnap.data();
       if (peerData?.status === 'busy') {
-        alert('Bu istifadəçi hazırda məşğuldur!');
+        alert('That person is on another call right now.');
         if (localTrackRef.current) {
           try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
           localTrackRef.current = null;
@@ -609,7 +609,7 @@ export default function Chat({ user }) {
         if (!joinedRef.current) {
           setCallStatus('rejected');
           endCallRef.current();
-          alert('İstifadəçi cavab vermir (Timeout).');
+          alert('No answer.');
         }
       }, 30000);
       setCallStatus('calling');
@@ -1000,7 +1000,7 @@ export default function Chat({ user }) {
           }}>
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>📞</div>
             <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>
-              {peer?.name} sizi zəng edir...
+              {peer?.name} is calling you...
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
               <button className="btn-accept" onClick={async () => {
@@ -1016,11 +1016,11 @@ export default function Chat({ user }) {
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
                 joinCall();
-              }}>✅ Qəbul et</button>
+              }}>✅ Accept</button>
               <button className="btn-reject" onClick={async () => {
                 setIncomingCallData(null);
                 await updateDoc(doc(db, 'calls', callDocId), { status: 'rejected' });
-              }}>❌ Rədd et</button>
+              }}>❌ Decline</button>
             </div>
           </div>
         </div>
@@ -1032,7 +1032,7 @@ export default function Chat({ user }) {
           background: '#ef4444', color: 'white', padding: '12px 24px',
           borderRadius: '12px', fontWeight: 600, zIndex: 9999,
         }}>
-          ❌ Zəng rədd edildi
+          ❌ Call declined
         </div>
       )}
 
@@ -1049,10 +1049,10 @@ export default function Chat({ user }) {
           <p className="call-status-text">
             {callStatus === 'calling' && '📞 Calling...'}
             {/* Kanaldayıq, amma qarşı tərəf hələ qoşulmayıb — gözləmə otağı. */}
-            {callStatus === 'connected' && !peerJoined && '⏳ Partnyor gözlənilir…'}
+            {callStatus === 'connected' && !peerJoined && '⏳ Waiting for your partner…'}
             {callStatus === 'connected' && peerJoined && `🟢 ${formatTime(callSeconds)}`}
             {callStatus === 'left' && '⚠️ Partner left'}
-            {callStatus === 'rejected' && '❌ Rədd edildi'}
+            {callStatus === 'rejected' && '❌ Declined'}
             {callStatus === 'error' && '❌ Error'}
           </p>
           {inCall && (
@@ -1065,7 +1065,7 @@ export default function Chat({ user }) {
                   fontSize: '12px', color: timeWarning ? '#f59e0b' : '#a1a1aa',
                   fontWeight: 600, marginTop: '8px',
                 }}>
-                  ⏰ {formatTime(Math.max(0, maxCallSeconds - callSeconds))} qaldı
+                  ⏰ {formatTime(Math.max(0, maxCallSeconds - callSeconds))} left
                 </div>
               )}
               {timeWarning && (
@@ -1074,7 +1074,7 @@ export default function Chat({ user }) {
                   borderRadius: '14px', fontSize: '14px', fontWeight: 800,
                   marginTop: '10px', animation: 'pulse 1s ease-in-out infinite',
                 }}>
-                  ⏳ 1 dəqiqə qaldı — sözünüzü yekunlaşdırın!
+                  ⏳ One minute left — start wrapping up
                 </div>
               )}
             </>
@@ -1084,7 +1084,7 @@ export default function Chat({ user }) {
               {inCall && (
                 <>
                   <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
-                    📖<span>Lüğət</span>
+                    📖<span>Vocabulary</span>
                   </button>
                   {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
@@ -1125,7 +1125,7 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
                     >
-                      🖼️<span>Şəkil</span>
+                      🖼️<span>Picture</span>
                     </button>
                   )}
                   {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
@@ -1188,6 +1188,7 @@ export default function Chat({ user }) {
             userId={user.uid} 
             topic={content?.topic || 'General'} 
             onTranslate={(t) => setCallTranslations(prev => [...prev, t])}
+            nativeLanguage={user?.preferredLanguage}
           />
         </div>
       )}
@@ -1383,7 +1384,7 @@ export default function Chat({ user }) {
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-empty-hint">
-            <p>👋 Salamlaşın və praktikaya başlayın!</p>
+            <p>👋 Say hello and start practising.</p>
           </div>
         ) : (
           messages.map((m) => {
@@ -1414,7 +1415,7 @@ export default function Chat({ user }) {
                       color: '#ef4444', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
                     }}
                   >
-                    🗑 Hamı üçün sil
+                    🗑 Delete for everyone
                   </button>
                 )}
               </div>
@@ -1427,11 +1428,11 @@ export default function Chat({ user }) {
       <form className="chat-input" onSubmit={sendMessage}>
         <input
           type="text"
-          placeholder="Mesaj yazın..."
+          placeholder="Write a message..."
           value={text}
           onChange={e => setText(e.target.value)}
         />
-        <button type="submit">Göndər ➤</button>
+        <button type="submit">Send ➤</button>
       </form>
       
       {postCallStage === 'quiz' && (

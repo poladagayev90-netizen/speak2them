@@ -314,6 +314,20 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // AInur activity sessions. The learner reads their own; nobody writes from
+    // a client. Turns are appended server-side by aiActivityTurn because the
+    // transcript is what the analysis -- and the teacher report -- is built
+    // from. If the client could edit it, a learner could hand their teacher a
+    // session they never spoke.
+    match /aiSessions/{docId} {
+      allow read: if isSignedIn() && docId.split('_')[0] == request.auth.uid;
+      allow write: if false;
+    }
+
+    // NOTE: aiUsage has NO match block on purpose. It is the per-user daily AI
+    // cost meter (STT seconds, TTS characters, tokens) and only the server
+    // writes it, exactly like analysisBudget. The catch-all below denies it.
+
     match /wordHistory/{userId}/words/{wordId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }

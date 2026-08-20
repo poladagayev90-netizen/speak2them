@@ -27,6 +27,13 @@ const APP_URL = defineString("APP_URL", {
   default: "https://speak2them.vercel.app",
 });
 
+// Groq retires model names without notice. llama-3.3-70b-versatile began
+// returning model_not_found on this account, which silently broke generateQuiz
+// and left callAnalysisLLM with a fallback that could never fire. The id lives
+// in one place now. aiActivityTurn goes further and walks a list at runtime
+// (AI_TURN_MODELS) so it survives the next retirement on its own.
+const GROQ_CHAT_MODEL = "openai/gpt-oss-20b";
+
 const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
 // Ops xəbərdarlıqlarının getdiyi əsas qutu (ADMIN_UID sənədindəki e-poçt
 // başqa hesaba aiddir, ona görə açıq yazılır).
@@ -2692,10 +2699,11 @@ exports.generateQuiz = onRequest({ secrets: [GROQ_API_KEY], invoker: "public" },
         "Authorization": `Bearer ${GROQ_API_KEY.value()}`
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: GROQ_CHAT_MODEL,
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
         temperature,
+        reasoning_effort: "low",
       })
     });
 
@@ -3511,7 +3519,10 @@ async function callGroqChat(userContent) {
         "Authorization": `Bearer ${GROQ_API_KEY.value()}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: GROQ_CHAT_MODEL,
+        // gpt-oss spends part of max_tokens on private reasoning; keep that
+        // share small so the JSON answer still fits the budgets below.
+        reasoning_effort: "low",
         messages,
         temperature: 0,
         top_p: 1,
@@ -4596,3 +4607,506 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     res.status(500).json({ error: "Silinmə tamamlanmadı. Yenidən cəhd edin." });
   }
 });
+
+// ─── AInur activities (SpeakLab 2.0) ───────────────────────────
+// A guided practice session with AInur: she sets a task, the learner speaks,
+// she reacts, and at the end the whole thing is analysed with the SAME pipeline
+// that analyses a human call. Two rules shape everything below.
+//
+// 1. The conversational model NEVER grades. Correction is a separate call at
+//    the end of the session (analyzeAiSession). That is the delayed-correction
+//    principle from SPEAKLAB_TEACHER_HANDOFF.md: never interrupt a learner
+//    mid-sentence to fix a verb. It also puts each job on the model that suits
+//    it — fast and warm for talking, structured and strict for grading.
+// 2. Turns are written SERVER-side. If the client could edit the transcript,
+//    the report — and what reaches the teacher — could be faked.
+
+const AI_TURN_MAX_PER_HOUR = 120;   // ~12 sessions/hour; a real session is ~10 turns
+
+// How much English AInur is allowed to use back. An 8B model drifts up to B2
+// prose for an A1 learner within a few turns, which is exactly the failure the
+// brief called out (it must match the learner level), so the constraint is
+// spelled out in words rather than left to the model to judge.
+const LEVEL_GUIDE = {
+  A1: { words: "4-8", grammar: "present simple only", vocab: "the 1000 most common English words", extra: "One idea per sentence. Never use a phrasal verb." },
+  A2: { words: "6-10", grammar: "present simple, past simple, going to", vocab: "the 2000 most common English words", extra: "At most one clause per sentence." },
+  B1: { words: "8-14", grammar: "common tenses, simple conditionals", vocab: "the 3000 most common English words", extra: "You may use very common phrasal verbs." },
+  B2: { words: "10-18", grammar: "any common tense, passive, relative clauses", vocab: "everyday and semi-formal vocabulary", extra: "Natural rhythm; an occasional idiom is fine." },
+  C1: { words: "12-22", grammar: "unrestricted", vocab: "unrestricted", extra: "Speak as you would to a fluent friend." },
+};
+const levelGuide = (lvl) => LEVEL_GUIDE[String(lvl || "B1").toUpperCase().slice(0, 2)] || LEVEL_GUIDE.B1;
+
+// Mistakes Azerbaijani and Turkish speakers make BECAUSE of their first
+// language. A generic tutor cannot do this; it is the one thing a global app
+// will not have. Same source as LANGUAGE_GUIDE above, phrased for conversation.
+const L1_WATCHLIST = {
+  az: [
+    'he/she mix-ups — Azerbaijani has one pronoun ("o") for both, so "my sister... he works" is very common',
+    "missing a/an/the — Azerbaijani has no articles",
+    "past simple used where present perfect is needed, and the reverse",
+    "word order — Azerbaijani puts the verb last",
+    "idioms translated word for word from Azerbaijani",
+  ],
+  tr: [
+    'he/she mix-ups — Turkish has one pronoun ("o") for both',
+    "missing a/an/the — Turkish has no articles",
+    "past simple used where present perfect is needed, and the reverse",
+    "word order — Turkish puts the verb last",
+    "idioms translated word for word from Turkish",
+  ],
+};
+
+// The five layers. Persona and pedagogy are fixed; learner, activity and state
+// change every turn. Keeping them separate is what makes a second activity a
+// data change rather than a new prompt.
+function buildAinurPrompt({ activity, level, l1 = "az", item = {}, state = {} }) {
+  const g = levelGuide(level);
+  const watch = (L1_WATCHLIST[l1] || L1_WATCHLIST.az).map((w) => "- " + w).join("\n");
+
+  const persona = `You are AInur, an English speaking partner in the SpeakLab app.
+You are warm, curious and brief. You are a person having a conversation, not a chatbot presenting options.
+Never mention that you are an AI, never break character, never use markdown, emoji, bullet points or stage directions. Your words are read aloud, so write only what should be spoken.`;
+
+  const pedagogy = `HOW YOU TEACH
+- The learner should be talking about 80% of the time. You are the smaller voice.
+- NEVER correct grammar or vocabulary during the conversation. Not once. Mistakes are collected and explained after the session by someone else. If a sentence is broken but you understood it, respond to the meaning.
+- Never repeat the sentence back in corrected form. That is a correction.
+- Ask exactly ONE question per turn. Never two.
+- End every turn with that question, so the learner always speaks last.
+- If the learner says very little, ask them to say more about one specific thing they mentioned, and name it.
+- If you did not understand, say so plainly and ask them to say it another way.`;
+
+  const learner = `THE LEARNER
+Their English level is ${level}. Their first language is ${l1 === "tr" ? "Turkish" : "Azerbaijani"}.
+Speak so they understand you easily:
+- Sentences of about ${g.words} words.
+- Grammar: ${g.grammar}.
+- Vocabulary: ${g.vocab}.
+- ${g.extra}
+These are mistakes their first language causes. Do NOT correct them, but understand what they meant:
+${watch}`;
+
+  const turnState = `THIS TURN
+Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
+${state.isLast ? "This is the last exchange on this item. Respond to what they said, then ask one final short question about it." : "There is at least one more exchange to come."}`;
+
+  let contract;
+  if (activity === "describe") {
+    const kw = Array.isArray(item.keywords) && item.keywords.length ? item.keywords.join(", ") : "(none given)";
+    contract = `THE ACTIVITY: describing a picture
+The learner is looking at a photograph. YOU CANNOT SEE IT.
+The only thing you know is that these things are probably in it: ${kw}.
+Because you cannot see the picture:
+- Never describe the picture yourself.
+- Never mention a detail the learner has not mentioned.
+- Never say whether their description is right or wrong. You have no way to know.
+Your job is to keep them describing. React briefly to something specific they said, then ask one question that makes them add detail: a colour, a reason, what happens next, how the person feels, or what they would do in that situation.
+If they used one of the words above, you may use it back naturally. If several of those things have not come up yet, steer your question towards one of them without naming it as a task.`;
+  } else {
+    contract = `THE ACTIVITY: open conversation
+Keep a natural conversation going about: ${item.topic || "everyday life"}.`;
+  }
+
+  return [persona, pedagogy, learner, contract, turnState].join("\n\n");
+}
+
+// Did the learner actually SAY the target words? A plain match on the
+// transcript — no model involved, so the pills on screen light up instantly and
+// cost nothing. Case and punctuation are folded, and a trailing s or es counts,
+// so "Suitcases." matches "suitcase".
+function matchKeywords(transcript, keywords) {
+  if (!Array.isArray(keywords) || !keywords.length) return [];
+  const flat = " " + String(transcript).toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ") + " ";
+  const hit = [];
+  for (const raw of keywords) {
+    const label = raw && raw.word ? raw.word : raw;
+    const w = String(label).toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+    if (!w) continue;
+    if (flat.includes(" " + w + " ") || flat.includes(" " + w + "s ") || flat.includes(" " + w + "es ")) hit.push(label);
+  }
+  return hit;
+}
+
+
+// Which Groq chat model to use for an AInur turn.
+//
+// 70B first because a smaller model cannot hold a CEFR level across a session,
+// and level matching is the whole point of the activity. But models get
+// decommissioned without notice -- llama-3.3-70b-versatile returned
+// model_not_found on this account the first time this shipped -- so the list is
+// walked in order and the first working one is remembered for the life of the
+// instance. Without this the whole activity is dead the day Groq retires a name.
+const AI_TURN_MODELS = [
+  "llama-3.3-70b-versatile",
+  "meta-llama/llama-4-scout-17b-16e-instruct",
+  "openai/gpt-oss-20b",
+  "llama-3.1-8b-instant",   // known good: chatWithAI has used it all along
+];
+let aiTurnModel = null;
+
+// gpt-oss models spend tokens on private reasoning BEFORE the answer, and both
+// come out of the same budget. At max_tokens 90 the reasoning ate all of it and
+// AInur was cut off mid-question. Give those models room and ask them to think
+// briefly; every other model keeps the tight cap that keeps replies short.
+function modelParams(model, body) {
+  if (model.includes("gpt-oss")) {
+    return { ...body, model, max_tokens: 600, reasoning_effort: "low" };
+  }
+  return { ...body, model };
+}
+
+async function groqChatWithFallback(body, apiKey) {
+  const order = aiTurnModel ? [aiTurnModel, ...AI_TURN_MODELS.filter((m) => m !== aiTurnModel)] : AI_TURN_MODELS;
+  let lastErr = "";
+  for (const model of order) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify(modelParams(model, body)),
+    });
+    if (res.ok) {
+      if (aiTurnModel !== model) {
+        aiTurnModel = model;
+        console.log("[aiActivityTurn] using model:", model);
+      }
+      return res;
+    }
+    lastErr = await res.text();
+    // Only a missing/forbidden model is worth retrying elsewhere. A rate limit
+    // or a bad request would fail the same way on every model.
+    if (!/model_not_found|does not exist|do not have access|model_decommissioned/i.test(lastErr)) {
+      console.error("[aiActivityTurn] LLM failed on", model + ":", lastErr);
+      return null;
+    }
+    console.warn("[aiActivityTurn] model unavailable, trying next:", model);
+  }
+  console.error("[aiActivityTurn] no usable Groq model. Last error:", lastErr);
+  return null;
+}
+
+// Per-user, per-day cost meter. Nothing here blocks a request — the decision
+// about limits is deliberately deferred until there is real data behind it.
+// Written server-side only; the collection has no rules match, so the catch-all
+// denies clients (same pattern as analysisBudget).
+async function recordAiUsage(uid, { sttSeconds = 0, ttsChars = 0, tokensIn = 0, tokensOut = 0, turns = 0, sessions = 0 }) {
+  try {
+    const inc = admin.firestore.FieldValue.increment;
+    await admin.firestore().collection("aiUsage").doc(`${uid}_${bakuDateStr()}`).set({
+      uid,
+      date: bakuDateStr(),
+      sttSeconds: inc(Math.round(sttSeconds)),
+      ttsChars: inc(ttsChars),
+      llmTokensIn: inc(tokensIn),
+      llmTokensOut: inc(tokensOut),
+      turns: inc(turns),
+      sessions: inc(sessions),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  } catch (e) {
+    // Metering must never break a lesson.
+    console.warn("[aiUsage] write failed:", e.message);
+  }
+}
+
+exports.aiActivityTurn = onRequest(
+  { secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memory: "1GiB", invoker: "public" },
+  async (req, res) => {
+    setCors(res);
+    if (req.method === "OPTIONS") return res.status(204).send("");
+
+    let decoded;
+    try {
+      decoded = await verifyAuth(req);
+    } catch {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const uid = decoded.uid;
+
+    try {
+      await enforceRateLimit(uid, "aiTurn", AI_TURN_MAX_PER_HOUR, 60 * 60 * 1000);
+    } catch {
+      return res.status(429).json({ error: "You have practised a lot in the last hour. Try again shortly." });
+    }
+
+    const {
+      sessionId,
+      activity = "describe",
+      topicIndex = 0,
+      itemId = "",
+      itemIndex = 0,
+      keywords = [],
+      turnIndex = 0,
+      plannedTurns = 2,
+      isLast = false,
+      base64Audio,
+      mimeType = "audio/webm",
+      level = "B1",
+    } = req.body || {};
+
+    if (!sessionId || typeof sessionId !== "string" || sessionId.length > 64) {
+      return res.status(400).json({ error: "sessionId required" });
+    }
+    if (!base64Audio || typeof base64Audio !== "string") {
+      return res.status(400).json({ error: "base64Audio required" });
+    }
+    // ~6 MB. Unbounded, one request could exhaust the instance and be billed
+    // for transcribing whatever was sent.
+    if (base64Audio.length > 8000000) {
+      return res.status(413).json({ error: "Audio too large" });
+    }
+    if (!Array.isArray(keywords) || keywords.length > 24) {
+      return res.status(400).json({ error: "keywords must be an array of at most 24" });
+    }
+
+    const db = admin.firestore();
+    const sessionRef = db.collection("aiSessions").doc(`${uid}_${sessionId}`);
+
+    try {
+      const audioBuffer = Buffer.from(base64Audio, "base64");
+      if (audioBuffer.length < 100) {
+        return res.status(400).json({ error: "That recording was too short." });
+      }
+
+      // 1. Speech to text
+      const ext = mimeType.includes("mp4") ? "mp4" : "webm";
+      const form = new FormData();
+      form.append("file", new Blob([audioBuffer], { type: mimeType }), `audio.${ext}`);
+      form.append("model", "whisper-large-v3-turbo");
+      form.append("response_format", "json");
+
+      const sttRes = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${GROQ_API_KEY.value()}` },
+        body: form,
+      });
+      if (!sttRes.ok) {
+        console.error("[aiActivityTurn] STT failed:", await sttRes.text());
+        return res.status(502).json({ error: "We could not hear that. Please try again." });
+      }
+      const transcript = ((await sttRes.json()).text || "").trim();
+      if (!transcript) {
+        // Silence is not an error the learner caused. Say so plainly and let
+        // them retry without burning an LLM or TTS call.
+        return res.status(200).json({ transcript: "", reply: "", audioBase64: "", matchedKeywords: [], silent: true });
+      }
+
+      const matchedKeywords = matchKeywords(transcript, keywords);
+
+      // 2. AInur replies. 70B rather than 8B: the smaller model cannot hold a
+      // level constraint across a session, and level matching is the point.
+      const systemPrompt = buildAinurPrompt({
+        activity,
+        level,
+        l1: "az",
+        item: { keywords },
+        state: { turnIndex, plannedTurns, isLast },
+      });
+
+      const chatRes = await groqChatWithFallback({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: transcript },
+        ],
+        temperature: 0.6,
+        max_tokens: 90,
+      }, GROQ_API_KEY.value());
+      if (!chatRes) {
+        return res.status(502).json({ error: "AInur could not answer just now. Please try again." });
+      }
+      const chatData = await chatRes.json();
+      const reply = (chatData.choices?.[0]?.message?.content || "Tell me a little more about that.").trim();
+      const usage = chatData.usage || {};
+
+      // 3. Text to speech
+      let audioBase64 = "";
+      try {
+        const ttsRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-asteria-en", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${DEEPGRAM_API_KEY.value()}`,
+          },
+          body: JSON.stringify({ text: reply }),
+        });
+        if (ttsRes.ok) {
+          audioBase64 = Buffer.from(await ttsRes.arrayBuffer()).toString("base64");
+        } else {
+          console.warn("[aiActivityTurn] TTS failed:", await ttsRes.text());
+        }
+      } catch (e) {
+        // A missing voice is a degraded lesson, not a failed one — the reply is
+        // on screen either way.
+        console.warn("[aiActivityTurn] TTS error:", e.message);
+      }
+
+      // 4. Persist the turn (server-side — see the note at the top of this block)
+      const now = Date.now();
+      await sessionRef.set({
+        uid,
+        activity,
+        topicIndex,
+        level,
+        status: "active",
+        startedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      const turnUpdate = {
+        turns: admin.firestore.FieldValue.arrayUnion(
+          { role: "student", text: transcript, itemId, itemIndex, ms: now },
+          { role: "ainur", text: reply, itemId, itemIndex, ms: now + 1 },
+        ),
+        turnCount: admin.firestore.FieldValue.increment(1),
+      };
+      // arrayUnion() throws with no arguments, and most early turns match no
+      // keywords at all, so only add the field when there is something in it.
+      if (matchedKeywords.length) {
+        turnUpdate.keywordsHit = admin.firestore.FieldValue.arrayUnion(...matchedKeywords);
+      }
+      await sessionRef.update(turnUpdate);
+
+      // Rough audio seconds from the encoded size — webm/opus at the browser
+      // default sits near 16 kB/s. Only feeds the cost meter.
+      recordAiUsage(uid, {
+        sttSeconds: audioBuffer.length / 16000,
+        ttsChars: reply.length,
+        tokensIn: usage.prompt_tokens || 0,
+        tokensOut: usage.completion_tokens || 0,
+        turns: 1,
+      });
+
+      return res.status(200).json({ transcript, reply, audioBase64, matchedKeywords });
+    } catch (e) {
+      console.error("[aiActivityTurn] error:", e);
+      return res.status(500).json({ error: "Something went wrong. Please try again." });
+    }
+  },
+);
+
+// End of session: grade it. Runs the EXISTING analysis pipeline, so the result
+// is a callAnalysis document — which means History, AnalysisDetail, the teacher
+// student page and the roster rollup all work unchanged. Unlike a human call
+// there is no recording to fetch and no transcription to pay for: every turn
+// was already transcribed on the way in.
+exports.analyzeAiSession = onRequest(
+  { secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY], memory: "1GiB", timeoutSeconds: 300, invoker: "public" },
+  async (req, res) => {
+    setCors(res);
+    if (req.method === "OPTIONS") return res.status(204).send("");
+
+    let decoded;
+    try {
+      decoded = await verifyAuth(req);
+    } catch {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const uid = decoded.uid;
+
+    try {
+      await enforceRateLimit(uid, "analyzeAiSession", 20, 60 * 60 * 1000);
+    } catch {
+      return res.status(429).json({ error: "Too many analyses in the last hour." });
+    }
+
+    const { sessionId } = req.body || {};
+    if (!sessionId || typeof sessionId !== "string") {
+      return res.status(400).json({ error: "sessionId required" });
+    }
+
+    const db = admin.firestore();
+    const sessionRef = db.collection("aiSessions").doc(`${uid}_${sessionId}`);
+    const analysisId = `${uid}_ai_${sessionId}`;
+    const analysisRef = db.collection("callAnalysis").doc(analysisId);
+
+    try {
+      const snap = await sessionRef.get();
+      if (!snap.exists) return res.status(404).json({ error: "Session not found" });
+      const session = snap.data();
+      if (session.uid !== uid) return res.status(403).json({ error: "Not your session" });
+      if (session.status === "analyzed") {
+        return res.status(200).json({ ok: true, analysisId, alreadyDone: true });
+      }
+
+      // Only the learner spoken words are graded. AInur turns are prompts, not
+      // performance, and feeding them in would let the model grade its own
+      // sentences and inflate the score.
+      const studentText = (session.turns || [])
+        .filter((t) => t.role === "student")
+        .map((t) => String(t.text || "").trim())
+        .filter(Boolean)
+        .join(" ");
+
+      const words = studentText ? studentText.split(/\s+/).length : 0;
+      // Under roughly a minute of speech there is nothing to score, and a thin
+      // report reads worse than no report. Same reasoning as the two-minute
+      // floor on call analysis.
+      if (words < 60) {
+        await sessionRef.set({ status: "done", tooShort: true }, { merge: true });
+        return res.status(200).json({ ok: false, reason: "too-short", words });
+      }
+
+      await analysisRef.set({
+        status: "processing",
+        userId: uid,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      const userSnap = await db.collection("users").doc(uid).get();
+      const u = userSnap.exists ? userSnap.data() : {};
+      const lang = u.preferredLanguage === "tr" ? "tr" : "az";
+
+      // ~120 words per minute of speech; used for the pace figure and the
+      // duration shown on the report card.
+      const spokenSeconds = Math.round((words / 120) * 60);
+
+      const prompt = buildAnalysisPrompt(studentText.slice(0, MAX_TRANSCRIPT_CHARS), lang);
+      const raw = await callAnalysisLLM(prompt, db);
+      const analysis = normalizeAnalysis(raw, { analyzeSeconds: spokenSeconds, transcript: studentText });
+
+      await analysisRef.set({
+        ...analysis,
+        transcript: studentText,
+        status: "done",
+        userId: uid,
+        source: "ainur",
+        activity: session.activity || "describe",
+        peerName: "AInur",
+        durationSeconds: spokenSeconds,
+        analyzedSeconds: spokenSeconds,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      await sessionRef.set({ status: "analyzed", analysisId }, { merge: true });
+      recordAiUsage(uid, { sessions: 1 });
+
+      // The whole point of the feature: the teacher sees it. Same rollup a
+      // human call writes, so the teacher page needs no special case.
+      if (u.teacherId) {
+        try {
+          await db.collection("teachers").doc(u.teacherId).collection("roster").doc(uid).set({
+            lastAnalysisAt: admin.firestore.FieldValue.serverTimestamp(),
+            lastScore: analysis.overallScore || null,
+            scoreSum: admin.firestore.FieldValue.increment(analysis.overallScore || 0),
+            scoreCount: admin.firestore.FieldValue.increment(1),
+            recentThemes: (analysis.errorThemes || []).slice(0, 6).map((t) => t.title).filter(Boolean),
+          }, { merge: true });
+        } catch (e) {
+          console.warn("[analyzeAiSession] roster rollup failed:", e.message);
+        }
+      }
+
+      // sendPushToUser resolves the token set and swallows its own failures.
+      await sendPushToUser(db, uid, {
+        title: "Your report is ready",
+        body: "See how your session with AInur went.",
+        type: "analysis",
+        url: "/history",
+      });
+
+      return res.status(200).json({ ok: true, analysisId });
+    } catch (e) {
+      console.error("[analyzeAiSession] error:", e);
+      await analysisRef.set({ status: "failed", error: "analysis-failed", userId: uid }, { merge: true }).catch(() => {});
+      return res.status(500).json({ error: "Analysis failed" });
+    }
+  },
+);

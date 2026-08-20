@@ -1,6 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';import { useNavigate } from 'react-router-dom';
 import { doc, setDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
@@ -50,9 +48,7 @@ function loadState(dayIndex) {
   return { dayIndex, guesses: [], won: false, rewarded: false };
 }
 
-export default function DailyPuzzle({ user }) {
-  const { t } = useTranslation(['headers', 'ranking', 'teacher', 'common']);
-  const navigate = useNavigate();
+export default function DailyPuzzle({ user }) {  const navigate = useNavigate();
   const dayIndex = getTodayPuzzleIndex();
   const puzzle = useMemo(() => getTodayPuzzle(), []);
   const answer = puzzle.word;
@@ -155,7 +151,7 @@ export default function DailyPuzzle({ user }) {
         >
           <ArrowLeft size={22} />
         </button>
-        <div className="home-logo">{t('headers:puzzle')}</div>
+        <div className="home-logo">{'Daily puzzle'}</div>
       </div>
 
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: 420, margin: '0 auto', position: 'relative' }}>
@@ -179,11 +175,11 @@ export default function DailyPuzzle({ user }) {
         )}
 
         <div className="puzzle-hint">
-          <p className="puzzle-hint-label">İpucu (EN)</p>
+          <p className="puzzle-hint-label">Hint (EN)</p>
           <p className="puzzle-hint-text">“{puzzle.hintEN}”</p>
           {showAzHint && <p className="puzzle-hint-az">🇦🇿 {puzzle.hintAZ}</p>}
           {!showAzHint && wrongCount > 0 && (
-            <p className="puzzle-hint-locked">🔒 AZ tərcümə {2 - wrongCount} səhv cəhddən sonra açılır</p>
+            <p className="puzzle-hint-locked">🔒 Translation {2 - wrongCount} wrong guesses to unlock</p>
           )}
         </div>
 
@@ -207,17 +203,17 @@ export default function DailyPuzzle({ user }) {
           <div className={`puzzle-result${state.won ? ' is-win' : ''}`}>
             {state.won ? (
               <>
-                <p className="puzzle-result-title">🎉 Afərin! {state.guesses.length} cəhdə tapdın</p>
-                <p className="puzzle-result-sub">Möhtəşəm nəticə! Sabah yeni söz! 🧩</p>
+                <p className="puzzle-result-title">🎉 Well done {state.guesses.length} guesses</p>
+                <p className="puzzle-result-sub">Great work. A new word tomorrow. 🧩</p>
               </>
             ) : (
               <>
-                <p className="puzzle-result-title">Söz: <b>{answer}</b> — {puzzle.hintAZ}</p>
-                <p className="puzzle-result-sub">Narahat olma, sabah yeni şansın var! 💪</p>
+                <p className="puzzle-result-title">Word: <b>{answer}</b> — {puzzle.hintAZ}</p>
+                <p className="puzzle-result-sub">A new word is waiting tomorrow. 💪</p>
               </>
             )}
             <button className="btn-primary" style={{ marginTop: 10 }} onClick={() => navigate('/')}>
-              Ana səhifəyə qayıt
+              Back to home
             </button>
           </div>
         )}

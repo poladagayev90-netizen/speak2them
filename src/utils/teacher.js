@@ -12,31 +12,31 @@ export const ADULT_AGE = 18;
 // Server xəta kodu → istifadəçi mətni. Serverin hər fərqli kodu üçün fərqli
 // mesaj: "tapılmadı" ≠ "dolub" ≠ "artıq bağlısınız".
 export const CREATE_CODE_ERROR_TEXT = {
-  'not-eligible': `Kod yaratmaq üçün əvvəlcə ${TEACHER_SESSIONS_REQUIRED} sessiya tamamlamalısınız.`,
-  'invalid-code': 'Kod yalnız 4–12 hərf/rəqəmdən ibarət ola bilər (məsələn: AYTAC01).',
-  'code-taken': 'Bu kod artıq götürülüb. Başqa bir kod sınayın.',
-  'user-not-found': 'Profiliniz tapılmadı. Səhifəni yeniləyib yenidən cəhd edin.',
-  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+  'not-eligible': `Complete ${TEACHER_SESSIONS_REQUIRED} sessions first to create a code.`,
+  'invalid-code': 'A code can only be 4–12 letters or digits (for example: AYTAC01).',
+  'code-taken': 'That code is taken. Try a different one.',
+  'user-not-found': 'We could not load your profile. Refresh the page and try again.',
+  unauthorized: 'Your session has expired. Please sign in again.',
 };
 
 export const CLAIM_CODE_ERROR_TEXT = {
-  'consent-required': 'Davam etmək üçün razılıq qutusunu işarələyin.',
-  'age-restricted': `Bu xidmət ${MIN_LINK_AGE} yaşdan yuxarı istifadəçilər üçündür.`,
-  'guardian-consent-required': '18 yaşdan kiçiksinizsə, valideyn/qəyyum razılığı tələb olunur.',
-  'code-not-found': 'Bu kod tapılmadı. Hərf səhvi ola bilər — müəlliminizdən kodu bir də soruşun.',
-  'code-inactive': 'Bu kod artıq aktiv deyil. Müəllimizlə əlaqə saxlayın.',
-  'code-expired': 'Bu kodun vaxtı bitib. Müəllimizdən yeni kod istəyin.',
-  'code-exhausted': 'Bu kod dolub — müəllimin şagird limiti tükənib.',
-  'already-linked': 'Siz artıq bir müəllimə bağlısınız.',
-  'self-link': 'Öz kodunuzu istifadə edə bilməzsiniz.',
-  'teacher-full': 'Müəllimin şagird limiti dolub. Onunla əlaqə saxlayın.',
-  'invalid-code': 'Kod formatı yanlışdır — hərfləri yoxlayıb yenidən yazın.',
-  'user-not-found': 'Profiliniz tapılmadı. Səhifəni yeniləyib yenidən cəhd edin.',
-  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+  'consent-required': 'Tick the consent box to continue.',
+  'age-restricted': `This service is for users aged ${MIN_LINK_AGE} and over.`,
+  'guardian-consent-required': 'If you are under 18, a parent or guardian must give consent.',
+  'code-not-found': 'That code was not found. Check the spelling, or ask your teacher for it again.',
+  'code-inactive': 'That code is no longer active. Please contact your teacher.',
+  'code-expired': 'That code has expired. Ask your teacher for a new one.',
+  'code-exhausted': 'That code is full. Your teacher has reached their student limit.',
+  'already-linked': 'You are already connected to a teacher.',
+  'self-link': 'You cannot use your own code.',
+  'teacher-full': 'Your teacher has reached their student limit. Please contact them.',
+  'invalid-code': 'That code format is not valid. Check it and try again.',
+  'user-not-found': 'We could not load your profile. Refresh the page and try again.',
+  unauthorized: 'Your session has expired. Please sign in again.',
 };
 
-const RATE_LIMITED_TEXT = 'Çox cəhd etdiniz. Bir saat sonra yenidən yoxlayın.';
-const NETWORK_TEXT = 'Şəbəkə xətası. İnternetinizi yoxlayıb yenidən cəhd edin.';
+const RATE_LIMITED_TEXT = 'Too many attempts. Please try again in an hour.';
+const NETWORK_TEXT = 'Network error. Check your connection and try again.';
 
 async function callTeacherFn(path, body, errorMap) {
   try {
@@ -52,7 +52,7 @@ async function callTeacherFn(path, body, errorMap) {
         // 429 serverdə xüsusi kod deyil, status olaraq gəlir.
         errorText: res.status === 429
           ? RATE_LIMITED_TEXT
-          : (errorMap[data.error] || 'Xəta baş verdi. Yenidən cəhd edin.'),
+          : (errorMap[data.error] || 'Something went wrong. Please try again.'),
       };
     }
     return { ok: true, data };
@@ -68,17 +68,17 @@ export function createInviteCode(code) {
 
 // ── Birbaşa dəvət ───────────────────────────────────────────────
 export const INVITE_ERROR_TEXT = {
-  'invalid-email': 'E-poçt formatı yanlışdır.',
-  'not-a-teacher': 'Bu əməliyyat yalnız müəllimlər üçündür.',
-  'student-not-found': 'Bu e-poçtla qeydiyyatdan keçmiş istifadəçi tapılmadı. Əvvəlcə tətbiqə qeydiyyatdan keçməlidir.',
-  'self-invite': 'Özünüzü dəvət edə bilməzsiniz.',
-  'already-your-student': 'Bu şagird artıq sizin siyahınızdadır.',
-  'already-linked': 'Bu istifadəçi artıq başqa müəllimə bağlıdır.',
-  'teacher-full': 'Şagird limitiniz dolub.',
-  'invite-not-found': 'Dəvət tapılmadı.',
-  'not-your-invite': 'Bu dəvət sizə aid deyil.',
-  'already-answered': 'Bu dəvətə artıq cavab verilib.',
-  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+  'invalid-email': 'That email address is not valid.',
+  'not-a-teacher': 'This action is for teachers only.',
+  'student-not-found': 'No user is registered with that email. They need to sign up for the app first.',
+  'self-invite': 'You cannot invite yourself.',
+  'already-your-student': 'That student is already on your list.',
+  'already-linked': 'That user is already connected to another teacher.',
+  'teacher-full': 'You have reached your student limit.',
+  'invite-not-found': 'Invitation not found.',
+  'not-your-invite': 'That invitation is not yours.',
+  'already-answered': 'That invitation has already been answered.',
+  unauthorized: 'Your session has expired. Please sign in again.',
 };
 
 export function inviteStudentByEmail(email) {
@@ -105,12 +105,12 @@ export const TUTOR_SPECIALTIES = [
 ];
 
 export const TUTOR_PROFILE_ERROR_TEXT = {
-  'name-required': 'Adınızı yazın — profildə bu ad görünəcək.',
-  'not-a-teacher': 'Bu bölmə yalnız müəllimlər üçündür.',
-  'user-not-found': 'Profiliniz tapılmadı. Səhifəni yeniləyib yenidən cəhd edin.',
-  forbidden: 'Bu əməliyyat üçün icazəniz yoxdur.',
-  'invalid-teacher': 'Müəllim tapılmadı.',
-  unauthorized: 'Sessiyanız bitib. Yenidən daxil olun.',
+  'name-required': 'Enter your name — this is what others will see.',
+  'not-a-teacher': 'This section is for teachers only.',
+  'user-not-found': 'We could not load your profile. Refresh the page and try again.',
+  forbidden: 'You do not have permission for this action.',
+  'invalid-teacher': 'Teacher not found.',
+  unauthorized: 'Your session has expired. Please sign in again.',
 };
 
 export function updateTeacherProfile({ displayName, bio, specialties, yearsExperience }) {

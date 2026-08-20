@@ -32,7 +32,7 @@ function DailyQuiz({ content, onFinish }) {
         ...shuffle(otherMeanings).slice(0, 3).map(m => ({ text: m, isCorrect: false }))
       ]);
       quiz.push({
-        qText: `"${target.word}" sözünün mənası aşağıdakılardan hansıdır?`,
+        qText: `What does "${target.word}" mean?`,
         options,
       });
     }
@@ -50,7 +50,7 @@ function DailyQuiz({ content, onFinish }) {
         ...shuffle(otherPhrases).slice(0, 3).map(m => ({ text: m, isCorrect: false }))
       ]);
       quiz.push({
-        qText: `Aşağıdakı ifadələrdən hansı "${target.meaning}" mənasına gəlir?`,
+        qText: `Which of these means "${target.meaning}"?`,
         options,
       });
     }
@@ -62,16 +62,16 @@ function DailyQuiz({ content, onFinish }) {
     setIsFinished(false);
   }, [content]);
 
-  if (questions.length === 0) return <p style={{textAlign:'center', color:'#888', marginTop:20}}>Yüklənir...</p>;
+  if (questions.length === 0) return <p style={{textAlign:'center', color:'#888', marginTop:20}}>Loading...</p>;
 
   if (isFinished) {
     return (
       <div className="dt-quiz-result">
-        <h3>Nəticə</h3>
+        <h3>Result</h3>
         <div className="dt-score">{score} / {questions.length}</div>
-        <p>{score === questions.length ? 'Möhtəşəm! Tamamilə hazırsınız! 🎉' : 'Bir az daha təkrar edin! 💪'}</p>
+        <p>{score === questions.length ? 'Excellent. You know these well. 🎉' : 'A little more practice with these. 💪'}</p>
         <button className="dt-quiz-next" onClick={onFinish} style={{ width: '100%', marginTop: '20px' }}>
-          Mövzuya Qayıt
+          Back to topic
         </button>
       </div>
     );
@@ -121,7 +121,7 @@ function DailyQuiz({ content, onFinish }) {
       </div>
       {selected !== null && (
         <button className="dt-quiz-next" onClick={handleNext}>
-          {currentQ < questions.length - 1 ? 'Növbəti' : 'Nəticəni Gör'}
+          {currentQ < questions.length - 1 ? 'Next' : 'See result'}
         </button>
       )}
     </div>
@@ -166,13 +166,13 @@ export default function DailyTopicModal({ open, onClose }) {
             className={`dt-tab ${activeSection === 'vocabulary' ? 'active' : ''}`}
             onClick={() => setActiveSection('vocabulary')}
           >
-            <BookOpen size={14} /> Sözlər
+            <BookOpen size={14} /> Words
           </button>
           <button
             className={`dt-tab ${activeSection === 'idioms' ? 'active' : ''}`}
             onClick={() => setActiveSection('idioms')}
           >
-            <Lightbulb size={14} /> İdiomlar
+            <Lightbulb size={14} /> Idioms
           </button>
           <button
             className={`dt-tab ${activeSection === 'questions' ? 'active' : ''}`}
@@ -184,13 +184,13 @@ export default function DailyTopicModal({ open, onClose }) {
             className={`dt-tab ${activeSection === 'quiz' ? 'active' : ''}`}
             onClick={() => setActiveSection('quiz')}
           >
-            <Brain size={14} /> Sınaq
+            <Brain size={14} /> Quiz
           </button>
           <button
             className={`dt-tab ${activeSection === 'pictures' ? 'active' : ''}`}
             onClick={() => setActiveSection('pictures')}
           >
-            🖼️ Şəkil
+            🖼️ Pictures
           </button>
         </div>
 
@@ -262,7 +262,7 @@ export default function DailyTopicModal({ open, onClose }) {
             <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🖼️</div>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
-                5 mövzuya uyğun şəkil — danışıq bacarığını inkişaf etdirmək üçün
+                Five pictures for this topic, to build your speaking
               </p>
               <button
                 onClick={() => setShowPictureDescribing(true)}
@@ -272,7 +272,7 @@ export default function DailyTopicModal({ open, onClose }) {
                   fontSize: 15, fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                Şəkillərə Bax
+                View pictures
               </button>
             </div>
           )}

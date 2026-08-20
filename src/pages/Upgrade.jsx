@@ -10,12 +10,12 @@ const PLANS = [
   {
     id: 'free',
     name: 'Free',
-    tagline: 'Əsas',
+    tagline: 'Core',
     price: 0,
     priceLabel: 'Pulsuz',
     icon: '🔋',
     color: '#185FA5',
-    features: ['Limitsiz danışıq — hər gün 30 dəqiqə', 'Ayda 3 AI analiz', 'AInur və Quizlər'],
+    features: ['Unlimited practice — 30 minutes a day', 'Ayda 3 AI analiz', 'AInur and quizzes'],
   },
   {
     id: 'premium',
@@ -26,14 +26,14 @@ const PLANS = [
     icon: '🚀',
     color: '#7c6ff7',
     popular: true,
-    features: ['Limitsiz AI analiz', 'Prioritet matching', 'Limitsiz danışıq — hər gün 30 dəqiqə', 'Profil badge'],
+    features: ['Limitsiz AI analiz', 'Prioritet matching', 'Unlimited practice — 30 minutes a day', 'Profil badge'],
   },
 ];
 
 const COMPARE = [
-  { feature: 'Danışıq (gündə 30 dəq)', values: [true, true] },
+  { feature: 'Speaking (30 min a day)', values: [true, true] },
   { feature: 'AI analiz', values: ['Ayda 3', 'Limitsiz'] },
-  { feature: 'AInur və Quizlər', values: [true, true] },
+  { feature: 'AInur and quizzes', values: [true, true] },
   { feature: 'Prioritet matching', values: [false, true] },
   { feature: 'Profil badge', values: [false, true] },
 ];
@@ -106,7 +106,7 @@ export default function Upgrade({ user }) {
 
   const handleContinue = () => {
     if (!premiumPlan) return;
-    const msg = `Salam! mən ${user?.name || 'istifadəçi'} (ID: ${user?.uid}). SpeakLab tətbiqində ${premiumPlan.name} planını almaq istəyirəm.`;
+    const msg = `Hi! I am ${user?.name || 'a user'} (ID: ${user?.uid}). I would like to buy the ${premiumPlan.name} plan on SpeakLab.`;
     const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -140,9 +140,9 @@ export default function Upgrade({ user }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>💎</div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Free və Premium</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Free and Premium</h2>
         <p style={{ fontSize: 13, color: '#aaa', margin: 0, lineHeight: 1.5 }}>
-          Danışıq praktikası <b style={{color: '#fff'}}>hər kəs üçün pulsuzdur</b> — Premium ilə limitsiz AI analiz və prioritet matching əldə et!
+          Speaking practice <b style={{color: '#fff'}}>free for everyone</b> — Premium gives you unlimited AI analysis and priority matching.
         </p>
       </div>
 
@@ -158,7 +158,7 @@ export default function Upgrade({ user }) {
           fontWeight: 700,
           textAlign: 'center',
         }}>
-          Explorer endirimi aktivdir: Premium planına {premiumDiscount}% endirim
+          Explorer discount is active: Premium for {premiumDiscount}% endirim
         </div>
       )}
 
@@ -185,7 +185,7 @@ export default function Upgrade({ user }) {
                 color: '#fff', fontSize: 10, fontWeight: 800,
                 padding: '4px 12px', borderRadius: '0 0 8px 8px', letterSpacing: '1px',
                 boxShadow: '0 4px 12px rgba(124, 111, 247, 0.4)'
-              }}>ƏN POPULYAR</div>
+              }}>MOST POPULAR</div>
             )}
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -245,21 +245,21 @@ export default function Upgrade({ user }) {
           color: '#fff', fontSize: 17, fontWeight: 800, cursor: 'pointer',
           boxShadow: `0 8px 24px ${premiumPlan.color}40`,
         }}>
-          Premium planına keç — {premiumPlan.priceLabel}
+          Go Premium — {premiumPlan.priceLabel}
         </button>
         <p style={{ textAlign: 'center', fontSize: 12, color: '#666', margin: '14px 0 0' }}>
-          Təsdiqləmə prosesi WhatsApp vasitəsilə həyata keçirilir
+          Confirmation happens over WhatsApp
         </p>
       </div>
 
       {/* Compare table */}
       <div style={{ padding: '24px 16px 0' }}>
-        <p style={{ fontSize: 13, color: '#666', textAlign: 'center', marginBottom: 12 }}>Plan müqayisəsi</p>
+        <p style={{ fontSize: 13, color: '#666', textAlign: 'center', marginBottom: 12 }}>Plan comparison</p>
         <div style={{ background: '#1e1e30', borderRadius: 14, overflow: 'hidden', border: '1px solid #2e2e50' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #2e2e50' }}>
-                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Xüsusiyyət</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Feature</th>
                 {PLANS.map(p => (
                   <th key={p.id} style={{ padding: '10px 6px', textAlign: 'center', color: selected === p.id ? p.color : '#555', fontWeight: 600 }}>
                     {p.name}

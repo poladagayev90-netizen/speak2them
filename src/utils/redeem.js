@@ -6,12 +6,12 @@ export const SUPPORT_WHATSAPP = 'https://wa.me/994513549195';
 // Server (redeemCode) xəta kodu → istifadəçiyə göstərilən mətn. Server nə
 // qaytarırsa ona görə fərqli mesaj: "tapılmadı" ≠ "dolub".
 export const REDEEM_ERROR_TEXT = {
-  invalid_code: 'Kod formatı yanlışdır — hərfləri yoxlayıb yenidən yazın.',
-  code_not_found: 'Bu kod tapılmadı. Hərf səhvi ola bilər — kodu olduğu kimi yazın.',
-  code_inactive: 'Bu kod artıq aktiv deyil. Yeni kod üçün bizə yazın.',
-  code_exhausted: 'Bu qrup dolub. Bizə yazın — sizi növbəti dalğaya əlavə edək.',
-  already_applied_elsewhere: 'Siz artıq başqa kohorta müraciət etmisiniz. Əvvəlcə onu ləğv edin və ya adminlə əlaqə saxlayın.',
-  rate_limited: 'Çox cəhd etdiniz. Bir az gözləyib yenidən yoxlayın.',
+  invalid_code: 'That code format is not valid. Check it and try again.',
+  code_not_found: 'That code was not found. Check the spelling and enter it exactly.',
+  code_inactive: 'That code is no longer active. Contact us for a new one.',
+  code_exhausted: 'This group is full. Contact us and we will add you to the next intake.',
+  already_applied_elsewhere: 'You have already applied to another cohort. Cancel that one first, or contact an admin.',
+  rate_limited: 'Too many attempts. Please wait a moment and try again.',
 };
 
 // redeemCode-u çağırıb nəticəni UI-ya hazır formada qaytarır. Redeem səhifəsi
@@ -27,7 +27,7 @@ export async function redeemCourseCode(code) {
       return {
         ok: false,
         error: data.error,
-        errorText: REDEEM_ERROR_TEXT[data.error] || 'Xəta baş verdi. Yenidən cəhd edin.',
+        errorText: REDEEM_ERROR_TEXT[data.error] || 'Something went wrong. Please try again.',
         showSupport: data.error === 'code_exhausted' || data.error === 'code_inactive',
       };
     }
@@ -36,7 +36,7 @@ export async function redeemCourseCode(code) {
     console.error('[redeemCourseCode]', e);
     return {
       ok: false,
-      errorText: 'Şəbəkə xətası. İnternetinizi yoxlayıb yenidən cəhd edin.',
+      errorText: 'Network error. Check your connection and try again.',
       showSupport: false,
     };
   }

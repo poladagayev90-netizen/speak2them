@@ -52,10 +52,10 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
         borderRadius: 20, border: '1px solid #7c6ff755', padding: '20px 18px',
       }}>
         <p style={{ color: 'var(--text-primary)', fontSize: 17, fontWeight: 800, margin: '0 0 6px' }}>
-          Maraq dairələrini seç 🎯
+          Pick your interests 🎯
         </p>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: '0 0 14px' }}>
-          Səni oxşar maraqlı tərəfdaşla eşləşdirəcəyik (max 3).
+          We will match you with partners who share them (up to 3).
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
           {TOPIC_OPTIONS.map((t) => (
@@ -83,7 +83,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
               fontSize: 14, fontWeight: 600, cursor: 'pointer',
             }}
           >
-            İmtina
+            Decline
           </button>
           <button
             onClick={handleSave}
@@ -95,7 +95,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
               cursor: selected.length ? 'pointer' : 'default',
             }}
           >
-            {saving ? 'Yadda saxlanır…' : 'Davam et'}
+            {saving ? 'Saving…' : 'Davam et'}
           </button>
         </div>
       </div>

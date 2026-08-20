@@ -15,14 +15,14 @@ import {
 // randevu istifadəçini sıxır və nəticədə heç kim slot qoymur.
 function countdownText(startMs, now) {
   const diff = startMs - now;
-  if (diff <= 0) return 'İndi';
+  if (diff <= 0) return 'Now';
   const totalMin = Math.floor(diff / 60000);
   const days = Math.floor(totalMin / 1440);
   const hours = Math.floor((totalMin % 1440) / 60);
   const mins = totalMin % 60;
-  if (days > 0) return `${days} gün ${hours} saat`;
-  if (hours > 0) return `${hours} saat ${mins} dəq`;
-  return `${mins} dəq`;
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
 }
 
 export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
@@ -53,7 +53,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
     setSending('');
     setPicking(false);
     setNotice(res.ok
-      ? 'Təklif göndərildi — partnyorunuz təsdiqləyəndə vaxt dəyişəcək.'
+      ? 'Request sent — the time changes once your partner accepts.'
       : `⚠️ ${res.errorText}`);
     setTimeout(() => setNotice(''), 8000);
   };
@@ -90,7 +90,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
             width: '7px', height: '7px', borderRadius: '50%',
             background: live ? 'var(--success)' : '#a99cff', display: 'inline-block',
           }} />
-          {live ? 'Praktika vaxtı' : 'Yaxınlaşan zəng'}
+          {live ? 'Practice time' : 'Upcoming call'}
         </span>
         <span style={{
           fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)',
@@ -120,7 +120,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
             fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
-            {peerName} ilə
+            {peerName} with
           </div>
         </div>
       </div>
@@ -140,11 +140,11 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
               color: '#fff',
             }}
           >
-            🎙️ Zəngə keç
+            🎙️ Join the call
           </button>
         ) : (
           <span style={{ flex: 1, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-            Vaxtı çatanda burada “Zəngə keç” düyməsi görünəcək.
+            The Join button appears here when it is time.
           </span>
         )}
         <button
@@ -158,7 +158,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
             cursor: busy ? 'default' : 'pointer', flexShrink: 0,
           }}
         >
-          {busy ? '...' : 'Ləğv et'}
+          {busy ? '...' : 'Cancel'}
         </button>
       </div>
 
@@ -168,7 +168,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
           görünür, ikinci dərəcəli hərəkət sakit çip kimi verilir. */}
       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
         {[
-          { key: 'time', label: '🕘 Vaxtı dəyiş', onClick: () => { setPicking((p) => !p); setNotice(''); } },
+          { key: 'time', label: '🕘 Change time', onClick: () => { setPicking((p) => !p); setNotice(''); } },
           { key: 'chat', label: '💬 Chat', onClick: () => navigate(`/chat/${call.peerUid}`) },
         ].map((action) => (
           <button
@@ -195,7 +195,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
       {picking && (
         <div style={{ marginTop: '12px' }}>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            Yeni vaxt seçin — partnyorunuza təklif gedəcək.
+            Pick a new time — your partner will get the request.
           </div>
           <div style={{
             display: 'flex', flexWrap: 'wrap', gap: '6px',

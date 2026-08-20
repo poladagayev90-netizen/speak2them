@@ -1,6 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import TeacherInviteBanner from '../components/TeacherInviteBanner';
+import React, { useEffect, useState, useCallback } from 'react';import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import TutorBadge from '../components/TutorBadge';
 import { collection, doc, getDocs, onSnapshot, query, where, limit } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -33,6 +31,7 @@ import UpcomingCallCard from '../components/UpcomingCallCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import LabBuddy from '../components/LabBuddy';
 import BuddySwing from '../components/BuddySwing';
+import TodayTaskCard from '../components/ai/TodayTaskCard';
 import {
   currentBlockSlotId, joinPracticeSlot, leavePracticeSlot, subscribeToMySlots,
   subscribeToSlotChange,
@@ -43,33 +42,31 @@ import { Award, Shuffle, X, Globe, Shield, BookOpen } from 'lucide-react';
 const HOME_TOUR_STEPS = [
   {
     target: '#tour-find-partner',
-    title: 'Buradan başla! 🎙️',
-    content: 'Bir toxunuşla səviyyənə (A1–C2) uyğun canlı partnyor tapılır və zəng avtomatik başlayır. İngilis dilini praktika etməyin ən sürətli yolu budur.',
+    title: 'Start here 🎙️',
+    content: 'One tap finds a partner at your level (A1–C2) and starts the call. The fastest way to practise.',
     disableBeacon: true,
   },
   {
     target: '#tour-daily-topic',
-    title: 'Günün Mövzusu 📅',
-    content: 'Zəngdən əvvəl günün mövzusu, yeni sözlər və hazır suallarla buradan tanış ol — zəngdə nədən danışacağını biləcəksən.',
+    title: "Today’s topic 📅",
+    content: "Look through today’s topic, new words and questions before your call, so you know what to talk about.",
   },
   {
     target: '#tour-filters',
-    title: 'Səviyyə Filtrləri',
-    content: 'Səviyyənə uyğun insanları tapmaq üçün bu filtrlərdən istifadə et.',
+    title: 'Level filters',
+    content: 'Use these to find people at your level.',
   },
   {
     target: '#tour-ai-chat',
     title: 'AI Praktika 🤖',
-    content: 'Real insanla danışmağa hazır deyilsənsə, AInur ilə dərhal səsli praktika edə bilərsən.',
+    content: 'You can start a voice session with AInur any time.',
   }
 ];
 
 const LEVELS = ['All', 'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
-export default function Home({ user }) {
-  const { t } = useTranslation(['common']);
-  const [onlineUsers, setOnlineUsers] = useState([]);
+export default function Home({ user }) {  const [onlineUsers, setOnlineUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
 
   const [tab, setTab] = useState('online');
@@ -163,9 +160,9 @@ export default function Home({ user }) {
     if (!slotId) return; // gecə saatları — blok yoxdur, sadəcə lövhə açılır
     const res = await joinPracticeSlot(slotId);
     if (res.ok && res.data?.matched) {
-      setSlotToast(`✅ ${res.data.partnerName || 'Partnyorunuz'} ilə zənginiz təsdiqləndi!`);
+      setSlotToast(`✅ Your call with ${res.data.partnerName || 'your partner'} is confirmed.`);
     } else {
-      setSlotToast('Hazırda kimsə yoxdur — vaxtınızı yazdıq. Kimsə qoşulan kimi bildiriş alacaqsınız.');
+      setSlotToast('Nobody is free right now. We saved your slot and will notify you when someone joins.');
     }
     setTimeout(() => setSlotToast(''), 8000);
   }, []);
@@ -183,12 +180,12 @@ export default function Home({ user }) {
   const cancelUpcoming = useCallback(async () => {
     const uc = mine?.upcomingCall;
     if (!uc) return;
-    if (!window.confirm('Bu zəngi ləğv edirsiniz? Partnyorunuza bildiriş gedəcək.')) return;
+    if (!window.confirm('Cancel this call? Your partner will be notified.')) return;
     setCancelBusy(true);
     const res = await leavePracticeSlot(uc.slotId);
     setCancelBusy(false);
     if (!res.ok) setSlotToast(`⚠️ ${res.errorText}`);
-    else setSlotToast('Zəng ləğv edildi.');
+    else setSlotToast('Call cancelled.');
     setTimeout(() => setSlotToast(''), 6000);
   }, [mine]);
 
@@ -296,10 +293,10 @@ export default function Home({ user }) {
       {showTopicIntro && todayTopic && (
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
-            <h3 className="topic-intro-label">🌟 Bugünün Mövzusu</h3>
+            <h3 className="topic-intro-label">🌟 Today's topic</h3>
             <h1 className="topic-intro-title">{todayTopic.topic}</h1>
             <p className="topic-intro-desc">
-              Vocabulary, Idioms və suallara baxaraq mövzuya hazırlaşın!
+              Look through the words, idioms and questions to get ready.
             </p>
             <div className="topic-intro-actions">
               <button 
@@ -309,13 +306,13 @@ export default function Home({ user }) {
                   setDailyTopicOpen(true);
                 }}
               >
-                <BookOpen size={18} /> Öyrənməyə Başla
+                <BookOpen size={18} /> Start learning
               </button>
               <button 
                 className="topic-intro-btn-secondary" 
                 onClick={() => setShowTopicIntro(false)}
               >
-                Ekrana Keç
+                Open
               </button>
             </div>
           </div>
@@ -344,6 +341,10 @@ export default function Home({ user }) {
         <TeacherInviteBanner user={user} />
 
         <CourseCompletionCelebration user={user} />
+
+        {/* First card on the screen, and the point of the release: there is
+            always something to practise, whether or not anyone is online. */}
+        <TodayTaskCard topic={todayTopic?.topic} hasTeacher={!!user?.teacherId} />
 
         {/* Nəzakətli xatırlatma — cəza YOX. İcma yeni formalaşır, ban insanları
             qaçırardı; bir dəfəlik xahiş kifayətdir. */}
@@ -396,7 +397,7 @@ export default function Home({ user }) {
           }}>
             <span style={{ fontSize: '22px' }}>🔎</span>
             <p style={{ flex: 1, color: 'var(--text-primary, #fff)', fontSize: '14px', margin: 0, lineHeight: 1.4 }}>
-              <b>{activeSearchers.length} nəfər</b> indi partnyor axtarır — qoşulsanız dərhal bağlanacaq!
+              <b>{activeSearchers.length} people</b> is looking for a partner right now — join and you will connect immediately.
             </p>
             <button
               onClick={startSearch}
@@ -406,7 +407,7 @@ export default function Home({ user }) {
                 fontWeight: 700, fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
               }}
             >
-              Dərhal qoşul
+              Join now
             </button>
             <style>{`
               @keyframes searcherPulse {
@@ -427,17 +428,17 @@ export default function Home({ user }) {
           }}
         >
           {searching
-            ? <><X size={20} /> {t('common:searchingCancel')}</>
-            : <><Shuffle size={20} /> {t('common:findRandomPartner')}</>
+            ? <><X size={20} /> {'Searching... (cancel)'}</>
+            : <><Shuffle size={20} /> {'Find a random partner'}</>
           }
         </button>
 
         <FlaskSearchOverlay
           visible={searching}
-          title="Tərəfdaş axtarılır…"
-          subtitle="Laboratoriyada uyğun partnyor hazırlanır — tapılan kimi zəng avtomatik başlayacaq"
+          title="Finding a partner…"
+          subtitle="Looking for a match — the call starts automatically once we find one"
           onCancel={cancelSearch}
-          cancelLabel="Axtarışı dayandır"
+          cancelLabel="Stop searching"
         />
 
         {slotToast && (
@@ -579,7 +580,7 @@ export default function Home({ user }) {
               /* Boş ekran ən pis andır — 😴 emoji yerinə yellənçəkdə oturan
                  Kolba. Gəlişinə reaksiya verir, sonra sakitcə yellənir. */
               <div className="empty-state">
-                <BuddySwing label={tab === 'online' ? t('common:noOneOnline') : t('common:noUsersYet')} />
+                <BuddySwing label={tab === 'online' ? 'Nobody is online right now.' : 'No users yet.'} />
               </div>
             ) : (
               <div className="users-grid">
@@ -612,13 +613,13 @@ export default function Home({ user }) {
                       )}
                       <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '11px', color: '#888' }}>📞 {u.callCount || 0}</span>
-                        <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} dəq</span>
+                        <span style={{ fontSize: '11px', color: '#888' }}>🕐 {u.totalMinutes || 0} min</span>
                         {u.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {u.streak}</span>}
                         {u.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(u.rating / u.ratingCount).toFixed(1)}</span>}
                       </div>
                       {(() => {
                         const presence = getPresence(u);
-                        const label = presence === 'busy' ? '📞 Zəngdə'
+                        const label = presence === 'busy' ? '📞 On a call'
                           : presence === 'online' ? '🟢 Online' : '⚫ Offline';
                         return <span className={`online-badge ${presence}`}>{label}</span>;
                       })()}

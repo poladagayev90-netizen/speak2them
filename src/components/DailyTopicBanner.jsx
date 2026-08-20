@@ -19,7 +19,7 @@ export default function DailyTopicBanner({ user, onOpenTopic }) {
   const topic = getTodayContent();
   const completed = getTopicsCompleted(user, cycle);
   const topicLabel = completed !== null && completed > 0
-    ? `Mövzu ${completed} · ${topic.topic}`
+    ? `Topic ${completed} · ${topic.topic}`
     : topic.topic;
 
   return (
@@ -49,7 +49,7 @@ export default function DailyTopicBanner({ user, onOpenTopic }) {
           color: 'rgba(255,255,255,0.72)', fontSize: '11px', fontWeight: 700,
           letterSpacing: '0.4px', textTransform: 'uppercase',
         }}>
-          Bugünün mövzusu
+          Today's topic
         </div>
         <div style={{
           color: '#fff', fontWeight: 800, fontSize: '15px', lineHeight: 1.25,

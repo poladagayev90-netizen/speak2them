@@ -27,22 +27,22 @@ export default function UserProfile({ user: currentUser }) {
       if (isBlocked) {
         await unblockUser(currentUser.uid, uid);
       } else {
-        if (!window.confirm('Bu istifadəçini bloklayırsınız? Onu siyahılarda görməyəcək, zəng və mesajlarını almayacaqsınız.')) return;
+        if (!window.confirm('Block this person? They will not appear in your lists, and you will not receive their calls or messages.')) return;
         await blockUser(currentUser.uid, uid, profileUser?.name);
       }
     } catch (e) { console.error('[UserProfile] block', e); }
   };
 
   const handleReport = async () => {
-    const reason = window.prompt('Şikayət səbəbini qısaca yazın (təhqir, spam, uyğunsuz davranış və s.):');
+    const reason = window.prompt('Briefly describe the reason (abuse, spam, inappropriate behaviour, etc.):');
     if (reason === null) return;
     try {
       await submitReport(currentUser.uid, uid, profileUser?.name, reason);
       setReported(true);
-      alert('Şikayətiniz göndərildi — komandamız baxacaq. Təşəkkürlər.');
+      alert('Your report has been sent. Our team will review it. Thank you.');
     } catch (e) {
       console.error('[UserProfile] report', e);
-      alert('Göndərilmədi, yenidən cəhd edin.');
+      alert('Not sent. Please try again.');
     }
   };
 
@@ -133,7 +133,7 @@ export default function UserProfile({ user: currentUser }) {
         {isTutor && (
           <>
             <p style={{ fontSize: '13px', fontWeight: 700, color: '#0891b2', margin: '0 0 6px 0' }}>
-              Təsdiqlənmiş English Tutor
+              Verified English Tutor
             </p>
             {(specialties.length > 0 || years > 0) && (
               <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
@@ -149,7 +149,7 @@ export default function UserProfile({ user: currentUser }) {
                     fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '20px',
                     background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
                     border: '1px solid var(--border)',
-                  }}>{years} il təcrübə</span>
+                  }}>{years} years experience</span>
                 )}
               </div>
             )}
@@ -173,14 +173,14 @@ export default function UserProfile({ user: currentUser }) {
               onClick={handleBlockToggle}
               style={{ background: 'none', border: '1px solid var(--border)', color: isBlocked ? 'var(--text-secondary)' : '#ef4444', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
             >
-              {isBlocked ? '✓ Blokdan çıxar' : '🚫 Blokla'}
+              {isBlocked ? '✓ Unblock' : '🚫 Blokla'}
             </button>
             <button
               onClick={reported ? undefined : handleReport}
               disabled={reported}
               style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: reported ? 'default' : 'pointer', opacity: reported ? 0.6 : 1 }}
             >
-              {reported ? '✓ Şikayət göndərildi' : '⚠️ Şikayət et'}
+              {reported ? '✓ Report sent' : '⚠️ Report'}
             </button>
           </div>
         )}
@@ -192,9 +192,9 @@ export default function UserProfile({ user: currentUser }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '24px' }}>
           {(isTutor
             ? [
-              { icon: '🎓', label: 'Şagird', value: Number(profileUser.tutorStudentCount) || 0 },
-              { icon: '🕐', label: 'Koçluq dəq.', value: Number(profileUser.tutorMinutesCoached) || 0 },
-              { icon: '📅', label: 'Təcrübə', value: years > 0 ? `${years} il` : '—' },
+              { icon: '🎓', label: 'Student', value: Number(profileUser.tutorStudentCount) || 0 },
+              { icon: '🕐', label: 'Coaching min.', value: Number(profileUser.tutorMinutesCoached) || 0 },
+              { icon: '📅', label: 'Experience', value: years > 0 ? `${years} il` : '—' },
             ]
             : [
               { icon: '💬', label: 'Feedback', value: avgRating },

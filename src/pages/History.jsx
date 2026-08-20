@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Clock, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';import { Clock, ChevronLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
+import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 import '../styles/analysisReport.css';
 
@@ -14,7 +13,7 @@ const PROFILE_TOUR_STEPS = [
   {
     target: '#tour-analyze',
     title: 'Analyze Data',
-    content: 'Zəngdən sonra qrammatika, söz seçimi və ümumi nəticənizə buradan baxa bilərsiniz.',
+    content: 'After a call you can review your grammar, word choice and overall score here.',
     disableBeacon: true,
   }
 ];
@@ -23,9 +22,7 @@ export default function History({ user }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
-  const navigate = useNavigate();
-  const { t } = useTranslation(['analysis', 'common', 'headers']);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
@@ -78,7 +75,7 @@ export default function History({ user }) {
   const scoreTone = (s) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger');
 
   if (selectedAnalysis) {
-    return <AnalysisDetail analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} />;
+    return <AnalysisDetail analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} lang={getFeedbackLanguage()} />;
   }
 
   return (
@@ -88,17 +85,17 @@ export default function History({ user }) {
         <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>{t('headers:analysisHistory')}</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>{'Analysis history'}</h2>
       </div>
 
       <GuidedTour user={user} steps={PROFILE_TOUR_STEPS} tourKey="tourDone_profile" />
 
       {loading ? (
-        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{t('common:loading')}</div>
+        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{'Loading...'}</div>
       ) : history.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '60px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📊</div>
-          <p style={{ color: 'var(--text-secondary)' }}>{t('analysis:noHistory')}</p>
+          <p style={{ color: 'var(--text-secondary)' }}>{'No analyses yet.'}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -122,7 +119,7 @@ export default function History({ user }) {
                 </div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Clock size={14} />
-                  {call.durationSeconds ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s` : t('common:unknown')}
+                  {call.durationSeconds ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s` : 'Unknown'}
                   {call.timestamp && ` • ${new Date(call.timestamp.seconds * 1000).toLocaleDateString()}`}
                 </div>
               </div>
@@ -140,7 +137,7 @@ export default function History({ user }) {
                     {call.overallScore}
                   </div>
                 ) : call.error ? (
-                  <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700 }}>{t('common:error')}</div>
+                  <div style={{ color: 'var(--danger)', fontSize: '12px', fontWeight: 700 }}>{'Error'}</div>
                 ) : null}
                 <button
                   id={idx === 0 ? "tour-analyze" : undefined}
@@ -160,7 +157,7 @@ export default function History({ user }) {
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  {t('analysis:analyzeData')}
+                  {'View analysis'}
                 </button>
               </div>
             </div>
@@ -178,21 +175,22 @@ export default function History({ user }) {
 // nömrələnmiş bölmələr, cədvəllər. Səbəb — müəllim bunu valideynə göstərir
 // və çap edir; "tətbiq ekranı" deyil, RƏSMİ HESABAT təsiri dəyəri satır.
 // Şagird və müəllim EYNİ komponenti görür (TeacherStudent bunu import edir).
-export function AnalysisDetail({ analysis, onClose }) {
-  const { t, i18n } = useTranslation(['analysis', 'common', 'headers']);
-  const isTr = i18n.language === 'tr';
+export function AnalysisDetail({ analysis, onClose, lang }) {
+  // The report body is written in the learner's own language, so its section
+  // labels follow that language -- not the (English) interface.
+  const isTr = (lang || getFeedbackLanguage()) === 'tr';
 
   if (analysis.error) return (
     <div className="analysis-doc">
       <div className="analysis-doc-header">
-        <button className="analysis-doc-back" onClick={onClose} aria-label={t('common:back')}>
+        <button className="analysis-doc-back" onClick={onClose} aria-label={'Back'}>
           <ChevronLeft size={22} />
         </button>
-        <div className="analysis-doc-title">{t('headers:analysisResult')}</div>
+        <div className="analysis-doc-title">{'Analysis'}</div>
       </div>
       <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 44, marginBottom: 10 }}>❌</div>
-        <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{t('analysis:failed')}</p>
+        <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{'Analysis failed'}</p>
         <p className="doc-note">{analysisErrorMessage(analysis.error)}</p>
       </div>
     </div>
@@ -238,10 +236,10 @@ export function AnalysisDetail({ analysis, onClose }) {
   };
 
   const scoreTiles = [
-    { label: t('analysis:overallScore'), value: view.overallScore },
-    { label: t('analysis:fluency'), value: view.scores.fluency },
-    { label: t('analysis:grammar'), value: view.scores.grammar },
-    { label: t('analysis:vocabulary'), value: view.scores.vocabulary },
+    { label: 'Overall score', value: view.overallScore },
+    { label: 'Fluency', value: view.scores.fluency },
+    { label: 'Grammar', value: view.scores.grammar },
+    { label: 'Vocabulary', value: view.scores.vocabulary },
   ].filter((x) => Number.isFinite(x.value));
 
   // Bölmə başlıqları sənəd üslubunda BÖYÜK HƏRFLƏ və dilə uyğun.
@@ -258,17 +256,17 @@ export function AnalysisDetail({ analysis, onClose }) {
     wrong: isTr ? 'Söylediğin' : 'Dediyin',
     right: isTr ? 'Doğrusu' : 'Düzgünü',
     why: isTr ? 'Açıklama' : 'İzah',
-    word: isTr ? 'Kelime' : 'Söz',
+    word: isTr ? 'Kelime' : 'Word',
     example: isTr ? 'Örnek cümle' : 'Nümunə cümlə',
   };
 
   return (
     <div className="analysis-doc">
       <div className="analysis-doc-header">
-        <button className="analysis-doc-back" onClick={onClose} aria-label={t('common:back')}>
+        <button className="analysis-doc-back" onClick={onClose} aria-label={'Back'}>
           <ChevronLeft size={22} />
         </button>
-        <div className="analysis-doc-title">SpeakLab · {t('headers:analysisResult')}</div>
+        <div className="analysis-doc-title">SpeakLab · {'Analysis'}</div>
         {dateLabel && <div className="analysis-doc-meta">{dateLabel}</div>}
       </div>
 
@@ -301,7 +299,7 @@ export function AnalysisDetail({ analysis, onClose }) {
           </div>
           {view.speakingPace?.wpm > 0 && (
             <p className="doc-note" style={{ marginTop: 12 }}>
-              {t('analysis:speakingPace')}: <strong>{view.speakingPace.wpm} wpm</strong> ({view.speakingPace.label})
+              {'Speaking pace'}: <strong>{view.speakingPace.wpm} wpm</strong> ({view.speakingPace.label})
             </p>
           )}
         </>
@@ -380,7 +378,7 @@ export function AnalysisDetail({ analysis, onClose }) {
         <>
           {section(SEC.mistakes)}
           <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
-            <span className="doc-right" style={{ fontSize: 15 }}>{t('analysis:noMistakes')}</span>
+            <span className="doc-right" style={{ fontSize: 15 }}>{'No grammar mistakes found'}</span>
           </div>
         </>
       )}

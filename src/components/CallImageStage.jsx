@@ -57,11 +57,11 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
           padding: '12px 16px',
         }}>
           <p style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700, margin: 0 }}>
-            🖼️ Şəkli birlikdə təsvir edin
+            Describe the picture together
           </p>
           <button
             onClick={onClose}
-            aria-label="Bağla"
+            aria-label="Close"
             style={{
               background: 'transparent', border: 'none', color: 'var(--text-secondary)',
               fontSize: 18, cursor: 'pointer', padding: '2px 6px',
@@ -81,7 +81,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
               color: 'var(--text-muted)', fontSize: 13,
             }}>
               <span style={{ fontSize: 30 }} aria-hidden="true">🖼️</span>
-              Şəkil yüklənmədi — mövzunu sözlə təsvir edin
+              The picture did not load — describe the topic in words
             </div>
           ) : (
             <img
@@ -108,7 +108,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
               alignItems: 'center', justifyContent: 'center',
               color: 'var(--text-muted)', fontSize: 12,
             }}>
-              Şəkil yüklənir…
+              Loading picture…
             </div>
           )}
         </div>
@@ -116,7 +116,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
         {keywords.length > 0 && (
           <div style={{ padding: '12px 16px 4px' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Açar sözlər · {safeIndex + 1}/{images.length}
+              Keywords · {safeIndex + 1}/{images.length}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {keywords.map((v, i) => (
@@ -147,7 +147,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
               fontSize: 14, fontWeight: 700, cursor: 'pointer',
             }}
           >
-            Növbəti şəkil →
+            Next picture →
           </button>
         </div>
       </div>

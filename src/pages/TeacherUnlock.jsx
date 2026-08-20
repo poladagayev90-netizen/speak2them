@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -17,10 +15,10 @@ import TutorBadge from '../components/TutorBadge';
 // Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
 // müsbətdir: müdafiə cümləsi ("şagirdinizi almırıq") qorxunu adlandırıb yaradır.
 const VERIFICATION_TEXT = {
-  verified: { text: 'Təsdiqlənib — adınızın yanında Tutor nişanı görünür.', color: 'var(--success)' },
-  pending: { text: 'Baxılır — təsdiqdən sonra adınızın yanında Tutor nişanı görünəcək.', color: '#d97706' },
-  rejected: { text: 'Profil natamamdır — məlumatları tamamlayıb yenidən göndərin.', color: 'var(--danger)' },
-  none: { text: 'Profilinizi doldurun — SpeakLab tədris keyfiyyətinizi və məhsuldarlığınızı artıran alətdir.', color: 'var(--text-secondary)' },
+  verified: { text: 'Verified. The Tutor badge now appears next to your name.', color: 'var(--success)' },
+  pending: { text: 'Under review. The Tutor badge will appear next to your name once approved.', color: '#d97706' },
+  rejected: { text: 'Your profile is incomplete. Fill in the details and submit again.', color: 'var(--danger)' },
+  none: { text: 'Complete your profile. SpeakLab gives you the tools to teach and track your students.', color: 'var(--text-secondary)' },
 };
 
 // Müəllim Dashboard-u. İki giriş yolu var:
@@ -28,9 +26,7 @@ const VERIFICATION_TEXT = {
 //      teacherEligible=true dərhal yazılır, bura birbaşa düşür.
 //   2) Köhnə funnel: şagird kimi başlayıb 3 sessiyadan sonra açılan istifadəçi.
 // Kod yaradılana qədər kod formu, sonra tam dashboard: dəvət linki + roster.
-export default function TeacherUnlock({ user }) {
-  const { t } = useTranslation(['headers', 'ranking', 'teacher', 'common']);
-  const navigate = useNavigate();
+export default function TeacherUnlock({ user }) {  const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -135,7 +131,7 @@ export default function TeacherUnlock({ user }) {
     } else {
       setInviteMsg({
         ok: true,
-        text: `${res.data.studentName || email} adlı şagirdə dəvət göndərildi — tətbiqdə bildiriş alacaq.`,
+        text: `Invitation sent to ${res.data.studentName || email} — they will get a notification in the app.`,
       });
       setInviteEmail('');
     }
@@ -161,11 +157,11 @@ export default function TeacherUnlock({ user }) {
     const res = await inviteStudentByUid(u.id);
     setInviting(false);
     if (!res.ok) {
-      setInviteMsg({ ok: false, text: `${u.name || 'İstifadəçi'}: ${res.errorText}` });
+      setInviteMsg({ ok: false, text: `${u.name || 'User'}: ${res.errorText}` });
       return;
     }
     setInvitedUids((prev) => new Set(prev).add(u.id));
-    setInviteMsg({ ok: true, text: `${u.name || 'İstifadəçi'} adlı şagirdə dəvət göndərildi.` });
+    setInviteMsg({ ok: true, text: `Invitation sent to ${u.name || 'User'}.` });
   };
 
   const toggleSpecialty = (s) => {
@@ -195,8 +191,8 @@ export default function TeacherUnlock({ user }) {
       setProfileMsg({
         ok: true,
         text: res.data.verificationStatus === 'verified'
-          ? 'Profiliniz yeniləndi.'
-          : 'Profiliniz təsdiqə göndərildi.',
+          ? 'Your profile has been updated.'
+          : 'Your profile has been submitted for review.',
       });
       setProfileOpen(false);
     }
@@ -209,7 +205,7 @@ export default function TeacherUnlock({ user }) {
       setCopied(what);
       setTimeout(() => setCopied(''), 1800);
     } catch {
-      setError('Kopyalana bilmədi — mətni əl ilə seçin.');
+      setError('Could not copy — please select the text manually.');
     }
   };
 
@@ -235,14 +231,13 @@ export default function TeacherUnlock({ user }) {
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={cardStyle}>
           <div style={{ fontSize: '46px', textAlign: 'center' }}>🎓</div>
-          <h2 style={{ textAlign: 'center', marginBottom: '6px' }}>Müəllim rejimi</h2>
+          <h2 style={{ textAlign: 'center', marginBottom: '6px' }}>Teacher mode</h2>
           <p style={{
             textAlign: 'center', color: 'var(--text-secondary, #888)',
             fontSize: '15px', lineHeight: 1.5, marginBottom: '20px',
           }}>
-            Şagirdlərinizi izləmək üçün əvvəlcə özünüz danışın.
-            {' '}<strong>{TEACHER_SESSIONS_REQUIRED} sessiya</strong> tamamlayın —
-            öz analizinizi görəcəksiniz, şagirdiniz də məhz onu alacaq.
+            Speak first yourself, then you can follow your students.
+            {' '}<strong>{TEACHER_SESSIONS_REQUIRED} sessiya</strong> and you will see your own report — exactly what your students receive.
           </p>
 
           <div style={{
@@ -269,13 +264,13 @@ export default function TeacherUnlock({ user }) {
             </div>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary, #888)', marginTop: '10px', marginBottom: 0 }}>
               {remaining === 0
-                ? 'Hazırdır — səhifəni yeniləyin.'
-                : `Daha ${remaining} sessiya qaldı. Sessiya = 2 dəqiqədən uzun zəng.`}
+                ? 'Done — refresh the page.'
+                : `${remaining} sessions to go. A session is a call longer than 2 minutes.`}
             </p>
           </div>
 
           <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-            Danışmağa başla 🎙️
+            Start speaking 🎙️
           </button>
           {back}
         </div>
@@ -294,7 +289,7 @@ export default function TeacherUnlock({ user }) {
         <div className="auth-card" style={{ ...cardStyle, textAlign: 'center' }}>
           <div className="loading-logo" style={{ fontSize: '34px' }}>🎙️</div>
           <p style={{ color: 'var(--text-secondary, #888)', fontSize: '14px', marginTop: '12px', marginBottom: 0 }}>
-            {t('common:loading')}
+            {'Loading...'}
           </p>
         </div>
       </div>
@@ -309,24 +304,23 @@ export default function TeacherUnlock({ user }) {
           <div style={{ fontSize: '46px', textAlign: 'center' }}>🔓</div>
           <h2 style={{ textAlign: 'center', marginBottom: '6px' }}>
             {isTeacher && done < TEACHER_SESSIONS_REQUIRED
-              ? t('teacher:welcomeTeacher')
-              : t('teacher:unlockedTitle')}
+              ? 'Welcome, teacher'
+              : 'Teacher mode unlocked'}
           </h2>
           <p style={{
             textAlign: 'center', color: 'var(--text-secondary, #888)',
             fontSize: '15px', lineHeight: 1.5, marginBottom: '20px',
           }}>
-            Şagirdlərinizin sizə qoşulması üçün bir kod seçin — dəvət linkiniz
-            və şagird siyahınız burada olacaq.
+            Pick a code your students can join with. Your invite link and student list will live here.
           </p>
 
           {error && <div className="error-box">{error}</div>}
 
           <form onSubmit={handleSubmit}>
-            <label>{t('teacher:yourStudentCode')}</label>
+            <label>{'Your student code'}</label>
             <input
               type="text"
-              placeholder="MƏS: AYTAC01"
+              placeholder="E.G. AYTAC01"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               autoCapitalize="characters"
@@ -357,10 +351,10 @@ export default function TeacherUnlock({ user }) {
               color: 'var(--text-secondary, #888)',
               margin: '10px 2px 18px',
             }}>
-              4–12 hərf və ya rəqəm. Şagirdlərinizin yadda saxlaya biləcəyi bir şey seçin.
+              4–12 letters or digits. Choose something your students can remember.
             </p>
             <button type="submit" className="btn-primary" disabled={loading || code.trim().length < 4}>
-              {loading ? t('teacher:creatingCode') : t('teacher:createCode')}
+              {loading ? 'Creating...' : 'Create code'}
             </button>
           </form>
           {back}
@@ -371,7 +365,7 @@ export default function TeacherUnlock({ user }) {
 
   // ─── 4. Dashboard: dəvət + roster ──────────────────────────────
   const link = buildJoinLink(myCode);
-  const shareText = `Salam! SpeakLab-da İngilis dili danışıq praktikası üçün mənim şagird kodum: ${myCode}\n${link}`;
+  const shareText = `My SpeakLab student code for English speaking practice: ${myCode}\n${link}`;
   const students = roster || [];
   // toLocaleDateString('az-AZ') bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
@@ -434,7 +428,7 @@ export default function TeacherUnlock({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">{t('headers:teacherPanel')}</div>
+        <div className="home-logo">{'Teacher panel'}</div>
       </div>
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
@@ -468,7 +462,7 @@ export default function TeacherUnlock({ user }) {
                 cursor: 'pointer', whiteSpace: 'nowrap',
               }}
             >
-              {profileOpen ? 'Bağla' : 'Redaktə et'}
+              {profileOpen ? 'Close' : 'Edit'}
             </button>
           </div>
 
@@ -484,19 +478,19 @@ export default function TeacherUnlock({ user }) {
           {profileOpen && (
             <form onSubmit={saveProfile} style={{ marginTop: '14px' }}>
               <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Profildə görünən ad
+                Name shown on your profile
               </label>
               <input
                 type="text"
                 value={profile.displayName}
                 onChange={(e) => setProfile((p) => ({ ...p, displayName: e.target.value }))}
                 maxLength={60}
-                placeholder="Aytac Məmmədova"
+                placeholder="Aytac Mammadova"
                 style={fieldStyle}
               />
 
               <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', margin: '14px 0 6px' }}>
-                İxtisas (5-ə qədər)
+                Specialities (up to 5)
               </label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {TUTOR_SPECIALTIES.map((s) => {
@@ -521,7 +515,7 @@ export default function TeacherUnlock({ user }) {
               </div>
 
               <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', margin: '14px 0 6px' }}>
-                Təcrübə (il)
+                Experience (years)
               </label>
               <input
                 type="number"
@@ -533,14 +527,14 @@ export default function TeacherUnlock({ user }) {
               />
 
               <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', margin: '14px 0 6px' }}>
-                Haqqınızda
+                About you
               </label>
               <textarea
                 value={profile.bio}
                 onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
                 maxLength={400}
                 rows={3}
-                placeholder="Nə tədris edirsiniz, kimlərlə işləyirsiniz?"
+                placeholder="What do you teach, and who do you work with?"
                 style={{ ...fieldStyle, resize: 'vertical' }}
               />
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right', marginTop: '4px' }}>
@@ -569,7 +563,7 @@ export default function TeacherUnlock({ user }) {
                   cursor: (savingProfile || !profile.displayName.trim()) ? 'default' : 'pointer',
                 }}
               >
-                {savingProfile ? '...' : (verifState === 'verified' ? 'Yadda saxla' : 'Təsdiqə göndər')}
+                {savingProfile ? '...' : (verifState === 'verified' ? 'Yadda saxla' : 'Submit for review')}
               </button>
             </form>
           )}
@@ -582,7 +576,7 @@ export default function TeacherUnlock({ user }) {
           padding: '18px', marginBottom: '16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700 }}>{t('teacher:inviteCode')}</span>
+            <span style={{ fontSize: '14px', fontWeight: 700 }}>{'Your invite code'}</span>
             <span style={{
               fontSize: '22px', fontWeight: 900, letterSpacing: '2px',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
@@ -600,7 +594,7 @@ export default function TeacherUnlock({ user }) {
                 color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700,
               }}
             >
-              {copied === 'link' ? `✅ ${t('common:copied')}` : t('teacher:copyLink')}
+              {copied === 'link' ? `✅ ${'Copied'}` : 'Copy link'}
             </button>
             <a
               href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
@@ -624,10 +618,10 @@ export default function TeacherUnlock({ user }) {
           borderRadius: '16px', padding: '16px', marginBottom: '16px',
         }}>
           <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
-            ✉️ Şagirdi birbaşa dəvət et
+            ✉️ Invite a student directly
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '10px', lineHeight: 1.5 }}>
-            Şagirdin tətbiqdə qeydiyyatdan keçdiyi e-poçtu yazın — dəvət onun ekranına düşəcək.
+            Enter the email your student signed up with — the invitation appears on their screen.
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input
@@ -658,7 +652,7 @@ export default function TeacherUnlock({ user }) {
                 whiteSpace: 'nowrap',
               }}
             >
-              {inviting ? '...' : 'Dəvət et'}
+              {inviting ? '...' : 'Invite'}
             </button>
           </div>
           {inviteMsg && (
@@ -689,10 +683,10 @@ export default function TeacherUnlock({ user }) {
           >
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
-                👥 İstifadəçilərdən seç
+                👥 Pick from users
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                Siyahıdan birbaşa dəvət göndərin — e-poçt yazmağa ehtiyac yoxdur
+                Invite straight from the list — no email needed
               </div>
             </div>
             <span style={{ color: 'var(--text-muted)', fontSize: '18px', flexShrink: 0 }}>
@@ -706,11 +700,11 @@ export default function TeacherUnlock({ user }) {
                 type="text"
                 value={dirSearch}
                 onChange={(e) => setDirSearch(e.target.value)}
-                placeholder="Ad ilə axtarın…"
+                placeholder="Search by name…"
                 style={{ ...fieldStyle, marginBottom: '10px' }}
               />
               {directory === null ? (
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t('common:loading')}</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{'Loading...'}</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '320px', overflowY: 'auto' }}>
                   {directory
@@ -740,19 +734,19 @@ export default function TeacherUnlock({ user }) {
                               fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)',
                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                             }}>
-                              {u.name || 'İstifadəçi'}
+                              {u.name || 'User'}
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                              {u.level || 'Səviyyə qeyd edilməyib'}
+                              {u.level || 'Level not set'}
                             </div>
                           </div>
                           {isMine ? (
                             <span style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 700, flexShrink: 0 }}>
-                              ✓ Şagirdiniz
+                              ✓ Your student
                             </span>
                           ) : otherTeacher ? (
                             <span style={{ fontSize: '12px', color: 'var(--text-muted)', flexShrink: 0 }}>
-                              Başqa müəllimdə
+                              With another teacher
                             </span>
                           ) : (
                             <button
@@ -770,7 +764,7 @@ export default function TeacherUnlock({ user }) {
                                 color: sent ? 'var(--text-secondary)' : '#fff',
                               }}
                             >
-                              {inviting === u.id ? '...' : sent ? 'Göndərildi' : 'Dəvət et'}
+                              {inviting === u.id ? '...' : sent ? 'Sent' : 'Invite'}
                             </button>
                           )}
                         </div>
@@ -789,7 +783,7 @@ export default function TeacherUnlock({ user }) {
             borderRadius: '16px', padding: '16px', marginBottom: '16px',
           }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px' }}>
-              📊 Sinfiniz bu həftə
+              📊 Your class this week
             </div>
 
             <div style={{
@@ -797,9 +791,9 @@ export default function TeacherUnlock({ user }) {
               gap: '10px',
             }}>
               {[
-                { label: 'Aktiv şagird', value: `${activeThisWeek}/${students.length}` },
-                { label: 'Sinif ortalaması', value: classAvg ?? '—' },
-                { label: 'Analiz edilən', value: scored.length },
+                { label: 'Active students', value: `${activeThisWeek}/${students.length}` },
+                { label: 'Class average', value: classAvg ?? '—' },
+                { label: 'Analysed', value: scored.length },
               ].map((tile) => (
                 <div key={tile.label} style={{
                   background: 'var(--bg-card)', borderRadius: '12px',
@@ -814,7 +808,7 @@ export default function TeacherUnlock({ user }) {
             {topThemes.length > 0 ? (
               <>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: '16px 2px 8px' }}>
-                  Ən çox təkrarlanan mövzular
+                  Most repeated error themes
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {topThemes.map((th, i) => (
@@ -833,13 +827,12 @@ export default function TeacherUnlock({ user }) {
                   ))}
                 </div>
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55, margin: '10px 2px 0' }}>
-                  Bu mövzuları növbəti dərsinizdə vurğulasanız, sinfinizin ən çox təkrarladığı
-                  səhvləri bir dəfəyə həll edəcəksiniz.
+                  Cover these in your next lesson and you address the whole class at once.
                 </p>
               </>
             ) : (
               <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55, margin: '14px 2px 0' }}>
-                Şagirdləriniz danışdıqca burada sinfin ən çox təkrarladığı səhv mövzuları görünəcək.
+                As your students speak, the errors your class repeats most will appear here.
               </p>
             )}
           </div>
@@ -850,25 +843,25 @@ export default function TeacherUnlock({ user }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           margin: '4px 2px 8px',
         }}>
-          <span style={{ fontSize: '15px', fontWeight: 800 }}>{t('teacher:myStudents')}</span>
+          <span style={{ fontSize: '15px', fontWeight: 800 }}>{'My students'}</span>
           <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-            {roster === null ? '' : `${students.length} ${t('common:people')}`}
+            {roster === null ? '' : `${students.length} ${'people'}`}
           </span>
         </div>
 
         {roster === null ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">⏳</div>
-            <p style={{ color: 'var(--text-secondary)' }}>{t('common:loading')}</p>
+            <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
           </div>
         ) : students.length === 0 ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon">🪺</div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              {t('teacher:noStudents')}
+              {'No students yet.'}
             </p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {t('teacher:noStudentsHint')}
+              {'Send the link above to your students — they appear here as soon as they join.'}
             </p>
           </div>
         ) : (
@@ -899,7 +892,7 @@ export default function TeacherUnlock({ user }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '15px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {s.displayName || 'Şagird'}
+                    {s.displayName || 'Student'}
                     {Number(s.streak) > 0 && (
                       <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 800, marginLeft: '6px' }}>
                         🔥{s.streak}
@@ -910,8 +903,8 @@ export default function TeacherUnlock({ user }) {
                       roster-ə denormalizə yazır (sessiya sayı + son aktivlik). */}
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                     {Number(s.completedSessions) > 0
-                      ? `${s.completedSessions} ${t('teacher:sessions')} · ${t('teacher:lastActive')}: ${fmtDate(s.lastActiveAt)}`
-                      : `${t('teacher:joined')}: ${fmtDate(s.joinedAt)} · ${t('teacher:notCalledYet')}`}
+                      ? `${s.completedSessions} ${'sessions'} · ${'last'}: ${fmtDate(s.lastActiveAt)}`
+                      : `${'Joined'}: ${fmtDate(s.joinedAt)} · ${'no calls yet'}`}
                   </div>
                 </div>
                 <span style={{
@@ -920,7 +913,7 @@ export default function TeacherUnlock({ user }) {
                   background: s.status === 'active' ? '#22c55e22' : '#f59e0b22',
                   color: s.status === 'active' ? '#16a34a' : '#d97706',
                 }}>
-                  {s.status === 'active' ? t('teacher:active') : t('teacher:inactive')}
+                  {s.status === 'active' ? 'Active' : 'Inactive'}
                 </span>
                 <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span>
               </div>
@@ -932,7 +925,7 @@ export default function TeacherUnlock({ user }) {
           fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center',
           marginTop: '14px', lineHeight: 1.5,
         }}>
-          {t('teacher:reportsSoon')}
+          {'Student progress and analysis reports arrive here next.'}
         </p>
       </div>
     </div>

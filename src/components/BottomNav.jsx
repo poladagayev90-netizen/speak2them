@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bot, Home, LayoutDashboard, MessageCircle, Trophy, User } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { subscribeToUnreadTotal } from '../utils/chat';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation('nav');
   const path = location.pathname;
 
   // Müəllim üçün AInur tabı Dashboard ilə əvəzlənir: müəllimin əsas işi
@@ -22,13 +20,13 @@ export default function BottomNav({ user }) {
     return subscribeToUnreadTotal(user.uid, setUnread);
   }, [user?.uid]);
   const tabs = [
-    { icon: Home,          label: t('lobby'),   route: '/' },
-    { icon: MessageCircle, label: t('chats'),   route: '/chats', badge: unread },
+    { icon: Home,          label: 'Today',   route: '/' },
+    { icon: MessageCircle, label: 'Chats',   route: '/chats', badge: unread },
     isTeacher
-      ? { icon: LayoutDashboard, label: t('dashboard'), route: '/teacher' }
-      : { icon: Bot,             label: t('ai'),        route: '/ai-chat', tourId: 'tour-ai-chat' },
-    { icon: Trophy,        label: t('ranking'), route: '/ranking' },
-    { icon: User,          label: t('profile'), route: '/profile' },
+      ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
+      : { icon: Bot,             label: 'AInur',        route: '/ai-chat', tourId: 'tour-ai-chat' },
+    { icon: Trophy,        label: 'Ranking', route: '/ranking' },
+    { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
   return (

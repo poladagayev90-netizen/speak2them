@@ -47,7 +47,7 @@ export default function Survey({ user }) {
     }
 
     if (list.length >= max) {
-      alert(`Maksimum ${max} seçim edə bilərsən.`);
+      alert(`You can choose up to ${max}.`);
       return;
     }
 
@@ -92,7 +92,7 @@ export default function Survey({ user }) {
 
       window.location.href = '/';
     } catch (err) {
-      alert('Survey yadda saxlanmadı. Zəhmət olmasa yenidən yoxla.');
+      alert('Your answers were not saved. Please try again.');
       setSaving(false);
     }
   };
@@ -139,7 +139,7 @@ export default function Survey({ user }) {
 
         <h2>Quick Setup</h2>
         <p className="auth-sub">
-          Daha uyğun danışıq partnyoru tapmaq üçün 20 saniyəlik seçim et.
+          A 20-second setup so we can match you with better partners.
         </p>
 
         {/* Qeydiyyatdan sonrakı ilk ekran budur — kurs kodu olan istifadəçi
@@ -160,7 +160,7 @@ export default function Survey({ user }) {
             marginTop: '12px',
           }}
         >
-          🎟️ Kurs kodunuz var? Aktivləşdirin
+          🎟️ Have a course code? Activate it
         </button>
 
         <button
@@ -226,7 +226,7 @@ export default function Survey({ user }) {
 
         <div style={sectionStyle}>
           <p style={sectionTitleStyle}>💬 Favorite conversation topics</p>
-          <p style={hintStyle}>Maksimum 3 mövzu seç.</p>
+          <p style={hintStyle}>Choose up to 3 topics.</p>
           {TOPICS.map(item => (
             <button
               key={item.value}

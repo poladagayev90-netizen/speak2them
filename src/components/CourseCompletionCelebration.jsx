@@ -52,7 +52,7 @@ export default function CourseCompletionCelebration({ user }) {
   };
 
   const share = async () => {
-    const text = `🎉 SpeakLab-da 30 mövzuluq İngilis dili danışıq kursunu tamamladım! speaklab-app.vercel.app`;
+    const text = `🎉 I completed the 30-topic English speaking course on SpeakLab! speaklab-app.vercel.app`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(text);
@@ -78,10 +78,10 @@ export default function CourseCompletionCelebration({ user }) {
         </div>
         <div style={{ fontSize: '56px', lineHeight: 1, marginBottom: '10px' }}>🎉</div>
         <h2 style={{ color: '#fff', fontSize: '22px', margin: '0 0 8px' }}>
-          Təbriklər! {COURSE_TOPIC_COUNT}/{COURSE_TOPIC_COUNT} tamamladınız!
+          Congratulations {COURSE_TOPIC_COUNT}/{COURSE_TOPIC_COUNT} complete
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: 1.5, margin: '0 0 18px' }}>
-          30 mövzuluq danışıq kursunun sonuna çatdınız — bu, böyük işdir. 👏
+          You reached the end of the 30-topic speaking course. That is a real achievement. 👏
         </p>
 
         <div style={{
@@ -89,11 +89,11 @@ export default function CourseCompletionCelebration({ user }) {
           borderRadius: '16px', padding: '14px', marginBottom: '20px',
         }}>
           <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>
-            🎁 6 aylıq pulsuz giriş aktivləşdi
+            🎁 Six months of free access unlocked
           </div>
           {untilLabel && (
             <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', marginTop: '4px' }}>
-              {untilLabel} tarixinə qədər
+              {untilLabel} until
             </div>
           )}
         </div>
@@ -107,7 +107,7 @@ export default function CourseCompletionCelebration({ user }) {
             marginBottom: '10px',
           }}
         >
-          📤 Nailiyyəti paylaş
+          📤 Share this
         </button>
         <button
           onClick={close}

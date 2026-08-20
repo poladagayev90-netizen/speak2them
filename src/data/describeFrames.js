@@ -13,7 +13,7 @@
 export const describeFrames = [
   {
     id: 'see',
-    label: 'Nə görürəm',
+    label: 'What I see',
     frames: [
       'I can see…',
       'There is a…',
@@ -24,7 +24,7 @@ export const describeFrames = [
   },
   {
     id: 'where',
-    label: 'Harada',
+    label: 'Where it is',
     frames: [
       'In the foreground…',
       'In the background…',
@@ -35,7 +35,7 @@ export const describeFrames = [
   },
   {
     id: 'guess',
-    label: 'Təxmin edirəm',
+    label: 'My guess',
     frames: [
       'It looks like…',
       'It seems to me that…',
@@ -46,7 +46,7 @@ export const describeFrames = [
   },
   {
     id: 'opinion',
-    label: 'Mənim fikrim',
+    label: 'What I think',
     frames: [
       'In my opinion…',
       "I'd say…",

@@ -35,7 +35,7 @@ export default function Admin({ user }) {
     setLoading(prev => ({ ...prev, [userId]: true }));
     const res = await setTutorVerification(userId, verified);
     setLoading(prev => ({ ...prev, [userId]: false }));
-    if (!res.ok) alert('Xəta: ' + res.errorText);
+    if (!res.ok) alert('Error: ' + res.errorText);
   };
 
   const setPremium = async (u, value, planType = 'pro') => {
@@ -92,7 +92,7 @@ export default function Admin({ user }) {
           revokedBy: user.uid,
         });
       }
-      alert(`✅ ${u.name || 'İstifadəçi'} üçün Premium statusu yeniləndi!`);
+      alert(`✅ Premium status updated for ${u.name || 'User'}.`);
     } catch (e) {
       console.error('[Admin] Failed to update premium status:', {
         targetUserId: userId,
@@ -101,7 +101,7 @@ export default function Admin({ user }) {
         error: e,
       });
       setError(e.message || 'Premium status could not be updated.');
-      alert('Xəta (Premium): ' + (e.message || 'Yenilənmədi.'));
+      alert('Premium error: ' + (e.message || 'Not updated.'));
     } finally {
       setLoading(prev => ({ ...prev, [userId]: false }));
     }
@@ -159,7 +159,7 @@ export default function Admin({ user }) {
             <span style={{ fontSize: '20px' }}>
               {{ cohorts: '🧪', slots: '📅' }[adminTab] || '👑'}
             </span>
-            {{ cohorts: 'Kohortlar', slots: 'Görüşlər' }[adminTab] || 'Premium İdarəetmə'}
+            {{ cohorts: 'Kohortlar', slots: 'Sessions' }[adminTab] || 'Premium management'}
           </h2>
           <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
         </div>
@@ -167,9 +167,9 @@ export default function Admin({ user }) {
         {/* Bölmə keçidi */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {[
-            { id: 'premium', label: '👑 Tələbələr' },
+            { id: 'premium', label: '👑 Students' },
             { id: 'cohorts', label: '🧪 Kohortlar' },
-            { id: 'slots', label: '📅 Görüşlər' },
+            { id: 'slots', label: '📅 Sessions' },
           ].map((t) => (
             <button
               key={t.id}
@@ -195,7 +195,7 @@ export default function Admin({ user }) {
             backdropFilter: 'blur(10px)'
           }}>
             <p style={{ fontSize: '24px', fontWeight: 800, color: '#e2e8f0', margin: 0 }}>{users.length}</p>
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>Ümumi</p>
+            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>All</p>
           </div>
           <div style={{
             flex: 1, background: 'rgba(245, 158, 11, 0.1)', borderRadius: '12px',
@@ -225,7 +225,7 @@ export default function Admin({ user }) {
         <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
           <input
             type="text"
-            placeholder="İstifadəçi axtar..."
+            placeholder="Search users..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
@@ -239,9 +239,9 @@ export default function Admin({ user }) {
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
           {[
-            { id: 'all', label: 'Bütün vaxtlar' },
+            { id: 'all', label: 'All time' },
             { id: 'day', label: 'Son 24 saat' },
-            { id: 'week', label: 'Son 1 həftə' },
+            { id: 'week', label: 'Last 7 days' },
             { id: 'month', label: 'Son 1 ay' },
           ].map(f => (
             <button
@@ -308,14 +308,14 @@ export default function Admin({ user }) {
                       📞 {u.callCount || 0}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      ⏱️ {u.totalMinutes || 0} dəq
+                      ⏱️ {u.totalMinutes || 0} min
                     </span>
                     {!isAdmin && (
                       <span style={{
                         color: u.subscriptionPlan === 'trial' ? '#7c6ff7' : (u.isPremium ? '#f59e0b' : '#64748b'),
                       }}>
                         🎁 {u.isPremium ? (u.premiumPlan || 'pro') : (u.subscriptionPlan || 'free')}
-                        {u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0}dəq` : ''}
+                        {u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0} min` : ''}
                       </span>
                     )}
                   </div>
@@ -325,7 +325,7 @@ export default function Admin({ user }) {
                       {Array.isArray(u.tutorProfile.specialties) && u.tutorProfile.specialties.length > 0
                         ? ` · ${u.tutorProfile.specialties.join(', ')}` : ''}
                       {u.tutorProfile.yearsExperience ? ` · ${u.tutorProfile.yearsExperience} il` : ''}
-                      {u.teacherVerified ? ' · ✅ təsdiqli' : ' · ⏳ gözləyir'}
+                      {u.teacherVerified ? ' · ✅ verified' : ' · ⏳ pending'}
                     </p>
                   )}
                 </div>
@@ -350,7 +350,7 @@ export default function Admin({ user }) {
                     >
                       {loading[u.uid || u.id]
                         ? '...'
-                        : (u.teacherVerified ? 'Nişanı ləğv et' : '🎓 Tutoru təsdiqlə')}
+                        : (u.teacherVerified ? 'Remove badge' : '🎓 Verify tutor')}
                     </button>
                   )}
                   {isAdmin && !u.teacherEligible && (
@@ -362,9 +362,9 @@ export default function Admin({ user }) {
                             role: 'teacher',
                             completedSessions: 3
                           });
-                          alert('Müəllim statusu verildi!');
+                          alert('Teacher access granted.');
                         } catch (e) {
-                          alert('Xəta: ' + e.message);
+                          alert('Error: ' + e.message);
                         }
                       }}
                       style={{
@@ -373,7 +373,7 @@ export default function Admin({ user }) {
                         fontWeight: 700, cursor: 'pointer', fontSize: '12px'
                       }}
                     >
-                      Müəllim et
+                      Make teacher
                     </button>
                   )}
                   {!isAdmin && (
@@ -388,7 +388,7 @@ export default function Admin({ user }) {
                           fontSize: '12px', transition: 'all 0.2s', width: '110px'
                         }}
                       >
-                        {loading[u.uid || u.id] ? '...' : 'Ləğv et'}
+                        {loading[u.uid || u.id] ? '...' : 'Cancel'}
                       </button>
                     ) : (
                       <button
@@ -414,7 +414,7 @@ export default function Admin({ user }) {
           {filteredUsers.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
               <div style={{ fontSize: '40px', marginBottom: '16px' }}>🔍</div>
-              <p style={{ margin: 0, fontSize: '15px' }}>Heç bir istifadəçi tapılmadı</p>
+              <p style={{ margin: 0, fontSize: '15px' }}>No users found</p>
             </div>
           )}
         </div>

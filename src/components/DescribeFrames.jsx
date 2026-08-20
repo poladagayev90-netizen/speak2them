@@ -39,7 +39,7 @@ export default function DescribeFrames({ compact = false, prompts = [] }) {
         }}
       >
         <span aria-hidden="true" style={{ fontSize: 15 }}>💬</span>
-        Danışıq qəlibləri
+        Sentence starters
         <span
           aria-hidden="true"
           style={{
@@ -107,7 +107,7 @@ export default function DescribeFrames({ compact = false, prompts = [] }) {
                 color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 6px',
                 textTransform: 'uppercase', letterSpacing: '0.5px',
               }}>
-                Bu şəkil üçün
+                For this picture
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {prompts.map((p, i) => (

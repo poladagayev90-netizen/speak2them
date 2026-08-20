@@ -52,7 +52,7 @@ function RatingBlock({ peerName, onSubmitRating }) {
       setDone(true);
     } catch (e) {
       console.error('[CallInsights] Rating error:', e);
-      setError('Qiymət göndərilmədi. İnternetini yoxla və yenidən cəhd et.');
+      setError('Rating not sent. Check your connection and try again.');
     }
     setSubmitting(false);
   };
@@ -64,12 +64,12 @@ function RatingBlock({ peerName, onSubmitRating }) {
     }}>
       {done ? (
         <p style={{ color: 'var(--success)', fontSize: 15, fontWeight: 700, margin: 0 }}>
-          Təşəkkürlər ✓
+          Thank you ✓
         </p>
       ) : (
         <>
           <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, margin: '0 0 10px' }}>
-            {peerName ? `${peerName} ilə zəng necə getdi?` : 'Zəng necə getdi?'}
+            {peerName ? `How did your call with ${peerName} go?` : 'How did the call go?'}
           </p>
           <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12 }}>
             {[1, 2, 3, 4, 5].map((star) => (
@@ -93,7 +93,7 @@ function RatingBlock({ peerName, onSubmitRating }) {
               cursor: selectedStar > 0 && !submitting ? 'pointer' : 'not-allowed',
               opacity: submitting ? 0.6 : 1,
             }}
-          >{submitting ? 'Göndərilir…' : 'Göndər'}</button>
+          >{submitting ? 'Sending…' : 'Send'}</button>
         </>
       )}
     </div>
@@ -143,7 +143,7 @@ export default function CallInsights({
           background: 'rgba(124, 111, 247, 0.15)', color: 'var(--accent)',
           border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer',
         }}>
-          📝 Söz testi ({quizWordCount} söz)
+          📝 Word quiz ({quizWordCount} words)
         </button>
       )}
     </>
@@ -155,18 +155,18 @@ export default function CallInsights({
     <InsightsShell centered onClose={onClose} extras={extras}>
       <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>📡</div>
       <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
-        Səs yazısı göndərilə bilmədi
+        The recording could not be uploaded
       </p>
       <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center' }}>
-        İnternet bağlantını yoxla. Bu zəngin analizi hazırlanmayacaq.
+        Check your connection. This call will not be analysed.
       </p>
     </InsightsShell>
   );
 
   if (status !== 'done' && status !== 'failed') {
     const statusText = status === 'processing'
-      ? 'AI danışığınızı yoxlayır…'
-      : 'Səs analiziniz növbəyə alındı';
+      ? 'AInur is reviewing your speaking…'
+      : 'Your speaking analysis is queued';
     return (
       <InsightsShell centered onClose={onClose} extras={extras}>
         <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>🎓</div>
@@ -174,7 +174,7 @@ export default function CallInsights({
           {statusText}
         </p>
         <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center' }}>
-          Hazır olduqda burada görünəcək. Gözləmək istəmirsənsə bağlaya bilərsən — nəticə itməyəcək.
+          It will appear here when it is ready. You can close this — your report will be saved.
         </p>
       </InsightsShell>
     );
@@ -184,7 +184,7 @@ export default function CallInsights({
     <InsightsShell centered onClose={onClose} extras={extras}>
       <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>⚠️</div>
       <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
-        Analiz alınmadı
+        Analysis failed
       </p>
       <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 8, textAlign: 'center' }}>
         {analysisErrorMessage(analysis?.error)}
@@ -199,9 +199,9 @@ export default function CallInsights({
   // Older analyses only recorded a fluency score; hide the tiles they lack
   // rather than printing a misleading 0.
   const scoreTiles = [
-    { label: 'Axıcılıq', value: view.scores.fluency },
+    { label: 'Fluency', value: view.scores.fluency },
     { label: 'Qrammatika', value: view.scores.grammar },
-    { label: 'Lüğət', value: view.scores.vocabulary },
+    { label: 'Vocabulary', value: view.scores.vocabulary },
   ].filter((t) => Number.isFinite(t.value));
 
   const sectionTitle = {
@@ -216,7 +216,7 @@ export default function CallInsights({
     <InsightsShell onClose={onClose} extras={extras}>
       {/* SCORE */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Zəng Analizi 🎓</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Call analysis 🎓</p>
         <div style={{
           width: 90, height: 90, borderRadius: '50%',
           background: scoreColor(view.overallScore),
@@ -248,7 +248,7 @@ export default function CallInsights({
 
       {view.speakingPace?.wpm > 0 && (
         <div style={{ ...card, textAlign: 'center', marginBottom: 24 }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Danışıq sürəti: </span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Speaking pace: </span>
           <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
             {view.speakingPace.wpm} wpm ({view.speakingPace.label})
           </span>
@@ -257,9 +257,9 @@ export default function CallInsights({
 
       {/* MISTAKES */}
       <div style={{ marginBottom: 24 }}>
-        <p style={sectionTitle}>Səhvlər ✏️</p>
+        <p style={sectionTitle}>Corrections ✏️</p>
         {!view.feedback.length ? (
-          <p style={{ color: 'var(--success)', fontSize: 14 }}>Real qrammatik səhv tapılmadı ✅</p>
+          <p style={{ color: 'var(--success)', fontSize: 14 }}>No grammar mistakes found ✅</p>
         ) : view.feedback.map((fix, i) => (
           <div key={i} style={card}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -279,7 +279,7 @@ export default function CallInsights({
       {/* STRENGTHS */}
       {view.strengths.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Güclü tərəflərin 💪</p>
+          <p style={sectionTitle}>Your strengths 💪</p>
           {view.strengths.map((s, i) => (
             <div key={i} style={{
               background: 'var(--success-bg)', color: 'var(--success-fg)', borderRadius: 12,
@@ -292,7 +292,7 @@ export default function CallInsights({
       {/* TIPS */}
       {view.tips.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Tövsiyələr 💡</p>
+          <p style={sectionTitle}>Tips 💡</p>
           {view.tips.map((t, i) => (
             <div key={i} style={{ ...card, display: 'flex', gap: 8, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
               <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{i + 1}.</span>
@@ -305,7 +305,7 @@ export default function CallInsights({
       {/* VOCABULARY */}
       {view.vocabulary.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Lüğət 📘</p>
+          <p style={sectionTitle}>Vocabulary 📘</p>
           {view.vocabulary.map((v, i) => (
             <div key={i} style={card}>
               <p style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700, margin: '0 0 4px' }}>{v.word}</p>
@@ -320,7 +320,7 @@ export default function CallInsights({
       {/* Words the learner used — only older analyses recorded these. */}
       {view.legacyVocabularyUsed.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>İşlətdiyin sözlər</p>
+          <p style={sectionTitle}>Words you used</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {view.legacyVocabularyUsed.map((word, i) => (
               <span key={i} style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', borderRadius: 20, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
@@ -333,7 +333,7 @@ export default function CallInsights({
 
       {view.transcript && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Danışıq Xülasəsi 📝</p>
+          <p style={sectionTitle}>Conversation summary 📝</p>
           <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: '12px 14px', border: '1px solid var(--border)' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{view.transcript}</p>
           </div>

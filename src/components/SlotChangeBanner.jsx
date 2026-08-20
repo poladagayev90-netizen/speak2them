@@ -37,13 +37,12 @@ export default function SlotChangeBanner({ request, onDone }) {
       padding: '16px', marginBottom: '12px',
     }}>
       <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-        🕘 Vaxt dəyişikliyi təklifi
+        🕘 Time change request
       </div>
       <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
         <b style={{ color: 'var(--text-primary)' }}>{request.proposerName || 'Partnyorunuz'}</b>{' '}
-        zəngi <b style={{ color: 'var(--text-primary)' }}>{label(from)}</b> vaxtından{' '}
-        <b style={{ color: 'var(--text-primary)' }}>{label(to)}</b> vaxtına keçirmək istəyir.
-        Razı olmasanız köhnə vaxt qüvvədə qalır.
+        call <b style={{ color: 'var(--text-primary)' }}>{label(from)}</b> from{' '}
+        <b style={{ color: 'var(--text-primary)' }}>{label(to)}</b> to. If you decline, the original time stands.
       </div>
 
       {error && (
@@ -62,7 +61,7 @@ export default function SlotChangeBanner({ request, onDone }) {
             cursor: busy ? 'default' : 'pointer',
           }}
         >
-          {busy === 'yes' ? '...' : 'Qəbul et'}
+          {busy === 'yes' ? '...' : 'Accept'}
         </button>
         <button
           type="button"
@@ -75,7 +74,7 @@ export default function SlotChangeBanner({ request, onDone }) {
             cursor: busy ? 'default' : 'pointer',
           }}
         >
-          {busy === 'no' ? '...' : 'Uyğun deyil'}
+          {busy === 'no' ? '...' : 'Not available'}
         </button>
         <button
           type="button"

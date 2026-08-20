@@ -29,7 +29,7 @@ import { formatAzDate } from '../utils/courseProgress';
 const pad = (n) => String(n).padStart(2, '0');
 
 // 0=Bazar … 6=Şənbə — bakuWeekday ilə eyni konvensiya.
-const WEEKDAY_SHORT = ['Baz', 'B.e', 'Ç.a', 'Çər', 'C.a', 'Cümə', 'Şən'];
+const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // Qalan müddət — böyük vahid varsa saniyə göstərilmir (bir saatlıq gözləmədə
 // saniyələrin oynaması diqqət oğurlayır), son bir dəqiqədə isə yalnız saniyə.
@@ -39,17 +39,17 @@ function formatRemaining(ms) {
   const hours = Math.floor((total % 86400) / 3600);
   const mins = Math.floor((total % 3600) / 60);
   const secs = total % 60;
-  if (days > 0) return `${days} gün ${hours} saat qalıb`;
-  if (hours > 0) return `${hours} saat ${mins} dəq qalıb`;
-  if (mins > 0) return `${mins} dəq ${pad(secs)} san qalıb`;
-  return `${secs} san qalıb`;
+  if (days > 0) return `${days}d ${hours}h left`;
+  if (hours > 0) return `${hours}h ${mins}m left`;
+  if (mins > 0) return `${mins}m ${pad(secs)}s left`;
+  return `${secs}s left`;
 }
 
 // "Bu gün" / "Sabah" / həftə günü. Müqayisə Bakı tarix sətirləri üzərindədir,
 // yəni cihaz hansı qurşaqda olursa olsun eyni nəticə verir.
 function dayLabel(dateStr, nowMs) {
-  if (dateStr === bakuDateStr(nowMs)) return 'Bu gün';
-  if (dateStr === bakuDateStr(nowMs + 24 * 60 * 60 * 1000)) return 'Sabah';
+  if (dateStr === bakuDateStr(nowMs)) return 'Today';
+  if (dateStr === bakuDateStr(nowMs + 24 * 60 * 60 * 1000)) return 'Tomorrow';
   const weekday = formatAzDate(dateStr).split(',')[0];
   return weekday ? weekday.charAt(0).toUpperCase() + weekday.slice(1) : dateStr;
 }
@@ -108,7 +108,7 @@ export default function SessionCountdown({ onJoin }) {
         }}
       >
         <span style={{ color: '#fff', fontSize: '12.5px', fontWeight: 800, lineHeight: 1.35 }}>
-          🔴 Praktika saatı {timeLabel} — indi başlayır
+          🔴 Practice hour {timeLabel} — starting now
         </span>
         {onJoin && (
           <button
@@ -127,7 +127,7 @@ export default function SessionCountdown({ onJoin }) {
               whiteSpace: 'nowrap',
             }}
           >
-            Qoşul
+            Join
           </button>
         )}
         <style>{`
@@ -151,13 +151,13 @@ export default function SessionCountdown({ onJoin }) {
       }}
     >
       <div style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1.35 }}>
-        ⏳ Praktika saatı: {dayLabel(win.dateStr, nowMs)} {timeLabel}
+        ⏳ Practice hour: {dayLabel(win.dateStr, nowMs)} {timeLabel}
         <span style={{ opacity: 0.85, fontWeight: 600 }}> · {formatRemaining(win.startMs - nowMs)}</span>
       </div>
       <div style={{ fontSize: '10.5px', fontWeight: 600, lineHeight: 1.35, marginTop: '3px', opacity: 0.82 }}>
         {isMain
-          ? 'Əsas gün — ən çox adam bu saatda toplaşır.'
-          : `Əsas günlər: ${mainDaysLabel(config)}. Bu gün az adam ola bilər — onlayn kimsə varsa yenə danışa bilərsən.`}
+          ? 'Main day — this is when most people are here.'
+          : `Main days: ${mainDaysLabel(config)}. Today may be quieter, but you can still talk to anyone who is online.`}
       </div>
     </div>
   );

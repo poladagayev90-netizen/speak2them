@@ -62,7 +62,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
   useEffect(() => {
     if (isExplainer === prevExplainer.current) return undefined;
     prevExplainer.current = isExplainer;
-    setToast(isExplainer ? 'Növbə səndədir! 🎤' : 'Partnyorun izah edir 👂');
+    setToast(isExplainer ? 'Your turn! 🎤' : 'Partnyorun izah edir 👂');
     const t = setTimeout(() => setToast(''), 2200);
     return () => clearTimeout(t);
   }, [isExplainer]);
@@ -122,7 +122,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
             </span>
             <button
               onClick={onClose}
-              aria-label="Bağla"
+              aria-label="Close"
               style={{
                 background: 'transparent', border: 'none', color: 'var(--text-secondary)',
                 fontSize: 18, cursor: 'pointer', padding: '2px 6px',
@@ -154,7 +154,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
                 textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center',
               }}>
-                Bu sözü izah et
+                Explain this word
               </p>
               <h2 style={{
                 color: '#fff', fontSize: 34, fontWeight: 800, letterSpacing: '2px',
@@ -173,7 +173,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 color: '#ef4444', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
                 textTransform: 'uppercase', letterSpacing: '1.2px', textAlign: 'center',
               }}>
-                Qadağan sözlər
+                Forbidden words
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {card.forbidden.map((w) => (
@@ -207,12 +207,12 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               <p style={{
                 color: '#fff', fontSize: 16, fontWeight: 700, textAlign: 'center', margin: '0 0 8px',
               }}>
-                Partnyorunuz sizə bir söz izah edir…
+                Your partner is explaining a word…
               </p>
               <p style={{
                 color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center', margin: 0,
               }}>
-                Diqqətlə dinləyin və tapın! 👂
+                Listen closely and guess 👂
               </p>
               <div className="taboo-dots" aria-hidden="true" style={{ marginTop: 14 }}>
                 <span style={{ animationDelay: '0ms' }} />
@@ -234,7 +234,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 boxShadow: '0 6px 18px rgba(34, 197, 94, 0.28)',
               }}
             >
-              ✅ Düzgün!
+              ✅ Correct
             </button>
             <button
               onClick={onPass}
@@ -253,7 +253,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
             <p style={{
               color: 'var(--text-muted, #7c84a2)', fontSize: 12, textAlign: 'center', margin: 0,
             }}>
-              Tapdıqda partnyorunuz «Düzgün» düyməsinə basacaq və növbə sizə keçəcək.
+              When you guess it, your partner taps Correct and the turn passes to you.
             </p>
           </div>
         )}

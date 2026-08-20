@@ -8,25 +8,25 @@ import React from 'react';
 
 const STEPS = [
   {
-    label: 'Tanışlıqla başlayın',
-    text: 'Adınızı, haradan olduğunuzu və niyə ingiliscə öyrəndiyinizi qısaca bölüşün. Bu, ilk gərginliyi aradan qaldırır və söhbətə rahat giriş verir.',
+    label: 'Start by introducing yourself',
+    text: 'Share your name, where you are from and why you are learning English. It is an easy way into the conversation.',
   },
   {
-    label: 'Hazır mövzu suallarından istifadə edin',
-    text: '"Günün Mövzusu" bölməsindəki suallar söhbəti fasiləsiz irəli aparır — nə deyəcəyinizi düşünməyə vaxt itirmirsiniz.',
+    label: 'Use the ready-made topic questions',
+    text: "The questions in Today’s Topic keep the conversation moving, so you never have to search for something to say.",
     feature: 'daily',
   },
   {
-    label: 'Gördüklərinizi təsvir edin',
-    text: 'Ekranda göstərilən şəkli mümkün qədər detallı izah etməyə çalışın. Bu, lüğətinizi canlı şəkildə işlətməyin ən effektiv yoludur.',
+    label: 'Describe what you see',
+    text: 'Describe the picture on screen in as much detail as you can. It is the most effective way to put your vocabulary to work.',
   },
   {
-    label: 'Öz mövzunuzu seçin',
-    text: 'Hazır suallar məcburi deyil — istədiyiniz istiqamətə yönələ, tamamilə sərbəst danışa bilərsiniz. Məqsəd nitqi davam etdirməkdir.',
+    label: 'Pick your own topic',
+    text: 'The ready-made questions are optional — take the conversation anywhere you like. The goal is to keep talking.',
   },
   {
-    label: 'Tabu oyunu ilə sınayın',
-    text: 'Sözü demədən izah etmə oyunu — danışıq qorxusunu əyləncə vasitəsilə aradan qaldırmağın ən effektiv yoludur.',
+    label: 'Try the Taboo game',
+    text: 'Explain a word without saying it — a fast, playful way to build fluency.',
   },
 ];
 
@@ -41,17 +41,17 @@ export default function CallRoadmap({ content, onStart, onOpenDaily }) {
         <button
           className="call-roadmap-skip"
           onClick={onStart}
-          aria-label="Bələdçini keç və zəngə başla"
+          aria-label="Skip the guide and start the call"
         >
-          Keç ✕
+          Skip ✕
         </button>
 
-        <p className="call-roadmap-label">🗺️ Zəng bələdçisi</p>
-        <h2 className="call-roadmap-title">Danışığa Necə Başlamaq Olar?</h2>
+        <p className="call-roadmap-label">🗺️ Call guide</p>
+        <h2 className="call-roadmap-title">How to start talking</h2>
 
         {content.topic && (
           <div className="call-roadmap-topic-pill">
-            Bugünün mövzusu · <b>{content.topic}</b>
+            Today's topic · <b>{content.topic}</b>
           </div>
         )}
 
@@ -77,9 +77,9 @@ export default function CallRoadmap({ content, onStart, onOpenDaily }) {
           ))}
         </div>
 
-        <button className="call-roadmap-start" onClick={onStart}>Başla 🎙️</button>
+        <button className="call-roadmap-start" onClick={onStart}>Start 🎙️</button>
         <button className="call-roadmap-more" onClick={onOpenDaily}>
-          Daha çox sual və söz üçün 📅 panelini aç
+          Open the 📅 panel for more questions and words
         </button>
       </div>
     </div>

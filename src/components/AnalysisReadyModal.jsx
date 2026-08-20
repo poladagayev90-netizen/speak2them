@@ -87,18 +87,17 @@ export default function AnalysisReadyModal({ user, suppressed }) {
   return (
     <div className="topic-intro-overlay">
       <div className="topic-intro-modal">
-        <h3 className="topic-intro-label">📊 NƏTİCƏ HAZIRDIR</h3>
-        <h1 className="topic-intro-title" style={{ fontSize: '26px' }}>AI analiziniz hazırdır!</h1>
+        <h3 className="topic-intro-label">📊 YOUR REPORT IS READY</h3>
+        <h1 className="topic-intro-title" style={{ fontSize: '26px' }}>Your analysis is ready!</h1>
         <p className="topic-intro-desc">
-          {latest.peerName ? `${latest.peerName} ilə zəngin` : 'Son zəngin'} təhlili —
-          tələffüz, söz ehtiyatı və tövsiyələr sizi gözləyir.
+          {latest.peerName ? `Your call with ${latest.peerName}` : 'Your last call'} is ready — pronunciation, vocabulary and tips are waiting.
         </p>
         <div className="topic-intro-actions">
           <button className="topic-intro-btn-primary" onClick={open}>
-            Nəticəyə bax
+            See result
           </button>
           <button className="topic-intro-btn-secondary" onClick={dismiss}>
-            Sonra
+            Later
           </button>
         </div>
       </div>

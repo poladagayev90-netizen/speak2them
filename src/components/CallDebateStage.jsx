@@ -65,7 +65,7 @@ const SOLID_BTN = {
 // görmür — kartın niyə birdən yüngülləşdiyi anlaşılmır. Rənglər
 // CallQuestionStage-dəki səviyyə rəngləri ilə eynidir (svetofor DEYİL).
 const LEVEL_META = {
-  simple: { text: 'SADƏ', colour: '#12BBD6' },   // Neon Cyan
+  simple: { text: 'SIMPLE', colour: '#12BBD6' },   // Neon Cyan
   normal: { text: 'ORTA', colour: '#6D3BEB' },   // Lab Violet
 };
 
@@ -91,7 +91,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
           </p>
           <button
             onClick={onClose}
-            aria-label="Bağla"
+            aria-label="Close"
             style={{
               background: 'transparent', border: 'none', color: 'var(--text-secondary)',
               fontSize: 20, cursor: 'pointer', padding: '2px 6px',
@@ -110,7 +110,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
               color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '1px', margin: 0,
             }}>
-              Mövzu
+              Topic
             </p>
             {level && (
               <span style={{
@@ -137,7 +137,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
               color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700, margin: 0,
               textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center',
             }}>
-              Sizin tərəfiniz
+              Your side
             </p>
             <h3 style={{
               color: '#fff', fontSize: 24, fontWeight: 800, margin: '0 0 4px', textAlign: 'center',
@@ -166,12 +166,12 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
           color: 'var(--text-muted, #7c84a2)', fontSize: 12, textAlign: 'center',
           margin: '10px 16px 0', flexShrink: 0,
         }}>
-          Əks tərəf: <strong>{theirLabel}</strong> — arqumentlərini görmürsünüz, diqqətlə dinləyin! 👂
+          Other side: <strong>{theirLabel}</strong> — you cannot see their arguments, so listen closely 👂
         </p>
 
         <div style={{ display: 'flex', gap: 10, padding: '14px 16px 16px', flexShrink: 0 }}>
           <button onClick={onClose} style={GHOST_BTN}>✕ Bitir</button>
-          <button onClick={onNextTopic} style={SOLID_BTN}>Növbəti mövzu →</button>
+          <button onClick={onNextTopic} style={SOLID_BTN}>Next topic →</button>
         </div>
       </div>
     </div>

@@ -12,9 +12,7 @@ import TutorBadge from '../components/TutorBadge';
 import { getStreakInfo } from '../utils/streak';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
-import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
-import { useTranslation } from 'react-i18next';
-import { LANGUAGES, setLanguage } from '../i18n';
+import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '../utils/feedbackLanguage';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -34,15 +32,14 @@ export default function Profile({ user }) {
   const [journeyOpen, setJourneyOpen] = useState(false);
   const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
   const [docId, setDocId] = useState(null);
-  const navigate = useNavigate();
-  const { t, i18n } = useTranslation(['profile', 'common']);
-
+  const [feedbackLang, setFeedbackLang] = useState(getFeedbackLanguage);
+  const navigate = useNavigate();
   // Dil dəyişimi: dərhal UI + localStorage (i18n modulu), sonra Firestore-a
   // yazılır ki, digər cihazlarda da tətbiq olunsun. Firestore yazısı uğursuz
   // olsa belə lokal seçim qalır — dil dəyişmək heç vaxt "uğursuz" görünməsin.
   const changeLanguage = async (code) => {
-    if (code === i18n.language) return;
-    setLanguage(code);
+    if (code === feedbackLang) return;
+    setFeedbackLang(setFeedbackLanguage(code));
     try {
       const targetId = docId || user.uid;
       if (targetId) await updateDoc(doc(db, 'users', targetId), { preferredLanguage: code });
@@ -114,10 +111,10 @@ export default function Profile({ user }) {
     // yəni "sil" → "SIL" ≠ "SİL". Nəticədə şərt heç vaxt ödənmirdi və hesab
     // silinmirdi. İki ayrı təsdiq təsadüfi toxunuşdan qorunmaq üçün kifayətdir.
     if (!window.confirm(
-      'Hesabınız və bütün datanız (profil, söz tarixçəsi, zəng analizləri, səs qeydləri) həmişəlik silinəcək. Bu əməliyyat geri qaytarıla bilməz. Davam edilsin?'
+      'Your account and all of your data (profile, word history, call analyses, recordings) will be permanently deleted. This cannot be undone. Continue?'
     )) return;
     if (!window.confirm(
-      'Son təsdiq: hesabınız indi həmişəlik silinsin?'
+      'Final confirmation: delete your account permanently now?'
     )) return;
 
     setDeleting(true);
@@ -125,14 +122,14 @@ export default function Profile({ user }) {
       const res = await authedFetch(`${FUNCTIONS_BASE}/deleteAccount`, { method: 'POST' });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Silinmə uğursuz oldu');
+        throw new Error(data.error || 'Deletion failed');
       }
       await signOut(auth).catch(() => {});
-      alert('Hesabınız silindi.');
+      alert('Your account has been deleted.');
       navigate('/login');
     } catch (e) {
       console.error(e);
-      alert(e.message || 'Silinmə zamanı xəta baş verdi. Yenidən cəhd edin.');
+      alert(e.message || 'Something went wrong during deletion. Please try again.');
       setDeleting(false);
     }
   };
@@ -165,10 +162,10 @@ export default function Profile({ user }) {
 
   const notifLabel = {
     granted: 'Aktiv',
-    denied: isNativePush() ? 'Cihaz parametrlərindən aç' : 'Brauzer parametrlərindən aç',
-    default: 'Aktivləşdir',
-    unsupported: 'Bu cihazda mövcud deyil',
-  }[notifPerm] || 'Aktivləşdir';
+    denied: isNativePush() ? 'Open device settings' : 'Open browser settings',
+    default: 'Activate',
+    unsupported: 'Not available on this device',
+  }[notifPerm] || 'Activate';
 
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
 
@@ -227,7 +224,7 @@ export default function Profile({ user }) {
 
       {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
-        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>Redaktə et</button>
+        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
       </div>
 
       {/* TOP SECTION: AVATAR, NAME, STATS */}
@@ -281,11 +278,11 @@ export default function Profile({ user }) {
         <div>
           <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Plan</div>
           <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
-            {mode === 'course' ? 'Kurs iştirakçısı'
+            {mode === 'course' ? 'Course member'
               : isPremium ? 'Pro'
-              : user.cohortStatus === 'accepted' ? 'Kohort — qəbul edildi'
-              : user.cohortStatus === 'pending' ? 'Kohort — müraciət gözləyir'
-              : 'Sınaq dövrü'}
+              : user.cohortStatus === 'accepted' ? 'Cohort — accepted'
+              : user.cohortStatus === 'pending' ? 'Cohort — application pending'
+              : 'Trial'}
           </div>
         </div>
       </div>
@@ -307,9 +304,9 @@ export default function Profile({ user }) {
         >
           <span style={{ fontSize: '22px', flexShrink: 0 }}>🎓</span>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>Kursa qoşul</span>
+            <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>Join the course</span>
             <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              Kodunuz varsa kohorta müraciət edin
+              Have a code? Apply to a cohort
             </span>
           </span>
           <span style={{ fontSize: '18px', flexShrink: 0, color: 'var(--text-secondary)' }}>→</span>
@@ -331,17 +328,17 @@ export default function Profile({ user }) {
           }}
         >
           {user.role === 'teacher'
-            ? t('profile:teacherCode')
-            : t('profile:teacherUnlocked')}
+            ? 'My student code'
+            : 'Teacher mode unlocked — create a code'}
         </button>
       )}
 
       {/* DİL — Türkiyə bazarı üçün. Seçim dərhal tətbiq olunur və
           users/{uid}.preferredLanguage-ə yazılır (cihazlar arası sinxron). */}
-      {sectionLabel(t('profile:language'))}
+      {sectionLabel('Feedback language')}
       <div style={{ ...listCard, display: 'flex', gap: '8px', padding: '10px' }}>
-        {LANGUAGES.map((lng) => {
-          const active = i18n.language === lng.code;
+        {FEEDBACK_LANGUAGES.map((lng) => {
+          const active = feedbackLang === lng.code;
           return (
             <button
               key={lng.code}
@@ -364,23 +361,23 @@ export default function Profile({ user }) {
       </div>
 
       {/* ÖYRƏNMƏ */}
-      {sectionLabel(t('profile:sectionLearning'))}
+      {sectionLabel('Learning')}
       <div style={listCard}>
-        {row({ icon: '📚', label: t('profile:myWords'), onClick: () => setShowWordHistory(true), notLast: true })}
-        {row({ icon: '🔥', label: t('profile:streakJourney'), onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
-        {row({ icon: '📊', label: t('profile:analysisHistory'), onClick: () => navigate('/history') })}
+        {row({ icon: '📚', label: 'My words', onClick: () => setShowWordHistory(true), notLast: true })}
+        {row({ icon: '🔥', label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
+        {row({ icon: '📊', label: 'Analysis history', onClick: () => navigate('/history') })}
       </div>
 
       {/* MƏLUMAT */}
-      {sectionLabel(t('profile:sectionInfo'))}
+      {sectionLabel('Info')}
       <div style={listCard}>
-        {row({ icon: '💬', label: t('profile:englishLevel'), right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
+        {row({ icon: '💬', label: 'English level', right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
         {/* E-poçt AÇIQ göstərilir: müəllim şagirdi məhz e-poçtla dəvət edir,
             şagird isə onu tapa bilmirdi. Uzun ünvan sətri sındırmasın deyə
             kəsilir, yanında kopyalama var. */}
         {row({
           icon: '✉️',
-          label: 'E-poçt',
+          label: 'Email',
           right: (
             <span
               onClick={() => { navigator.clipboard?.writeText(user.email || '').catch(() => {}); }}
@@ -398,18 +395,18 @@ export default function Profile({ user }) {
       </div>
 
       {/* TƏNZİMLƏMƏLƏR */}
-      {sectionLabel(t('profile:sectionSettings'))}
+      {sectionLabel('Settings')}
       <div style={listCard}>
         {row({
           icon: isDark ? <Moon size={17} /> : <Sun size={17} />,
-          label: isDark ? 'Qaranlıq rejim' : 'İşıqlı rejim',
+          label: isDark ? 'Dark mode' : 'Light mode',
           onClick: toggleTheme,
           right: <span className={`theme-switch ${isDark ? 'dark' : 'light'}`} aria-hidden="true" style={{ display: 'inline-block', flexShrink: 0 }}><span className="theme-switch-thumb"></span></span>,
           notLast: true,
         })}
         {row({
           icon: <Bell size={17} />,
-          label: 'Push bildirişləri',
+          label: 'Push notifications',
           onClick: handleEnableNotifications,
           right: <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: notifPerm === 'granted' ? 'var(--success)' : 'var(--accent)' }}>{notifLabel}</span>,
           notLast: true,
@@ -419,7 +416,7 @@ export default function Profile({ user }) {
             onsuz da avtomatik kəsilir (bax utils/sfx.js). */}
         {row({
           icon: sfx ? <Volume2 size={17} /> : <VolumeX size={17} />,
-          label: 'Səs effektləri',
+          label: 'Sound effects',
           onClick: () => {
             const next = !sfx;
             setSfxEnabled(next);
@@ -428,19 +425,19 @@ export default function Profile({ user }) {
           },
           right: (
             <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: sfx ? 'var(--success)' : 'var(--text-muted)' }}>
-              {sfx ? 'Açıq' : 'Bağlı'}
+              {sfx ? 'On' : 'Off'}
             </span>
           ),
           notLast: true,
         })}
         {row({
           icon: '🔄',
-          label: 'Turları sıfırla',
+          label: 'Reset tours',
           onClick: async () => {
             if (!docId) return;
             try {
               await updateDoc(doc(db, 'users', docId), { tourDone_home: false, tourDone_chat: false, tourDone_profile: false });
-              alert('Turlar sıfırlandı! Səhifələri gəzərək yenidən baxa bilərsiniz.');
+              alert('Tours reset. Visit the pages again to see them.');
             } catch (e) { console.error(e); }
           },
         })}
@@ -448,11 +445,11 @@ export default function Profile({ user }) {
 
       {/* HESAB — Google Play requires an in-app privacy link and a way to
           delete the account together with its data. */}
-      {sectionLabel(t('profile:sectionAccount'))}
+      {sectionLabel('Account')}
       <div style={listCard}>
-        {row({ icon: '🔒', label: 'Məxfilik Siyasəti', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
-        {row({ icon: '🗑️', label: deleting ? 'Silinir…' : 'Hesabı Sil', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}
-        {row({ icon: '↩️', label: 'Çıxış', onClick: () => { if (window.confirm('Çıxış etmək istəyirsiniz?')) handleLogout(); }, right: null })}
+        {row({ icon: '🔒', label: 'Privacy Policy', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
+        {row({ icon: '🗑️', label: deleting ? 'Silinir…' : 'Delete account', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}
+        {row({ icon: '↩️', label: 'Sign out', onClick: () => { if (window.confirm('Sign out?')) handleLogout(); }, right: null })}
       </div>
 
       {showWordHistory && (

@@ -74,27 +74,27 @@ export default function StreakModal({ open, streakInfo, onClose, onOpenJourney }
         </div>
 
         <div className="streak-count" style={{ color: tier.accent }}>{display}</div>
-        <div className="streak-days">gün streak</div>
+        <div className="streak-days">day streak</div>
 
         <h2 className="streak-title">{tier.title}</h2>
         <p className="streak-message">
           {tier.message}
           {streakInfo?.alive && !streakInfo?.doneToday && (
-            <><br /><b style={{ color: tier.accent }}>Bu gün danış, streak-ini qoru!</b></>
+            <><br /><b style={{ color: tier.accent }}>Talk today to keep your streak.</b></>
           )}
         </p>
 
         {next && (
           <div className="streak-next">
-            Növbəti hədəf: <b>{next.target} gün</b> — {next.remaining} gün qaldı
+            Next milestone: <b>{next.target} days</b> — {next.remaining} days to go
           </div>
         )}
 
         <button className="streak-btn-primary" style={{ background: tier.accent }} onClick={onClose}>
-          Başla
+          Start
         </button>
         <button className="streak-btn-secondary" onClick={onOpenJourney}>
-          🗺️ Səyahətə bax
+          🗺️ See your journey
         </button>
       </div>
     </div>

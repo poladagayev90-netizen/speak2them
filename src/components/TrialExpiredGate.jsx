@@ -44,17 +44,15 @@ export default function TrialExpiredGate() {
         {activated ? (
           <>
             <div style={{ fontSize: '52px', marginBottom: '8px' }}>📨</div>
-            <h2 style={{ marginBottom: '8px' }}>Müraciətiniz göndərildi!</h2>
-            <p className="auth-sub">Bir saniyə — tətbiq açılır. Admin təsdiqindən sonra kurs başlayacaq.</p>
+            <h2 style={{ marginBottom: '8px' }}>Your application has been sent.</h2>
+            <p className="auth-sub">One moment, opening the app. The course starts once an admin approves it.</p>
           </>
         ) : (
           <>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>⏳</div>
-            <h2 style={{ marginBottom: '8px' }}>Sınağınız bitdi</h2>
+            <h2 style={{ marginBottom: '8px' }}>Your trial has ended</h2>
             <p className="auth-sub" style={{ marginBottom: '20px' }}>
-              2 günlük pulsuz sınaq sona çatdı — davamı üçün kohorta qoşulun.
-              Kodla müraciət edin, admin təsdiqindən sonra 30 mövzuluq canlı
-              danışıq kursu başlayır. Profiliniz və irəliləyişiniz olduğu kimi qalır.
+              Your free trial has ended. Join a cohort to continue: apply with a code, and once an admin approves it the 30-topic live speaking course begins. Your profile and progress stay exactly as they are.
             </p>
 
             {error && (
@@ -62,12 +60,12 @@ export default function TrialExpiredGate() {
                 {error}
                 {showSupport && (
                   <a
-                    href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Salam! Kurs koduma görə yazıram.')}`}
+                    href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi! I am writing about my course code.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: 'block', marginTop: '8px', color: '#25D366', fontWeight: 700 }}
                   >
-                    💬 WhatsApp-da bizə yazın
+                    💬 Message us on WhatsApp
                   </a>
                 )}
               </div>
@@ -77,7 +75,7 @@ export default function TrialExpiredGate() {
               <label>Kurs kodu</label>
               <input
                 type="text"
-                placeholder="MƏS: SPEAK-A2-01"
+                placeholder="E.G. SPEAK-A2-01"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 autoCapitalize="characters"
@@ -87,12 +85,12 @@ export default function TrialExpiredGate() {
                 required
               />
               <button type="submit" className="btn-primary" disabled={loading || code.trim().length < 4}>
-                {loading ? 'Göndərilir...' : 'Müraciət et'}
+                {loading ? 'Sending...' : 'Apply'}
               </button>
             </form>
 
             <a
-              href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Salam! Sınağım bitdi, kursa qoşulmaq istəyirəm.')}`}
+              href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi! My trial has ended and I would like to join the course.')}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -102,11 +100,11 @@ export default function TrialExpiredGate() {
                 textDecoration: 'none', fontSize: '14px', fontWeight: 700,
               }}
             >
-              💬 Kodunuz yoxdur? Bizə yazın
+              💬 No code? Message us
             </a>
 
             <p style={{ fontSize: '12px', color: 'var(--text-secondary, #888)', marginTop: '16px' }}>
-              Hesab əməliyyatları üçün Profil bölməsi açıq qalır.
+              Your Profile section stays open for account settings.
             </p>
           </>
         )}

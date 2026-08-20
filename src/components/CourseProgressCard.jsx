@@ -52,7 +52,7 @@ export default function CourseProgressCard({ user }) {
       <div style={{ ...cardStyle, padding: '12px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '7px' }}>
           <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
-            📖 Mövzu {completed}/{COURSE_TOPIC_COUNT}
+            📖 Topic {completed}/{COURSE_TOPIC_COUNT}
           </span>
           <span style={{ fontSize: '12px', fontWeight: 700, color: '#7c6ff7' }}>{pct}%</span>
         </div>
@@ -75,9 +75,9 @@ export default function CourseProgressCard({ user }) {
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {done
-              ? '🏁 Kurs tamamlandı!'
+              ? '🏁 Course complete'
               : <>🧪 <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
-                  {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} iştirakçı</>}</>}
+                  {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} members</>}</>}
           </div>
         )}
       </div>
@@ -89,10 +89,10 @@ export default function CourseProgressCard({ user }) {
     return (
       <div style={cardStyle}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)', marginBottom: '4px' }}>
-          ✅ Qəbul edildiniz!
+          ✅ You have been accepted
         </div>
         <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
-          Kursun başlaması gözlənilir — admin başladan kimi mövzular açılacaq.
+          Waiting for the course to start. Topics open as soon as an admin starts it.
         </div>
       </div>
     );
@@ -101,10 +101,10 @@ export default function CourseProgressCard({ user }) {
     return (
       <div style={cardStyle}>
         <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)', marginBottom: '4px' }}>
-          ⏳ Müraciətiniz göndərildi
+          ⏳ Your application has been sent
         </div>
         <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
-          Admin təsdiqini gözləyin — qəbul ediləndə burada görünəcək.
+          Waiting for admin approval. You will see it here once accepted.
         </div>
       </div>
     );

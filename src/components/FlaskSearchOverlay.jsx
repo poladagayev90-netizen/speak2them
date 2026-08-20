@@ -75,7 +75,7 @@ export default function FlaskSearchOverlay({
   title,
   subtitle,
   onCancel,
-  cancelLabel = 'Ləğv et',
+  cancelLabel = 'Cancel',
 }) {
   if (!visible) return null;
 

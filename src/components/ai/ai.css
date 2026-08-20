@@ -1,0 +1,182 @@
+/* AInur activity surfaces.
+   Cyan throughout: in SpeakLab colour says who you are talking to, and cyan is
+   AInur. Violet is a real person. See the token block in index.css. */
+
+/* ------------------------------------------------------------- Activity -- */
+/* A session is a focused surface, like a call -- it covers the tab bar rather
+   than living inside it. Placed inside .main-content the footer scrolled under
+   the nav and the mic label was cut in half. Leaving is the back chevron or
+   Finish, which is deliberate: you should not tab away mid-sentence by
+   accident. Same z-layer as .fullscreen-call. */
+.ai-activity {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  padding-top: var(--safe-area-top, 0px);
+}
+
+.ai-activity-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  flex-shrink: 0;
+}
+.ai-activity-title {
+  margin: 0;
+  flex: 1;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+/* Progress dots — five pictures, so a bar would be less legible than pips. */
+.ai-dots { display: flex; gap: 6px; align-items: center; }
+.ai-dot {
+  width: 7px; height: 7px; border-radius: var(--r-pill);
+  background: var(--border);
+  transition: background-color 200ms ease, transform 200ms ease;
+}
+.ai-dot--done { background: var(--ai); }
+.ai-dot--now  { background: var(--ai); transform: scale(1.5); }
+
+/* The body scrolls; the mic never leaves the screen. */
+.ai-activity-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--s-4) var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.ai-activity-foot {
+  flex-shrink: 0;
+  padding: var(--s-3) var(--s-4);
+  padding-bottom: calc(var(--s-3) + var(--safe-area-bottom, 0px));
+  border-top: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+
+/* ---------------------------------------------------------------- Photo -- */
+.ai-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+.ai-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;          /* cover, not contain: no letterbox bars */
+  display: block;
+  transition: opacity 220ms ease;
+}
+.ai-photo-fallback {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: var(--s-2);
+  color: var(--text-muted); font-size: var(--fs-sm); text-align: center;
+  padding: var(--s-4);
+}
+
+/* ------------------------------------------------------------ AInur turn -- */
+.ai-bubble {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+}
+.ai-avatar {
+  width: 36px; height: 36px;
+  border-radius: var(--r-pill);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--ai);
+  background: var(--ai-soft);
+}
+.ai-avatar--pulse { animation: ai-pulse 1.4s ease-in-out infinite; }
+@keyframes ai-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--ai-soft); }
+  50%      { box-shadow: 0 0 0 8px transparent; }
+}
+.ai-bubble-body { flex: 1; min-width: 0; }
+.ai-bubble-name {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ai);
+  margin: 0 0 2px;
+}
+.ai-bubble-text {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-primary);
+}
+
+/* What the learner just said, shown back so they can see they were heard.
+   Muted on purpose — it is a receipt, not the content. */
+.ai-heard {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  font-style: italic;
+  border-left: 2px solid var(--border);
+  padding-left: var(--s-3);
+}
+
+/* ----------------------------------------------------------- Mic button -- */
+.ai-mic-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
+.ai-mic {
+  width: 72px; height: 72px;
+  border-radius: var(--r-pill);
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--text-on-ai);
+  background: var(--ai);
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 160ms ease, transform 100ms ease, box-shadow 90ms linear;
+}
+.ai-mic:disabled { opacity: .5; cursor: not-allowed; }
+.ai-mic:not(:disabled):active { transform: scale(.94); }
+.ai-mic:focus-visible { outline: 2px solid var(--ai); outline-offset: 4px; }
+.ai-mic--rec { background: var(--danger); color: #fff; }
+.ai-mic--speaking { background: var(--ai-strong); }
+.ai-mic--busy { background: var(--bg-secondary); color: var(--text-secondary); }
+.ai-mic-label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.ai-spin { animation: ai-rot 1s linear infinite; }
+@keyframes ai-rot { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-spin, .ai-avatar--pulse { animation: none; }
+  .ai-mic, .ai-dot { transition: none; }
+}
+
+/* --------------------------------------------------------------- Finish -- */
+.ai-done {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: var(--s-4);
+  padding: var(--s-8) var(--s-4);
+}
+.ai-done-ring {
+  width: 84px; height: 84px; border-radius: var(--r-pill);
+  display: grid; place-items: center;
+  background: var(--ai-soft);
+  border: 2px solid var(--ai);
+  color: var(--ai);
+}

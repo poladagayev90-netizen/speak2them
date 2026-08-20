@@ -68,12 +68,12 @@ export default function JoinTeacher({ user }) {
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: '52px', marginBottom: '8px' }}>🎓</div>
-          <h2 style={{ marginBottom: '8px' }}>Müəlliminiz var</h2>
+          <h2 style={{ marginBottom: '8px' }}>You have a teacher</h2>
           <p className="auth-sub" style={{ marginBottom: '20px' }}>
-            Siz artıq bir müəllimə bağlısınız. Dəyişiklik üçün müəlliminizlə əlaqə saxlayın.
+            You are already connected to a teacher. Contact them to change this.
           </p>
           <button type="button" className="btn-primary" onClick={dismiss}>
-            Ana səhifə
+            Home
           </button>
         </div>
       </div>
@@ -85,13 +85,12 @@ export default function JoinTeacher({ user }) {
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: '52px', marginBottom: '8px' }}>🎉</div>
-          <h2 style={{ marginBottom: '8px' }}>Qoşuldunuz!</h2>
+          <h2 style={{ marginBottom: '8px' }}>You are connected.</h2>
           <p className="auth-sub" style={{ marginBottom: '20px' }}>
-            Müəlliminiz artıq proqresinizi görə biləcək. İndi danışıq praktikasına başlayın —
-            hər zəngdən sonra öz analizinizi alacaqsınız.
+            Your teacher can now see your progress. Start practising — you get your own report after every call.
           </p>
           <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-            Başlayaq 🚀
+            Let us begin 🚀
           </button>
         </div>
       </div>
@@ -124,18 +123,18 @@ export default function JoinTeacher({ user }) {
           <Logo width={160} />
         </div>
 
-        <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Müəlliminizə qoşulun 🎓</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Connect with your teacher 🎓</h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: '20px' }}>
-          Müəlliminizin verdiyi kodu daxil edin. Bundan sonra o, danışıq proqresinizi görə biləcək.
+          Enter the code your teacher gave you. They will then be able to see your speaking progress.
         </p>
 
         {error && <div className="error-box">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <label>Müəllim kodu</label>
+          <label>Teacher code</label>
           <input
             type="text"
-            placeholder="MƏS: AYTAC01"
+            placeholder="E.G. AYTAC01"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             autoCapitalize="characters"
@@ -150,12 +149,12 @@ export default function JoinTeacher({ user }) {
               icazəsi isə AÇIQ razılıq kimi qalır — funnel-in əsası budur. */}
           <div style={{ marginTop: '14px', marginBottom: '4px' }}>
             {checkboxRow(consent, setConsent, (
-              <>Müəllimimin danışıq proqresimi və zəng analizlərimi görməsinə razıyam.</>
+              <>I agree that my teacher can see my speaking progress and call analyses.</>
             ), 'consent')}
           </div>
 
           <button type="submit" className="btn-primary" disabled={!canSubmit}>
-            {loading ? 'Qoşulur...' : 'Müəllimə qoşul'}
+            {loading ? 'Connecting...' : 'Connect to teacher'}
           </button>
         </form>
 
@@ -168,7 +167,7 @@ export default function JoinTeacher({ user }) {
             marginTop: '12px', cursor: 'pointer',
           }}
         >
-          İndi yox
+          Not now
         </button>
       </div>
     </div>

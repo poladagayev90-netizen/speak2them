@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import HomeRanking from '../components/HomeRanking';
 
@@ -10,9 +8,7 @@ import HomeRanking from '../components/HomeRanking';
 const CACHE_TTL_MS = 120000;
 let usersCache = { users: null, ts: 0 };
 
-export default function Ranking({ user }) {
-  const { t } = useTranslation(['headers', 'ranking', 'teacher', 'common']);
-  const [allUsers, setAllUsers] = useState(usersCache.users || []);
+export default function Ranking({ user }) {  const [allUsers, setAllUsers] = useState(usersCache.users || []);
   const [loading, setLoading] = useState(!usersCache.users);
   const [tab, setTab] = useState('weekly');
 
@@ -43,7 +39,7 @@ export default function Ranking({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">{t('headers:ranking')}</div>
+        <div className="home-logo">{'Leaderboard'}</div>
       </div>
       <div className="home-body" style={{ paddingBottom: '90px' }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
@@ -59,7 +55,7 @@ export default function Ranking({ user }) {
               color: tab === 'weekly' ? '#fff' : 'var(--text-secondary)',
             }}
           >
-            {t('ranking:weekly')}
+            {'This week'}
           </button>
           <button
             onClick={() => setTab('all')}
@@ -73,7 +69,7 @@ export default function Ranking({ user }) {
               color: tab === 'all' ? '#fff' : 'var(--text-secondary)',
             }}
           >
-            {t('ranking:allTime')}
+            {'All time'}
           </button>
         </div>
         {tab === 'weekly' && (
@@ -81,18 +77,18 @@ export default function Ranking({ user }) {
             fontSize: 12, color: 'var(--text-muted)', textAlign: 'center',
             margin: '0 0 12px',
           }}>
-            {t('ranking:resetNote')}
+            {'Resets every Monday — everyone starts level again.'}
           </p>
         )}
         {loading ? (
           <div className="empty-state">
             <div className="empty-icon">⏳</div>
-            <p>Sıralama yüklənir...</p>
+            <p>Loading the leaderboard...</p>
           </div>
         ) : allUsers.length === 0 ? (
           <div className="empty-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
             <div className="empty-icon" style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
-            <p style={{ color: 'var(--text-secondary)' }}>{t('ranking:empty')}</p>
+            <p style={{ color: 'var(--text-secondary)' }}>{'Nobody has practised yet. Be the first.'}</p>
           </div>
         ) : (
           <HomeRanking users={allUsers} currentUserId={user.uid} mode={tab === 'weekly' ? 'weekly' : 'all'} />

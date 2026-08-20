@@ -64,7 +64,7 @@ function bumpQuota() {
 
 // Toxunuş replikaları — sayı artdıqca personaj "bezir". Kiçik detaldır, amma
 // təkrar toxunanda eyni cavabı almaq personajı dərhal cansız göstərir.
-const POKE_LINES = ['Ay!', 'Yenə?', 'Qıdıqlanıram!', 'Bəsdir də 😅', 'Başım gicəllənir…'];
+const POKE_LINES = ['Ay!', 'Again?', 'That tickles!', 'That is enough 😅', 'I am getting dizzy…'];
 
 // Yalnız REAL vəziyyətdən doğan suallar. Heç biri uyğun gəlmirsə personaj
 // danışmır — gəzintisi və boylanması qalır.
@@ -76,8 +76,8 @@ function pickMessage(user, mine, navigate, openBoard) {
     const mins = Math.round((startMs - Date.now()) / 60000);
     if (mins > 0 && mins <= 90) {
       return {
-        text: `${hourLabel(parsed?.hour ?? 0)} zənginə ${mins} dəqiqə qalıb. Hazırsan?`,
-        actions: [{ label: 'Hazıram 💪', run: () => {} }],
+        text: `${mins} minutes until your ${hourLabel(parsed?.hour ?? 0)} call. Ready?`,
+        actions: [{ label: 'I am ready 💪', run: () => {} }],
       };
     }
     return null;
@@ -85,10 +85,10 @@ function pickMessage(user, mine, navigate, openBoard) {
 
   if (!mine?.slotIds?.length) {
     return {
-      text: 'Bu gün üçün slot seçmisən?',
+      text: 'Have you picked a time for today?',
       actions: [
-        { label: 'Hələ yox — seçək', run: openBoard },
-        { label: 'Sonra', run: () => {} },
+        { label: 'Not yet — let us pick one', run: openBoard },
+        { label: 'Later', run: () => {} },
       ],
     };
   }
@@ -96,7 +96,7 @@ function pickMessage(user, mine, navigate, openBoard) {
   const streak = Number(user?.streak) || 0;
   if (streak > 0 && user?.lastCallDate !== new Date().toDateString()) {
     return {
-      text: `${streak} günlük seriyan var — bu gün hələ danışmamısan. Partnyor tapaq?`,
+      text: `You are on a ${streak}-day streak and have not spoken today. Shall we find a partner?`,
       actions: [{ label: 'Tapaq', run: () => navigate('/') }],
     };
   }

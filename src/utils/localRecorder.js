@@ -62,7 +62,7 @@ function startVad() {
   // pause/resume olmayan brauzerdə (köhnə Safari) VAD-ı ümumiyyətlə qurmuruq
   // — hər şey əvvəlki kimi, tam yazılır.
   if (typeof mediaRecorder.pause !== 'function' || typeof mediaRecorder.resume !== 'function') {
-    console.log('[Recorder] pause/resume yoxdur — sükut kəsmə söndürüldü');
+    console.log('[Recorder] no pause/resume support, silence trimming disabled');
     return;
   }
 
@@ -189,7 +189,7 @@ export function startLocalRecording(localAgoraTrack) {
     try {
       startVad();
     } catch (vadError) {
-      console.warn('[Recorder] VAD qurula bilmədi, tam yazılır:', vadError);
+      console.warn('[Recorder] VAD unavailable, recording everything:', vadError);
       stopVad();
     }
     console.log('[Recorder] Started recording local audio only');

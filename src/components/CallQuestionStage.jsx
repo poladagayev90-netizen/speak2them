@@ -105,7 +105,7 @@ export default function CallQuestionStage({
       </p>
       <button
         onClick={onClose}
-        aria-label="Bağla"
+        aria-label="Close"
         style={{
           background: 'transparent', border: 'none', color: 'var(--text-secondary)',
           fontSize: 20, cursor: 'pointer', padding: '2px 6px',
@@ -120,21 +120,21 @@ export default function CallQuestionStage({
   if (!difficulty) {
     return (
       <Overlay>
-        {header('🗣️ Sual kartları')}
+        {header('🗣️ Question cards')}
         <div style={{ padding: '0 16px 20px' }}>
           <p style={{
             color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.5,
             margin: '0 0 16px', textAlign: 'center',
           }}>
             {content?.topic ? `${content.topic} — ` : ''}
-            səviyyəni seçin, kartlar ikinizə də açılacaq.
+            pick a level and the cards open for both of you.
           </p>
           {/* Yan-yana iki kart: hər biri 76px-lik tam enli düymədən kiçikdir,
               amma adı + bir sətirlik izahı daşıdığı üçün seçim daha aydındır. */}
           <div style={{ display: 'flex', gap: 10 }}>
             {[
-              { key: 'easy', name: 'Easy', hint: 'Gündəlik suallar' },
-              { key: 'hard', name: 'Hard', hint: 'Dərin müzakirə' },
+              { key: 'easy', name: 'Easy', hint: 'Everyday questions' },
+              { key: 'hard', name: 'Hard', hint: 'Deeper discussion' },
             ].map(({ key, name, hint }) => (
               <button
                 key={key}
@@ -167,7 +167,7 @@ export default function CallQuestionStage({
 
   return (
     <Overlay>
-      {header('🗣️ Sual kartı')}
+      {header('🗣️ Question card')}
       <div style={{ padding: '0 16px' }}>
         <div key={safeIndex} className="qstage-card" style={{
           borderRadius: 20, padding: '26px 20px', minHeight: 210,
@@ -208,7 +208,7 @@ export default function CallQuestionStage({
           onClick={() => (isFirst ? onBackToDifficulty() : onGo(safeIndex - 1))}
           style={GHOST_BTN}
         >
-          {isFirst ? '← Səviyyə' : '← Əvvəlki'}
+          {isFirst ? '← Level' : '← Previous'}
         </button>
         <button
           onClick={() => (isLast ? onClose() : onGo(safeIndex + 1))}
@@ -216,7 +216,7 @@ export default function CallQuestionStage({
             ? { ...SOLID_BTN, background: 'linear-gradient(135deg, #22c55e, #15803d)' }
             : SOLID_BTN}
         >
-          {isLast ? 'Bitir ✓' : 'Növbəti →'}
+          {isLast ? 'Bitir ✓' : 'Next →'}
         </button>
       </div>
     </Overlay>

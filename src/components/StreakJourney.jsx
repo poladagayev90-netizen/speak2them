@@ -53,10 +53,10 @@ export default function StreakJourney({ open, streakInfo, onClose }) {
       ))}
 
       <div className="journey-header">
-        <button className="journey-close" onClick={onClose} aria-label="Bağla"><X size={22} /></button>
+        <button className="journey-close" onClick={onClose} aria-label="Close"><X size={22} /></button>
         <div className="journey-hero-flame" aria-hidden="true">🔥</div>
         <div className="journey-head-count" style={{ color: tier.accent }}>
-          {count} <span className="journey-head-days">gün</span>
+          {count} <span className="journey-head-days">days</span>
         </div>
         <div className="journey-head-tier">{tier.title}</div>
         <div className="journey-progress-track" role="progressbar" aria-valuenow={milestonePct} aria-valuemin={0} aria-valuemax={100}>
@@ -64,8 +64,8 @@ export default function StreakJourney({ open, streakInfo, onClose }) {
         </div>
         <div className="journey-head-sub">
           {count === 0
-            ? 'Bu gün danışıb səyahətə başla!'
-            : (next ? `Növbəti hədəf: ${MILESTONE_ICON[next.target] || '⭐'} ${next.target} gün — ${next.remaining} gün qaldı` : 'Bütün hədəflər fəth edildi! 👑')}
+            ? 'Talk today and start your streak.'
+            : (next ? `Next milestone: ${MILESTONE_ICON[next.target] || '⭐'} ${next.target} days — ${next.remaining} to go` : 'Every milestone reached 👑')}
         </div>
       </div>
 
@@ -86,8 +86,8 @@ export default function StreakJourney({ open, streakInfo, onClose }) {
                 {milestone ? (MILESTONE_ICON[d] || '⭐') : (done ? d : (current ? d : ''))}
                 {!done && !current && !milestone && <span className="journey-lock">🔒</span>}
               </div>
-              {milestone && <div className="journey-node-label">{d} gün</div>}
-              {current && <div className="journey-node-label journey-node-label--today">Bugün 🎉</div>}
+              {milestone && <div className="journey-node-label">{d} days</div>}
+              {current && <div className="journey-node-label journey-node-label--today">Today 🎉</div>}
             </div>
           );
         })}

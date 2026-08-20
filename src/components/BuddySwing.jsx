@@ -119,8 +119,7 @@ export default function BuddySwing({ label }) {
         margin: '6px 0 0', fontSize: '12.5px', color: 'var(--text-muted)',
         textAlign: 'center', lineHeight: 1.5, maxWidth: '270px',
       }}>
-        Yuxarıdan bir blok seçin — kimsə həmin vaxta yazılan kimi zənginiz
-        avtomatik təsdiqlənəcək.
+        Pick a block above. Your call is confirmed automatically as soon as someone else joins that time.
       </p>
 
       <style>{`
