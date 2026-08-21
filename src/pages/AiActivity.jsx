@@ -7,34 +7,37 @@ import { getTodayContent } from '../data/weeklyContent';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
 import { plainTopic } from '../utils/topicLabel';
 import useAinurSession from '../hooks/useAinurSession';
-import { speakLine } from '../utils/ainurVoice';
+import { speakLine, stopSpeaking } from '../utils/ainurVoice';
 import AiDescribeStage from '../components/ai/AiDescribeStage';
 import MicButton from '../components/ai/MicButton';
 import Button from '../components/ui/Button';
 import '../components/ai/ai.css';
 
-// A describing session with AInur: five pictures, two exchanges each, about
-// eight minutes. Ends with the same analysis a human call produces, which is
-// what reaches the teacher.
+// A describing session with AInur: five pictures, one question each.
+// Ends with the same analysis a human call produces, which is what reaches the
+// teacher.
 //
-// HANDS-FREE. You tap once at the start and then just talk: she listens,
-// notices you have finished, answers, and listens again. Tapping again ends the
-// session. Requiring a tap per turn made a learner mid-thought hunt for a
-// button, and it hid a much worse failure — see useAinurSession.
+// ONE TAP AND ONE SPOKEN LINE, for the whole session. She says a single
+// sentence as it opens; after that the activity is silent. You describe a
+// picture, she asks one follow-up IN WRITING, you answer, and the next picture
+// appears with the microphone already live. There is no record button per
+// picture and no waiting for her to stop talking before you may speak.
+//
+// Why the voice went: hearing every reply cost five to eight seconds after each
+// answer, twice per picture, in which the learner could do nothing at all — and
+// it was most of what the activity cost to run. A written question is read in a
+// second and, unlike a spoken one, is still there while they think.
 const PICTURES_PER_SESSION = 5;
+// Describe the picture, then answer the one follow-up. That second answer gets
+// no reply: the server records it and the picture moves on.
 const TURNS_PER_PICTURE = 2;
 
-// The opening question for each picture. Plain and concrete on purpose: a
-// learner staring at a photo with nothing asked of them freezes, and "describe
-// this" is not a question you can answer without first deciding what to say.
-// Fixed strings, so the audio is synthesised once and reused.
-const OPENERS = [
-  'What can you see in this picture?',
-  'How would you describe this picture?',
-  'Tell me what is happening here.',
-  'What do you notice first in this picture?',
-  'Describe this picture for me. What is going on?',
-];
+// The one line she says out loud, at the start of the session only. It is a
+// fixed string, so its audio is synthesised once and then served from the
+// device forever. It also stays on screen for every picture as the standing
+// instruction, because a learner looking at a photo with nothing asked of them
+// freezes.
+const DESCRIBE_PROMPT = 'How can you describe this photo?';
 
 const FREE_TURNS = 40;   // effectively unlimited; the learner ends the session
 const freeOpener = (topic) => `Hello. Today the topic is ${topic}. What do you think about it?`;
@@ -52,11 +55,13 @@ export default function AiActivity({ user }) {
   const [reply, setReply] = useState('');
   const [log, setLog] = useState([]);          // free talk only: the running exchange
   const [finishing, setFinishing] = useState(false);
+  const [intro, setIntro] = useState(false);   // the opening line is playing
   const [done, setDone] = useState(null);     // null | 'analyzing' | 'ready' | 'short'
 
   const content = useMemo(() => getTodayContent(), []);
   const sessionIdRef = useRef(`${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
   const spokeRef = useRef(false);
+  const introRef = useRef(false);
   // The exchange on the CURRENT picture only, cleared on every picture change —
   // that reset is what stops one picture leaking into the next.
   const historyRef = useRef([]);
@@ -163,26 +168,48 @@ export default function AiActivity({ user }) {
     return () => { cancelled = true; };
   }, [content, isFree]);
 
-  const opener = isFree ? freeOpener(plainTopic(content.topic)) : OPENERS[picIndex % OPENERS.length];
-
-  // Ask the question out loud when a new picture appears.
-  useEffect(() => {
-    if (!active || heard || reply) return;
-    if (!isFree && !image) return;
-    speakLine(opener);
-  }, [active, opener, image, isFree, heard, reply]);
+  // One line for the whole session, not one per picture. It stays on screen
+  // under her name until she has asked her follow-up.
+  const opener = isFree ? freeOpener(plainTopic(content.topic)) : DESCRIBE_PROMPT;
 
   const ready = isFree || !!image;
 
+  // She speaks BEFORE the microphone opens, never over it. Run together, the
+  // recorder hears her through the speaker and Whisper hands back AInur's own
+  // question as the learner's first sentence.
+  const beginSession = useCallback(async () => {
+    introRef.current = true;
+    setIntro(true);
+    await speakLine(opener);        // resolves when she has finished, not when she starts
+    if (!introRef.current) return;  // skipped, finished early, or the screen was left
+    introRef.current = false;
+    setIntro(false);
+    start();
+  }, [opener, start]);
+
   const onTap = useCallback(() => {
-    if (!active) { start(); return; }
+    // Tapping through the opening line skips it rather than restarting it.
+    if (intro) {
+      introRef.current = false;
+      setIntro(false);
+      stopSpeaking();
+      start();
+      return;
+    }
+    if (!active) { beginSession(); return; }
     if (status === 'speaking') { interrupt(); return; }
     stop();
-  }, [active, status, start, stop, interrupt]);
+  }, [intro, active, status, beginSession, start, stop, interrupt]);
+
+  // Leaving the screen must not leave her talking, and must not let a queued
+  // opening line start a session nobody is looking at.
+  useEffect(() => () => { introRef.current = false; stopSpeaking(); }, []);
 
   const finish = useCallback(async () => {
     if (finishing) return;
     setFinishing(true);
+    introRef.current = false;
+    stopSpeaking();
     stop();
     if (!spokeRef.current) { navigate('/'); return; }
     setDone('analyzing');
@@ -251,7 +278,7 @@ export default function AiActivity({ user }) {
       <div className="ai-activity-head">
         <Button
           variant="ghost" size="sm" iconOnly aria-label="Back"
-          onClick={() => { stop(); navigate('/'); }}
+          onClick={() => { introRef.current = false; stopSpeaking(); stop(); navigate('/'); }}
           icon={<ChevronLeft size={22} strokeWidth={1.75} />}
         />
         <h1 className="ai-activity-title">{isFree ? 'Free talk' : 'Describe pictures'}</h1>
@@ -338,6 +365,7 @@ export default function AiActivity({ user }) {
         <MicButton
           status={status}
           active={active}
+          intro={intro}
           level={level}
           elapsedMs={elapsedMs}
           onTap={onTap}

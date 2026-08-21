@@ -4686,7 +4686,10 @@ Speak so they understand you easily:
 These are mistakes their first language causes. Do NOT correct them, but understand what they meant:
 ${watch}`;
 
-  const turnState = `THIS TURN
+  const turnState = activity === "describe"
+    ? `THIS TURN
+This is your ONE and ONLY reply about this picture. React in a clause, ask your question, stop. Their answer ends the picture and you will not speak again about it.`
+    : `THIS TURN
 Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
 ${state.isLast
   ? "This is the LAST exchange on this item and we move on the moment you finish speaking. Do NOT ask a question — there is no chance for them to answer it. Say one short warm sentence about what they told you, and stop."
@@ -4700,12 +4703,25 @@ The learner is looking at a photograph. YOU CANNOT SEE IT.
 The only thing you know is that these things are probably in it: ${kw}.
 Because you cannot see the picture:
 - Never describe the picture yourself.
-- Never mention a detail the learner has not mentioned.
+- Never state a detail the learner has not stated.
 - Never say whether their description is right or wrong. You have no way to know.
-The exchange above is about THIS picture only. Never mention an earlier picture — you cannot see any of them and the learner has moved on.
-React briefly to something specific they ACTUALLY said, naming it, then ask one question that makes them add detail: a colour, a reason, what happens next, how the person feels, or what they would do in that situation.
-Never ask about something they did not mention as if they had.
-If they used one of the words above, you may use it back naturally. If several of those things have not come up yet, steer your question towards one of them without naming it as a task.`;
+This is about THIS picture only. Never mention an earlier picture — you cannot see any of them and the learner has moved on.
+
+YOUR WHOLE REPLY IS TWO PARTS AND NOTHING ELSE
+1. One short COMPLETE SENTENCE naming ONE concrete thing they actually said, in your own words.
+2. One question.
+Write both on a single line, as ordinary prose. Never a line break, never a heading, never a fragment: "Woman with a red basket." is not a sentence. The learner is learning English from the way you write, so every sentence you send must be one they could copy.
+Do not open with "You mentioned" or "You said" — name the thing directly, the way someone listening would. Five pictures of "You mentioned X" in a row sounds like a form being filled in.
+
+THE QUESTION IS THE POINT, AND IT MUST ASK FOR SOMETHING THEY HAVE NOT ALREADY TOLD YOU.
+Before you write it, apply this test: could the question be answered by a sentence they have already spoken? If yes, it is the wrong question. Throw it away and ask a different one. Asking someone to repeat what they just said is the one thing that makes you sound like you were not listening.
+- They said the woman is wearing a red coat → do NOT ask what colour her coat is. Ask why she might be dressed like that.
+- They said two people are sitting at a table → do NOT ask how many people there are, or where they are. Ask what you think they are talking about.
+- They said it looks like a market → do NOT ask where it is. Ask what they would buy there.
+The best questions ask for what a photograph cannot show: a reason, a feeling, what happened just before, what happens next, or what the learner themselves would do there.
+Never ask about a detail they did not mention as if they had mentioned it.
+Exactly one question. Never two, and never one question containing "or" that offers two things to answer.
+Keep the whole reply under 25 words.`;
   } else {
     contract = `THE ACTIVITY: open conversation
 Keep a natural conversation going about: ${item.topic || "everyday life"}.`;
@@ -4905,6 +4921,48 @@ exports.aiActivityTurn = onRequest(
 
       const matchedKeywords = matchKeywords(transcript, keywords);
 
+      // Writing the turn away. Server-side only -- see the note at the top of
+      // this block -- and hoisted into a function because the closing answer
+      // below returns before the model is ever called.
+      const saveTurn = async (replyText) => {
+        const now = Date.now();
+        await sessionRef.set({
+          uid,
+          activity,
+          topicIndex,
+          level,
+          status: "active",
+          startedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        const spoken = [
+          { role: "student", text: transcript, itemId, itemIndex, ms: now, sec: Math.round(audioBuffer.length / 16000) },
+        ];
+        // A closing answer has no reply to store, and arrayUnion() throws when
+        // handed nothing, so the student turn always leads.
+        if (replyText) spoken.push({ role: "ainur", text: replyText, itemId, itemIndex, ms: now + 1 });
+        const turnUpdate = {
+          turns: admin.firestore.FieldValue.arrayUnion(...spoken),
+          turnCount: admin.firestore.FieldValue.increment(1),
+        };
+        // Most early turns match no keywords at all, so only add the field when
+        // there is something in it.
+        if (matchedKeywords.length) {
+          turnUpdate.keywordsHit = admin.firestore.FieldValue.arrayUnion(...matchedKeywords);
+        }
+        await sessionRef.update(turnUpdate);
+      };
+
+      // Describing a picture is ONE question and the answer to it. The answer
+      // needs no reply -- the picture changes the moment it lands -- so the turn
+      // is recorded and nothing is generated. That saves an LLM call and a TTS
+      // call per picture, and removes a closing line nobody had time to read.
+      if (activity === "describe" && isLast) {
+        await saveTurn("");
+        recordAiUsage(uid, { sttSeconds: audioBuffer.length / 16000, ttsChars: 0, tokensIn: 0, tokensOut: 0, turns: 1 });
+        return res.status(200).json({ transcript, reply: "", audioBase64: "", matchedKeywords, closing: true });
+      }
+
       // 2. AInur replies. 70B rather than 8B: the smaller model cannot hold a
       // level constraint across a session, and level matching is the point.
       const systemPrompt = buildAinurPrompt({
@@ -4936,52 +4994,42 @@ exports.aiActivityTurn = onRequest(
       const reply = (chatData.choices?.[0]?.message?.content || "Tell me a little more about that.").trim();
       const usage = chatData.usage || {};
 
-      // 3. Text to speech
+      // 3. Text to speech.
+      //
+      // Describing pictures is a SILENT activity now, apart from one spoken
+      // line at the very start of the session (src/utils/ainurVoice.js, cached
+      // on the device, so it costs one call ever). Her follow-up question is
+      // read, not heard. That drops the dominant cost of the activity -- TTS
+      // was more than half of it -- and, more importantly, it removes the wait
+      // between the learner finishing and being allowed to speak again.
+      //
+      // Decided here rather than taken from the request: a client that asked
+      // for a voice on every describe turn would simply be billing us for it.
       let audioBase64 = "";
-      try {
-        const ttsRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-thalia-en", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${DEEPGRAM_API_KEY.value()}`,
-          },
-          body: JSON.stringify({ text: reply }),
-        });
-        if (ttsRes.ok) {
-          audioBase64 = Buffer.from(await ttsRes.arrayBuffer()).toString("base64");
-        } else {
-          console.warn("[aiActivityTurn] TTS failed:", await ttsRes.text());
+      if (activity !== "describe") {
+        try {
+          const ttsRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-thalia-en", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Token ${DEEPGRAM_API_KEY.value()}`,
+            },
+            body: JSON.stringify({ text: reply }),
+          });
+          if (ttsRes.ok) {
+            audioBase64 = Buffer.from(await ttsRes.arrayBuffer()).toString("base64");
+          } else {
+            console.warn("[aiActivityTurn] TTS failed:", await ttsRes.text());
+          }
+        } catch (e) {
+          // A missing voice is a degraded lesson, not a failed one — the reply
+          // is on screen either way.
+          console.warn("[aiActivityTurn] TTS error:", e.message);
         }
-      } catch (e) {
-        // A missing voice is a degraded lesson, not a failed one — the reply is
-        // on screen either way.
-        console.warn("[aiActivityTurn] TTS error:", e.message);
       }
 
-      // 4. Persist the turn (server-side — see the note at the top of this block)
-      const now = Date.now();
-      await sessionRef.set({
-        uid,
-        activity,
-        topicIndex,
-        level,
-        status: "active",
-        startedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
-      const turnUpdate = {
-        turns: admin.firestore.FieldValue.arrayUnion(
-          { role: "student", text: transcript, itemId, itemIndex, ms: now, sec: Math.round(audioBuffer.length / 16000) },
-          { role: "ainur", text: reply, itemId, itemIndex, ms: now + 1 },
-        ),
-        turnCount: admin.firestore.FieldValue.increment(1),
-      };
-      // arrayUnion() throws with no arguments, and most early turns match no
-      // keywords at all, so only add the field when there is something in it.
-      if (matchedKeywords.length) {
-        turnUpdate.keywordsHit = admin.firestore.FieldValue.arrayUnion(...matchedKeywords);
-      }
-      await sessionRef.update(turnUpdate);
+      // 4. Persist the turn
+      await saveTurn(reply);
 
       // Rough audio seconds from the encoded size — webm/opus at the browser
       // default sits near 16 kB/s. Only feeds the cost meter.

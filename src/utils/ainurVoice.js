@@ -12,24 +12,46 @@ import { FUNCTIONS_BASE } from '../constants';
 const MEM = new Map();
 const KEY = (text) => `ainur_tts_v1:${text}`;
 let current = null;
+let endCurrent = null;   // settles the promise for whatever is playing right now
 
+// A ceiling on how long a caller will wait for one line. A line is a single
+// sentence; if it has not finished by now something is wrong -- autoplay was
+// blocked, or the decode stalled -- and a learner staring at a dead microphone
+// button is a worse failure than a missing voice.
+const MAX_LINE_MS = 9000;
+
+// Resolves when she has STOPPED TALKING, not when playback began. Callers open
+// the microphone on that promise, so getting this wrong means recording her.
 function play(base64) {
-  if (current) { current.pause(); current = null; }
+  stopSpeaking();
   const el = new Audio(`data:audio/mp3;base64,${base64}`);
   current = el;
-  el.onended = () => { if (current === el) current = null; };
-  el.play().catch(() => { if (current === el) current = null; });
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (current === el) { current = null; endCurrent = null; }
+      resolve();
+    };
+    const timer = setTimeout(finish, MAX_LINE_MS);
+    endCurrent = finish;
+    el.onended = finish;
+    el.onerror = finish;
+    el.play().catch(finish);
+  });
 }
 
 export async function speakLine(text) {
   if (!text) return;
 
   const mem = MEM.get(text);
-  if (mem) { play(mem); return; }
+  if (mem) { await play(mem); return; }
 
   try {
     const stored = localStorage.getItem(KEY(text));
-    if (stored) { MEM.set(text, stored); play(stored); return; }
+    if (stored) { MEM.set(text, stored); await play(stored); return; }
   } catch {
     // storage unavailable (private mode) — fall through and fetch
   }
@@ -47,14 +69,18 @@ export async function speakLine(text) {
     MEM.set(text, audioBase64);
     // Best effort: a full quota must never break the lesson.
     try { localStorage.setItem(KEY(text), audioBase64); } catch { /* ignore */ }
-    play(audioBase64);
+    await play(audioBase64);
   } catch {
     // A silent question is a degraded lesson, not a broken one — it is on screen.
   }
 }
 
+// Cutting her off also SETTLES the pending promise. Without that, a learner who
+// skipped the line would wait out the whole ceiling before the microphone
+// opened -- the skip button would look broken.
 export function stopSpeaking() {
   if (current) { current.pause(); current = null; }
+  if (endCurrent) { const settle = endCurrent; endCurrent = null; settle(); }
 }
 
 export default speakLine;

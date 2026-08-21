@@ -15,23 +15,28 @@ const fmt = (ms) => {
  * thrown the audio away. Whatever else changes here, the button must never
  * claim a state the session is not in.
  */
-export default function MicButton({ status, active, level = 0, elapsedMs = 0, onTap, disabled }) {
-  const listening = status === 'listening';
-  const busy = status === 'sending';
-  const speaking = status === 'speaking';
+export default function MicButton({ status, active, intro = false, level = 0, elapsedMs = 0, onTap, disabled }) {
+  const listening = !intro && status === 'listening';
+  const busy = !intro && status === 'sending';
+  // `intro` is the one spoken line at the top of a session. It is a separate
+  // flag rather than a status because the session has not started yet — the
+  // microphone deliberately stays shut until she has finished.
+  const speaking = intro || status === 'speaking';
 
-  const label = !active ? 'Tap to start'
-    : listening ? 'Listening — just talk'
-      : busy ? 'One moment'
-        : speaking ? 'Tap to interrupt'
-          : 'Tap to start';
+  const label = intro ? 'AInur is asking — tap to skip'
+    : !active ? 'Tap to start'
+      : listening ? 'Listening — just talk'
+        : busy ? 'One moment'
+          : speaking ? 'Tap to interrupt'
+            : 'Tap to start';
 
-  const Icon = !active ? Mic
-    : listening ? Square
-      : busy ? Loader2
-        : speaking ? Volume2 : Mic;
+  const Icon = intro ? Volume2
+    : !active ? Mic
+      : listening ? Square
+        : busy ? Loader2
+          : speaking ? Volume2 : Mic;
 
-  const mode = !active ? 'idle' : listening ? 'rec' : busy ? 'busy' : speaking ? 'speaking' : 'idle';
+  const mode = speaking ? 'speaking' : !active ? 'idle' : listening ? 'rec' : busy ? 'busy' : 'idle';
   // Cap the ring so a loud room does not blow it off the screen.
   const glow = Math.min(level, 0.6);
 
@@ -50,7 +55,7 @@ export default function MicButton({ status, active, level = 0, elapsedMs = 0, on
       <span className="ai-mic-label">
         {listening && elapsedMs > 0 ? fmt(elapsedMs) : label}
       </span>
-      {active && (
+      {active && !intro && (
         <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
           Tap again to end the session
         </span>
