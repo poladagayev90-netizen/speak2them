@@ -29,6 +29,11 @@ export default function useAinurTurn() {
   const startedAtRef = useRef(0);
   const lastVoiceAtRef = useRef(0);
   const audioElRef = useRef(null);
+  // Resolves when AInur has finished speaking (or was cut off). The caller
+  // needs this because the NEXT picture must not appear while she is still
+  // talking about the current one.
+  const speechDoneRef = useRef(Promise.resolve());
+  const speechResolveRef = useRef(null);
   const resolveRef = useRef(null);
   const autoStopRef = useRef(null);
 
@@ -49,6 +54,7 @@ export default function useAinurTurn() {
     // Barge-in: tapping the mic while AInur is talking cuts her off, the same
     // way you would interrupt a person.
     if (audioElRef.current) { audioElRef.current.pause(); audioElRef.current = null; }
+    if (speechResolveRef.current) { speechResolveRef.current(); speechResolveRef.current = null; }
 
     let stream;
     try {
@@ -194,9 +200,15 @@ export default function useAinurTurn() {
       const el = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
       audioElRef.current = el;
       setStatus('speaking');
-      el.onended = () => { audioElRef.current = null; setStatus('idle'); };
-      el.onerror = () => { audioElRef.current = null; setStatus('idle'); };
-      el.play().catch(() => { audioElRef.current = null; setStatus('idle'); });
+      speechDoneRef.current = new Promise((resolve) => { speechResolveRef.current = resolve; });
+      const finish = () => {
+        audioElRef.current = null;
+        setStatus('idle');
+        if (speechResolveRef.current) { speechResolveRef.current(); speechResolveRef.current = null; }
+      };
+      el.onended = finish;
+      el.onerror = finish;
+      el.play().catch(finish);
     } else {
       // TTS can fail on its own; the reply is still on screen.
       setStatus('idle');
@@ -204,5 +216,8 @@ export default function useAinurTurn() {
     return data;
   }, []);
 
-  return { status, level, error, elapsedMs, startRecording, stopRecording, send, setError };
+  // Await the current utterance. Resolves immediately when nothing is playing.
+  const waitForSpeech = useCallback(() => speechDoneRef.current, []);
+
+  return { status, level, error, elapsedMs, startRecording, stopRecording, send, setError, waitForSpeech };
 }

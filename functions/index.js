@@ -4688,7 +4688,9 @@ ${watch}`;
 
   const turnState = `THIS TURN
 Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
-${state.isLast ? "This is the last exchange on this item. Respond to what they said, then ask one final short question about it." : "There is at least one more exchange to come."}`;
+${state.isLast
+  ? "This is the LAST exchange on this item and we move on the moment you finish speaking. Do NOT ask a question — there is no chance for them to answer it. Say one short warm sentence about what they told you, and stop."
+  : "There is at least one more exchange to come, so end with your question as usual."}`;
 
   let contract;
   if (activity === "describe") {
@@ -4700,7 +4702,9 @@ Because you cannot see the picture:
 - Never describe the picture yourself.
 - Never mention a detail the learner has not mentioned.
 - Never say whether their description is right or wrong. You have no way to know.
-Your job is to keep them describing. React briefly to something specific they said, then ask one question that makes them add detail: a colour, a reason, what happens next, how the person feels, or what they would do in that situation.
+The exchange above is about THIS picture only. Never mention an earlier picture — you cannot see any of them and the learner has moved on.
+React briefly to something specific they ACTUALLY said, naming it, then ask one question that makes them add detail: a colour, a reason, what happens next, how the person feels, or what they would do in that situation.
+Never ask about something they did not mention as if they had.
 If they used one of the words above, you may use it back naturally. If several of those things have not come up yet, steer your question towards one of them without naming it as a task.`;
   } else {
     contract = `THE ACTIVITY: open conversation
@@ -4838,6 +4842,7 @@ exports.aiActivityTurn = onRequest(
       turnIndex = 0,
       plannedTurns = 2,
       isLast = false,
+      history = [],
       base64Audio,
       mimeType = "audio/webm",
       level = "B1",
@@ -4856,6 +4861,14 @@ exports.aiActivityTurn = onRequest(
     }
     if (!Array.isArray(keywords) || keywords.length > 24) {
       return res.status(400).json({ error: "keywords must be an array of at most 24" });
+    }
+    // The exchange so far on THIS item. Without it every turn was a cold
+    // call: AInur saw only the latest sentence, not her own question or the
+    // answer before it, so her follow-ups did not follow from anything. The
+    // client resets it when the picture changes, which is also what keeps a
+    // previous picture from leaking into the next one.
+    if (!Array.isArray(history) || history.length > 8) {
+      return res.status(400).json({ error: "history must be an array of at most 8 turns" });
     }
 
     const db = admin.firestore();
@@ -4902,9 +4915,15 @@ exports.aiActivityTurn = onRequest(
         state: { turnIndex, plannedTurns, isLast },
       });
 
+      const safeHistory = history
+        .filter((h) => h && (h.role === "user" || h.role === "assistant") && typeof h.content === "string")
+        .slice(-8)
+        .map((h) => ({ role: h.role, content: h.content.slice(0, 1200) }));
+
       const chatRes = await groqChatWithFallback({
         messages: [
           { role: "system", content: systemPrompt },
+          ...safeHistory,
           { role: "user", content: transcript },
         ],
         temperature: 0.6,

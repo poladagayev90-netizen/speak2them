@@ -41,7 +41,10 @@ export default function AiActivity({ user }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const isFree = params.get('mode') === 'free';
-  const { status, level, error, elapsedMs, startRecording, stopRecording, send, setError } = useAinurTurn();
+  const {
+    status, level, error, elapsedMs,
+    startRecording, stopRecording, send, setError, waitForSpeech,
+  } = useAinurTurn();
 
   const [images, setImages] = useState([]);
   const [picIndex, setPicIndex] = useState(0);
@@ -58,6 +61,9 @@ export default function AiActivity({ user }) {
   // stay stable across every turn but never repeat between sessions.
   const sessionIdRef = useRef(`${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
   const spokeRef = useRef(false);             // did the learner ever speak?
+  // The exchange on the CURRENT picture only. Reset on every picture change,
+  // which is what stops AInur carrying one picture into the next.
+  const historyRef = useRef([]);
 
   useEffect(() => {
     if (isFree) return undefined;
@@ -95,10 +101,16 @@ export default function AiActivity({ user }) {
       plannedTurns: isFree ? FREE_TURNS : TURNS_PER_PICTURE,
       isLast: isLastTurn,
       level: user?.level || 'B1',
+      history: historyRef.current,
     });
     if (!data || data.silent) return;
 
     spokeRef.current = true;
+    historyRef.current = [
+      ...historyRef.current,
+      { role: 'user', content: data.transcript || '' },
+      { role: 'assistant', content: data.reply || '' },
+    ].slice(-8);
     setHeard(data.transcript || '');
     setReply(data.reply || '');
     if (Array.isArray(data.matchedKeywords) && data.matchedKeywords.length) {
@@ -112,19 +124,22 @@ export default function AiActivity({ user }) {
     }
 
     if (isLastTurn) {
-      // Give the learner a beat to read the reply before the picture changes.
-      setTimeout(() => {
-        if (isLastPicture) return;
-        setPicIndex((i) => i + 1);
-        setTurnIndex(0);
-        setHits([]);
-        setHeard('');
-        setReply('');
-      }, 1400);
+      // Wait for AInur to actually FINISH speaking before swapping the
+      // picture. This ran on a 1400ms timer, but her reply takes six to eight
+      // seconds to speak — so the photo changed while she was still talking
+      // about the previous one, which is exactly how it looked to the learner.
+      await waitForSpeech();
+      if (isLastPicture) return;
+      historyRef.current = [];
+      setPicIndex((i) => i + 1);
+      setTurnIndex(0);
+      setHits([]);
+      setHeard('');
+      setReply('');
     } else {
       setTurnIndex((t) => t + 1);
     }
-  }, [stopRecording, send, image, picIndex, turnIndex, isLastTurn, isLastPicture, content.day, user, isFree, ready]);
+  }, [stopRecording, send, waitForSpeech, image, picIndex, turnIndex, isLastTurn, isLastPicture, content.day, user, isFree, ready]);
 
   // Finish: ask the server to grade the session. Under about a minute of speech
   // there is nothing worth reporting, and the server says so rather than
