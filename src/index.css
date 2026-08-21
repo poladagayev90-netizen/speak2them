@@ -32,7 +32,12 @@
 [data-theme="light"] {
   --bg-primary: #ffffff;
   --bg-secondary: #f4f4f5;
-  --bg-card: #ffffff;
+  /* A card is glass, not paper. This is the same value as --glass-fill below;
+     it lives on --bg-card as well because ~80 places across the app paint a
+     panel with --bg-card directly, and switching the token carries all of them
+     instead of leaving half the app flat. Anything that needs a genuinely
+     opaque surface should use --bg-input or --bg-primary. */
+  --bg-card: rgba(255, 255, 255, 0.88);
   --bg-input: #ffffff;
   --text-primary: #18181b;   /* 16.1:1 on white */
   --text-secondary: #52525b; /*  7.6:1 */
@@ -58,12 +63,43 @@
   --gold: #b45309;
   --silver: #52525b;
   --bronze: #92400e;
+
+  /* ── Glass ──────────────────────────────────────────────────────────────
+     A surface is a translucent fill with a lit top edge, not a flat panel with
+     a hairline drawn round it. The border still carries the separation; the
+     edge is what makes it read as a physical layer instead of a box. */
+  --glass-fill: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(9, 9, 11, 0.07);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.90);
+  --glass-lift: 0 14px 34px -26px rgba(9, 9, 11, 0.60);
+
+  /* Atmosphere: the page is lit by the accent rather than being flat white.
+     It costs one pseudo-element and it is the single biggest difference
+     between the old screens and the new ones. Built on the --*-rgb triplets
+     rather than a literal violet, or ocean/forest/mono would all be lit
+     violet -- a palette must never leak another palette's hue. */
+  --page-glow:
+    radial-gradient(100% 40% at 80% -6%, rgb(var(--accent-rgb) / 0.16), transparent 68%),
+    radial-gradient(80% 34% at 4% 60%, rgb(var(--ai-rgb) / 0.09), transparent 70%);
+
+  /* Glow shadows keyed to the two semantic hues. Never decorative -- only the
+     one primary action on a screen carries one, so a glow still means
+     "tap this". */
+  --glow-accent: 0 14px 30px -12px rgb(var(--accent-rgb) / 0.55);
+  --glow-ai: 0 14px 30px -12px rgb(var(--ai-rgb) / 0.55);
+  --tint-accent: radial-gradient(130% 130% at 100% 0%, rgb(var(--accent-rgb) / 0.14), var(--glass-fill) 60%);
+  --tint-ai: radial-gradient(130% 120% at 0% 0%, rgb(var(--ai-rgb) / 0.14), var(--glass-fill) 58%);
 }
 
 [data-theme="dark"] {
   --bg-primary: #0a0a0b;     /* neutral near-black, not navy */
   --bg-secondary: #131316;
-  --bg-card: #131316;
+  /* A white wash over the near-black page rather than a fixed grey: it lands
+     at roughly the old #131316 on --bg-primary, but it picks up the page glow,
+     and two nested panels read as two layers instead of one flat block. Flat
+     rather than the --glass-fill gradient, because --bg-card is also used in
+     shorthands where a gradient would be invalid. */
+  --bg-card: rgba(255, 255, 255, 0.045);
   --bg-input: #18181b;
   --text-primary: #fafafa;   /* 17.4:1 on --bg-card */
   --text-secondary: #a1a1aa; /*  7.3:1 */
@@ -85,6 +121,23 @@
   --gold: #fbbf24;
   --silver: #d4d4d8;
   --bronze: #fdba74;
+
+  /* Only these differ from light. The dark fill is a gradient and the light
+     fill is a solid, deliberately: on white, a translucent gradient reads as
+     dirt. --tint-* therefore cannot end in var(--glass-fill) here -- a
+     gradient is not a valid colour stop -- so the dark tints end in a flat
+     wash instead. */
+  --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.020));
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --glass-lift: 0 20px 40px -24px rgba(0, 0, 0, 0.90);
+  --page-glow:
+    radial-gradient(100% 42% at 78% -6%, rgb(var(--accent-rgb) / 0.26), transparent 66%),
+    radial-gradient(80% 36% at 6% 62%, rgb(var(--ai-rgb) / 0.10), transparent 72%);
+  --glow-accent: 0 14px 30px -12px rgb(var(--accent-rgb) / 0.70);
+  --glow-ai: 0 14px 30px -12px rgb(var(--ai-rgb) / 0.70);
+  --tint-accent: radial-gradient(130% 130% at 100% 0%, rgb(var(--accent-rgb) / 0.20), rgba(255, 255, 255, 0.026) 60%);
+  --tint-ai: radial-gradient(130% 120% at 0% 0%, rgb(var(--ai-rgb) / 0.20), rgba(255, 255, 255, 0.028) 58%);
 }
 
 /* ── Palettes ─────────────────────────────────────────────────────────────── */
@@ -98,10 +151,12 @@
 :root[data-palette="violet"],
 [data-theme="light"][data-palette="violet"] {
   --accent: #6d3beb;         /* 6.1:1 as text on white; white on it = 6.1:1 */
+  --accent-rgb: 109 59 235;
   --accent-strong: #5325c9;
   --accent-soft: rgba(109, 59, 235, 0.09);
   --text-on-accent: #ffffff;
   --ai: #0e7490;             /* 5.3:1 on white */
+  --ai-rgb: 14 116 144;
   --ai-strong: #0b5c73;
   --ai-soft: rgba(14, 116, 144, 0.09);
   --text-on-ai: #ffffff;
@@ -109,10 +164,12 @@
 [data-theme="dark"],
 [data-theme="dark"][data-palette="violet"] {
   --accent: #a78bfa;         /* 8.1:1 on --bg-card */
+  --accent-rgb: 167 139 250;
   --accent-strong: #c4b5fd;
   --accent-soft: rgba(167, 139, 250, 0.14);
   --text-on-accent: #0a0a0b; /* dark ink on a light fill */
   --ai: #22d3ee;             /* 9.9:1 on --bg-card */
+  --ai-rgb: 34 211 238;
   --ai-strong: #67e8f9;
   --ai-soft: rgba(34, 211, 238, 0.14);
   --text-on-ai: #0a0a0b;
@@ -122,20 +179,24 @@
 [data-palette="ocean"],
 [data-theme="light"][data-palette="ocean"] {
   --accent: #2563eb;
+  --accent-rgb: 37 99 235;
   --accent-strong: #1d4ed8;
   --accent-soft: rgba(37, 99, 235, 0.09);
   --text-on-accent: #ffffff;
   --ai: #0f766e;
+  --ai-rgb: 15 118 110;
   --ai-strong: #115e59;
   --ai-soft: rgba(15, 118, 110, 0.09);
   --text-on-ai: #ffffff;
 }
 [data-theme="dark"][data-palette="ocean"] {
   --accent: #60a5fa;
+  --accent-rgb: 96 165 250;
   --accent-strong: #93c5fd;
   --accent-soft: rgba(96, 165, 250, 0.14);
   --text-on-accent: #0a0a0b;
   --ai: #2dd4bf;
+  --ai-rgb: 45 212 191;
   --ai-strong: #5eead4;
   --ai-soft: rgba(45, 212, 191, 0.14);
   --text-on-ai: #0a0a0b;
@@ -145,20 +206,24 @@
 [data-palette="forest"],
 [data-theme="light"][data-palette="forest"] {
   --accent: #047857;
+  --accent-rgb: 4 120 87;
   --accent-strong: #065f46;
   --accent-soft: rgba(4, 120, 87, 0.09);
   --text-on-accent: #ffffff;
   --ai: #7c3aed;
+  --ai-rgb: 124 58 237;
   --ai-strong: #6d28d9;
   --ai-soft: rgba(124, 58, 237, 0.09);
   --text-on-ai: #ffffff;
 }
 [data-theme="dark"][data-palette="forest"] {
   --accent: #34d399;
+  --accent-rgb: 52 211 153;
   --accent-strong: #6ee7b7;
   --accent-soft: rgba(52, 211, 153, 0.14);
   --text-on-accent: #0a0a0b;
   --ai: #c4b5fd;
+  --ai-rgb: 196 181 253;
   --ai-strong: #ddd6fe;
   --ai-soft: rgba(196, 181, 253, 0.14);
   --text-on-ai: #0a0a0b;
@@ -169,23 +234,36 @@
 [data-palette="mono"],
 [data-theme="light"][data-palette="mono"] {
   --accent: #18181b;
+  --accent-rgb: 24 24 27;
   --accent-strong: #000000;
   --accent-soft: rgba(9, 9, 11, 0.06);
   --text-on-accent: #ffffff;
   --ai: #2563eb;
+  --ai-rgb: 37 99 235;
   --ai-strong: #1d4ed8;
   --ai-soft: rgba(37, 99, 235, 0.09);
   --text-on-ai: #ffffff;
 }
 [data-theme="dark"][data-palette="mono"] {
   --accent: #fafafa;
+  --accent-rgb: 250 250 250;
   --accent-strong: #ffffff;
   --accent-soft: rgba(250, 250, 250, 0.12);
   --text-on-accent: #0a0a0b;
   --ai: #7dd3fc;
+  --ai-rgb: 125 211 252;
   --ai-strong: #bae6fd;
   --ai-soft: rgba(125, 211, 252, 0.14);
   --text-on-ai: #0a0a0b;
+}
+
+/* Mono's accent is near-black in light and near-white in dark, so lighting the
+   page with it would be a grey smudge rather than atmosphere. Mono keeps the
+   AInur hue only -- which is exactly the point of the palette: the one colour
+   left on screen is the AI. This has to sit after both neutral blocks:
+   [data-palette] and :root have equal specificity, so it wins on order. */
+[data-palette="mono"] {
+  --page-glow: radial-gradient(90% 38% at 82% -6%, rgb(var(--ai-rgb) / 0.12), transparent 70%);
 }
 
 /* A real person is the accent; AInur is the AI hue. Aliases so a component can
@@ -216,11 +294,17 @@
   --s-1: 4px;  --s-2: 8px;   --s-3: 12px; --s-4: 16px;
   --s-5: 20px; --s-6: 24px;  --s-8: 32px; --s-10: 40px;
 
-  /* Radius */
-  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px; --r-pill: 999px;
+  /* Radius. Bumped one step: a glass panel with a 14px corner reads as a
+     rectangle with rounded corners; at 22px it reads as a panel. */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 22px; --r-pill: 999px;
 
-  /* Type */
-  --fs-display: 28px; --fs-h1: 22px; --fs-h2: 17px;
+  /* Type. Outfit carries anything that is a headline -- it is already the
+     wordmark's own face, so the app finally speaks in the brand's voice.
+     Manrope carries everything else, because Outfit at 13px is worse than
+     Manrope at 13px. Display sizes get negative tracking: Outfit is wide. */
+  --font-display: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  --font-ui: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --fs-display: 30px; --fs-h1: 23px; --fs-h2: 18px;
   --fs-body: 15px;    --fs-sm: 13px; --fs-xs: 11px;
   --lh-tight: 1.2;    --lh-body: 1.5;
 
@@ -229,6 +313,9 @@
   --e-1: none;
   --e-2: 0 1px 3px var(--shadow);
   --e-3: 0 8px 30px var(--shadow);
+  /* The floating nav bar. Deeper than --e-3 on purpose: it is the only element
+     in the app that is meant to look detached from the page. */
+  --e-4: 0 22px 44px -20px rgba(0, 0, 0, 0.55);
 
   /* Z — one ladder for the whole app. */
   --z-nav: 100; --z-sheet: 1000; --z-stage: 1500; --z-modal: 2000; --z-toast: 3000;
@@ -253,9 +340,7 @@ body, #root {
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
@@ -266,6 +351,27 @@ body, #root {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+}
+
+/* Atmosphere layer. Fixed and non-interactive, painted under everything, so
+   every screen in the app gets the accent-lit background for free with no
+   per-page work. #root's children are lifted onto their own layer so no
+   content can end up behind it. */
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--page-glow);
+}
+#root > * { position: relative; z-index: 1; }
+
+/* Headlines speak Outfit. Scoped to the type roles rather than applied
+   globally, because Outfit only earns its keep at size. */
+h1, h2, h3, .home-logo, .ui-stat-value {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 ::-webkit-scrollbar {
@@ -893,3 +999,21 @@ code {
   50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
 }
 
+/* The flask breathes. Bubbles rise out of the neck and fade before they reach
+   the wordmark; three of them on staggered thirds of one cycle, so the stream
+   never gaps and never doubles up. These live here rather than in Logo.jsx
+   because @keyframes cannot be declared inline on an element. */
+@keyframes logo-bubble {
+  0%   { transform: translateY(0) scale(.45); opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { transform: translateY(-26px) scale(1); opacity: .7; }
+  100% { transform: translateY(-44px) scale(.8); opacity: 0; }
+}
+@keyframes logo-bubble-drift {
+  0%   { transform: translate(0, 0) scale(.4); opacity: 0; }
+  22%  { opacity: .9; }
+  100% { transform: translate(6px, -42px) scale(.9); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="logo-bubble"] { animation: none !important; opacity: .35; }
+}

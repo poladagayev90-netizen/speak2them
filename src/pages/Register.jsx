@@ -216,7 +216,7 @@ export default function Register() {
             style={{
               width: '100%',
               backgroundColor: '#ffffff',
-              color: 'var(--bg-card)',
+              color: 'var(--text-on-accent)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

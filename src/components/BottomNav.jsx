@@ -26,13 +26,16 @@ export default function BottomNav({ user }) {
       ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
       // Cyan, not violet: colour says who you are talking to, and this tab is
       // the AI one. Every other tab leads to people.
-      : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)' },
+      : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)', soft: 'var(--ai-soft)' },
     { icon: Users,         label: 'Live',    route: '/live' },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
   return (
-    <div className="bottom-nav" style={{ paddingBottom: 'var(--safe-area-bottom, 0px)' }}>
+    // No safe-area padding here any more. The bar floats now — .bottom-nav sits
+    // at `bottom: calc(14px + safe-area)`, so padding it as well would count the
+    // inset twice and leave a dead strip inside the bar.
+    <div className="bottom-nav">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = path === tab.route;
@@ -42,6 +45,9 @@ export default function BottomNav({ user }) {
             id={tab.tourId}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
             onClick={() => navigate(tab.route)}
+            // The pool of light behind the active icon has to be the tab's own
+            // hue, or the AI tab glows violet while its icon is cyan.
+            style={isActive && tab.soft ? { '--nav-pool': tab.soft } : undefined}
           >
             <span style={{ position: 'relative', display: 'inline-flex' }}>
               <Icon

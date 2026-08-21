@@ -174,8 +174,9 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
+  /* The atmosphere layer is the background now. A card-coloured strip with a
+     border cut the page in half right under the logo. */
+  background: transparent;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -219,7 +220,8 @@ body {
 .home-body {
   padding: 16px;
   flex: 1;
-  padding-bottom: 80px;
+  /* Clears the floating nav: 64px bar + 14px gap + breathing room. */
+  padding-bottom: 96px;
 }
 
 .users-grid {
@@ -312,25 +314,29 @@ body {
 .btn-random {
   width: 100%;
   padding: 15px;
-  background: var(--peer, var(--accent));
+  background: linear-gradient(180deg, var(--accent-strong), var(--peer, var(--accent)));
   color: var(--text-on-accent);
   border: none;
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
+  font-family: var(--font-display);
   font-size: 17px;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), var(--glow-accent);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: filter 0.2s, transform 0.08s;
 }
 
-.btn-random:hover {
-  background: var(--accent-strong);
-}
+.btn-random:hover { filter: brightness(1.06); }
+.btn-random:active { transform: scale(.98); }
 
 .chat-page {
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  padding-bottom: 70px;
+  /* Clears the floating nav: its top edge is 64px bar + 14px gap off the
+     bottom, so 70px put the composer underneath it. */
+  padding-bottom: 86px;
 }
 
 .chat-header {
@@ -502,6 +508,11 @@ body {
 }
 
 .incoming-call {
+  /* --bg-card is translucent now, and this sits over whatever the user was
+     looking at -- without a blur behind it the caller's name competes with
+     the page underneath. */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   position: fixed;
   top: 20px;
   left: 50%;
@@ -918,6 +929,8 @@ body {
 }
 
 .daily-panel-header {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1189,6 +1202,22 @@ body {
   align-items: center;
   gap: 16px;
   margin-bottom: 60px;
+  position: relative;
+}
+
+/* A pool of accent light behind the mark, with no edge of its own. */
+.splash-content::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 260px;
+  height: 260px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-soft), transparent 62%);
+  filter: blur(6px);
+  pointer-events: none;
 }
 
 .splash-logo {
@@ -1216,34 +1245,49 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+/* #1e1e3088 was a leftover from the old dark-only palette and rendered as a
+   grey slab over white in light mode. */
 .splash-quote {
   text-align: center;
   padding: 24px;
-  background: #1e1e3088;
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-edge), var(--glass-lift);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   max-width: 340px;
+  position: relative;
 }
 
 .splash-motto {
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
   color: var(--text-primary);
   font-style: italic;
-  line-height: 1.6;
+  line-height: 1.45;
   margin-bottom: 12px;
+  text-wrap: pretty;
 }
 
 .splash-by {
   font-size: 13px;
   color: var(--accent);
   font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .splash-credit {
   position: absolute;
   bottom: 40px;
   font-size: 13px;
-  color: #444;
+  /* was #444 -- near-invisible on dark, muddy on light */
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 .user-stats-row {
   display: flex;
@@ -1260,17 +1304,24 @@ body {
 }
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  /* Floating, not welded to the bottom edge. The margin is what makes the app
+     feel like it sits on top of the phone rather than filling it. */
+  bottom: calc(14px + var(--safe-area-bottom, 0px));
+  left: 12px;
+  right: 12px;
   min-height: 64px;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-edge), var(--e-4);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  /* Keeps the active tab's glow inside the rounded corners. */
+  overflow: hidden;
   display: flex;
   align-items: stretch;
   justify-content: space-around;
-  z-index: 100;
-  padding-bottom: var(--safe-area-bottom, 0px);
+  z-index: var(--z-nav);
 }
 
 .bottom-nav-btn {
@@ -1285,6 +1336,21 @@ body {
   cursor: pointer;
   padding: 8px 0;
   height: 100%;
+  position: relative;
+}
+
+/* A soft pool of accent behind the active icon, drawn as a radial gradient so
+   it has no edge of its own -- a pill with a border would read as a second
+   button sitting inside the bar. */
+.bottom-nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 34px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  background: radial-gradient(circle, var(--nav-pool, var(--accent-soft)), transparent 70%);
+  pointer-events: none;
 }
 
 .bottom-nav-icon {

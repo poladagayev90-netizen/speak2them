@@ -11,7 +11,7 @@
   justify-content: center;
   gap: var(--s-2);
   border: 1px solid transparent;
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   font-family: inherit;
   font-weight: 600;
   line-height: 1;
@@ -31,22 +31,46 @@
 }
 
 /* sizes */
-.ui-btn--sm { height: 34px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+.ui-btn--sm { height: 34px; padding: 0 var(--s-3); font-size: var(--fs-sm); border-radius: var(--r-md); }
 .ui-btn--md { height: 44px; padding: 0 var(--s-4); font-size: var(--fs-body); }
-.ui-btn--lg { height: 52px; padding: 0 var(--s-5); font-size: var(--fs-h2); border-radius: var(--r-lg); }
+/* The one big action on a screen. Outfit at 18/700 with tight tracking is the
+   difference between "a button" and "the thing you came here to do". */
+.ui-btn--lg {
+  height: 54px;
+  padding: 0 var(--s-5);
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border-radius: var(--r-lg);
+}
 .ui-btn--full { width: 100%; }
 
 /* variants */
-.ui-btn--primary { background: var(--accent); color: var(--text-on-accent); }
-.ui-btn--primary:not(:disabled):hover { background: var(--accent-strong); }
+/* A filled button is a light source now: a top-to-bottom gradient between the
+   two ramp steps, an inner highlight along the top edge, and a coloured glow
+   underneath. The gradient direction is fixed (light end on top) and works in
+   both themes without an override because the ramps invert -- in dark,
+   --accent-strong is the LIGHTER step (#c4b5fd vs #a78bfa). */
+.ui-btn--primary {
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  color: var(--text-on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), var(--glow-accent);
+}
+.ui-btn--primary:not(:disabled):hover { filter: brightness(1.06); }
 
-.ui-btn--ai { background: var(--ai); color: var(--text-on-ai); }
-.ui-btn--ai:not(:disabled):hover { background: var(--ai-strong); }
+.ui-btn--ai {
+  background: linear-gradient(180deg, var(--ai-strong), var(--ai));
+  color: var(--text-on-ai);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), var(--glow-ai);
+}
+.ui-btn--ai:not(:disabled):hover { filter: brightness(1.06); }
 
 .ui-btn--secondary {
-  background: var(--bg-secondary);
+  background: var(--glass-fill);
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-edge);
 }
 .ui-btn--secondary:not(:disabled):hover { border-color: var(--accent); }
 
@@ -60,22 +84,34 @@
 .ui-btn--icon { padding: 0; aspect-ratio: 1; }
 .ui-btn--icon.ui-btn--sm { width: 34px; }
 .ui-btn--icon.ui-btn--md { width: 44px; }
-.ui-btn--icon.ui-btn--lg { width: 52px; }
+.ui-btn--icon.ui-btn--lg { width: 54px; }
 
 /* ------------------------------------------------------------------ Card -- */
 .ui-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  box-shadow: var(--e-1);
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-edge), var(--glass-lift);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 .ui-card--pad-sm { padding: var(--s-3); }
 .ui-card--pad-md { padding: var(--s-4); }
 .ui-card--pad-lg { padding: var(--s-5); }
 
-/* Tone is the "who am I talking to" signal: cyan = AInur, violet = a person. */
-.ui-card--ai   { border-color: var(--ai);   box-shadow: var(--e-1), 0 0 0 3px var(--ai-soft); }
-.ui-card--peer { border-color: var(--peer); box-shadow: var(--e-1), 0 0 0 3px var(--peer-soft); }
+/* Tone is the "who am I talking to" signal: cyan = AInur, violet = a person.
+   The 3px ring became a tint pooling in one corner plus a coloured lift --
+   same message, but it reads as the card being lit rather than outlined. */
+.ui-card--ai {
+  background: var(--tint-ai);
+  border-color: rgb(var(--ai-rgb) / 0.30);
+  box-shadow: var(--glass-edge), 0 30px 60px -34px var(--ai);
+}
+.ui-card--peer {
+  background: var(--tint-accent);
+  border-color: rgb(var(--accent-rgb) / 0.28);
+  box-shadow: var(--glass-edge), 0 24px 50px -34px var(--peer);
+}
 
 .ui-card--interactive {
   cursor: pointer;
@@ -143,11 +179,13 @@
   max-height: 88vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
+  background: var(--glass-fill);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-bottom: none;
-  box-shadow: var(--e-3);
+  box-shadow: var(--glass-edge), var(--e-3);
   animation: ui-sheet-up 220ms cubic-bezier(.2, .8, .2, 1);
   padding-bottom: var(--safe-area-bottom, 0px);
 }
@@ -156,7 +194,7 @@
   margin: auto var(--s-4);
   width: auto;
   border-radius: var(--r-xl);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
 }
 .ui-sheet-backdrop--center { align-items: center; padding: var(--s-4); }
 
@@ -196,25 +234,26 @@
 /* ------------------------------------------------------------------ Stat -- */
 .ui-stat { display: flex; flex-direction: column; gap: 2px; }
 .ui-stat-value {
-  font-size: var(--fs-h1);
+  font-family: var(--font-display);
+  font-size: 24px;
   font-weight: 700;
   color: var(--text-primary);
-  line-height: var(--lh-tight);
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .ui-stat-label {
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  letter-spacing: .04em;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 /* --------------------------------------------------------------- Section -- */
 .ui-section-label {
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: .06em;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin: 0 0 var(--s-2);

@@ -1077,7 +1077,7 @@ export default function Chat({ user }) {
               )}
               {timeWarning && (
                 <div style={{
-                  background: 'var(--warning)', color: 'var(--bg-card)', padding: '10px 16px',
+                  background: 'var(--warning)', color: 'var(--text-on-accent)', padding: '10px 16px',
                   borderRadius: '14px', fontSize: '14px', fontWeight: 800,
                   marginTop: '10px', animation: 'pulse 1s ease-in-out infinite',
                 }}>
