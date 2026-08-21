@@ -32,12 +32,15 @@
 [data-theme="light"] {
   --bg-primary: #ffffff;
   --bg-secondary: #f4f4f5;
-  /* A card is glass, not paper. This is the same value as --glass-fill below;
-     it lives on --bg-card as well because ~80 places across the app paint a
-     panel with --bg-card directly, and switching the token carries all of them
-     instead of leaving half the app flat. Anything that needs a genuinely
-     opaque surface should use --bg-input or --bg-primary. */
-  --bg-card: rgba(255, 255, 255, 0.88);
+  /* OPAQUE, and it must stay that way. This was briefly translucent so that the
+     ~80 places painting a panel with --bg-card directly would pick up the glass
+     look. That broke the call screen: the in-call stage panels are fixed
+     overlays with no scrim, so the avatar, the name, the timer and the End
+     button all showed straight through the panel on top of the text. A token
+     that every surface in the app uses cannot be see-through by default.
+     Glass is opt-in, on the primitives that sit ON the page rather than over
+     it: .ui-card, .ui-sheet and .bottom-nav read --glass-fill. */
+  --bg-card: #ffffff;
   --bg-input: #ffffff;
   --text-primary: #18181b;   /* 16.1:1 on white */
   --text-secondary: #52525b; /*  7.6:1 */
@@ -94,12 +97,8 @@
 [data-theme="dark"] {
   --bg-primary: #0a0a0b;     /* neutral near-black, not navy */
   --bg-secondary: #131316;
-  /* A white wash over the near-black page rather than a fixed grey: it lands
-     at roughly the old #131316 on --bg-primary, but it picks up the page glow,
-     and two nested panels read as two layers instead of one flat block. Flat
-     rather than the --glass-fill gradient, because --bg-card is also used in
-     shorthands where a gradient would be invalid. */
-  --bg-card: rgba(255, 255, 255, 0.045);
+  /* Opaque -- see the note on the light value. */
+  --bg-card: #131316;
   --bg-input: #18181b;
   --text-primary: #fafafa;   /* 17.4:1 on --bg-card */
   --text-secondary: #a1a1aa; /*  7.3:1 */

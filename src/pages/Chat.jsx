@@ -84,6 +84,9 @@ export default function Chat({ user }) {
   const [tabooStage, setTabooStage] = useState(null);
   const [questionStage, setQuestionStage] = useState(null);
   const [debateStage, setDebateStage] = useState(null);
+  // Any full-screen activity panel currently owning the call screen.
+  const stageOpen = !!(imageStage?.active || tabooStage?.active
+    || questionStage?.active || debateStage?.active || showDaily);
   // The post-call flow is a queue of full-screen stages. Normally it holds just
   // 'insights' (the single summary screen); 'quiz' is pushed only when the user
   // asks for it from that screen.
@@ -1189,7 +1192,12 @@ export default function Chat({ user }) {
           </div>
         </div>
       )}
-      {inCall && (
+      {/* The translate ball is position:fixed at z-index 10005, which put it on
+          top of EVERYTHING -- including the "Next picture" / "Next topic"
+          button at the bottom of every in-call activity panel. Tapping the
+          primary action meant tapping the globe instead. While a panel owns the
+          screen the widget stands down; closing the panel brings it back. */}
+      {inCall && !stageOpen && (
         <div id="tour-translate">
           <TranslateWidget 
             userId={user.uid} 

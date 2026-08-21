@@ -72,15 +72,21 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 1500,
+      position: 'fixed', inset: 0, zIndex: 'var(--z-stage)',
+      // A dim behind the sheet. Without it the call screen reads straight
+      // through every gap around the panel -- avatar, name, timer and the End
+      // button competing with the activity's own text, which is exactly how
+      // this looked once --bg-card went translucent. pointerEvents stays
+      // 'none', so the call controls underneath remain reachable mid-activity.
+      background: 'var(--overlay)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '16px', pointerEvents: 'none',
     }}>
       <div style={{
         pointerEvents: 'auto', width: '100%', maxWidth: 360, position: 'relative',
-        background: 'var(--bg-card, var(--bg-card))',
-        borderRadius: 22, border: '1px solid var(--border)',
-        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px var(--accent-soft)',
+        background: 'var(--bg-card)',
+        borderRadius: 'var(--r-xl)', border: '1px solid var(--border)',
+        boxShadow: 'var(--glass-edge), var(--e-3)',
         overflow: 'hidden',
       }}>
         {burstKey > 0 && !reduceMotion && (
@@ -115,7 +121,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               className={reduceMotion ? undefined : 'taboo-score-pop'}
               style={{
                 display: 'inline-block',
-                background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+                background: 'var(--success)', color: '#fff',
                 borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700,
               }}
             >
@@ -160,7 +166,6 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               <h2 style={{
                 color: '#fff', fontSize: 34, fontWeight: 800, letterSpacing: '2px',
                 textAlign: 'center', margin: '0 0 16px',
-                textShadow: '0 0 22px rgba(139,107,255,0.55)',
               }}>
                 {card.word}
               </h2>
@@ -230,7 +235,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               onClick={onCorrect}
               style={{
                 flex: 1.5, height: 46, borderRadius: 12, border: 'none',
-                background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
+                background: 'var(--success)', color: '#fff',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
                 boxShadow: '0 6px 18px rgba(34, 197, 94, 0.28)',
               }}

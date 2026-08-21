@@ -16,10 +16,10 @@ const PANEL = {
   pointerEvents: 'auto',
   width: '100%',
   maxWidth: 360,
-  background: 'var(--bg-card, var(--bg-card))',
-  borderRadius: 22,
+  background: 'var(--bg-card)',
+  borderRadius: 'var(--r-xl)',
   border: '1px solid var(--border)',
-  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px var(--accent-soft)',
+  boxShadow: 'var(--glass-edge), var(--e-3)',
   overflow: 'hidden',
 };
 
@@ -29,7 +29,7 @@ const PANEL = {
 // assosiasiyası yaradırdı, halbuki Hard səhv deyil, sadəcə daha ağır seçimdir.
 const LEVEL_ACCENT = {
   easy: 'var(--ai)',  // Neon Cyan
-  hard: '#6D3BEB',  // Lab Violet
+  hard: 'var(--accent)',  // Lab Violet
 };
 
 const LEVEL_CARD = {
@@ -195,7 +195,7 @@ export default function CallQuestionStage({
           </div>
           <p style={{
             color: '#fff', fontSize: 21, fontWeight: 700, lineHeight: 1.4,
-            margin: 0, textShadow: '0 0 22px rgba(139,107,255,0.35)',
+            margin: 0,
           }}>
             {questions[safeIndex]}
           </p>
@@ -213,7 +213,7 @@ export default function CallQuestionStage({
         <button
           onClick={() => (isLast ? onClose() : onGo(safeIndex + 1))}
           style={isLast
-            ? { ...SOLID_BTN, background: 'linear-gradient(135deg, #22c55e, #15803d)' }
+            ? { ...SOLID_BTN, background: 'var(--success)' }
             : SOLID_BTN}
         >
           {isLast ? 'Finish' : 'Next →'}
@@ -226,7 +226,13 @@ export default function CallQuestionStage({
 function Overlay({ children }) {
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 1500,
+      position: 'fixed', inset: 0, zIndex: 'var(--z-stage)',
+      // A dim behind the sheet. Without it the call screen reads straight
+      // through every gap around the panel -- avatar, name, timer and the End
+      // button competing with the activity's own text, which is exactly how
+      // this looked once --bg-card went translucent. pointerEvents stays
+      // 'none', so the call controls underneath remain reachable mid-activity.
+      background: 'var(--overlay)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '16px', pointerEvents: 'none',
     }}>

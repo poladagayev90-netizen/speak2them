@@ -42,15 +42,21 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 1500,
+      position: 'fixed', inset: 0, zIndex: 'var(--z-stage)',
+      // A dim behind the sheet. Without it the call screen reads straight
+      // through every gap around the panel -- avatar, name, timer and the End
+      // button competing with the activity's own text, which is exactly how
+      // this looked once --bg-card went translucent. pointerEvents stays
+      // 'none', so the call controls underneath remain reachable mid-activity.
+      background: 'var(--overlay)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '16px', pointerEvents: 'none',
     }}>
       <div style={{
         pointerEvents: 'auto', width: '100%', maxWidth: 360,
-        background: 'var(--bg-card, var(--bg-card))',
-        borderRadius: 20, border: '1px solid var(--border)',
-        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent-soft)',
+        background: 'var(--bg-card)',
+        borderRadius: 'var(--r-xl)', border: '1px solid var(--border)',
+        boxShadow: 'var(--glass-edge), var(--e-3)',
         overflow: 'hidden',
       }}>
         <div style={{

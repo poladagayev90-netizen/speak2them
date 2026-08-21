@@ -12,10 +12,10 @@ const PANEL = {
   pointerEvents: 'auto',
   width: '100%',
   maxWidth: 360,
-  background: 'var(--bg-card, var(--bg-card))',
-  borderRadius: 22,
+  background: 'var(--bg-card)',
+  borderRadius: 'var(--r-xl)',
   border: '1px solid var(--border)',
-  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px var(--accent-soft)',
+  boxShadow: 'var(--glass-edge), var(--e-3)',
   overflow: 'hidden',
   // Bu panel Taboo-dan xeyli hündürdür: 5 arqument iki sətrə keçəndə 320px
   // ekranda alt düymələr kadrdan çıxırdı və sürüşdürmək mümkün deyildi.
@@ -67,7 +67,7 @@ const SOLID_BTN = {
 // CallQuestionStage-dəki səviyyə rəngləri ilə eynidir (svetofor DEYİL).
 const LEVEL_META = {
   simple: { text: 'SIMPLE', colour: 'var(--ai)' },   // Neon Cyan
-  normal: { text: 'ORTA', colour: '#6D3BEB' },   // Lab Violet
+  normal: { text: 'ORTA', colour: 'var(--accent)' },   // Lab Violet
 };
 
 export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose }) {
@@ -78,7 +78,13 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 1500,
+      position: 'fixed', inset: 0, zIndex: 'var(--z-stage)',
+      // A dim behind the sheet. Without it the call screen reads straight
+      // through every gap around the panel -- avatar, name, timer and the End
+      // button competing with the activity's own text, which is exactly how
+      // this looked once --bg-card went translucent. pointerEvents stays
+      // 'none', so the call controls underneath remain reachable mid-activity.
+      background: 'var(--overlay)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '16px', pointerEvents: 'none',
     }}>
@@ -142,7 +148,6 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
             </p>
             <h3 style={{
               color: '#fff', fontSize: 24, fontWeight: 800, margin: '0 0 4px', textAlign: 'center',
-              textShadow: '0 0 22px rgba(139,107,255,0.55)',
             }}>
               {mine.label}
             </h3>
