@@ -5191,7 +5191,19 @@ exports.analyzeAiSession = onRequest(
 //
 // Deliberately NOT free-form: an endpoint that will speak any text a client
 // sends is a paid megaphone. Only lines the app itself ships are allowed.
+// Every fixed line the app is allowed to have spoken. The allowlist exists so a
+// client cannot turn this endpoint into free text-to-speech, and it is billed
+// per character.
+//
+// ⚠️ THIS MUST MATCH THE CLIENT. DESCRIBE_PROMPT in src/pages/AiActivity.jsx is
+// the line the describing activity asks for; changing the string there without
+// adding it here returns 400 "Unknown line" and AInur goes COMPLETELY SILENT
+// with nothing on screen to say why. That has already shipped once.
 const SPEAKABLE_LINES = new Set([
+  // The current describing opener -- keep in sync with DESCRIBE_PROMPT.
+  "How can you describe this photo?",
+  // The five per-picture openers this replaced. Kept because a client running
+  // an older bundle still asks for them, and a cached device still holds them.
   "What can you see in this picture?",
   "How would you describe this picture?",
   "Tell me what is happening here.",

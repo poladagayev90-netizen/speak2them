@@ -7,7 +7,7 @@ import { getTodayContent } from '../data/weeklyContent';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
 import { plainTopic } from '../utils/topicLabel';
 import useAinurSession from '../hooks/useAinurSession';
-import { speakLine, stopSpeaking } from '../utils/ainurVoice';
+import { speakLine, stopSpeaking, primeLine, hasLine } from '../utils/ainurVoice';
 import AiDescribeStage from '../components/ai/AiDescribeStage';
 import MicButton from '../components/ai/MicButton';
 import Button from '../components/ui/Button';
@@ -37,7 +37,23 @@ const TURNS_PER_PICTURE = 2;
 // device forever. It also stays on screen for every picture as the standing
 // instruction, because a learner looking at a photo with nothing asked of them
 // freezes.
+// ⚠️ The server keeps an allowlist of speakable lines (SPEAKABLE_LINES in
+// functions/index.js). Changing this string without adding it there makes
+// speakLine return 400 and AInur goes silent for every learner, with nothing on
+// screen to explain it. That is exactly how this activity broke once.
 const DESCRIBE_PROMPT = 'How can you describe this photo?';
+
+// A turn can fail in six different ways and every one of them used to look
+// identical to the learner: nothing happened at all. No reply, no message, no
+// hint that anything had gone wrong. Each one now says what happened and what
+// to do next.
+function turnErrorFor(status, data) {
+  if (status === 429) return 'You have practised a lot this hour. Take a short break and come back.';
+  if (status === 401 || status === 403) return 'Your sign-in expired. Open the app again to carry on.';
+  if (status === 502) return 'AInur could not make that out. Try once more, a little louder.';
+  if (status === 413) return 'That answer was very long. Try a shorter one.';
+  return (data && data.error) || 'Something went wrong on our side. Try that again.';
+}
 
 const FREE_TURNS = 40;   // effectively unlimited; the learner ends the session
 const freeOpener = (topic) => `Hello. Today the topic is ${topic}. What do you think about it?`;
@@ -56,6 +72,7 @@ export default function AiActivity({ user }) {
   const [log, setLog] = useState([]);          // free talk only: the running exchange
   const [finishing, setFinishing] = useState(false);
   const [intro, setIntro] = useState(false);   // the opening line is playing
+  const [turnError, setTurnError] = useState('');
   const [done, setDone] = useState(null);     // null | 'analyzing' | 'ready' | 'short'
 
   const content = useMemo(() => getTodayContent(), []);
@@ -112,10 +129,21 @@ export default function AiActivity({ user }) {
         }),
       });
       data = await res.json().catch(() => ({}));
-      if (!res.ok || data.silent) return null;
+      if (!res.ok) {
+        setTurnError(turnErrorFor(res.status, data));
+        return null;
+      }
+      if (data.silent) {
+        // Not an error the learner caused, but they still need to know why
+        // nothing came back.
+        setTurnError('I did not catch anything. Speak a little louder, then pause when you finish.');
+        return null;
+      }
     } catch {
+      setTurnError('Connection problem — your answer did not reach AInur. Try that again.');
       return null;
     }
+    setTurnError('');
 
     spokeRef.current = true;
     historyRef.current = [
@@ -125,7 +153,10 @@ export default function AiActivity({ user }) {
     ].slice(-8);
 
     setHeard(data.transcript || '');
-    setReply(data.reply || '');
+    // The closing answer carries no reply. Leave her question on screen rather
+    // than blanking the bubble back to the generic prompt for the half second
+    // before the picture changes.
+    if (data.reply) setReply(data.reply);
     if (Array.isArray(data.matchedKeywords) && data.matchedKeywords.length) {
       setHits((prev) => Array.from(new Set([...prev, ...data.matchedKeywords])));
     }
@@ -174,10 +205,29 @@ export default function AiActivity({ user }) {
 
   const ready = isFree || !!image;
 
+  // Fetch the opening line while they are still looking at the first picture,
+  // so the tap does not wait on a network round trip. Costs nothing after the
+  // first time on this device: the audio is cached.
+  // Keyed on the uid, not just mount: auth restores asynchronously and a prime
+  // fired before it lands has no token to send, so it would quietly do nothing
+  // and never retry.
+  useEffect(() => { if (user?.uid) primeLine(opener); }, [opener, user?.uid]);
+
   // She speaks BEFORE the microphone opens, never over it. Run together, the
   // recorder hears her through the speaker and Whisper hands back AInur's own
   // question as the learner's first sentence.
+  //
+  // But the voice never delays the lesson. If the line is not already on the
+  // device — offline, a cold start, or the server refused it — the microphone
+  // opens immediately and the sentence stays on screen unspoken.
   const beginSession = useCallback(async () => {
+    if (!hasLine(opener)) {
+      // A prime is probably already in flight from the effect above. Give it a
+      // moment to land so even the very first session hears her — but cap the
+      // wait hard: a slow network must never hold the microphone shut.
+      await Promise.race([primeLine(opener), new Promise((r) => { setTimeout(r, 1200); })]);
+    }
+    if (!hasLine(opener)) { start(); return; }
     introRef.current = true;
     setIntro(true);
     await speakLine(opener);        // resolves when she has finished, not when she starts
@@ -354,12 +404,12 @@ export default function AiActivity({ user }) {
       </div>
 
       <div className="ai-activity-foot">
-        {error && (
+        {(error || turnError) && (
           <p style={{
             margin: '0 0 var(--s-3)', textAlign: 'center',
             fontSize: 'var(--fs-sm)', color: 'var(--danger)',
           }}>
-            {error}
+            {error || turnError}
           </p>
         )}
         <MicButton
