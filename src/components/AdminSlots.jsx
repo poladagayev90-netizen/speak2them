@@ -195,7 +195,7 @@ export default function AdminSlots({ users }) {
                       borderBottom: '1px solid #2e2e50', paddingBottom: '8px',
                     }}>
                       <strong style={{ color: '#e2e8f0', fontSize: '15px' }}>
-                        {popular && <span title="Populyar saat" style={{ marginRight: 4 }}>⭐</span>}
+                        {popular && <span title="Busiest hour" style={{ marginRight: 4 }}>⭐</span>}
                         {blockLabel(s.hour)}
                       </strong>
                       <span style={{ fontSize: 12, color: c.total ? '#94a3b8' : '#475569', fontWeight: 600 }}>

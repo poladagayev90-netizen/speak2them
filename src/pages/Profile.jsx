@@ -3,7 +3,13 @@ import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'f
 import { updateProfile, signOut } from 'firebase/auth';
 import { db, auth, enableNotifications } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, Bell, Volume2, VolumeX } from 'lucide-react';
+import {
+  Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
+  GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw,
+} from 'lucide-react';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Stat from '../components/ui/Stat';
 import { sfxEnabled, setSfxEnabled, sfxPop } from '../utils/sfx';
 import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
@@ -202,7 +208,18 @@ export default function Profile({ user }) {
   const sectionLabel = (t) => (
     <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', margin: '18px 6px 8px' }}>{t}</div>
   );
-  const row = ({ icon, label, value, right, onClick, danger, notLast }) => (
+  // A lucide component, a ready-made element, or (legacy) an emoji string.
+  // Order matters: an element is also an object, and a lucide icon is a
+  // forwardRef OBJECT rather than a function -- checking for a function first
+  // let icons fall through and React tried to render the component itself.
+  const renderRowIcon = (icon) => {
+    if (!icon) return null;
+    if (typeof icon === 'string') return <span aria-hidden="true" style={{ fontSize: 17 }}>{icon}</span>;
+    if (React.isValidElement(icon)) return icon;
+    const I = icon;
+    return <I size={18} strokeWidth={1.75} aria-hidden="true" />;
+  };
+  const row = ({ icon: Icon, label, value, right, onClick, danger, notLast }) => (
     <div
       onClick={onClick}
       role={onClick ? 'button' : undefined}
@@ -210,82 +227,88 @@ export default function Profile({ user }) {
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
       style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 16px', cursor: onClick ? 'pointer' : 'default', borderBottom: notLast ? divider : 'none' }}
     >
-      <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: danger ? '#ef444422' : 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '17px', color: danger ? '#ef4444' : 'var(--accent)' }}>{icon}</div>
+      <div style={{ width: '34px', height: '34px', borderRadius: 'var(--r-md)', background: danger ? 'var(--danger-bg)' : 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: danger ? 'var(--danger)' : 'var(--accent)' }}>
+        {renderRowIcon(Icon)}
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ color: danger ? '#ef4444' : 'var(--text-primary)', fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
         {value && <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>}
       </div>
-      {right !== undefined ? right : (onClick ? <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span> : null)}
+      {right !== undefined ? right : (onClick ? <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
     </div>
   );
 
   return (
     <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
 
-      {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
-        <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
-      </div>
-
-      {/* TOP SECTION: AVATAR, NAME, STATS */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        
-        {/* Avatar */}
-        <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 16px' }}>
-          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+      {/* Identity. The avatar used to take 250px of a 844px screen before a
+          single useful number appeared; it is now a row, not a monument. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', marginBottom: 'var(--s-4)' }}>
+        <div style={{ position: 'relative', width: '64px', height: '64px', flexShrink: 0 }}>
+          <div style={{
+            width: '100%', height: '100%', borderRadius: 'var(--r-pill)',
+            background: 'var(--peer)', color: 'var(--text-on-accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '26px', fontWeight: 700,
+          }}>
             {name?.charAt(0).toUpperCase() || '?'}
           </div>
-          {/* Online Flag Indicator */}
-          <div style={{ position: 'absolute', bottom: '0', right: '0', width: '22px', height: '22px', borderRadius: '50%', background: 'var(--success)', border: '3px solid var(--bg-primary)' }}></div>
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0, width: '16px', height: '16px',
+            borderRadius: 'var(--r-pill)', background: 'var(--success)',
+            border: '3px solid var(--bg-primary)',
+          }} />
         </div>
 
-        {/* Name & Bio */}
-        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {name || 'User'}
-          {user.teacherVerified && <TutorBadge />}
-        </h2>
-        <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px 0' }}>{bio || 'No time to die'}</p>
-
-        {/* Horizontal Stats */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '24px' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
-              <span>💬</span> Feedback
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{avgRating}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
-              <span>📞</span> Talks
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.calls}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
-              <span>🕐</span> Mins
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.totalMinutes}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 style={{
+            fontSize: 'var(--fs-h1)', fontWeight: 700, color: 'var(--text-primary)',
+            margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--s-2)',
+            lineHeight: 'var(--lh-tight)',
+          }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name || 'User'}</span>
+            {user.teacherVerified && <TutorBadge />}
+          </h2>
+          {/* Level and plan are facts worth seeing at a glance; the plan used
+              to be a whole card that said one word. */}
+          <div style={{ display: 'flex', gap: 'var(--s-2)', marginTop: '6px', flexWrap: 'wrap' }}>
+            <span className="ui-pill ui-pill--accent"><Signal size={12} strokeWidth={2} />{level}</span>
+            <span className="ui-pill">
+              {mode === 'course' ? 'Course member'
+                : isPremium ? 'Pro'
+                : user.cohortStatus === 'accepted' ? 'Cohort accepted'
+                : user.cohortStatus === 'pending' ? 'Cohort pending'
+                : 'Trial'}
+            </span>
           </div>
         </div>
+
+        <Button
+          variant="ghost" size="sm" iconOnly aria-label="Edit profile"
+          onClick={() => setIsEditing(true)}
+          icon={<Pencil size={18} strokeWidth={1.75} />}
+        />
       </div>
 
-      {/* PLAN — satış yoxdur: yeni user hər şeyi açıq görür, yalnız burada
-          "Sınaq dövrü" yazılır. Kohortdan keçən avtomatik Kurs/Pro olur. */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
-        <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-          {mode === 'course' ? '🎓' : isPremium ? '💎' : '⏳'}
+      {/* Bio only when there IS one. The old fallback printed a Bond film
+          title under every account that had not written anything. */}
+      {bio && (
+        <p style={{
+          fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)',
+          margin: '0 0 var(--s-4)', lineHeight: 'var(--lh-body)',
+        }}>{bio}</p>
+      )}
+
+      {/* Four numbers that answer "am I getting anywhere". The old three were
+          Feedback / Talks / Mins, which read as trivia rather than progress. */}
+      <Card padding="md" style={{ marginBottom: 'var(--s-4)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--s-2)' }}>
+          <Stat value={stats.totalMinutes} label="Minutes" />
+          <Stat value={stats.calls} label="Sessions" />
+          <Stat value={streakInfo.count} label="Streak" />
+          <Stat value={avgRating} label="Rating" />
         </div>
-        <div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Plan</div>
-          <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
-            {mode === 'course' ? 'Course member'
-              : isPremium ? 'Pro'
-              : user.cohortStatus === 'accepted' ? 'Cohort — accepted'
-              : user.cohortStatus === 'pending' ? 'Cohort — application pending'
-              : 'Trial'}
-          </div>
-        </div>
-      </div>
+      </Card>
 
       {/* KURSA QOŞUL — kohorta yeganə girişdir. Əvvəl eyni /redeem düyməsi həm
           burada, həm ana səhifədə vardı; ana səhifədəki silindi, mətn isə
@@ -302,14 +325,14 @@ export default function Profile({ user }) {
             cursor: 'pointer', textAlign: 'left',
           }}
         >
-          <span style={{ fontSize: '22px', flexShrink: 0 }}>🎓</span>
+          <GraduationCap size={22} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--accent)' }} />
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>Join the course</span>
             <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
               Have a code? Apply to a cohort
             </span>
           </span>
-          <span style={{ fontSize: '18px', flexShrink: 0, color: 'var(--text-secondary)' }}>→</span>
+          <ChevronRight size={18} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />
         </button>
       )}
 
@@ -363,20 +386,20 @@ export default function Profile({ user }) {
       {/* ÖYRƏNMƏ */}
       {sectionLabel('Learning')}
       <div style={listCard}>
-        {row({ icon: '📚', label: 'My words', onClick: () => setShowWordHistory(true), notLast: true })}
-        {row({ icon: '🔥', label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
-        {row({ icon: '📊', label: 'Analysis history', onClick: () => navigate('/history') })}
+        {row({ icon: BookMarked, label: 'My words', onClick: () => setShowWordHistory(true), notLast: true })}
+        {row({ icon: Flame, label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
+        {row({ icon: BarChart3, label: 'Analysis history', onClick: () => navigate('/history') })}
       </div>
 
       {/* MƏLUMAT */}
       {sectionLabel('Info')}
       <div style={listCard}>
-        {row({ icon: '💬', label: 'English level', right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
+        {row({ icon: Signal, label: 'English level', right: <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 600, flexShrink: 0 }}>{level}</span>, notLast: true })}
         {/* E-poçt AÇIQ göstərilir: müəllim şagirdi məhz e-poçtla dəvət edir,
             şagird isə onu tapa bilmirdi. Uzun ünvan sətri sındırmasın deyə
             kəsilir, yanında kopyalama var. */}
         {row({
-          icon: '✉️',
+          icon: Mail,
           label: 'Email',
           right: (
             <span
@@ -431,7 +454,7 @@ export default function Profile({ user }) {
           notLast: true,
         })}
         {row({
-          icon: '🔄',
+          icon: RotateCcw,
           label: 'Reset tours',
           onClick: async () => {
             if (!docId) return;
@@ -447,9 +470,9 @@ export default function Profile({ user }) {
           delete the account together with its data. */}
       {sectionLabel('Account')}
       <div style={listCard}>
-        {row({ icon: '🔒', label: 'Privacy Policy', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
-        {row({ icon: '🗑️', label: deleting ? 'Silinir…' : 'Delete account', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}
-        {row({ icon: '↩️', label: 'Sign out', onClick: () => { if (window.confirm('Sign out?')) handleLogout(); }, right: null })}
+        {row({ icon: Shield, label: 'Privacy Policy', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
+        {row({ icon: Trash2, label: deleting ? 'Deleting…' : 'Delete account', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}
+        {row({ icon: LogOut, label: 'Sign out', onClick: () => { if (window.confirm('Sign out?')) handleLogout(); }, right: null })}
       </div>
 
       {showWordHistory && (

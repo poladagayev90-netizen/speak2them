@@ -120,7 +120,7 @@ export default function CallQuestionStage({
   if (!difficulty) {
     return (
       <Overlay>
-        {header('🗣️ Question cards')}
+        {header('Question cards')}
         <div style={{ padding: '0 16px 20px' }}>
           <p style={{
             color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.5,
@@ -167,7 +167,7 @@ export default function CallQuestionStage({
 
   return (
     <Overlay>
-      {header('🗣️ Question card')}
+      {header('Question card')}
       <div style={{ padding: '0 16px' }}>
         <div key={safeIndex} className="qstage-card" style={{
           borderRadius: 20, padding: '26px 20px', minHeight: 210,
@@ -216,7 +216,7 @@ export default function CallQuestionStage({
             ? { ...SOLID_BTN, background: 'linear-gradient(135deg, #22c55e, #15803d)' }
             : SOLID_BTN}
         >
-          {isLast ? 'Bitir ✓' : 'Next →'}
+          {isLast ? 'Finish' : 'Next →'}
         </button>
       </div>
     </Overlay>

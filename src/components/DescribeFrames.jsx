@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MessageSquareQuote } from 'lucide-react';
 import { describeFrames } from '../data/describeFrames';
 
 // Şəkil təsviri üçün danışıq qəlibləri paneli. İki yerdə işlənir:
@@ -38,7 +39,7 @@ export default function DescribeFrames({ compact = false, prompts = [] }) {
           transition: 'background 0.15s, border-color 0.15s, color 0.15s',
         }}
       >
-        <span aria-hidden="true" style={{ fontSize: 15 }}>💬</span>
+        <MessageSquareQuote size={15} strokeWidth={1.75} aria-hidden="true" />
         Sentence starters
         <span
           aria-hidden="true"

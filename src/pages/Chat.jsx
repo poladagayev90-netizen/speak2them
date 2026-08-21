@@ -7,6 +7,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
+import {
+  BookOpen, MessageCircleQuestion, Image as ImageIcon, Drama, MessagesSquare,
+  Mic, MicOff, PhoneOff, Clock, X, Check, Trash2, Send, Phone, Calendar,
+  BookMarked, Lightbulb,
+} from 'lucide-react';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import PremiumBadge from '../components/PremiumBadge';
@@ -998,7 +1003,7 @@ export default function Chat({ user }) {
             background: '#1e1e30', border: '2px solid #7c6ff7',
             borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>📞</div>
+            <div style={{ marginBottom: '12px', color: 'var(--accent)' }}><Phone size={44} strokeWidth={1.5} aria-hidden="true" /></div>
             <p style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>
               {peer?.name} is calling you...
             </p>
@@ -1016,11 +1021,11 @@ export default function Chat({ user }) {
                 await setDoc(doc(db, 'calls', callDocId), { status: 'accepted' }, { merge: true });
                 joinedRef.current = false;
                 joinCall();
-              }}>✅ Accept</button>
+              }}><Check size={18} strokeWidth={1.75} aria-hidden="true" /> Accept</button>
               <button className="btn-reject" onClick={async () => {
                 setIncomingCallData(null);
                 await updateDoc(doc(db, 'calls', callDocId), { status: 'rejected' });
-              }}>❌ Decline</button>
+              }}><X size={18} strokeWidth={1.75} aria-hidden="true" /> Decline</button>
             </div>
           </div>
         </div>
@@ -1064,8 +1069,10 @@ export default function Chat({ user }) {
                   padding: '6px 12px', borderRadius: '20px',
                   fontSize: '12px', color: timeWarning ? '#f59e0b' : '#a1a1aa',
                   fontWeight: 600, marginTop: '8px',
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
                 }}>
-                  ⏰ {formatTime(Math.max(0, maxCallSeconds - callSeconds))} left
+                  <Clock size={13} strokeWidth={2} aria-hidden="true" />
+                  {formatTime(Math.max(0, maxCallSeconds - callSeconds))} left
                 </div>
               )}
               {timeWarning && (
@@ -1084,7 +1091,7 @@ export default function Chat({ user }) {
               {inCall && (
                 <>
                   <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
-                    📖<span>Vocabulary</span>
+                    <BookOpen size={26} strokeWidth={1.75} aria-hidden="true" /><span>Vocabulary</span>
                   </button>
                   {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
@@ -1103,7 +1110,7 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] questionStage start failed:', e));
                       }}
                     >
-                      🗣️<span>Suallar</span>
+                      <MessageCircleQuestion size={26} strokeWidth={1.75} aria-hidden="true" /><span>Questions</span>
                     </button>
                   )}
                   {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
@@ -1125,7 +1132,7 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
                     >
-                      🖼️<span>Picture</span>
+                      <ImageIcon size={26} strokeWidth={1.75} aria-hidden="true" /><span>Picture</span>
                     </button>
                   )}
                   {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
@@ -1145,7 +1152,7 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
                       }}
                     >
-                      🎭<span>Taboo</span>
+                      <Drama size={26} strokeWidth={1.75} aria-hidden="true" /><span>Taboo</span>
                     </button>
                   )}
                   {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
@@ -1164,7 +1171,7 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] debateStage start failed:', e));
                       }}
                     >
-                      💬<span>Debat</span>
+                      <MessagesSquare size={26} strokeWidth={1.75} aria-hidden="true" /><span>Debate</span>
                     </button>
                   )}
                 </>
@@ -1174,10 +1181,10 @@ export default function Chat({ user }) {
             <div className="fullscreen-call-buttons">
               {inCall && (
                 <button className={`call-btn-big ${muted ? 'active-mute' : ''}`} onClick={toggleMute}>
-                  {muted ? '🔇' : '🎤'}<span>{muted ? 'Unmute' : 'Mute'}</span>
+                  {muted ? <MicOff size={26} strokeWidth={1.75} aria-hidden="true" /> : <Mic size={26} strokeWidth={1.75} aria-hidden="true" />}<span>{muted ? 'Unmute' : 'Mute'}</span>
                 </button>
               )}
-              <button className="call-btn-big end" onClick={endCall}>📵<span>End</span></button>
+              <button className="call-btn-big end" onClick={endCall}><PhoneOff size={26} strokeWidth={1.75} aria-hidden="true" /><span>End</span></button>
             </div>
           </div>
         </div>
@@ -1318,14 +1325,14 @@ export default function Chat({ user }) {
       {showDaily && (
         <div className="daily-panel">
           <div className="daily-panel-header">
-            <h3>📖 {content.topic}</h3>
-            <button className="daily-close" onClick={() => setShowDaily(false)}>✕</button>
+            <h3>{content.topic}</h3>
+            <button className="daily-close" onClick={() => setShowDaily(false)}><X size={20} strokeWidth={1.75} aria-hidden="true" /></button>
           </div>
           {/* Zəng içində suallar artıq sinxron 🗣️ stage-indədir; bu panel yalnız
               lüğət kimi qalır, yoxsa iki ayrı sual siyahısı bir-birini kəsirdi. */}
           <div className="daily-panel-tabs">
-            <button className={`dp-tab ${dailyTab === 'vocabulary' ? 'active' : ''}`} onClick={() => setDailyTab('vocabulary')}>📚 Vocab</button>
-            <button className={`dp-tab ${dailyTab === 'idioms' ? 'active' : ''}`} onClick={() => setDailyTab('idioms')}>💬 Idioms</button>
+            <button className={`dp-tab ${dailyTab === 'vocabulary' ? 'active' : ''}`} onClick={() => setDailyTab('vocabulary')}><BookMarked size={15} strokeWidth={1.75} aria-hidden="true" /> Vocab</button>
+            <button className={`dp-tab ${dailyTab === 'idioms' ? 'active' : ''}`} onClick={() => setDailyTab('idioms')}><Lightbulb size={15} strokeWidth={1.75} aria-hidden="true" /> Idioms</button>
           </div>
           <div className="daily-panel-body">
             {dailyTab === 'vocabulary' && (
@@ -1375,9 +1382,9 @@ export default function Chat({ user }) {
         </div>
         <div className="call-controls">
           {!inCall && callStatus !== 'calling' && (
-            <button className="btn-call" onClick={startCall}>🎙️ Call</button>
+            <button className="btn-call" onClick={startCall}><Phone size={18} strokeWidth={1.75} aria-hidden="true" /> Call</button>
           )}
-          <button className="btn-daily-chat" onClick={() => setShowDaily(!showDaily)}>📅</button>
+          <button className="btn-daily-chat" onClick={() => setShowDaily(!showDaily)}><Calendar size={20} strokeWidth={1.75} aria-hidden="true" /></button>
         </div>
       </div>
 
@@ -1415,7 +1422,7 @@ export default function Chat({ user }) {
                       color: '#ef4444', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
                     }}
                   >
-                    🗑 Delete for everyone
+                    <Trash2 size={15} strokeWidth={1.75} aria-hidden="true" /> Delete for everyone
                   </button>
                 )}
               </div>
@@ -1432,7 +1439,7 @@ export default function Chat({ user }) {
           value={text}
           onChange={e => setText(e.target.value)}
         />
-        <button type="submit">Send ➤</button>
+        <button type="submit" aria-label="Send"><Send size={18} strokeWidth={1.75} aria-hidden="true" /></button>
       </form>
       
       {postCallStage === 'quiz' && (

@@ -146,7 +146,7 @@ export default function DailyPuzzle({ user }) {  const navigate = useNavigate()
       <div className="home-header" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <button
           onClick={() => navigate('/')}
-          aria-label="Geri"
+          aria-label="Back"
           style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', padding: 4 }}
         >
           <ArrowLeft size={22} />

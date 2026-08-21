@@ -24,7 +24,9 @@ export default function BottomNav({ user }) {
     { icon: MessageCircle, label: 'Chats',   route: '/chats', badge: unread },
     isTeacher
       ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
-      : { icon: Bot,             label: 'AInur',        route: '/ai-chat', tourId: 'tour-ai-chat' },
+      // Cyan, not violet: colour says who you are talking to, and this tab is
+      // the AI one. Every other tab leads to people.
+      : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)' },
     { icon: Trophy,        label: 'Ranking', route: '/ranking' },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
@@ -44,7 +46,7 @@ export default function BottomNav({ user }) {
             <span style={{ position: 'relative', display: 'inline-flex' }}>
               <Icon
                 size={22}
-                color={isActive ? 'var(--accent)' : 'var(--text-muted)'}
+                color={isActive ? (tab.accent || 'var(--accent)') : 'var(--text-muted)'}
                 strokeWidth={isActive ? 2.5 : 1.8}
               />
               {tab.badge > 0 && (
@@ -59,7 +61,7 @@ export default function BottomNav({ user }) {
                 </span>
               )}
             </span>
-            <span className="bottom-nav-label">{tab.label}</span>
+            <span className="bottom-nav-label" style={isActive && tab.accent ? { color: tab.accent } : undefined}>{tab.label}</span>
           </button>
         );
       })}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import { auth } from '../firebase';
 import { FUNCTIONS_BASE } from '../constants';
@@ -31,8 +31,16 @@ const OPENERS = [
   'Describe this picture for me. What is going on?',
 ];
 
+// Free talk has no pictures, so the whole session is one long item and the
+// opener is a greeting instead of a task.
+const FREE_TURNS = 40;   // effectively unlimited; the learner ends the session
+const freeOpener = (topic) =>
+  `Hello! Today the topic is ${topic}. What do you think about it?`;
+
 export default function AiActivity({ user }) {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const isFree = params.get('mode') === 'free';
   const { status, level, error, elapsedMs, startRecording, stopRecording, send, setError } = useAinurTurn();
 
   const [images, setImages] = useState([]);
@@ -41,6 +49,7 @@ export default function AiActivity({ user }) {
   const [hits, setHits] = useState([]);       // keywords said, this picture
   const [heard, setHeard] = useState('');
   const [reply, setReply] = useState('');
+  const [log, setLog] = useState([]);          // free talk only: the running exchange
   const [finishing, setFinishing] = useState(false);
   const [done, setDone] = useState(null);     // null | 'analyzing' | 'ready' | 'short'
 
@@ -51,16 +60,20 @@ export default function AiActivity({ user }) {
   const spokeRef = useRef(false);             // did the learner ever speak?
 
   useEffect(() => {
+    if (isFree) return undefined;
     let cancelled = false;
     fetchTopicImages(content.day, content.imageKeywords, content.manualImageUrls).then((list) => {
       if (!cancelled) setImages((list || []).slice(0, PICTURES_PER_SESSION));
     });
     return () => { cancelled = true; };
-  }, [content]);
+  }, [content, isFree]);
 
   const image = images[picIndex];
   const isLastPicture = picIndex >= images.length - 1;
-  const isLastTurn = turnIndex >= TURNS_PER_PICTURE - 1;
+  // In free talk nothing advances, so no turn is ever "the last on this item"
+  // — AInur should never start wrapping up until the learner ends it.
+  const isLastTurn = isFree ? false : turnIndex >= TURNS_PER_PICTURE - 1;
+  const ready = isFree || !!image;
 
   const onStart = useCallback(async () => {
     setError('');
@@ -69,17 +82,17 @@ export default function AiActivity({ user }) {
 
   const onStop = useCallback(async () => {
     const blob = await stopRecording();
-    if (!blob || !image) return;
+    if (!blob || !ready) return;
 
     const data = await send(blob, {
       sessionId: sessionIdRef.current,
-      activity: 'describe',
+      activity: isFree ? 'freechat' : 'describe',
       topicIndex: content.day,
-      itemId: image.id,
-      itemIndex: picIndex,
-      keywords: (image.keywords || []).map((k) => (k && k.word ? k.word : k)),
+      itemId: isFree ? 'free' : image.id,
+      itemIndex: isFree ? 0 : picIndex,
+      keywords: isFree ? [] : (image.keywords || []).map((k) => (k && k.word ? k.word : k)),
       turnIndex,
-      plannedTurns: TURNS_PER_PICTURE,
+      plannedTurns: isFree ? FREE_TURNS : TURNS_PER_PICTURE,
       isLast: isLastTurn,
       level: user?.level || 'B1',
     });
@@ -90,6 +103,12 @@ export default function AiActivity({ user }) {
     setReply(data.reply || '');
     if (Array.isArray(data.matchedKeywords) && data.matchedKeywords.length) {
       setHits((prev) => Array.from(new Set([...prev, ...data.matchedKeywords])));
+    }
+
+    if (isFree) {
+      setLog((prev) => [...prev, { you: data.transcript || '', ainur: data.reply || '' }]);
+      setTurnIndex((t) => t + 1);
+      return;
     }
 
     if (isLastTurn) {
@@ -105,7 +124,7 @@ export default function AiActivity({ user }) {
     } else {
       setTurnIndex((t) => t + 1);
     }
-  }, [stopRecording, send, image, picIndex, turnIndex, isLastTurn, isLastPicture, content.day, user]);
+  }, [stopRecording, send, image, picIndex, turnIndex, isLastTurn, isLastPicture, content.day, user, isFree, ready]);
 
   // Finish: ask the server to grade the session. Under about a minute of speech
   // there is nothing worth reporting, and the server says so rather than
@@ -183,19 +202,56 @@ export default function AiActivity({ user }) {
           onClick={() => navigate('/')}
           icon={<ChevronLeft size={22} strokeWidth={1.75} />}
         />
-        <h1 className="ai-activity-title">Describe pictures</h1>
-        <div className="ai-dots" aria-label={`Picture ${picIndex + 1} of ${images.length || PICTURES_PER_SESSION}`}>
-          {Array.from({ length: images.length || PICTURES_PER_SESSION }).map((_, i) => (
-            <span
-              key={i}
-              className={`ai-dot${i < picIndex ? ' ai-dot--done' : i === picIndex ? ' ai-dot--now' : ''}`}
-            />
-          ))}
-        </div>
+        <h1 className="ai-activity-title">{isFree ? 'Free talk' : 'Describe pictures'}</h1>
+        {isFree ? (
+          <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+            {turnIndex} {turnIndex === 1 ? 'turn' : 'turns'}
+          </span>
+        ) : (
+          <div className="ai-dots" aria-label={`Picture ${picIndex + 1} of ${images.length || PICTURES_PER_SESSION}`}>
+            {Array.from({ length: images.length || PICTURES_PER_SESSION }).map((_, i) => (
+              <span
+                key={i}
+                className={`ai-dot${i < picIndex ? ' ai-dot--done' : i === picIndex ? ' ai-dot--now' : ''}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="ai-activity-body">
-        {!image ? (
+        {isFree ? (
+          <>
+            <div className="ai-bubble">
+              <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
+              <div className="ai-bubble-body">
+                <p className="ai-bubble-name">AInur</p>
+                <p className="ai-bubble-text">{freeOpener(content.topic)}</p>
+              </div>
+            </div>
+            {log.map((x, i) => (
+              <React.Fragment key={i}>
+                <p className="ai-heard">“{x.you}”</p>
+                <div className="ai-bubble">
+                  <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
+                  <div className="ai-bubble-body">
+                    <p className="ai-bubble-name">AInur</p>
+                    <p className="ai-bubble-text">{x.ainur}</p>
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+            {status === 'sending' && (
+              <div className="ai-bubble">
+                <img src="/ainur_avatar.png" alt="" className="ai-avatar ai-avatar--pulse" />
+                <div className="ai-bubble-body">
+                  <p className="ai-bubble-name">AInur</p>
+                  <p className="ai-bubble-text">Listening…</p>
+                </div>
+              </div>
+            )}
+          </>
+        ) : !image ? (
           <p className="ai-bubble-text" style={{ color: 'var(--text-secondary)' }}>Loading pictures…</p>
         ) : (
           <>
@@ -234,11 +290,11 @@ export default function AiActivity({ user }) {
           elapsedMs={elapsedMs}
           onStart={onStart}
           onStop={onStop}
-          disabled={!image}
+          disabled={!ready}
         />
         <div style={{ marginTop: 'var(--s-3)' }}>
           <Button variant="ghost" size="sm" full onClick={finish} disabled={finishing}>
-            {isLastPicture && isLastTurn ? 'Finish and get my report' : 'Finish early'}
+            {isFree || (isLastPicture && isLastTurn) ? 'Finish and get my report' : 'Finish early'}
           </Button>
         </div>
       </div>

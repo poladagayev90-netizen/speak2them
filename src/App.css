@@ -819,8 +819,12 @@ body {
   gap: 16px;
   justify-content: center;
   align-items: center;
-  /* Beş düymə (Lüğət / Suallar / Şəkil / Taboo / Debat) 320px ekrana sığmır. */
+  /* Five activity buttons do not fit one row on a phone. Capping the row at
+     three makes the break 3+2 and centred, instead of 4+1 with one orphan
+     button stranded on its own line. */
   flex-wrap: wrap;
+  max-width: 282px;   /* 3 x 70px + 2 x 16px gap */
+  margin: 0 auto;
 }
 
 .call-btn-big {

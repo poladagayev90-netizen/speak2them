@@ -175,7 +175,7 @@ export default function AdminCohorts() {
         padding: '14px', marginBottom: '16px',
       }}>
         <p style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: '#e2e8f0' }}>
-          ➕ Yeni kohort
+          New cohort
         </p>
         {formError && (
           <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#f87171' }}>{formError}</p>
@@ -217,14 +217,14 @@ export default function AdminCohorts() {
               <span style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
                 👥 {Number(c.memberCount) || 0}{Number(c.maxUses) > 0 ? `/${c.maxUses}` : ''} aktiv
                 {Number(c.pendingCount) > 0 && <span style={{ color: '#fbbf24' }}> · ⏳ {Number(c.pendingCount)} waiting</span>}
-                {' · '}kod: <b>{c.code}</b>
+                {' · '}code: <b>{c.code}</b>
               </span>
             </button>
             <button onClick={() => copyCode(c)} style={{
               padding: '6px 10px', background: '#2a2a40', color: copied === c.id ? '#34d399' : '#e2e8f0',
               border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
-              {copied === c.id ? '✓ Copied' : '📋 Kod'}
+              {copied === c.id ? '✓ Copied' : 'Code'}
             </button>
             <button onClick={() => toggleStatus(c)} style={{
               padding: '6px 10px', background: 'none',
@@ -277,7 +277,7 @@ export default function AdminCohorts() {
               <button onClick={() => rejectApplicant(m)} style={{
                 padding: '9px 14px', background: 'none', color: '#f87171',
                 border: '1px solid #f8717155', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', flexShrink: 0,
-              }}>Geri al</button>
+              }}>Undo</button>
             ) : (
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                 <button onClick={() => acceptApplicant(m)} style={{
@@ -307,7 +307,7 @@ export default function AdminCohorts() {
               display: 'flex', background: '#0f0f1e', borderRadius: '14px',
               border: '1px solid #24243e', marginBottom: '16px', overflow: 'hidden',
             }}>
-              {stat('🙋', 'Yeni', pendingList.length, '#fbbf24')}
+              {stat('🙋', 'New', pendingList.length, '#fbbf24')}
               <div style={{ width: '1px', background: '#24243e' }} />
               {stat('✅', 'Accept', acceptedList.length, '#34d399')}
               <div style={{ width: '1px', background: '#24243e' }} />

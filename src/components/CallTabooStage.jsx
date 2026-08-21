@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { X, Check, SkipForward } from 'lucide-react';
 import { tabooWords } from '../data/tabooWords';
 
 const prefersReducedMotion = () =>
@@ -62,7 +63,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
   useEffect(() => {
     if (isExplainer === prevExplainer.current) return undefined;
     prevExplainer.current = isExplainer;
-    setToast(isExplainer ? 'Your turn! 🎤' : 'Partnyorun izah edir 👂');
+    setToast(isExplainer ? 'Your turn' : 'Your partner is explaining');
     const t = setTimeout(() => setToast(''), 2200);
     return () => clearTimeout(t);
   }, [isExplainer]);
@@ -106,7 +107,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
           padding: '12px 16px',
         }}>
           <p style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700, margin: 0 }}>
-            🎭 Taboo
+            Taboo
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span
@@ -128,7 +129,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 fontSize: 18, cursor: 'pointer', padding: '2px 6px',
               }}
             >
-              ✕
+              <X size={20} strokeWidth={1.75} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -234,7 +235,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 boxShadow: '0 6px 18px rgba(34, 197, 94, 0.28)',
               }}
             >
-              ✅ Correct
+              <Check size={18} strokeWidth={1.75} aria-hidden="true" /> Correct
             </button>
             <button
               onClick={onPass}
@@ -245,7 +246,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              ⏭ Pas
+              <SkipForward size={18} strokeWidth={1.75} aria-hidden="true" /> Pass
             </button>
           </div>
         ) : (

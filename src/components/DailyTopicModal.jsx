@@ -97,7 +97,7 @@ function DailyQuiz({ content, onFinish }) {
   return (
     <div className="dt-quiz-container">
       <div className="dt-quiz-header">
-        <span>Sual {currentQ + 1}/{questions.length}</span>
+        <span>Question {currentQ + 1}/{questions.length}</span>
         <span>Xal: {score}</span>
       </div>
       <h3 className="dt-quiz-q">{q.qText}</h3>
@@ -178,7 +178,7 @@ export default function DailyTopicModal({ open, onClose }) {
             className={`dt-tab ${activeSection === 'questions' ? 'active' : ''}`}
             onClick={() => setActiveSection('questions')}
           >
-            <MessageCircle size={14} /> Suallar
+            <MessageCircle size={14} /> Questions
           </button>
           <button
             className={`dt-tab ${activeSection === 'quiz' ? 'active' : ''}`}

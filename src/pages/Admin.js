@@ -240,7 +240,7 @@ export default function Admin({ user }) {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
           {[
             { id: 'all', label: 'All time' },
-            { id: 'day', label: 'Son 24 saat' },
+            { id: 'day', label: 'Last 24 hours' },
             { id: 'week', label: 'Last 7 days' },
             { id: 'month', label: 'Son 1 ay' },
           ].map(f => (

@@ -46,7 +46,7 @@ export default function CallRoadmap({ content, onStart, onOpenDaily }) {
           Skip ✕
         </button>
 
-        <p className="call-roadmap-label">🗺️ Call guide</p>
+        <p className="call-roadmap-label">How to start</p>
         <h2 className="call-roadmap-title">How to start talking</h2>
 
         {content.topic && (
@@ -77,7 +77,7 @@ export default function CallRoadmap({ content, onStart, onOpenDaily }) {
           ))}
         </div>
 
-        <button className="call-roadmap-start" onClick={onStart}>Start 🎙️</button>
+        <button className="call-roadmap-start" onClick={onStart}>Start</button>
         <button className="call-roadmap-more" onClick={onOpenDaily}>
           Open the 📅 panel for more questions and words
         </button>

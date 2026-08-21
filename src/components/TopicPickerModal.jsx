@@ -95,7 +95,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
               cursor: selected.length ? 'pointer' : 'default',
             }}
           >
-            {saving ? 'Saving…' : 'Davam et'}
+            {saving ? 'Saving…' : 'Continue'}
           </button>
         </div>
       </div>

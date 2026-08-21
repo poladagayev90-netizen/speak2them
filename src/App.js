@@ -24,7 +24,7 @@ import Logo from './components/Logo';
 // first visit to each tab downloads its chunk on the spot and the page flashes.
 const importHome = () => import('./pages/Home');
 const importChats = () => import('./pages/Chats');
-const importAIChat = () => import('./pages/AIChat');
+const importAIChat = () => import('./pages/AinurHub');
 const importProfile = () => import('./pages/Profile');
 const importRanking = () => import('./pages/Ranking');
 const TAB_PAGE_IMPORTS = [importHome, importChats, importAIChat, importRanking, importProfile];
@@ -34,7 +34,7 @@ const Register = React.lazy(() => import('./pages/Register'));
 const Home = React.lazy(importHome);
 const Chats = React.lazy(importChats);
 const Chat = React.lazy(() => import('./pages/Chat'));
-const AIChat = React.lazy(importAIChat);
+const AinurHub = React.lazy(importAIChat);
 const AiActivity = React.lazy(() => import('./pages/AiActivity'));
 const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
@@ -180,7 +180,7 @@ function AppShell({ user }) {
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
           <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
-          <Route path="/ai-chat" element={user ? <AIChat user={user} /> : <Navigate to="/login" />} />
+          <Route path="/ai-chat" element={user ? <AinurHub user={user} /> : <Navigate to="/login" />} />
           {/* A guided AInur session. Full-screen like a call, so it sits
               outside the tab set rather than inside it. */}
           <Route path="/practice" element={user ? <AiActivity user={user} /> : <Navigate to="/login" />} />

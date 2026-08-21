@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
+import { X, ImageOff } from 'lucide-react';
 import DescribeFrames from './DescribeFrames';
 
 // In-call synchronized picture stage. Both parties see the exact same image —
@@ -67,7 +68,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
               fontSize: 18, cursor: 'pointer', padding: '2px 6px',
             }}
           >
-            ✕
+            <X size={20} strokeWidth={1.75} />
           </button>
         </div>
 
@@ -80,7 +81,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
               alignItems: 'center', justifyContent: 'center', gap: 6,
               color: 'var(--text-muted)', fontSize: 13,
             }}>
-              <span style={{ fontSize: 30 }} aria-hidden="true">🖼️</span>
+              <ImageOff size={28} strokeWidth={1.5} aria-hidden="true" />
               The picture did not load — describe the topic in words
             </div>
           ) : (

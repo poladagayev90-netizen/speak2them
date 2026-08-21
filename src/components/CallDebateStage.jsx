@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import { debateTopics } from '../data/debateTopics';
 
 // In-call synchronized Debate game. Same pattern as Taboo/Suallar: everything
@@ -87,7 +88,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
           padding: '14px 16px 8px', flexShrink: 0,
         }}>
           <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, margin: 0 }}>
-            💬 Debat
+            Debate
           </p>
           <button
             onClick={onClose}
@@ -97,7 +98,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
               fontSize: 20, cursor: 'pointer', padding: '2px 6px',
             }}
           >
-            ✕
+            <X size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
 
@@ -170,7 +171,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
         </p>
 
         <div style={{ display: 'flex', gap: 10, padding: '14px 16px 16px', flexShrink: 0 }}>
-          <button onClick={onClose} style={GHOST_BTN}>✕ Bitir</button>
+          <button onClick={onClose} style={GHOST_BTN}>Finish</button>
           <button onClick={onNextTopic} style={SOLID_BTN}>Next topic →</button>
         </div>
       </div>
