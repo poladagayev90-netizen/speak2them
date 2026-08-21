@@ -17,7 +17,7 @@ import './ai.css';
  * server by a plain string match — instant, and free. A learner who does not
  * know what to say always has six concrete targets in front of them.
  */
-export default function AiDescribeStage({ image, hits = [], heard, reply, thinking }) {
+export default function AiDescribeStage({ image, hits = [], heard }) {
   const [failed, setFailed] = useState(false);
   const [dead, setDead] = useState(false);
   const [loadedUrl, setLoadedUrl] = useState('');
@@ -79,20 +79,6 @@ export default function AiDescribeStage({ image, hits = [], heard, reply, thinki
 
       {heard && (
         <p className="ai-heard">“{heard}”</p>
-      )}
-
-      {(reply || thinking) && (
-        <div className="ai-bubble">
-          <img
-            src="/ainur_avatar.png"
-            alt=""
-            className={`ai-avatar${thinking ? ' ai-avatar--pulse' : ''}`}
-          />
-          <div className="ai-bubble-body">
-            <p className="ai-bubble-name">AInur</p>
-            <p className="ai-bubble-text">{thinking ? 'Listening…' : reply}</p>
-          </div>
-        </div>
       )}
 
       <DescribeFrames compact prompts={image.prompts || []} />

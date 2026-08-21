@@ -11,18 +11,23 @@
    müəllim bunu ekranda göstərəndə/çap edəndə eyni görünməlidir.        */
 
 .analysis-doc {
-  /* Mövzudan asılı olmayan sabit sənəd palitrası. */
-  --doc-paper: #FFFFFF;
-  --doc-ink: #1F2937;
-  --doc-ink-soft: #4B5563;
-  --doc-muted: #6B7280;
-  --doc-rule: #E5E7EB;
-  --doc-accent: #E65100;
-  --doc-accent-soft: #FFF7ED;
-  --doc-red: #EF4444;
-  --doc-green: #10B981;
-  --doc-warn-bg: #FEF9C3;
-  --doc-warn-border: #EAB308;
+  /* The report used to force a fixed white "paper" palette and override dark
+     mode on purpose, for a printed-document feel. That stopped making sense once
+     the app got themes and switchable palettes: a white sheet inside a dark app
+     is the loudest thing in the product, and it ignored whichever accent the
+     learner picked. These now map onto the app tokens, so every .doc-* rule
+     below keeps working while the page follows the theme. */
+  --doc-paper: var(--bg-primary);
+  --doc-ink: var(--text-primary);
+  --doc-ink-soft: var(--text-secondary);
+  --doc-muted: var(--text-muted);
+  --doc-rule: var(--border);
+  --doc-accent: var(--accent);
+  --doc-accent-soft: var(--accent-soft);
+  --doc-red: var(--danger);
+  --doc-green: var(--success);
+  --doc-warn-bg: var(--warning-bg);
+  --doc-warn-border: var(--warning);
 
   background: var(--doc-paper);
   color: var(--doc-ink);
@@ -347,3 +352,162 @@
   .analysis-doc-header { border-bottom-width: 1px; }
   .analysis-doc-back { display: none; }
 }
+
+/* ── Compact report ──────────────────────────────────────────────────────────
+   The report used to open with up to 4000 characters of generated prose, then
+   score tiles, then themed mistake tables, then strengths, tips, vocabulary and
+   only finally something to practise. A learner scrolled past everything to
+   reach the part that tells them what they got wrong.
+   Order is inverted now: corrections first, practice second, everything else
+   folded or trimmed. The prose still exists — behind "full notes". */
+
+.rep-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+.rep-score {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.rep-head-meta { min-width: 0; }
+.rep-head-line {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.rep-head-sub {
+  margin: 2px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.rep-label {
+  margin: var(--s-6) var(--s-4) var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* One correction. The wrong line and the right line sit directly above each
+   other so the difference is visible without reading a sentence about it. */
+.rep-fix {
+  margin: 0 var(--s-4) var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+}
+.rep-tag {
+  display: inline-block;
+  margin-bottom: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.rep-mark {
+  display: inline-block;
+  width: 16px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.rep-wrong, .rep-right {
+  display: flex;
+  gap: var(--s-2);
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: 1.45;
+}
+.rep-wrong { color: var(--text-muted); text-decoration: line-through var(--danger); }
+.rep-wrong .rep-mark { color: var(--danger); text-decoration: none; }
+.rep-right { color: var(--text-primary); font-weight: 600; margin-top: 2px; }
+.rep-right .rep-mark { color: var(--success); }
+.rep-why {
+  margin: var(--s-2) 0 0 24px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+
+.rep-clean {
+  margin: var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  text-align: center;
+}
+.rep-clean-title {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--success);
+}
+.rep-clean .rep-why { margin-left: 0; }
+
+.rep-notes { margin: 0 var(--s-4); }
+.rep-note {
+  display: flex;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+.rep-note-mark { flex-shrink: 0; font-weight: 700; color: var(--text-muted); }
+.rep-note-mark.good { color: var(--success); }
+
+.rep-words { margin: 0 var(--s-4); }
+.rep-word {
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.rep-word:last-child { border-bottom: none; }
+.rep-word-w {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.rep-word-e {
+  margin: 2px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+.rep-toggle {
+  display: block;
+  width: calc(100% - var(--s-8));
+  margin: var(--s-4) var(--s-4) 0;
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.rep-toggle:hover { color: var(--text-primary); border-color: var(--accent); }
+
+.rep-transcript {
+  margin: var(--s-2) var(--s-4) 0;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--bg-secondary);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+.rep-notes-full { margin: var(--s-2) var(--s-4) var(--s-8); }
+.analysis-doc.rep { padding-bottom: 120px; }

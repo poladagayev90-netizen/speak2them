@@ -22,7 +22,7 @@ export default function History({ user }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
-  const navigate = useNavigate();
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
@@ -175,286 +175,174 @@ export default function History({ user }) {
 // nömrələnmiş bölmələr, cədvəllər. Səbəb — müəllim bunu valideynə göstərir
 // və çap edir; "tətbiq ekranı" deyil, RƏSMİ HESABAT təsiri dəyəri satır.
 // Şagird və müəllim EYNİ komponenti görür (TeacherStudent bunu import edir).
+// One threshold table for the whole report rather than a colour picked inline
+// at each call site.
+const scoreHue = (s) => (s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)');
+
+// Used only by the folded 'full notes' block.
+const mdComponents = {
+  h1: ({ children }) => <h2 className="doc-h">{children}</h2>,
+  h2: ({ children }) => <h3 className="doc-h">{children}</h3>,
+  h3: ({ children }) => <h4 className="doc-h">{children}</h4>,
+  p: ({ children }) => <p className="doc-p">{children}</p>,
+  ul: ({ children }) => <ul className="doc-list">{children}</ul>,
+  li: ({ children }) => <li>{children}</li>,
+  strong: ({ children }) => <strong>{children}</strong>,
+};
+
 export function AnalysisDetail({ analysis, onClose, lang }) {
-  // The report body is written in the learner's own language, so its section
-  // labels follow that language -- not the (English) interface.
-  const isTr = (lang || getFeedbackLanguage()) === 'tr';
+  // The generated content (corrections, reasons, tips) arrives already written
+  // in the learner language; the frame around it is English like the rest of
+  // the app, so nothing here needs to branch on the language.
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   if (analysis.error) return (
     <div className="analysis-doc">
       <div className="analysis-doc-header">
-        <button className="analysis-doc-back" onClick={onClose} aria-label={'Back'}>
+        <button className="analysis-doc-back" onClick={onClose} aria-label="Back">
           <ChevronLeft size={22} />
         </button>
-        <div className="analysis-doc-title">{'Analysis'}</div>
+        <div className="analysis-doc-title">Analysis</div>
       </div>
       <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
         <div style={{ marginBottom: 10, color: 'var(--danger)' }}><FileText size={38} strokeWidth={1.5} /></div>
-        <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{'Analysis failed'}</p>
+        <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Analysis failed</p>
         <p className="doc-note">{analysisErrorMessage(analysis.error)}</p>
       </div>
     </div>
   );
 
   const view = toAnalysisView(analysis);
-  const scoreColor = (s) => (s >= 80 ? '#10B981' : s >= 60 ? '#E65100' : 'var(--danger)');
-
-  // Chrome az-AZ tarixi "2026 M07 25" kimi verir (ICU boşluğu) — ay adları
-  // əl ilə yazılır ki, sənədin başlığı hər cihazda düzgün görünsün.
-  const MONTHS = {
-    az: ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'],
-    tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
-  };
   const dateLabel = (() => {
     if (!analysis.timestamp?.seconds) return '';
     const d = new Date(analysis.timestamp.seconds * 1000);
-    const names = isTr ? MONTHS.tr : MONTHS.az;
-    return `${d.getDate()} ${names[d.getMonth()]} ${d.getFullYear()}`;
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
   })();
+  const mins = Math.round((analysis.durationSeconds || 0) / 60);
+  const durLabel = mins >= 1 ? `${mins} min` : `${analysis.durationSeconds || 0}s`;
 
-  // Bölmələr avtomatik nömrələnir — hansı blokların görünəcəyi analizin
-  // məzmunundan asılıdır, ona görə nömrə sabit yazıla bilməz.
-  let sectionNo = 0;
-  const section = (label) => {
-    sectionNo += 1;
-    return <div className="analysis-doc-section">{sectionNo}. {label}</div>;
-  };
-
-  // Markdown → sənəd tipoqrafiyası. Ölçülər CSS-dədir (analysisReport.css),
-  // burada yalnız element eşlənməsi var.
-  const mdComponents = {
-    h1: ({ children }) => <h2>{children}</h2>,
-    h2: ({ children }) => <h2>{children}</h2>,
-    h3: ({ children }) => <h3>{children}</h3>,
-    p: ({ children }) => <p>{children}</p>,
-    ul: ({ children }) => <ul>{children}</ul>,
-    ol: ({ children }) => <ul>{children}</ul>,
-    li: ({ children }) => <li>{children}</li>,
-    strong: ({ children }) => <strong>{children}</strong>,
-    em: ({ children }) => <em>{children}</em>,
-    a: ({ children }) => <span>{children}</span>,
-  };
-
-  const scoreTiles = [
-    { label: 'Overall score', value: view.overallScore },
-    { label: 'Fluency', value: view.scores.fluency },
-    { label: 'Grammar', value: view.scores.grammar },
-    { label: 'Vocabulary', value: view.scores.vocabulary },
-  ].filter((x) => Number.isFinite(x.value));
-
-  // Bölmə başlıqları sənəd üslubunda BÖYÜK HƏRFLƏ və dilə uyğun.
-  const SEC = {
-    summary: isTr ? 'GENEL DEĞERLENDİRME' : 'ÜMUMİ DƏYƏRLƏNDİRMƏ',
-    scores: isTr ? 'PUANLAR' : 'BALLAR',
-    mistakes: isTr ? 'DÜZELTMELER' : 'DÜZƏLİŞLƏR',
-    strengths: isTr ? 'GÜÇLÜ YÖNLER' : 'GÜCLÜ TƏRƏFLƏR',
-    tips: isTr ? 'ÖNERİLER' : 'TÖVSİYƏLƏR',
-    vocab: isTr ? 'KELİME HAZİNESİ' : 'LÜĞƏT',
-    homework: isTr ? 'ALIŞTIRMALAR' : 'TAPŞIRIQLAR',
-  };
-  const TH = {
-    wrong: isTr ? 'Söylediğin' : 'Dediyin',
-    right: isTr ? 'Doğrusu' : 'Düzgünü',
-    why: isTr ? 'Açıklama' : 'İzah',
-    word: isTr ? 'Kelime' : 'Word',
-    example: isTr ? 'Örnek cümle' : 'Nümunə cümlə',
-  };
+  // Every correction, flattened. The learner does not think in "themes" — they
+  // think "what did I get wrong". The theme title becomes a small tag on the
+  // row instead of a heading with its own paragraph.
+  const fixes = [];
+  (view.errorThemes || []).forEach((theme) => {
+    (theme.items || []).forEach((item) => {
+      if (item.original && item.corrected) {
+        fixes.push({ ...item, tag: theme.title, rule: theme.rule });
+      }
+    });
+  });
 
   return (
-    <div className="analysis-doc">
+    <div className="analysis-doc rep">
       <div className="analysis-doc-header">
-        <button className="analysis-doc-back" onClick={onClose} aria-label={'Back'}>
+        <button className="analysis-doc-back" onClick={onClose} aria-label="Back">
           <ChevronLeft size={22} />
         </button>
-        <div className="analysis-doc-title">SpeakLab · {'Analysis'}</div>
-        {dateLabel && <div className="analysis-doc-meta">{dateLabel}</div>}
+        <div className="analysis-doc-title">Analysis</div>
       </div>
 
-      {/* 1. İcmal — AI-nin markdown hesabatı */}
-      {view.reportMarkdown ? (
-        <>
-          {section(SEC.summary)}
-          <div className="analysis-doc-card">
-            <ReactMarkdown components={mdComponents}>{view.reportMarkdown}</ReactMarkdown>
-          </div>
-        </>
-      ) : view.recap ? (
-        <>
-          {section(SEC.summary)}
-          <div className="analysis-doc-card"><p>{view.recap}</p></div>
-        </>
-      ) : null}
+      {/* One line of context, then straight into the corrections. The report
+          used to open with up to 4000 characters of generated prose, which is
+          the part a learner scrolls past to reach what they actually got
+          wrong. It is still available, at the bottom, folded away. */}
+      <div className="rep-head">
+        <div className="rep-score" style={{ color: scoreHue(view.overallScore) }}>
+          {view.overallScore ?? '—'}
+        </div>
+        <div className="rep-head-meta">
+          <p className="rep-head-line">
+            {durLabel} of speaking{dateLabel ? ` · ${dateLabel}` : ''}
+          </p>
+          <p className="rep-head-sub">
+            Fluency {view.scores.fluency ?? '—'} · Grammar {view.scores.grammar ?? '—'} · Vocabulary {view.scores.vocabulary ?? '—'}
+            {view.speakingPace?.wpm > 0 ? ` · ${view.speakingPace.wpm} wpm` : ''}
+          </p>
+        </div>
+      </div>
 
-      {/* 2. Ballar */}
-      {scoreTiles.length > 0 && (
+      {fixes.length > 0 ? (
         <>
-          {section(SEC.scores)}
-          <div className="analysis-doc-scores">
-            {scoreTiles.map((s) => (
-              <div key={s.label} className="analysis-doc-score">
-                <div className="analysis-doc-score-label">{s.label}</div>
-                <div className="analysis-doc-score-value" style={{ color: scoreColor(s.value) }}>{s.value}</div>
-              </div>
-            ))}
-          </div>
-          {view.speakingPace?.wpm > 0 && (
-            <p className="doc-note" style={{ marginTop: 12 }}>
-              {'Speaking pace'}: <strong>{view.speakingPace.wpm} wpm</strong> ({view.speakingPace.label})
-            </p>
-          )}
-        </>
-      )}
-
-      {/* 3. Düzəlişlər. Yeni analizlərdə səhvlər MÖVZUYA görə qruplaşdırılır:
-          hər mövzunun adı + bir qızıl qayda + həmin naxışın real nümunələri.
-          Köhnə sənədlərdə mövzu yoxdur — onlar düz cədvəllə göstərilir. */}
-      {view.errorThemes.length > 0 ? (
-        <>
-          {section(SEC.mistakes)}
-          {view.errorThemes.map((theme, ti) => (
-            <div key={ti} style={{ marginBottom: 28 }}>
-              <h3 style={{
-                fontFamily: "'PT Serif', Georgia, serif", fontSize: 17,
-                fontWeight: 700, margin: '0 0 10px',
-              }}>
-                {String.fromCharCode(65 + ti)}. {theme.title}
-              </h3>
-              {theme.rule && (
-                <div className="analysis-doc-critical">
-                  <span className="analysis-doc-critical-label">
-                    {isTr ? 'Kritik Kural' : 'Kritik Qayda'}
-                  </span>
-                  {theme.rule}
-                </div>
-              )}
-              <div className="analysis-doc-table-wrap">
-                <table className="analysis-doc-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '32%' }}>{TH.wrong}</th>
-                      <th style={{ width: '32%' }}>{TH.right}</th>
-                      <th>{TH.why}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {theme.items.map((f, i) => (
-                      <tr key={i}>
-                        <td><span className="doc-wrong">{f.original}</span></td>
-                        <td><span className="doc-right">{f.corrected}</span></td>
-                        <td><span className="doc-note">{f.reason}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <p className="rep-label">Fix these · {fixes.length}</p>
+          {fixes.map((f, i) => (
+            <div className="rep-fix" key={i}>
+              {f.tag && <span className="rep-tag">{f.tag}</span>}
+              <p className="rep-wrong"><span className="rep-mark">✗</span>{f.original}</p>
+              <p className="rep-right"><span className="rep-mark">✓</span>{f.corrected}</p>
+              {(f.reason || f.rule) && <p className="rep-why">{f.reason || f.rule}</p>}
             </div>
           ))}
         </>
-      ) : view.feedback.length > 0 ? (
-        <>
-          {section(SEC.mistakes)}
-          <div className="analysis-doc-table-wrap">
-            <table className="analysis-doc-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '32%' }}>{TH.wrong}</th>
-                  <th style={{ width: '32%' }}>{TH.right}</th>
-                  <th>{TH.why}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {view.feedback.map((f, i) => (
-                  <tr key={i}>
-                    <td><span className="doc-wrong">{f.original}</span></td>
-                    <td><span className="doc-right">{f.corrected}</span></td>
-                    <td><span className="doc-note">{f.reason}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
       ) : (
-        <>
-          {section(SEC.mistakes)}
-          <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
-            <span className="doc-right" style={{ fontSize: 15 }}>{'No grammar mistakes found'}</span>
-          </div>
-        </>
+        <div className="rep-clean">
+          <p className="rep-clean-title">No grammar mistakes found</p>
+          <p className="rep-why">Nothing to correct in what you said this time.</p>
+        </div>
       )}
 
-      {/* 4. Güclü tərəflər */}
-      {view.strengths.length > 0 && (
-        <>
-          {section(SEC.strengths)}
-          <ul className="analysis-doc-list">
-            {view.strengths.map((s, i) => <li key={i}>{s}</li>)}
-          </ul>
-        </>
-      )}
-
-      {/* 5. Tövsiyələr */}
-      {view.tips.length > 0 && (
-        <>
-          {section(SEC.tips)}
-          <ul className="analysis-doc-list numbered">
-            {view.tips.map((tip, i) => <li key={i}>{tip}</li>)}
-          </ul>
-        </>
-      )}
-
-      {/* 6. Lüğət cədvəli */}
-      {view.vocabulary.length > 0 && (
-        <>
-          {section(SEC.vocab)}
-          <div className="analysis-doc-table-wrap">
-            <table className="analysis-doc-table">
-              <thead>
-                <tr>
-                  <th style={{ width: '28%' }}>{TH.word}</th>
-                  <th>{TH.example}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {view.vocabulary.map((v, i) => (
-                  <tr key={i}>
-                    <td><span className="analysis-doc-word">{v.word}</span></td>
-                    <td><span className="analysis-doc-example">{v.example}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-
-      {/* Köhnə sənədlərin sahələri */}
-      {view.legacyVocabularyUsed.length > 0 && (
-        <>
-          {section(SEC.vocab)}
-          <p className="doc-note">{view.legacyVocabularyUsed.join(' · ')}</p>
-        </>
-      )}
-      {view.legacyExamples.length > 0 && (
-        <ul className="analysis-doc-list">
-          {view.legacyExamples.map((s, i) => <li key={i}><em>{s}</em></li>)}
-        </ul>
-      )}
-
-      {/* 7. İnteraktiv tapşırıqlar — sənədin davamı. Düzəlişlər yuxarıdakı
-          cədvəldə olduğu üçün burada təkrarlanmır (showCorrections=false). */}
+      {/* Practice outranks reading. This is the part that changes anything. */}
       {view.homework && (
         <>
-          {section(SEC.homework)}
+          <p className="rep-label">Practice</p>
           <div className="homework-scope">
             <AnalysisHomework homework={view.homework} showCorrections={false} showBanner={false} />
           </div>
         </>
       )}
 
-      <div className="analysis-doc-footer">
-        SpeakLab · {isTr ? 'Yapay zekâ destekli konuşma analizi' : 'Süni intellekt dəstəkli danışıq analizi'}
-      </div>
+      {(view.strengths.length > 0 || view.tips.length > 0) && (
+        <>
+          <p className="rep-label">Also worth knowing</p>
+          <div className="rep-notes">
+            {view.strengths.slice(0, 2).map((s, i) => (
+              <p key={`s${i}`} className="rep-note"><span className="rep-note-mark good">+</span>{s}</p>
+            ))}
+            {view.tips.slice(0, 2).map((t, i) => (
+              <p key={`t${i}`} className="rep-note"><span className="rep-note-mark">→</span>{t}</p>
+            ))}
+          </div>
+        </>
+      )}
+
+      {view.vocabulary.length > 0 && (
+        <>
+          <p className="rep-label">Words to reuse</p>
+          <div className="rep-words">
+            {view.vocabulary.map((v, i) => (
+              <div className="rep-word" key={i}>
+                <p className="rep-word-w">{v.word}</p>
+                <p className="rep-word-e">{v.example}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* What you actually said. Nothing in the report can be checked without
+          it, and a learner who disagrees with a correction deserves to see the
+          sentence it came from. */}
+      {analysis.transcript && (
+        <>
+          <button className="rep-toggle" type="button" onClick={() => setShowTranscript((v) => !v)}>
+            {showTranscript ? 'Hide what you said' : 'Show what you said'}
+          </button>
+          {showTranscript && <p className="rep-transcript">{analysis.transcript}</p>}
+        </>
+      )}
+
+      {view.reportMarkdown && (
+        <>
+          <button className="rep-toggle" type="button" onClick={() => setShowNotes((v) => !v)}>
+            {showNotes ? 'Hide full notes' : 'Show full notes'}
+          </button>
+          {showNotes && (
+            <div className="analysis-doc-card rep-notes-full">
+              <ReactMarkdown components={mdComponents}>{view.reportMarkdown}</ReactMarkdown>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -5,7 +5,9 @@ import { auth } from '../firebase';
 import { FUNCTIONS_BASE } from '../constants';
 import { getTodayContent } from '../data/weeklyContent';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
-import useAinurTurn from '../hooks/useAinurTurn';
+import { plainTopic } from '../utils/topicLabel';
+import useAinurSession from '../hooks/useAinurSession';
+import { speakLine } from '../utils/ainurVoice';
 import AiDescribeStage from '../components/ai/AiDescribeStage';
 import MicButton from '../components/ai/MicButton';
 import Button from '../components/ui/Button';
@@ -15,36 +17,32 @@ import '../components/ai/ai.css';
 // eight minutes. Ends with the same analysis a human call produces, which is
 // what reaches the teacher.
 //
-// Why this activity first: the content already exists. topicImages.js holds 360
-// reviewed photographs, each with keywords taken from the photograph itself and
-// two questions written for it. Nothing new had to be authored.
+// HANDS-FREE. You tap once at the start and then just talk: she listens,
+// notices you have finished, answers, and listens again. Tapping again ends the
+// session. Requiring a tap per turn made a learner mid-thought hunt for a
+// button, and it hid a much worse failure — see useAinurSession.
 const PICTURES_PER_SESSION = 5;
 const TURNS_PER_PICTURE = 2;
 
-// AInur asks the same opening question on every picture, so it is written here
-// rather than generated. That is not a shortcut: a fixed opener costs no tokens
-// and no speech synthesis, and it keeps her voice for the part that has to be
-// live — reacting to what the learner actually said.
+// The opening question for each picture. Plain and concrete on purpose: a
+// learner staring at a photo with nothing asked of them freezes, and "describe
+// this" is not a question you can answer without first deciding what to say.
+// Fixed strings, so the audio is synthesised once and reused.
 const OPENERS = [
-  'Look at this picture. What is happening in it?',
-  'Tell me what you can see here.',
+  'What can you see in this picture?',
+  'How would you describe this picture?',
+  'Tell me what is happening here.',
+  'What do you notice first in this picture?',
   'Describe this picture for me. What is going on?',
 ];
 
-// Free talk has no pictures, so the whole session is one long item and the
-// opener is a greeting instead of a task.
 const FREE_TURNS = 40;   // effectively unlimited; the learner ends the session
-const freeOpener = (topic) =>
-  `Hello! Today the topic is ${topic}. What do you think about it?`;
+const freeOpener = (topic) => `Hello. Today the topic is ${topic}. What do you think about it?`;
 
 export default function AiActivity({ user }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const isFree = params.get('mode') === 'free';
-  const {
-    status, level, error, elapsedMs,
-    startRecording, stopRecording, send, setError, waitForSpeech,
-  } = useAinurTurn();
 
   const [images, setImages] = useState([]);
   const [picIndex, setPicIndex] = useState(0);
@@ -57,13 +55,104 @@ export default function AiActivity({ user }) {
   const [done, setDone] = useState(null);     // null | 'analyzing' | 'ready' | 'short'
 
   const content = useMemo(() => getTodayContent(), []);
-  // One id for the whole session. The server keys aiSessions on it, so it must
-  // stay stable across every turn but never repeat between sessions.
   const sessionIdRef = useRef(`${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
-  const spokeRef = useRef(false);             // did the learner ever speak?
-  // The exchange on the CURRENT picture only. Reset on every picture change,
-  // which is what stops AInur carrying one picture into the next.
+  const spokeRef = useRef(false);
+  // The exchange on the CURRENT picture only, cleared on every picture change —
+  // that reset is what stops one picture leaking into the next.
   const historyRef = useRef([]);
+  const pendingAdvanceRef = useRef(false);
+  // Live copy for the segment handler, which is created once and must not close
+  // over stale state.
+  const stateRef = useRef({});
+
+  const image = images[picIndex];
+  const isLastPicture = picIndex >= images.length - 1;
+  const isLastTurn = isFree ? false : turnIndex >= TURNS_PER_PICTURE - 1;
+  stateRef.current = { image, picIndex, turnIndex, isLastTurn, isLastPicture, isFree };
+
+  // One segment of speech: send it, show what came back, and note whether the
+  // picture should advance. Returning the payload lets the session play her
+  // voice and resume listening on its own.
+  const handleSegment = useCallback(async (blob) => {
+    const st = stateRef.current;
+    if (!st.isFree && !st.image) return null;
+
+    const base64Audio = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(String(r.result).split(',')[1]);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+
+    let data;
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const res = await fetch(`${FUNCTIONS_BASE}/aiActivityTurn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({
+          sessionId: sessionIdRef.current,
+          activity: st.isFree ? 'freechat' : 'describe',
+          topicIndex: content.day,
+          itemId: st.isFree ? 'free' : st.image.id,
+          itemIndex: st.isFree ? 0 : st.picIndex,
+          keywords: st.isFree ? [] : (st.image.keywords || []).map((k) => (k && k.word ? k.word : k)),
+          turnIndex: st.turnIndex,
+          plannedTurns: st.isFree ? FREE_TURNS : TURNS_PER_PICTURE,
+          isLast: st.isLastTurn,
+          level: user?.level || 'B1',
+          history: historyRef.current,
+          base64Audio,
+          mimeType: blob.type || 'audio/webm',
+        }),
+      });
+      data = await res.json().catch(() => ({}));
+      if (!res.ok || data.silent) return null;
+    } catch {
+      return null;
+    }
+
+    spokeRef.current = true;
+    historyRef.current = [
+      ...historyRef.current,
+      { role: 'user', content: data.transcript || '' },
+      { role: 'assistant', content: data.reply || '' },
+    ].slice(-8);
+
+    setHeard(data.transcript || '');
+    setReply(data.reply || '');
+    if (Array.isArray(data.matchedKeywords) && data.matchedKeywords.length) {
+      setHits((prev) => Array.from(new Set([...prev, ...data.matchedKeywords])));
+    }
+
+    if (st.isFree) {
+      setLog((prev) => [...prev, { you: data.transcript || '', ainur: data.reply || '' }]);
+      setTurnIndex((t) => t + 1);
+    } else if (st.isLastTurn) {
+      // Queued behind her voice: the session plays the reply first and only then
+      // goes back to listening, so the picture cannot change while she is still
+      // talking about the previous one.
+      if (!st.isLastPicture) pendingAdvanceRef.current = true;
+    } else {
+      setTurnIndex((t) => t + 1);
+    }
+    return data;
+  }, [content.day, user]);
+
+  const { status, active, level, elapsedMs, error, start, stop, interrupt } =
+    useAinurSession({ onSegment: handleSegment });
+
+  // The picture changes at the moment she stops speaking, never before.
+  useEffect(() => {
+    if (status !== 'listening' || !pendingAdvanceRef.current) return;
+    pendingAdvanceRef.current = false;
+    historyRef.current = [];
+    setPicIndex((i) => i + 1);
+    setTurnIndex(0);
+    setHits([]);
+    setHeard('');
+    setReply('');
+  }, [status]);
 
   useEffect(() => {
     if (isFree) return undefined;
@@ -74,79 +163,27 @@ export default function AiActivity({ user }) {
     return () => { cancelled = true; };
   }, [content, isFree]);
 
-  const image = images[picIndex];
-  const isLastPicture = picIndex >= images.length - 1;
-  // In free talk nothing advances, so no turn is ever "the last on this item"
-  // — AInur should never start wrapping up until the learner ends it.
-  const isLastTurn = isFree ? false : turnIndex >= TURNS_PER_PICTURE - 1;
+  const opener = isFree ? freeOpener(plainTopic(content.topic)) : OPENERS[picIndex % OPENERS.length];
+
+  // Ask the question out loud when a new picture appears.
+  useEffect(() => {
+    if (!active || heard || reply) return;
+    if (!isFree && !image) return;
+    speakLine(opener);
+  }, [active, opener, image, isFree, heard, reply]);
+
   const ready = isFree || !!image;
 
-  const onStart = useCallback(async () => {
-    setError('');
-    await startRecording();
-  }, [startRecording, setError]);
+  const onTap = useCallback(() => {
+    if (!active) { start(); return; }
+    if (status === 'speaking') { interrupt(); return; }
+    stop();
+  }, [active, status, start, stop, interrupt]);
 
-  const onStop = useCallback(async () => {
-    const blob = await stopRecording();
-    if (!blob || !ready) return;
-
-    const data = await send(blob, {
-      sessionId: sessionIdRef.current,
-      activity: isFree ? 'freechat' : 'describe',
-      topicIndex: content.day,
-      itemId: isFree ? 'free' : image.id,
-      itemIndex: isFree ? 0 : picIndex,
-      keywords: isFree ? [] : (image.keywords || []).map((k) => (k && k.word ? k.word : k)),
-      turnIndex,
-      plannedTurns: isFree ? FREE_TURNS : TURNS_PER_PICTURE,
-      isLast: isLastTurn,
-      level: user?.level || 'B1',
-      history: historyRef.current,
-    });
-    if (!data || data.silent) return;
-
-    spokeRef.current = true;
-    historyRef.current = [
-      ...historyRef.current,
-      { role: 'user', content: data.transcript || '' },
-      { role: 'assistant', content: data.reply || '' },
-    ].slice(-8);
-    setHeard(data.transcript || '');
-    setReply(data.reply || '');
-    if (Array.isArray(data.matchedKeywords) && data.matchedKeywords.length) {
-      setHits((prev) => Array.from(new Set([...prev, ...data.matchedKeywords])));
-    }
-
-    if (isFree) {
-      setLog((prev) => [...prev, { you: data.transcript || '', ainur: data.reply || '' }]);
-      setTurnIndex((t) => t + 1);
-      return;
-    }
-
-    if (isLastTurn) {
-      // Wait for AInur to actually FINISH speaking before swapping the
-      // picture. This ran on a 1400ms timer, but her reply takes six to eight
-      // seconds to speak — so the photo changed while she was still talking
-      // about the previous one, which is exactly how it looked to the learner.
-      await waitForSpeech();
-      if (isLastPicture) return;
-      historyRef.current = [];
-      setPicIndex((i) => i + 1);
-      setTurnIndex(0);
-      setHits([]);
-      setHeard('');
-      setReply('');
-    } else {
-      setTurnIndex((t) => t + 1);
-    }
-  }, [stopRecording, send, waitForSpeech, image, picIndex, turnIndex, isLastTurn, isLastPicture, content.day, user, isFree, ready]);
-
-  // Finish: ask the server to grade the session. Under about a minute of speech
-  // there is nothing worth reporting, and the server says so rather than
-  // producing a thin report.
   const finish = useCallback(async () => {
     if (finishing) return;
     setFinishing(true);
+    stop();
     if (!spokeRef.current) { navigate('/'); return; }
     setDone('analyzing');
     try {
@@ -161,7 +198,7 @@ export default function AiActivity({ user }) {
     } catch {
       setDone('short');
     }
-  }, [finishing, navigate]);
+  }, [finishing, navigate, stop]);
 
   if (done) {
     return (
@@ -185,7 +222,7 @@ export default function AiActivity({ user }) {
               <>
                 <h2 className="ai-activity-title" style={{ textAlign: 'center' }}>Your report is ready</h2>
                 <p className="ai-bubble-text" style={{ color: 'var(--text-secondary)' }}>
-                  Grammar, word choice and a score, from what you said today.
+                  Your mistakes, corrected, and something to practise.
                 </p>
                 <Button variant="ai" size="lg" full onClick={() => navigate('/history')}>
                   See my report
@@ -214,7 +251,7 @@ export default function AiActivity({ user }) {
       <div className="ai-activity-head">
         <Button
           variant="ghost" size="sm" iconOnly aria-label="Back"
-          onClick={() => navigate('/')}
+          onClick={() => { stop(); navigate('/'); }}
           icon={<ChevronLeft size={22} strokeWidth={1.75} />}
         />
         <h1 className="ai-activity-title">{isFree ? 'Free talk' : 'Describe pictures'}</h1>
@@ -241,7 +278,7 @@ export default function AiActivity({ user }) {
               <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
               <div className="ai-bubble-body">
                 <p className="ai-bubble-name">AInur</p>
-                <p className="ai-bubble-text">{freeOpener(content.topic)}</p>
+                <p className="ai-bubble-text">{opener}</p>
               </div>
             </div>
             {log.map((x, i) => (
@@ -261,7 +298,7 @@ export default function AiActivity({ user }) {
                 <img src="/ainur_avatar.png" alt="" className="ai-avatar ai-avatar--pulse" />
                 <div className="ai-bubble-body">
                   <p className="ai-bubble-name">AInur</p>
-                  <p className="ai-bubble-text">Listening…</p>
+                  <p className="ai-bubble-text">One moment…</p>
                 </div>
               </div>
             )}
@@ -270,22 +307,21 @@ export default function AiActivity({ user }) {
           <p className="ai-bubble-text" style={{ color: 'var(--text-secondary)' }}>Loading pictures…</p>
         ) : (
           <>
-            {!heard && !reply && (
-              <div className="ai-bubble">
-                <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
-                <div className="ai-bubble-body">
-                  <p className="ai-bubble-name">AInur</p>
-                  <p className="ai-bubble-text">{OPENERS[picIndex % OPENERS.length]}</p>
-                </div>
+            {/* The question stays on screen while they answer it. It used to
+                vanish the moment they spoke, so a learner who lost the thread
+                mid-sentence had nothing to look back at. */}
+            <div className="ai-bubble">
+              <img
+                src="/ainur_avatar.png"
+                alt=""
+                className={`ai-avatar${status === 'sending' ? ' ai-avatar--pulse' : ''}`}
+              />
+              <div className="ai-bubble-body">
+                <p className="ai-bubble-name">AInur</p>
+                <p className="ai-bubble-text">{reply || opener}</p>
               </div>
-            )}
-            <AiDescribeStage
-              image={image}
-              hits={hits}
-              heard={heard}
-              reply={reply}
-              thinking={status === 'sending'}
-            />
+            </div>
+            <AiDescribeStage image={image} hits={hits} heard={heard} />
           </>
         )}
       </div>
@@ -301,10 +337,10 @@ export default function AiActivity({ user }) {
         )}
         <MicButton
           status={status}
+          active={active}
           level={level}
           elapsedMs={elapsedMs}
-          onStart={onStart}
-          onStop={onStop}
+          onTap={onTap}
           disabled={!ready}
         />
         <div style={{ marginTop: 'var(--s-3)' }}>

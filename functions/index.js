@@ -2910,7 +2910,7 @@ Ask a follow-up question to keep the conversation going.`;
     const aiReply = chatData.choices?.[0]?.message?.content || "I didn't quite catch that. Could you repeat?";
 
     // 3. Generate Speech via Deepgram Aura
-    const dgRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-asteria-en", {
+    const dgRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-thalia-en", {
       method: "POST",
       headers: {
         "Authorization": `Token ${DEEPGRAM_API_KEY.value()}`,
@@ -4939,7 +4939,7 @@ exports.aiActivityTurn = onRequest(
       // 3. Text to speech
       let audioBase64 = "";
       try {
-        const ttsRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-asteria-en", {
+        const ttsRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-thalia-en", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -4971,7 +4971,7 @@ exports.aiActivityTurn = onRequest(
       }, { merge: true });
       const turnUpdate = {
         turns: admin.firestore.FieldValue.arrayUnion(
-          { role: "student", text: transcript, itemId, itemIndex, ms: now },
+          { role: "student", text: transcript, itemId, itemIndex, ms: now, sec: Math.round(audioBuffer.length / 16000) },
           { role: "ainur", text: reply, itemId, itemIndex, ms: now + 1 },
         ),
         turnCount: admin.firestore.FieldValue.increment(1),
@@ -5073,9 +5073,15 @@ exports.analyzeAiSession = onRequest(
       const u = userSnap.exists ? userSnap.data() : {};
       const lang = u.preferredLanguage === "tr" ? "tr" : "az";
 
-      // ~120 words per minute of speech; used for the pace figure and the
-      // duration shown on the report card.
-      const spokenSeconds = Math.round((words / 120) * 60);
+      // Real speaking time, summed from the turns. This was estimated from the
+      // word count at an assumed 120 wpm, which meant a slow speaker was told
+      // they had spoken for half as long as they really had — and the pace
+      // figure derived from it was circular, since it divided words by a
+      // duration that had itself been computed from those words.
+      const measured = (session.turns || [])
+        .filter((t) => t.role === "student" && Number.isFinite(t.sec))
+        .reduce((sum, t) => sum + t.sec, 0);
+      const spokenSeconds = measured > 0 ? measured : Math.round((words / 120) * 60);
 
       const prompt = buildAnalysisPrompt(studentText.slice(0, MAX_TRANSCRIPT_CHARS), lang);
       const raw = await callAnalysisLLM(prompt, db);
@@ -5129,3 +5135,71 @@ exports.analyzeAiSession = onRequest(
     }
   },
 );
+
+// Speak one fixed line. No transcription, no model call — just a voice for a
+// string the app already knows, so AInur can ASK the opening question out loud
+// instead of only printing it. The client caches the audio per line, so each
+// distinct sentence costs one synthesis on a device and nothing after that.
+//
+// Deliberately NOT free-form: an endpoint that will speak any text a client
+// sends is a paid megaphone. Only lines the app itself ships are allowed.
+const SPEAKABLE_LINES = new Set([
+  "What can you see in this picture?",
+  "How would you describe this picture?",
+  "Tell me what is happening here.",
+  "What do you notice first in this picture?",
+  "Describe this picture for me. What is going on?",
+]);
+
+exports.speakLine = onRequest(
+  { secrets: [DEEPGRAM_API_KEY], invoker: "public" },
+  async (req, res) => {
+    setCors(res);
+    if (req.method === "OPTIONS") return res.status(204).send("");
+
+    let decoded;
+    try {
+      decoded = await verifyAuth(req);
+    } catch {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+      await enforceRateLimit(decoded.uid, "speakLine", 60, 60 * 60 * 1000);
+    } catch {
+      return res.status(429).json({ error: "Too many requests." });
+    }
+
+    const { text } = req.body || {};
+    // A free-talk greeting carries the day's topic, so it cannot be in a fixed
+    // set. Allow it by shape instead: short, and matching the sentence the app
+    // builds.
+    const isGreeting = typeof text === "string"
+      && /^Hello\. Today the topic is .{1,60}\. What do you think about it\?$/.test(text);
+    if (!text || (!SPEAKABLE_LINES.has(text) && !isGreeting)) {
+      return res.status(400).json({ error: "Unknown line" });
+    }
+
+    try {
+      const ttsRes = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-thalia-en", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${DEEPGRAM_API_KEY.value()}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!ttsRes.ok) {
+        console.warn("[speakLine] TTS failed:", await ttsRes.text());
+        return res.status(502).json({ error: "Voice unavailable" });
+      }
+      const audioBase64 = Buffer.from(await ttsRes.arrayBuffer()).toString("base64");
+      recordAiUsage(decoded.uid, { ttsChars: text.length });
+      return res.status(200).json({ audioBase64 });
+    } catch (e) {
+      console.error("[speakLine] error:", e);
+      return res.status(500).json({ error: "Voice unavailable" });
+    }
+  },
+);
+

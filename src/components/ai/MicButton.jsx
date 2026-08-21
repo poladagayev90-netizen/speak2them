@@ -8,38 +8,53 @@ const fmt = (ms) => {
 };
 
 /**
- * The one control in an activity. Tap to start, tap to stop.
+ * The one control in a session. Tap once to begin; after that it runs itself.
  *
- * The ring around it tracks the microphone input, which does one useful job
- * beyond decoration: a learner who is too quiet to be transcribed can see that
- * before they finish talking, instead of finding out from an error afterwards.
+ * The label always describes what is happening RIGHT NOW, because the previous
+ * version could show "recording" while the recorder had already stopped and
+ * thrown the audio away. Whatever else changes here, the button must never
+ * claim a state the session is not in.
  */
-export default function MicButton({ status, level = 0, elapsedMs = 0, onStart, onStop, disabled }) {
-  const recording = status === 'recording';
+export default function MicButton({ status, active, level = 0, elapsedMs = 0, onTap, disabled }) {
+  const listening = status === 'listening';
   const busy = status === 'sending';
   const speaking = status === 'speaking';
 
-  const label = recording ? 'Stop' : speaking ? 'Tap to interrupt' : busy ? 'Sending' : 'Tap to speak';
-  const Icon = recording ? Square : busy ? Loader2 : speaking ? Volume2 : Mic;
+  const label = !active ? 'Tap to start'
+    : listening ? 'Listening — just talk'
+      : busy ? 'One moment'
+        : speaking ? 'Tap to interrupt'
+          : 'Tap to start';
 
-  // Cap the glow so a loud room does not blow the ring off the screen.
+  const Icon = !active ? Mic
+    : listening ? Square
+      : busy ? Loader2
+        : speaking ? Volume2 : Mic;
+
+  const mode = !active ? 'idle' : listening ? 'rec' : busy ? 'busy' : speaking ? 'speaking' : 'idle';
+  // Cap the ring so a loud room does not blow it off the screen.
   const glow = Math.min(level, 0.6);
 
   return (
     <div className="ai-mic-wrap">
       <button
         type="button"
-        className={`ai-mic ai-mic--${recording ? 'rec' : speaking ? 'speaking' : busy ? 'busy' : 'idle'}`}
-        style={recording ? { boxShadow: `0 0 0 ${6 + glow * 26}px var(--ai-soft)` } : undefined}
-        onClick={recording ? onStop : onStart}
-        disabled={disabled || busy}
+        className={`ai-mic ai-mic--${mode}`}
+        style={listening ? { boxShadow: `0 0 0 ${6 + glow * 26}px var(--ai-soft)` } : undefined}
+        onClick={onTap}
+        disabled={disabled}
         aria-label={label}
       >
         <Icon size={30} strokeWidth={2} className={busy ? 'ai-spin' : undefined} />
       </button>
       <span className="ai-mic-label">
-        {recording ? fmt(elapsedMs) : label}
+        {listening && elapsedMs > 0 ? fmt(elapsedMs) : label}
       </span>
+      {active && (
+        <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+          Tap again to end the session
+        </span>
+      )}
     </div>
   );
 }
