@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bot, Home, LayoutDashboard, MessageCircle, Trophy, User } from 'lucide-react';
+import { Bot, Home, LayoutDashboard, MessageCircle, Users, User } from 'lucide-react';
 import { subscribeToUnreadTotal } from '../utils/chat';
 
 export default function BottomNav({ user }) {
@@ -27,7 +27,7 @@ export default function BottomNav({ user }) {
       // Cyan, not violet: colour says who you are talking to, and this tab is
       // the AI one. Every other tab leads to people.
       : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)' },
-    { icon: Trophy,        label: 'Ranking', route: '/ranking' },
+    { icon: Users,         label: 'Live',    route: '/live' },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
 

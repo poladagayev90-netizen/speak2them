@@ -27,7 +27,8 @@ const importChats = () => import('./pages/Chats');
 const importAIChat = () => import('./pages/AinurHub');
 const importProfile = () => import('./pages/Profile');
 const importRanking = () => import('./pages/Ranking');
-const TAB_PAGE_IMPORTS = [importHome, importChats, importAIChat, importRanking, importProfile];
+const importLive = () => import('./pages/Live');
+const TAB_PAGE_IMPORTS = [importHome, importChats, importAIChat, importLive, importProfile];
 
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
@@ -44,6 +45,7 @@ const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(importRanking);
+const Live = React.lazy(importLive);
 const History = React.lazy(() => import('./pages/History'));
 const DailyPuzzle = React.lazy(() => import('./pages/DailyPuzzle'));
 const Redeem = React.lazy(() => import('./pages/Redeem'));
@@ -203,6 +205,7 @@ function AppShell({ user }) {
           <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
           <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
+          <Route path="/live" element={user ? <Live user={user} /> : <Navigate to="/login" />} />
           <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
         </Routes>

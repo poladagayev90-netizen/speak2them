@@ -161,7 +161,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
             {todayWaiting > 0
-              ? `${todayWaiting} blocks have someone waiting today`
+              ? `${todayWaiting} ${todayWaiting === 1 ? 'block has' : 'blocks have'} someone waiting today`
               : 'Pick a time — it is confirmed as soon as a second person joins'}
           </div>
         </div>

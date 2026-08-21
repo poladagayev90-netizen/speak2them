@@ -1,6 +1,7 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
 import { useNavigate } from 'react-router-dom';
+import { Phone, Clock, Flame, Star } from 'lucide-react';
 import { getPresence } from '../utils/presence';
 
 export default function UserCard({ user, onChat }) {
@@ -39,17 +40,17 @@ export default function UserCard({ user, onChat }) {
           </p>
         )}
         <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '11px', color: '#888' }}>📞 {user.callCount || 0}</span>
-          <span style={{ fontSize: '11px', color: '#888' }}>🕐 {user.totalMinutes || 0} min</span>
-          {user.streak > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>🔥 {user.streak}</span>}
-          {user.ratingCount > 0 && <span style={{ fontSize: '11px', color: '#f59e0b' }}>⭐ {(user.rating / user.ratingCount).toFixed(1)}</span>}
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Phone size={11} strokeWidth={2} />{user.callCount || 0}</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Clock size={11} strokeWidth={2} />{user.totalMinutes || 0} min</span>
+          {user.streak > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Flame size={11} strokeWidth={2} />{user.streak}</span>}
+          {user.ratingCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Star size={11} strokeWidth={2} />{(user.rating / user.ratingCount).toFixed(1)}</span>}
         </div>
         <span className={`online-badge ${isOnline ? 'online' : 'offline'}`}>
-          {isOnline ? '🟢 Online' : '⚫ Offline'}
+          {isOnline ? 'Online' : 'Offline'}
         </span>
       </div>
       <button className="btn-chat" onClick={() => navigate(`/user/${user.uid || user.id}`)}>
-        👀 View Profile
+        View profile
       </button>
     </div>
   );
