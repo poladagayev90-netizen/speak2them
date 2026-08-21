@@ -118,7 +118,7 @@ export function useLiveLobby(user) {
     if (!slotId) return;  // night hours — no block, just open the board
     const res = await joinPracticeSlot(slotId);
     if (res.ok && res.data?.matched) {
-      setSlotToast(`✅ Your call with ${res.data.partnerName || 'your partner'} is confirmed.`);
+      setSlotToast(`Your call with ${res.data.partnerName || 'your partner'} is confirmed.`);
     } else {
       setSlotToast('Nobody is free right now. We saved your slot and will notify you when someone joins.');
     }

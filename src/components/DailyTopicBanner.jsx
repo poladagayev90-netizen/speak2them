@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { ChevronRight, CalendarDays } from 'lucide-react';
 import { subscribeToCycle } from '../utils/cycle';
 import { getTodayContent } from '../data/weeklyContent';
 import { getTopicsCompleted } from '../utils/courseProgress';
+import { plainTopic } from '../utils/topicLabel';
+import Card from './ui/Card';
+import './ui/ui.css';
 
-// Home-un YEGANƏ "günün mövzusu" girişi — bir sətir, bir toxunuş.
+// The one entry to today's topic: a single row, one tap.
 //
-// Əvvəllər bu kart üç qat idi: mövzu başlığı + "Sözlər · idiomlar · suallar"
-// çipi + 21:00 geri sayımı və "əsas günlər" izahı. Nəticədə ana səhifənin
-// yarısını tuturdu və əsl hərəkət (partnyor tapmaq) ekrandan aşağı düşürdü.
+// This card was once three layers — topic title, a "words · idioms · questions"
+// chip, a 21:00 countdown and an explanation of main days — and took up half
+// the home screen, pushing the real action below the fold. SessionCountdown was
+// removed entirely: 21:00 is not a separate announcement, it is the starred
+// 20–22 block on the practice board. Explaining the same thing in two places,
+// once as "the session" and once as "a block", only confused people.
 //
-// SessionCountdown TAMAMİLƏ ÇIXARILDI. 21:00 artıq ayrıca xəbərdarlıq deyil —
-// praktika lövhəsindəki ⭐ işarəli 20–22 blokudur. İki fərqli yerdə eyni şeyi
-// izah etmək istifadəçini çaşdırırdı: biri "sessiya saatı", digəri "blok".
+// It was also a saturated violet gradient with a glow. On a screen where the
+// primary action is now a card of its own, a second loud block competed with it
+// and won on nothing but volume. Reference material should look like reference
+// material.
 export default function DailyTopicBanner({ user, onOpenTopic }) {
   const [cycle, setCycle] = useState(null);
   useEffect(() => subscribeToCycle(setCycle), []);
@@ -19,48 +27,46 @@ export default function DailyTopicBanner({ user, onOpenTopic }) {
   const topic = getTodayContent();
   const completed = getTopicsCompleted(user, cycle);
   const topicLabel = completed !== null && completed > 0
-    ? `Topic ${completed} · ${topic.topic}`
-    : topic.topic;
+    ? `Topic ${completed} · ${plainTopic(topic.topic)}`
+    : plainTopic(topic.topic);
 
   return (
-    <div
+    <Card
       id="tour-daily-topic"
+      padding="md"
       onClick={onOpenTopic}
-      role={onOpenTopic ? 'button' : undefined}
-      tabIndex={onOpenTopic ? 0 : undefined}
-      onKeyDown={(e) => {
-        if (onOpenTopic && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpenTopic(); }
-      }}
-      style={{
-        background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
-        borderRadius: '14px',
-        padding: '12px 14px',
-        marginBottom: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        cursor: onOpenTopic ? 'pointer' : 'default',
-        boxShadow: '0 3px 14px rgba(124,111,247,0.35)',
-      }}
+      style={{ marginBottom: 'var(--s-3)' }}
     >
-      <span style={{ fontSize: '20px', flexShrink: 0 }}>🎙️</span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          color: 'rgba(255,255,255,0.72)', fontSize: '11px', fontWeight: 700,
-          letterSpacing: '0.4px', textTransform: 'uppercase',
-        }}>
-          Today's topic
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
+        <CalendarDays
+          size={20}
+          strokeWidth={1.75}
+          aria-hidden="true"
+          style={{ color: 'var(--text-muted)', flexShrink: 0 }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p className="ui-section-label" style={{ margin: 0 }}>Today’s topic</p>
+          <p style={{
+            margin: '2px 0 0',
+            color: 'var(--text-primary)',
+            fontWeight: 600,
+            fontSize: 'var(--fs-body)',
+            lineHeight: 'var(--lh-tight)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {topicLabel}
+          </p>
         </div>
-        <div style={{
-          color: '#fff', fontWeight: 800, fontSize: '15px', lineHeight: 1.25,
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          {topicLabel}
-        </div>
+        {onOpenTopic && (
+          <ChevronRight
+            size={18}
+            strokeWidth={1.75}
+            style={{ color: 'var(--text-muted)', flexShrink: 0 }}
+          />
+        )}
       </div>
-      {onOpenTopic && (
-        <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '18px', flexShrink: 0 }}>›</span>
-      )}
-    </div>
+    </Card>
   );
 }

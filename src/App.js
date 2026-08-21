@@ -18,6 +18,7 @@ import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
 import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
 import Logo from './components/Logo';
+import { Mic } from 'lucide-react';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
 // be preloaded on idle (see the preload effect in App) — without this, the
@@ -79,7 +80,7 @@ const PageFallback = () => (
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     minHeight: '60vh', color: 'var(--text-muted)', fontSize: 22,
   }} aria-label="Loading">
-    <span className="loading-logo" style={{ fontSize: 34 }}>🎙️</span>
+    <span className="loading-logo"><Mic size={30} strokeWidth={1.75} aria-hidden="true" /></span>
   </div>
 );
 

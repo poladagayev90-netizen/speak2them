@@ -88,10 +88,10 @@ export default function TeacherStudent({ user }) {
           gap: '10px', marginBottom: '18px',
         }}>
           {[
-            { label: 'Speaking minutes', value: totalMinutes, icon: '⏱️' },
-            { label: 'Sessions', value: sessions, icon: '🎙️' },
+            { label: 'Speaking minutes', value: totalMinutes, icon: '' },
+            { label: 'Sessions', value: sessions, icon: '' },
             { label: 'Streak', value: streak > 0 ? `🔥${streak}` : '—', icon: '' },
-            { label: 'Average score', value: avgScore ?? '—', icon: '📊' },
+            { label: 'Average score', value: avgScore ?? '—', icon: '' },
           ].map((tile) => (
             <div key={tile.label} style={{ ...panel, textAlign: 'center', padding: '14px 8px' }}>
               <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--text-primary)' }}>
@@ -115,19 +115,19 @@ export default function TeacherStudent({ user }) {
 
         {analyses === null ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon">⏳</div>
+            <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
           </div>
         ) : denied ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon">🔒</div>
+            <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)' }}>
               {'This student is not linked to you, so their analyses are not available.'}
             </p>
           </div>
         ) : analyses.length === 0 ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon">📭</div>
+            <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>{'No analyses yet.'}</p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               {'An analysis appears here a few minutes after your student finishes their first call.'}

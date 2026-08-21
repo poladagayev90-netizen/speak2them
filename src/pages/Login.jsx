@@ -133,7 +133,7 @@ export default function Login() {
             style={{
               width: '100%',
               backgroundColor: '#ffffff',
-              color: '#1e1e30',
+              color: 'var(--bg-card)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

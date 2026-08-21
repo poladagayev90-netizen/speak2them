@@ -19,7 +19,7 @@ export default function DailyHub() {
       <div className="hub-header">
         <button className="btn-back" onClick={() => navigate('/')}>← Back</button>
         <div>
-          <h2>📅 Today's Topic</h2>
+          <h2>Today's Topic</h2>
           <h1 className="hub-topic">{content.topic}</h1>
         </div>
       </div>
@@ -99,8 +99,8 @@ export default function DailyHub() {
             {content.idioms.map((idiom, i) => (
               <div key={i} className="idiom-card">
                 <h3>"{idiom.phrase}"</h3>
-                <p className="idiom-meaning">📌 {idiom.meaning}</p>
-                <p className="idiom-example">💡 "{idiom.example}"</p>
+                <p className="idiom-meaning"> {idiom.meaning}</p>
+                <p className="idiom-example"> "{idiom.example}"</p>
               </div>
             ))}
           </div>

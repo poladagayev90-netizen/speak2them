@@ -34,7 +34,7 @@ export default function PostCallQuizModal({ words, onClose }) {
     return (
       <div style={overlayStyle}>
         <div style={modalStyle}>
-          <div className="spinner" style={{ margin: '0 auto 20px', borderTopColor: '#7c6ff7' }}></div>
+          <div className="spinner" style={{ margin: '0 auto 20px', borderTopColor: 'var(--accent)' }}></div>
           <h3 style={{ color: '#fff' }}>Building your quiz...</h3>
           <p style={{ color: '#a0a0b8', fontSize: 14 }}>A short quiz from the words you looked up during the conversation.</p>
         </div>
@@ -58,7 +58,7 @@ export default function PostCallQuizModal({ words, onClose }) {
     return (
       <div style={overlayStyle}>
         <div style={modalStyle}>
-          <h2 style={{ fontSize: 48, marginBottom: 10 }}>{score === quizData.length ? '🏆' : '👏'}</h2>
+          <h2 style={{ fontSize: 48, marginBottom: 10 }}>{score === quizData.length ? '' : ''}</h2>
           <h3 style={{ color: '#fff', fontSize: 24, marginBottom: 10 }}>Your result</h3>
           <p style={{ color: '#2ed573', fontSize: 20, fontWeight: 'bold', margin: '0 0 20px' }}>
             {score} / {quizData.length} Correct
@@ -95,7 +95,7 @@ export default function PostCallQuizModal({ words, onClose }) {
     <div style={overlayStyle}>
       <div style={{...modalStyle, textAlign: 'left', padding: '24px'}}>
         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a0a0b8', fontSize: 14, marginBottom: 20 }}>
-          <span style={{ fontWeight: 'bold', color: '#7c6ff7' }}>Quiz</span>
+          <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>Quiz</span>
           <span>Sual {currentQ + 1}/{quizData.length}</span>
         </div>
         
@@ -106,7 +106,7 @@ export default function PostCallQuizModal({ words, onClose }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
           {q.options.map((opt, i) => {
             let bg = '#1a1a2e';
-            let border = '2px solid #2e2e50';
+            let border = '2px solid var(--bg-secondary)';
             let color = '#fff';
 
             if (selected !== null) {
@@ -155,7 +155,7 @@ const overlayStyle = {
 };
 
 const modalStyle = {
-  background: 'linear-gradient(145deg, #1e1e30, #141420)',
+  background: 'linear-gradient(145deg, var(--bg-card), #141420)',
   border: '1px solid rgba(124, 111, 247, 0.3)',
   borderRadius: 24, width: '100%', maxWidth: 400,
   padding: '40px 24px', textAlign: 'center',
@@ -164,7 +164,7 @@ const modalStyle = {
 
 const btnStyle = {
   width: '100%', padding: 16, borderRadius: 16, border: 'none',
-  background: 'linear-gradient(135deg, #7c6ff7, #5a4de3)',
+  background: 'linear-gradient(135deg, var(--accent), #5a4de3)',
   color: '#fff', fontSize: 16, fontWeight: 'bold', cursor: 'pointer',
   boxShadow: '0 8px 20px rgba(124, 111, 247, 0.3)'
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Flame } from 'lucide-react';
 import { streakTier, nextMilestone } from '../utils/streak';
 
 const prefersReducedMotion = () =>
@@ -6,7 +7,7 @@ const prefersReducedMotion = () =>
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const CONFETTI_COLORS = ['#f59e0b', '#7c6ff7', '#22d3ee', '#ef4444', '#22c55e', '#fb923c'];
+const CONFETTI_COLORS = ['var(--warning)', 'var(--accent)', '#22d3ee', 'var(--danger)', '#22c55e', '#fb923c'];
 
 // Full-screen daily streak celebration. Content scales with the streak tier;
 // heavy motion is gated behind prefers-reduced-motion.
@@ -66,10 +67,10 @@ export default function StreakModal({ open, streakInfo, onClose, onOpenJourney }
       )}
 
       <div className="streak-card" style={{ '--streak-accent': tier.accent }}>
-        {showCrown && <div className="streak-crown" aria-hidden="true">👑</div>}
+        {showCrown && <div className="streak-crown" aria-hidden="true"></div>}
 
         <div className={`streak-flame streak-flame--${tier.effect}`} aria-hidden="true">
-          <span className="streak-flame-emoji">🔥</span>
+          <span className="streak-flame-emoji"><Flame size={44} strokeWidth={1.5} /></span>
           <span className="streak-flame-glow" />
         </div>
 

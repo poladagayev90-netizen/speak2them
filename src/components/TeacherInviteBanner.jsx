@@ -47,8 +47,8 @@ export default function TeacherInviteBanner({ user }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-      border: '1px solid #7c6ff755', borderRadius: '16px',
+      background: 'var(--accent-soft)',
+      border: '1px solid var(--border)', borderRadius: '16px',
       padding: '16px', marginBottom: '16px',
     }}>
       <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -67,7 +67,7 @@ export default function TeacherInviteBanner({ user }) {
           onClick={() => respond(true)}
           style={{
             flex: 1, padding: '11px', borderRadius: '12px', border: 'none',
-            background: busy ? 'var(--bg-card)' : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+            background: busy ? 'var(--bg-card)' : 'var(--accent)',
             color: busy ? 'var(--text-muted)' : '#fff',
             fontSize: '14px', fontWeight: 800, cursor: busy ? 'default' : 'pointer',
           }}

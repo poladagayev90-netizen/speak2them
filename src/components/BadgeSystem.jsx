@@ -81,12 +81,12 @@ export const BADGES = {
   chatterbox: {
     id: 'chatterbox', label: 'Chatterbox', desc: '10 calls completed',
     tier: 'silver', glow: '#94a3b8',
-    colors: ['#94a3b8', '#e2e8f0', '#64748b'],
+    colors: ['#94a3b8', 'var(--text-primary)', '#64748b'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic2" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#e2e8f0"/>
+            <stop offset="0%" stopColor="var(--text-primary)"/>
             <stop offset="100%" stopColor="#475569"/>
           </radialGradient>
         </defs>
@@ -105,8 +105,8 @@ export const BADGES = {
   },
   social_butterfly: {
     id: 'social_butterfly', label: 'Social Butterfly', desc: '50 calls completed',
-    tier: 'gold', glow: '#f59e0b',
-    colors: ['#f59e0b', '#fde68a', '#d97706'],
+    tier: 'gold', glow: 'var(--warning)',
+    colors: ['var(--warning)', '#fde68a', '#d97706'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -128,13 +128,13 @@ export const BADGES = {
   },
   week_warrior: {
     id: 'week_warrior', label: 'Week Warrior', desc: '7-day streak',
-    tier: 'fire', glow: '#ef4444',
-    colors: ['#f97316', '#fbbf24', '#ef4444'],
+    tier: 'fire', glow: 'var(--danger)',
+    colors: ['#f97316', 'var(--warning)', 'var(--danger)'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic4" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#fbbf24"/>
+            <stop offset="0%" stopColor="var(--warning)"/>
             <stop offset="100%" stopColor="#dc2626"/>
           </radialGradient>
         </defs>
@@ -204,14 +204,14 @@ export const BADGES = {
   },
   legend: {
     id: 'legend', label: 'L E G E N D', desc: '5000 minutes spoken',
-    tier: 'legend', glow: '#f59e0b',
-    colors: ['#fef3c7', '#f59e0b', '#92400e'],
+    tier: 'legend', glow: 'var(--warning)',
+    colors: ['#fef3c7', 'var(--warning)', '#92400e'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic8" cx="50%" cy="20%" r="80%">
             <stop offset="0%" stopColor="#fef9c3"/>
-            <stop offset="50%" stopColor="#f59e0b"/>
+            <stop offset="50%" stopColor="var(--warning)"/>
             <stop offset="100%" stopColor="#78350f"/>
           </radialGradient>
           <linearGradient id="ic8s" x1="12" y1="8" x2="36" y2="40" gradientUnits="userSpaceOnUse">
@@ -234,8 +234,8 @@ export const BADGES = {
   },
   well_rated: {
     id: 'well_rated', label: 'Well Rated', desc: '4.5+ average rating',
-    tier: 'gold', glow: '#f59e0b',
-    colors: ['#f59e0b', '#fde68a', '#d97706'],
+    tier: 'gold', glow: 'var(--warning)',
+    colors: ['var(--warning)', '#fde68a', '#d97706'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -262,10 +262,10 @@ export const BADGES = {
   marathon: {
     id: 'marathon', label: 'Marathon Speaker',
     desc: 'Single call over 45 minutes',
-    tier: 'gold', glow: '#f59e0b',
-    colors: ['#f59e0b', '#fde68a', '#d97706'],
+    tier: 'gold', glow: 'var(--warning)',
+    colors: ['var(--warning)', '#fde68a', '#d97706'],
     reward: { type: 'bonusMinutes', value: 20 },
-    Icon: () => <SimpleBadgeIcon colors={['#f59e0b', '#fde68a', '#d97706']} motif="clock"/>,
+    Icon: () => <SimpleBadgeIcon colors={['var(--warning)', '#fde68a', '#d97706']} motif="clock"/>,
   },
 
   profile_pro: {
@@ -288,9 +288,9 @@ export const BADGES = {
     id: 'daily_devotee', label: 'Daily Devotee',
     desc: '14-day streak',
     tier: 'fire', glow: '#f97316',
-    colors: ['#f97316', '#fbbf24', '#ea580c'],
+    colors: ['#f97316', 'var(--warning)', '#ea580c'],
     reward: { type: 'trialPremium', value: 3 },
-    Icon: () => <SimpleBadgeIcon colors={['#f97316', '#fbbf24', '#ea580c']} motif="bolt"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#f97316', 'var(--warning)', '#ea580c']} motif="bolt"/>,
   },
   speed_connector: {
     id: 'speed_connector', label: 'Speed Connector',
@@ -303,29 +303,29 @@ export const BADGES = {
   premium_curious: {
     id: 'premium_curious', label: 'Pro Curious',
     desc: 'Visited the Pro page',
-    tier: 'gold', glow: '#f59e0b',
-    colors: ['#f59e0b', '#fde68a', '#d97706'],
+    tier: 'gold', glow: 'var(--warning)',
+    colors: ['var(--warning)', '#fde68a', '#d97706'],
     reward: { type: 'discountPremium', value: 10 },
-    Icon: () => <SimpleBadgeIcon colors={['#f59e0b', '#fde68a', '#d97706']} motif="crown"/>,
+    Icon: () => <SimpleBadgeIcon colors={['var(--warning)', '#fde68a', '#d97706']} motif="crown"/>,
   },
   five_star: {
     id: 'five_star', label: 'Five Star',
     desc: 'Received a 5-star rating',
-    tier: 'legend', glow: '#f59e0b',
-    colors: ['#fef3c7', '#f59e0b', '#92400e'],
+    tier: 'legend', glow: 'var(--warning)',
+    colors: ['#fef3c7', 'var(--warning)', '#92400e'],
     reward: { type: 'bonusMinutes', value: 15 },
-    Icon: () => <SimpleBadgeIcon colors={['#fef3c7', '#f59e0b', '#92400e']} motif="spark"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#fef3c7', 'var(--warning)', '#92400e']} motif="spark"/>,
   },
 };
 
 const TIER_STYLES = {
   bronze:   { bg: '#1c120a', border: '#cd7f32', shine: '#e8a96b' },
-  silver:   { bg: '#111624', border: '#94a3b8', shine: '#e2e8f0' },
-  gold:     { bg: '#1a1100', border: '#f59e0b', shine: '#fde68a' },
-  fire:     { bg: '#1a0800', border: '#ef4444', shine: '#fbbf24' },
+  silver:   { bg: '#111624', border: '#94a3b8', shine: 'var(--text-primary)' },
+  gold:     { bg: '#1a1100', border: 'var(--warning)', shine: '#fde68a' },
+  fire:     { bg: '#1a0800', border: 'var(--danger)', shine: 'var(--warning)' },
   platinum: { bg: '#130a22', border: '#8b5cf6', shine: '#c4b5fd' },
   diamond:  { bg: '#001a24', border: '#06b6d4', shine: '#a5f3fc' },
-  legend:   { bg: '#1a0e00', border: '#f59e0b', shine: '#fef3c7' },
+  legend:   { bg: '#1a0e00', border: 'var(--warning)', shine: '#fef3c7' },
 };
 
 const BADGE_VISUALS = {
@@ -461,7 +461,7 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
             fontSize:10, fontWeight:800, letterSpacing:'4px',
             color:t.border, textTransform:'uppercase', marginBottom:22,
             animation:'bdText .4s ease .6s both',
-          }}>✦ Badge Unlocked ✦</div>
+          }}>Badge Unlocked</div>
 
           {/* icon area */}
           <div style={{position:'relative', display:'inline-block', marginBottom:20}}>
@@ -502,7 +502,7 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
 
           {/* desc */}
           <div style={{
-            fontSize:13, color:'#888', marginBottom:10,
+            fontSize:13, color:'var(--text-muted)', marginBottom:10,
             animation:'bdText .4s ease .92s both',
           }}>{b.desc}</div>
 
@@ -546,7 +546,7 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
           }}
             onMouseEnter={e=>{e.target.style.transform='scale(1.03)'; e.target.style.boxShadow=`0 6px 28px ${b.glow}70`}}
             onMouseLeave={e=>{e.target.style.transform='scale(1)'; e.target.style.boxShadow=`0 4px 20px ${b.glow}50`}}
-          >Awesome! 💪</button>
+          >Awesome!</button>
         </div>
       </div>
     </>
@@ -560,7 +560,7 @@ export function BadgeCard({ badgeId, earned=true }) {
   return (
     <div style={{
       background: earned ? `radial-gradient(ellipse at 50% 0%, ${t.border}15 0%, ${t.bg} 70%)` : '#111118',
-      border:`1px solid ${earned ? t.border+'55' : '#1e1e30'}`,
+      border:`1px solid ${earned ? t.border+'55' : 'var(--bg-card)'}`,
       borderRadius:16, padding:'14px 10px',
       textAlign:'center', position:'relative', overflow:'hidden',
       opacity: earned ? 1 : 0.72,
@@ -617,7 +617,7 @@ export function BadgeGrid({ earnedBadges=[] }) {
       <div style={{fontSize:11,fontWeight:800,color:'#555',marginBottom:6,letterSpacing:'2px',textTransform:'uppercase'}}>
         Badges · {earnedBadges.filter(id => BADGE_ORDER.includes(id)).length}/{BADGE_ORDER.length}
       </div>
-      <div style={{fontSize:11,color:'#888',lineHeight:1.4,marginBottom:12}}>
+      <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.4,marginBottom:12}}>
         Each badge shows how to earn it.
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(98px,1fr))',gap:10}}>
@@ -814,7 +814,7 @@ export function AchievementsPanel({ earnedBadges=[] }) {
         <div style={{
           minWidth:58,
           padding:'8px 10px',
-          border:'1px solid #2e2e50',
+          border:'1px solid var(--bg-secondary)',
           borderRadius:14,
           background:'#151522',
           color:'#d8d7ff',
@@ -854,7 +854,7 @@ export default function BadgeDemo() {
   const [showing, setShowing] = useState(null);
   return (
     <div style={{background:'#080810',minHeight:'100vh',padding:'32px 20px',fontFamily:'system-ui,sans-serif',color:'#fff'}}>
-      <div style={{marginBottom:8,fontSize:22,fontWeight:800}}>🏅 Badge System</div>
+      <div style={{marginBottom:8,fontSize:22,fontWeight:800}}>Badge System</div>
       <div style={{color:'#555',fontSize:12,marginBottom:28}}>Tap any badge to preview unlock animation</div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,maxWidth:340}}>
         {BADGE_ORDER.map(id=>(

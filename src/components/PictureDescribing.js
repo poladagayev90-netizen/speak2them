@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
 import DescribeFrames from './DescribeFrames';
 
@@ -62,7 +63,7 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
         <button onClick={onClose} style={{
           background: 'transparent', border: 'none',
           color: 'var(--text-secondary)', fontSize: 22, cursor: 'pointer'
-        }}>✕</button>
+        }}><X size={20} strokeWidth={1.75} /></button>
       </div>
 
       {/* Content */}

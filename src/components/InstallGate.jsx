@@ -94,7 +94,7 @@ export default function InstallGate() {
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
       <div style={{
         flexShrink: 0, width: 36, height: 36, borderRadius: 10,
-        background: 'rgba(124,111,247,0.15)', color: '#7c6ff7',
+        background: 'rgba(124,111,247,0.15)', color: 'var(--accent)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {icon}
@@ -114,10 +114,10 @@ export default function InstallGate() {
       <div style={{ width: '100%', maxWidth: 400 }}>
         <div style={{
           width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-          background: 'rgba(245,158,11,0.15)', color: '#f59e0b',
+          background: 'rgba(245,158,11,0.15)', color: 'var(--warning)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34,
         }}>
-          ⚠️
+          ⚠
         </div>
 
         <h2 style={{ color: '#fff', fontSize: 21, fontWeight: 800, textAlign: 'center', margin: '0 0 10px' }}>
@@ -127,11 +127,11 @@ export default function InstallGate() {
           {inApp ? (
             <>
               This app cannot be installed here. Open the link in
-              {' '}<b style={{ color: '#fff' }}>Safari</b> or <b style={{ color: '#fff' }}>Chrome</b> and add it to your home screen — otherwise <b style={{ color: '#f59e0b' }}>notifications are off</b>.
+              {' '}<b style={{ color: '#fff' }}>Safari</b> or <b style={{ color: '#fff' }}>Chrome</b> and add it to your home screen — otherwise <b style={{ color: 'var(--warning)' }}>notifications are off</b>.
             </>
           ) : (
             <>
-              Add SpeakLab to your home screen to use it fully and get session notifications. Otherwise <b style={{ color: '#f59e0b' }}>notifications are off</b> and you will miss sessions.
+              Add SpeakLab to your home screen to use it fully and get session notifications. Otherwise <b style={{ color: 'var(--warning)' }}>notifications are off</b> and you will miss sessions.
             </>
           )}
         </p>
@@ -149,7 +149,7 @@ export default function InstallGate() {
                 onClick={copyLink}
                 style={{
                   marginTop: 4, border: 'none', borderRadius: 12, padding: '13px',
-                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+                  background: 'var(--accent)', color: '#fff',
                   fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 }}
@@ -160,7 +160,7 @@ export default function InstallGate() {
           ) : ios ? (
             <>
               {isIOSNonSafari() && (
-                <p style={{ color: '#f59e0b', fontSize: 13, margin: 0, fontWeight: 600 }}>
+                <p style={{ color: 'var(--warning)', fontSize: 13, margin: 0, fontWeight: 600 }}>
                   First open this page in <b>Safari</b> .
                 </p>
               )}
@@ -177,7 +177,7 @@ export default function InstallGate() {
                 onClick={handleInstall}
                 style={{
                   border: 'none', borderRadius: 12, padding: '14px',
-                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+                  background: 'var(--accent)', color: '#fff',
                   fontSize: 16, fontWeight: 800, cursor: 'pointer', width: '100%',
                 }}
               >

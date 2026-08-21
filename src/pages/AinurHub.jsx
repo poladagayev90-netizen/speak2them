@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Image as ImageIcon, MessageSquare, ChevronRight, Lock } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
+import { plainTopic } from '../utils/topicLabel';
 import Card from '../components/ui/Card';
 import '../components/ai/ai.css';
 
@@ -65,7 +66,7 @@ export default function AinurHub({ user }) {
         </div>
       </div>
 
-      <p className="ui-section-label">Practice · {content.topic}</p>
+      <p className="ui-section-label">Practice · {plainTopic(content.topic)}</p>
 
       {ACTIVITIES.map((a) => {
         const Icon = a.icon;

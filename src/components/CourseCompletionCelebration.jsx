@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { PartyPopper } from 'lucide-react';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { subscribeToCycle } from '../utils/cycle';
@@ -76,12 +77,12 @@ export default function CourseCompletionCelebration({ user }) {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
           <Logo width={130} />
         </div>
-        <div style={{ fontSize: '56px', lineHeight: 1, marginBottom: '10px' }}>🎉</div>
+        <div style={{ marginBottom: '10px', color: 'var(--accent)' }}><PartyPopper size={48} strokeWidth={1.5} /></div>
         <h2 style={{ color: '#fff', fontSize: '22px', margin: '0 0 8px' }}>
           Congratulations {COURSE_TOPIC_COUNT}/{COURSE_TOPIC_COUNT} complete
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: 1.5, margin: '0 0 18px' }}>
-          You reached the end of the 30-topic speaking course. That is a real achievement. 👏
+          You reached the end of the 30-topic speaking course. That is a real achievement.
         </p>
 
         <div style={{
@@ -113,12 +114,12 @@ export default function CourseCompletionCelebration({ user }) {
           onClick={close}
           style={{
             width: '100%', padding: '13px', borderRadius: '14px',
-            background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+            background: 'var(--accent)',
             border: 'none', color: '#fff', fontSize: '15px', fontWeight: 800,
             cursor: 'pointer',
           }}
         >
-          Davam edirik 🚀
+          Davam edirik
         </button>
       </div>
     </div>

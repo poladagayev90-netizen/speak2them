@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { SearchX } from 'lucide-react';
 import { collection, onSnapshot, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -92,7 +93,7 @@ export default function Admin({ user }) {
           revokedBy: user.uid,
         });
       }
-      alert(`✅ Premium status updated for ${u.name || 'User'}.`);
+      alert(`Premium status updated for ${u.name || 'User'}.`);
     } catch (e) {
       console.error('[Admin] Failed to update premium status:', {
         targetUserId: userId,
@@ -142,7 +143,7 @@ export default function Admin({ user }) {
     <div className="profile-page" style={{ background: '#0f0f17', minHeight: '100vh', paddingBottom: 'calc(120px + var(--safe-area-bottom, 0px))' }}>
       <div style={{ 
         padding: '20px 16px', 
-        background: 'linear-gradient(135deg, #161625, #1e1e30)',
+        background: 'linear-gradient(135deg, #161625, var(--bg-card))',
         borderBottom: '1px solid #33334d',
         position: 'sticky', top: 0, zIndex: 10,
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
@@ -155,9 +156,9 @@ export default function Admin({ user }) {
           }}>
             ← Geri
           </button>
-          <h2 style={{ margin: 0, fontSize: '18px', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px' }}>
-              {{ cohorts: '🧪', slots: '📅' }[adminTab] || '👑'}
+              {{ cohorts: '', slots: '' }[adminTab] || ''}
             </span>
             {{ cohorts: 'Kohortlar', slots: 'Sessions' }[adminTab] || 'Premium management'}
           </h2>
@@ -167,18 +168,18 @@ export default function Admin({ user }) {
         {/* Bölmə keçidi */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {[
-            { id: 'premium', label: '👑 Students' },
-            { id: 'cohorts', label: '🧪 Kohortlar' },
-            { id: 'slots', label: '📅 Sessions' },
+            { id: 'premium', label: 'Students' },
+            { id: 'cohorts', label: 'Kohortlar' },
+            { id: 'slots', label: 'Sessions' },
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => setAdminTab(t.id)}
               style={{
                 flex: 1, padding: '8px 12px',
-                background: adminTab === t.id ? '#7c6ff7' : '#1a1a2e',
+                background: adminTab === t.id ? 'var(--accent)' : '#1a1a2e',
                 color: adminTab === t.id ? '#fff' : '#94a3b8',
-                border: `1px solid ${adminTab === t.id ? '#7c6ff7' : '#2e2e50'}`,
+                border: `1px solid ${adminTab === t.id ? 'var(--accent)' : 'var(--bg-secondary)'}`,
                 borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
               }}
             >
@@ -194,7 +195,7 @@ export default function Admin({ user }) {
             padding: '12px', textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)'
           }}>
-            <p style={{ fontSize: '24px', fontWeight: 800, color: '#e2e8f0', margin: 0 }}>{users.length}</p>
+            <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{users.length}</p>
             <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>All</p>
           </div>
           <div style={{
@@ -202,7 +203,7 @@ export default function Admin({ user }) {
             padding: '12px', textAlign: 'center', border: '1px solid rgba(245, 158, 11, 0.2)',
             backdropFilter: 'blur(10px)'
           }}>
-            <p style={{ fontSize: '24px', fontWeight: 800, color: '#f59e0b', margin: 0 }}>{users.filter(u => u.isPremium).length}</p>
+            <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--warning)', margin: 0 }}>{users.filter(u => u.isPremium).length}</p>
             <p style={{ fontSize: '12px', color: '#fcd34d', margin: '4px 0 0' }}>Premium</p>
           </div>
         </div>
@@ -213,7 +214,7 @@ export default function Admin({ user }) {
         <>
         {error && (
           <div style={{
-            background: '#ef444422', border: '1px solid #ef444455', color: '#fecaca',
+            background: 'var(--danger-bg)', border: '1px solid var(--danger-bg)', color: '#fecaca',
             borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', fontSize: '13px',
           }}>
             {error}
@@ -230,7 +231,7 @@ export default function Admin({ user }) {
             onChange={e => setSearch(e.target.value)}
             style={{
               flex: 1, padding: '12px 16px',
-              background: '#1a1a2e', border: '1px solid #2e2e50',
+              background: '#1a1a2e', border: '1px solid var(--bg-secondary)',
               borderRadius: '12px', color: 'white', fontSize: '14px',
               outline: 'none', transition: 'border-color 0.3s'
             }}
@@ -249,9 +250,9 @@ export default function Admin({ user }) {
               onClick={() => setTimeFilter(f.id)}
               style={{
                 padding: '8px 14px', whiteSpace: 'nowrap',
-                background: timeFilter === f.id ? '#f59e0b' : '#1a1a2e',
+                background: timeFilter === f.id ? 'var(--warning)' : '#1a1a2e',
                 color: timeFilter === f.id ? '#000' : '#94a3b8',
-                border: `1px solid ${timeFilter === f.id ? '#f59e0b' : '#2e2e50'}`,
+                border: `1px solid ${timeFilter === f.id ? 'var(--warning)' : 'var(--bg-secondary)'}`,
                 borderRadius: '20px', fontWeight: 600, fontSize: '12px', cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
@@ -270,7 +271,7 @@ export default function Admin({ user }) {
                 background: isAdmin ? 'linear-gradient(135deg, #2c1e4a, #1a1025)' : '#1a1a2e', 
                 borderRadius: '16px',
                 padding: '16px',
-                border: isAdmin ? '2px solid #a855f7' : `1px solid ${u.isPremium ? '#f59e0b55' : '#2e2e50'}`,
+                border: isAdmin ? '2px solid var(--accent)' : `1px solid ${u.isPremium ? 'var(--warning-bg)' : 'var(--bg-secondary)'}`,
                 boxShadow: isAdmin ? '0 4px 20px rgba(168, 85, 247, 0.2)' : '0 4px 12px rgba(0,0,0,0.2)',
                 display: 'flex', alignItems: 'center', gap: '14px',
                 position: 'relative', overflow: 'hidden'
@@ -278,7 +279,7 @@ export default function Admin({ user }) {
                 {isAdmin && (
                   <div style={{
                     position: 'absolute', top: 0, right: 0,
-                    background: '#a855f7', color: 'white',
+                    background: 'var(--accent)', color: 'white',
                     padding: '2px 10px', fontSize: '10px', fontWeight: 800,
                     borderBottomLeftRadius: '10px', textTransform: 'uppercase'
                   }}>
@@ -288,7 +289,7 @@ export default function Admin({ user }) {
                 
                 <div style={{
                   width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
-                  background: isAdmin ? 'linear-gradient(135deg, #d8b4fe, #a855f7)' : (u.isPremium ? 'linear-gradient(135deg, #fcd34d, #f59e0b)' : '#334155'),
+                  background: isAdmin ? 'linear-gradient(135deg, #d8b4fe, var(--accent))' : (u.isPremium ? 'linear-gradient(135deg, #fcd34d, var(--warning))' : '#334155'),
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '18px', fontWeight: 700, color: isAdmin ? '#4c1d95' : 'white',
                   border: u.isPremium && !isAdmin ? '2px solid #fff' : 'none'
@@ -298,21 +299,21 @@ export default function Admin({ user }) {
                 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontWeight: 700, fontSize: '15px', color: isAdmin ? '#e9d5ff' : '#f8fafc', margin: '0 0 4px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {u.name} {u.isPremium && !isAdmin && '🌟'}
+                    {u.name} {u.isPremium && !isAdmin && ''}
                   </p>
                   <p style={{ fontSize: '12px', color: isAdmin ? '#d8b4fe' : '#94a3b8', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {u.email}
                   </p>
-                  <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: isAdmin ? '#a855f7' : '#64748b', fontWeight: 600, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: isAdmin ? 'var(--accent)' : '#64748b', fontWeight: 600, flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       📞 {u.callCount || 0}
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      ⏱️ {u.totalMinutes || 0} min
+                      ⏱ {u.totalMinutes || 0} min
                     </span>
                     {!isAdmin && (
                       <span style={{
-                        color: u.subscriptionPlan === 'trial' ? '#7c6ff7' : (u.isPremium ? '#f59e0b' : '#64748b'),
+                        color: u.subscriptionPlan === 'trial' ? 'var(--accent)' : (u.isPremium ? 'var(--warning)' : '#64748b'),
                       }}>
                         🎁 {u.isPremium ? (u.premiumPlan || 'pro') : (u.subscriptionPlan || 'free')}
                         {u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0} min` : ''}
@@ -345,12 +346,12 @@ export default function Admin({ user }) {
                         background: u.teacherVerified
                           ? 'rgba(239, 68, 68, 0.1)'
                           : 'linear-gradient(135deg, #22d3ee, #0891b2)',
-                        color: u.teacherVerified ? '#ef4444' : '#062a3a',
+                        color: u.teacherVerified ? 'var(--danger)' : '#062a3a',
                       }}
                     >
                       {loading[u.uid || u.id]
                         ? '...'
-                        : (u.teacherVerified ? 'Remove badge' : '🎓 Verify tutor')}
+                        : (u.teacherVerified ? 'Remove badge' : 'Verify tutor')}
                     </button>
                   )}
                   {isAdmin && !u.teacherEligible && (
@@ -368,7 +369,7 @@ export default function Admin({ user }) {
                         }
                       }}
                       style={{
-                        padding: '8px 16px', background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+                        padding: '8px 16px', background: 'linear-gradient(135deg, var(--accent), #7e22ce)',
                         color: '#fff', border: 'none', borderRadius: '10px',
                         fontWeight: 700, cursor: 'pointer', fontSize: '12px'
                       }}
@@ -383,7 +384,7 @@ export default function Admin({ user }) {
                         disabled={loading[u.uid || u.id]}
                         style={{
                           padding: '8px 16px', background: 'rgba(239, 68, 68, 0.1)',
-                          color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)',
+                          color: 'var(--danger)', border: '1px solid rgba(239, 68, 68, 0.3)',
                           borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
                           fontSize: '12px', transition: 'all 0.2s', width: '110px'
                         }}
@@ -395,14 +396,14 @@ export default function Admin({ user }) {
                         onClick={() => setPremium(u, true, 'pro')}
                         disabled={loading[u.uid || u.id]}
                         style={{
-                          padding: '8px 16px', background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                          padding: '8px 16px', background: 'linear-gradient(135deg, var(--warning), #d97706)',
                           color: '#fff', border: 'none', borderRadius: '10px',
                           fontWeight: 700, cursor: 'pointer', fontSize: '12px',
                           boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
                           transition: 'all 0.2s', width: '110px'
                         }}
                       >
-                        {loading[u.uid || u.id] ? '...' : 'PRO Ver ✨'}
+                        {loading[u.uid || u.id] ? '...' : 'PRO Ver'}
                       </button>
                     )
                   )}
@@ -413,7 +414,7 @@ export default function Admin({ user }) {
           
           {filteredUsers.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px' }}>🔍</div>
+              <div style={{ marginBottom: '16px', color: 'var(--text-muted)' }}><SearchX size={36} strokeWidth={1.5} /></div>
               <p style={{ margin: 0, fontSize: '15px' }}>No users found</p>
             </div>
           )}

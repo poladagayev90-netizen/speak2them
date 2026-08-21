@@ -48,9 +48,9 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
     }}>
       <div style={{
         pointerEvents: 'auto', width: '100%', maxWidth: 360,
-        background: 'var(--bg-card, #17172b)',
-        borderRadius: 20, border: '1px solid #7c6ff755',
-        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 24px #7c6ff722',
+        background: 'var(--bg-card, var(--bg-card))',
+        borderRadius: 20, border: '1px solid var(--border)',
+        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent-soft)',
         overflow: 'hidden',
       }}>
         <div style={{
@@ -122,7 +122,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {keywords.map((v, i) => (
                 <span key={i} style={{
-                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+                  background: 'var(--accent)', color: '#fff',
                   borderRadius: 20, padding: '5px 14px',
                   fontSize: 13, fontWeight: 600,
                 }}>
@@ -144,7 +144,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
             onClick={onNext}
             style={{
               flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: 'linear-gradient(135deg, #7c6ff7, #6355e0)', color: '#fff',
+              background: 'var(--accent)', color: '#fff',
               fontSize: 14, fontWeight: 700, cursor: 'pointer',
             }}
           >

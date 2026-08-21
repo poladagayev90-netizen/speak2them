@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useNavigate } from 'react-router-dom';import { Clock, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';import { Clock, ChevronLeft, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
@@ -94,7 +94,7 @@ export default function History({ user }) {
         <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{'Loading...'}</div>
       ) : history.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '60px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📊</div>
+          <div style={{ marginBottom: '16px', color: 'var(--text-muted)' }}><FileText size={40} strokeWidth={1.5} /></div>
           <p style={{ color: 'var(--text-secondary)' }}>{'No analyses yet.'}</p>
         </div>
       ) : (
@@ -189,7 +189,7 @@ export function AnalysisDetail({ analysis, onClose, lang }) {
         <div className="analysis-doc-title">{'Analysis'}</div>
       </div>
       <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 44, marginBottom: 10 }}>❌</div>
+        <div style={{ marginBottom: 10, color: 'var(--danger)' }}><FileText size={38} strokeWidth={1.5} /></div>
         <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{'Analysis failed'}</p>
         <p className="doc-note">{analysisErrorMessage(analysis.error)}</p>
       </div>
@@ -197,7 +197,7 @@ export function AnalysisDetail({ analysis, onClose, lang }) {
   );
 
   const view = toAnalysisView(analysis);
-  const scoreColor = (s) => (s >= 80 ? '#10B981' : s >= 60 ? '#E65100' : '#EF4444');
+  const scoreColor = (s) => (s >= 80 ? '#10B981' : s >= 60 ? '#E65100' : 'var(--danger)');
 
   // Chrome az-AZ tarixi "2026 M07 25" kimi verir (ICU boşluğu) — ay adları
   // əl ilə yazılır ki, sənədin başlığı hər cihazda düzgün görünsün.

@@ -69,7 +69,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
     <div style={{
       position: 'relative',
       background: 'linear-gradient(135deg, rgba(124,111,247,0.20), rgba(91,77,232,0.10))',
-      border: `1px solid ${live ? 'var(--success)' : '#7c6ff7aa'}`,
+      border: `1px solid ${live ? 'var(--success)' : 'var(--accent)'}`,
       borderRadius: '18px',
       padding: '16px',
       marginBottom: '14px',
@@ -103,7 +103,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
         <div style={{
           width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
-          background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+          background: 'var(--accent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '19px', fontWeight: 800, color: '#fff',
         }}>
@@ -136,7 +136,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
             style={{
               flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
               fontSize: '14px', fontWeight: 800, cursor: busy ? 'default' : 'pointer',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+              background: 'var(--accent)',
               color: '#fff',
             }}
           >
@@ -168,8 +168,8 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
           görünür, ikinci dərəcəli hərəkət sakit çip kimi verilir. */}
       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
         {[
-          { key: 'time', label: '🕘 Change time', onClick: () => { setPicking((p) => !p); setNotice(''); } },
-          { key: 'chat', label: '💬 Chat', onClick: () => navigate(`/chat/${call.peerUid}`) },
+          { key: 'time', label: 'Change time', onClick: () => { setPicking((p) => !p); setNotice(''); } },
+          { key: 'chat', label: 'Chat', onClick: () => navigate(`/chat/${call.peerUid}`) },
         ].map((action) => (
           <button
             key={action.key}

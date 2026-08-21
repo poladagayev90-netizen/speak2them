@@ -10,13 +10,13 @@ export default function UserCard({ user, onChat }) {
 
   return (
     <div className="user-card" style={{
-      border: user.isPremium ? '1px solid #f59e0b55' : undefined,
+      border: user.isPremium ? '1px solid var(--warning-bg)' : undefined,
     }}>
       <div 
         className="user-avatar" 
         onClick={() => navigate(`/user/${user.uid || user.id}`)}
         style={{
-          boxShadow: user.isPremium ? '0 0 12px #f59e0b66' : undefined,
+          boxShadow: user.isPremium ? '0 0 12px var(--warning-bg)' : undefined,
           cursor: 'pointer'
         }}>
         {user.photo

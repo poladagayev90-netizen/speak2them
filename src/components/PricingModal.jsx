@@ -21,7 +21,7 @@ export default function PricingModal({ onClose }) {
           background: 'linear-gradient(135deg, #6c63ff, #8b5cf6)', padding: '30px 20px',
           textAlign: 'center', color: 'white'
         }}>
-          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>Go Premium 🚀</h2>
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>Go Premium</h2>
           <p style={{ margin: '8px 0 0', fontSize: '14px', opacity: 0.9 }}>
             Unlimited AI analysis and the full course mode.
           </p>

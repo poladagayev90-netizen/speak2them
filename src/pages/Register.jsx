@@ -145,7 +145,7 @@ export default function Register() {
           right: '-50px',
           width: '150px',
           height: '150px',
-          background: 'radial-gradient(circle, #7c6ff744 0%, transparent 70%)',
+          background: 'radial-gradient(circle, var(--accent)44 0%, transparent 70%)',
           borderRadius: '50%',
           zIndex: 0
         }}></div>
@@ -167,8 +167,8 @@ export default function Register() {
           {/* Müəllim dəvəti ilə gələn üçün rol seçimi göstərilmir — o, şagirddir. */}
           {invitedByTeacher && (
             <div style={{
-              background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-              border: '1px solid #7c6ff755', borderRadius: '12px',
+              background: 'var(--accent-soft)',
+              border: '1px solid var(--border)', borderRadius: '12px',
               padding: '12px 14px', marginBottom: '12px',
               fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5,
             }}>
@@ -181,8 +181,8 @@ export default function Register() {
           {!invitedByTeacher && (
           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
             {[
-              { key: 'student', icon: '🎓', label: 'I am a Student', sub: 'Practice speaking' },
-              { key: 'teacher', icon: '👩‍🏫', label: 'I am a Teacher', sub: 'Track my students' },
+              { key: 'student', icon: '', label: 'I am a Student', sub: 'Practice speaking' },
+              { key: 'teacher', icon: '', label: 'I am a Teacher', sub: 'Track my students' },
             ].map((opt) => (
               <button
                 key={opt.key}
@@ -190,9 +190,9 @@ export default function Register() {
                 onClick={() => setRole(opt.key)}
                 style={{
                   flex: 1, padding: '10px 6px', borderRadius: '12px', cursor: 'pointer',
-                  border: role === opt.key ? '2px solid #7c6ff7' : '1px solid var(--border)',
+                  border: role === opt.key ? '2px solid var(--accent)' : '1px solid var(--border)',
                   background: role === opt.key
-                    ? 'linear-gradient(135deg, #7c6ff722, #5b4de822)'
+                    ? 'var(--accent-soft)'
                     : 'var(--bg-card)',
                   color: 'var(--text-primary)', textAlign: 'center',
                 }}
@@ -216,7 +216,7 @@ export default function Register() {
             style={{
               width: '100%',
               backgroundColor: '#ffffff',
-              color: '#1e1e30',
+              color: 'var(--bg-card)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

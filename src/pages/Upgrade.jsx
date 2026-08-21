@@ -13,7 +13,7 @@ const PLANS = [
     tagline: 'Core',
     price: 0,
     priceLabel: 'Pulsuz',
-    icon: '🔋',
+    icon: '',
     color: '#185FA5',
     features: ['Unlimited practice — 30 minutes a day', 'Ayda 3 AI analiz', 'AInur and quizzes'],
   },
@@ -23,8 +23,8 @@ const PLANS = [
     tagline: 'Tam limitsiz',
     price: 9.99,
     priceLabel: '9.99 ₼',
-    icon: '🚀',
-    color: '#7c6ff7',
+    icon: '',
+    color: 'var(--accent)',
     popular: true,
     features: ['Limitsiz AI analiz', 'Prioritet matching', 'Unlimited practice — 30 minutes a day', 'Profil badge'],
   },
@@ -134,12 +134,12 @@ export default function Upgrade({ user }) {
 
       {/* Header */}
       <div style={{ padding: '20px 20px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#7c6ff7', fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>← Geri</button>
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 15, cursor: 'pointer', fontWeight: 600 }}>← Geri</button>
       </div>
 
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
-        <div style={{ fontSize: 40, marginBottom: 8 }}>💎</div>
+        <div style={{ fontSize: 40, marginBottom: 8 }}></div>
         <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Free and Premium</h2>
         <p style={{ fontSize: 13, color: '#aaa', margin: 0, lineHeight: 1.5 }}>
           Speaking practice <b style={{color: '#fff'}}>free for everyone</b> — Premium gives you unlimited AI analysis and priority matching.
@@ -169,8 +169,8 @@ export default function Upgrade({ user }) {
             key={p.id}
             onClick={() => setSelected(p.id)}
             style={{
-              background: '#1e1e30',
-              border: selected === p.id ? `2px solid ${p.color}` : '1px solid #2e2e50',
+              background: 'var(--bg-card)',
+              border: selected === p.id ? `2px solid ${p.color}` : '1px solid var(--bg-secondary)',
               borderRadius: 16,
               padding: '14px 16px',
               cursor: 'pointer',
@@ -181,7 +181,7 @@ export default function Upgrade({ user }) {
             {p.popular && (
               <div style={{
                 position: 'absolute', top: -1, right: 14,
-                background: '#7c6ff7', border: '1px solid #7c6ff7',
+                background: 'var(--accent)', border: '1px solid var(--accent)',
                 color: '#fff', fontSize: 10, fontWeight: 800,
                 padding: '4px 12px', borderRadius: '0 0 8px 8px', letterSpacing: '1px',
                 boxShadow: '0 4px 12px rgba(124, 111, 247, 0.4)'
@@ -208,7 +208,7 @@ export default function Upgrade({ user }) {
 
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: '#888' }}>{p.tagline}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.tagline}</div>
                 </div>
               </div>
 
@@ -222,11 +222,11 @@ export default function Upgrade({ user }) {
               </div>
             </div>
 
-            <div style={{ borderTop: '1px solid #2e2e50', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div style={{ borderTop: '1px solid var(--bg-secondary)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
               {p.features.map((f, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: f.startsWith('—') ? '#555' : '#aaa' }}>
                   <span style={{ color: f.startsWith('—') ? '#3e3e50' : '#22c55e', fontSize: 14 }}>
-                    {f.startsWith('—') ? '✕' : '✓'}
+                    {f.startsWith('—') ? '' : '✓'}
                   </span>
                   {f.startsWith('—') ? f.slice(2) : f}
                 </div>
@@ -255,10 +255,10 @@ export default function Upgrade({ user }) {
       {/* Compare table */}
       <div style={{ padding: '24px 16px 0' }}>
         <p style={{ fontSize: 13, color: '#666', textAlign: 'center', marginBottom: 12 }}>Plan comparison</p>
-        <div style={{ background: '#1e1e30', borderRadius: 14, overflow: 'hidden', border: '1px solid #2e2e50' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--bg-secondary)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #2e2e50' }}>
+              <tr style={{ borderBottom: '1px solid var(--bg-secondary)' }}>
                 <th style={{ padding: '10px 12px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Feature</th>
                 {PLANS.map(p => (
                   <th key={p.id} style={{ padding: '10px 6px', textAlign: 'center', color: selected === p.id ? p.color : '#555', fontWeight: 600 }}>
@@ -269,13 +269,13 @@ export default function Upgrade({ user }) {
             </thead>
             <tbody>
               {COMPARE.map((row, i) => (
-                <tr key={i} style={{ borderBottom: i < COMPARE.length - 1 ? '1px solid #2e2e5033' : 'none' }}>
+                <tr key={i} style={{ borderBottom: i < COMPARE.length - 1 ? '1px solid var(--bg-secondary)33' : 'none' }}>
                   <td style={{ padding: '9px 12px', color: '#aaa' }}>{row.feature}</td>
                   {row.values.map((v, j) => (
                     <td key={j} style={{ padding: '9px 6px', textAlign: 'center' }}>
                       {typeof v === 'boolean'
                         ? <span style={{ color: v ? '#22c55e' : '#3e3e50', fontSize: 14 }}>{v ? '✓' : '—'}</span>
-                        : <span style={{ color: '#888' }}>{v}</span>
+                        : <span style={{ color: 'var(--text-muted)' }}>{v}</span>
                       }
                     </td>
                   ))}

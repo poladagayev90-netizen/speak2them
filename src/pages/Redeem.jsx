@@ -52,9 +52,9 @@ export default function Redeem({ user }) {
 
   if (welcome) {
     const info = {
-      active: { emoji: '🎉', title: 'Your course is active.', text: 'You can follow your topic progress on the home screen.', btn: 'Let us begin 🚀' },
-      accepted: { emoji: '✅', title: 'You have been accepted.', text: 'Waiting for the course to start. Topics open as soon as an admin starts it.', btn: 'Home' },
-      applied: { emoji: '📨', title: 'Your application has been sent.', text: 'The course starts once an admin approves it. You will see it here and get a notification.', btn: 'Home' },
+      active: { emoji: '', title: 'Your course is active.', text: 'You can follow your topic progress on the home screen.', btn: 'Let us begin' },
+      accepted: { emoji: '', title: 'You have been accepted.', text: 'Waiting for the course to start. Topics open as soon as an admin starts it.', btn: 'Home' },
+      applied: { emoji: '', title: 'Your application has been sent.', text: 'The course starts once an admin approves it. You will see it here and get a notification.', btn: 'Home' },
     }[welcome.state] || {};
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
@@ -64,8 +64,8 @@ export default function Redeem({ user }) {
           <p className="auth-sub" style={{ marginBottom: '20px' }}>{info.text}</p>
 
           <div style={{
-            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-            border: '1px solid #7c6ff755',
+            background: 'var(--accent-soft)',
+            border: '1px solid var(--border)',
             borderRadius: '16px', padding: '18px', marginBottom: '20px', textAlign: 'left',
           }}>
             <div style={{ fontSize: '16px', fontWeight: 800 }}>
@@ -88,7 +88,7 @@ export default function Redeem({ user }) {
           <Logo width={160} />
         </div>
 
-        <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Kodunuz var? 🎟️</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Kodunuz var?</h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: '20px' }}>
           Enter your code to apply. Once an admin approves it, the 30-topic speaking course begins.
         </p>
@@ -143,7 +143,7 @@ export default function Redeem({ user }) {
           onClick={() => navigate(-1)}
           style={{
             width: '100%', background: 'none', border: 'none',
-            color: 'var(--text-secondary, #888)', fontSize: '14px',
+            color: 'var(--text-secondary, var(--text-muted))', fontSize: '14px',
             marginTop: '12px', cursor: 'pointer',
           }}
         >

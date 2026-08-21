@@ -153,7 +153,7 @@ export default function AdminCohorts() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'start_failed');
-      alert(`✅ Started. ${data.started} members activated.`);
+      alert(`Started. ${data.started} members activated.`);
     } catch (err) {
       console.error('[AdminCohorts] start', err);
       alert('Could not start: ' + (err.message || 'error'));
@@ -163,7 +163,7 @@ export default function AdminCohorts() {
 
   const inputStyle = {
     flex: 1, minWidth: 0, padding: '10px 12px', background: '#1a1a2e',
-    border: '1px solid #2e2e50', borderRadius: '10px', color: 'white',
+    border: '1px solid var(--bg-secondary)', borderRadius: '10px', color: 'white',
     fontSize: '13px', outline: 'none',
   };
 
@@ -171,10 +171,10 @@ export default function AdminCohorts() {
     <div>
       {/* Yeni kohort */}
       <form onSubmit={createCohort} style={{
-        background: '#1a1a2e', border: '1px solid #2e2e50', borderRadius: '16px',
+        background: '#1a1a2e', border: '1px solid var(--bg-secondary)', borderRadius: '16px',
         padding: '14px', marginBottom: '16px',
       }}>
-        <p style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: '#e2e8f0' }}>
+        <p style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>
           New cohort
         </p>
         {formError && (
@@ -189,7 +189,7 @@ export default function AdminCohorts() {
             placeholder="Limit" value={newMax} onChange={(e) => setNewMax(e.target.value)} />
         </div>
         <button type="submit" disabled={creating} style={{
-          width: '100%', padding: '10px', background: 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+          width: '100%', padding: '10px', background: 'var(--accent)',
           color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700,
           fontSize: '13px', cursor: 'pointer',
         }}>
@@ -202,7 +202,7 @@ export default function AdminCohorts() {
         {cohorts.map((c) => (
           <div key={c.id} style={{
             background: selectedId === c.id ? 'linear-gradient(135deg, #2c1e4a, #1a1025)' : '#1a1a2e',
-            border: selectedId === c.id ? '1px solid #7c6ff7' : '1px solid #2e2e50',
+            border: selectedId === c.id ? '1px solid var(--accent)' : '1px solid var(--bg-secondary)',
             borderRadius: '14px', padding: '12px 14px',
             display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap',
           }}>
@@ -216,20 +216,20 @@ export default function AdminCohorts() {
               </span>
               <span style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
                 👥 {Number(c.memberCount) || 0}{Number(c.maxUses) > 0 ? `/${c.maxUses}` : ''} aktiv
-                {Number(c.pendingCount) > 0 && <span style={{ color: '#fbbf24' }}> · ⏳ {Number(c.pendingCount)} waiting</span>}
+                {Number(c.pendingCount) > 0 && <span style={{ color: 'var(--warning)' }}> · {Number(c.pendingCount)} waiting</span>}
                 {' · '}code: <b>{c.code}</b>
               </span>
             </button>
             <button onClick={() => copyCode(c)} style={{
-              padding: '6px 10px', background: '#2a2a40', color: copied === c.id ? '#34d399' : '#e2e8f0',
+              padding: '6px 10px', background: '#2a2a40', color: copied === c.id ? 'var(--success)' : 'var(--text-primary)',
               border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
               {copied === c.id ? '✓ Copied' : 'Code'}
             </button>
             <button onClick={() => toggleStatus(c)} style={{
               padding: '6px 10px', background: 'none',
-              color: c.status === 'active' ? '#f87171' : '#34d399',
-              border: `1px solid ${c.status === 'active' ? '#f8717155' : '#34d39955'}`,
+              color: c.status === 'active' ? '#f87171' : 'var(--success)',
+              border: `1px solid ${c.status === 'active' ? '#f8717155' : 'var(--success)55'}`,
               borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
               {c.status === 'active' ? 'Stop' : 'Activate'}
@@ -261,15 +261,15 @@ export default function AdminCohorts() {
 
         const applicantRow = (m, accepted) => (
           <div key={m.id} style={{
-            background: '#15152a', border: '1px solid #2e2e50', borderRadius: '14px',
+            background: '#15152a', border: '1px solid var(--bg-secondary)', borderRadius: '14px',
             padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '10px',
           }}>
-            <span style={{ fontSize: '18px', flexShrink: 0 }}>{accepted ? '✅' : '🙋'}</span>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>{accepted ? '' : ''}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {m.name || m.email || m.id}
               </p>
-              <p style={{ margin: '2px 0 0', fontSize: '12px', color: accepted ? '#34d399' : '#fbbf24' }}>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: accepted ? 'var(--success)' : 'var(--warning)' }}>
                 {accepted ? 'Accepted, waiting to start' : 'New application'}
               </p>
             </div>
@@ -295,7 +295,7 @@ export default function AdminCohorts() {
 
         return (
           <div style={{
-            background: '#141428', border: '1px solid #2e2e50', borderRadius: '18px',
+            background: '#141428', border: '1px solid var(--bg-secondary)', borderRadius: '18px',
             padding: '16px', marginBottom: '20px',
           }}>
             <p style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800, color: '#f8fafc' }}>
@@ -307,13 +307,13 @@ export default function AdminCohorts() {
               display: 'flex', background: '#0f0f1e', borderRadius: '14px',
               border: '1px solid #24243e', marginBottom: '16px', overflow: 'hidden',
             }}>
-              {stat('🙋', 'New', pendingList.length, '#fbbf24')}
+              {stat('', 'New', pendingList.length, 'var(--warning)')}
               <div style={{ width: '1px', background: '#24243e' }} />
-              {stat('✅', 'Accept', acceptedList.length, '#34d399')}
+              {stat('', 'Accept', acceptedList.length, 'var(--success)')}
               <div style={{ width: '1px', background: '#24243e' }} />
-              {stat('🎓', 'Aktiv', activeList.length, '#7c6ff7')}
+              {stat('', 'Aktiv', activeList.length, 'var(--accent)')}
               <div style={{ width: '1px', background: '#24243e' }} />
-              {stat('🪑', maxUses > 0 ? 'Limit' : 'Yer', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, '#e2e8f0')}
+              {stat('', maxUses > 0 ? 'Limit' : 'Yer', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, 'var(--text-primary)')}
             </div>
 
             {/* Başlat düyməsi — hər zaman görünür (nə edəcəyi aydın olsun). */}
@@ -322,7 +322,7 @@ export default function AdminCohorts() {
               disabled={starting || acceptedList.length === 0}
               style={{
                 width: '100%', padding: '15px', marginBottom: acceptedList.length > 0 || pendingList.length > 0 ? '18px' : '0',
-                background: acceptedList.length === 0 ? '#20203a' : 'linear-gradient(135deg, #7c6ff7, #5b4de8)',
+                background: acceptedList.length === 0 ? '#20203a' : 'var(--accent)',
                 color: acceptedList.length === 0 ? '#64748b' : '#fff',
                 border: 'none', borderRadius: '14px', fontWeight: 800, fontSize: '15px',
                 cursor: (starting || acceptedList.length === 0) ? 'default' : 'pointer',
@@ -331,14 +331,14 @@ export default function AdminCohorts() {
               }}
             >
               {starting ? 'Starting...'
-                : acceptedList.length === 0 ? '🚀 Accept members before starting'
-                : `🚀 Start cohort — ${acceptedList.length} members will be activated`}
+                : acceptedList.length === 0 ? 'Accept members before starting'
+                : `Start cohort — ${acceptedList.length} members will be activated`}
             </button>
 
             {/* Müraciətlər */}
             {(pendingList.length > 0 || acceptedList.length > 0) && (
               <>
-                <p style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 10px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>
                   Applications
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
@@ -349,7 +349,7 @@ export default function AdminCohorts() {
             )}
 
             {/* Aktiv üzvlər */}
-            <p style={{ fontSize: '14px', fontWeight: 800, color: '#e2e8f0', margin: '0 0 4px' }}>
+            <p style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
               Active members ({activeList.length})
             </p>
             {activeList.length > 0 && (
@@ -361,11 +361,11 @@ export default function AdminCohorts() {
               {activeList.map((m) => (
                 <div key={m.id} style={{
                   background: '#15152a',
-                  border: m.fading ? '1px solid #ef444488' : '1px solid #2e2e50',
+                  border: m.fading ? '1px solid var(--danger)88' : '1px solid var(--bg-secondary)',
                   borderRadius: '14px', padding: '13px 14px',
                   display: 'flex', alignItems: 'center', gap: '12px',
                 }}>
-                  <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.fading ? '🔴' : '🟢'}</span>
+                  <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.fading ? '' : ''}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: m.fading ? '#fca5a5' : '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {m.name || m.email || m.id}
@@ -374,12 +374,12 @@ export default function AdminCohorts() {
                       Last seen: {m.callMs
                         ? new Intl.DateTimeFormat('az', { day: 'numeric', month: 'short' }).format(new Date(m.callMs))
                         : 'never'}
-                      {' · '}📞 {m.callCount || 0} calls
+                      {' · '} {m.callCount || 0} calls
                     </p>
                   </div>
                   <span style={{
                     flexShrink: 0, fontSize: '14px', fontWeight: 800,
-                    color: m.completed !== null ? '#7c6ff7' : '#64748b',
+                    color: m.completed !== null ? 'var(--accent)' : '#64748b',
                   }}>
                     {m.completed !== null ? `${m.completed}/${COURSE_TOPIC_COUNT}` : '—'}
                   </span>

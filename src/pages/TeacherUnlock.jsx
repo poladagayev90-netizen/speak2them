@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';import { useNavigate } from 'react-router-dom';
+import { GraduationCap } from 'lucide-react';
 import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -216,7 +217,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
       onClick={() => navigate('/profile')}
       style={{
         width: '100%', background: 'none', border: 'none',
-        color: 'var(--text-secondary, #888)', fontSize: '14px',
+        color: 'var(--text-secondary, var(--text-muted))', fontSize: '14px',
         marginTop: '16px', cursor: 'pointer',
       }}
     >
@@ -230,10 +231,10 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={cardStyle}>
-          <div style={{ fontSize: '46px', textAlign: 'center' }}>🎓</div>
+          <div style={{ textAlign: 'center', color: 'var(--accent)' }}><GraduationCap size={40} strokeWidth={1.5} /></div>
           <h2 style={{ textAlign: 'center', marginBottom: '6px' }}>Teacher mode</h2>
           <p style={{
-            textAlign: 'center', color: 'var(--text-secondary, #888)',
+            textAlign: 'center', color: 'var(--text-secondary, var(--text-muted))',
             fontSize: '15px', lineHeight: 1.5, marginBottom: '20px',
           }}>
             Speak first yourself, then you can follow your students.
@@ -241,8 +242,8 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
           </p>
 
           <div style={{
-            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-            border: '1px solid #7c6ff755', borderRadius: '16px',
+            background: 'var(--accent-soft)',
+            border: '1px solid var(--border)', borderRadius: '16px',
             padding: '18px', marginBottom: '18px',
           }}>
             <div style={{
@@ -258,11 +259,11 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
             }}>
               <div style={{
                 width: `${pct}%`, height: '100%', borderRadius: '99px',
-                background: 'linear-gradient(90deg, #7c6ff7, #5b4de8)',
+                background: 'linear-gradient(90deg, var(--accent), var(--accent-strong))',
                 transition: 'width .4s ease',
               }} />
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary, #888)', marginTop: '10px', marginBottom: 0 }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary, var(--text-muted))', marginTop: '10px', marginBottom: 0 }}>
               {remaining === 0
                 ? 'Done — refresh the page.'
                 : `${remaining} sessions to go. A session is a call longer than 2 minutes.`}
@@ -270,7 +271,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
           </div>
 
           <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-            Start speaking 🎙️
+            Start speaking
           </button>
           {back}
         </div>
@@ -287,8 +288,8 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ ...cardStyle, textAlign: 'center' }}>
-          <div className="loading-logo" style={{ fontSize: '34px' }}>🎙️</div>
-          <p style={{ color: 'var(--text-secondary, #888)', fontSize: '14px', marginTop: '12px', marginBottom: 0 }}>
+          <div className="loading-logo" style={{ fontSize: '34px' }}></div>
+          <p style={{ color: 'var(--text-secondary, var(--text-muted))', fontSize: '14px', marginTop: '12px', marginBottom: 0 }}>
             {'Loading...'}
           </p>
         </div>
@@ -301,14 +302,14 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={cardStyle}>
-          <div style={{ fontSize: '46px', textAlign: 'center' }}>🔓</div>
+          <div style={{ textAlign: 'center', color: 'var(--accent)' }}><GraduationCap size={40} strokeWidth={1.5} /></div>
           <h2 style={{ textAlign: 'center', marginBottom: '6px' }}>
             {isTeacher && done < TEACHER_SESSIONS_REQUIRED
               ? 'Welcome, teacher'
               : 'Teacher mode unlocked'}
           </h2>
           <p style={{
-            textAlign: 'center', color: 'var(--text-secondary, #888)',
+            textAlign: 'center', color: 'var(--text-secondary, var(--text-muted))',
             fontSize: '15px', lineHeight: 1.5, marginBottom: '20px',
           }}>
             Pick a code your students can join with. Your invite link and student list will live here.
@@ -348,7 +349,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                 bir yerdə oxunurdu. İndi ayrı sətir kimi nəfəs alır. */}
             <p style={{
               fontSize: '12.5px', lineHeight: 1.55,
-              color: 'var(--text-secondary, #888)',
+              color: 'var(--text-secondary, var(--text-muted))',
               margin: '10px 2px 18px',
             }}>
               4–12 letters or digits. Choose something your students can remember.
@@ -471,7 +472,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
               marginTop: '10px', fontSize: '13px',
               color: profileMsg.ok ? 'var(--success)' : 'var(--danger)',
             }}>
-              {profileMsg.ok ? '✅ ' : '⚠️ '}{profileMsg.text}
+              {profileMsg.ok ? ' ' : ' '}{profileMsg.text}
             </div>
           )}
 
@@ -546,7 +547,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                   marginTop: '10px', fontSize: '13px', lineHeight: 1.5,
                   color: profileMsg.ok ? 'var(--success)' : 'var(--danger)',
                 }}>
-                  {profileMsg.ok ? '✅ ' : '⚠️ '}{profileMsg.text}
+                  {profileMsg.ok ? ' ' : ' '}{profileMsg.text}
                 </div>
               )}
 
@@ -557,7 +558,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                   width: '100%', marginTop: '14px', padding: '12px', borderRadius: '12px', border: 'none',
                   background: (savingProfile || !profile.displayName.trim())
                     ? 'var(--bg-card)'
-                    : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                    : 'var(--accent)',
                   color: (savingProfile || !profile.displayName.trim()) ? 'var(--text-muted)' : '#fff',
                   fontSize: '14px', fontWeight: 800,
                   cursor: (savingProfile || !profile.displayName.trim()) ? 'default' : 'pointer',
@@ -571,8 +572,8 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
 
         {/* Dəvət bölməsi */}
         <div style={{
-          background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-          border: '1px solid #7c6ff755', borderRadius: '16px',
+          background: 'var(--accent-soft)',
+          border: '1px solid var(--border)', borderRadius: '16px',
           padding: '18px', marginBottom: '16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -590,7 +591,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
               onClick={() => copy(link, 'link')}
               style={{
                 flex: 1, padding: '10px', borderRadius: '12px', cursor: 'pointer',
-                border: '1px solid #7c6ff755', background: 'var(--bg-card)',
+                border: '1px solid var(--border)', background: 'var(--bg-card)',
                 color: 'var(--text-primary)', fontSize: '13px', fontWeight: 700,
               }}
             >
@@ -645,7 +646,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                 padding: '11px 16px', borderRadius: '12px', border: 'none',
                 background: (inviting || !inviteEmail.trim())
                   ? 'var(--bg-card)'
-                  : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                  : 'var(--accent)',
                 color: (inviting || !inviteEmail.trim()) ? 'var(--text-muted)' : '#fff',
                 fontSize: '14px', fontWeight: 800,
                 cursor: (inviting || !inviteEmail.trim()) ? 'default' : 'pointer',
@@ -660,7 +661,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
               marginTop: '10px', fontSize: '13px', lineHeight: 1.5,
               color: inviteMsg.ok ? 'var(--success)' : 'var(--danger)',
             }}>
-              {inviteMsg.ok ? '✅ ' : '⚠️ '}{inviteMsg.text}
+              {inviteMsg.ok ? ' ' : ' '}{inviteMsg.text}
             </div>
           )}
         </form>
@@ -690,7 +691,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
               </div>
             </div>
             <span style={{ color: 'var(--text-muted)', fontSize: '18px', flexShrink: 0 }}>
-              {dirOpen ? '⌃' : '⌄'}
+              {dirOpen ? '' : ''}
             </span>
           </button>
 
@@ -723,9 +724,9 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                         }}>
                           <div style={{
                             width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
-                            background: 'linear-gradient(135deg, #7c6ff733, #5b4de833)',
+                            background: 'linear-gradient(135deg, var(--border), var(--accent-soft))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontWeight: 800, color: '#7c6ff7', fontSize: '13px',
+                            fontWeight: 800, color: 'var(--accent)', fontSize: '13px',
                           }}>
                             {(u.name || '?').charAt(0).toUpperCase()}
                           </div>
@@ -760,7 +761,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                                 border: sent ? '1px solid var(--border)' : 'none',
                                 background: sent
                                   ? 'transparent'
-                                  : 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+                                  : 'var(--accent)',
                                 color: sent ? 'var(--text-secondary)' : '#fff',
                               }}
                             >
@@ -816,7 +817,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                       display: 'flex', alignItems: 'center', gap: '10px',
                       background: 'var(--bg-card)', borderRadius: '10px', padding: '10px 12px',
                     }}>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: '#7c6ff7', minWidth: '16px' }}>{i + 1}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: 'var(--accent)', minWidth: '16px' }}>{i + 1}</span>
                       <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', flex: 1, minWidth: 0 }}>
                         {th.title}
                       </span>
@@ -851,12 +852,12 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
 
         {roster === null ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon">⏳</div>
+            <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
           </div>
         ) : students.length === 0 ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon">🪺</div>
+            <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>
               {'No students yet.'}
             </p>
@@ -884,9 +885,9 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
               >
                 <div style={{
                   width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
-                  background: 'linear-gradient(135deg, #7c6ff733, #5b4de833)',
+                  background: 'linear-gradient(135deg, var(--border), var(--accent-soft))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '16px', fontWeight: 800, color: '#7c6ff7',
+                  fontSize: '16px', fontWeight: 800, color: 'var(--accent)',
                 }}>
                   {(s.displayName || '?').slice(0, 1).toUpperCase()}
                 </div>
@@ -894,7 +895,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                   <div style={{ fontSize: '15px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.displayName || 'Student'}
                     {Number(s.streak) > 0 && (
-                      <span style={{ fontSize: '12px', color: '#f59e0b', fontWeight: 800, marginLeft: '6px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--warning)', fontWeight: 800, marginLeft: '6px' }}>
                         🔥{s.streak}
                       </span>
                     )}
@@ -910,7 +911,7 @@ export default function TeacherUnlock({ user }) {  const navigate = useNavigate
                 <span style={{
                   fontSize: '11px', fontWeight: 700, padding: '4px 10px',
                   borderRadius: '99px', flexShrink: 0,
-                  background: s.status === 'active' ? '#22c55e22' : '#f59e0b22',
+                  background: s.status === 'active' ? '#22c55e22' : 'var(--warning-bg)',
                   color: s.status === 'active' ? '#16a34a' : '#d97706',
                 }}>
                   {s.status === 'active' ? 'Active' : 'Inactive'}

@@ -11,7 +11,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Stat from '../components/ui/Stat';
 import { sfxEnabled, setSfxEnabled, sfxPop } from '../utils/sfx';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, PALETTES } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 import StreakJourney from '../components/StreakJourney';
 import TutorBadge from '../components/TutorBadge';
@@ -25,7 +25,7 @@ const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
 export default function Profile({ user }) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, palette, setPalette } = useTheme();
   const isDark = theme === 'dark';
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -231,7 +231,7 @@ export default function Profile({ user }) {
         {renderRowIcon(Icon)}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ color: danger ? '#ef4444' : 'var(--text-primary)', fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+        <div style={{ color: danger ? 'var(--danger)' : 'var(--text-primary)', fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
         {value && <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>}
       </div>
       {right !== undefined ? right : (onClick ? <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
@@ -318,9 +318,9 @@ export default function Profile({ user }) {
           onClick={() => navigate('/redeem')}
           style={{
             width: '100%',
-            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-            border: '1px solid #7c6ff755', color: 'var(--text-primary)',
-            padding: '16px', borderRadius: '16px', marginBottom: '16px',
+            background: 'var(--accent-soft)',
+            border: '1px solid var(--border)', color: 'var(--text-primary)',
+            padding: 'var(--s-4)', borderRadius: 'var(--r-lg)', marginBottom: 'var(--s-4)',
             display: 'flex', alignItems: 'center', gap: '12px',
             cursor: 'pointer', textAlign: 'left',
           }}
@@ -343,8 +343,8 @@ export default function Profile({ user }) {
           onClick={() => navigate('/teacher')}
           style={{
             width: '100%',
-            background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-            border: '1px solid #7c6ff755', color: 'var(--text-primary)',
+            background: 'var(--accent-soft)',
+            border: '1px solid var(--border)', color: 'var(--text-primary)',
             padding: '16px', borderRadius: '16px', marginBottom: '16px',
             display: 'flex', alignItems: 'center', gap: '12px',
             cursor: 'pointer', fontSize: '16px', fontWeight: 700, textAlign: 'left',
@@ -387,7 +387,7 @@ export default function Profile({ user }) {
       {sectionLabel('Learning')}
       <div style={listCard}>
         {row({ icon: BookMarked, label: 'My words', onClick: () => setShowWordHistory(true), notLast: true })}
-        {row({ icon: Flame, label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
+        {row({ icon: Flame, label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: 'var(--warning)', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
         {row({ icon: BarChart3, label: 'Analysis history', onClick: () => navigate('/history'), notLast: true })}
         {row({ icon: Trophy, label: 'Leaderboard', onClick: () => navigate('/ranking') })}
       </div>
@@ -412,13 +412,62 @@ export default function Profile({ user }) {
                 whiteSpace: 'nowrap', cursor: 'pointer',
               }}
             >
-              {user.email || '—'} 📋
+              {user.email || '—'}
             </span>
           ),
         })}
       </div>
 
       {/* TƏNZİMLƏMƏLƏR */}
+      {/* Accent choice. Each swatch is the actual --accent and --ai of that
+          palette, rendered in the CURRENT theme, so what you see is exactly
+          what you get. A palette only swaps those two hues — the neutrals
+          never move — which is why none of these can look broken. */}
+      {sectionLabel('Accent')}
+      <div style={{ ...listCard, padding: 'var(--s-3)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--s-2)' }}>
+          {PALETTES.map((p) => {
+            const active = palette === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPalette(p.id)}
+                aria-pressed={active}
+                title={p.note}
+                data-palette={p.id}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  gap: 'var(--s-2)', padding: 'var(--s-2) var(--s-1)',
+                  borderRadius: 'var(--r-md)', cursor: 'pointer',
+                  background: active ? 'var(--accent-soft)' : 'transparent',
+                  border: active ? '1px solid var(--accent)' : '1px solid transparent',
+                  font: 'inherit',
+                }}
+              >
+                <span style={{ display: 'flex' }}>
+                  <span style={{
+                    width: 18, height: 18, borderRadius: 'var(--r-pill)',
+                    background: 'var(--accent)', border: '1px solid var(--border)',
+                  }} />
+                  <span style={{
+                    width: 18, height: 18, borderRadius: 'var(--r-pill)',
+                    background: 'var(--ai)', border: '1px solid var(--border)',
+                    marginLeft: -7,
+                  }} />
+                </span>
+                <span style={{
+                  fontSize: 'var(--fs-xs)', fontWeight: 600,
+                  color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+                }}>
+                  {p.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {sectionLabel('Settings')}
       <div style={listCard}>
         {row({

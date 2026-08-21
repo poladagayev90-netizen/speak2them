@@ -558,7 +558,7 @@ export default function Chat({ user }) {
           // keeps firing and stacks one alert per second.
           clearInterval(timerRef.current);
           endCallRef.current?.();
-          alert('⏰ Time is up for this call. Start a new one to keep going.');
+          alert('Time is up for this call. Start a new one to keep going.');
         }
       }, 1000);
     } else {
@@ -1000,7 +1000,7 @@ export default function Chat({ user }) {
           justifyContent: 'center', zIndex: 9998,
         }}>
           <div style={{
-            background: '#1e1e30', border: '2px solid #7c6ff7',
+            background: 'var(--bg-card)', border: '2px solid var(--accent)',
             borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px', width: '90%',
           }}>
             <div style={{ marginBottom: '12px', color: 'var(--accent)' }}><Phone size={44} strokeWidth={1.5} aria-hidden="true" /></div>
@@ -1034,7 +1034,7 @@ export default function Chat({ user }) {
       {callStatus === 'rejected' && (
         <div style={{
           position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
-          background: '#ef4444', color: 'white', padding: '12px 24px',
+          background: 'var(--danger)', color: 'white', padding: '12px 24px',
           borderRadius: '12px', fontWeight: 600, zIndex: 9999,
         }}>
           ❌ Call declined
@@ -1052,22 +1052,22 @@ export default function Chat({ user }) {
             {peer?.isPremium && <PremiumBadge />}
           </h2>
           <p className="call-status-text">
-            {callStatus === 'calling' && '📞 Calling...'}
+            {callStatus === 'calling' && 'Calling...'}
             {/* Kanaldayıq, amma qarşı tərəf hələ qoşulmayıb — gözləmə otağı. */}
-            {callStatus === 'connected' && !peerJoined && '⏳ Waiting for your partner…'}
+            {callStatus === 'connected' && !peerJoined && 'Waiting for your partner…'}
             {callStatus === 'connected' && peerJoined && `🟢 ${formatTime(callSeconds)}`}
-            {callStatus === 'left' && '⚠️ Partner left'}
-            {callStatus === 'rejected' && '❌ Declined'}
-            {callStatus === 'error' && '❌ Error'}
+            {callStatus === 'left' && 'Partner left'}
+            {callStatus === 'rejected' && 'Declined'}
+            {callStatus === 'error' && 'Error'}
           </p>
           {inCall && (
             <>
               {maxCallSeconds !== Infinity && (
                 <div style={{
-                  background: timeWarning ? '#f59e0b33' : '#2e2e50',
-                  border: timeWarning ? '1px solid #f59e0b' : 'none',
+                  background: timeWarning ? 'var(--warning)33' : 'var(--bg-secondary)',
+                  border: timeWarning ? '1px solid var(--warning)' : 'none',
                   padding: '6px 12px', borderRadius: '20px',
-                  fontSize: '12px', color: timeWarning ? '#f59e0b' : '#a1a1aa',
+                  fontSize: '12px', color: timeWarning ? 'var(--warning)' : 'var(--text-secondary)',
                   fontWeight: 600, marginTop: '8px',
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                 }}>
@@ -1077,7 +1077,7 @@ export default function Chat({ user }) {
               )}
               {timeWarning && (
                 <div style={{
-                  background: '#f59e0b', color: '#1e1e30', padding: '10px 16px',
+                  background: 'var(--warning)', color: 'var(--bg-card)', padding: '10px 16px',
                   borderRadius: '14px', fontSize: '14px', fontWeight: 800,
                   marginTop: '10px', animation: 'pulse 1s ease-in-out infinite',
                 }}>
@@ -1352,8 +1352,8 @@ export default function Chat({ user }) {
                 {content.idioms.map((idiom, i) => (
                   <div key={i} className="idiom-card">
                     <h3>"{idiom.phrase}"</h3>
-                    <p className="idiom-meaning">📌 {idiom.meaning}</p>
-                    <p className="idiom-example">💡 "{idiom.example}"</p>
+                    <p className="idiom-meaning"> {idiom.meaning}</p>
+                    <p className="idiom-example"> "{idiom.example}"</p>
                   </div>
                 ))}
               </div>
@@ -1391,7 +1391,7 @@ export default function Chat({ user }) {
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-empty-hint">
-            <p>👋 Say hello and start practising.</p>
+            <p>Say hello and start practising.</p>
           </div>
         ) : (
           messages.map((m) => {
@@ -1418,8 +1418,8 @@ export default function Chat({ user }) {
                     onClick={() => { setSelectedMsg(null); deleteMessage(chatId, m.id); }}
                     style={{
                       marginTop: '6px', padding: '5px 10px', borderRadius: '8px',
-                      border: '1px solid #ef444455', background: '#ef444418',
-                      color: '#ef4444', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                      border: '1px solid var(--danger-bg)', background: 'var(--danger)18',
+                      color: 'var(--danger)', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
                     }}
                   >
                     <Trash2 size={15} strokeWidth={1.75} aria-hidden="true" /> Delete for everyone

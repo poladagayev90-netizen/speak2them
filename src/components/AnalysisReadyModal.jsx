@@ -87,7 +87,7 @@ export default function AnalysisReadyModal({ user, suppressed }) {
   return (
     <div className="topic-intro-overlay">
       <div className="topic-intro-modal">
-        <h3 className="topic-intro-label">📊 YOUR REPORT IS READY</h3>
+        <h3 className="topic-intro-label">YOUR REPORT IS READY</h3>
         <h1 className="topic-intro-title" style={{ fontSize: '26px' }}>Your analysis is ready!</h1>
         <p className="topic-intro-desc">
           {latest.peerName ? `Your call with ${latest.peerName}` : 'Your last call'} is ready — pronunciation, vocabulary and tips are waiting.

@@ -12,10 +12,10 @@ const PANEL = {
   pointerEvents: 'auto',
   width: '100%',
   maxWidth: 360,
-  background: 'var(--bg-card, #17172b)',
+  background: 'var(--bg-card, var(--bg-card))',
   borderRadius: 22,
-  border: '1px solid #7c6ff755',
-  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px #7c6ff722',
+  border: '1px solid var(--border)',
+  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px var(--accent-soft)',
   overflow: 'hidden',
   // Bu panel Taboo-dan xeyli hündürdür: 5 arqument iki sətrə keçəndə 320px
   // ekranda alt düymələr kadrdan çıxırdı və sürüşdürmək mümkün deyildi.
@@ -50,14 +50,14 @@ const FOOT_BTN = {
 const GHOST_BTN = {
   ...FOOT_BTN,
   border: '1px solid var(--border, #2a2947)',
-  background: 'var(--bg-input, #14132b)',
+  background: 'var(--bg-input, var(--bg-input))',
   color: 'var(--text-secondary, #a8afc9)',
 };
 
 const SOLID_BTN = {
   ...FOOT_BTN,
   border: 'none',
-  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)',
+  background: 'var(--accent)',
   color: '#fff',
   boxShadow: '0 6px 18px rgba(124,111,247,0.28)',
 };
@@ -66,7 +66,7 @@ const SOLID_BTN = {
 // görmür — kartın niyə birdən yüngülləşdiyi anlaşılmır. Rənglər
 // CallQuestionStage-dəki səviyyə rəngləri ilə eynidir (svetofor DEYİL).
 const LEVEL_META = {
-  simple: { text: 'SIMPLE', colour: '#12BBD6' },   // Neon Cyan
+  simple: { text: 'SIMPLE', colour: 'var(--ai)' },   // Neon Cyan
   normal: { text: 'ORTA', colour: '#6D3BEB' },   // Lab Violet
 };
 
@@ -167,7 +167,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
           color: 'var(--text-muted, #7c84a2)', fontSize: 12, textAlign: 'center',
           margin: '10px 16px 0', flexShrink: 0,
         }}>
-          Other side: <strong>{theirLabel}</strong> — you cannot see their arguments, so listen closely 👂
+          Other side: <strong>{theirLabel}</strong> — you cannot see their arguments, so listen closely
         </p>
 
         <div style={{ display: 'flex', gap: 10, padding: '14px 16px 16px', flexShrink: 0 }}>

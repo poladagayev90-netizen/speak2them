@@ -7,7 +7,7 @@ const prefersReducedMotion = () =>
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const CONFETTI_COLORS = ['#f59e0b', '#7c6ff7', '#22d3ee', '#ef4444', '#22c55e', '#fb923c'];
+const CONFETTI_COLORS = ['var(--warning)', 'var(--accent)', '#22d3ee', 'var(--danger)', '#22c55e', '#fb923c'];
 
 const makeConfetti = () =>
   Array.from({ length: 18 }, () => {
@@ -78,9 +78,9 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
     }}>
       <div style={{
         pointerEvents: 'auto', width: '100%', maxWidth: 360, position: 'relative',
-        background: 'var(--bg-card, #17172b)',
-        borderRadius: 22, border: '1px solid #7c6ff755',
-        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px #7c6ff722',
+        background: 'var(--bg-card, var(--bg-card))',
+        borderRadius: 22, border: '1px solid var(--border)',
+        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px var(--accent-soft)',
         overflow: 'hidden',
       }}>
         {burstKey > 0 && !reduceMotion && (
@@ -140,7 +140,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
             style={{
               margin: '0 16px 10px', padding: '8px 12px', borderRadius: 12,
               background: 'var(--accent-soft, rgba(139,107,255,0.16))',
-              border: '1px solid #7c6ff755',
+              border: '1px solid var(--border)',
               color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, textAlign: 'center',
             }}
           >
@@ -171,7 +171,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               }} />
 
               <p style={{
-                color: '#ef4444', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
+                color: 'var(--danger)', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
                 textTransform: 'uppercase', letterSpacing: '1.2px', textAlign: 'center',
               }}>
                 Forbidden words
@@ -185,7 +185,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                     borderRadius: 10, padding: '7px 12px',
                     color: '#fca5a5', fontSize: 14, fontWeight: 600,
                   }}>
-                    <span aria-hidden="true" style={{ color: '#ef4444', fontWeight: 800 }}>✕</span>
+                    <X size={16} strokeWidth={2.5} aria-hidden="true" style={{ color: 'var(--danger)' }} />
                     {w}
                   </div>
                 ))}
@@ -198,7 +198,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 aria-hidden="true"
                 style={{
                   width: 96, height: 96, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)',
+                  background: 'var(--accent)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 42, fontWeight: 800, color: '#fff', marginBottom: 18,
                 }}
@@ -213,7 +213,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               <p style={{
                 color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center', margin: 0,
               }}>
-                Listen closely and guess 👂
+                Listen closely and guess
               </p>
               <div className="taboo-dots" aria-hidden="true" style={{ marginTop: 14 }}>
                 <span style={{ animationDelay: '0ms' }} />
@@ -242,7 +242,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               style={{
                 flex: 1, height: 46, borderRadius: 12,
                 border: '1px solid var(--border, #2a2947)',
-                background: 'var(--bg-input, #14132b)', color: 'var(--text-secondary)',
+                background: 'var(--bg-input, var(--bg-input))', color: 'var(--text-secondary)',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
               }}
             >

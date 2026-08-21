@@ -278,7 +278,7 @@ function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
         offset: 12,
         overlayClickAction: false,
         overlayColor: 'rgba(4, 6, 14, 0.78)',
-        primaryColor: '#7c6ff7',
+        primaryColor: 'var(--accent)',
         scrollDuration: 360,
         scrollOffset: 96,
         showProgress: true,

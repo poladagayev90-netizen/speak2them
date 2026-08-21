@@ -114,7 +114,7 @@ export default function UserProfile({ user: currentUser }) {
         
         {/* Avatar */}
         <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 16px' }}>
-          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: 'var(--text-primary)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
             {name.charAt(0).toUpperCase()}
           </div>
           {/* Online Flag Indicator */}
@@ -171,16 +171,16 @@ export default function UserProfile({ user: currentUser }) {
             )}
             <button
               onClick={handleBlockToggle}
-              style={{ background: 'none', border: '1px solid var(--border)', color: isBlocked ? 'var(--text-secondary)' : '#ef4444', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+              style={{ background: 'none', border: '1px solid var(--border)', color: isBlocked ? 'var(--text-secondary)' : 'var(--danger)', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
             >
-              {isBlocked ? '✓ Unblock' : '🚫 Blokla'}
+              {isBlocked ? '✓ Unblock' : 'Blokla'}
             </button>
             <button
               onClick={reported ? undefined : handleReport}
               disabled={reported}
               style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: reported ? 'default' : 'pointer', opacity: reported ? 0.6 : 1 }}
             >
-              {reported ? '✓ Report sent' : '⚠️ Report'}
+              {reported ? '✓ Report sent' : 'Report'}
             </button>
           </div>
         )}
@@ -192,14 +192,14 @@ export default function UserProfile({ user: currentUser }) {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', borderBottom: '1px solid var(--border)', paddingBottom: '24px' }}>
           {(isTutor
             ? [
-              { icon: '🎓', label: 'Student', value: Number(profileUser.tutorStudentCount) || 0 },
-              { icon: '🕐', label: 'Coaching min.', value: Number(profileUser.tutorMinutesCoached) || 0 },
-              { icon: '📅', label: 'Experience', value: years > 0 ? `${years} il` : '—' },
+              { icon: '', label: 'Student', value: Number(profileUser.tutorStudentCount) || 0 },
+              { icon: '', label: 'Coaching min.', value: Number(profileUser.tutorMinutesCoached) || 0 },
+              { icon: '', label: 'Experience', value: years > 0 ? `${years} il` : '—' },
             ]
             : [
-              { icon: '💬', label: 'Feedback', value: avgRating },
-              { icon: '📞', label: 'Talks', value: stats.calls },
-              { icon: '🕐', label: 'Mins', value: stats.totalMinutes },
+              { icon: '', label: 'Feedback', value: avgRating },
+              { icon: '', label: 'Talks', value: stats.calls },
+              { icon: '', label: 'Mins', value: stats.totalMinutes },
             ]
           ).map((tile) => (
             <div key={tile.label} style={{ textAlign: 'center' }}>
@@ -216,7 +216,7 @@ export default function UserProfile({ user: currentUser }) {
       {isPremium && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>💎</div>
+            <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}></div>
             <div>
               <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Plan</div>
               <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
@@ -233,7 +233,7 @@ export default function UserProfile({ user: currentUser }) {
         
         {/* Level */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>💬</div>
+          <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}></div>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>English level</div>
             <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{level}</div>
@@ -242,7 +242,7 @@ export default function UserProfile({ user: currentUser }) {
 
         {/* Streak */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px' }}>
-          <div style={{ background: '#f59e0b22', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}>🔥</div>
+          <div style={{ background: 'var(--warning-bg)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}></div>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
             <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>

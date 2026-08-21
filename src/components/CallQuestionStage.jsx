@@ -16,10 +16,10 @@ const PANEL = {
   pointerEvents: 'auto',
   width: '100%',
   maxWidth: 360,
-  background: 'var(--bg-card, #17172b)',
+  background: 'var(--bg-card, var(--bg-card))',
   borderRadius: 22,
-  border: '1px solid #7c6ff755',
-  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px #7c6ff722',
+  border: '1px solid var(--border)',
+  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 24px var(--accent-soft)',
   overflow: 'hidden',
 };
 
@@ -28,7 +28,7 @@ const PANEL = {
 // hündürlük, 24px şrift, 26px emoji dairə) — ucuz görünürdü və «qırmızı = səhv»
 // assosiasiyası yaradırdı, halbuki Hard səhv deyil, sadəcə daha ağır seçimdir.
 const LEVEL_ACCENT = {
-  easy: '#12BBD6',  // Neon Cyan
+  easy: 'var(--ai)',  // Neon Cyan
   hard: '#6D3BEB',  // Lab Violet
 };
 
@@ -76,14 +76,14 @@ const FOOT_BTN = {
 const GHOST_BTN = {
   ...FOOT_BTN,
   border: '1px solid var(--border, #2a2947)',
-  background: 'var(--bg-input, #14132b)',
+  background: 'var(--bg-input, var(--bg-input))',
   color: 'var(--text-secondary, #a8afc9)',
 };
 
 const SOLID_BTN = {
   ...FOOT_BTN,
   border: 'none',
-  background: 'linear-gradient(135deg, #7c6ff7, #6355e0)',
+  background: 'var(--accent)',
   color: '#fff',
 };
 

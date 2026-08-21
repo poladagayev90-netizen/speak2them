@@ -1,10 +1,14 @@
 import React from 'react';
 
 // SpeakLab mark — "The Kolba Bubble": a chemistry flask whose round body is
-// also a speech bubble (chat tail + live typing dots). Mirrors
-// public/logo-wordmark-dark.svg; inlined so it inherits the page and needs no
-// extra request. Gradient ids are prefixed to avoid clashing with the standalone
-// SVGs if both ever render on one page.
+// also a speech bubble (chat tail + live typing dots). Inlined so it inherits
+// the page and needs no extra request.
+//
+// FLAT, NOT GRADIENT. Two reasons. A three-hue gradient made the logo the
+// loudest thing on a screen that is otherwise grey — and it could not follow
+// the palette anyway: SVG <stop stop-color> would not resolve a CSS variable
+// that itself pointed at another variable, so the mark silently rendered BLACK
+// in light mode. Flat fills read the token directly and work everywhere.
 export default function Logo({ width = 160, className = '', style = {} }) {
   return (
     <svg
@@ -19,41 +23,25 @@ export default function Logo({ width = 160, className = '', style = {} }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <linearGradient id="logo-wd-grad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#38BDF8" />
-          <stop offset="0.55" stopColor="#6D3BEB" />
-          <stop offset="1" stopColor="#A855F7" />
-        </linearGradient>
-        <linearGradient id="logo-wd-liq" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#12BBD6" />
-          <stop offset="1" stopColor="#7C4DFF" />
-        </linearGradient>
         <clipPath id="logo-wd-body"><circle cx="64" cy="88" r="30" /></clipPath>
-        {/* Separate ramp for the wordmark: the flask keeps the full signature
-            gradient (decorative shapes), the text uses a theme-aware one. */}
-        <linearGradient id="logo-wd-text" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="var(--logo-text-1)" />
-          <stop offset="0.55" stopColor="var(--logo-text-2)" />
-          <stop offset="1" stopColor="var(--logo-text-3)" />
-        </linearGradient>
       </defs>
 
       <g transform="translate(0,8) scale(0.92)">
         {/* Liquid, clipped to the flask body */}
         <g clipPath="url(#logo-wd-body)">
-          <rect x="30" y="92" width="70" height="36" fill="url(#logo-wd-liq)" opacity="0.2" />
+          <rect x="30" y="92" width="70" height="36" fill="var(--ai)" opacity="0.18" />
         </g>
         {/* Speech-bubble tail */}
-        <path d="M46,110 L33,124 L56,116 Z" fill="url(#logo-wd-grad)" />
+        <path d="M46,110 L33,124 L56,116 Z" fill="var(--accent)" />
         {/* Flask body / bubble */}
-        <circle cx="64" cy="88" r="30" fill="none" stroke="url(#logo-wd-grad)" strokeWidth="6.5" />
+        <circle cx="64" cy="88" r="30" fill="none" stroke="var(--accent)" strokeWidth="6.5" />
         {/* Neck + lip */}
-        <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="url(#logo-wd-grad)" strokeWidth="6.5" strokeLinecap="round" />
-        <line x1="47" y1="36" x2="81" y2="36" stroke="url(#logo-wd-grad)" strokeWidth="6.5" strokeLinecap="round" />
-        {/* Typing dots */}
-        <circle cx="52" cy="88" r="4.6" fill="#12BBD6" />
-        <circle cx="64" cy="88" r="4.6" fill="#6D3BEB" />
-        <circle cx="76" cy="88" r="4.6" fill="#A855F7" />
+        <path d="M54,36 L54,60 M74,36 L74,60" fill="none" stroke="var(--accent)" strokeWidth="6.5" strokeLinecap="round" />
+        <line x1="47" y1="36" x2="81" y2="36" stroke="var(--accent)" strokeWidth="6.5" strokeLinecap="round" />
+        {/* Typing dots — the one place the AI hue appears in the mark. */}
+        <circle cx="52" cy="88" r="4.6" fill="var(--ai)" />
+        <circle cx="64" cy="88" r="4.6" fill="var(--ai)" />
+        <circle cx="76" cy="88" r="4.6" fill="var(--ai)" />
       </g>
 
       <text
@@ -65,7 +53,7 @@ export default function Logo({ width = 160, className = '', style = {} }) {
         letterSpacing="-3"
       >
         <tspan fill="currentColor">Speak</tspan>
-        <tspan fill="url(#logo-wd-text)">Lab</tspan>
+        <tspan fill="var(--accent)">Lab</tspan>
       </text>
     </svg>
   );

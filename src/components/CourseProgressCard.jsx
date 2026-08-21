@@ -54,7 +54,7 @@ export default function CourseProgressCard({ user }) {
           <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
             📖 Topic {completed}/{COURSE_TOPIC_COUNT}
           </span>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: '#7c6ff7' }}>{pct}%</span>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>{pct}%</span>
         </div>
 
         <div style={{
@@ -63,7 +63,7 @@ export default function CourseProgressCard({ user }) {
         }}>
           <div style={{
             height: '100%', width: `${pct}%`,
-            background: 'linear-gradient(90deg, #7c6ff7, #5b4de8)',
+            background: 'linear-gradient(90deg, var(--accent), var(--accent-strong))',
             borderRadius: '3px',
             transition: 'width 0.6s ease',
           }} />
@@ -75,8 +75,8 @@ export default function CourseProgressCard({ user }) {
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {done
-              ? '🏁 Course complete'
-              : <>🧪 <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
+              ? 'Course complete'
+              : <> <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
                   {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} members</>}</>}
           </div>
         )}

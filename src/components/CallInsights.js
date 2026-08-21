@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Star, GraduationCap, AlertTriangle } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
@@ -77,7 +78,7 @@ function RatingBlock({ peerName, onSubmitRating }) {
                 fontSize: 32, background: 'none', border: 'none',
                 cursor: submitting ? 'default' : 'pointer',
                 opacity: star <= selectedStar ? 1 : 0.3, transition: 'opacity 0.2s',
-              }}>⭐</button>
+              }}><Star size={30} strokeWidth={1.75} fill={star <= selectedStar ? 'currentColor' : 'none'} /></button>
             ))}
           </div>
           {error && (
@@ -129,7 +130,7 @@ export default function CallInsights({
 
   // Used as the score circle's FILL with white text on top, so the circle
   // supplies its own background and these stay fixed across themes. The old
-  // amber (#f59e0b) gave white only 2.15:1 — effectively unreadable.
+  // amber (var(--warning)) gave white only 2.15:1 — effectively unreadable.
   const scoreColor = (s) => (s >= 80 ? '#15803d' : s >= 60 ? '#b45309' : '#b91c1c');
 
   const extras = (
@@ -153,7 +154,7 @@ export default function CallInsights({
   // result for this call — do not leave the user on the "queued" screen.
   if (enqueueFailed && status === 'uploading') return (
     <InsightsShell centered onClose={onClose} extras={extras}>
-      <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>📡</div>
+      <div style={{ marginBottom: 16, textAlign: 'center', color: 'var(--warning)' }}><AlertTriangle size={40} strokeWidth={1.5} /></div>
       <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
         The recording could not be uploaded
       </p>
@@ -169,7 +170,7 @@ export default function CallInsights({
       : 'Your speaking analysis is queued';
     return (
       <InsightsShell centered onClose={onClose} extras={extras}>
-        <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>🎓</div>
+        <div style={{ marginBottom: 16, textAlign: 'center', color: 'var(--ai)' }}><GraduationCap size={40} strokeWidth={1.5} /></div>
         <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 700, textAlign: 'center' }}>
           {statusText}
         </p>
@@ -182,7 +183,7 @@ export default function CallInsights({
 
   if (status === 'failed') return (
     <InsightsShell centered onClose={onClose} extras={extras}>
-      <div style={{ fontSize: 48, marginBottom: 16, textAlign: 'center' }}>⚠️</div>
+      <div style={{ marginBottom: 16, textAlign: 'center', color: 'var(--warning)' }}><AlertTriangle size={40} strokeWidth={1.5} /></div>
       <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
         Analysis failed
       </p>
@@ -216,7 +217,7 @@ export default function CallInsights({
     <InsightsShell onClose={onClose} extras={extras}>
       {/* SCORE */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Call analysis 🎓</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Call analysis</p>
         <div style={{
           width: 90, height: 90, borderRadius: '50%',
           background: scoreColor(view.overallScore),
@@ -257,9 +258,9 @@ export default function CallInsights({
 
       {/* MISTAKES */}
       <div style={{ marginBottom: 24 }}>
-        <p style={sectionTitle}>Corrections ✏️</p>
+        <p style={sectionTitle}>Corrections</p>
         {!view.feedback.length ? (
-          <p style={{ color: 'var(--success)', fontSize: 14 }}>No grammar mistakes found ✅</p>
+          <p style={{ color: 'var(--success)', fontSize: 14 }}>No grammar mistakes found</p>
         ) : view.feedback.map((fix, i) => (
           <div key={i} style={card}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -279,7 +280,7 @@ export default function CallInsights({
       {/* STRENGTHS */}
       {view.strengths.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Your strengths 💪</p>
+          <p style={sectionTitle}>Your strengths</p>
           {view.strengths.map((s, i) => (
             <div key={i} style={{
               background: 'var(--success-bg)', color: 'var(--success-fg)', borderRadius: 12,
@@ -292,7 +293,7 @@ export default function CallInsights({
       {/* TIPS */}
       {view.tips.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Tips 💡</p>
+          <p style={sectionTitle}>Tips</p>
           {view.tips.map((t, i) => (
             <div key={i} style={{ ...card, display: 'flex', gap: 8, color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.5 }}>
               <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{i + 1}.</span>
@@ -305,7 +306,7 @@ export default function CallInsights({
       {/* VOCABULARY */}
       {view.vocabulary.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Vocabulary 📘</p>
+          <p style={sectionTitle}>Vocabulary</p>
           {view.vocabulary.map((v, i) => (
             <div key={i} style={card}>
               <p style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700, margin: '0 0 4px' }}>{v.word}</p>
@@ -333,7 +334,7 @@ export default function CallInsights({
 
       {view.transcript && (
         <div style={{ marginBottom: 24 }}>
-          <p style={sectionTitle}>Conversation summary 📝</p>
+          <p style={sectionTitle}>Conversation summary</p>
           <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: '12px 14px', border: '1px solid var(--border)' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{view.transcript}</p>
           </div>

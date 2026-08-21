@@ -57,7 +57,7 @@ export default function TranslateWidget({ userId, topic, onTranslate, nativeLang
         style={{
           position: 'fixed', bottom: 140, right: 16,
           width: 52, height: 52, borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+          background: 'var(--accent)',
           border: 'none', color: 'var(--text-on-accent)', fontSize: 22,
           cursor: 'pointer', zIndex: 10005,
           boxShadow: '0 4px 12px rgba(124,111,247,0.4)',
@@ -84,7 +84,7 @@ export default function TranslateWidget({ userId, topic, onTranslate, nativeLang
         <button
           onClick={() => setExpanded(false)}
           style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer' }}
-        >✕</button>
+        ></button>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>

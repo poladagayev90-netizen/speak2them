@@ -7,7 +7,6 @@ import NotificationPrompt from '../components/NotificationPrompt';
 import StreakModal from '../components/StreakModal';
 import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
-import TopicDecorations from '../components/TopicDecorations';
 import { getTodayContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import AnalysisReadyModal from '../components/AnalysisReadyModal';
@@ -20,7 +19,7 @@ import CourseCompletionCelebration from '../components/CourseCompletionCelebrati
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
-import LabBuddy from '../components/LabBuddy';
+import TodayNudge from '../components/TodayNudge';
 import TodayTaskCard from '../components/ai/TodayTaskCard';
 import useLiveLobby from '../hooks/useLiveLobby';
 import Card from '../components/ui/Card';
@@ -65,7 +64,7 @@ export default function Home({ user }) {
   // Shared with the Live tab: one set of subscriptions, two pages.
   const {
     onlineUsers, activeSearchers, mine, slotChange, setSlotChange,
-    cancelBusy, cancelUpcoming, joinCallNow, openBoard,
+    cancelBusy, cancelUpcoming, joinCallNow,
   } = useLiveLobby(user);
 
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
@@ -133,13 +132,6 @@ export default function Home({ user }) {
         tourKey="tourDone_home"
         disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen}
       />
-      {todayTopic && (
-        <TopicDecorations
-          topic={todayTopic.topic}
-          intensity={showTopicIntro || dailyTopicOpen ? 'high' : 'low'}
-        />
-      )}
-
       {showTopicIntro && todayTopic && (
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
@@ -182,10 +174,6 @@ export default function Home({ user }) {
             people for a missed slot would empty it. */}
         {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
 
-        {/* The mascot leans in from the corner when it has something to say,
-            then leaves. Home only — on every screen it stops being a character
-            and becomes an obstacle. */}
-        <LabBuddy user={user} mine={mine} onOpenBoard={openBoard} />
 
         {/* An unanswered question belongs at the top of the screen. */}
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
@@ -204,6 +192,11 @@ export default function Home({ user }) {
         <div id="tour-today-task">
           <TodayTaskCard topic={todayTopic?.topic} hasTeacher={!!user?.teacherId} />
         </div>
+
+        {/* A quiet contextual prompt, in the flow rather than floating over it,
+            and BELOW the main action -- a nudge must never outrank the thing it
+            is nudging you towards. */}
+        <TodayNudge user={user} mine={mine} />
 
         {/* Live is a summary here, not the whole lobby. Violet, because the
             other end is a person; the card above is cyan for AInur. */}

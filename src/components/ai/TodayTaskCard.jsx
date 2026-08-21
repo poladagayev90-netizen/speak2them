@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight } from 'lucide-react';
+import { plainTopic } from '../../utils/topicLabel';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import './ai.css';
@@ -43,7 +44,7 @@ export default function TodayTaskCard({ topic, hasTeacher }) {
         lineHeight: 'var(--lh-body)',
         color: 'var(--text-secondary)',
       }}>
-        Five pictures on {topic || 'today’s topic'}. AInur listens and asks you
+        Five pictures on {plainTopic(topic) || 'today’s topic'}. AInur listens and asks you
         questions. About 8 minutes.
         {hasTeacher ? ' Your report goes to your teacher.' : ''}
       </p>

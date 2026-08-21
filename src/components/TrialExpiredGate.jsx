@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Hourglass, GraduationCap } from 'lucide-react';
 import { redeemCourseCode, SUPPORT_WHATSAPP } from '../utils/redeem';
 import Logo from './Logo';
 
@@ -43,13 +44,13 @@ export default function TrialExpiredGate() {
 
         {activated ? (
           <>
-            <div style={{ fontSize: '52px', marginBottom: '8px' }}>📨</div>
+            <div style={{ marginBottom: '8px', color: 'var(--accent)' }}><Hourglass size={44} strokeWidth={1.5} /></div>
             <h2 style={{ marginBottom: '8px' }}>Your application has been sent.</h2>
             <p className="auth-sub">One moment, opening the app. The course starts once an admin approves it.</p>
           </>
         ) : (
           <>
-            <div style={{ fontSize: '48px', marginBottom: '8px' }}>⏳</div>
+            <div style={{ marginBottom: '8px', color: 'var(--accent)' }}><GraduationCap size={42} strokeWidth={1.5} /></div>
             <h2 style={{ marginBottom: '8px' }}>Your trial has ended</h2>
             <p className="auth-sub" style={{ marginBottom: '20px' }}>
               Your free trial has ended. Join a cohort to continue: apply with a code, and once an admin approves it the 30-topic live speaking course begins. Your profile and progress stay exactly as they are.
@@ -103,7 +104,7 @@ export default function TrialExpiredGate() {
               💬 No code? Message us
             </a>
 
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary, #888)', marginTop: '16px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary, var(--text-muted))', marginTop: '16px' }}>
               Your Profile section stays open for account settings.
             </p>
           </>

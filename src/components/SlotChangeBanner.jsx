@@ -32,8 +32,8 @@ export default function SlotChangeBanner({ request, onDone }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #f59e0b1f, #d977061a)',
-      border: '1px solid #f59e0b55', borderRadius: '16px',
+      background: 'linear-gradient(135deg, var(--warning)1f, #d977061a)',
+      border: '1px solid var(--warning-bg)', borderRadius: '16px',
       padding: '16px', marginBottom: '12px',
     }}>
       <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -46,7 +46,7 @@ export default function SlotChangeBanner({ request, onDone }) {
       </div>
 
       {error && (
-        <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '10px' }}>⚠️ {error}</div>
+        <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '10px' }}> {error}</div>
       )}
 
       <div style={{ display: 'flex', gap: '8px' }}>
@@ -56,7 +56,7 @@ export default function SlotChangeBanner({ request, onDone }) {
           disabled={!!busy}
           style={{
             flex: 1, padding: '11px', borderRadius: '11px', border: 'none',
-            background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+            background: 'var(--accent)',
             color: '#fff', fontSize: '14px', fontWeight: 800,
             cursor: busy ? 'default' : 'pointer',
           }}

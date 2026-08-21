@@ -74,7 +74,7 @@ export default function Chats({ user }) {
       <div className="home-body" style={{ paddingBottom: '90px' }}>
         {rows.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">💬</div>
+            <div className="empty-icon"></div>
             <p>No conversations yet.</p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               Message your partner here before or after a call.
@@ -111,7 +111,7 @@ export default function Chats({ user }) {
                       <span style={{
                         position: 'absolute', right: 0, bottom: 0,
                         width: '13px', height: '13px', borderRadius: '50%',
-                        background: presence === 'busy' ? '#f59e0b' : 'var(--success)',
+                        background: presence === 'busy' ? 'var(--warning)' : 'var(--success)',
                         border: '2px solid var(--bg-primary)',
                       }} />
                     )}

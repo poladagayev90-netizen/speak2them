@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Star } from 'lucide-react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { boardDates, subscribeToBoard, parseSlotId, dayLabel, blockLabel, POPULAR_HOUR } from '../utils/practiceSlots';
@@ -66,9 +67,9 @@ function AdminSlotMembers({ slotId, usersMap }) {
           padding: '10px 12px', borderRadius: '8px', fontSize: '14px',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          <span style={{ color: '#4ade80', fontWeight: 800 }}>✓</span>
+          <span style={{ color: 'var(--success)', fontWeight: 800 }}>✓</span>
           <span style={nameStyle}>{labelOf(a.uid)} <span style={lvlStyle}>({levelOf(a.uid)})</span></span>
-          <span style={{ color: '#4ade80', flexShrink: 0 }}>↔</span>
+          <span style={{ color: 'var(--success)', flexShrink: 0 }}>↔</span>
           <span style={nameStyle}>{labelOf(b.uid)} <span style={lvlStyle}>({levelOf(b.uid)})</span></span>
         </div>
       ))}
@@ -79,7 +80,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <span style={nameStyle}>{labelOf(m.uid)} <span style={lvlStyle}>({levelOf(m.uid)})</span></span>
-          <span style={{ color: '#facc15', fontWeight: 600, fontSize: '13px' }}>⏳ Waiting alone</span>
+          <span style={{ color: 'var(--warning)', fontWeight: 600, fontSize: '13px' }}>Waiting alone</span>
         </div>
       ))}
     </div>
@@ -89,7 +90,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
 function StatPill({ label, value, color }) {
   return (
     <div style={{
-      flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid #2e2e50',
+      flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--bg-secondary)',
       borderRadius: 10, padding: '10px 8px', textAlign: 'center',
     }}>
       <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color }}>{value}</p>
@@ -158,9 +159,9 @@ export default function AdminSlots({ users }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       {/* Ümumi xülasə — 3 günün cəmi */}
       <div style={{ display: 'flex', gap: 8 }}>
-        <StatPill label="Signed up" value={totals.people} color="#e2e8f0" />
-        <StatPill label="Matched" value={totals.paired} color="#4ade80" />
-        <StatPill label="Waiting" value={totals.waiting} color="#facc15" />
+        <StatPill label="Signed up" value={totals.people} color="var(--text-primary)" />
+        <StatPill label="Matched" value={totals.paired} color="var(--success)" />
+        <StatPill label="Waiting" value={totals.waiting} color="var(--warning)" />
       </div>
 
       {dates.map((date) => {
@@ -187,15 +188,15 @@ export default function AdminSlots({ users }) {
                 return (
                   <div key={s.slotId} style={{
                     background: '#1a1a2e',
-                    border: `1px solid ${popular ? '#7c6ff755' : '#2e2e50'}`,
+                    border: `1px solid ${popular ? 'var(--border)' : 'var(--bg-secondary)'}`,
                     padding: '14px', borderRadius: '12px',
                   }}>
                     <div style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      borderBottom: '1px solid #2e2e50', paddingBottom: '8px',
+                      borderBottom: '1px solid var(--bg-secondary)', paddingBottom: '8px',
                     }}>
-                      <strong style={{ color: '#e2e8f0', fontSize: '15px' }}>
-                        {popular && <span title="Busiest hour" style={{ marginRight: 4 }}>⭐</span>}
+                      <strong style={{ color: 'var(--text-primary)', fontSize: '15px' }}>
+                        {popular && <Star size={11} strokeWidth={2} aria-label="Busiest hour" style={{ marginRight: 4, color: 'var(--warning)' }} />}
                         {blockLabel(s.hour)}
                       </strong>
                       <span style={{ fontSize: 12, color: c.total ? '#94a3b8' : '#475569', fontWeight: 600 }}>

@@ -33,13 +33,13 @@ class ErrorBoundary extends React.Component {
           fontFamily: 'system-ui, -apple-system, sans-serif',
           color: '#fff',
         }}>
-          <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>⚠️ Application Error</h1>
+          <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>Application Error</h1>
           <p style={{ marginBottom: '20px', textAlign: 'center', maxWidth: '500px' }}>
             Something went wrong. Please refresh the page or contact support.
           </p>
           {this.state.error && (
             <details style={{
-              backgroundColor: '#1e1e30',
+              backgroundColor: 'var(--bg-card)',
               padding: '15px',
               borderRadius: '8px',
               maxWidth: '100%',
@@ -65,7 +65,7 @@ class ErrorBoundary extends React.Component {
             onClick={() => window.location.reload()}
             style={{
               padding: '10px 20px',
-              backgroundColor: '#f59e0b',
+              backgroundColor: 'var(--warning)',
               color: '#000',
               border: 'none',
               borderRadius: '8px',

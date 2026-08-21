@@ -53,7 +53,7 @@ export default function BottomNav({ user }) {
                 <span style={{
                   position: 'absolute', top: '-5px', left: '13px',
                   minWidth: '16px', height: '16px', padding: '0 4px',
-                  borderRadius: '20px', background: '#ef4444', color: '#fff',
+                  borderRadius: '20px', background: 'var(--danger)', color: '#fff',
                   fontSize: '10px', fontWeight: 800, lineHeight: '16px',
                   textAlign: 'center',
                 }}>

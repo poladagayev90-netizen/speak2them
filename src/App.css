@@ -43,7 +43,7 @@ body {
   justify-content: center;
   min-height: 100dvh;
   padding: var(--safe-area-top, 16px) 16px var(--safe-area-bottom, 16px);
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: var(--bg-primary);
 }
 
 .auth-card {
@@ -136,7 +136,7 @@ body {
 .btn-primary {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 12px;
@@ -253,7 +253,7 @@ body {
   height: 52px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,7 +286,7 @@ body {
 
 .btn-chat {
   padding: 10px 14px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 10px;
@@ -361,7 +361,7 @@ body {
 .chat-avatar {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -457,7 +457,7 @@ body {
 }
 
 .message.mine p {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: white;
 }
 
@@ -492,7 +492,7 @@ body {
 
 .chat-input button {
   padding: 12px 20px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 12px;
@@ -567,7 +567,7 @@ body {
 }
 
 .tab.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border-color: transparent;
   color: white;
 }
@@ -617,11 +617,11 @@ body {
 .hub-topic { font-size: 24px; font-weight: 800; color: var(--accent); }
 .hub-tabs { display: flex; gap: 8px; padding: 20px 32px 0; }
 .hub-tab { padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.hub-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent-strong)); border-color: transparent; color: white; }
+.hub-tab.active { background: var(--accent); border-color: transparent; color: white; }
 .hub-body { padding: 24px 32px; flex: 1; }
 .difficulty-toggle { display: flex; gap: 12px; margin-bottom: 20px; }
 .diff-btn { padding: 10px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.diff-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent-strong)); border-color: transparent; color: white; }
+.diff-btn.active { background: var(--accent); border-color: transparent; color: white; }
 .questions-list { display: flex; flex-direction: column; gap: 12px; }
 .question-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; }
 .question-number { background: var(--accent); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
@@ -675,7 +675,7 @@ body {
 .profile-avatar-big {
   width: 90px;
   height: 90px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -768,7 +768,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+  background: var(--bg-primary);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -784,7 +784,7 @@ body {
 .call-avatar-big {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -793,7 +793,7 @@ body {
   font-weight: 700;
   overflow: hidden;
   border: 4px solid var(--accent);
-  box-shadow: 0 0 40px rgba(124, 111, 247, 0.4);
+  box-shadow: var(--e-2);
 }
 
 .call-avatar-big img {
@@ -898,7 +898,7 @@ body {
 }
 
 .level-btn.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border-color: transparent;
   color: white;
 }
@@ -957,7 +957,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 1002;
-  background: radial-gradient(120% 120% at 50% 0%, rgba(124, 58, 237, 0.18), rgba(15, 15, 23, 0.94));
+  background: var(--bg-primary);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -1024,7 +1024,7 @@ body {
 .call-roadmap-topic-pill {
   display: inline-block;
   max-width: 100%;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.22), rgba(79, 70, 229, 0.22));
+  background: var(--accent-soft);
   border: 1px solid rgba(124, 58, 237, 0.45);
   color: #d9d2ff;
   font-size: 13px;
@@ -1061,7 +1061,7 @@ body {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background: var(--accent);
   color: #fff;
   font-size: 14px;
   font-weight: 800;
@@ -1099,7 +1099,7 @@ body {
 
 .call-roadmap-question {
   background: rgba(124, 58, 237, 0.12);
-  border-left: 2px solid #7c3aed;
+  border-left: 2px solid var(--accent);
   color: #d9d2ff;
   font-size: 12.5px;
   line-height: 1.4;
@@ -1114,7 +1114,7 @@ body {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background: var(--accent);
   color: white;
   font-size: 16px;
   font-weight: 700;
@@ -1148,7 +1148,7 @@ body {
 }
 
 .dp-tab.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border-color: transparent;
   color: white;
 }
@@ -1178,7 +1178,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100dvh;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: var(--bg-primary);
   padding: 40px;
   position: relative;
 }
@@ -1210,7 +1210,7 @@ body {
 .splash-title {
   font-size: 36px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1254,7 +1254,7 @@ body {
 .user-stat {
   font-size: 12px;
   color: var(--accent);
-  background: #7c6ff711;
+  background: var(--accent)11;
   padding: 3px 8px;
   border-radius: 10px;
 }
@@ -1298,7 +1298,7 @@ body {
 }
 
 .bottom-nav-btn.active .bottom-nav-label {
-  color: #7c6ff7;
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -1429,7 +1429,7 @@ body {
 }
 
 .dt-tab.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
@@ -1550,7 +1550,7 @@ body {
 }
 
 .dt-diff-btn.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   border-color: transparent;
 }
@@ -1577,7 +1577,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   font-size: 13px;
   font-weight: 800;
@@ -1613,7 +1613,7 @@ body {
 }
 
 .topic-intro-modal {
-  background: linear-gradient(145deg, rgba(30, 30, 48, 0.95), rgba(20, 20, 32, 0.95));
+  background: var(--bg-card);
   border: 1px solid rgba(124, 111, 247, 0.3);
   border-radius: 24px;
   padding: 32px 24px;
@@ -1629,7 +1629,7 @@ body {
 .topic-intro-label {
   font-size: 13px;
   font-weight: 700;
-  color: #7c6ff7;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin: 0 0 12px;
@@ -1658,7 +1658,7 @@ body {
 }
 
 .topic-intro-btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   border: none;
   padding: 16px;
@@ -1706,7 +1706,7 @@ body {
 }
 
 .topic-intro-modal {
-  background: linear-gradient(145deg, rgba(30, 30, 48, 0.95), rgba(20, 20, 32, 0.95));
+  background: var(--bg-card);
   border: 1px solid rgba(124, 111, 247, 0.3);
   border-radius: 24px;
   padding: 32px 24px;
@@ -1722,7 +1722,7 @@ body {
 .topic-intro-label {
   font-size: 13px;
   font-weight: 700;
-  color: #7c6ff7;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin: 0 0 12px;
@@ -1751,7 +1751,7 @@ body {
 }
 
 .topic-intro-btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   border: none;
   padding: 16px;
@@ -1872,7 +1872,7 @@ body {
   font-size: 16px;
   font-weight: 800;
   color: var(--text-on-accent);
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   border: none;
   border-radius: 16px;
   cursor: pointer;
@@ -2019,10 +2019,12 @@ body {
 
 /* In-call picture stage: soft shimmer while a picture is on the wire. */
 .imgstage-skeleton {
+  /* Neutral, not accent-tinted: a loading state should read as absence, not
+     as a coloured thing that turned out to be nothing. */
   background: linear-gradient(100deg,
-    rgba(124, 111, 247, 0.06) 30%,
-    rgba(124, 111, 247, 0.16) 50%,
-    rgba(124, 111, 247, 0.06) 70%);
+    var(--bg-secondary) 30%,
+    var(--border) 50%,
+    var(--bg-secondary) 70%);
   background-size: 200% 100%;
 }
 
@@ -2154,7 +2156,7 @@ body {
   /* Android WebView düyməyə white-space: nowrap verə bilir — uzun sual bir
      sətirdə qalıb kartdan daşırdı. */
   white-space: normal;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   box-shadow: 0 4px 12px var(--accent-soft);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
@@ -2211,7 +2213,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  background: var(--accent);
   color: var(--text-on-accent);
   font-size: 12px;
   font-weight: 800;

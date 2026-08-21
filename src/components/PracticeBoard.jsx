@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Repeat, ChevronDown, ChevronUp } from 'lucide-react';
+import { Repeat, ChevronDown, ChevronUp, Star } from 'lucide-react';
 import {
   SLOT_BLOCK_HOURS,
   POPULAR_HOUR,
@@ -168,7 +168,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
         {todayWaiting > 0 && !expanded && (
           <span style={{
             fontSize: '12px', fontWeight: 800, padding: '4px 9px', borderRadius: '20px',
-            background: '#f59e0b22', color: '#f59e0b', flexShrink: 0,
+            background: 'var(--warning-bg)', color: 'var(--warning)', flexShrink: 0,
           }}>
             🔥 {todayWaiting}
           </span>
@@ -181,7 +181,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
       {bridge && (
         <div style={{
           marginTop: '12px', padding: '12px',
-          background: '#f59e0b14', border: '1px solid #f59e0b44', borderRadius: '12px',
+          background: 'var(--warning)14', border: '1px solid var(--warning)44', borderRadius: '12px',
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
           <div style={{ flex: 1, minWidth: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
@@ -193,7 +193,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
             disabled={busy === bridge.slotId}
             style={{
               flexShrink: 0, padding: '9px 12px', borderRadius: '9px', border: 'none',
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#1a1000',
+              background: 'linear-gradient(135deg, var(--warning), #d97706)', color: '#1a1000',
               fontSize: '12px', fontWeight: 800, cursor: 'pointer',
             }}
           >
@@ -228,7 +228,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           </div>
 
           {error && (
-            <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '8px' }}>⚠️ {error}</div>
+            <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '8px' }}> {error}</div>
           )}
 
           {/* Vaxt çipləri — günün hissəsinə görə qruplu grid. */}
@@ -266,8 +266,8 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                     border = 'var(--accent)'; bg = 'var(--accent-soft)';
                     status = { text: 'Pending', color: 'var(--accent)' };
                   } else if (hot) {
-                    border = '#f59e0b66'; bg = '#f59e0b18';
-                    status = { text: `${othersWaiting} waiting`, color: '#f59e0b' };
+                    border = 'var(--warning-bg)'; bg = 'var(--warning)18';
+                    status = { text: `${othersWaiting} waiting`, color: 'var(--warning)' };
                   } else if (!past) {
                     status = { text: 'I am free', color: 'var(--text-muted)' };
                   }
@@ -297,7 +297,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                         <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                           –{hourLabel((hour + 2) % 24)}
                         </span>
-                        {popular && <span title="Most people are here at this hour" style={{ fontSize: '11px' }}>⭐</span>}
+                        {popular && <Star size={11} strokeWidth={2} aria-label="Most people are here at this hour" style={{ color: 'var(--warning)' }} />}
                         {isNow && (
                           <span style={{
                             fontSize: '8px', fontWeight: 800, padding: '2px 5px', borderRadius: '20px',

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Clock } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -35,7 +36,7 @@ export default function SlotNoticeModal({ uid }) {
         background: 'var(--bg-card)', border: '1px solid var(--border)',
         borderRadius: '18px', padding: '22px', textAlign: 'center',
       }}>
-        <div style={{ fontSize: '38px', marginBottom: '10px' }}>🕊️</div>
+        <div style={{ marginBottom: '10px', color: 'var(--warning)' }}><Clock size={34} strokeWidth={1.5} /></div>
         <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
           You missed your last call
         </div>
@@ -47,7 +48,7 @@ export default function SlotNoticeModal({ uid }) {
           onClick={dismiss}
           style={{
             width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
-            background: 'linear-gradient(135deg, var(--accent), var(--accent-strong))',
+            background: 'var(--accent)',
             color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
           }}
         >

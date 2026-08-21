@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { X } from 'lucide-react';
 import { streakTier, nextMilestone, isMilestone } from '../utils/streak';
 
-const MILESTONE_ICON = { 3: '🌱', 7: '🔥', 14: '💎', 30: '👑', 60: '🏆', 100: '🚀' };
+const MILESTONE_ICON = { 3: '', 7: '', 14: '', 30: '', 60: '', 100: '' };
 
 // Decorative ember specks scattered over the dark backdrop; positions are
 // random per open, animation is gated behind prefers-reduced-motion in CSS.
@@ -54,7 +54,7 @@ export default function StreakJourney({ open, streakInfo, onClose }) {
 
       <div className="journey-header">
         <button className="journey-close" onClick={onClose} aria-label="Close"><X size={22} /></button>
-        <div className="journey-hero-flame" aria-hidden="true">🔥</div>
+        <div className="journey-hero-flame" aria-hidden="true"></div>
         <div className="journey-head-count" style={{ color: tier.accent }}>
           {count} <span className="journey-head-days">days</span>
         </div>
@@ -65,7 +65,7 @@ export default function StreakJourney({ open, streakInfo, onClose }) {
         <div className="journey-head-sub">
           {count === 0
             ? 'Talk today and start your streak.'
-            : (next ? `Next milestone: ${MILESTONE_ICON[next.target] || '⭐'} ${next.target} days — ${next.remaining} to go` : 'Every milestone reached 👑')}
+            : (next ? `Next milestone: ${MILESTONE_ICON[next.target] || ''} ${next.target} days — ${next.remaining} to go` : 'Every milestone reached')}
         </div>
       </div>
 
@@ -83,11 +83,11 @@ export default function StreakJourney({ open, streakInfo, onClose }) {
               style={done ? { '--node-accent': tier.accent } : undefined}
             >
               <div className="journey-dot">
-                {milestone ? (MILESTONE_ICON[d] || '⭐') : (done ? d : (current ? d : ''))}
-                {!done && !current && !milestone && <span className="journey-lock">🔒</span>}
+                {milestone ? (MILESTONE_ICON[d] || '') : (done ? d : (current ? d : ''))}
+                {!done && !current && !milestone && <span className="journey-lock"></span>}
               </div>
               {milestone && <div className="journey-node-label">{d} days</div>}
-              {current && <div className="journey-node-label journey-node-label--today">Today 🎉</div>}
+              {current && <div className="journey-node-label journey-node-label--today">Today</div>}
             </div>
           );
         })}

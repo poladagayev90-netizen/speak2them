@@ -43,7 +43,7 @@ export default function CallRoadmap({ content, onStart, onOpenDaily }) {
           onClick={onStart}
           aria-label="Skip the guide and start the call"
         >
-          Skip ✕
+          Skip
         </button>
 
         <p className="call-roadmap-label">How to start</p>

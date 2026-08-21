@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
 import PictureDescribing from './PictureDescribing';
 import SpeakingCards from './SpeakingCards';
@@ -62,14 +62,14 @@ function DailyQuiz({ content, onFinish }) {
     setIsFinished(false);
   }, [content]);
 
-  if (questions.length === 0) return <p style={{textAlign:'center', color:'#888', marginTop:20}}>Loading...</p>;
+  if (questions.length === 0) return <p style={{textAlign:'center', color:'var(--text-muted)', marginTop:20}}>Loading...</p>;
 
   if (isFinished) {
     return (
       <div className="dt-quiz-result">
         <h3>Result</h3>
         <div className="dt-score">{score} / {questions.length}</div>
-        <p>{score === questions.length ? 'Excellent. You know these well. 🎉' : 'A little more practice with these. 💪'}</p>
+        <p>{score === questions.length ? 'Excellent. You know these well.' : 'A little more practice with these.'}</p>
         <button className="dt-quiz-next" onClick={onFinish} style={{ width: '100%', marginTop: '20px' }}>
           Back to topic
         </button>
@@ -226,7 +226,7 @@ export default function DailyTopicModal({ open, onClose }) {
                   <p className="dt-idiom-phrase">"{idm.phrase}"</p>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
                   {idm.meaningAZ && <p className="dt-idiom-meaning" style={{color: '#a0a0b8', marginTop: '4px', fontSize: '12px'}}>{idm.meaningAZ}</p>}
-                  <p className="dt-idiom-example">💬 {idm.example}</p>
+                  <p className="dt-idiom-example"> {idm.example}</p>
                 </div>
               ))}
             </div>
@@ -260,7 +260,7 @@ export default function DailyTopicModal({ open, onClose }) {
 
           {activeSection === 'pictures' && (
             <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🖼️</div>
+              <div style={{ marginBottom: 12, color: 'var(--text-muted)' }}><ImageIcon size={40} strokeWidth={1.5} /></div>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
                 Five pictures for this topic, to build your speaking
               </p>

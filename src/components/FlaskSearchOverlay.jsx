@@ -20,7 +20,7 @@ function FlaskAnimation({ size = 140 }) {
         </defs>
 
         <g clipPath="url(#flask-liquid-clip)">
-          <rect className="flask-liquid" x="0" y="104" width="140" height="56" fill="#7c6ff7" />
+          <rect className="flask-liquid" x="0" y="104" width="140" height="56" fill="var(--accent)" />
           <circle className="flask-bubble flask-b1" cx="55" cy="150" r="5" fill="#c7c1ff" />
           <circle className="flask-bubble flask-b2" cx="72" cy="152" r="4" fill="#e4e1ff" />
           <circle className="flask-bubble flask-b3" cx="88" cy="149" r="6" fill="#b3aaff" />
@@ -28,11 +28,11 @@ function FlaskAnimation({ size = 140 }) {
 
         <path
           d="M58 6 h24 v14 l-2 40 34 76 a10 10 0 0 1 -9 16 h-70 a10 10 0 0 1 -9 -16 l34 -76 -2 -40 z"
-          stroke="#7c6ff7"
+          stroke="var(--accent)"
           strokeWidth="4"
           strokeLinejoin="round"
         />
-        <line x1="52" y1="6" x2="88" y2="6" stroke="#7c6ff7" strokeWidth="5" strokeLinecap="round" />
+        <line x1="52" y1="6" x2="88" y2="6" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" />
       </svg>
 
       <style>{`
@@ -84,7 +84,7 @@ export default function FlaskSearchOverlay({
       <div style={{ textAlign: 'center' }}>
         <FlaskAnimation size={80} />
         {title && (
-          <p style={{ color: '#7c6ff7', fontWeight: 700, fontSize: '14px', margin: '8px 0 0' }}>
+          <p style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '14px', margin: '8px 0 0' }}>
             {title}
           </p>
         )}
@@ -111,7 +111,7 @@ export default function FlaskSearchOverlay({
         </p>
       )}
       {subtitle && (
-        <p style={{ color: '#a1a1aa', fontSize: '14px', margin: '10px 0 0', textAlign: 'center', maxWidth: 320 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '10px 0 0', textAlign: 'center', maxWidth: 320 }}>
           {subtitle}
         </p>
       )}
@@ -119,8 +119,8 @@ export default function FlaskSearchOverlay({
         <button
           onClick={onCancel}
           style={{
-            marginTop: 28, background: 'transparent', color: '#ef4444',
-            border: '1px solid #ef444466', borderRadius: 12,
+            marginTop: 28, background: 'transparent', color: 'var(--danger)',
+            border: '1px solid var(--danger)66', borderRadius: 12,
             padding: '12px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
           }}
         >

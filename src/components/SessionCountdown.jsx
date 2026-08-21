@@ -117,7 +117,7 @@ export default function SessionCountdown({ onJoin }) {
             style={{
               marginLeft: 'auto',
               background: '#fff',
-              color: '#5b4de8',
+              color: 'var(--accent-strong)',
               border: 'none',
               borderRadius: '8px',
               padding: '5px 12px',

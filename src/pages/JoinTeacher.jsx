@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { GraduationCap, CheckCircle2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../components/Logo';
 import {
@@ -67,7 +68,7 @@ export default function JoinTeacher({ user }) {
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: '52px', marginBottom: '8px' }}>🎓</div>
+          <div style={{ marginBottom: '8px', color: 'var(--success)' }}><CheckCircle2 size={44} strokeWidth={1.5} /></div>
           <h2 style={{ marginBottom: '8px' }}>You have a teacher</h2>
           <p className="auth-sub" style={{ marginBottom: '20px' }}>
             You are already connected to a teacher. Contact them to change this.
@@ -84,13 +85,13 @@ export default function JoinTeacher({ user }) {
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-          <div style={{ fontSize: '52px', marginBottom: '8px' }}>🎉</div>
+          <div style={{ marginBottom: '8px', color: 'var(--accent)' }}><GraduationCap size={44} strokeWidth={1.5} /></div>
           <h2 style={{ marginBottom: '8px' }}>You are connected.</h2>
           <p className="auth-sub" style={{ marginBottom: '20px' }}>
             Your teacher can now see your progress. Start practising — you get your own report after every call.
           </p>
           <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-            Let us begin 🚀
+            Let us begin
           </button>
         </div>
       </div>
@@ -123,7 +124,7 @@ export default function JoinTeacher({ user }) {
           <Logo width={160} />
         </div>
 
-        <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Connect with your teacher 🎓</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Connect with your teacher</h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: '20px' }}>
           Enter the code your teacher gave you. They will then be able to see your speaking progress.
         </p>
@@ -163,7 +164,7 @@ export default function JoinTeacher({ user }) {
           onClick={dismiss}
           style={{
             width: '100%', background: 'none', border: 'none',
-            color: 'var(--text-secondary, #888)', fontSize: '14px',
+            color: 'var(--text-secondary, var(--text-muted))', fontSize: '14px',
             marginTop: '12px', cursor: 'pointer',
           }}
         >

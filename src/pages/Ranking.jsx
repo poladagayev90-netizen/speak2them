@@ -50,7 +50,7 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
               cursor: 'pointer',
               border: tab === 'weekly' ? 'none' : '1px solid var(--border)',
               background: tab === 'weekly'
-                ? 'linear-gradient(135deg, var(--accent), var(--accent-strong))'
+                ? 'var(--accent)'
                 : 'var(--bg-card)',
               color: tab === 'weekly' ? '#fff' : 'var(--text-secondary)',
             }}
@@ -64,7 +64,7 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
               cursor: 'pointer',
               border: tab === 'all' ? 'none' : '1px solid var(--border)',
               background: tab === 'all'
-                ? 'linear-gradient(135deg, var(--accent), var(--accent-strong))'
+                ? 'var(--accent)'
                 : 'var(--bg-card)',
               color: tab === 'all' ? '#fff' : 'var(--text-secondary)',
             }}
@@ -82,12 +82,12 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
         )}
         {loading ? (
           <div className="empty-state">
-            <div className="empty-icon">⏳</div>
+            <div className="empty-icon"></div>
             <p>Loading the leaderboard...</p>
           </div>
         ) : allUsers.length === 0 ? (
           <div className="empty-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
-            <div className="empty-icon" style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
+            <div className="empty-icon" style={{ fontSize: '48px', marginBottom: '16px' }}></div>
             <p style={{ color: 'var(--text-secondary)' }}>{'Nobody has practised yet. Be the first.'}</p>
           </div>
         ) : (

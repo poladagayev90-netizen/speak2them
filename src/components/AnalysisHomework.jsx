@@ -37,13 +37,13 @@ function MultipleChoice({ item, index }) {  const [picked, setPicked] = useStat
               style={{
                 textAlign: 'left', padding: '12px 14px', borderRadius: '12px',
                 fontSize: '14px', fontWeight: 600, cursor: answered ? 'default' : 'pointer',
-                border: showGreen ? '2px solid #22c55e' : showRed ? '2px solid #ef4444' : '1px solid var(--border)',
-                background: showGreen ? '#22c55e22' : showRed ? '#ef444422' : 'var(--bg-card)',
+                border: showGreen ? '2px solid #22c55e' : showRed ? '2px solid var(--danger)' : '1px solid var(--border)',
+                background: showGreen ? '#22c55e22' : showRed ? 'var(--danger-bg)' : 'var(--bg-card)',
                 color: 'var(--text-primary)',
                 transition: 'all .15s ease',
               }}
             >
-              {showGreen ? '✅ ' : showRed ? '❌ ' : ''}{opt}
+              {showGreen ? ' ' : showRed ? ' ' : ''}{opt}
             </button>
           );
         })}
@@ -95,7 +95,7 @@ function WordOrder({ item, index }) {  // Hər söz mənbə massivindəki indek
       <div style={{
         minHeight: '48px', padding: '10px 12px', borderRadius: '12px',
         border: checked
-          ? `2px solid ${isCorrect ? '#22c55e' : '#ef4444'}`
+          ? `2px solid ${isCorrect ? '#22c55e' : 'var(--danger)'}`
           : '1px dashed var(--border)',
         background: 'var(--bg-card)', marginBottom: '12px',
         display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center',
@@ -148,7 +148,7 @@ function WordOrder({ item, index }) {  // Hər söz mənbə massivindəki indek
           onClick={() => setChecked(true)}
           style={{
             width: '100%', padding: '11px', borderRadius: '12px', border: 'none',
-            background: complete ? 'linear-gradient(135deg, var(--accent), var(--accent-strong))' : 'var(--bg-card)',
+            background: complete ? 'var(--accent)' : 'var(--bg-card)',
             color: complete ? '#fff' : 'var(--text-muted)',
             fontSize: '14px', fontWeight: 800, cursor: complete ? 'pointer' : 'default',
           }}
@@ -159,8 +159,8 @@ function WordOrder({ item, index }) {  // Hər söz mənbə massivindəki indek
         <div>
           <div style={{
             padding: '12px', borderRadius: '12px', marginBottom: '8px',
-            background: isCorrect ? '#22c55e15' : '#ef444415',
-            border: `1px solid ${isCorrect ? '#22c55e44' : '#ef444444'}`,
+            background: isCorrect ? '#22c55e15' : 'var(--danger)15',
+            border: `1px solid ${isCorrect ? '#22c55e44' : 'var(--danger)44'}`,
           }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? '#16a34a' : '#dc2626', marginBottom: '4px' }}>
               {isCorrect ? 'Perfect' : `${'Correct sentence'}:`}
@@ -223,8 +223,8 @@ export default function AnalysisHomework({ homework, showCorrections = true, sho
   return (
     <div>
       {showBanner && <div style={{
-        background: 'linear-gradient(135deg, #7c6ff722, #5b4de822)',
-        border: '1px solid #7c6ff755', borderRadius: '16px',
+        background: 'var(--accent-soft)',
+        border: '1px solid var(--border)', borderRadius: '16px',
         padding: '16px', marginBottom: '20px',
       }}>
         <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>

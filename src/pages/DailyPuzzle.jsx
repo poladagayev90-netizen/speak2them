@@ -163,7 +163,7 @@ export default function DailyPuzzle({ user }) {  const navigate = useNavigate()
               return (
                 <span key={i} className="taboo-confetti-piece" style={{
                   left: '50%', top: '30%',
-                  background: ['#f59e0b', '#7c6ff7', '#22d3ee', '#ef4444', '#22c55e'][i % 5],
+                  background: ['var(--warning)', 'var(--accent)', '#22d3ee', 'var(--danger)', '#22c55e'][i % 5],
                   animationDelay: `${(i * 40) % 200}ms`,
                   '--tx': `${Math.cos(angle) * dist}px`,
                   '--ty': `${Math.sin(angle) * dist + 40}px`,
@@ -179,7 +179,7 @@ export default function DailyPuzzle({ user }) {  const navigate = useNavigate()
           <p className="puzzle-hint-text">“{puzzle.hintEN}”</p>
           {showAzHint && <p className="puzzle-hint-az">🇦🇿 {puzzle.hintAZ}</p>}
           {!showAzHint && wrongCount > 0 && (
-            <p className="puzzle-hint-locked">🔒 Translation {2 - wrongCount} wrong guesses to unlock</p>
+            <p className="puzzle-hint-locked">Translation {2 - wrongCount} wrong guesses to unlock</p>
           )}
         </div>
 
@@ -203,13 +203,13 @@ export default function DailyPuzzle({ user }) {  const navigate = useNavigate()
           <div className={`puzzle-result${state.won ? ' is-win' : ''}`}>
             {state.won ? (
               <>
-                <p className="puzzle-result-title">🎉 Well done {state.guesses.length} guesses</p>
-                <p className="puzzle-result-sub">Great work. A new word tomorrow. 🧩</p>
+                <p className="puzzle-result-title">Well done {state.guesses.length} guesses</p>
+                <p className="puzzle-result-sub">Great work. A new word tomorrow.</p>
               </>
             ) : (
               <>
                 <p className="puzzle-result-title">Word: <b>{answer}</b> — {puzzle.hintAZ}</p>
-                <p className="puzzle-result-sub">A new word is waiting tomorrow. 💪</p>
+                <p className="puzzle-result-sub">A new word is waiting tomorrow.</p>
               </>
             )}
             <button className="btn-primary" style={{ marginTop: 10 }} onClick={() => navigate('/')}>
@@ -228,7 +228,7 @@ export default function DailyPuzzle({ user }) {  const navigate = useNavigate()
                     onClick={() => handleKey(k)}
                     className={`puzzle-key${k.length > 1 ? ' puzzle-key--wide' : ''}${keyStates[k] ? ` is-${keyStates[k]}` : ''}`}
                   >
-                    {k === 'DEL' ? '⌫' : k === 'ENTER' ? '✓' : k}
+                    {k === 'DEL' ? '' : k === 'ENTER' ? '✓' : k}
                   </button>
                 ))}
               </div>

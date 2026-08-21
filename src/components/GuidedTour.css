@@ -143,7 +143,7 @@
 }
 
 .guided-tour-progress span.active {
-  background: linear-gradient(90deg, #22d3ee, #7c6ff7);
+  background: linear-gradient(90deg, #22d3ee, var(--accent));
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.42);
 }
 
@@ -195,7 +195,7 @@
 }
 
 .guided-tour-next {
-  background: linear-gradient(135deg, #22d3ee, #7c6ff7 55%, #f59e0b);
+  background: linear-gradient(135deg, #22d3ee, var(--accent) 55%, #f59e0b);
   color: #ffffff;
   padding: 0 15px;
   box-shadow: 0 12px 24px rgba(124, 111, 247, 0.3);

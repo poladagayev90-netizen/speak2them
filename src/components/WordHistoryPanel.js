@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { X, BookMarked } from 'lucide-react';
 import { subscribeToWordHistory, deleteWordFromHistory } from '../utils/wordHistory';
 
 export default function WordHistoryPanel({ userId, onClose }) {
@@ -30,12 +31,12 @@ export default function WordHistoryPanel({ userId, onClose }) {
         <button onClick={onClose} style={{
           background: 'transparent', border: 'none',
           color: 'var(--text-secondary)', fontSize: 22, cursor: 'pointer'
-        }}>✕</button>
+        }}><X size={20} strokeWidth={1.75} /></button>
       </div>
 
       {words.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: 60 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📖</div>
+          <div style={{ marginBottom: 12, color: 'var(--text-muted)' }}><BookMarked size={40} strokeWidth={1.5} /></div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
             No words saved yet.<br/>
             Use the translate button during a call.
@@ -70,7 +71,7 @@ export default function WordHistoryPanel({ userId, onClose }) {
                       </div>
                     ) : (
                       <div>
-                        <p style={{ color: '#7c6ff7', fontSize: 17, fontWeight: 700, margin: 0 }}>
+                        <p style={{ color: 'var(--accent)', fontSize: 17, fontWeight: 700, margin: 0 }}>
                           {w.translated}
                         </p>
                         <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
@@ -85,7 +86,7 @@ export default function WordHistoryPanel({ userId, onClose }) {
                         background: 'transparent', border: 'none',
                         color: 'var(--text-secondary)', fontSize: 16, cursor: 'pointer'
                       }}
-                    >🗑️</button>
+                    ></button>
                   </div>
                 ))}
               </div>

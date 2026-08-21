@@ -7,7 +7,7 @@ import './Ranking.css';
 
 function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   const heights = { 1: 120, 2: 90, 3: 70 };
-  const emojis = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const emojis = { 1: '', 2: '', 3: '' };
   const navigate = useNavigate();
 
   return (
@@ -46,7 +46,7 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
   if (sortedUsers.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">🏆</div>
+        <div className="empty-icon"></div>
         <p>No rankings yet.</p>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 8 }}>Complete a call to appear on the board.</p>
       </div>
@@ -62,9 +62,9 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
             <p className="ranking-you-rank">#{myRank}</p>
           </div>
           <div className="ranking-you-stats">
-            <span>🕐 {currentUser ? minutesOf(currentUser) : 0} min</span>
-            <span>📞 {currentUser?.callCount || 0} calls</span>
-            {(currentUser?.streak || 0) > 0 && <span className="streak-pill">🔥 {currentUser.streak}</span>}
+            <span> {currentUser ? minutesOf(currentUser) : 0} min</span>
+            <span> {currentUser?.callCount || 0} calls</span>
+            {(currentUser?.streak || 0) > 0 && <span className="streak-pill"> {currentUser.streak}</span>}
           </div>
         </div>
       )}

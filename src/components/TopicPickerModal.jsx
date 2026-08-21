@@ -4,13 +4,13 @@ import { db } from '../firebase';
 
 // Keep in sync with the TOPICS list in src/pages/Survey.js.
 const TOPIC_OPTIONS = [
-  { value: 'Technology', label: '💻 Technology' },
-  { value: 'Movies', label: '🎬 Movies' },
-  { value: 'Music', label: '🎵 Music' },
-  { value: 'Travel', label: '✈️ Travel' },
-  { value: 'Business', label: '💼 Business' },
-  { value: 'Sport', label: '⚽ Sport' },
-  { value: 'General', label: '💬 General talk' },
+  { value: 'Technology', label: 'Technology' },
+  { value: 'Movies', label: 'Movies' },
+  { value: 'Music', label: 'Music' },
+  { value: 'Travel', label: 'Travel' },
+  { value: 'Business', label: 'Business' },
+  { value: 'Sport', label: 'Sport' },
+  { value: 'General', label: 'General talk' },
 ];
 
 // One-time interest picker shown to survey-skippers before they join a
@@ -48,11 +48,11 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
     }}>
       <div style={{
-        width: '100%', maxWidth: 360, background: 'var(--bg-card, #17172b)',
-        borderRadius: 20, border: '1px solid #7c6ff755', padding: '20px 18px',
+        width: '100%', maxWidth: 360, background: 'var(--bg-card, var(--bg-card))',
+        borderRadius: 20, border: '1px solid var(--border)', padding: '20px 18px',
       }}>
         <p style={{ color: 'var(--text-primary)', fontSize: 17, fontWeight: 800, margin: '0 0 6px' }}>
-          Pick your interests 🎯
+          Pick your interests
         </p>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: '0 0 14px' }}>
           We will match you with partners who share them (up to 3).
@@ -65,8 +65,8 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
               style={{
                 borderRadius: 20, padding: '8px 14px', fontSize: 13, fontWeight: 600,
                 cursor: 'pointer',
-                border: selected.includes(t.value) ? '1px solid #7c6ff7' : '1px solid var(--border, #2e2e50)',
-                background: selected.includes(t.value) ? 'linear-gradient(135deg, #7c6ff7, #6355e0)' : 'transparent',
+                border: selected.includes(t.value) ? '1px solid var(--accent)' : '1px solid var(--border, var(--bg-secondary))',
+                background: selected.includes(t.value) ? 'var(--accent)' : 'transparent',
                 color: selected.includes(t.value) ? '#fff' : 'var(--text-secondary)',
               }}
             >
@@ -78,7 +78,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
           <button
             onClick={onClose}
             style={{
-              flex: 1, height: 46, borderRadius: 12, border: '1px solid var(--border, #2e2e50)',
+              flex: 1, height: 46, borderRadius: 12, border: '1px solid var(--border, var(--bg-secondary))',
               background: 'transparent', color: 'var(--text-secondary)',
               fontSize: 14, fontWeight: 600, cursor: 'pointer',
             }}
@@ -90,7 +90,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
             disabled={!selected.length || saving}
             style={{
               flex: 2, height: 46, borderRadius: 12, border: 'none',
-              background: selected.length ? 'linear-gradient(135deg, #7c6ff7, #6355e0)' : '#3a3a5a',
+              background: selected.length ? 'var(--accent)' : '#3a3a5a',
               color: '#fff', fontSize: 14, fontWeight: 700,
               cursor: selected.length ? 'pointer' : 'default',
             }}
