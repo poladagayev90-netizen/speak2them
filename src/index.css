@@ -67,6 +67,39 @@
   --silver: #52525b;
   --bronze: #92400e;
 
+  /* ── In-call activity hues ───────────────────────────────────────────────
+     The five call activities are the product's main event, so each one owns a
+     hue and is recognisable before the label is read -- which is what the
+     emoji used to do, minus the per-platform lottery over how a 🎭 is drawn.
+     Deliberately NOT --accent/--ai: those two mean "a real person" and
+     "AInur", and five buttons in the peer colour would say nothing. Cyan is
+     avoided entirely here, or Debate would read as an AInur activity.
+     Values are literal per theme rather than mixed at runtime: this is the one
+     screen that must never depend on an old WebView's colour-mix support. */
+  --act-vocab:   #c2410c;   --act-vocab-rgb:   194  65  12;  /*  4.6:1 on white */
+  --act-quiz:    #7c3aed;   --act-quiz-rgb:    124  58 237;  /*  6.3:1 */
+  --act-picture: #047857;   --act-picture-rgb:   4 120  87;  /*  5.1:1 */
+  --act-taboo:   #be123c;   --act-taboo-rgb:   190  18  60;  /*  6.1:1 */
+  --act-debate:  #1d4ed8;   --act-debate-rgb:   29  78 216;  /*  7.2:1 */
+  /* Disc fill and ring, as an alpha of the hue above. Light needs less fill
+     than dark to reach the same apparent separation from the page. */
+  --act-fill: 0.10;
+  --act-ring: 0.30;
+
+  /* The two call controls that must read IDENTICALLY in both themes, and so
+     are deliberately not overridden in the dark block below.
+     End does not use --danger: that token flips to a light red in dark mode
+     (#f87171) and white-on-#f87171 is 2.6:1 -- the hang-up glyph was washing
+     out on the default theme.
+     Mute does not use --warning: that token is #b45309 in light, a brown-amber
+     sitting right next to the red End button at almost the same darkness, so
+     the two filled circles blurred into each other. A muted mic and "hang up"
+     are the two controls you least want confused mid-call, so mute takes a
+     bright amber that no theme can drag towards red. */
+  --danger-solid: #dc2626;   /* white ink   = 4.8:1 */
+  --warning-solid: #f59e0b;  /* #1c1500 ink = 8.6:1 */
+  --ink-on-warning: #1c1500;
+
   /* ── Glass ──────────────────────────────────────────────────────────────
      A surface is a translucent fill with a lit top edge, not a flat panel with
      a hairline drawn round it. The border still carries the separation; the
@@ -120,6 +153,16 @@
   --gold: #fbbf24;
   --silver: #d4d4d8;
   --bronze: #fdba74;
+
+  /* Same five hues, lifted for a near-black page. See the light block. */
+  --act-vocab:   #fb923c;   --act-vocab-rgb:   251 146  60;  /*  9.4:1 on --bg-primary */
+  --act-quiz:    #a78bfa;   --act-quiz-rgb:    167 139 250;  /*  8.1:1 */
+  --act-picture: #34d399;   --act-picture-rgb:  52 211 153;  /* 11.7:1 */
+  --act-taboo:   #fb7185;   --act-taboo-rgb:   251 113 133;  /*  7.9:1 */
+  --act-debate:  #60a5fa;   --act-debate-rgb:   96 165 250;  /*  8.3:1 */
+  --act-fill: 0.16;
+  --act-ring: 0.42;
+  /* --danger-solid / --warning-solid are intentionally NOT redefined here. */
 
   /* Only these differ from light. The dark fill is a gradient and the light
      fill is a solid, deliberately: on white, a translucent gradient reads as
@@ -398,7 +441,6 @@ code {
 .dp-tab.active,
 .message.mine p,
 .question-number,
-.call-btn-big,
 .btn-call,
 .btn-mute,
 .btn-end,
@@ -406,6 +448,15 @@ code {
 .btn-reject {
   color: var(--text-on-accent);
 }
+/* .call-btn-big is deliberately NOT in that list. It belonged there while the
+   in-call buttons were filled with --accent AND held an emoji: an emoji paints
+   itself, so the ink colour never mattered and the mistake stayed invisible.
+   The moment the emoji became a lucide SVG the icon started inheriting
+   currentColor -- and --text-on-accent is #ffffff in light, #0a0a0b in dark,
+   i.e. the SAME colour as the unfilled disc underneath in BOTH themes. Every
+   in-call icon was being painted the colour of the surface it sat on, which is
+   why the labels showed and the icons did not. The colour now comes from
+   .call-btn-big in App.css, per activity. */
 
 .settings-button {
   position: absolute;

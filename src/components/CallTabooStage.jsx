@@ -125,7 +125,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700,
               }}
             >
-              Hesab: {score}
+              Score: {score}
             </span>
             <button
               onClick={onClose}

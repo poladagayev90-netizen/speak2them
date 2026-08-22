@@ -54,8 +54,15 @@ export default function TranslateWidget({ userId, topic, onTranslate, nativeLang
     return (
       <button
         onClick={() => setExpanded(true)}
+        // Anchored to the TOP right, not the bottom. This widget only ever
+        // renders during a call, and bottom:140 is measured from the viewport
+        // while the in-call controls are laid out from the top: on a short
+        // screen (320x568) the two met and the globe sat directly on the
+        // Debate button, so tapping Debate opened the translator. Nothing else
+        // occupies the call screen's top right -- the settings button is top
+        // left -- so this cannot collide at any viewport height.
         style={{
-          position: 'fixed', bottom: 140, right: 16,
+          position: 'fixed', top: 'max(16px, var(--safe-area-top, 16px))', right: 16,
           width: 52, height: 52, borderRadius: '50%',
           background: 'var(--accent)',
           border: 'none', color: 'var(--text-on-accent)', fontSize: 22,

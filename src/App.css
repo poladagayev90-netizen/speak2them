@@ -792,9 +792,15 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* flex-shrink:0 is load-bearing: .fullscreen-call is a column flex container,
+   so height is the MAIN axis and every child is shrinkable by default. On a
+   320x568 screen the content is taller than the viewport and the avatar was
+   the thing that gave -- it collapsed from a 120px circle into a flat violet
+   ellipse. The same applies to the name and the status line under it. */
 .call-avatar-big {
   width: 120px;
   height: 120px;
+  flex-shrink: 0;
   background: var(--accent);
   border-radius: 50%;
   display: flex;
@@ -813,16 +819,38 @@ body {
   object-fit: cover;
 }
 
+/* Short screens (a 568px-tall SE, and the 640px budget Androids that are a
+   large share of this app's installs) cannot fit a 10vh gutter, a 120px avatar
+   AND three rows of controls. Without this the choice was between a squashed
+   avatar and an End button below the fold -- so the identity block gives up the
+   room instead, and every control stays reachable without scrolling. */
+@media (max-height: 700px) {
+  .fullscreen-call {
+    padding-top: max(12px, var(--safe-area-top, 12px));
+    gap: 10px;
+  }
+  .call-avatar-big {
+    width: 84px;
+    height: 84px;
+    font-size: 34px;
+    border-width: 3px;
+  }
+  .call-peer-name { font-size: 22px; margin-top: 4px; }
+  .call-status-text { font-size: 15px; margin-bottom: 12px; }
+}
+
 .call-peer-name {
   font-size: 28px;
   font-weight: 800;
   margin-top: 8px;
+  flex-shrink: 0;
 }
 
 .call-status-text {
   font-size: 16px;
   color: var(--text-secondary);
   margin-bottom: 32px;
+  flex-shrink: 0;
 }
 
 .fullscreen-call-buttons {
@@ -839,57 +867,76 @@ body {
 }
 
 /* An in-call control has to be visible against the call screen itself, and the
-   call screen is --bg-primary. --bg-card is #ffffff in light, so painting these
-   with it left five buttons completely invisible on a white page: the labels
-   floated with no button under them. --bg-secondary is the one neutral that is
-   distinct from the page in BOTH themes, and the hairline does the rest. */
+   call screen is --bg-primary. A neutral disc cannot do that in both themes:
+   --bg-secondary is 1.06:1 on the light page and 1.15:1 on the dark one, so the
+   buttons had no body either way. Each activity now paints its own hue -- the
+   disc is a wash of it, the ring is a stronger cut of it, the glyph is it at
+   full strength. The hue does the separating, so the same rule works on white
+   and on near-black, and the row is scannable by colour before it is read.
+   --act-* is set by the .act-* modifier below; the fallbacks keep the plain
+   .call-btn-big (Mute) neutral. */
 .call-btn-big {
+  --act: var(--text-primary);
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--bg-secondary);
-  box-shadow: var(--glass-edge);
-  color: var(--text-primary);
+  border: 1.5px solid rgb(var(--act-rgb, 113 113 122) / var(--act-ring));
+  background: rgb(var(--act-rgb, 113 113 122) / var(--act-fill));
+  color: var(--act);
   font-size: 24px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  transition: transform 80ms ease, border-color 140ms ease, filter 140ms ease;
+  gap: 3px;
+  transition: transform 80ms ease, filter 140ms ease;
 }
 
 .call-btn-big span {
   font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
+/* One modifier per activity: the hue as a colour (for the glyph) and as an rgb
+   triplet (for the fill and ring alphas). Both are needed -- an alpha cannot be
+   applied to a hex token without the triplet. */
+.call-btn-big.act-vocab   { --act: var(--act-vocab);   --act-rgb: var(--act-vocab-rgb); }
+.call-btn-big.act-quiz    { --act: var(--act-quiz);    --act-rgb: var(--act-quiz-rgb); }
+.call-btn-big.act-picture { --act: var(--act-picture); --act-rgb: var(--act-picture-rgb); }
+.call-btn-big.act-taboo   { --act: var(--act-taboo);   --act-rgb: var(--act-taboo-rgb); }
+.call-btn-big.act-debate  { --act: var(--act-debate);  --act-rgb: var(--act-debate-rgb); }
+
+/* Mute is a state, not an activity: unlit while live, filled amber while muted,
+   so "your mic is off" is readable across the room. */
 .call-btn-big.active-mute {
-  background: var(--warning);
+  background: var(--warning-solid);
   border-color: transparent;
-  color: var(--text-on-accent);
+  --act: var(--ink-on-warning);
 }
-.call-btn-big.active-mute span { color: var(--text-on-accent); }
+.call-btn-big.active-mute span { color: var(--ink-on-warning); }
 
-/* End is the one destructive action on the screen, so it keeps a filled
-   treatment -- but through the token, not a raw hex, and with the same lit
-   gradient every other primary action in the app now uses. */
+/* End is the one destructive action on the screen, so it stays filled -- on
+   --danger-solid rather than --danger, because --danger is a light red in dark
+   mode and the white glyph was sitting on it at 2.6:1. */
 .call-btn-big.end {
   width: 80px;
   height: 80px;
   font-size: 28px;
-  background: linear-gradient(180deg, var(--danger), var(--danger));
+  background: var(--danger-solid);
   border-color: transparent;
-  color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), 0 14px 30px -12px var(--danger);
+  --act: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 24px -14px var(--danger-solid);
 }
-.call-btn-big.end span { color: rgba(255, 255, 255, 0.92); }
+.call-btn-big.end span { color: #fff; }
 
-.call-btn-big:hover { filter: brightness(1.06); border-color: var(--accent); }
+.call-btn-big:hover { filter: brightness(1.08); }
 .call-btn-big:active { transform: scale(.96); }
+@media (prefers-reduced-motion: reduce) {
+  .call-btn-big { transition: none; }
+}
 .level-filter {
   display: flex;
   /* wrap yox: C2 tək başına ikinci sətrə düşüb yığını dağıdırdı — tək
@@ -1187,9 +1234,11 @@ body {
   padding: 16px;
 }
 
-.daily-btn {
-  background: var(--bg-card);
-}
+/* .daily-btn used to re-paint the Vocabulary button with --bg-card. It sits
+   AFTER .call-btn-big in this file at equal specificity, so it won -- and
+   --bg-card is #ffffff, exactly the light call screen. That is why Vocabulary
+   was a white disc on a white page with a white glyph: three ways invisible.
+   The button is styled by .act-vocab now; this rule has nothing left to say. */
 
 .btn-daily-chat {
   padding: 8px 12px;

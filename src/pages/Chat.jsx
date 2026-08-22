@@ -1093,12 +1093,12 @@ export default function Chat({ user }) {
             <div className="fullscreen-call-buttons">
               {inCall && (
                 <>
-                  <button className="call-btn-big daily-btn" onClick={() => setShowDaily(true)}>
-                    <BookOpen size={26} strokeWidth={1.75} aria-hidden="true" /><span>Vocabulary</span>
+                  <button className="call-btn-big act-vocab" onClick={() => setShowDaily(true)}>
+                    <BookOpen size={26} strokeWidth={2.25} aria-hidden="true" /><span>Vocabulary</span>
                   </button>
                   {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
-                      className="call-btn-big"
+                      className="call-btn-big act-quiz"
                       onClick={() => {
                         // Same contentIndex pinning as the picture stage: the
                         // topic must not be recomputed per device mid-call.
@@ -1113,12 +1113,12 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] questionStage start failed:', e));
                       }}
                     >
-                      <MessageCircleQuestion size={26} strokeWidth={1.75} aria-hidden="true" /><span>Questions</span>
+                      <MessageCircleQuestion size={26} strokeWidth={2.25} aria-hidden="true" /><span>Questions</span>
                     </button>
                   )}
                   {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
-                      className="call-btn-big"
+                      className="call-btn-big act-picture"
                       onClick={() => {
                         // contentIndex pins the topic for BOTH peers: each
                         // device computes "today" from its own clock, so a
@@ -1135,12 +1135,12 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
                     >
-                      <ImageIcon size={26} strokeWidth={1.75} aria-hidden="true" /><span>Picture</span>
+                      <ImageIcon size={26} strokeWidth={2.25} aria-hidden="true" /><span>Picture</span>
                     </button>
                   )}
                   {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
-                      className="call-btn-big"
+                      className="call-btn-big act-taboo"
                       onClick={() => {
                         updateDoc(doc(db, 'calls', callDocId), {
                           tabooStage: {
@@ -1155,12 +1155,12 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
                       }}
                     >
-                      <Drama size={26} strokeWidth={1.75} aria-hidden="true" /><span>Taboo</span>
+                      <Drama size={26} strokeWidth={2.25} aria-hidden="true" /><span>Taboo</span>
                     </button>
                   )}
                   {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
                     <button
-                      className="call-btn-big"
+                      className="call-btn-big act-debate"
                       onClick={() => {
                         updateDoc(doc(db, 'calls', callDocId), {
                           debateStage: {
@@ -1174,7 +1174,7 @@ export default function Chat({ user }) {
                         }).catch((e) => console.error('[Chat] debateStage start failed:', e));
                       }}
                     >
-                      <MessagesSquare size={26} strokeWidth={1.75} aria-hidden="true" /><span>Debate</span>
+                      <MessagesSquare size={26} strokeWidth={2.25} aria-hidden="true" /><span>Debate</span>
                     </button>
                   )}
                 </>
@@ -1184,10 +1184,10 @@ export default function Chat({ user }) {
             <div className="fullscreen-call-buttons">
               {inCall && (
                 <button className={`call-btn-big ${muted ? 'active-mute' : ''}`} onClick={toggleMute}>
-                  {muted ? <MicOff size={26} strokeWidth={1.75} aria-hidden="true" /> : <Mic size={26} strokeWidth={1.75} aria-hidden="true" />}<span>{muted ? 'Unmute' : 'Mute'}</span>
+                  {muted ? <MicOff size={26} strokeWidth={2.25} aria-hidden="true" /> : <Mic size={26} strokeWidth={2.25} aria-hidden="true" />}<span>{muted ? 'Unmute' : 'Mute'}</span>
                 </button>
               )}
-              <button className="call-btn-big end" onClick={endCall}><PhoneOff size={26} strokeWidth={1.75} aria-hidden="true" /><span>End</span></button>
+              <button className="call-btn-big end" onClick={endCall}><PhoneOff size={26} strokeWidth={2.25} aria-hidden="true" /><span>End</span></button>
             </div>
           </div>
         </div>
