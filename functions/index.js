@@ -4696,7 +4696,8 @@ ${watch}`;
 They have just ANSWERED the question you asked about this picture, and the picture is finished.
 Say ONE short warm sentence that shows you took in what they just told you, and stop.
 Do NOT ask a question — the picture changes the moment you finish, so they could never answer it.
-Do NOT go back to describing the picture. Respond to their answer, not to the photograph.`
+Do NOT go back to describing the picture. Respond to their answer, not to the photograph.
+NEVER repeat a sentence you have already said, and never send the same sentence twice in one reply. If their answer does not really answer your question -- speech gets cut off, and people wander -- respond to whatever they DID say. Saying your own last line back to them is the one thing you must never do.`
       : `THIS TURN
 This is your first and only QUESTION about this picture. React in a clause, ask your question, stop. They get one answer, and you will close the picture after it.`)
     : `THIS TURN
@@ -4756,6 +4757,50 @@ Keep a natural conversation going about: ${item.topic || "everyday life"}.`;
 // transcript — no model involved, so the pills on screen light up instantly and
 // cost nothing. Case and punctuation are folded, and a trailing s or es counts,
 // so "Suitcases." matches "suitcase".
+// Two ways an AInur reply comes back broken, both seen in real sessions:
+// the same sentence emitted twice with no space between ("X.X."), and the model
+// repeating its OWN previous line instead of responding to the learner. The
+// second happens when the answer does not address the question -- which is
+// routine, because speech gets clipped -- and it is the worst possible output
+// here: the learner says something, and she replies with the sentence she just
+// said. That reads exactly like the bug this activity was reported for, so it
+// is repaired deterministically instead of being left to the prompt.
+function sanitizeAinurReply(reply, history, fallback) {
+  let out = String(reply || "").trim();
+  // "desk.The teacher" -- restore the space before splitting, or the whole
+  // thing counts as one sentence and the duplicate survives.
+  out = out.replace(/([.!?])(?=[A-Z])/g, "$1 ");
+  const seen = new Set();
+  out = out
+    .split(/(?<=[.!?])\s+/)
+    .map((x) => x.trim())
+    .filter((x) => {
+      if (!x) return false;
+      const k = x.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .join(" ");
+  // Compared SENTENCE BY SENTENCE, not whole-string. The observed failure was
+  // "X.X." where X was merely the first half of her previous reply, so after
+  // de-duplication it still came out as a line she had already said -- a whole
+  // -string check waves that through.
+  const lastAinur = [...(history || [])].reverse().find((h) => h && h.role === "assistant");
+  if (lastAinur && out) {
+    const said = new Set(
+      String(lastAinur.content || "")
+        .replace(/([.!?])(?=[A-Z])/g, "$1 ")
+        .split(/(?<=[.!?])\s+/)
+        .map((x) => x.trim().toLowerCase())
+        .filter(Boolean),
+    );
+    const fresh = out.split(/(?<=[.!?])\s+/).map((x) => x.trim().toLowerCase()).filter(Boolean);
+    if (fresh.length && fresh.every((x) => said.has(x))) return fallback;
+  }
+  return out || fallback;
+}
+
 function matchKeywords(transcript, keywords) {
   if (!Array.isArray(keywords) || !keywords.length) return [];
   const flat = " " + String(transcript).toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ") + " ";
@@ -5024,7 +5069,13 @@ exports.aiActivityTurn = onRequest(
         return res.status(502).json({ error: "AInur could not answer just now. Please try again." });
       }
       const chatData = await chatRes.json();
-      const reply = (chatData.choices?.[0]?.message?.content || "Tell me a little more about that.").trim();
+      const isDescribeClose = activity === "describe" && isLast;
+      const reply = sanitizeAinurReply(
+        chatData.choices?.[0]?.message?.content,
+        safeHistory,
+        // A closing line cannot ask for more -- the picture is already going.
+        isDescribeClose ? "Thank you, that is a good way to put it." : "Tell me a little more about that.",
+      );
       const usage = chatData.usage || {};
 
       // 3. Text to speech.
@@ -5079,7 +5130,7 @@ exports.aiActivityTurn = onRequest(
       // request, exactly like the TTS decision above.
       return res.status(200).json({
         transcript, reply, audioBase64, matchedKeywords,
-        closing: activity === "describe" && isLast,
+        closing: isDescribeClose,
       });
     } catch (e) {
       console.error("[aiActivityTurn] error:", e);

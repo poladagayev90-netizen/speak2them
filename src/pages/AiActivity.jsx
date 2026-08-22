@@ -94,6 +94,8 @@ export default function AiActivity({ user }) {
   // activity had no end at all -- see the effect that consumes it.
   const pendingFinishRef = useRef(false);
   const advanceTimerRef = useRef(null);
+  const finishTimerRef = useRef(null);
+  const finishScheduledRef = useRef(false);
   // Live copy for the segment handler, which is created once and must not close
   // over stale state.
   const stateRef = useRef({});
@@ -317,13 +319,21 @@ export default function AiActivity({ user }) {
   }, [finishing, navigate, stop]);
 
   // Five pictures answered IS the end of the activity, so it ends itself and
-  // goes straight to the report the learner did the work for. Queued the same
-  // way as a picture change -- on the return to 'listening', i.e. once the turn
-  // has fully settled -- so this can never cut across a reply still arriving.
+  // goes straight to the report the learner did the work for. Queued on the
+  // return to 'listening' so it cannot cut across a reply still arriving, then
+  // held for the same beat as a picture change: without the hold, her sentence
+  // about the FIFTH answer was generated, paid for, and replaced by the
+  // "Marking your session" screen before anyone could read it -- the last
+  // answer of the session being the one answer that still got nothing back.
+  // Guarded by its own flag because this effect re-runs on every status change,
+  // and the timer must not be rescheduled or cancelled once it is set.
   useEffect(() => {
-    if (!pendingFinishRef.current || status !== 'listening') return;
-    finish();
+    if (!pendingFinishRef.current || status !== 'listening' || finishScheduledRef.current) return;
+    finishScheduledRef.current = true;
+    finishTimerRef.current = setTimeout(finish, CLOSING_READ_MS);
   }, [status, finish]);
+
+  useEffect(() => () => clearTimeout(finishTimerRef.current), []);
 
   if (done) {
     return (
