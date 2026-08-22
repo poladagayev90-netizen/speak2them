@@ -4687,8 +4687,18 @@ These are mistakes their first language causes. Do NOT correct them, but underst
 ${watch}`;
 
   const turnState = activity === "describe"
-    ? `THIS TURN
-This is your ONE and ONLY reply about this picture. React in a clause, ask your question, stop. Their answer ends the picture and you will not speak again about it.`
+    ? (state.isLast
+      // The answer to her question used to get NO reply at all: the server
+      // returned reply:"" and the picture simply changed. Answering a question
+      // and receiving silence is indistinguishable from the app being broken,
+      // which is exactly how it was reported. She now closes the picture.
+      ? `THIS TURN
+They have just ANSWERED the question you asked about this picture, and the picture is finished.
+Say ONE short warm sentence that shows you took in what they just told you, and stop.
+Do NOT ask a question — the picture changes the moment you finish, so they could never answer it.
+Do NOT go back to describing the picture. Respond to their answer, not to the photograph.`
+      : `THIS TURN
+This is your first and only QUESTION about this picture. React in a clause, ask your question, stop. They get one answer, and you will close the picture after it.`)
     : `THIS TURN
 Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
 ${state.isLast
@@ -4707,10 +4717,13 @@ Because you cannot see the picture:
 - Never say whether their description is right or wrong. You have no way to know.
 This is about THIS picture only. Never mention an earlier picture — you cannot see any of them and the learner has moved on.
 
-YOUR WHOLE REPLY IS TWO PARTS AND NOTHING ELSE
+${state.isLast
+  ? `YOUR WHOLE REPLY IS ONE SENTENCE AND NOTHING ELSE
+One short COMPLETE SENTENCE that picks up something concrete in the answer they just gave, in your own words. No question, no second sentence, no sign-off.`
+  : `YOUR WHOLE REPLY IS TWO PARTS AND NOTHING ELSE
 1. One short COMPLETE SENTENCE naming ONE concrete thing they actually said, in your own words.
 2. One question.
-Write both on a single line, as ordinary prose. Never a line break, never a heading.
+Write both on a single line, as ordinary prose. Never a line break, never a heading.`}
 
 YOUR FIRST SENTENCE MUST CONTAIN A FINITE VERB. This is the rule you break most often, so check it before you send.
 Begin it with a subject -- The, A, She, He, They, It, There, or a name -- and then put the verb straight after it.
@@ -4973,18 +4986,18 @@ exports.aiActivityTurn = onRequest(
         await sessionRef.update(turnUpdate);
       };
 
-      // Describing a picture is ONE question and the answer to it. The answer
-      // needs no reply -- the picture changes the moment it lands -- so the turn
-      // is recorded and nothing is generated. That saves an LLM call and a TTS
-      // call per picture, and removes a closing line nobody had time to read.
-      if (activity === "describe" && isLast) {
-        await saveTurn("");
-        recordAiUsage(uid, { sttSeconds: audioBuffer.length / 16000, ttsChars: 0, tokensIn: 0, tokensOut: 0, turns: 1 });
-        return res.status(200).json({ transcript, reply: "", audioBase64: "", matchedKeywords, closing: true });
-      }
-
-      // 2. AInur replies. 70B rather than 8B: the smaller model cannot hold a
-      // level constraint across a session, and level matching is the point.
+      // The closing answer on a picture USED TO RETURN reply:"" and skip the
+      // model entirely, to save one LLM call per picture. That saving is what
+      // broke the activity: the learner answered her question and got nothing
+      // back at all -- the bubble still showed the question they had just
+      // answered, then the photo swapped. Reported, correctly, as "I did, but
+      // nothing happened". She answers every answer now. It costs one LLM call
+      // per picture and no TTS (describing stays silent), which is the cheap
+      // half of the turn; the expensive half is the transcription we were
+      // paying for anyway.
+      // 2. AInur replies. Which model that actually is comes from
+      // AI_TURN_MODELS -- see the note there; the 70B this comment used to name
+      // is not reachable on this account.
       const systemPrompt = buildAinurPrompt({
         activity,
         level,
@@ -5061,7 +5074,13 @@ exports.aiActivityTurn = onRequest(
         turns: 1,
       });
 
-      return res.status(200).json({ transcript, reply, audioBase64, matchedKeywords });
+      // closing tells the client this picture is done, so it can show her line
+      // and then move on. It is derived here rather than trusted from the
+      // request, exactly like the TTS decision above.
+      return res.status(200).json({
+        transcript, reply, audioBase64, matchedKeywords,
+        closing: activity === "describe" && isLast,
+      });
     } catch (e) {
       console.error("[aiActivityTurn] error:", e);
       return res.status(500).json({ error: "Something went wrong. Please try again." });

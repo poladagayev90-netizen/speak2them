@@ -19,17 +19,19 @@ import '../components/ai/ai.css';
 //
 // ONE TAP AND ONE SPOKEN LINE, for the whole session. She says a single
 // sentence as it opens; after that the activity is silent. You describe a
-// picture, she asks one follow-up IN WRITING, you answer, and the next picture
-// appears with the microphone already live. There is no record button per
-// picture and no waiting for her to stop talking before you may speak.
+// picture, she asks one follow-up IN WRITING, you answer, she says one line back
+// about that answer, and the next picture appears with the microphone already
+// live. There is no record button per picture and no waiting for her to stop
+// talking before you may speak.
 //
 // Why the voice went: hearing every reply cost five to eight seconds after each
 // answer, twice per picture, in which the learner could do nothing at all — and
 // it was most of what the activity cost to run. A written question is read in a
 // second and, unlike a spoken one, is still there while they think.
 const PICTURES_PER_SESSION = 5;
-// Describe the picture, then answer the one follow-up. That second answer gets
-// no reply: the server records it and the picture moves on.
+// Describe the picture, then answer the one follow-up. She answers that answer
+// too, with a single sentence and no question, and the picture moves on once it
+// has been on screen long enough to read.
 const TURNS_PER_PICTURE = 2;
 
 // The one line she says out loud, at the start of the session only. It is a
@@ -54,6 +56,11 @@ function turnErrorFor(status, data) {
   if (status === 413) return 'That answer was very long. Try a shorter one.';
   return (data && data.error) || 'Something went wrong on our side. Try that again.';
 }
+
+// How long her closing sentence stays on screen before the next picture
+// arrives. Long enough to read one short sentence without being long enough to
+// feel like the app has stalled -- the failure this whole path is fixing.
+const CLOSING_READ_MS = 2800;
 
 const FREE_TURNS = 40;   // effectively unlimited; the learner ends the session
 const freeOpener = (topic) => `Hello. Today the topic is ${topic}. What do you think about it?`;
@@ -86,6 +93,7 @@ export default function AiActivity({ user }) {
   // The closing answer on the LAST picture ends the session. Without this the
   // activity had no end at all -- see the effect that consumes it.
   const pendingFinishRef = useRef(false);
+  const advanceTimerRef = useRef(null);
   // Live copy for the segment handler, which is created once and must not close
   // over stale state.
   const stateRef = useRef({});
@@ -195,17 +203,31 @@ export default function AiActivity({ user }) {
   const { status, active, level, elapsedMs, error, start, stop, interrupt } =
     useAinurSession({ onSegment: handleSegment });
 
-  // The picture changes at the moment she stops speaking, never before.
+  // The picture changes once her closing line has been on screen long enough to
+  // read. It used to change the instant the turn settled, which -- back when the
+  // closing turn produced no line at all -- meant the learner's answer was met
+  // by the photo silently swapping. She replies to it now, so the reply needs a
+  // beat: swapping the picture under her sentence hides the very thing that was
+  // missing.
   useEffect(() => {
     if (status !== 'listening' || !pendingAdvanceRef.current) return;
     pendingAdvanceRef.current = false;
-    historyRef.current = [];
-    setPicIndex((i) => i + 1);
-    setTurnIndex(0);
-    setHits([]);
-    setHeard('');
-    setReply('');
+    // Held in a ref and deliberately NOT cleared when status changes: this
+    // effect re-runs on every status transition, so cleaning up here would let
+    // the learner cancel their own picture change simply by starting to speak
+    // during the hold -- and the picture would then never advance at all.
+    advanceTimerRef.current = setTimeout(() => {
+      historyRef.current = [];
+      setPicIndex((i) => i + 1);
+      setTurnIndex(0);
+      setHits([]);
+      setHeard('');
+      setReply('');
+    }, CLOSING_READ_MS);
   }, [status]);
+
+  // Only leaving the screen cancels a pending picture change.
+  useEffect(() => () => clearTimeout(advanceTimerRef.current), []);
 
   useEffect(() => {
     if (isFree) return undefined;
