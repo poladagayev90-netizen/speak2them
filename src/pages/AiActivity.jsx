@@ -83,6 +83,9 @@ export default function AiActivity({ user }) {
   // that reset is what stops one picture leaking into the next.
   const historyRef = useRef([]);
   const pendingAdvanceRef = useRef(false);
+  // The closing answer on the LAST picture ends the session. Without this the
+  // activity had no end at all -- see the effect that consumes it.
+  const pendingFinishRef = useRef(false);
   // Live copy for the segment handler, which is created once and must not close
   // over stale state.
   const stateRef = useRef({});
@@ -97,6 +100,9 @@ export default function AiActivity({ user }) {
   // voice and resume listening on its own.
   const handleSegment = useCallback(async (blob) => {
     const st = stateRef.current;
+    // The session is already closing — a segment that was in flight when the
+    // last picture ended must not be sent, or it lands as another dead turn.
+    if (pendingFinishRef.current) return null;
     if (!st.isFree && !st.image) return null;
 
     const base64Audio = await new Promise((resolve, reject) => {
@@ -168,7 +174,18 @@ export default function AiActivity({ user }) {
       // Queued behind her voice: the session plays the reply first and only then
       // goes back to listening, so the picture cannot change while she is still
       // talking about the previous one.
+      //
+      // On the LAST picture this closes the session instead of advancing. It
+      // used to do NOTHING, and nothing was a dead end: turnIndex was never
+      // incremented, so isLastTurn stayed true and isLastPicture stayed true
+      // for ever. The microphone kept listening, every further answer was sent
+      // as another closing turn, and the server dutifully returned an empty
+      // reply -- so the bubble stayed frozen on a question already answered,
+      // the picture never changed, and the learner went on talking into
+      // nothing. Each of those dead turns still billed a Whisper transcription
+      // and wrote a turn to Firestore.
       if (!st.isLastPicture) pendingAdvanceRef.current = true;
+      else pendingFinishRef.current = true;
     } else {
       setTurnIndex((t) => t + 1);
     }
@@ -276,6 +293,15 @@ export default function AiActivity({ user }) {
       setDone('short');
     }
   }, [finishing, navigate, stop]);
+
+  // Five pictures answered IS the end of the activity, so it ends itself and
+  // goes straight to the report the learner did the work for. Queued the same
+  // way as a picture change -- on the return to 'listening', i.e. once the turn
+  // has fully settled -- so this can never cut across a reply still arriving.
+  useEffect(() => {
+    if (!pendingFinishRef.current || status !== 'listening') return;
+    finish();
+  }, [status, finish]);
 
   if (done) {
     return (

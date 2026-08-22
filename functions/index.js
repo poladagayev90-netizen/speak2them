@@ -4710,7 +4710,16 @@ This is about THIS picture only. Never mention an earlier picture — you cannot
 YOUR WHOLE REPLY IS TWO PARTS AND NOTHING ELSE
 1. One short COMPLETE SENTENCE naming ONE concrete thing they actually said, in your own words.
 2. One question.
-Write both on a single line, as ordinary prose. Never a line break, never a heading, never a fragment: "Woman with a red basket." is not a sentence. The learner is learning English from the way you write, so every sentence you send must be one they could copy.
+Write both on a single line, as ordinary prose. Never a line break, never a heading.
+
+YOUR FIRST SENTENCE MUST CONTAIN A FINITE VERB. This is the rule you break most often, so check it before you send.
+Begin it with a subject -- The, A, She, He, They, It, There, or a name -- and then put the verb straight after it.
+  GOOD: "The teacher is standing at the whiteboard."
+  GOOD: "There is a red basket full of vegetables."
+  BAD:  "Girl using a laptop for an online lesson."   <- no finite verb
+  BAD:  "A classroom with a big whiteboard."          <- no verb at all
+  BAD:  "Woman with a red basket."                    <- no verb at all
+A noun with some words hanging off it is not a sentence. The learner is learning English from the way you write, and copying a fragment teaches them to write fragments, so every sentence you send must be one they could safely copy.
 Do not open with "You mentioned" or "You said" — name the thing directly, the way someone listening would. Five pictures of "You mentioned X" in a row sounds like a form being filled in.
 
 THE QUESTION IS THE POINT, AND IT MUST ASK FOR SOMETHING THEY HAVE NOT ALREADY TOLD YOU.
@@ -4750,17 +4759,28 @@ function matchKeywords(transcript, keywords) {
 
 // Which Groq chat model to use for an AInur turn.
 //
-// 70B first because a smaller model cannot hold a CEFR level across a session,
-// and level matching is the whole point of the activity. But models get
-// decommissioned without notice -- llama-3.3-70b-versatile returned
-// model_not_found on this account the first time this shipped -- so the list is
-// walked in order and the first working one is remembered for the life of the
-// instance. Without this the whole activity is dead the day Groq retires a name.
+// Models get decommissioned without notice, so the list is walked in order and
+// the first working one is remembered for the life of the instance. Without
+// that the whole activity is dead the day Groq retires a name.
+//
+// This once read "70B first, because a smaller model cannot hold a CEFR level
+// across a session". That was a reasonable preference and a dead letter: 70B
+// has never been reachable on this account, so every turn ever served came
+// from gpt-oss-20b anyway, by way of two failed requests.
+// Ordered by what this Groq account can ACTUALLY reach, newest probe first.
+// Probed 2026-08-22 against the live key: llama-3.3-70b-versatile 404,
+// llama-4-scout 404, llama-3.1-8b-instant 404, openai/gpt-oss-20b 200. With the
+// dead names in front, every cold instance burned two failed round trips before
+// its first real answer -- pure latency on the turn a learner is most likely to
+// judge the activity by. The unreachable names are kept BELOW the working one
+// rather than deleted: if the account regains them the fallback still finds
+// them, and the day gpt-oss is retired this list is what keeps the activity
+// alive. Re-probe before assuming any of the 404s is still a 404.
 const AI_TURN_MODELS = [
+  "openai/gpt-oss-20b",
   "llama-3.3-70b-versatile",
   "meta-llama/llama-4-scout-17b-16e-instruct",
-  "openai/gpt-oss-20b",
-  "llama-3.1-8b-instant",   // known good: chatWithAI has used it all along
+  "llama-3.1-8b-instant",
 ];
 let aiTurnModel = null;
 
