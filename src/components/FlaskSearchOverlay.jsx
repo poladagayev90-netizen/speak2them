@@ -89,16 +89,20 @@ export default function FlaskSearchOverlay({
           </p>
         )}
         {subtitle && (
-          <p style={{ color: '#666', fontSize: '12px', margin: '4px 0 0' }}>{subtitle}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>{subtitle}</p>
         )}
       </div>
     );
   }
 
+  // The scrim was a hardcoded near-black at 92% in BOTH themes, while the
+  // subtitle underneath it read --text-secondary -- which is a dark grey on the
+  // light theme, i.e. dark text on a black panel. The waiting state is now
+  // painted in the theme's own colours, so it reads as the app either way.
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9000,
-      background: 'rgba(10, 10, 20, 0.92)',
+      background: 'var(--bg-primary)',
       backdropFilter: 'blur(6px)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
@@ -106,7 +110,7 @@ export default function FlaskSearchOverlay({
     }}>
       <FlaskAnimation size={140} />
       {title && (
-        <p style={{ color: '#fff', fontWeight: 800, fontSize: '20px', margin: '20px 0 0', textAlign: 'center' }}>
+        <p style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '20px', margin: '20px 0 0', textAlign: 'center' }}>
           {title}
         </p>
       )}
@@ -120,7 +124,7 @@ export default function FlaskSearchOverlay({
           onClick={onCancel}
           style={{
             marginTop: 28, background: 'transparent', color: 'var(--danger)',
-            border: '1px solid var(--danger)66', borderRadius: 12,
+            border: '1px solid var(--danger)', borderRadius: 12,
             padding: '12px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
           }}
         >

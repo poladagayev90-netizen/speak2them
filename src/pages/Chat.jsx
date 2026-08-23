@@ -1067,7 +1067,7 @@ export default function Chat({ user }) {
             <>
               {maxCallSeconds !== Infinity && (
                 <div style={{
-                  background: timeWarning ? 'var(--warning)33' : 'var(--bg-secondary)',
+                  background: timeWarning ? 'var(--warning-bg)' : 'var(--bg-secondary)',
                   border: timeWarning ? '1px solid var(--warning)' : 'none',
                   padding: '6px 12px', borderRadius: '20px',
                   fontSize: '12px', color: timeWarning ? 'var(--warning)' : 'var(--text-secondary)',
@@ -1426,7 +1426,7 @@ export default function Chat({ user }) {
                     onClick={() => { setSelectedMsg(null); deleteMessage(chatId, m.id); }}
                     style={{
                       marginTop: '6px', padding: '5px 10px', borderRadius: '8px',
-                      border: '1px solid var(--danger-bg)', background: 'var(--danger)18',
+                      border: '1px solid var(--danger)', background: 'var(--danger-bg)',
                       color: 'var(--danger)', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
                     }}
                   >

@@ -11,7 +11,8 @@ const cardStyle = {
 };
 
 // ─── 1. Test sualı ───────────────────────────────────────────────
-function MultipleChoice({ item, index }) {  const [picked, setPicked] = useState(null);
+function MultipleChoice({ item, index }) {
+  const [picked, setPicked] = useState(null);
   const answered = picked !== null;
   const isCorrect = picked === item.correct_answer;
 
@@ -69,7 +70,8 @@ function MultipleChoice({ item, index }) {  const [picked, setPicked] = useStat
 }
 
 // ─── 2. Söz sırası ───────────────────────────────────────────────
-function WordOrder({ item, index }) {  // Hər söz mənbə massivindəki indeksi ilə izlənir — təkrarlanan sözlər
+function WordOrder({ item, index }) {
+  // Hər söz mənbə massivindəki indeksi ilə izlənir — təkrarlanan sözlər
   // ("the ... the") bir-birinin yerinə işlənə bilsin, açar da stabil qalsın.
   const [chosen, setChosen] = useState([]); // seçilmiş scrambled-indeksləri sırayla
   const [checked, setChecked] = useState(false);
@@ -159,10 +161,12 @@ function WordOrder({ item, index }) {  // Hər söz mənbə massivindəki indek
         <div>
           <div style={{
             padding: '12px', borderRadius: '12px', marginBottom: '8px',
-            background: isCorrect ? '#22c55e15' : 'var(--danger)15',
-            border: `1px solid ${isCorrect ? '#22c55e44' : 'var(--danger)44'}`,
+            background: isCorrect ? 'var(--success-bg)' : 'var(--danger-bg)',
+            border: `1px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`,
           }}>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? '#16a34a' : '#dc2626', marginBottom: '4px' }}>
+            {/* The -fg tokens, not the raw greens/reds: #16a34a on the dark
+                theme's translucent green sits at about 2:1. */}
+            <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? 'var(--success-fg)' : 'var(--danger-fg)', marginBottom: '4px' }}>
               {isCorrect ? 'Perfect' : `${'Correct sentence'}:`}
             </div>
             {!isCorrect && (
@@ -214,7 +218,8 @@ function CorrectionCompare({ item }) {
   );
 }
 
-export default function AnalysisHomework({ homework, showCorrections = true, showBanner = true }) {  if (!homework) return null;
+export default function AnalysisHomework({ homework, showCorrections = true, showBanner = true }) {
+  if (!homework) return null;
   const { multipleChoice = [], wordOrder = [], correction = [] } = homework;
   if (!multipleChoice.length && !wordOrder.length && !(showCorrections && correction.length)) return null;
 

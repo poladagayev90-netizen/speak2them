@@ -1448,19 +1448,6 @@ body {
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-.user-stats-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.user-stat {
-  font-size: 12px;
-  color: var(--accent);
-  background: var(--accent)11;
-  padding: 3px 8px;
-  border-radius: 10px;
-}
 .bottom-nav {
   position: fixed;
   /* Floating, not welded to the bottom edge. The margin is what makes the app

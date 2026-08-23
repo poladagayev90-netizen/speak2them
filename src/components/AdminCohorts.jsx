@@ -228,8 +228,8 @@ export default function AdminCohorts() {
             </button>
             <button onClick={() => toggleStatus(c)} style={{
               padding: '6px 10px', background: 'none',
-              color: c.status === 'active' ? '#f87171' : 'var(--success)',
-              border: `1px solid ${c.status === 'active' ? '#f8717155' : 'var(--success)55'}`,
+              color: c.status === 'active' ? 'var(--danger)' : 'var(--success)',
+              border: `1px solid ${c.status === 'active' ? 'var(--danger)' : 'var(--success)'}`,
               borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
               {c.status === 'active' ? 'Stop' : 'Activate'}
@@ -361,7 +361,7 @@ export default function AdminCohorts() {
               {activeList.map((m) => (
                 <div key={m.id} style={{
                   background: '#15152a',
-                  border: m.fading ? '1px solid var(--danger)88' : '1px solid var(--bg-secondary)',
+                  border: m.fading ? '1px solid var(--danger)' : '1px solid var(--bg-secondary)',
                   borderRadius: '14px', padding: '13px 14px',
                   display: 'flex', alignItems: 'center', gap: '12px',
                 }}>

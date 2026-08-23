@@ -269,7 +269,7 @@ export default function Upgrade({ user }) {
             </thead>
             <tbody>
               {COMPARE.map((row, i) => (
-                <tr key={i} style={{ borderBottom: i < COMPARE.length - 1 ? '1px solid var(--bg-secondary)33' : 'none' }}>
+                <tr key={i} style={{ borderBottom: i < COMPARE.length - 1 ? '1px solid var(--border)' : 'none' }}>
                   <td style={{ padding: '9px 12px', color: '#aaa' }}>{row.feature}</td>
                   {row.values.map((v, j) => (
                     <td key={j} style={{ padding: '9px 6px', textAlign: 'center' }}>
