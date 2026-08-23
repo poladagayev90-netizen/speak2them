@@ -32,8 +32,8 @@ export default function SlotChangeBanner({ request, onDone }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, var(--warning)1f, #d977061a)',
-      border: '1px solid var(--warning-bg)', borderRadius: '16px',
+      background: 'var(--warning-bg)',
+      border: '1px solid var(--warning)', borderRadius: '16px',
       padding: '16px', marginBottom: '12px',
     }}>
       <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>

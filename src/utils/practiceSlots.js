@@ -14,7 +14,11 @@ import { bakuDateStr } from './sessionSchedule';
 // Blok yalnız MÜSAİTLİK elanıdır. İki nəfər eyni bloka düşəndə randevu blokun
 // BAŞLANĞIC saatına bərkidilir ("Bu gün 14:00"), yəni qeyri-müəyyənlik qalmır.
 export const SLOT_BLOCK_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
-export const SLOT_HORIZON_DAYS = 3;
+// Beş gün. Üç gün o demək idi ki, axşam saat 21-də lövhəni açan adam praktikada
+// iki gün görürdü — "bu həftə sonu vaxtım var" deyən adamın seçəcəyi xana yox
+// idi. Server tərəfdəki eyni adlı sabit (functions/index.js) bu dəyərlə eyni
+// qalmalıdır: orada joinPracticeSlot üfüqdən kənar slotu RƏDD edir.
+export const SLOT_HORIZON_DAYS = 5;
 export const SLOT_BLOCK_MS = 2 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -56,6 +60,20 @@ export function currentBlockSlotId(nowMs = Date.now()) {
     if (nowMs >= start && nowMs < start + SLOT_BLOCK_MS) return slotIdOf(dateStr, hour);
   }
   return null;
+}
+
+// Təqvim zolağı üçün: gün adının qısası + ayın günü. Beş sütun 320px ekranda
+// tam ada yer vermir ("Wednesday" sütuna sığmır), rəqəm isə "hansı tarix?"
+// sualına birbaşa cavab verir.
+export function dayChip(dateStr, nowMs = Date.now()) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const isToday = dateStr === bakuDateStr(nowMs);
+  return {
+    weekday: isToday ? 'Today' : SHORT[new Date(Date.UTC(y, m - 1, d)).getUTCDay()],
+    day: String(d),
+    isToday,
+  };
 }
 
 export function dayLabel(dateStr, nowMs = Date.now()) {

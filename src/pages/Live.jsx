@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Shuffle, X, Search, Users } from 'lucide-react';
 import useLiveLobby from '../hooks/useLiveLobby';
 import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
@@ -25,10 +26,28 @@ export default function Live({ user }) {
     searching, startSearch, cancelSearch,
     mine, slotChange, setSlotChange,
     slotToast, cancelBusy, cancelUpcoming, joinCallNow,
-    boardOpenSignal,
+    boardOpenSignal, openBoard,
   } = useLiveLobby(user);
 
   const [tab, setTab] = useState('online');
+
+  // Arriving from "Pick a time" — open the calendar and scroll to it, rather
+  // than dropping the learner at the top of a page where the thing they asked
+  // for is two screens down and collapsed.
+  const location = useLocation();
+  const boardRef = useRef(null);
+  useEffect(() => {
+    if (!location.state?.openBoard) return;
+    openBoard();
+    const id = setTimeout(() => {
+      boardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+    return () => clearTimeout(id);
+    // openBoard is recreated every render (it is an inline arrow in the hook),
+    // so it is deliberately not a dependency -- it would re-fire the scroll on
+    // every heartbeat.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key, location.state?.openBoard]);
 
   const browsable = allUsers.filter((u) => u.uid !== user.uid && u.id !== user.uid);
   const baseList = (tab === 'online' ? onlineUsers : browsable)
@@ -105,7 +124,7 @@ export default function Live({ user }) {
         </Card>
       )}
 
-      <div style={{ marginTop: 'var(--s-4)' }}>
+      <div ref={boardRef} style={{ marginTop: 'var(--s-4)', scrollMarginTop: 'var(--s-4)' }}>
         <PracticeBoard mine={mine} openSignal={boardOpenSignal} />
       </div>
 

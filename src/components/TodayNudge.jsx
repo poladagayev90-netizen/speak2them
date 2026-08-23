@@ -35,7 +35,9 @@ function pickNudge(user, mine) {
     return {
       id: 'pick-time',
       text: 'Pick a time you are free and we will match you with someone.',
-      action: { label: 'Pick a time', to: '/live' },
+      // openBoard: "Pick a time" landing on a COLLAPSED board meant the button
+      // did not do what it said. Live reads this and opens the calendar.
+      action: { label: 'Pick a time', to: '/live', state: { openBoard: true } },
     };
   }
 
@@ -70,7 +72,11 @@ export default function TodayNudge({ user, mine }) {
       </p>
       <div style={{ display: 'flex', gap: 'var(--s-2)', marginTop: 'var(--s-3)' }}>
         {nudge.action && (
-          <Button variant="secondary" size="sm" onClick={() => navigate(nudge.action.to)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate(nudge.action.to, { state: nudge.action.state })}
+          >
             {nudge.action.label}
           </Button>
         )}

@@ -1836,7 +1836,10 @@ exports.setTutorVerification = onRequest({ secrets: [], invoker: "public" }, asy
 // SONRA, bildiriş mətnini seçmək üçün oxunur.
 const SLOT_BLOCK_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
 const SLOT_BLOCK_MS = 2 * 60 * 60 * 1000;
-const SLOT_HORIZON_DAYS = 3;
+// Client-dəki eyni adlı sabitlə (src/utils/practiceSlots.js) EYNİ qalmalıdır:
+// lövhə beş gün göstərir, joinPracticeSlot isə üfüqdən kənar slotu rədd edir —
+// fərq olsa lövhədəki son günlər "slot-too-far" verib səssizcə işləməzdi.
+const SLOT_HORIZON_DAYS = 5;
 const SLOT_REMINDER_MS = 10 * 60 * 1000;
 const SLOT_NOSHOW_GRACE_MS = 10 * 60 * 1000;
 const SLOT_MAX_MEMBERS = 60;

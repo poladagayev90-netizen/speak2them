@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Repeat, ChevronDown, ChevronUp, Star } from 'lucide-react';
+import { Repeat, ChevronDown, ChevronUp, Star, CalendarDays, Flame } from 'lucide-react';
 import {
   SLOT_BLOCK_HOURS,
   POPULAR_HOUR,
@@ -8,6 +8,7 @@ import {
   slotIdOf,
   slotStartMs,
   dayLabel,
+  dayChip,
   blockLabel,
   hourLabel,
   subscribeToBoard,
@@ -91,12 +92,12 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
     return count + (!past && Math.max(0, w - (mineHere ? 1 : 0)) > 0 ? 1 : 0);
   }, 0);
 
-  // Collapsed until asked for. It used to default OPEN for anyone with no slots
-  // booked -- which is every new user -- so the first thing a new account saw
-  // was a grid of grey "Passed" blocks, i.e. "there is nothing here". The home
-  // screen now leads with something you can actually do, and this board sells
-  // itself from its own header.
-  const expanded = open === null ? false : open;
+  // Open by default. It was collapsed because it used to sit on the HOME screen,
+  // where a grid of grey "Passed" blocks was the first thing a new account saw.
+  // It lives on the Live tab now -- a page you open precisely to arrange a time
+  // -- and "Pick a time" asking for one more tap before showing any dates was
+  // the complaint. An explicit collapse is still remembered.
+  const expanded = open === null ? true : open;
 
   const toggleSlot = async (slotId, joined, matched) => {
     if (matched && !window.confirm(
@@ -119,6 +120,17 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
     setBusy('');
     if (!res.ok) setError(res.errorText);
   };
+
+  // Açılış günü: hələ blok qalan İLK gün. Axşam saat 22-də "Today" sütununun
+  // hamısı keçmiş olur və lövhə boz "Passed" siyahısı ilə açılırdı.
+  const firstOpenDay = useMemo(() => {
+    const i = dates.findIndex((d) => SLOT_BLOCK_HOURS.some(
+      (h) => slotStartMs(d, h) + SLOT_BLOCK_MS > now,
+    ));
+    return i < 0 ? 0 : i;
+  }, [dates, now]);
+  const [dayTouched, setDayTouched] = useState(false);
+  useEffect(() => { if (!dayTouched) setDayIndex(firstOpenDay); }, [firstOpenDay, dayTouched]);
 
   const activeDate = dates[dayIndex] || dates[0];
 
@@ -155,6 +167,13 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',
         }}
       >
+        <div style={{
+          width: 38, height: 38, borderRadius: 'var(--r-md)', flexShrink: 0,
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          color: 'var(--text-secondary)', display: 'grid', placeItems: 'center',
+        }}>
+          <CalendarDays size={19} strokeWidth={1.75} aria-hidden="true" />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
             When are you free?
@@ -167,10 +186,11 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
         </div>
         {todayWaiting > 0 && !expanded && (
           <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '4px',
             fontSize: '12px', fontWeight: 800, padding: '4px 9px', borderRadius: '20px',
-            background: 'var(--warning-bg)', color: 'var(--warning)', flexShrink: 0,
+            background: 'var(--warning-bg)', color: 'var(--warning-fg)', flexShrink: 0,
           }}>
-            🔥 {todayWaiting}
+            <Flame size={12} strokeWidth={2.25} aria-hidden="true" /> {todayWaiting}
           </span>
         )}
         <span style={{ color: 'var(--text-muted)', display: 'flex', flexShrink: 0 }}>
@@ -181,7 +201,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
       {bridge && (
         <div style={{
           marginTop: '12px', padding: '12px',
-          background: 'var(--warning)14', border: '1px solid var(--warning)44', borderRadius: '12px',
+          background: 'var(--warning-bg)', border: '1px solid var(--warning)', borderRadius: '12px',
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
           <div style={{ flex: 1, minWidth: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
@@ -204,27 +224,59 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
 
       {expanded && (
         <>
-          {/* Gün tabları — nisbi ad + tarix nömrəsi (Calendly kimi konkretlik). */}
-          <div style={{ display: 'flex', gap: '6px', margin: '14px 0 12px' }}>
-            {dates.map((d, i) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setDayIndex(i)}
-                style={{
-                  flex: 1, padding: '7px 4px', borderRadius: '10px', cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px',
-                  border: i === dayIndex ? '1px solid var(--accent)' : '1px solid var(--border)',
-                  background: i === dayIndex ? 'var(--accent-soft)' : 'transparent',
-                  color: i === dayIndex ? 'var(--accent)' : 'var(--text-secondary)',
-                }}
-              >
-                <span style={{ fontSize: '13px', fontWeight: 800 }}>{dayLabel(d, now)}</span>
-                <span style={{ fontSize: '10px', opacity: 0.75, fontVariantNumeric: 'tabular-nums' }}>
-                  {d.slice(5).replace('-', '.')}
-                </span>
-              </button>
-            ))}
+          {/* Təqvim zolağı. Beş gün, gün adı + ayın günü — tam gün adı ("Wednesday")
+              beş sütuna sığmır, tarix nömrəsi isə "hansı gün?" sualına birbaşa
+              cavabdır. Altdakı nöqtə: həmin gün kimsə gözləyir. */}
+          <div style={{ display: 'flex', gap: '5px', margin: '14px 0 12px' }}>
+            {dates.map((d, i) => {
+              const chip = dayChip(d, now);
+              const on = i === dayIndex;
+              const allPast = SLOT_BLOCK_HOURS.every(
+                (h) => slotStartMs(d, h) + SLOT_BLOCK_MS <= now,
+              );
+              const someoneWaiting = SLOT_BLOCK_HOURS.some((h) => {
+                const id = slotIdOf(d, h);
+                if (slotStartMs(d, h) + SLOT_BLOCK_MS <= now) return false;
+                const w = Number(board[id]?.waitingCount) || 0;
+                const mineHere = mySlotIds.includes(id) && upcoming?.slotId !== id;
+                return Math.max(0, w - (mineHere ? 1 : 0)) > 0;
+              });
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => { setDayIndex(i); setDayTouched(true); }}
+                  disabled={allPast}
+                  aria-pressed={on}
+                  style={{
+                    flex: 1, minWidth: 0, padding: '7px 2px 6px', borderRadius: '12px',
+                    cursor: allPast ? 'default' : 'pointer', opacity: allPast ? 0.4 : 1,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px',
+                    border: on ? '1px solid var(--accent)' : '1px solid var(--border)',
+                    background: on ? 'var(--accent-soft)' : 'var(--bg-card)',
+                    color: on ? 'var(--accent)' : 'var(--text-secondary)',
+                  }}
+                >
+                  <span style={{
+                    fontSize: '10px', fontWeight: 800, letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                  }}>
+                    {chip.weekday}
+                  </span>
+                  <span style={{
+                    fontSize: '17px', fontWeight: 800, lineHeight: 1.1,
+                    color: on ? 'var(--accent)' : 'var(--text-primary)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}>
+                    {chip.day}
+                  </span>
+                  <span style={{
+                    width: '5px', height: '5px', borderRadius: '50%', marginTop: '2px',
+                    background: someoneWaiting ? 'var(--warning)' : 'transparent',
+                  }} />
+                </button>
+              );
+            })}
           </div>
 
           {error && (
@@ -260,13 +312,13 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                   let bg = 'var(--bg-card)';
                   let status = null;
                   if (iAmMatched) {
-                    border = 'var(--success)'; bg = 'rgba(34,197,94,0.12)';
+                    border = 'var(--success)'; bg = 'var(--success-bg)';
                     status = { text: `✓ ${upcoming.peerName || 'Confirmed'}`, color: 'var(--success)' };
                   } else if (joined) {
                     border = 'var(--accent)'; bg = 'var(--accent-soft)';
                     status = { text: 'Pending', color: 'var(--accent)' };
                   } else if (hot) {
-                    border = 'var(--warning-bg)'; bg = 'var(--warning)18';
+                    border = 'var(--warning)'; bg = 'var(--warning-bg)';
                     status = { text: `${othersWaiting} waiting`, color: 'var(--warning)' };
                   } else if (!past) {
                     status = { text: 'I am free', color: 'var(--text-muted)' };

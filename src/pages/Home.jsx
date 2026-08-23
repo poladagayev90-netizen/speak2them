@@ -204,7 +204,11 @@ export default function Home({ user }) {
           tone="peer"
           padding="md"
           id="tour-live"
-          onClick={() => navigate('/live')}
+          // Nobody around? Then the useful thing on the Live tab is the
+          // calendar, not the empty people list — open it on arrival.
+          onClick={() => navigate('/live', {
+            state: (searchingCount + onlineCount) === 0 ? { openBoard: true } : undefined,
+          })}
           style={{ marginBottom: 'var(--s-3)' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>

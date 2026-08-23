@@ -52,7 +52,7 @@ const getInitialPalette = () => {
 // Keep the browser chrome (status bar, address bar) in step with the theme.
 // These are the --bg-primary values; a mismatch shows as a coloured seam above
 // the app on Android.
-const THEME_COLOR = { light: '#ffffff', dark: '#0a0a0b' };
+const THEME_COLOR = { light: '#f6f6f7', dark: '#17161a' };
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(getInitialTheme);

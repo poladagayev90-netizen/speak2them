@@ -4,6 +4,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, signInWithGoogle } from '../firebase';
 import { Capacitor } from '@capacitor/core';
 import { Link, useNavigate } from 'react-router-dom';
+import { GraduationCap, Presentation, Sparkles } from 'lucide-react';
 import Logo from '../components/Logo';
 import { getPendingJoinCode } from '../utils/teacher';
 
@@ -136,101 +137,76 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      {/* .auth-card default padding-i 40px-dir — rol seçimi ilə birlikdə bu,
-          formanı ekrandan kənara çıxarırdı. Yalnız bu səhifədə sıxılır. */}
-      <div className="auth-card" style={{ position: 'relative', overflow: 'hidden', padding: '16px 18px' }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50px',
-          right: '-50px',
-          width: '150px',
-          height: '150px',
-          background: 'radial-gradient(circle, var(--accent)44 0%, transparent 70%)',
-          borderRadius: '50%',
-          zIndex: 0
-        }}></div>
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div className="auth-logo" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '6px' }}>
-            <Logo width={116} />
+      {/* This screen used to be a white slab with a stack of unlabelled boxes:
+          the decorative blob behind it was written `var(--accent)44`, which is
+          not a colour any browser parses, so it never painted; the Google
+          button carried white ink on a white fill, so its label was invisible
+          on the light theme; and the fields shared the card's own background.
+          Everything below is the same flow, given an edge. */}
+      <div className="auth-card">
+        <div className="auth-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--s-4)' }}>
+          <Logo width={150} />
+        </div>
+
+        {/* The interface is English throughout; see feedbackLanguage.js for the
+            one thing that is not. */}
+        <h2 style={{ textAlign: 'center', fontSize: 'var(--fs-h1)', marginBottom: '6px' }}>
+          Start <span style={{ color: 'var(--accent)' }}>speaking</span>
+        </h2>
+        <p className="auth-sub" style={{ textAlign: 'center', marginBottom: 'var(--s-5)' }}>
+          Speak every day — with a real partner or with AInur.
+        </p>
+
+        {error && <div className="error-box">{error}</div>}
+
+        {/* Müəllim dəvəti ilə gələn üçün rol seçimi göstərilmir — o, şagirddir. */}
+        {invitedByTeacher && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 'var(--s-3)',
+            background: 'var(--accent-soft)',
+            border: '1px solid var(--border)', borderRadius: 'var(--r-lg)',
+            padding: 'var(--s-3)', marginBottom: 'var(--s-4)',
+            fontSize: 'var(--fs-sm)', color: 'var(--text-primary)', lineHeight: 'var(--lh-body)',
+          }}>
+            <Sparkles size={18} strokeWidth={1.75} style={{ color: 'var(--accent)', flexShrink: 0 }} aria-hidden="true" />
+            <span>You are joining through a teacher invitation — you will be connected right after you sign up.</span>
           </div>
-          {/* Rol seçimi əlavə olunandan sonra forma bir ekrana sığmırdı:
-              başlıq tək sətirə salındı, alt yazı çıxarıldı, boşluqlar
-              sıxıldı — scroll olmadan hamısı görünür. */}
-          {/* The interface is English throughout; see feedbackLanguage.js for the
-              one thing that is not. */}
-          <h2 style={{ fontSize: '20px', marginBottom: '10px', lineHeight: '1.2' }}>
-            Start <span style={{ color: 'var(--accent)' }}>speaking</span>
-          </h2>
+        )}
 
-          {error && <div className="error-box">{error}</div>}
-
-          {/* Müəllim dəvəti ilə gələn üçün rol seçimi göstərilmir — o, şagirddir. */}
-          {invitedByTeacher && (
-            <div style={{
-              background: 'var(--accent-soft)',
-              border: '1px solid var(--border)', borderRadius: '12px',
-              padding: '12px 14px', marginBottom: '12px',
-              fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5,
-            }}>
-              🎓 You are joining through a teacher invitation — you will be connected right after you sign up.
+        {/* Rol seçimi — qeydiyyatın şərti. Sonradan dəyişilə bilmir
+            (rules yalnız ilk yazılışa icazə verir), ona görə açıq seçimdir. */}
+        {!invitedByTeacher && (
+          <>
+            <div className="auth-role-row">
+              {[
+                { key: 'student', Icon: GraduationCap, label: 'I am a Student', sub: 'Practice speaking' },
+                { key: 'teacher', Icon: Presentation, label: 'I am a Teacher', sub: 'Track my students' },
+              ].map(({ key, Icon, label, sub }) => (
+                <button
+                  key={key}
+                  type="button"
+                  className="auth-role"
+                  aria-pressed={role === key}
+                  onClick={() => setRole(key)}
+                >
+                  <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
+                  <span className="auth-role-label">{label}</span>
+                  <span className="auth-role-sub">{sub}</span>
+                </button>
+              ))}
             </div>
-          )}
+            {!role && <p className="auth-hint">Choose your role to continue</p>}
+          </>
+        )}
 
-          {/* Rol seçimi — qeydiyyatın şərti. Sonradan dəyişilə bilmir
-              (rules yalnız ilk yazılışa icazə verir), ona görə açıq seçimdir. */}
-          {!invitedByTeacher && (
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-            {[
-              { key: 'student', icon: '', label: 'I am a Student', sub: 'Practice speaking' },
-              { key: 'teacher', icon: '', label: 'I am a Teacher', sub: 'Track my students' },
-            ].map((opt) => (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => setRole(opt.key)}
-                style={{
-                  flex: 1, padding: '10px 6px', borderRadius: '12px', cursor: 'pointer',
-                  border: role === opt.key ? '2px solid var(--accent)' : '1px solid var(--border)',
-                  background: role === opt.key
-                    ? 'var(--accent-soft)'
-                    : 'var(--bg-card)',
-                  color: 'var(--text-primary)', textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '20px', marginBottom: '2px' }}>{opt.icon}</div>
-                <div style={{ fontSize: '13px', fontWeight: 700 }}>{opt.label}</div>
-              </button>
-            ))}
-          </div>
-          )}
-          {!role && (
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', margin: '0 0 10px' }}>
-              Choose your role to continue
-            </p>
-          )}
-
-          {!Capacitor.isNativePlatform() && (
+        {!Capacitor.isNativePlatform() && (
           <button
+            type="button"
+            className="auth-google"
             onClick={handleGoogleRegister}
             disabled={loading || !role}
-            style={{
-              width: '100%',
-              backgroundColor: '#ffffff',
-              color: 'var(--text-on-accent)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              padding: '10px',
-              borderRadius: '12px',
-              border: 'none',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              marginBottom: '10px'
-            }}
           >
-            <svg width="20" height="20" viewBox="0 0 48 48">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
               <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
               <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
@@ -240,12 +216,10 @@ export default function Register() {
           </button>
         )}
 
-        <div style={{ textAlign: 'center', marginBottom: '10px', color: 'var(--text-secondary)', fontSize: '12px' }}>
-          or register with email
-        </div>
+        <div className="auth-divider">or</div>
 
         <form onSubmit={handleRegister}>
-          <label>Full Name</label>
+          <label style={{ marginTop: 0 }}>Full Name</label>
           <input
             type="text"
             placeholder="Your name"
@@ -278,10 +252,9 @@ export default function Register() {
           </button>
         </form>
 
-        <p className="auth-footer" style={{ marginTop: '10px', fontSize: '13px' }}>
+        <p className="auth-footer">
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
-        </div>
       </div>
     </div>
   );
