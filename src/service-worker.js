@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 // eslint-disable-next-line no-unused-vars
 const ignored = self.__WB_MANIFEST;
-const CACHE_NAME = 's2t-cache-v4';
+const CACHE_NAME = 's2t-cache-v5';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -46,6 +46,15 @@ self.addEventListener('fetch', event => {
       .catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
+        // A navigation asks for the APP, not for a file. Every route is served
+        // by the same index.html, so matching on the request URL finds nothing
+        // for /practice, /live, /profile — only "/" was ever precached — and
+        // the learner got an empty 504 body, which is a white screen. Falling
+        // back to the shell lets the router take the path from there.
+        if (event.request.mode === 'navigate') {
+          const shell = (await caches.match('/index.html')) || (await caches.match('/'));
+          if (shell) return shell;
+        }
         return new Response('', { status: 504, statusText: 'Offline' });
       })
   );

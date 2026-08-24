@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, Square, Loader2, Volume2 } from 'lucide-react';
+import { Mic, Send, Loader2, Volume2 } from 'lucide-react';
 import './ai.css';
 
 const fmt = (ms) => {
@@ -8,12 +8,19 @@ const fmt = (ms) => {
 };
 
 /**
- * The one control in a session. Tap once to begin; after that it runs itself.
+ * The one control in a session. Tap once to begin; after that it runs itself,
+ * and a tap while it is listening means "I have finished this answer".
  *
  * The label always describes what is happening RIGHT NOW, because the previous
  * version could show "recording" while the recorder had already stopped and
  * thrown the audio away. Whatever else changes here, the button must never
  * claim a state the session is not in.
+ *
+ * THE ICON IS PART OF THAT PROMISE. While listening it used to be a stop
+ * square beside a running timer — which every voice UI in the world means
+ * "send" — and tapping it ended the whole session and deleted the answer. It
+ * is a send arrow now, and it does what it says. The session is ended by the
+ * Finish button underneath, never from here.
  */
 export default function MicButton({ status, active, intro = false, level = 0, elapsedMs = 0, onTap, disabled }) {
   const listening = !intro && status === 'listening';
@@ -25,14 +32,14 @@ export default function MicButton({ status, active, intro = false, level = 0, el
 
   const label = intro ? 'AInur is asking — tap to skip'
     : !active ? 'Tap to start'
-      : listening ? 'Listening — just talk'
+      : listening ? 'Listening — tap when you finish'
         : busy ? 'One moment'
           : speaking ? 'Tap to interrupt'
             : 'Tap to start';
 
   const Icon = intro ? Volume2
     : !active ? Mic
-      : listening ? Square
+      : listening ? Send
         : busy ? Loader2
           : speaking ? Volume2 : Mic;
 
@@ -52,12 +59,15 @@ export default function MicButton({ status, active, intro = false, level = 0, el
       >
         <Icon size={30} strokeWidth={2} className={busy ? 'ai-spin' : undefined} />
       </button>
+      {/* The timer alone was the whole label while listening, which left the
+          button looking like a recorder with a stop control and nothing saying
+          what a tap would do. The sentence stays; the clock joins it. */}
       <span className="ai-mic-label">
-        {listening && elapsedMs > 0 ? fmt(elapsedMs) : label}
+        {listening && elapsedMs > 0 ? `${fmt(elapsedMs)} · tap when you finish` : label}
       </span>
       {active && !intro && (
         <span style={{ fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--text-muted)' }}>
-          Tap again to end the session
+          Or just pause — she answers on her own
         </span>
       )}
     </div>

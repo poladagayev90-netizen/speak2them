@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bot, Home, LayoutDashboard, MessageCircle, Users, User } from 'lucide-react';
 import { subscribeToUnreadTotal } from '../utils/chat';
+import useSearcherCount from '../hooks/useSearcherCount';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
@@ -19,6 +20,12 @@ export default function BottomNav({ user }) {
     if (!user?.uid) return undefined;
     return subscribeToUnreadTotal(user.uid, setUnread);
   }, [user?.uid]);
+  // Somebody is searching for a partner RIGHT NOW. This was a sentence inside a
+  // card on the home screen and nothing else -- you had to already be looking at
+  // Today, and reading, to find out that a person was waiting. It is the most
+  // time-critical thing the app has to say (a searcher gives up in a minute or
+  // two), so it belongs where it is visible from every screen.
+  const searching = useSearcherCount(user?.uid);
   const tabs = [
     { icon: Home,          label: 'Today',   route: '/' },
     { icon: MessageCircle, label: 'Chats',   route: '/chats', badge: unread },
@@ -27,7 +34,7 @@ export default function BottomNav({ user }) {
       // The lighter purple, not the deep one: colour says who you are talking
       // to, and this tab is the AI one. Every other tab leads to people.
       : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)', soft: 'var(--ai-soft)' },
-    { icon: Users,         label: 'Live',    route: '/live' },
+    { icon: Users,         label: 'Live',    route: '/live', badge: searching, live: true },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
@@ -57,13 +64,22 @@ export default function BottomNav({ user }) {
                 strokeWidth={isActive ? 2.5 : 1.8}
               />
               {tab.badge > 0 && (
-                <span style={{
-                  position: 'absolute', top: '-5px', left: '13px',
-                  minWidth: '16px', height: '16px', padding: '0 4px',
-                  borderRadius: '20px', background: 'var(--danger-solid)', color: 'var(--ink-on-danger)',
-                  fontSize: '10px', fontWeight: 800, lineHeight: '16px',
-                  textAlign: 'center',
-                }}>
+                <span
+                  // Unread messages are red because they are a backlog; people
+                  // waiting to talk are the accent, because that is an
+                  // invitation, not a debt. The live one pulses -- it is true
+                  // only for the next minute or so.
+                  className={tab.live ? 'nav-badge-live' : undefined}
+                  style={{
+                    position: 'absolute', top: '-5px', left: '13px',
+                    minWidth: '16px', height: '16px', padding: '0 4px',
+                    borderRadius: '20px',
+                    background: tab.live ? 'var(--accent)' : 'var(--danger-solid)',
+                    color: tab.live ? 'var(--text-on-accent)' : 'var(--ink-on-danger)',
+                    fontSize: '10px', fontWeight: 800, lineHeight: '16px',
+                    textAlign: 'center',
+                  }}
+                >
                   {tab.badge > 9 ? '9+' : tab.badge}
                 </span>
               )}

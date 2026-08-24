@@ -3,9 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // A hands-free speaking session with AInur.
 //
 // You tap once to begin. After that it listens, notices when you have stopped
-// talking, sends what you said, plays her answer, and starts listening again —
-// until you tap to end it. Tapping while she is talking interrupts her, the same
-// way you would interrupt a person.
+// talking, sends what you said, plays her answer, and starts listening again.
+// Tapping while it listens means "I have finished this answer" and sends it
+// immediately (submit); tapping while she is talking interrupts her, the same
+// way you would interrupt a person. Ending the session is the Finish button,
+// NOT the microphone — see the note on submit() for what it cost to learn
+// that the two must not share a control.
 //
 // THE BUG THIS REPLACES, because it must never come back:
 // the old hook auto-stopped the recorder from a timer, handed the blob to
@@ -52,6 +55,9 @@ export default function useAinurSession({ onSegment }) {
   const lastVoiceAtRef = useRef(0);
   const heardVoiceRef = useRef(false);
   const autoStopRef = useRef(null);
+  // Set by submit(): this segment is ending because the learner said it was
+  // finished, not because the room went quiet.
+  const submitRef = useRef(false);
   const audioElRef = useRef(null);
   const onSegmentRef = useRef(onSegment);
   onSegmentRef.current = onSegment;
@@ -155,9 +161,17 @@ export default function useAinurSession({ onSegment }) {
       chunksRef.current = [];
       recorderRef.current = null;
       setElapsedMs(0);
+      // Read and clear here: a deliberate "I have finished" tap must survive
+      // into the checks below, and must not leak into the next segment.
+      const submitted = submitRef.current;
+      submitRef.current = false;
 
       if (!activeRef.current) return;               // session ended mid-segment
-      if (blob.size < 1200 || !heardVoiceRef.current) {
+      // A tap on the button means "send this", so it overrides the voice
+      // detector. Without the override a segment recorded while the meter
+      // failed to start (no AudioContext) could never be sent at all, and the
+      // learner would tap, watch nothing happen, and tap again.
+      if (blob.size < 1200 || (!heardVoiceRef.current && !submitted)) {
         // Nothing worth sending. Listen again rather than bothering the learner.
         listen();
         return;
@@ -226,9 +240,28 @@ export default function useAinurSession({ onSegment }) {
     listen();
   }, [listen]);
 
+  // "I have finished my answer." Ends the current segment and sends it, and the
+  // session carries on — this is NOT stop().
+  //
+  // It exists because the button that shows a stop square and a running timer
+  // used to call stop(), and stop() clears activeRef BEFORE stopping the
+  // recorder, so onstop hit its `!activeRef.current` guard and threw the answer
+  // away. Tapping what looks exactly like "send" silently deleted what you had
+  // just said and ended the session: no reply, no next picture, nothing on
+  // screen to say why. Waiting out the silence timer was the only way to be
+  // heard, and nobody knew that.
+  const submit = useCallback(() => {
+    const rec = recorderRef.current;
+    if (!activeRef.current || !rec || rec.state !== 'recording') return false;
+    submitRef.current = true;
+    rec.stop();
+    return true;
+  }, []);
+
   const stop = useCallback(() => {
     activeRef.current = false;
     setActive(false);
+    submitRef.current = false;
     if (autoStopRef.current) { clearInterval(autoStopRef.current); autoStopRef.current = null; }
     const rec = recorderRef.current;
     if (rec && rec.state === 'recording') rec.stop();
@@ -252,5 +285,5 @@ export default function useAinurSession({ onSegment }) {
     releaseMic();
   }, [releaseMic, stopPlayback]);
 
-  return { status, active, level, elapsedMs, error, setError, start, stop, interrupt };
+  return { status, active, level, elapsedMs, error, setError, start, stop, submit, interrupt };
 }

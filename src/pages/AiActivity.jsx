@@ -202,7 +202,7 @@ export default function AiActivity({ user }) {
     return data;
   }, [content.day, user]);
 
-  const { status, active, level, elapsedMs, error, start, stop, interrupt } =
+  const { status, active, level, elapsedMs, error, start, stop, submit, interrupt } =
     useAinurSession({ onSegment: handleSegment });
 
   // The picture changes once her closing line has been on screen long enough to
@@ -278,6 +278,15 @@ export default function AiActivity({ user }) {
     start();
   }, [opener, start]);
 
+  // The microphone button NEVER ends the session. It used to: any tap that was
+  // not an interrupt fell through to stop(), which discards the segment being
+  // recorded. So a learner who answered and then tapped the stop-square — the
+  // universal "send" gesture, and what the running timer beside it invites —
+  // had their answer deleted, got no reply, no next picture, and no error. It
+  // was reported, exactly, as "I answer, I send, and nothing happens".
+  //
+  // Tapping while listening now SENDS. Ending the session is the Finish button
+  // below, which says so in words.
   const onTap = useCallback(() => {
     // Tapping through the opening line skips it rather than restarting it.
     if (intro) {
@@ -289,8 +298,11 @@ export default function AiActivity({ user }) {
     }
     if (!active) { beginSession(); return; }
     if (status === 'speaking') { interrupt(); return; }
-    stop();
-  }, [intro, active, status, beginSession, start, stop, interrupt]);
+    // Already sending: a second tap must not queue anything or tear the
+    // session down. Doing nothing is the honest response to "one moment".
+    if (status === 'sending') return;
+    submit();
+  }, [intro, active, status, beginSession, start, submit, interrupt]);
 
   // Leaving the screen must not leave her talking, and must not let a queued
   // opening line start a session nobody is looking at.

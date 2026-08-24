@@ -1204,8 +1204,12 @@ export default function Chat({ user }) {
           top of EVERYTHING -- including the "Next picture" / "Next topic"
           button at the bottom of every in-call activity panel. Tapping the
           primary action meant tapping the globe instead. While a panel owns the
-          screen the widget stands down; closing the panel brings it back. */}
-      {inCall && !stageOpen && (
+          screen the widget stands down; closing the panel brings it back.
+          The roadmap is in that list for the same reason and it was NOT: the
+          globe sat on the roadmap's Skip button, so the first thing a learner
+          does on their first call — dismiss the roadmap — opened the
+          translator over everything instead. */}
+      {inCall && !stageOpen && !showRoadmap && (
         <div id="tour-translate">
           <TranslateWidget 
             userId={user.uid} 

@@ -198,8 +198,13 @@ export default function Home({ user }) {
             is nudging you towards. */}
         <TodayNudge user={user} mine={mine} />
 
-        {/* Live is a summary here, not the whole lobby. Violet, because the
-            other end is a person; the card above is cyan for AInur. */}
+        {/* Live is a summary here, not the whole lobby. The deep purple,
+            because the other end is a person; the card above is AInur's. */}
+        {/* When somebody is actually searching this stops being a summary and
+            becomes the thing to do: the card lights up, says so with a live
+            dot, and grows a button. It used to be one grey sentence in the
+            middle of a quiet card -- you had to be reading it to notice that a
+            person was waiting, and they only wait a minute or two. */}
         <Card
           tone="peer"
           padding="md"
@@ -209,15 +214,22 @@ export default function Home({ user }) {
           onClick={() => navigate('/live', {
             state: (searchingCount + onlineCount) === 0 ? { openBoard: true } : undefined,
           })}
-          style={{ marginBottom: 'var(--s-3)' }}
+          style={{
+            marginBottom: 'var(--s-3)',
+            ...(searchingCount > 0 ? { borderColor: 'var(--accent)' } : null),
+          }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
             <div style={{
+              position: 'relative',
               width: 44, height: 44, borderRadius: 'var(--r-md)', flexShrink: 0,
               background: 'var(--peer-soft)', color: 'var(--peer)',
               display: 'grid', placeItems: 'center',
             }}>
               <Users size={22} strokeWidth={1.75} aria-hidden="true" />
+              {searchingCount > 0 && (
+                <span className="live-dot" aria-hidden="true" />
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
@@ -227,17 +239,28 @@ export default function Home({ user }) {
                 Talk to someone
               </p>
               <p style={{
-                margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)',
+                margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600,
+                color: searchingCount > 0 ? 'var(--accent)' : 'var(--text-secondary)',
                 lineHeight: 'var(--lh-body)',
               }}>
                 {searchingCount > 0
-                  ? `${searchingCount} ${searchingCount === 1 ? 'person is' : 'people are'} looking for a partner right now`
+                  ? `${searchingCount} ${searchingCount === 1 ? 'person is waiting' : 'people are waiting'} right now — join and you connect immediately`
                   : onlineCount > 0
                     ? `${onlineCount} ${onlineCount === 1 ? 'person' : 'people'} online`
                     : 'Book a time and we will match you'}
               </p>
             </div>
-            <ChevronRight size={20} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+            {searchingCount > 0
+              ? (
+                <span style={{
+                  flexShrink: 0, padding: '8px 14px', borderRadius: 'var(--r-pill)',
+                  background: 'var(--accent)', color: 'var(--text-on-accent)',
+                  fontSize: 'var(--fs-sm)', fontWeight: 700, whiteSpace: 'nowrap',
+                }}>
+                  Join
+                </span>
+              )
+              : <ChevronRight size={20} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
           </div>
         </Card>
 

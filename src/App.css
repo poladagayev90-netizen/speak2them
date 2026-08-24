@@ -1520,6 +1520,34 @@ body {
   font-size: 22px;
 }
 
+/* "Someone is here right now", on the Today card's people icon. Same meaning as
+   the nav badge, same accent, same breathing ring. */
+.live-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-card);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .live-dot { animation: nav-badge-pulse 2s ease-in-out infinite; }
+}
+
+/* The Live badge counts people waiting to be matched, which stops being true
+   within a minute or two, so it breathes rather than sitting there like a
+   number. A flat ring, no blur: this is a signal, not a glow. */
+.nav-badge-live { box-shadow: 0 0 0 0 var(--accent-ring); }
+@media (prefers-reduced-motion: no-preference) {
+  .nav-badge-live { animation: nav-badge-pulse 2s ease-in-out infinite; }
+}
+@keyframes nav-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-ring); }
+  50%      { box-shadow: 0 0 0 5px rgb(var(--accent-rgb) / 0); }
+}
+
 /* 700, not 500. At 10px on a translucent bar a medium weight is a smudge --
    the label has to be readable at a glance or the icon is doing all the work. */
 .bottom-nav-label {

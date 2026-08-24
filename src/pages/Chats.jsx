@@ -141,7 +141,7 @@ export default function Chats({ user }) {
                         fontWeight: unread > 0 ? 600 : 400,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       }}>
-                        {mine && <span style={{ color: 'var(--text-muted)' }}>Siz: </span>}
+                        {mine && <span style={{ color: 'var(--text-muted)' }}>You: </span>}
                         {c.lastMessage}
                       </p>
                       {unread > 0 && (

@@ -158,7 +158,27 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      allow read: if isChatMember(chatId);
+      // GET and LIST are split, and they have to be.
+      //
+      // `isChatMember` derives membership from the document ID, which is fine
+      // for reading one known chat. It CANNOT authorise a query: rules are not
+      // filters, so for a list Firestore has to prove from the query's own
+      // constraints that every document it could return is allowed — and it has
+      // no way to reason about `chatId.split("_")` before reading anything. The
+      // whole subscription therefore failed with "Missing or insufficient
+      // permissions", subscribeToChats fell into its error branch and reported
+      // an empty list, and the Chats tab stayed empty for ever. You could still
+      // open a conversation by URL (a get) and see every message, which is why
+      // this read as "the chat only appears if the other person opens it".
+      //
+      // The list rule leans on `participants` instead, which the query filters
+      // on, so it is provable. That array is client-written, but the only thing
+      // a forged entry buys is having someone else's chat listed — the get,
+      // update and message rules all still go through isChatMember, so nothing
+      // can actually be read or written that way.
+      allow get: if isChatMember(chatId);
+      allow list: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
       allow create: if isChatMember(chatId);
       // Oxunmamış sayğac: hər kəs YALNIZ öz sayını sıfırlaya bilər. Qarşı
       // tərəfinki toxunulmazdır — əks halda mesaj göndərən adam qarşı tərəfin
