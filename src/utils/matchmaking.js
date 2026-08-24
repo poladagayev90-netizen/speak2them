@@ -193,7 +193,12 @@ export function subscribeToSearchingQueue(onCandidates) {
     where('status', '==', MATCH_STATUS.SEARCHING),
     limit(25)
   );
-  return onSnapshot(q, (snap) => {
-    onCandidates(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+  return onSnapshot(
+    q,
+    (snap) => onCandidates(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    // The nav bar subscribes to this on every screen now (the Live badge), so
+    // a failure here must degrade to "nobody is searching", not to an uncaught
+    // error on every route.
+    (e) => { console.warn('[matchQueue] searchers listener stopped:', e.code || e.message); onCandidates([]); },
+  );
 }

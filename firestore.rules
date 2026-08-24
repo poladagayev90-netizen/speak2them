@@ -204,10 +204,22 @@ service cloud.firestore {
     }
 
     match /calls/{callId} {
-      allow read: if isSignedIn() && (
-        request.auth.uid == resource.data.callerId || 
+      // `resource != null` is not decoration, and it is why teacherInvites and
+      // slotChanges below carry the same guard.
+      //
+      // Call documents get DELETED — on reject, and when a call is cleaned up.
+      // Chat.jsx keeps a listener on the call doc for the whole call, so it is
+      // still attached at the moment the document disappears. Firestore then
+      // evaluates this rule with a null resource, `resource.data.callerId`
+      // throws, and a rule that errors is reported to the client as
+      // permission-denied. That is the "Uncaught Error in snapshot listener:
+      // FirebaseError [code=permission-denied]" that appeared every time a
+      // call ended — nothing was actually forbidden, the rule just could not
+      // survive the document going away.
+      allow read: if isSignedIn() && resource != null && (
+        request.auth.uid == resource.data.callerId ||
         request.auth.uid == resource.data.receiverId ||
-        request.auth.uid == resource.data.userA || 
+        request.auth.uid == resource.data.userA ||
         request.auth.uid == resource.data.userB
       );
       allow create: if request.auth.uid == request.resource.data.callerId || 

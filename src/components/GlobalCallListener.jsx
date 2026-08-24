@@ -51,6 +51,13 @@ export default function GlobalCallListener({ user }) {
         setIncomingCall(null);
         ringtoneRef.current?.pause();
       }
+    }, (e) => {
+      // This listener lives for the whole session on every screen, so an
+      // unhandled error here is a console full of uncaught FirebaseErrors and
+      // a ringtone that can never be stopped. Fail quiet, fail closed.
+      console.warn('[calls] incoming listener stopped:', e.code || e.message);
+      setIncomingCall(null);
+      ringtoneRef.current?.pause();
     });
     return unsub;
   }, [user.uid]);

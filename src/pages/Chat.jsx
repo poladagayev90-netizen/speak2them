@@ -519,6 +519,12 @@ export default function Chat({ user }) {
         setIncomingCallData(null);
         endCallRef.current?.();
       }
+    }, (e) => {
+      // A listener on a document that gets deleted mid-call must not throw.
+      // The rule now guards `resource != null`, but the network can fail too,
+      // and an unhandled listener error surfaces as an uncaught FirebaseError
+      // in the console with nothing on screen to explain it.
+      console.warn('[call] listener stopped:', e.code || e.message);
     });
     return unsub;
     // eslint-disable-next-line react-hooks/exhaustive-deps
