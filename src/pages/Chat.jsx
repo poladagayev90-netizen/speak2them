@@ -999,7 +999,7 @@ export default function Chat({ user }) {
       {incomingCallData && !inCall && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: '#0f0f1aee', display: 'flex', alignItems: 'center',
+          background: 'var(--bg-card)', display: 'flex', alignItems: 'center',
           justifyContent: 'center', zIndex: 9998,
         }}>
           <div style={{
@@ -1037,7 +1037,7 @@ export default function Chat({ user }) {
       {callStatus === 'rejected' && (
         <div style={{
           position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--danger)', color: 'white', padding: '12px 24px',
+          background: 'var(--danger-solid)', color: 'var(--ink-on-danger)', padding: '12px 24px',
           borderRadius: '12px', fontWeight: 600, zIndex: 9999,
         }}>
           ❌ Call declined
@@ -1058,7 +1058,15 @@ export default function Chat({ user }) {
             {callStatus === 'calling' && 'Calling...'}
             {/* Kanaldayıq, amma qarşı tərəf hələ qoşulmayıb — gözləmə otağı. */}
             {callStatus === 'connected' && !peerJoined && 'Waiting for your partner…'}
-            {callStatus === 'connected' && peerJoined && `🟢 ${formatTime(callSeconds)}`}
+            {/* The live dot is a styled span, not a 🟢: an emoji is the one
+                thing on screen no palette can reach, and a green disc on a
+                plum call screen was the only foreign hue left in the app. */}
+            {callStatus === 'connected' && peerJoined && (
+              <>
+                <span className="call-live-dot" aria-hidden="true" />
+                {formatTime(callSeconds)}
+              </>
+            )}
             {callStatus === 'left' && 'Partner left'}
             {callStatus === 'rejected' && 'Declined'}
             {callStatus === 'error' && 'Error'}

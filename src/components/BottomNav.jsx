@@ -24,8 +24,8 @@ export default function BottomNav({ user }) {
     { icon: MessageCircle, label: 'Chats',   route: '/chats', badge: unread },
     isTeacher
       ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
-      // Cyan, not violet: colour says who you are talking to, and this tab is
-      // the AI one. Every other tab leads to people.
+      // The lighter purple, not the deep one: colour says who you are talking
+      // to, and this tab is the AI one. Every other tab leads to people.
       : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)', soft: 'var(--ai-soft)' },
     { icon: Users,         label: 'Live',    route: '/live' },
     { icon: User,          label: 'Profile', route: '/profile' },
@@ -45,8 +45,9 @@ export default function BottomNav({ user }) {
             id={tab.tourId}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
             onClick={() => navigate(tab.route)}
-            // The pool of light behind the active icon has to be the tab's own
-            // hue, or the AI tab glows violet while its icon is cyan.
+            // The pool behind the active icon has to be the tab's own step of
+            // the purple, or the AI tab pools in the peer colour under an
+            // AInur-coloured icon.
             style={isActive && tab.soft ? { '--nav-pool': tab.soft } : undefined}
           >
             <span style={{ position: 'relative', display: 'inline-flex' }}>
@@ -59,7 +60,7 @@ export default function BottomNav({ user }) {
                 <span style={{
                   position: 'absolute', top: '-5px', left: '13px',
                   minWidth: '16px', height: '16px', padding: '0 4px',
-                  borderRadius: '20px', background: 'var(--danger)', color: '#fff',
+                  borderRadius: '20px', background: 'var(--danger-solid)', color: 'var(--ink-on-danger)',
                   fontSize: '10px', fontWeight: 800, lineHeight: '16px',
                   textAlign: 'center',
                 }}>

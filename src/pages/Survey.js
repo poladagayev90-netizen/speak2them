@@ -3,6 +3,7 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import { Ticket, Target } from 'lucide-react';
 
 const LEVELS = [
   'A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -99,17 +100,16 @@ export default function Survey({ user }) {
 
   const optionButtonStyle = (active) => ({
     width: '100%',
-    border: active ? '1px solid var(--accent)' : '1px solid var(--bg-secondary)',
-    background: active ? 'linear-gradient(135deg, var(--border), var(--accent-soft))' : '#151520',
-    color: active ? '#ffffff' : '#d1d5db',
+    border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
+    background: active ? 'var(--accent-soft)' : 'var(--bg-card)',
+    color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
     padding: '12px 14px',
     borderRadius: '14px',
     fontSize: '14px',
-    fontWeight: active ? 700 : 500,
+    fontWeight: active ? 700 : 600,
     textAlign: 'left',
     cursor: 'pointer',
     marginBottom: '8px',
-    boxShadow: active ? '0 0 12px var(--border)' : 'none',
   });
 
   const sectionStyle = {
@@ -120,7 +120,7 @@ export default function Survey({ user }) {
     fontSize: '15px',
     fontWeight: 800,
     marginBottom: '10px',
-    color: '#ffffff',
+    color: 'var(--text-primary)',
   };
 
   const hintStyle = {
@@ -149,18 +149,19 @@ export default function Survey({ user }) {
           onClick={() => navigate('/redeem')}
           style={{
             width: '100%',
-            border: '1px solid var(--border)',
+            border: '1px solid var(--accent-ring)',
             background: 'var(--accent-soft)',
-            color: '#ffffff',
+            color: 'var(--accent)',
             padding: '12px',
             borderRadius: '14px',
             fontSize: '14px',
             fontWeight: 700,
             cursor: 'pointer',
             marginTop: '12px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
           }}
         >
-          🎟️ Have a course code? Activate it
+          <Ticket size={16} strokeWidth={1.75} aria-hidden="true" /> Have a course code? Activate it
         </button>
 
         <button
@@ -169,9 +170,9 @@ export default function Survey({ user }) {
           disabled={saving}
           style={{
             width: '100%',
-            border: '1px solid var(--bg-secondary)',
-            background: '#151520',
-            color: '#aaa',
+            border: '1px solid var(--border)',
+            background: 'var(--bg-card)',
+            color: 'var(--text-secondary)',
             padding: '12px',
             borderRadius: '14px',
             fontSize: '14px',
@@ -191,9 +192,9 @@ export default function Survey({ user }) {
             type="button"
             className="btn-primary"
             onClick={() => navigate('/placement')}
-            style={{ width: '100%', marginBottom: '16px', background: 'var(--accent)' }}
+            style={{ width: '100%', marginBottom: '16px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            🎯 Take a Quick Placement Test (Recommended)
+            <Target size={16} strokeWidth={1.75} aria-hidden="true" /> Take a Quick Placement Test (Recommended)
           </button>
           
           <p style={hintStyle}>Or select your level manually if you already know it:</p>

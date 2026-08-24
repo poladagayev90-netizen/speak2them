@@ -1,42 +1,42 @@
-/* SpeakLab colour system.
+/* SpeakLab colour system — Plum.
  *
- * Two rules hold the whole thing together.
+ * Three rules hold the whole thing together.
  *
- * 1. NEUTRALS CARRY THE UI, ONE ACCENT CARRIES ACTION. The surfaces are plain
- *    greys, the borders are hairlines, and there are no gradients. Colour is
- *    scarce on purpose: when almost nothing is coloured, the one coloured thing
- *    is obviously the thing to tap. The old palette put a violet gradient
- *    banner, an orange-red button, a cyan card and a green badge on one screen,
- *    and none of them won.
+ * 1. ONE FAMILY. Every colour in the app is a step of the same purple. The
+ *    room is a deep plum, a real person is a deep purple, AInur is a lighter
+ *    one, and the five call activities are further steps down the same band.
+ *    Nothing green, amber or teal survives: when a screen carries one hue,
+ *    the eye reads position and lightness instead of trying to decode four
+ *    unrelated colours. Red is the single exception, and only ever on the
+ *    controls that destroy something — End call, Delete.
  *
  * 2. COLOUR SAYS WHO YOU ARE TALKING TO. --accent is a real person, --ai is
- *    AInur. That is the only semantic colour in the product, so it never has to
- *    compete with decoration.
+ *    AInur. Because the two now sit in the same family, the difference is
+ *    lightness, so it never shouts.
  *
- * PALETTES. Everything below is driven by two hues, so a palette is data rather
- * than code: set data-palette on <html> and the whole app follows. The
- * neutrals never change — only the accent pair does — which is why swapping
- * palettes cannot break contrast or make the app look like a different product.
+ * 3. NOTHING GLOWS. Surfaces get one soft lift shadow (--glass-lift) and that
+ *    is all. There is no page-wide radial light behind the screens and no
+ *    coloured halo under a filled button: on a tinted page those turn every
+ *    action into a light source, and this is a study app.
  *
- * CONTRAST. Light themes use DEEP accents with white text on them; dark themes
- * use LIGHT accents with dark ink on them. That inversion is what keeps a
- * filled button readable in both, and it is why --text-on-accent is a token
- * rather than a hardcoded white.
+ * CONTRAST. Light theme uses DEEP accents with white text on them; dark uses
+ * LIGHT accents with dark ink. That inversion is what keeps a filled button
+ * readable in both, and it is why --text-on-accent is a token rather than a
+ * hardcoded white. The one place the pattern bends is the AInur Start button:
+ * a lilac light enough to read as "the friendly one" is unreadable as text on
+ * white, so the FILL (--ai-fill) is a separate token from the hue (--ai).
  */
 
-/* ── Neutrals ─────────────────────────────────────────────────────────────── */
+/* ── Light ────────────────────────────────────────────────────────────────── */
 /* :root carries the light values so the page is never unstyled — if the theme
    attribute is missing (JS blocked, or a paint before the boot script runs) the
    text still contrasts with the background. */
 :root,
 [data-theme="light"] {
-  /* Not pure white. Every surface in the app is white or near-white, so on a
-     white page nothing has an edge -- the cards on the home screen dissolved
-     into the background and the only thing that looked tappable was the one
-     filled button. An off-white floor costs nothing and gives every card back
-     its shape. */
-  --bg-primary: #f6f6f7;
-  --bg-secondary: #ececee;
+  /* Not pure white, and not a neutral grey either: a faint plum wash, so the
+     white cards on top of it have an edge without needing a heavier border. */
+  --bg-primary: #f5f4f9;
+  --bg-secondary: #eae8f2;
   /* OPAQUE, and it must stay that way. This was briefly translucent so that the
      ~80 places painting a panel with --bg-card directly would pick up the glass
      look. That broke the call screen: the in-call stage panels are fixed
@@ -46,68 +46,70 @@
      Glass is opt-in, on the primitives that sit ON the page rather than over
      it: .ui-card, .ui-sheet and .bottom-nav read --glass-fill. */
   --bg-card: #ffffff;
-  --bg-input: #fafafa;   /* a field inside a white card needs its own value */
-  --text-primary: #18181b;   /* 16.1:1 on white */
-  --text-secondary: #52525b; /*  7.6:1 */
-  --text-muted: #71717a;     /*  4.9:1 — the floor for body text */
+  --bg-input: #fbfafd;   /* a field inside a white card needs its own value */
+  --text-primary: #191727;   /* 15.6:1 on white */
+  --text-secondary: #48445e; /*  8.9:1 */
+  --text-muted: #605c78;     /*  6.1:1 — small text is 600 weight, see below */
   /* Hairlines, but VISIBLE ones. At 0.10 a card sitting on a white page had no
      edge at all, so the two things a learner is meant to tap on the home
      screen -- today's topic, talk to someone -- read as paragraphs of text.
      A border is what tells you a surface is a surface. */
-  --border: rgba(9, 9, 11, 0.14);
-  --shadow: rgba(9, 9, 11, 0.10);
-  --overlay: rgba(9, 9, 11, 0.45);
+  --border: rgba(24, 20, 48, 0.15);
+  --shadow: rgba(24, 20, 48, 0.10);
+  --overlay: rgba(23, 19, 49, 0.45);
 
-  /* Status. The usual #16a34a / #ef4444 are only ~3.3:1 on white — fine for an
-     icon, not for the label beside it. */
-  --success: #15803d;
-  --danger: #b91c1c;
-  --warning: #b45309;
-  --success-bg: #dcfce7;
-  --success-fg: #14532d;
-  --danger-bg: #fee2e2;
-  --danger-fg: #7f1d1d;
-  --warning-bg: #fef3c7;
-  --warning-fg: #713f12;
+  /* Status. "Confirmed" is no longer green and "waiting" is no longer amber --
+     both are steps of the purple family. A tick beside a purple label still
+     reads as done; a green pill on a plum screen read as a different app. */
+  --success: #403a7e;
+  --danger: #a5352f;
+  --warning: #6f5ad0;
+  --success-bg: #ebe8fb;
+  --success-fg: #2e2960;
+  --danger-bg: #f7e6e5;
+  --danger-fg: #7f2622;
+  --warning-bg: #f0ecff;
+  --warning-fg: #3b3183;
 
-  /* Leaderboard medals. The literal medal colours are ~2:1 on white, so each
-     theme gets a readable stand-in. */
-  --gold: #b45309;
-  --silver: #52525b;
-  --bronze: #92400e;
+  /* Leaderboard medals. Gold/silver/bronze as literal metals would put three
+     foreign hues on the one screen that is nothing but a list, so the ranks
+     are a lightness ramp instead: first place is the deepest, third the
+     palest. The number beside it is what says which place it is. */
+  --gold: #2b2668;
+  --silver: #5b3fa8;
+  --bronze: #8a6fd8;
 
   /* ── In-call activity hues ───────────────────────────────────────────────
      The five call activities are the product's main event, so each one owns a
-     hue and is recognisable before the label is read -- which is what the
+     shade and is recognisable before the label is read -- which is what the
      emoji used to do, minus the per-platform lottery over how a 🎭 is drawn.
-     Deliberately NOT --accent/--ai: those two mean "a real person" and
-     "AInur", and five buttons in the peer colour would say nothing. Cyan is
-     avoided entirely here, or Debate would read as an AInur activity.
+     Spread on LIGHTNESS inside the purple band rather than on hue: five
+     unrelated colours on the call screen was the loudest thing in the app.
      Values are literal per theme rather than mixed at runtime: this is the one
      screen that must never depend on an old WebView's colour-mix support. */
-  --act-vocab:   #c2410c;   --act-vocab-rgb:   194  65  12;  /*  4.6:1 on white */
-  --act-quiz:    #7c3aed;   --act-quiz-rgb:    124  58 237;  /*  6.3:1 */
-  --act-picture: #047857;   --act-picture-rgb:   4 120  87;  /*  5.1:1 */
-  --act-taboo:   #be123c;   --act-taboo-rgb:   190  18  60;  /*  6.1:1 */
-  --act-debate:  #1d4ed8;   --act-debate-rgb:   29  78 216;  /*  7.2:1 */
+  --act-vocab:   #8a6fd8;   --act-vocab-rgb:   138 111 216;
+  --act-quiz:    #2b2668;   --act-quiz-rgb:     43  38 104;
+  --act-picture: #4a5bb0;   --act-picture-rgb:  74  91 176;
+  --act-taboo:   #8c4a91;   --act-taboo-rgb:   140  74 145;
+  --act-debate:  #5b3fa8;   --act-debate-rgb:   91  63 168;
   /* Disc fill and ring, as an alpha of the hue above. Light needs less fill
      than dark to reach the same apparent separation from the page. */
   --act-fill: 0.10;
   --act-ring: 0.30;
 
-  /* The two call controls that must read IDENTICALLY in both themes, and so
+  /* The three call controls that must read IDENTICALLY in both themes, and so
      are deliberately not overridden in the dark block below.
      End does not use --danger: that token flips to a light red in dark mode
-     (#f87171) and white-on-#f87171 is 2.6:1 -- the hang-up glyph was washing
-     out on the default theme.
-     Mute does not use --warning: that token is #b45309 in light, a brown-amber
-     sitting right next to the red End button at almost the same darkness, so
-     the two filled circles blurred into each other. A muted mic and "hang up"
-     are the two controls you least want confused mid-call, so mute takes a
-     bright amber that no theme can drag towards red. */
-  --danger-solid: #dc2626;   /* white ink   = 4.8:1 */
-  --warning-solid: #f59e0b;  /* #1c1500 ink = 8.6:1 */
-  --ink-on-warning: #1c1500;
+     and white on it washes out. It is the one control outside the purple
+     family on purpose -- destroying something should not look like an
+     activity. Mute is a step of the family, not an amber: an amber circle sat
+     right next to the red End button at almost the same darkness and the two
+     blurred into each other, which are the two controls you least want
+     confused mid-call. */
+  --danger-solid: #b8433c;   /* white ink = 5.4:1 */
+  --ink-on-danger: #ffffff;
+  --warning-solid: #6f5ad0;  /* white ink = 5.0:1 */
+  --ink-on-warning: #ffffff;
 
   /* ── Glass ──────────────────────────────────────────────────────────────
      A surface is a translucent fill with a lit top edge, not a flat panel with
@@ -117,73 +119,62 @@
   --glass-border: rgba(9, 9, 11, 0.13);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.90);
   --glass-lift: 0 10px 24px -18px rgba(9, 9, 11, 0.34);
+  --nav-lift: 0 18px 36px -24px rgba(9, 9, 11, 0.30);
 
-  /* Atmosphere: the page is lit by the accent rather than being flat white.
-     It costs one pseudo-element and it is the single biggest difference
-     between the old screens and the new ones. Built on the --*-rgb triplets
-     rather than a literal violet, or ocean/forest/mono would all be lit
-     violet -- a palette must never leak another palette's hue. */
-  --page-glow:
-    radial-gradient(100% 40% at 80% -6%, rgb(var(--accent-rgb) / 0.10), transparent 68%),
-    radial-gradient(80% 34% at 4% 60%, rgb(var(--ai-rgb) / 0.06), transparent 70%);
+  /* A card can still say which side of the app it belongs to -- a faint tint
+     pooling in one corner, not a coloured panel. */
+  --tint-accent: radial-gradient(130% 130% at 100% 0%, rgba(64, 58, 126, 0.11), rgba(255, 255, 255, 0.94) 60%);
+  --tint-ai: radial-gradient(130% 120% at 0% 0%, rgba(111, 90, 208, 0.11), rgba(255, 255, 255, 0.94) 58%);
 
-  /* Glow shadows keyed to the two semantic hues. Never decorative -- only the
-     one primary action on a screen carries one, so a glow still means
-     "tap this". */
-  /* A shadow, not a halo. These were 30px of 55%-opaque colour thrown under
-     every filled button: on a dark page that is a neon tube, and this is a
-     study app, not a nightclub. Tight, low-opacity, and it still says "this
-     one is lifted". */
-  --glow-accent: 0 8px 18px -10px rgb(var(--accent-rgb) / 0.40);
-  --glow-ai: 0 8px 18px -10px rgb(var(--ai-rgb) / 0.40);
-  --tint-accent: radial-gradient(130% 130% at 100% 0%, rgb(var(--accent-rgb) / 0.12), var(--glass-fill) 60%);
-  --tint-ai: radial-gradient(130% 120% at 0% 0%, rgb(var(--ai-rgb) / 0.12), var(--glass-fill) 58%);
+  /* A neutral disc, for the controls that carry no meaning of their own. */
+  --neutral-fill: rgba(113, 113, 122, 0.10);
+  --neutral-ring: rgba(113, 113, 122, 0.30);
 }
 
 /* Dark is the DEFAULT theme (ThemeContext), so this block is what most people
-   see all evening. It used to be near-black with saturated accents glowing on
-   top of it, and it read as a nightclub rather than a place to study: pure
-   black is not "calm", it is maximum contrast, and every coloured thing on it
-   turns into a light source. The room is now a soft charcoal with a whisper of
-   the brand violet in it, the surfaces sit a step above the floor instead of
-   being outlined against a void, and the accents are muted one notch. Nothing
-   moved semantically -- violet is still a person, cyan is still AInur. */
+   see all evening. It is a deep plum room, never black: pure black is not
+   "calm", it is maximum contrast, and every coloured thing on it turns into a
+   light source. The surfaces sit a step above the floor instead of being
+   outlined against a void, and the accents are the same family one step
+   lighter. Secondary and muted text are deliberately high here -- at 13px a
+   thin low-contrast grey is what makes a screen tiring to read. */
 [data-theme="dark"] {
-  --bg-primary: #17161a;     /* charcoal, not black */
-  --bg-secondary: #201e25;
+  --bg-primary: #171331;     /* deep plum, not black */
+  --bg-secondary: #241e48;
   /* Opaque -- see the note on the light value. */
-  --bg-card: #1e1d23;
-  --bg-input: #26242c;
-  --text-primary: #f4f3f6;   /* 15.0:1 on --bg-card */
-  --text-secondary: #adaab6; /*  7.6:1 */
-  --text-muted: #8a8794;     /*  4.8:1 */
-  --border: rgba(255, 255, 255, 0.10);
+  --bg-card: #1e1940;
+  --bg-input: #292251;
+  --text-primary: #f4f2fc;   /* 14.7:1 on --bg-card */
+  --text-secondary: #c8c2e4; /*  9.3:1 */
+  --text-muted: #a49dc6;     /*  6.1:1 */
+  --border: rgba(255, 255, 255, 0.13);
   --shadow: rgba(0, 0, 0, 0.45);
-  --overlay: rgba(12, 11, 15, 0.68);
+  --overlay: rgba(14, 11, 32, 0.68);
 
-  --success: #4ade80;
-  --danger: #f87171;
-  --warning: #fbbf24;
-  --success-bg: rgba(74, 222, 128, 0.12);
-  --success-fg: #86efac;
-  --danger-bg: rgba(248, 113, 113, 0.12);
-  --danger-fg: #fca5a5;
-  --warning-bg: rgba(251, 191, 36, 0.12);
-  --warning-fg: #fcd34d;
+  --success: #c9b8ff;
+  --danger: #e08d86;
+  --warning: #b6a6ff;
+  --success-bg: rgba(201, 184, 255, 0.14);
+  --success-fg: #e3d8ff;
+  --danger-bg: rgba(224, 141, 134, 0.12);
+  --danger-fg: #f0bbb6;
+  --warning-bg: rgba(182, 166, 255, 0.14);
+  --warning-fg: #cfc4ff;
 
-  --gold: #fbbf24;
-  --silver: #d4d4d8;
-  --bronze: #fdba74;
+  --gold: #dbd0ff;
+  --silver: #b6a6ff;
+  --bronze: #8f85dd;
 
-  /* Same five hues, lifted for a near-black page. See the light block. */
-  --act-vocab:   #fb923c;   --act-vocab-rgb:   251 146  60;  /*  9.4:1 on --bg-primary */
-  --act-quiz:    #a78bfa;   --act-quiz-rgb:    167 139 250;  /*  8.1:1 */
-  --act-picture: #34d399;   --act-picture-rgb:  52 211 153;  /* 11.7:1 */
-  --act-taboo:   #fb7185;   --act-taboo-rgb:   251 113 133;  /*  7.9:1 */
-  --act-debate:  #60a5fa;   --act-debate-rgb:   96 165 250;  /*  8.3:1 */
+  /* Same five steps, lifted for a dark page. See the light block. */
+  --act-vocab:   #e3d8ff;   --act-vocab-rgb:   227 216 255;
+  --act-quiz:    #8f85dd;   --act-quiz-rgb:    143 133 221;
+  --act-picture: #8fa3e8;   --act-picture-rgb: 143 163 232;
+  --act-taboo:   #dfa6f0;   --act-taboo-rgb:   223 166 240;
+  --act-debate:  #a37fe8;   --act-debate-rgb:  163 127 232;
   --act-fill: 0.16;
   --act-ring: 0.42;
-  /* --danger-solid / --warning-solid are intentionally NOT redefined here. */
+  /* --danger-solid / --warning-solid and their inks are intentionally NOT
+     redefined here -- see the light block. */
 
   /* Only these differ from light. The dark fill is a gradient and the light
      fill is a solid, deliberately: on white, a translucent gradient reads as
@@ -194,147 +185,58 @@
   --glass-border: rgba(255, 255, 255, 0.10);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --glass-lift: 0 16px 30px -26px rgba(0, 0, 0, 0.75);
-  /* The atmosphere was two 26%-opacity floodlights on a black page — the exact
-     thing that made the home screen look lit by stage lamps. At a tenth it
-     still stops the background being flat, and you stop noticing it, which is
-     the point of atmosphere. */
-  --page-glow:
-    radial-gradient(100% 42% at 78% -6%, rgb(var(--accent-rgb) / 0.09), transparent 66%),
-    radial-gradient(80% 36% at 6% 62%, rgb(var(--ai-rgb) / 0.05), transparent 72%);
-  --glow-accent: 0 10px 20px -14px rgb(var(--accent-rgb) / 0.32);
-  --glow-ai: 0 10px 20px -14px rgb(var(--ai-rgb) / 0.32);
-  --tint-accent: radial-gradient(130% 130% at 100% 0%, rgb(var(--accent-rgb) / 0.11), rgba(255, 255, 255, 0.030) 60%);
-  --tint-ai: radial-gradient(130% 120% at 0% 0%, rgb(var(--ai-rgb) / 0.11), rgba(255, 255, 255, 0.032) 58%);
+  --nav-lift: 0 22px 44px -28px rgba(0, 0, 0, 0.60);
+  --tint-accent: radial-gradient(130% 130% at 100% 0%, rgba(182, 166, 255, 0.11), rgba(255, 255, 255, 0.030) 60%);
+  --tint-ai: radial-gradient(130% 120% at 0% 0%, rgba(201, 184, 255, 0.11), rgba(255, 255, 255, 0.030) 58%);
+
+  --neutral-fill: rgba(160, 160, 170, 0.16);
+  --neutral-ring: rgba(160, 160, 170, 0.42);
 }
 
-/* ── Palettes ─────────────────────────────────────────────────────────────── */
-/* Each palette sets exactly six things: the accent ramp and the AI ramp. No
-   palette may introduce a third hue — that is what keeps every combination
-   looking like the same app. */
-
-/* Violet — SpeakLab's own, and the default. */
+/* ── The two semantic hues ────────────────────────────────────────────────── */
+/* One family, two steps: a deep purple for a real person, a lighter one for
+   AInur. There is no second palette and no data-palette switch any more -- four
+   selectable palettes meant four products, and three of them introduced a hue
+   the design does not have. */
 :root,
-[data-theme="light"],
-:root[data-palette="violet"],
-[data-theme="light"][data-palette="violet"] {
-  --accent: #6d3beb;         /* 6.1:1 as text on white; white on it = 6.1:1 */
-  --accent-rgb: 109 59 235;
-  --accent-strong: #5325c9;
-  --accent-soft: rgba(109, 59, 235, 0.09);
+[data-theme="light"] {
+  --accent: #403a7e;         /* a real person. White on it = 9.5:1 */
+  --accent-rgb: 64 58 126;
+  --accent-strong: #2e2960;
+  --accent-soft: rgba(64, 58, 126, 0.10);
+  --accent-ring: rgba(64, 58, 126, 0.30);
   --text-on-accent: #ffffff;
-  --ai: #0e7490;             /* 5.3:1 on white */
-  --ai-rgb: 14 116 144;
-  --ai-strong: #0b5c73;
-  --ai-soft: rgba(14, 116, 144, 0.09);
-  --text-on-ai: #ffffff;
+
+  --ai: #6f5ad0;             /* AInur. 5.0:1 on white, so it can be text */
+  --ai-rgb: 111 90 208;
+  --ai-strong: #5946ac;
+  --ai-soft: rgba(111, 90, 208, 0.10);
+  --ai-ring: rgba(111, 90, 208, 0.32);
+  /* The FILL of an AInur button is not --ai: a purple deep enough to read as
+     text on white is too heavy as a 54px block, and the pale lilac that looks
+     right as a block is invisible as text. Two tokens, one hue. */
+  --ai-fill: #c9baff;
+  --ai-fill-strong: #ded4ff;
+  --text-on-ai: #241c52;     /* dark ink on the pale fill = 7.3:1 */
 }
-[data-theme="dark"],
-[data-theme="dark"][data-palette="violet"] {
-  --accent: #a794f2;         /* 7.7:1 on --bg-card */
-  --accent-rgb: 167 148 242;
-  --accent-strong: #c0b2f8;
-  --accent-soft: rgba(167, 148, 242, 0.14);
-  --text-on-accent: #16151a; /* dark ink on a light fill */
-  /* #22d3ee is an electric cyan — as a 54px full-width filled button it was
-     the brightest object on the phone. Same hue family, saturation pulled
-     back: still unmistakably "this is AInur", no longer a light fitting. */
-  --ai: #6cc9d8;             /* 8.4:1 on --bg-card */
-  --ai-rgb: 108 201 216;
-  --ai-strong: #92dbe6;
-  --ai-soft: rgba(108, 201, 216, 0.14);
-  --text-on-ai: #16151a;
+[data-theme="dark"] {
+  --accent: #b6a6ff;
+  --accent-rgb: 182 166 255;
+  --accent-strong: #cfc4ff;
+  --accent-soft: rgba(182, 166, 255, 0.20);
+  --accent-ring: rgba(182, 166, 255, 0.40);
+  --text-on-accent: #171331; /* dark ink on a light fill */
+
+  --ai: #c9b8ff;
+  --ai-rgb: 201 184 255;
+  --ai-strong: #dbd0ff;
+  --ai-soft: rgba(201, 184, 255, 0.20);
+  --ai-ring: rgba(201, 184, 255, 0.42);
+  --ai-fill: #c3b1ff;
+  --ai-fill-strong: #dbd0ff;
+  --text-on-ai: #1a1436;
 }
 
-/* Ocean — the quietest of the four. */
-[data-palette="ocean"],
-[data-theme="light"][data-palette="ocean"] {
-  --accent: #2563eb;
-  --accent-rgb: 37 99 235;
-  --accent-strong: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.09);
-  --text-on-accent: #ffffff;
-  --ai: #0f766e;
-  --ai-rgb: 15 118 110;
-  --ai-strong: #115e59;
-  --ai-soft: rgba(15, 118, 110, 0.09);
-  --text-on-ai: #ffffff;
-}
-[data-theme="dark"][data-palette="ocean"] {
-  --accent: #60a5fa;
-  --accent-rgb: 96 165 250;
-  --accent-strong: #93c5fd;
-  --accent-soft: rgba(96, 165, 250, 0.14);
-  --text-on-accent: #16151a;
-  --ai: #2dd4bf;
-  --ai-rgb: 45 212 191;
-  --ai-strong: #5eead4;
-  --ai-soft: rgba(45, 212, 191, 0.14);
-  --text-on-ai: #16151a;
-}
-
-/* Forest — warm-neutral company for the green. */
-[data-palette="forest"],
-[data-theme="light"][data-palette="forest"] {
-  --accent: #047857;
-  --accent-rgb: 4 120 87;
-  --accent-strong: #065f46;
-  --accent-soft: rgba(4, 120, 87, 0.09);
-  --text-on-accent: #ffffff;
-  --ai: #7c3aed;
-  --ai-rgb: 124 58 237;
-  --ai-strong: #6d28d9;
-  --ai-soft: rgba(124, 58, 237, 0.09);
-  --text-on-ai: #ffffff;
-}
-[data-theme="dark"][data-palette="forest"] {
-  --accent: #34d399;
-  --accent-rgb: 52 211 153;
-  --accent-strong: #6ee7b7;
-  --accent-soft: rgba(52, 211, 153, 0.14);
-  --text-on-accent: #16151a;
-  --ai: #c4b5fd;
-  --ai-rgb: 196 181 253;
-  --ai-strong: #ddd6fe;
-  --ai-soft: rgba(196, 181, 253, 0.14);
-  --text-on-ai: #16151a;
-}
-
-/* Mono — no hue at all for the primary action. The most minimal option, and
-   the one that proves the layout works without colour doing any of the work. */
-[data-palette="mono"],
-[data-theme="light"][data-palette="mono"] {
-  --accent: #18181b;
-  --accent-rgb: 24 24 27;
-  --accent-strong: #000000;
-  --accent-soft: rgba(9, 9, 11, 0.06);
-  --text-on-accent: #ffffff;
-  --ai: #2563eb;
-  --ai-rgb: 37 99 235;
-  --ai-strong: #1d4ed8;
-  --ai-soft: rgba(37, 99, 235, 0.09);
-  --text-on-ai: #ffffff;
-}
-[data-theme="dark"][data-palette="mono"] {
-  --accent: #fafafa;
-  --accent-rgb: 250 250 250;
-  --accent-strong: #ffffff;
-  --accent-soft: rgba(250, 250, 250, 0.12);
-  --text-on-accent: #16151a;
-  --ai: #7dd3fc;
-  --ai-rgb: 125 211 252;
-  --ai-strong: #bae6fd;
-  --ai-soft: rgba(125, 211, 252, 0.14);
-  --text-on-ai: #16151a;
-}
-
-/* Mono's accent is near-black in light and near-white in dark, so lighting the
-   page with it would be a grey smudge rather than atmosphere. Mono keeps the
-   AInur hue only -- which is exactly the point of the palette: the one colour
-   left on screen is the AI. This has to sit after both neutral blocks:
-   [data-palette] and :root have equal specificity, so it wins on order. */
-[data-palette="mono"] {
-  --page-glow: radial-gradient(90% 38% at 82% -6%, rgb(var(--ai-rgb) / 0.12), transparent 70%);
-}
 
 /* A real person is the accent; AInur is the AI hue. Aliases so a component can
    say what it means rather than which colour it wants. */
@@ -385,7 +287,7 @@
   --e-3: 0 8px 30px var(--shadow);
   /* The floating nav bar. Deeper than --e-3 on purpose: it is the only element
      in the app that is meant to look detached from the page. */
-  --e-4: 0 22px 44px -20px rgba(0, 0, 0, 0.55);
+  --e-4: var(--nav-lift);
 
   /* Z — one ladder for the whole app. */
   --z-nav: 100; --z-sheet: 1000; --z-stage: 1500; --z-modal: 2000; --z-toast: 3000;
@@ -423,18 +325,12 @@ body, #root {
   overscroll-behavior-y: none;
 }
 
-/* Atmosphere layer. Fixed and non-interactive, painted under everything, so
-   every screen in the app gets the accent-lit background for free with no
-   per-page work. #root's children are lifted onto their own layer so no
-   content can end up behind it. */
-#root::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: var(--page-glow);
-}
+/* There used to be an atmosphere layer here: two fixed radial gradients lit in
+   the accent hue, painted under every screen. On a tinted plum room it is a
+   pair of floodlights and the page stops being flat in the wrong way -- the
+   room's own colour is the atmosphere now. The stacking rule stays: #root's
+   children keep their own layer, so nothing that was drawn above the old
+   pseudo-element changes order now that it is gone. */
 #root > * { position: relative; z-index: 1; }
 
 /* Headlines speak Outfit. Scoped to the type roles rather than applied
@@ -580,7 +476,7 @@ code {
 
 .settings-close:hover {
   background: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
   transform: scale(1.04);
 }
 
@@ -640,7 +536,7 @@ code {
   border-radius: 50%;
   background: white;
   /* A white thumb on the light "off" track needs an edge to be visible. */
-  box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px rgba(13, 27, 62, 0.06);
+  box-shadow: 0 1px 3px var(--shadow);
   margin: 3px;
   display: flex;
   align-items: center;
@@ -773,7 +669,7 @@ code {
 .streak-crown {
   font-size: 38px;
   margin-bottom: 4px;
-  filter: drop-shadow(0 0 14px var(--streak-accent, #a855f7));
+  filter: drop-shadow(0 2px 6px var(--shadow));
 }
 
 .streak-flame {
@@ -795,8 +691,8 @@ code {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--streak-accent, #f59e0b) 0%, transparent 65%);
-  opacity: 0.5;
+  background: radial-gradient(circle, var(--streak-accent) 0%, transparent 65%);
+  opacity: 0.28;
   filter: blur(8px);
 }
 .streak-flame--none .streak-flame-emoji { font-size: 64px; filter: grayscale(0.4) opacity(0.85); }
@@ -813,19 +709,20 @@ code {
 }
 .streak-days {
   font-size: 14px;
-  color: var(--text-secondary, #9a9ab0);
+  color: var(--text-secondary);
+  font-weight: 600;
   margin-top: 2px;
   text-transform: uppercase;
   letter-spacing: 2px;
 }
 .streak-title {
-  color: var(--text-primary, #fff);
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 800;
   margin: 16px 0 8px;
 }
 .streak-message {
-  color: var(--text-secondary, #b6b6c8);
+  color: var(--text-secondary);
   font-size: 15px;
   line-height: 1.5;
   margin: 0 0 20px;
@@ -837,7 +734,8 @@ code {
   border-radius: 12px;
   padding: 8px 14px;
   font-size: 13px;
-  color: var(--text-secondary, #b6b6c8);
+  font-weight: 600;
+  color: var(--text-secondary);
   margin-bottom: 22px;
 }
 .streak-btn-primary {
@@ -845,11 +743,10 @@ code {
   border: none;
   border-radius: 14px;
   padding: 15px;
-  color: #fff;
+  color: var(--text-on-accent);
   font-size: 16px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .streak-btn-secondary {
   width: 100%;
@@ -858,7 +755,7 @@ code {
   background: transparent;
   border-radius: 14px;
   padding: 13px;
-  color: var(--text-primary, #e7e7f5);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -882,7 +779,7 @@ code {
   position: fixed;
   inset: 0;
   z-index: 10001;
-  background: radial-gradient(130% 80% at 50% 0%, #1c1530 0%, #0b0a14 70%);
+  background: var(--bg-primary);
   overflow-y: auto;
   animation: streak-fade-in 0.3s ease;
 }
@@ -895,7 +792,7 @@ code {
      bar, so without this inset the close button sits inside the system bar
      and taps never reach it. */
   padding: calc(20px + var(--safe-area-top, 0px)) 16px 16px;
-  background: linear-gradient(#12101f 60%, transparent);
+  background: linear-gradient(var(--bg-primary) 60%, transparent);
 }
 .journey-close {
   position: absolute;
@@ -905,9 +802,9 @@ code {
      so the later-in-DOM full-width flame div painted over this button and
      swallowed every tap — the "X doesn't work" bug. */
   z-index: 1;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
   border: none;
-  color: var(--text-primary, #fff);
+  color: var(--text-primary);
   border-radius: 10px;
   padding: 10px;
   cursor: pointer;
@@ -916,7 +813,6 @@ code {
 .journey-hero-flame {
   font-size: 44px;
   line-height: 1;
-  filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.55));
   pointer-events: none;
 }
 .journey-head-count { font-size: 34px; font-weight: 900; line-height: 1.1; }
@@ -926,7 +822,7 @@ code {
   font-weight: 800;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--text-secondary, #9a9ab0);
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 .journey-progress-track {
@@ -934,24 +830,23 @@ code {
   height: 8px;
   margin: 10px auto 0;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-secondary);
   overflow: hidden;
 }
 .journey-progress-fill {
   height: 100%;
   border-radius: 6px;
-  background: linear-gradient(90deg, var(--journey-accent, #f59e0b), #dc2626);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  background: var(--journey-accent);
   transition: width 0.6s cubic-bezier(0.34, 1.2, 0.5, 1);
 }
-.journey-head-sub { font-size: 13px; color: var(--text-secondary, #9a9ab0); margin-top: 8px; }
+.journey-head-sub { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-top: 8px; }
 
 .journey-spark {
   position: fixed;
   z-index: 0;
-  color: rgba(245, 158, 11, 0.4);
+  color: var(--accent);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.28;
 }
 
 .journey-trail {
@@ -964,8 +859,8 @@ code {
   align-items: center;
   gap: 22px;
 }
-/* Two-layer spine: a dim dashed path for the road ahead, with a glowing
-   accent beam poured over the travelled portion (--journey-trail-fill). */
+/* Two-layer spine: a dim dashed path for the road ahead, with a solid accent
+   beam poured over the travelled portion (--journey-trail-fill). */
 .journey-trail::before {
   content: '';
   position: absolute;
@@ -974,7 +869,7 @@ code {
   left: 50%;
   width: 4px;
   margin-left: -2px;
-  background: repeating-linear-gradient(#2e2e50 0 8px, transparent 8px 16px);
+  background: repeating-linear-gradient(var(--border) 0 8px, transparent 8px 16px);
 }
 .journey-trail::after {
   content: '';
@@ -985,8 +880,7 @@ code {
   width: 4px;
   margin-left: -2px;
   border-radius: 4px;
-  background: linear-gradient(180deg, var(--journey-accent, #f59e0b), #dc2626);
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+  background: var(--journey-accent);
 }
 .journey-node { position: relative; z-index: 1; }
 .journey-node--left { align-self: flex-start; margin-left: 28px; }
@@ -1000,34 +894,28 @@ code {
   justify-content: center;
   font-weight: 800;
   font-size: 16px;
-  color: #6b6b85;
-  background: #191926;
-  border: 2px solid #2e2e50;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
 }
 .journey-node.is-done .journey-dot {
-  color: #fff;
-  background: linear-gradient(135deg, var(--node-accent, #f59e0b), #dc2626);
+  color: var(--text-on-accent);
+  background: var(--node-accent, var(--accent));
   border-color: transparent;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 4px 14px rgba(245, 158, 11, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .journey-node.is-milestone .journey-dot {
   width: 64px;
   height: 64px;
   font-size: 26px;
   border-color: var(--accent);
-  box-shadow: 0 var(--e-2);
 }
 .journey-node.is-milestone.is-done .journey-dot {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 var(--e-2),
-    var(--e-2);
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .journey-node.is-current .journey-dot {
-  outline: 3px solid #fff;
+  outline: 3px solid var(--text-primary);
   outline-offset: 3px;
   transform: scale(1.12);
 }
@@ -1035,16 +923,15 @@ code {
 .journey-node-label {
   text-align: center;
   font-size: 11px;
-  color: var(--text-secondary, #9a9ab0);
+  color: var(--text-secondary);
   margin-top: 4px;
   font-weight: 700;
 }
 .journey-node-label--today {
-  color: #fff;
-  background: linear-gradient(135deg, var(--journey-accent, #f59e0b), #dc2626);
+  color: var(--text-on-accent);
+  background: var(--journey-accent);
   border-radius: 10px;
   padding: 2px 10px;
-  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35);
 }
 
 @keyframes streak-fade-in { from { opacity: 0; } to { opacity: 1; } }

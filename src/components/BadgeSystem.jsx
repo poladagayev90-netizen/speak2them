@@ -58,18 +58,18 @@ function SimpleBadgeIcon({ colors, motif = 'star' }) {
 export const BADGES = {
   first_call: {
     id: 'first_call', label: 'First Words', desc: 'Made your first call',
-    tier: 'bronze', glow: '#cd7f32',
-    colors: ['#cd7f32', '#e8a96b', '#cd7f32'],
+    tier: 'bronze', glow: '#5b3fa8',
+    colors: ['#5b3fa8', '#8a6fd8', '#5b3fa8'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic1" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#ffd49e"/>
-            <stop offset="100%" stopColor="#8b4513"/>
+            <stop offset="0%" stopColor="#ded4ff"/>
+            <stop offset="100%" stopColor="#241c52"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic1)"/>
-        <circle cx="24" cy="24" r="22" fill="none" stroke="#e8a96b" strokeWidth="1.5" strokeOpacity=".5"/>
+        <circle cx="24" cy="24" r="22" fill="none" stroke="#8a6fd8" strokeWidth="1.5" strokeOpacity=".5"/>
         <path d="M17 26c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
         <line x1="31" y1="26" x2="33" y2="30" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
         <circle cx="24" cy="24" r="3" fill="white"/>
@@ -80,14 +80,14 @@ export const BADGES = {
   },
   chatterbox: {
     id: 'chatterbox', label: 'Chatterbox', desc: '10 calls completed',
-    tier: 'silver', glow: '#94a3b8',
-    colors: ['#94a3b8', 'var(--text-primary)', '#64748b'],
+    tier: 'silver', glow: '#8f85dd',
+    colors: ['#8f85dd', 'var(--text-primary)', '#403a7e'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic2" cx="50%" cy="30%" r="70%">
             <stop offset="0%" stopColor="var(--text-primary)"/>
-            <stop offset="100%" stopColor="#475569"/>
+            <stop offset="100%" stopColor="#2e2960"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic2)"/>
@@ -95,24 +95,24 @@ export const BADGES = {
         <path d="M14 24 L12 29 L18 26" fill="white" fillOpacity=".9"/>
         <rect x="21" y="20" width="16" height="11" rx="3.5" fill="white"/>
         <path d="M34 31 L36 36 L30 33" fill="white"/>
-        <circle cx="17" cy="18.5" r="1.5" fill="#475569"/>
-        <circle cx="21" cy="18.5" r="1.5" fill="#475569"/>
-        <circle cx="25" cy="25.5" r="1.5" fill="#475569"/>
-        <circle cx="29" cy="25.5" r="1.5" fill="#475569"/>
-        <circle cx="33" cy="25.5" r="1.5" fill="#475569"/>
+        <circle cx="17" cy="18.5" r="1.5" fill="#2e2960"/>
+        <circle cx="21" cy="18.5" r="1.5" fill="#2e2960"/>
+        <circle cx="25" cy="25.5" r="1.5" fill="#2e2960"/>
+        <circle cx="29" cy="25.5" r="1.5" fill="#2e2960"/>
+        <circle cx="33" cy="25.5" r="1.5" fill="#2e2960"/>
       </svg>
     ),
   },
   social_butterfly: {
     id: 'social_butterfly', label: 'Social Butterfly', desc: '50 calls completed',
-    tier: 'gold', glow: 'var(--warning)',
-    colors: ['var(--warning)', '#fde68a', '#d97706'],
+    tier: 'gold', glow: '#b6a6ff',
+    colors: ['var(--warning)', '#ded4ff', '#5b3fa8'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic3" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#fde68a"/>
-            <stop offset="100%" stopColor="#b45309"/>
+            <stop offset="0%" stopColor="#ded4ff"/>
+            <stop offset="100%" stopColor="#3b3183"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic3)"/>
@@ -128,14 +128,14 @@ export const BADGES = {
   },
   week_warrior: {
     id: 'week_warrior', label: 'Week Warrior', desc: '7-day streak',
-    tier: 'fire', glow: 'var(--danger)',
-    colors: ['#f97316', 'var(--warning)', 'var(--danger)'],
+    tier: 'fire', glow: '#8c4a91',
+    colors: ['#8c4a91', 'var(--warning)', 'var(--danger)'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic4" cx="50%" cy="30%" r="70%">
             <stop offset="0%" stopColor="var(--warning)"/>
-            <stop offset="100%" stopColor="#dc2626"/>
+            <stop offset="100%" stopColor="#4c2a72"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic4)"/>
@@ -146,14 +146,14 @@ export const BADGES = {
   },
   monthly_master: {
     id: 'monthly_master', label: 'Monthly Master', desc: '30-day streak',
-    tier: 'platinum', glow: '#8b5cf6',
-    colors: ['#8b5cf6', '#c4b5fd', '#6d28d9'],
+    tier: 'platinum', glow: '#6f5ad0',
+    colors: ['#6f5ad0', '#c9baff', '#403a7e'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic5" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#c4b5fd"/>
-            <stop offset="100%" stopColor="#4c1d95"/>
+            <stop offset="0%" stopColor="#c9baff"/>
+            <stop offset="100%" stopColor="#2e2960"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic5)"/>
@@ -164,14 +164,14 @@ export const BADGES = {
   },
   beginner: {
     id: 'beginner', label: 'Getting Started', desc: '60 minutes spoken',
-    tier: 'bronze', glow: '#cd7f32',
-    colors: ['#cd7f32', '#e8a96b', '#9c5a1d'],
+    tier: 'bronze', glow: '#5b3fa8',
+    colors: ['#5b3fa8', '#8a6fd8', '#2e2960'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic6" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#ffd49e"/>
-            <stop offset="100%" stopColor="#8b4513"/>
+            <stop offset="0%" stopColor="#ded4ff"/>
+            <stop offset="100%" stopColor="#241c52"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic6)"/>
@@ -186,14 +186,14 @@ export const BADGES = {
   },
   expert: {
     id: 'expert', label: 'Expert Speaker', desc: '1000 minutes spoken',
-    tier: 'diamond', glow: '#06b6d4',
-    colors: ['#06b6d4', '#a5f3fc', '#0e7490'],
+    tier: 'diamond', glow: '#4a5bb0',
+    colors: ['#4a5bb0', '#c9baff', '#2b2668'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic7" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#a5f3fc"/>
-            <stop offset="100%" stopColor="#0e7490"/>
+            <stop offset="0%" stopColor="#c9baff"/>
+            <stop offset="100%" stopColor="#2b2668"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic7)"/>
@@ -204,24 +204,24 @@ export const BADGES = {
   },
   legend: {
     id: 'legend', label: 'L E G E N D', desc: '5000 minutes spoken',
-    tier: 'legend', glow: 'var(--warning)',
-    colors: ['#fef3c7', 'var(--warning)', '#92400e'],
+    tier: 'legend', glow: '#dbd0ff',
+    colors: ['#f0ecff', 'var(--warning)', '#2e2960'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic8" cx="50%" cy="20%" r="80%">
-            <stop offset="0%" stopColor="#fef9c3"/>
+            <stop offset="0%" stopColor="#f4f2fc"/>
             <stop offset="50%" stopColor="var(--warning)"/>
-            <stop offset="100%" stopColor="#78350f"/>
+            <stop offset="100%" stopColor="#241c52"/>
           </radialGradient>
           <linearGradient id="ic8s" x1="12" y1="8" x2="36" y2="40" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#ffffff"/>
-            <stop offset="40%" stopColor="#fde68a"/>
-            <stop offset="100%" stopColor="#d97706"/>
+            <stop offset="40%" stopColor="#ded4ff"/>
+            <stop offset="100%" stopColor="#5b3fa8"/>
           </linearGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic8)"/>
-        <circle cx="24" cy="24" r="22" fill="none" stroke="#fde68a" strokeWidth="2" strokeOpacity=".6"/>
+        <circle cx="24" cy="24" r="22" fill="none" stroke="#ded4ff" strokeWidth="2" strokeOpacity=".6"/>
         <polygon points="24,8 27.8,17.5 38.5,17.5 30,23.5 33,34 24,28 15,34 18,23.5 9.5,17.5 20.2,17.5" fill="url(#ic8s)"/>
         <polygon points="24,8 27.8,17.5 38.5,17.5 30,23.5 33,34 24,28 15,34 18,23.5 9.5,17.5 20.2,17.5" fill="none" stroke="white" strokeWidth="1" strokeOpacity=".4"/>
         <circle cx="24" cy="8" r="2" fill="white" fillOpacity=".8"/>
@@ -234,19 +234,19 @@ export const BADGES = {
   },
   well_rated: {
     id: 'well_rated', label: 'Well Rated', desc: '4.5+ average rating',
-    tier: 'gold', glow: 'var(--warning)',
-    colors: ['var(--warning)', '#fde68a', '#d97706'],
+    tier: 'gold', glow: '#b6a6ff',
+    colors: ['var(--warning)', '#ded4ff', '#5b3fa8'],
     Icon: () => (
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="ic9" cx="50%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#fef3c7"/>
-            <stop offset="100%" stopColor="#b45309"/>
+            <stop offset="0%" stopColor="#f0ecff"/>
+            <stop offset="100%" stopColor="#3b3183"/>
           </radialGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="url(#ic9)"/>
         <path d="M24 12 L27 20 L36 20 L29 25.5 L32 34 L24 28.5 L16 34 L19 25.5 L12 20 L21 20 Z" fill="white" fillOpacity=".95"/>
-        <path d="M19 19 Q24 15 29 19" stroke="#b45309" strokeWidth="1" fill="none" strokeOpacity=".3"/>
+        <path d="M19 19 Q24 15 29 19" stroke="#3b3183" strokeWidth="1" fill="none" strokeOpacity=".3"/>
         <circle cx="24" cy="11" r="1.5" fill="white" fillOpacity=".6"/>
       </svg>
     ),
@@ -254,78 +254,84 @@ export const BADGES = {
   night_owl: {
     id: 'night_owl', label: 'Night Owl',
     desc: 'Made a call between 22:00-02:00',
-    tier: 'silver', glow: '#6366f1',
-    colors: ['#6366f1', '#a5b4fc', '#4338ca'],
+    tier: 'silver', glow: '#5b3fa8',
+    colors: ['#5b3fa8', '#b6a6ff', '#2e2960'],
     reward: { type: 'bonusMinutes', value: 10 },
-    Icon: () => <SimpleBadgeIcon colors={['#6366f1', '#a5b4fc', '#4338ca']} motif="moon"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#5b3fa8', '#b6a6ff', '#2e2960']} motif="moon"/>,
   },
   marathon: {
     id: 'marathon', label: 'Marathon Speaker',
     desc: 'Single call over 45 minutes',
-    tier: 'gold', glow: 'var(--warning)',
-    colors: ['var(--warning)', '#fde68a', '#d97706'],
+    tier: 'gold', glow: '#b6a6ff',
+    colors: ['var(--warning)', '#ded4ff', '#5b3fa8'],
     reward: { type: 'bonusMinutes', value: 20 },
-    Icon: () => <SimpleBadgeIcon colors={['var(--warning)', '#fde68a', '#d97706']} motif="clock"/>,
+    Icon: () => <SimpleBadgeIcon colors={['var(--warning)', '#ded4ff', '#5b3fa8']} motif="clock"/>,
   },
 
   profile_pro: {
     id: 'profile_pro', label: 'Profile Pro',
     desc: 'Filled bio and set level',
-    tier: 'bronze', glow: '#cd7f32',
-    colors: ['#cd7f32', '#e8a96b', '#9c5a1d'],
+    tier: 'bronze', glow: '#5b3fa8',
+    colors: ['#5b3fa8', '#8a6fd8', '#2e2960'],
     reward: { type: 'bonusMinutes', value: 5 },
-    Icon: () => <SimpleBadgeIcon colors={['#cd7f32', '#e8a96b', '#9c5a1d']} motif="person"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#5b3fa8', '#8a6fd8', '#2e2960']} motif="person"/>,
   },
   century: {
     id: 'century', label: 'Century Club',
     desc: '100 total calls completed',
-    tier: 'platinum', glow: '#8b5cf6',
-    colors: ['#8b5cf6', '#c4b5fd', '#6d28d9'],
+    tier: 'platinum', glow: '#6f5ad0',
+    colors: ['#6f5ad0', '#c9baff', '#403a7e'],
     reward: { type: 'discountPremium', value: 30 },
-    Icon: () => <SimpleBadgeIcon colors={['#8b5cf6', '#c4b5fd', '#6d28d9']} motif="spark"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#6f5ad0', '#c9baff', '#403a7e']} motif="spark"/>,
   },
   daily_devotee: {
     id: 'daily_devotee', label: 'Daily Devotee',
     desc: '14-day streak',
-    tier: 'fire', glow: '#f97316',
-    colors: ['#f97316', 'var(--warning)', '#ea580c'],
+    tier: 'fire', glow: '#8c4a91',
+    colors: ['#8c4a91', 'var(--warning)', '#6d3583'],
     reward: { type: 'trialPremium', value: 3 },
-    Icon: () => <SimpleBadgeIcon colors={['#f97316', 'var(--warning)', '#ea580c']} motif="bolt"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#8c4a91', 'var(--warning)', '#6d3583']} motif="bolt"/>,
   },
   speed_connector: {
     id: 'speed_connector', label: 'Speed Connector',
     desc: 'Found a match in under 30 seconds',
-    tier: 'silver', glow: '#22c55e',
-    colors: ['#22c55e', '#86efac', '#16a34a'],
+    tier: 'silver', glow: '#6f5ad0',
+    colors: ['#6f5ad0', '#c9baff', '#403a7e'],
     reward: { type: 'bonusMinutes', value: 5 },
-    Icon: () => <SimpleBadgeIcon colors={['#22c55e', '#86efac', '#16a34a']} motif="bolt"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#6f5ad0', '#c9baff', '#403a7e']} motif="bolt"/>,
   },
   premium_curious: {
     id: 'premium_curious', label: 'Pro Curious',
     desc: 'Visited the Pro page',
-    tier: 'gold', glow: 'var(--warning)',
-    colors: ['var(--warning)', '#fde68a', '#d97706'],
+    tier: 'gold', glow: '#b6a6ff',
+    colors: ['var(--warning)', '#ded4ff', '#5b3fa8'],
     reward: { type: 'discountPremium', value: 10 },
-    Icon: () => <SimpleBadgeIcon colors={['var(--warning)', '#fde68a', '#d97706']} motif="crown"/>,
+    Icon: () => <SimpleBadgeIcon colors={['var(--warning)', '#ded4ff', '#5b3fa8']} motif="crown"/>,
   },
   five_star: {
     id: 'five_star', label: 'Five Star',
     desc: 'Received a 5-star rating',
-    tier: 'legend', glow: 'var(--warning)',
-    colors: ['#fef3c7', 'var(--warning)', '#92400e'],
+    tier: 'legend', glow: '#dbd0ff',
+    colors: ['#f0ecff', 'var(--warning)', '#2e2960'],
     reward: { type: 'bonusMinutes', value: 15 },
-    Icon: () => <SimpleBadgeIcon colors={['#fef3c7', 'var(--warning)', '#92400e']} motif="spark"/>,
+    Icon: () => <SimpleBadgeIcon colors={['#f0ecff', 'var(--warning)', '#2e2960']} motif="spark"/>,
   },
 };
 
+// Tiers are seven steps of the one purple, not seven metals. They must stay
+// LITERAL hexes: every use below concatenates an alpha suffix onto them
+// (`${t.border}50`), which a var() would turn into nonsense — three tiers were
+// already silently borderless for exactly that reason. The values are the
+// dark-theme steps written out, because this card always draws on a dark
+// surface of its own regardless of the app theme.
 const TIER_STYLES = {
-  bronze:   { bg: '#1c120a', border: '#cd7f32', shine: '#e8a96b' },
-  silver:   { bg: '#111624', border: '#94a3b8', shine: 'var(--text-primary)' },
-  gold:     { bg: '#1a1100', border: 'var(--warning)', shine: '#fde68a' },
-  fire:     { bg: '#1a0800', border: 'var(--danger)', shine: 'var(--warning)' },
-  platinum: { bg: '#130a22', border: '#8b5cf6', shine: '#c4b5fd' },
-  diamond:  { bg: '#001a24', border: '#06b6d4', shine: '#a5f3fc' },
-  legend:   { bg: '#1a0e00', border: 'var(--warning)', shine: '#fef3c7' },
+  bronze:   { bg: '#241e48', border: '#5b3fa8', shine: '#8a6fd8' },
+  silver:   { bg: '#1e1940', border: '#8f85dd', shine: '#c8c2e4' },
+  gold:     { bg: '#241e48', border: '#b6a6ff', shine: '#ded4ff' },
+  fire:     { bg: '#241e48', border: '#8c4a91', shine: '#dfa6f0' },
+  platinum: { bg: '#1e1940', border: '#a37fe8', shine: '#c9baff' },
+  diamond:  { bg: '#171331', border: '#8fa3e8', shine: '#c9baff' },
+  legend:   { bg: '#241e48', border: '#dbd0ff', shine: '#f0ecff' },
 };
 
 const BADGE_VISUALS = {
@@ -428,7 +434,7 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
       <div onClick={onClose} style={{
         position:'fixed', inset:0, zIndex:99999,
         display:'flex', alignItems:'center', justifyContent:'center',
-        background:'rgba(4,4,15,0.92)', backdropFilter:'blur(12px)',
+        background:'var(--overlay)', backdropFilter:'blur(12px)',
         animation:'bdBackdrop .3s ease forwards',
       }}>
         {/* confetti */}
@@ -446,7 +452,7 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
           textAlign:'center', width:300, position:'relative',
           overflow:'hidden',
           animation:'bdCard .9s cubic-bezier(.34,1.56,.64,1) .1s both',
-          boxShadow:`0 0 60px ${b.glow}40, 0 24px 60px rgba(0,0,0,.7)`,
+          boxShadow:'0 24px 60px rgba(0,0,0,.55)',
         }}>
           {/* shimmer */}
           {phase>=1 && (
@@ -478,14 +484,13 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
             {/* glow bg */}
             <div style={{
               width:100, height:100, borderRadius:'50%',
-              background:`radial-gradient(circle, ${b.glow}55 0%, transparent 70%)`,
+              background:`radial-gradient(circle, ${b.glow}2e 0%, transparent 70%)`,
               display:'flex', alignItems:'center', justifyContent:'center',
               animation:'bdGlow 2s ease-in-out infinite',
             }}>
               <div style={{
                 width:72, height:72,
                 animation:'bdBadge .9s cubic-bezier(.34,1.56,.64,1) .35s both',
-                filter:`drop-shadow(0 0 12px ${b.glow})`,
               }}>
                 <b.Icon/>
               </div>
@@ -502,7 +507,7 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
 
           {/* desc */}
           <div style={{
-            fontSize:13, color:'var(--text-muted)', marginBottom:10,
+            fontSize:13, fontWeight: 600, color:'var(--text-muted)', marginBottom:10,
             animation:'bdText .4s ease .92s both',
           }}>{b.desc}</div>
 
@@ -538,14 +543,13 @@ export function BadgeUnlockModal({ badge, rewardMessage, onClose }) {
             display:'block', width:'100%', padding:'13px',
             background:`linear-gradient(135deg, ${b.colors[0]}, ${b.colors[2]})`,
             border:'none', borderRadius:14,
-            color: b.tier==='silver'?'#1e293b':'#fff',
+            color: b.tier==='silver'?'#241e48':'#fff',
             fontSize:15, fontWeight:700, cursor:'pointer',
             animation:'bdText .4s ease 1.15s both',
             transition:'transform .15s, box-shadow .15s',
-            boxShadow:`0 4px 20px ${b.glow}50`,
           }}
-            onMouseEnter={e=>{e.target.style.transform='scale(1.03)'; e.target.style.boxShadow=`0 6px 28px ${b.glow}70`}}
-            onMouseLeave={e=>{e.target.style.transform='scale(1)'; e.target.style.boxShadow=`0 4px 20px ${b.glow}50`}}
+            onMouseEnter={e=>{e.target.style.transform='scale(1.03)'}}
+            onMouseLeave={e=>{e.target.style.transform='scale(1)'}}
           >Awesome!</button>
         </div>
       </div>
@@ -559,7 +563,7 @@ export function BadgeCard({ badgeId, earned=true }) {
   const t = TIER_STYLES[b.tier];
   return (
     <div style={{
-      background: earned ? `radial-gradient(ellipse at 50% 0%, ${t.border}15 0%, ${t.bg} 70%)` : '#111118',
+      background: earned ? `radial-gradient(ellipse at 50% 0%, ${t.border}15 0%, ${t.bg} 70%)` : '#171331',
       border:`1px solid ${earned ? t.border+'55' : 'var(--bg-card)'}`,
       borderRadius:16, padding:'14px 10px',
       textAlign:'center', position:'relative', overflow:'hidden',
@@ -569,21 +573,21 @@ export function BadgeCard({ badgeId, earned=true }) {
       onMouseEnter={e=>{
         if(!earned) return;
         e.currentTarget.style.transform='translateY(-4px)';
-        e.currentTarget.style.boxShadow=`0 8px 24px ${b.glow}55`;
+        e.currentTarget.style.borderColor=t.border;
       }}
       onMouseLeave={e=>{
         e.currentTarget.style.transform='translateY(0)';
         e.currentTarget.style.boxShadow='none';
       }}
     >
-      <div style={{width:44,height:44,margin:'0 auto 8px', filter:earned?`drop-shadow(0 0 8px ${b.glow}88)`:'grayscale(1)'}}>
+      <div style={{width:44,height:44,margin:'0 auto 8px', filter:earned?'none':'grayscale(1)'}}>
         <b.Icon/>
       </div>
-      <div style={{fontSize:11,fontWeight:700,color:earned?'#fff':'#d1d5db',lineHeight:1.3}}>{b.label}</div>
+      <div style={{fontSize:11,fontWeight:700,color:earned?'#fff':'#ded4ff',lineHeight:1.3}}>{b.label}</div>
       <div style={{
         fontSize:9,
         fontWeight:600,
-        color:earned?'#9ca3af':'#8b93a3',
+        color:earned?'#a49dc6':'#6f5ad0',
         lineHeight:1.35,
         marginTop:6,
       }}>
@@ -593,7 +597,7 @@ export function BadgeCard({ badgeId, earned=true }) {
         <div style={{
           fontSize:9,
           fontWeight:700,
-          color:earned?t.border:'#7c8597',
+          color:earned?t.border:'#605c78',
           lineHeight:1.35,
           marginTop:5,
         }}>
@@ -617,7 +621,7 @@ export function BadgeGrid({ earnedBadges=[] }) {
       <div style={{fontSize:11,fontWeight:800,color:'#555',marginBottom:6,letterSpacing:'2px',textTransform:'uppercase'}}>
         Badges · {earnedBadges.filter(id => BADGE_ORDER.includes(id)).length}/{BADGE_ORDER.length}
       </div>
-      <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.4,marginBottom:12}}>
+      <div style={{fontSize:11, fontWeight: 600,color:'var(--text-muted)',lineHeight:1.4,marginBottom:12}}>
         Each badge shows how to earn it.
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(98px,1fr))',gap:10}}>
@@ -643,8 +647,8 @@ function AchievementTile({ badgeId, earned, onPreview }) {
         width:'100%',
         minHeight:112,
         borderRadius:16,
-        border:`1px solid ${earned ? t.border+'55' : '#262638'}`,
-        background: earned ? `radial-gradient(ellipse at 50% 0%, ${t.border}16 0%, ${t.bg} 72%)` : '#12121f',
+        border:`1px solid ${earned ? t.border+'55' : '#292251'}`,
+        background: earned ? `radial-gradient(ellipse at 50% 0%, ${t.border}16 0%, ${t.bg} 72%)` : '#1e1940',
         color:'#fff',
         padding:'16px 8px 14px',
         position:'relative',
@@ -657,7 +661,7 @@ function AchievementTile({ badgeId, earned, onPreview }) {
       }}
       onMouseEnter={e=>{
         e.currentTarget.style.transform='translateY(-4px) scale(1.02)';
-        e.currentTarget.style.boxShadow=earned ? `0 10px 26px ${b.glow}50` : '0 10px 24px rgba(0,0,0,.38)';
+        e.currentTarget.style.boxShadow='0 10px 24px rgba(0,0,0,.30)';
       }}
       onMouseLeave={e=>{
         e.currentTarget.style.transform='translateY(0) scale(1)';
@@ -669,11 +673,11 @@ function AchievementTile({ badgeId, earned, onPreview }) {
         height:54,
         margin:'0 auto 9px',
         opacity:earned?1:.48,
-        filter:earned ? `drop-shadow(0 0 10px ${b.glow}88)` : 'grayscale(1)',
+        filter:earned ? 'none' : 'grayscale(1)',
       }}>
         <b.Icon/>
       </div>
-      <div style={{fontSize:11,fontWeight:800,lineHeight:1.25,color:earned?'#fff':'#c6c9d3'}}>
+      <div style={{fontSize:11,fontWeight:800,lineHeight:1.25,color:earned?'#fff':'#c9baff'}}>
         {b.label}
       </div>
       {earned && (
@@ -721,7 +725,7 @@ function LockedBadgePreview({ badgeId, onClose }) {
           alignItems:'center',
           justifyContent:'center',
           padding:24,
-          background:'rgba(4,4,12,.88)',
+          background:'var(--overlay)',
           backdropFilter:'blur(10px)',
           animation:'achievementBackdropIn .2s ease both',
         }}
@@ -733,7 +737,7 @@ function LockedBadgePreview({ badgeId, onClose }) {
             padding:'30px 24px 24px',
             borderRadius:22,
             textAlign:'center',
-            background:`radial-gradient(ellipse at 50% 0%, ${t.border}22 0%, #10101c 58%, #0b0b14 100%)`,
+            background:`radial-gradient(ellipse at 50% 0%, ${t.border}22 0%, #171331 58%, #171331 100%)`,
             border:`1px solid ${t.border}42`,
             boxShadow:'0 24px 70px rgba(0,0,0,.62)',
             animation:'achievementModalIn .28s cubic-bezier(.2,.9,.2,1) both',
@@ -757,8 +761,8 @@ function LockedBadgePreview({ badgeId, onClose }) {
           <div style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:10}}>{b.label}</div>
           <div style={{display:'grid',gap:8,textAlign:'left'}}>
             <div style={{background:'#ffffff08',border:'1px solid #ffffff10',borderRadius:12,padding:'10px 12px'}}>
-              <div style={{fontSize:10,fontWeight:800,letterSpacing:'1.8px',textTransform:'uppercase',color:'#71717a',marginBottom:4}}>Requirement</div>
-              <div style={{fontSize:13,fontWeight:700,color:'#e5e7eb',lineHeight:1.35}}>{b.conditionText || b.desc}</div>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:'1.8px',textTransform:'uppercase',color:'#605c78',marginBottom:4}}>Requirement</div>
+              <div style={{fontSize:13,fontWeight:700,color:'#ebe8fb',lineHeight:1.35}}>{b.conditionText || b.desc}</div>
             </div>
             {b.rewardText && (
               <div style={{background:`${t.border}12`,border:`1px solid ${t.border}35`,borderRadius:12,padding:'10px 12px'}}>
@@ -809,15 +813,15 @@ export function AchievementsPanel({ earnedBadges=[] }) {
       }}>
         <div>
           <div style={{fontSize:18,fontWeight:800,color:'#fff',lineHeight:1.2}}>Achievements</div>
-          <div style={{fontSize:12,fontWeight:700,color:'#7c8597',marginTop:4}}>{earnedCount}/{BADGE_ORDER.length} unlocked</div>
+          <div style={{fontSize:12,fontWeight:700,color:'#605c78',marginTop:4}}>{earnedCount}/{BADGE_ORDER.length} unlocked</div>
         </div>
         <div style={{
           minWidth:58,
           padding:'8px 10px',
           border:'1px solid var(--bg-secondary)',
           borderRadius:14,
-          background:'#151522',
-          color:'#d8d7ff',
+          background:'#1e1940',
+          color:'#ded4ff',
           fontSize:13,
           fontWeight:800,
           textAlign:'center',
@@ -853,7 +857,7 @@ export function checkNewBadges(userData, callData = {}) {
 export default function BadgeDemo() {
   const [showing, setShowing] = useState(null);
   return (
-    <div style={{background:'#080810',minHeight:'100vh',padding:'32px 20px',fontFamily:'system-ui,sans-serif',color:'#fff'}}>
+    <div style={{background:'#171331',minHeight:'100vh',padding:'32px 20px',fontFamily:'system-ui,sans-serif',color:'#fff'}}>
       <div style={{marginBottom:8,fontSize:22,fontWeight:800}}>Badge System</div>
       <div style={{color:'#555',fontSize:12,marginBottom:28}}>Tap any badge to preview unlock animation</div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,maxWidth:340}}>

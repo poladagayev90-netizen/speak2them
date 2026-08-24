@@ -162,8 +162,8 @@ export default function AdminCohorts() {
   };
 
   const inputStyle = {
-    flex: 1, minWidth: 0, padding: '10px 12px', background: '#1a1a2e',
-    border: '1px solid var(--bg-secondary)', borderRadius: '10px', color: 'white',
+    flex: 1, minWidth: 0, padding: '10px 12px', background: 'var(--bg-card)',
+    border: '1px solid var(--bg-secondary)', borderRadius: '10px', color: 'var(--text-primary)',
     fontSize: '13px', outline: 'none',
   };
 
@@ -171,14 +171,14 @@ export default function AdminCohorts() {
     <div>
       {/* Yeni kohort */}
       <form onSubmit={createCohort} style={{
-        background: '#1a1a2e', border: '1px solid var(--bg-secondary)', borderRadius: '16px',
+        background: 'var(--bg-card)', border: '1px solid var(--bg-secondary)', borderRadius: '16px',
         padding: '14px', marginBottom: '16px',
       }}>
         <p style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>
           New cohort
         </p>
         {formError && (
-          <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#f87171' }}>{formError}</p>
+          <p style={{ margin: '0 0 8px', fontSize: '12px', color: 'var(--danger)' }}>{formError}</p>
         )}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
           <input style={inputStyle} placeholder="Name (e.g. Wave 1)" value={newName}
@@ -190,7 +190,7 @@ export default function AdminCohorts() {
         </div>
         <button type="submit" disabled={creating} style={{
           width: '100%', padding: '10px', background: 'var(--accent)',
-          color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700,
+          color: 'var(--text-on-accent)', border: 'none', borderRadius: '10px', fontWeight: 700,
           fontSize: '13px', cursor: 'pointer',
         }}>
           {creating ? '...' : 'Yarat'}
@@ -201,7 +201,7 @@ export default function AdminCohorts() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
         {cohorts.map((c) => (
           <div key={c.id} style={{
-            background: selectedId === c.id ? 'linear-gradient(135deg, #2c1e4a, #1a1025)' : '#1a1a2e',
+            background: selectedId === c.id ? 'var(--accent-soft)' : 'var(--bg-card)',
             border: selectedId === c.id ? '1px solid var(--accent)' : '1px solid var(--bg-secondary)',
             borderRadius: '14px', padding: '12px 14px',
             display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap',
@@ -210,18 +210,18 @@ export default function AdminCohorts() {
               onClick={() => setSelectedId(selectedId === c.id ? null : c.id)}
               style={{ flex: 1, minWidth: '140px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', padding: 0 }}
             >
-              <span style={{ display: 'block', fontSize: '14px', fontWeight: 800, color: '#f8fafc' }}>
+              <span style={{ display: 'block', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)' }}>
                 🧪 {c.name || c.id}
-                {c.status !== 'active' && <span style={{ color: '#f87171', fontSize: '11px' }}> · paused</span>}
+                {c.status !== 'active' && <span style={{ color: 'var(--danger)', fontSize: '11px' }}> · paused</span>}
               </span>
-              <span style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+              <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
                 👥 {Number(c.memberCount) || 0}{Number(c.maxUses) > 0 ? `/${c.maxUses}` : ''} aktiv
                 {Number(c.pendingCount) > 0 && <span style={{ color: 'var(--warning)' }}> · {Number(c.pendingCount)} waiting</span>}
                 {' · '}code: <b>{c.code}</b>
               </span>
             </button>
             <button onClick={() => copyCode(c)} style={{
-              padding: '6px 10px', background: '#2a2a40', color: copied === c.id ? 'var(--success)' : 'var(--text-primary)',
+              padding: '6px 10px', background: 'var(--bg-secondary)', color: copied === c.id ? 'var(--success)' : 'var(--text-primary)',
               border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
             }}>
               {copied === c.id ? '✓ Copied' : 'Code'}
@@ -237,7 +237,7 @@ export default function AdminCohorts() {
           </div>
         ))}
         {cohorts.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600 }}>
             No cohorts yet — create one above.
           </p>
         )}
@@ -255,18 +255,18 @@ export default function AdminCohorts() {
         const stat = (emoji, label, n, color) => (
           <div style={{ flex: 1, textAlign: 'center', padding: '10px 4px' }}>
             <div style={{ fontSize: '22px', fontWeight: 800, color }}>{n}</div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{emoji} {label}</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>{emoji} {label}</div>
           </div>
         );
 
         const applicantRow = (m, accepted) => (
           <div key={m.id} style={{
-            background: '#15152a', border: '1px solid var(--bg-secondary)', borderRadius: '14px',
+            background: 'var(--bg-card)', border: '1px solid var(--bg-secondary)', borderRadius: '14px',
             padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '10px',
           }}>
             <span style={{ fontSize: '18px', flexShrink: 0 }}>{accepted ? '' : ''}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {m.name || m.email || m.id}
               </p>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: accepted ? 'var(--success)' : 'var(--warning)' }}>
@@ -275,18 +275,18 @@ export default function AdminCohorts() {
             </div>
             {accepted ? (
               <button onClick={() => rejectApplicant(m)} style={{
-                padding: '9px 14px', background: 'none', color: '#f87171',
-                border: '1px solid #f8717155', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+                padding: '9px 14px', background: 'none', color: 'var(--danger)',
+                border: '1px solid var(--danger)', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', flexShrink: 0,
               }}>Undo</button>
             ) : (
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                 <button onClick={() => acceptApplicant(m)} style={{
-                  padding: '9px 14px', background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff',
+                  padding: '9px 14px', background: 'var(--accent)', color: 'var(--text-on-accent)',
                   border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
                 }}>Accept</button>
                 <button onClick={() => rejectApplicant(m)} style={{
-                  padding: '9px 12px', background: 'none', color: '#f87171',
-                  border: '1px solid #f8717155', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                  padding: '9px 12px', background: 'none', color: 'var(--danger)',
+                  border: '1px solid var(--danger)', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
                 }}>Decline</button>
               </div>
             )}
@@ -295,24 +295,24 @@ export default function AdminCohorts() {
 
         return (
           <div style={{
-            background: '#141428', border: '1px solid var(--bg-secondary)', borderRadius: '18px',
+            background: 'var(--bg-card)', border: '1px solid var(--bg-secondary)', borderRadius: '18px',
             padding: '16px', marginBottom: '20px',
           }}>
-            <p style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800, color: '#f8fafc' }}>
+            <p style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
               🧪 {selected.name || selectedId}
             </p>
 
             {/* Həqiqi xülasə — sayğaclardan yox, üzv sənədlərindən hesablanır. */}
             <div style={{
-              display: 'flex', background: '#0f0f1e', borderRadius: '14px',
-              border: '1px solid #24243e', marginBottom: '16px', overflow: 'hidden',
+              display: 'flex', background: 'var(--bg-card)', borderRadius: '14px',
+              border: '1px solid var(--border)', marginBottom: '16px', overflow: 'hidden',
             }}>
               {stat('', 'New', pendingList.length, 'var(--warning)')}
-              <div style={{ width: '1px', background: '#24243e' }} />
+              <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
               {stat('', 'Accept', acceptedList.length, 'var(--success)')}
-              <div style={{ width: '1px', background: '#24243e' }} />
+              <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
               {stat('', 'Aktiv', activeList.length, 'var(--accent)')}
-              <div style={{ width: '1px', background: '#24243e' }} />
+              <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
               {stat('', maxUses > 0 ? 'Limit' : 'Yer', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, 'var(--text-primary)')}
             </div>
 
@@ -322,12 +322,11 @@ export default function AdminCohorts() {
               disabled={starting || acceptedList.length === 0}
               style={{
                 width: '100%', padding: '15px', marginBottom: acceptedList.length > 0 || pendingList.length > 0 ? '18px' : '0',
-                background: acceptedList.length === 0 ? '#20203a' : 'var(--accent)',
-                color: acceptedList.length === 0 ? '#64748b' : '#fff',
+                background: acceptedList.length === 0 ? 'var(--bg-secondary)' : 'var(--accent)',
+                color: acceptedList.length === 0 ? 'var(--text-muted)' : 'var(--text-on-accent)',
                 border: 'none', borderRadius: '14px', fontWeight: 800, fontSize: '15px',
                 cursor: (starting || acceptedList.length === 0) ? 'default' : 'pointer',
                 opacity: starting ? 0.6 : 1,
-                boxShadow: acceptedList.length === 0 ? 'none' : '0 4px 16px rgba(124,111,247,0.4)',
               }}
             >
               {starting ? 'Starting...'
@@ -353,24 +352,24 @@ export default function AdminCohorts() {
               Active members ({activeList.length})
             </p>
             {activeList.length > 0 && (
-              <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 10px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 10px' }}>
                 🔴 = missed the last 2 sessions
               </p>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {activeList.map((m) => (
                 <div key={m.id} style={{
-                  background: '#15152a',
+                  background: 'var(--bg-card)',
                   border: m.fading ? '1px solid var(--danger)' : '1px solid var(--bg-secondary)',
                   borderRadius: '14px', padding: '13px 14px',
                   display: 'flex', alignItems: 'center', gap: '12px',
                 }}>
                   <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.fading ? '' : ''}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: m.fading ? '#fca5a5' : '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: m.fading ? 'var(--danger)' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {m.name || m.email || m.id}
                     </p>
-                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>
+                    <p style={{ margin: '2px 0 0', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                       Last seen: {m.callMs
                         ? new Intl.DateTimeFormat('az', { day: 'numeric', month: 'short' }).format(new Date(m.callMs))
                         : 'never'}
@@ -379,14 +378,14 @@ export default function AdminCohorts() {
                   </div>
                   <span style={{
                     flexShrink: 0, fontSize: '14px', fontWeight: 800,
-                    color: m.completed !== null ? 'var(--accent)' : '#64748b',
+                    color: m.completed !== null ? 'var(--accent)' : 'var(--text-muted)',
                   }}>
                     {m.completed !== null ? `${m.completed}/${COURSE_TOPIC_COUNT}` : '—'}
                   </span>
                 </div>
               ))}
               {activeList.length === 0 && (
-                <p style={{ textAlign: 'center', color: '#64748b', fontSize: '13px', padding: '8px 0' }}>
+                <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600, padding: '8px 0' }}>
                   No active members yet — accept them and press Start.
                 </p>
               )}

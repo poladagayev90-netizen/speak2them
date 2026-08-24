@@ -94,19 +94,23 @@ export default function InstallGate() {
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
       <div style={{
         flexShrink: 0, width: 36, height: 36, borderRadius: 10,
-        background: 'rgba(124,111,247,0.15)', color: 'var(--accent)',
+        background: 'rgba(182, 166, 255, 0.16)', color: '#c9b8ff',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         {icon}
       </div>
-      <span style={{ color: '#e7e7f5', fontSize: 14, lineHeight: 1.4 }}>{text}</span>
+      <span style={{ color: '#e7e3fa', fontSize: 14, lineHeight: 1.4 }}>{text}</span>
     </div>
   );
 
+  // Every colour on this gate is a LITERAL, not a token. The gate covers the
+  // whole app before anything else can paint, and it is always drawn on its own
+  // dark plum surface — a themed token would flip the ink to near-black on it
+  // the moment a learner is in light mode.
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'linear-gradient(160deg, #14121f, #0b0a14)',
+      background: 'linear-gradient(160deg, #241e48, #171331)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', padding: '28px 22px',
       overflowY: 'auto',
@@ -114,30 +118,30 @@ export default function InstallGate() {
       <div style={{ width: '100%', maxWidth: 400 }}>
         <div style={{
           width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-          background: 'rgba(245,158,11,0.15)', color: 'var(--warning)',
+          background: 'rgba(182, 166, 255, 0.16)', color: '#c9b8ff',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34,
         }}>
           ⚠
         </div>
 
-        <h2 style={{ color: '#fff', fontSize: 21, fontWeight: 800, textAlign: 'center', margin: '0 0 10px' }}>
+        <h2 style={{ color: '#f4f2fc', fontSize: 21, fontWeight: 800, textAlign: 'center', margin: '0 0 10px' }}>
           {inApp ? 'Open in browser' : 'Add the app to your home screen'}
         </h2>
-        <p style={{ color: '#a9a9c4', fontSize: 14, lineHeight: 1.5, textAlign: 'center', margin: '0 0 22px' }}>
+        <p style={{ color: '#a49dc6', fontSize: 14, lineHeight: 1.5, textAlign: 'center', margin: '0 0 22px' }}>
           {inApp ? (
             <>
               This app cannot be installed here. Open the link in
-              {' '}<b style={{ color: '#fff' }}>Safari</b> or <b style={{ color: '#fff' }}>Chrome</b> and add it to your home screen — otherwise <b style={{ color: 'var(--warning)' }}>notifications are off</b>.
+              {' '}<b style={{ color: '#f4f2fc' }}>Safari</b> or <b style={{ color: '#f4f2fc' }}>Chrome</b> and add it to your home screen — otherwise <b style={{ color: '#c9b8ff' }}>notifications are off</b>.
             </>
           ) : (
             <>
-              Add SpeakLab to your home screen to use it fully and get session notifications. Otherwise <b style={{ color: 'var(--warning)' }}>notifications are off</b> and you will miss sessions.
+              Add SpeakLab to your home screen to use it fully and get session notifications. Otherwise <b style={{ color: '#c9b8ff' }}>notifications are off</b> and you will miss sessions.
             </>
           )}
         </p>
 
         <div style={{
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,111,247,0.25)',
+          background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(182, 166, 255, 0.28)',
           borderRadius: 16, padding: 18, display: 'flex', flexDirection: 'column', gap: 14,
         }}>
           {inApp ? (
@@ -149,7 +153,7 @@ export default function InstallGate() {
                 onClick={copyLink}
                 style={{
                   marginTop: 4, border: 'none', borderRadius: 12, padding: '13px',
-                  background: 'var(--accent)', color: '#fff',
+                  background: '#b6a6ff', color: '#171331',
                   fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 }}
@@ -160,7 +164,7 @@ export default function InstallGate() {
           ) : ios ? (
             <>
               {isIOSNonSafari() && (
-                <p style={{ color: 'var(--warning)', fontSize: 13, margin: 0, fontWeight: 600 }}>
+                <p style={{ color: '#c9b8ff', fontSize: 13, margin: 0, fontWeight: 600 }}>
                   First open this page in <b>Safari</b> .
                 </p>
               )}
@@ -170,14 +174,14 @@ export default function InstallGate() {
             </>
           ) : deferredPrompt ? (
             <>
-              <p style={{ color: '#a9a9c4', fontSize: 13, margin: 0, textAlign: 'center' }}>
+              <p style={{ color: '#a49dc6', fontSize: 13, margin: 0, textAlign: 'center' }}>
                 Install with one tap:
               </p>
               <button
                 onClick={handleInstall}
                 style={{
                   border: 'none', borderRadius: 12, padding: '14px',
-                  background: 'var(--accent)', color: '#fff',
+                  background: '#b6a6ff', color: '#171331',
                   fontSize: 16, fontWeight: 800, cursor: 'pointer', width: '100%',
                 }}
               >
@@ -197,7 +201,7 @@ export default function InstallGate() {
           onClick={openHelp}
           style={{
             marginTop: 16, width: '100%', border: '1px solid rgba(255,255,255,0.15)',
-            background: 'transparent', color: '#e7e7f5', borderRadius: 12, padding: '12px',
+            background: 'transparent', color: '#e7e3fa', borderRadius: 12, padding: '12px',
             fontSize: 14, fontWeight: 700, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
@@ -209,7 +213,7 @@ export default function InstallGate() {
           onClick={handleBypass}
           style={{
             marginTop: 12, width: '100%', border: 'none', background: 'none',
-            color: '#6b6b85', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            color: '#a49dc6', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}
         >
           Continue for now

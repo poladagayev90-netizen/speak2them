@@ -48,25 +48,27 @@
 
 /* variants */
 /* A filled button is lit from the top: a gentle gradient between the two ramp
-   steps, a hairline highlight along the top edge, and a soft shadow underneath.
+   steps and a hairline highlight along the top edge. No shadow under it at all
+   -- a coloured shadow is a glow, and on a tinted page it turns the one big
+   button on each screen into a neon sign.
    The gradient direction is fixed (light end on top) and works in both themes
    without an override because the ramps invert -- in dark, --accent-strong is
-   the LIGHTER step.
-   The highlight used to be 30% white and the shadow a wide coloured halo, which
-   on a dark page turned the one big button on each screen into a neon sign.
-   Restraint here is what separates "the thing to tap" from "the thing glowing
-   at you". */
+   the LIGHTER step. */
 .ui-btn--primary {
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
   color: var(--text-on-accent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), var(--glow-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 .ui-btn--primary:not(:disabled):hover { filter: brightness(1.06); }
 
+/* AInur's button is filled with --ai-fill, NOT --ai. The two are the same hue
+   at different lightness for a reason: --ai has to survive as 13px text on
+   white, which makes it too heavy as a 54px block, and the pale lilac that
+   reads right as a block would be unreadable as text. */
 .ui-btn--ai {
-  background: linear-gradient(180deg, var(--ai-strong), var(--ai));
+  background: linear-gradient(180deg, var(--ai-fill-strong), var(--ai-fill));
   color: var(--text-on-ai);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), var(--glow-ai);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 .ui-btn--ai:not(:disabled):hover { filter: brightness(1.06); }
 
@@ -81,7 +83,7 @@
 .ui-btn--ghost { background: transparent; color: var(--text-secondary); }
 .ui-btn--ghost:not(:disabled):hover { background: var(--bg-secondary); color: var(--text-primary); }
 
-.ui-btn--danger { background: var(--danger); color: #fff; }
+.ui-btn--danger { background: var(--danger-solid); color: var(--ink-on-danger); }
 .ui-btn--danger:not(:disabled):hover { filter: brightness(.92); }
 
 /* An icon-only button stays square so it never collapses to a sliver. */
@@ -103,7 +105,8 @@
 .ui-card--pad-md { padding: var(--s-4); }
 .ui-card--pad-lg { padding: var(--s-5); }
 
-/* Tone is the "who am I talking to" signal: cyan = AInur, violet = a person.
+/* Tone is the "who am I talking to" signal: the lighter purple = AInur, the
+   deeper one = a person.
    Carried by a faint tint pooling in one corner and a coloured border, NOT by
    a 60px halo of the hue thrown behind the card -- two of those on one screen
    was most of why the dark theme looked like a light show. The border does the

@@ -7,22 +7,21 @@ import React from 'react';
 // yazılır və rules ilə clientə bağlıdır.
 //
 // Ölçülər PremiumBadge ilə BİRƏ-BİR eynidir: bir sətirdə ikisi yan-yana düşəndə
-// (premium müəllim) mətn sıçramasın. Fərq yalnız rəngdədir — Pro qızılı,
-// Tutor brendin Neon Cyan tonu.
+// (premium müəllim) mətn sıçramasın. Fərq yalnız rəngdədir — ikisi də bənövşəyi
+// ailədəndir, Tutor bir ton açıqdır.
 export default function TutorBadge() {
   return (
     <span style={{
       display: 'inline-flex',
       alignItems: 'center',
       gap: '3px',
-      background: 'linear-gradient(135deg, #22d3ee, #0891b2)',
-      color: '#062a3a',
+      background: 'var(--ai-fill)',
+      color: 'var(--text-on-ai)',
       fontSize: '10px',
       fontWeight: 700,
       padding: '2px 7px',
       borderRadius: '20px',
       marginLeft: '6px',
-      boxShadow: '0 0 8px #22d3ee55',
       whiteSpace: 'nowrap',
     }}>
       🎓 Tutor

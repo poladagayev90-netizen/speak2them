@@ -58,7 +58,7 @@ export default function AinurHub({ user }) {
             AInur
           </h1>
           <p style={{
-            margin: '2px 0 0', fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)',
+            margin: '2px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)',
             lineHeight: 'var(--lh-body)',
           }}>
             Speak any time. You get a report after every session.
@@ -95,12 +95,12 @@ export default function AinurHub({ user }) {
                 {a.title}
               </p>
               <p style={{
-                margin: '4px 0 0', fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)',
+                margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)',
                 lineHeight: 'var(--lh-body)',
               }}>
                 {a.blurb}
               </p>
-              <p style={{ margin: '6px 0 0', fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+              <p style={{ margin: '6px 0 0', fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--text-muted)' }}>
                 About {a.minutes} minutes
               </p>
             </div>
@@ -120,7 +120,7 @@ export default function AinurHub({ user }) {
               <p style={{ margin: 0, fontSize: 'var(--fs-body)', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {a.title}
               </p>
-              <p style={{ margin: '2px 0 0', fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)' }}>
+              <p style={{ margin: '2px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 {a.blurb}
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function AinurHub({ user }) {
 
       {user?.teacherId && (
         <p style={{
-          marginTop: 'var(--s-5)', fontSize: 'var(--fs-sm)', color: 'var(--text-muted)',
+          marginTop: 'var(--s-5)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-muted)',
           lineHeight: 'var(--lh-body)',
         }}>
           Your teacher can see the report from each session.

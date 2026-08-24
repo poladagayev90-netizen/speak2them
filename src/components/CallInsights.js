@@ -82,7 +82,7 @@ function RatingBlock({ peerName, onSubmitRating }) {
             ))}
           </div>
           {error && (
-            <p style={{ color: 'var(--danger-fg, #ff4757)', fontSize: 13, margin: '0 0 10px' }}>{error}</p>
+            <p style={{ color: 'var(--danger-fg)', fontSize: 13, margin: '0 0 10px' }}>{error}</p>
           )}
           <button
             disabled={selectedStar === 0 || submitting}
@@ -131,7 +131,9 @@ export default function CallInsights({
   // Used as the score circle's FILL with white text on top, so the circle
   // supplies its own background and these stay fixed across themes. The old
   // amber (var(--warning)) gave white only 2.15:1 — effectively unreadable.
-  const scoreColor = (s) => (s >= 80 ? '#15803d' : s >= 60 ? '#b45309' : '#b91c1c');
+  // A score band, not a traffic light: two steps of the purple for "good" and
+// "getting there", and the one red the palette keeps for "this needs work".
+const scoreColor = (s) => (s >= 80 ? 'var(--accent)' : s >= 60 ? 'var(--ai)' : 'var(--danger)');
 
   const extras = (
     <>
@@ -141,7 +143,7 @@ export default function CallInsights({
       {quizWordCount > 0 && onStartQuiz && (
         <button onClick={onStartQuiz} style={{
           width: '100%', marginTop: 12, padding: 14,
-          background: 'rgba(124, 111, 247, 0.15)', color: 'var(--accent)',
+          background: 'var(--accent-soft)', color: 'var(--accent)',
           border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: 'pointer',
         }}>
           📝 Word quiz ({quizWordCount} words)
@@ -217,14 +219,14 @@ export default function CallInsights({
     <InsightsShell onClose={onClose} extras={extras}>
       {/* SCORE */}
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8 }}>Call analysis</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Call analysis</p>
         <div style={{
           width: 90, height: 90, borderRadius: '50%',
           background: scoreColor(view.overallScore),
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 12px'
         }}>
-          <span style={{ color: '#fff', fontSize: 28, fontWeight: 800 }}>{view.overallScore}</span>
+          <span style={{ color: 'var(--text-on-accent)', fontSize: 28, fontWeight: 800 }}>{view.overallScore}</span>
         </div>
         {view.recap && (
           <p style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
@@ -241,7 +243,7 @@ export default function CallInsights({
               padding: '12px 8px', textAlign: 'center', border: '1px solid var(--border)'
             }}>
               <p style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>{s.value}</p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: 0 }}>{s.label}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, margin: 0 }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -249,7 +251,7 @@ export default function CallInsights({
 
       {view.speakingPace?.wpm > 0 && (
         <div style={{ ...card, textAlign: 'center', marginBottom: 24 }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Speaking pace: </span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600 }}>Speaking pace: </span>
           <span style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
             {view.speakingPace.wpm} wpm ({view.speakingPace.label})
           </span>
@@ -272,7 +274,7 @@ export default function CallInsights({
                 {fix.corrected}
               </span>
             </div>
-            {fix.reason && <p style={{ color: 'var(--text-secondary)', fontSize: 12, margin: 0 }}>{fix.reason}</p>}
+            {fix.reason && <p style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, margin: 0 }}>{fix.reason}</p>}
           </div>
         ))}
       </div>
@@ -311,7 +313,7 @@ export default function CallInsights({
             <div key={i} style={card}>
               <p style={{ color: 'var(--accent)', fontSize: 14, fontWeight: 700, margin: '0 0 4px' }}>{v.word}</p>
               {v.example && (
-                <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>{v.example}</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, margin: 0, lineHeight: 1.5 }}>{v.example}</p>
               )}
             </div>
           ))}
@@ -336,7 +338,7 @@ export default function CallInsights({
         <div style={{ marginBottom: 24 }}>
           <p style={sectionTitle}>Conversation summary</p>
           <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: '12px 14px', border: '1px solid var(--border)' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{view.transcript}</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, lineHeight: 1.6, margin: 0 }}>{view.transcript}</p>
           </div>
         </div>
       )}

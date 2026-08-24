@@ -7,7 +7,10 @@ const prefersReducedMotion = () =>
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const CONFETTI_COLORS = ['var(--warning)', 'var(--accent)', '#22d3ee', 'var(--danger)', '#22c55e', '#fb923c'];
+// Confetti is the one place a spread of colour is the point, so it takes six
+// steps of the purple rather than six unrelated hues -- the burst still reads
+// as a burst, and it no longer contradicts every other colour on the screen.
+const CONFETTI_COLORS = ['#b6a6ff', '#c9b8ff', '#8fa3e8', '#dfa6f0', '#a37fe8', '#e3d8ff'];
 
 const makeConfetti = () =>
   Array.from({ length: 18 }, () => {
@@ -30,10 +33,10 @@ const CARD_BASE = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  background: 'linear-gradient(160deg, #1e1b4b 0%, #2e1065 55%, #172554 100%)',
+  background: 'linear-gradient(160deg, #241e48 0%, #1e1940 55%, #171331 100%)',
   border: '1px solid rgba(255, 255, 255, 0.10)',
   boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45), 0 0 26px rgba(124,111,247,0.18)',
+    'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
 };
 
 // In-call synchronized Taboo game. Both peers read the same tabooStage doc field,
@@ -121,7 +124,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               className={reduceMotion ? undefined : 'taboo-score-pop'}
               style={{
                 display: 'inline-block',
-                background: 'var(--success)', color: '#fff',
+                background: 'var(--accent)', color: 'var(--text-on-accent)',
                 borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 700,
               }}
             >
@@ -145,7 +148,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
             className={reduceMotion ? undefined : 'taboo-toast'}
             style={{
               margin: '0 16px 10px', padding: '8px 12px', borderRadius: 12,
-              background: 'var(--accent-soft, rgba(139,107,255,0.16))',
+              background: 'var(--accent-soft)',
               border: '1px solid var(--border)',
               color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, textAlign: 'center',
             }}
@@ -172,11 +175,16 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
 
               <div style={{
                 height: 1, margin: '0 0 14px',
-                background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(224,141,134,0.6), transparent)',
               }} />
 
               <p style={{
-                color: 'var(--danger)', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
+                /* The card underneath is dark in BOTH themes, so the danger
+                   tokens cannot be used here: in light mode --danger-bg is a
+                   pale pink and --danger a deep red, i.e. pink slabs and
+                   invisible ink on a near-black card. These are the dark-theme
+                   red written out. */
+                color: '#e08d86', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
                 textTransform: 'uppercase', letterSpacing: '1.2px', textAlign: 'center',
               }}>
                 Forbidden words
@@ -185,12 +193,12 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 {card.forbidden.map((w) => (
                   <div key={w} style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: 'rgba(239, 68, 68, 0.10)',
-                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    background: 'rgba(224, 141, 134, 0.12)',
+                    border: '1px solid rgba(224, 141, 134, 0.25)',
                     borderRadius: 10, padding: '7px 12px',
-                    color: '#fca5a5', fontSize: 14, fontWeight: 600,
+                    color: '#f0bbb6', fontSize: 14, fontWeight: 600,
                   }}>
-                    <X size={16} strokeWidth={2.5} aria-hidden="true" style={{ color: 'var(--danger)' }} />
+                    <X size={16} strokeWidth={2.5} aria-hidden="true" style={{ color: '#e08d86' }} />
                     {w}
                   </div>
                 ))}
@@ -203,9 +211,9 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 aria-hidden="true"
                 style={{
                   width: 96, height: 96, borderRadius: '50%',
-                  background: 'var(--accent)',
+                  background: '#b6a6ff',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 42, fontWeight: 800, color: '#fff', marginBottom: 18,
+                  fontSize: 42, fontWeight: 800, color: '#171331', marginBottom: 18,
                 }}
               >
                 ?
@@ -235,9 +243,8 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               onClick={onCorrect}
               style={{
                 flex: 1.5, height: 46, borderRadius: 12, border: 'none',
-                background: 'var(--success)', color: '#fff',
+                background: 'var(--accent)', color: 'var(--text-on-accent)',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                boxShadow: '0 6px 18px rgba(34, 197, 94, 0.28)',
               }}
             >
               <Check size={18} strokeWidth={1.75} aria-hidden="true" /> Correct
@@ -246,8 +253,8 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
               onClick={onPass}
               style={{
                 flex: 1, height: 46, borderRadius: 12,
-                border: '1px solid var(--border, #2a2947)',
-                background: 'var(--bg-input, var(--bg-input))', color: 'var(--text-secondary)',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-input)', color: 'var(--text-secondary)',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
               }}
             >
@@ -257,7 +264,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
         ) : (
           <div style={{ padding: '14px 16px 18px' }}>
             <p style={{
-              color: 'var(--text-muted, #7c84a2)', fontSize: 12, textAlign: 'center', margin: 0,
+              color: 'var(--text-muted)', fontSize: 12, fontWeight: 600, textAlign: 'center', margin: 0,
             }}>
               When you guess it, your partner taps Correct and the turn passes to you.
             </p>

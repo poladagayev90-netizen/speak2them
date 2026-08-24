@@ -14,7 +14,8 @@ const PLANS = [
     price: 0,
     priceLabel: 'Pulsuz',
     icon: '',
-    color: '#185FA5',
+    color: 'var(--ai)',
+    soft: 'var(--ai-soft)',
     features: ['Unlimited practice — 30 minutes a day', 'Ayda 3 AI analiz', 'AInur and quizzes'],
   },
   {
@@ -25,6 +26,7 @@ const PLANS = [
     priceLabel: '9.99 ₼',
     icon: '',
     color: 'var(--accent)',
+    soft: 'var(--accent-soft)',
     popular: true,
     features: ['Limitsiz AI analiz', 'Prioritet matching', 'Unlimited practice — 30 minutes a day', 'Profil badge'],
   },
@@ -112,7 +114,7 @@ export default function Upgrade({ user }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f0f1a', color: '#fff', fontFamily: 'inherit', paddingBottom: 40 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: 'inherit', paddingBottom: 40 }}>
       <BadgeUnlockModal
         badge={newBadge}
         rewardMessage={newBadgeReward}
@@ -140,18 +142,18 @@ export default function Upgrade({ user }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', padding: '24px 20px 16px' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}></div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', background: 'linear-gradient(to right, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Free and Premium</h2>
-        <p style={{ fontSize: 13, color: '#aaa', margin: 0, lineHeight: 1.5 }}>
-          Speaking practice <b style={{color: '#fff'}}>free for everyone</b> — Premium gives you unlimited AI analysis and priority matching.
+        <h2 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', color: 'var(--text-primary)' }}>Free and Premium</h2>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600, margin: 0, lineHeight: 1.5 }}>
+          Speaking practice <b style={{color: 'var(--text-primary)'}}>free for everyone</b> — Premium gives you unlimited AI analysis and priority matching.
         </p>
       </div>
 
       {premiumDiscount > 0 && (
         <div style={{
           margin: '0 16px 14px',
-          background: '#22c55e18',
-          border: '1px solid #22c55e55',
-          color: '#bbf7d0',
+          background: 'var(--success-bg)',
+          border: '1px solid var(--success)',
+          color: 'var(--success-fg)',
           borderRadius: 14,
           padding: '12px 14px',
           fontSize: 13,
@@ -170,7 +172,7 @@ export default function Upgrade({ user }) {
             onClick={() => setSelected(p.id)}
             style={{
               background: 'var(--bg-card)',
-              border: selected === p.id ? `2px solid ${p.color}` : '1px solid var(--bg-secondary)',
+              border: selected === p.id ? `2px solid ${p.color}` : '1px solid var(--border)',
               borderRadius: 16,
               padding: '14px 16px',
               cursor: 'pointer',
@@ -182,9 +184,8 @@ export default function Upgrade({ user }) {
               <div style={{
                 position: 'absolute', top: -1, right: 14,
                 background: 'var(--accent)', border: '1px solid var(--accent)',
-                color: '#fff', fontSize: 10, fontWeight: 800,
+                color: 'var(--text-on-accent)', fontSize: 10, fontWeight: 800,
                 padding: '4px 12px', borderRadius: '0 0 8px 8px', letterSpacing: '1px',
-                boxShadow: '0 4px 12px rgba(124, 111, 247, 0.4)'
               }}>MOST POPULAR</div>
             )}
 
@@ -193,39 +194,45 @@ export default function Upgrade({ user }) {
                 {/* Radio */}
                 <div style={{
                   width: 18, height: 18, borderRadius: '50%',
-                  border: `2px solid ${selected === p.id ? p.color : '#3e3e60'}`,
+                  border: `2px solid ${selected === p.id ? p.color : 'var(--border)'}`,
                   background: selected === p.id ? p.color : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  {selected === p.id && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />}
+                  {selected === p.id && <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-on-accent)' }} />}
                 </div>
 
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: `${p.color}22`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-                }}>{p.icon}</div>
+                {/* The icon slot is empty for both plans (the emoji were
+                    removed when the UI went to lucide), so the chip only
+                    renders when there is something to put in it -- otherwise
+                    it is a blank tinted square beside every plan name. */}
+                {p.icon && (
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    background: p.soft,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                  }}>{p.icon}</div>
+                )}
 
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{p.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.tagline}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{p.tagline}</div>
                 </div>
               </div>
 
               <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                 {p.oldPriceLabel && (
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#666', textDecoration: 'line-through', marginBottom: -2 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textDecoration: 'line-through', marginBottom: -2 }}>
                     {p.oldPriceLabel}
                   </div>
                 )}
-                <div style={{ fontSize: 19, fontWeight: 800, color: '#fff' }}>{p.priceLabel}</div>
+                <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)' }}>{p.priceLabel}</div>
               </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--bg-secondary)', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
               {p.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: f.startsWith('—') ? '#555' : '#aaa' }}>
-                  <span style={{ color: f.startsWith('—') ? '#3e3e50' : '#22c55e', fontSize: 14 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 600, color: f.startsWith('—') ? 'var(--text-muted)' : 'var(--text-secondary)' }}>
+                  <span style={{ color: f.startsWith('—') ? 'var(--text-muted)' : 'var(--accent)', fontSize: 14 }}>
                     {f.startsWith('—') ? '' : '✓'}
                   </span>
                   {f.startsWith('—') ? f.slice(2) : f}
@@ -240,28 +247,27 @@ export default function Upgrade({ user }) {
       <div style={{ padding: '16px 16px 0' }}>
         <button onClick={handleContinue} style={{
           width: '100%', padding: '16px',
-          background: `linear-gradient(135deg, ${premiumPlan.color}, ${premiumPlan.color}cc)`,
+          background: premiumPlan.color,
           border: 'none', borderRadius: 16,
-          color: '#fff', fontSize: 17, fontWeight: 800, cursor: 'pointer',
-          boxShadow: `0 8px 24px ${premiumPlan.color}40`,
+          color: 'var(--text-on-accent)', fontSize: 17, fontWeight: 800, cursor: 'pointer',
         }}>
           Go Premium — {premiumPlan.priceLabel}
         </button>
-        <p style={{ textAlign: 'center', fontSize: 12, color: '#666', margin: '14px 0 0' }}>
+        <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '14px 0 0' }}>
           Confirmation happens over WhatsApp
         </p>
       </div>
 
       {/* Compare table */}
       <div style={{ padding: '24px 16px 0' }}>
-        <p style={{ fontSize: 13, color: '#666', textAlign: 'center', marginBottom: 12 }}>Plan comparison</p>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 12 }}>Plan comparison</p>
         <div style={{ background: 'var(--bg-card)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--bg-secondary)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--bg-secondary)' }}>
-                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Feature</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Feature</th>
                 {PLANS.map(p => (
-                  <th key={p.id} style={{ padding: '10px 6px', textAlign: 'center', color: selected === p.id ? p.color : '#555', fontWeight: 600 }}>
+                  <th key={p.id} style={{ padding: '10px 6px', textAlign: 'center', color: selected === p.id ? p.color : 'var(--text-muted)', fontWeight: 600 }}>
                     {p.name}
                   </th>
                 ))}
@@ -270,11 +276,11 @@ export default function Upgrade({ user }) {
             <tbody>
               {COMPARE.map((row, i) => (
                 <tr key={i} style={{ borderBottom: i < COMPARE.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                  <td style={{ padding: '9px 12px', color: '#aaa' }}>{row.feature}</td>
+                  <td style={{ padding: '9px 12px', color: 'var(--text-secondary)' }}>{row.feature}</td>
                   {row.values.map((v, j) => (
                     <td key={j} style={{ padding: '9px 6px', textAlign: 'center' }}>
                       {typeof v === 'boolean'
-                        ? <span style={{ color: v ? '#22c55e' : '#3e3e50', fontSize: 14 }}>{v ? '✓' : '—'}</span>
+                        ? <span style={{ color: v ? 'var(--accent)' : 'var(--text-muted)', fontSize: 14 }}>{v ? '✓' : '—'}</span>
                         : <span style={{ color: 'var(--text-muted)' }}>{v}</span>
                       }
                     </td>

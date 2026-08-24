@@ -85,7 +85,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
             <div style={{
               position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 6,
-              color: 'var(--text-muted)', fontSize: 13,
+              color: 'var(--text-muted)', fontSize: 13, fontWeight: 600,
             }}>
               <ImageOff size={28} strokeWidth={1.5} aria-hidden="true" />
               The picture did not load — describe the topic in words
@@ -113,7 +113,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
             <div aria-hidden="true" className="imgstage-skeleton" style={{
               position: 'absolute', inset: 0, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              color: 'var(--text-muted)', fontSize: 12,
+              color: 'var(--text-muted)', fontSize: 12, fontWeight: 600,
             }}>
               Loading picture…
             </div>
@@ -122,13 +122,13 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
 
         {keywords.length > 0 && (
           <div style={{ padding: '12px 16px 4px' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Keywords · {safeIndex + 1}/{images.length}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {keywords.map((v, i) => (
                 <span key={i} style={{
-                  background: 'var(--accent)', color: '#fff',
+                  background: 'var(--accent)', color: 'var(--text-on-accent)',
                   borderRadius: 20, padding: '5px 14px',
                   fontSize: 13, fontWeight: 600,
                 }}>
@@ -150,7 +150,7 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
             onClick={onNext}
             style={{
               flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: 'var(--accent)', color: '#fff',
+              background: 'var(--accent)', color: 'var(--text-on-accent)',
               fontSize: 14, fontWeight: 700, cursor: 'pointer',
             }}
           >

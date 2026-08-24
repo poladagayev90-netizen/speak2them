@@ -25,6 +25,9 @@
   padding: var(--s-3) var(--s-4);
   flex-shrink: 0;
 }
+/* The header sits tighter than a chat bubble does, so her avatar loses one
+   step there. Everywhere else .ai-avatar keeps its 36px. */
+.ai-activity-head .ai-avatar { width: 30px; height: 30px; }
 .ai-activity-title {
   margin: 0;
   flex: 1;
@@ -82,7 +85,8 @@
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: var(--s-2);
-  color: var(--text-muted); font-size: var(--fs-sm); text-align: center;
+  color: var(--text-muted); font-size: var(--fs-sm);
+  font-weight: 600; text-align: center;
   padding: var(--s-4);
 }
 
@@ -126,6 +130,7 @@
 .ai-heard {
   margin: 0;
   font-size: var(--fs-sm);
+  font-weight: 600;
   line-height: var(--lh-body);
   color: var(--text-muted);
   font-style: italic;
@@ -142,16 +147,18 @@
   display: grid;
   place-items: center;
   cursor: pointer;
+  /* --ai-fill, not --ai: the hue has to survive as small text elsewhere, which
+     makes it too heavy for a 72px disc. Same pair, two jobs. */
   color: var(--text-on-ai);
-  background: var(--ai);
+  background: var(--ai-fill);
   -webkit-tap-highlight-color: transparent;
   transition: background-color 160ms ease, transform 100ms ease, box-shadow 90ms linear;
 }
 .ai-mic:disabled { opacity: .5; cursor: not-allowed; }
 .ai-mic:not(:disabled):active { transform: scale(.94); }
 .ai-mic:focus-visible { outline: 2px solid var(--ai); outline-offset: 4px; }
-.ai-mic--rec { background: var(--danger); color: #fff; }
-.ai-mic--speaking { background: var(--ai-strong); }
+.ai-mic--rec { background: var(--danger-solid); color: var(--ink-on-danger); }
+.ai-mic--speaking { background: var(--ai-fill-strong); }
 .ai-mic--busy { background: var(--bg-secondary); color: var(--text-secondary); }
 .ai-mic-label {
   font-size: var(--fs-sm);

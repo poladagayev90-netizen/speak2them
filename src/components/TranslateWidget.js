@@ -67,7 +67,6 @@ export default function TranslateWidget({ userId, topic, onTranslate, nativeLang
           background: 'var(--accent)',
           border: 'none', color: 'var(--text-on-accent)', fontSize: 22,
           cursor: 'pointer', zIndex: 10005,
-          boxShadow: '0 4px 12px rgba(124,111,247,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
       >
@@ -82,7 +81,7 @@ export default function TranslateWidget({ userId, topic, onTranslate, nativeLang
       maxWidth: 400, margin: '0 auto',
       background: 'var(--bg-card)', border: '1px solid var(--accent)',
       borderRadius: 16, padding: 14, zIndex: 10005,
-      boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+      boxShadow: 'var(--glass-lift)'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <p style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 700, margin: 0 }}>

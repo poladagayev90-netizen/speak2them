@@ -269,15 +269,15 @@ function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
         skip: 'Skip',
       }}
       options={{
-        arrowColor: '#141421',
-        backgroundColor: '#141421',
+        arrowColor: '#241e48',
+        backgroundColor: '#241e48',
         buttons: ['skip', 'back', 'primary'],
         closeButtonAction: 'skip',
         dismissKeyAction: false,
         disableFocusTrap: false,
         offset: 12,
         overlayClickAction: false,
-        overlayColor: 'rgba(4, 6, 14, 0.78)',
+        overlayColor: 'rgba(14, 11, 32, 0.78)',
         primaryColor: 'var(--accent)',
         scrollDuration: 360,
         scrollOffset: 96,
@@ -286,16 +286,16 @@ function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
         spotlightPadding: 10,
         spotlightRadius: 18,
         targetWaitTimeout: 1200,
-        textColor: '#f8fafc',
+        textColor: '#f4f2fc',
         width: 'min(360px, calc(100vw - 32px))',
         zIndex: 12000,
       }}
       styles={{
         beaconInner: {
-          backgroundColor: '#22d3ee',
+          backgroundColor: '#c9b8ff',
         },
         beaconOuter: {
-          borderColor: '#22d3ee',
+          borderColor: '#c9b8ff',
         },
         floater: {
           filter: 'drop-shadow(0 24px 50px rgba(0, 0, 0, 0.45))',
@@ -304,7 +304,7 @@ function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
           backdropFilter: 'blur(5px)',
         },
         spotlight: {
-          stroke: 'rgba(34, 211, 238, 0.72)',
+          stroke: 'rgba(201, 184, 255, 0.72)',
           strokeWidth: 2,
         },
       }}

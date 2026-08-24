@@ -56,7 +56,7 @@ export default function MicButton({ status, active, intro = false, level = 0, el
         {listening && elapsedMs > 0 ? fmt(elapsedMs) : label}
       </span>
       {active && !intro && (
-        <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)' }}>
+        <span style={{ fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--text-muted)' }}>
           Tap again to end the session
         </span>
       )}

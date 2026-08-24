@@ -20,7 +20,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
     return unsub;
   }, [slotId]);
 
-  if (members.length === 0) return <span style={{ color: '#64748b', fontSize: '13px' }}>Empty</span>;
+  if (members.length === 0) return <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600 }}>Empty</span>;
 
   // Eyni ad birdən çox üzvdə varsa (məs. 3 "Sebine") kimin-kim olduğu qarışırdı.
   // Ad təkrarlanırsa fərqləndirici əlavə olunur: email prefiksi, yoxsa qısa uid.
@@ -56,14 +56,14 @@ function AdminSlotMembers({ slotId, usersMap }) {
     }
   });
 
-  const nameStyle = { color: '#f8fafc', fontWeight: 600 };
-  const lvlStyle = { color: '#94a3b8', fontSize: '12px', fontWeight: 400 };
+  const nameStyle = { color: 'var(--text-primary)', fontWeight: 600 };
+  const lvlStyle = { color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 400 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
       {pairs.map(([a, b]) => (
         <div key={a.uid + b.uid} style={{
-          background: '#052e16', border: '1px solid #166534',
+          background: 'var(--success-bg)', border: '1px solid var(--success)',
           padding: '10px 12px', borderRadius: '8px', fontSize: '14px',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
@@ -75,7 +75,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
       ))}
       {waiting.map((m) => (
         <div key={m.uid} style={{
-          background: '#422006', border: '1px solid #854d0e',
+          background: 'var(--warning-bg)', border: '1px solid var(--warning)',
           padding: '8px 12px', borderRadius: '8px', fontSize: '14px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
@@ -94,7 +94,7 @@ function StatPill({ label, value, color }) {
       borderRadius: 10, padding: '10px 8px', textAlign: 'center',
     }}>
       <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color }}>{value}</p>
-      <p style={{ margin: '2px 0 0', fontSize: 11, color: '#94a3b8' }}>{label}</p>
+      <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</p>
     </div>
   );
 }
@@ -147,7 +147,7 @@ export default function AdminSlots({ users }) {
   }, [board]);
 
   if (dates.length === 0) {
-    return <div style={{ color: '#94a3b8', padding: '20px', textAlign: 'center' }}>Nobody has picked a time for the next three days yet.</div>;
+    return <div style={{ color: 'var(--text-secondary)', padding: '20px', textAlign: 'center' }}>Nobody has picked a time for the next three days yet.</div>;
   }
 
   const dayTotals = (date) => byDay[date].reduce((acc, s) => {
@@ -173,10 +173,10 @@ export default function AdminSlots({ users }) {
               display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
               margin: '0 2px 8px',
             }}>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#c4bbff' }}>
-                {dayLabel(date)} <span style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>{date}</span>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--accent)' }}>
+                {dayLabel(date)} <span style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>{date}</span>
               </h3>
-              <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>
                 {dt.total} people · {dt.paired} matched
               </span>
             </div>
@@ -187,7 +187,7 @@ export default function AdminSlots({ users }) {
                 const popular = s.hour === POPULAR_HOUR;
                 return (
                   <div key={s.slotId} style={{
-                    background: '#1a1a2e',
+                    background: 'var(--bg-card)',
                     border: `1px solid ${popular ? 'var(--border)' : 'var(--bg-secondary)'}`,
                     padding: '14px', borderRadius: '12px',
                   }}>
@@ -199,7 +199,7 @@ export default function AdminSlots({ users }) {
                         {popular && <Star size={11} strokeWidth={2} aria-label="Busiest hour" style={{ marginRight: 4, color: 'var(--warning)' }} />}
                         {blockLabel(s.hour)}
                       </strong>
-                      <span style={{ fontSize: 12, color: c.total ? '#94a3b8' : '#475569', fontWeight: 600 }}>
+                      <span style={{ fontSize: 12, color: c.total ? 'var(--text-secondary)' : 'var(--text-muted)', fontWeight: 600 }}>
                         {c.total ? `${c.total} people${c.paired ? ` · ${c.paired} matched` : ''}` : 'empty'}
                       </span>
                     </div>

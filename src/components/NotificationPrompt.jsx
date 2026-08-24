@@ -90,7 +90,7 @@ export default function NotificationPrompt({ user }) {
         <div style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
           Turn on notifications
         </div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.4 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, lineHeight: 1.4 }}>
           Allow notifications so you know when a session starts and your report is ready.
         </div>
       </div>

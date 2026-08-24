@@ -38,8 +38,8 @@ function MultipleChoice({ item, index }) {
               style={{
                 textAlign: 'left', padding: '12px 14px', borderRadius: '12px',
                 fontSize: '14px', fontWeight: 600, cursor: answered ? 'default' : 'pointer',
-                border: showGreen ? '2px solid #22c55e' : showRed ? '2px solid var(--danger)' : '1px solid var(--border)',
-                background: showGreen ? '#22c55e22' : showRed ? 'var(--danger-bg)' : 'var(--bg-card)',
+                border: showGreen ? '2px solid var(--success)' : showRed ? '2px solid var(--danger)' : '1px solid var(--border)',
+                background: showGreen ? 'var(--success-bg)' : showRed ? 'var(--danger-bg)' : 'var(--bg-card)',
                 color: 'var(--text-primary)',
                 transition: 'all .15s ease',
               }}
@@ -52,14 +52,14 @@ function MultipleChoice({ item, index }) {
       {answered && (
         <div style={{
           marginTop: '12px', padding: '12px', borderRadius: '12px',
-          background: isCorrect ? '#22c55e15' : 'var(--bg-card)',
-          border: `1px solid ${isCorrect ? '#22c55e44' : 'var(--border)'}`,
+          background: isCorrect ? 'var(--success-bg)' : 'var(--bg-card)',
+          border: `1px solid ${isCorrect ? 'var(--success)' : 'var(--border)'}`,
         }}>
-          <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? '#16a34a' : 'var(--text-primary)', marginBottom: '4px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? 'var(--success-fg)' : 'var(--text-primary)', marginBottom: '4px' }}>
             {isCorrect ? 'Correct' : `${'Correct answer'}: ${item.correct_answer}`}
           </div>
           {item.explanation && (
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
               💡 {item.explanation}
             </div>
           )}
@@ -97,13 +97,13 @@ function WordOrder({ item, index }) {
       <div style={{
         minHeight: '48px', padding: '10px 12px', borderRadius: '12px',
         border: checked
-          ? `2px solid ${isCorrect ? '#22c55e' : 'var(--danger)'}`
+          ? `2px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`
           : '1px dashed var(--border)',
         background: 'var(--bg-card)', marginBottom: '12px',
         display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center',
       }}>
         {chosen.length === 0 && (
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{'Tap the words to build the sentence...'}</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>{'Tap the words to build the sentence...'}</span>
         )}
         {chosen.map((i) => (
           <button
@@ -112,7 +112,7 @@ function WordOrder({ item, index }) {
             onClick={() => toggle(i)}
             style={{
               padding: '6px 10px', borderRadius: '10px', border: 'none',
-              background: 'var(--accent)', color: 'var(--text-on-accent, #fff)',
+              background: 'var(--accent)', color: 'var(--text-on-accent)',
               fontSize: '14px', fontWeight: 700, cursor: checked ? 'default' : 'pointer',
             }}
           >
@@ -164,8 +164,9 @@ function WordOrder({ item, index }) {
             background: isCorrect ? 'var(--success-bg)' : 'var(--danger-bg)',
             border: `1px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`,
           }}>
-            {/* The -fg tokens, not the raw greens/reds: #16a34a on the dark
-                theme's translucent green sits at about 2:1. */}
+            {/* The -fg tokens, not the base ones: on the dark theme the
+                translucent tint behind this text is barely a shade, so the
+                base --success/--danger sit at about 2:1 on it. */}
             <div style={{ fontSize: '14px', fontWeight: 800, color: isCorrect ? 'var(--success-fg)' : 'var(--danger-fg)', marginBottom: '4px' }}>
               {isCorrect ? 'Perfect' : `${'Correct sentence'}:`}
             </div>
@@ -175,7 +176,7 @@ function WordOrder({ item, index }) {
               </div>
             )}
             {item.explanation && (
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
                 💡 {item.explanation}
               </div>
             )}
@@ -210,7 +211,7 @@ function CorrectionCompare({ item }) {
         {item.corrected}
       </div>
       {item.reason && (
-        <div style={{ color: 'var(--text-secondary)', fontSize: '13px', background: 'var(--bg-card)', padding: '10px', borderRadius: '10px', lineHeight: 1.55 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, background: 'var(--bg-card)', padding: '10px', borderRadius: '10px', lineHeight: 1.55 }}>
           💡 {item.reason}
         </div>
       )}
@@ -235,7 +236,7 @@ export default function AnalysisHomework({ homework, showCorrections = true, sho
         <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>
           {'Exercises made for you'}
         </div>
-        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
           {'These come from your own mistakes in this call. Work through them and the pattern sticks.'}
         </div>
       </div>}

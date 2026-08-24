@@ -93,7 +93,7 @@ body {
   font-weight: 700;
   color: var(--text-primary);
 }
-.auth-role-sub { font-size: var(--fs-xs); color: var(--text-muted); }
+.auth-role-sub { font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
 
 /* Google's button is white with dark ink in BOTH themes -- that is Google's
    own brand rule, and it is also the only way the wordmark stays legible.
@@ -108,9 +108,9 @@ body {
   height: 46px;
   padding: 0 var(--s-4);
   border-radius: var(--r-lg);
-  border: 1px solid rgba(9, 9, 11, 0.20);
-  background: #ffffff;
-  color: #1f1f1f;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-family: inherit;
   font-size: var(--fs-body);
   font-weight: 600;
@@ -147,6 +147,7 @@ body {
 .auth-hint {
   margin: 0 0 var(--s-3);
   font-size: var(--fs-xs);
+  font-weight: 600;
   color: var(--text-muted);
   text-align: center;
 }
@@ -232,7 +233,7 @@ body {
   width: 100%;
   padding: 14px;
   background: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -356,7 +357,7 @@ body {
   justify-content: center;
   font-weight: 700;
   font-size: 20px;
-  color: #fff;
+  color: var(--text-on-accent);
   text-transform: uppercase;
   overflow: hidden;
 }
@@ -384,7 +385,7 @@ body {
 .btn-chat {
   padding: 10px 14px;
   background: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
   border: none;
   border-radius: 10px;
   font-size: 13px;
@@ -417,7 +418,7 @@ body {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), var(--glow-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
   cursor: pointer;
   transition: filter 0.2s, transform 0.08s;
 }
@@ -478,6 +479,7 @@ body {
 
 .chat-peer-info span {
   font-size: 12px;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -488,8 +490,8 @@ body {
 
 .btn-call {
   padding: 10px 18px;
-  background: #15803d;
-  color: white;
+  background: var(--accent);
+  color: var(--text-on-accent);
   border: none;
   border-radius: 10px;
   font-size: 14px;
@@ -499,8 +501,8 @@ body {
 
 .btn-mute {
   padding: 10px 18px;
-  background: #b45309;
-  color: white;
+  background: var(--warning-solid);
+  color: var(--ink-on-warning);
   border: none;
   border-radius: 10px;
   font-size: 14px;
@@ -510,8 +512,8 @@ body {
 
 .btn-end {
   padding: 10px 18px;
-  background: #b91c1c;
-  color: white;
+  background: var(--danger-solid);
+  color: var(--ink-on-danger);
   border: none;
   border-radius: 10px;
   font-size: 14px;
@@ -547,6 +549,7 @@ body {
 
 .message-sender {
   font-size: 11px;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -559,7 +562,7 @@ body {
 
 .message.mine p {
   background: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
 }
 
 .message.theirs p {
@@ -594,7 +597,7 @@ body {
 .chat-input button {
   padding: 12px 20px;
   background: var(--accent);
-  color: white;
+  color: var(--text-on-accent);
   border: none;
   border-radius: 12px;
   font-size: 15px;
@@ -618,7 +621,7 @@ body {
   padding: 20px 28px;
   text-align: center;
   z-index: 999;
-  box-shadow: 0 8px 32px rgba(124, 111, 247, 0.3);
+  box-shadow: var(--glass-lift);
 }
 
 .incoming-call p {
@@ -635,8 +638,8 @@ body {
 
 .btn-accept {
   padding: 10px 24px;
-  background: #22c55e;
-  color: white;
+  background: var(--accent);
+  color: var(--text-on-accent);
   border: none;
   border-radius: 10px;
   font-size: 15px;
@@ -646,8 +649,8 @@ body {
 
 .btn-reject {
   padding: 10px 24px;
-  background: #ef4444;
-  color: white;
+  background: var(--danger-solid);
+  color: var(--ink-on-danger);
   border: none;
   border-radius: 10px;
   font-size: 15px;
@@ -675,7 +678,7 @@ body {
 .tab.active {
   background: var(--accent);
   border-color: transparent;
-  color: white;
+  color: var(--text-on-accent);
 }
 
 .online-badge {
@@ -697,9 +700,9 @@ body {
   font-weight: 600;
 }
 .success-box {
-  background: #22c55e22;
-  border: 1px solid #22c55e55;
-  color: #22c55e;
+  background: var(--success-bg);
+  border: 1px solid var(--accent-ring);
+  color: var(--success-fg);
   padding: 12px 16px;
   border-radius: 10px;
   font-size: 14px;
@@ -722,22 +725,22 @@ body {
 .hub-header { display: flex; align-items: center; gap: 16px; padding: 20px 32px; background: var(--bg-card); border-bottom: 1px solid var(--border); }
 .hub-topic { font-size: 24px; font-weight: 800; color: var(--accent); }
 .hub-tabs { display: flex; gap: 8px; padding: 20px 32px 0; }
-.hub-tab { padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.hub-tab.active { background: var(--accent); border-color: transparent; color: white; }
+.hub-tab { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.hub-tab.active { background: var(--accent); border-color: transparent; color: var(--text-on-accent); }
 .hub-body { padding: 24px 32px; flex: 1; }
 .difficulty-toggle { display: flex; gap: 12px; margin-bottom: 20px; }
 .diff-btn { padding: 10px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.diff-btn.active { background: var(--accent); border-color: transparent; color: white; }
+.diff-btn.active { background: var(--accent); border-color: transparent; color: var(--text-on-accent); }
 .questions-list { display: flex; flex-direction: column; gap: 12px; }
 .question-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; }
-.question-number { background: var(--accent); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.question-number { background: var(--accent); color: var(--text-on-accent); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
 .question-card p { font-size: 15px; line-height: 1.5; margin: 0; }
 .vocab-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
 .vocab-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; cursor: pointer; min-height: 120px; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; }
 .vocab-card:hover { border-color: var(--accent); }
 .vocab-front { text-align: center; }
 .vocab-front h3 { font-size: 20px; font-weight: 700; color: var(--accent); }
-.tap-hint { font-size: 12px; color: var(--text-muted); margin-top: 8px; display: block; }
+.tap-hint { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 8px; display: block; }
 .vocab-back { text-align: center; }
 .vocab-meaning { font-size: 14px; color: var(--text-primary); margin-bottom: 8px; }
 .vocab-example { font-size: 13px; color: var(--accent); font-style: italic; }
@@ -817,6 +820,7 @@ body {
 
 .stat-label {
   font-size: 12px;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -946,6 +950,20 @@ body {
   color: var(--text-secondary);
   margin-bottom: 32px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* "The call is live" — the accent, not a green emoji. It is beside a running
+   timer, so the colour is confirming, not warning. */
+.call-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 .fullscreen-call-buttons {
@@ -1025,7 +1043,7 @@ body {
   --act: #fff;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 24px -14px var(--danger-solid);
 }
-.call-btn-big.end span { color: #fff; }
+.call-btn-big.end span { color: var(--ink-on-danger); }
 
 .call-btn-big:hover { filter: brightness(1.08); }
 .call-btn-big:active { transform: scale(.96); }
@@ -1068,7 +1086,7 @@ body {
 .level-btn.active {
   background: var(--accent);
   border-color: transparent;
-  color: white;
+  color: var(--text-on-accent);
 }
 .daily-panel {
   position: fixed;
@@ -1136,15 +1154,17 @@ body {
   overflow-y: auto;
 }
 
-/* Glassmorphism card, brand dark surface (#13131A) regardless of app theme —
-   it always sits over the dark in-call screen. */
+/* Glass card on a fixed dark PLUM surface regardless of the app theme — it
+   always sits over the in-call screen, which is dark in both themes. The
+   literals below are the dark-theme plum tokens written out, deliberately:
+   this panel must not flip to white when a learner is in light mode. */
 .call-roadmap-card {
   position: relative;
   width: 100%;
   max-width: 420px;
   max-height: 100%;
   overflow-y: auto;
-  background: rgba(19, 19, 26, 0.72);
+  background: rgba(30, 25, 64, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 22px;
   padding: 26px 20px 22px;
@@ -1160,7 +1180,7 @@ body {
   right: 12px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #c7c4d4;
+  color: #c8c2e4;
   font-size: 12px;
   font-weight: 600;
   padding: 6px 12px;
@@ -1171,20 +1191,20 @@ body {
 
 .call-roadmap-skip:hover {
   background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: #f4f2fc;
 }
 
 .call-roadmap-label {
-  color: #9d8bff;
+  color: #b6a6ff;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0 0 6px;
 }
 
 .call-roadmap-title {
-  color: #fff;
+  color: #f4f2fc;
   font-size: 21px;
   font-weight: 800;
   line-height: 1.25;
@@ -1194,18 +1214,16 @@ body {
 .call-roadmap-topic-pill {
   display: inline-block;
   max-width: 100%;
-  background: var(--accent-soft);
-  border: 1px solid rgba(124, 58, 237, 0.45);
-  color: #d9d2ff;
+  background: rgba(182, 166, 255, 0.16);
+  border: 1px solid rgba(182, 166, 255, 0.40);
+  color: #ded4ff;
   font-size: 13px;
   padding: 7px 16px;
   border-radius: 999px;
   margin: 0 0 18px;
 }
 
-.call-roadmap-topic-pill b {
-  color: #fff;
-}
+.call-roadmap-topic-pill b { color: #f4f2fc; }
 
 .call-roadmap-steps {
   display: flex;
@@ -1214,8 +1232,8 @@ body {
   text-align: left;
 }
 
-/* Each step is its own glass card with a neon-gradient number, laid out
-   top-to-bottom for a clear reading flow. */
+/* Each step is its own glass card with a numbered disc, laid out top-to-bottom
+   for a clear reading flow. */
 .call-roadmap-step {
   display: flex;
   align-items: flex-start;
@@ -1231,14 +1249,13 @@ body {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
+  background: #b6a6ff;
+  color: #171331;
   font-size: 14px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
 }
 
 .call-roadmap-step-body {
@@ -1247,15 +1264,16 @@ body {
 }
 
 .call-roadmap-step-label {
-  color: #fff;
+  color: #f4f2fc;
   font-size: 14.5px;
   font-weight: 700;
   margin: 2px 0 4px;
 }
 
 .call-roadmap-step-text {
-  color: #b3b0c2;
+  color: #c8c2e4;
   font-size: 13px;
+  font-weight: 600;
   line-height: 1.5;
   margin: 0;
 }
@@ -1268,9 +1286,9 @@ body {
 }
 
 .call-roadmap-question {
-  background: rgba(124, 58, 237, 0.12);
-  border-left: 2px solid var(--accent);
-  color: #d9d2ff;
+  background: rgba(182, 166, 255, 0.14);
+  border-left: 2px solid #b6a6ff;
+  color: #ded4ff;
   font-size: 12.5px;
   line-height: 1.4;
   padding: 7px 10px;
@@ -1284,12 +1302,11 @@ body {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  background: var(--accent);
-  color: white;
+  background: #b6a6ff;
+  color: #171331;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(124, 58, 237, 0.4);
 }
 
 .call-roadmap-more {
@@ -1298,7 +1315,7 @@ body {
   padding: 10px;
   background: transparent;
   border: none;
-  color: #9d8bff;
+  color: #b6a6ff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1320,7 +1337,7 @@ body {
 .dp-tab.active {
   background: var(--accent);
   border-color: transparent;
-  color: white;
+  color: var(--text-on-accent);
 }
 
 .daily-panel-body {
@@ -1340,7 +1357,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  color: white;
+  color: var(--text-primary);
   font-size: 16px;
   cursor: pointer;
 }
@@ -1459,10 +1476,10 @@ body {
   border-radius: var(--r-xl);
   background: var(--glass-fill);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-edge), var(--e-4);
+  box-shadow: var(--glass-edge), var(--nav-lift);
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
-  /* Keeps the active tab's glow inside the rounded corners. */
+  /* Keeps the active tab's pool inside the rounded corners. */
   overflow: hidden;
   display: flex;
   align-items: stretch;
@@ -1503,9 +1520,11 @@ body {
   font-size: 22px;
 }
 
+/* 700, not 500. At 10px on a translucent bar a medium weight is a smudge --
+   the label has to be readable at a glance or the icon is doing all the work. */
 .bottom-nav-label {
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-secondary);
 }
 
@@ -1574,7 +1593,7 @@ body {
   font-size: 11px;
   font-weight: 700;
   color: var(--accent);
-  background: rgba(108, 99, 255, 0.12);
+  background: var(--accent-soft);
   padding: 4px 10px;
   border-radius: 20px;
 }
@@ -1644,7 +1663,6 @@ body {
   background: var(--accent);
   color: var(--text-on-accent);
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
   transform: translateY(-2px);
 }
 
@@ -1678,7 +1696,7 @@ body {
 
 .dt-vocab-card.expanded {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(108, 99, 255, 0.1);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .dt-vocab-row {
@@ -1696,6 +1714,7 @@ body {
 
 .dt-vocab-meaning {
   font-size: 13px;
+  font-weight: 600;
   color: var(--text-secondary);
   margin: 6px 0 0;
   line-height: 1.4;
@@ -1706,7 +1725,7 @@ body {
   color: var(--accent);
   margin: 8px 0 0;
   padding: 10px 12px;
-  background: rgba(108, 99, 255, 0.06);
+  background: var(--accent-soft);
   border-radius: 10px;
   font-style: italic;
   line-height: 1.5;
@@ -1736,6 +1755,7 @@ body {
 
 .dt-idiom-example {
   font-size: 13px;
+  font-weight: 600;
   color: var(--text-secondary);
   margin: 0;
   font-style: italic;
@@ -1813,7 +1833,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(10, 10, 20, 0.7);
+  background: var(--overlay);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 9999;
@@ -1826,7 +1846,7 @@ body {
 
 .topic-intro-modal {
   background: var(--bg-card);
-  border: 1px solid rgba(124, 111, 247, 0.3);
+  border: 1px solid var(--accent-ring);
   border-radius: 24px;
   padding: 32px 24px;
   width: 100%;
@@ -1850,15 +1870,15 @@ body {
 .topic-intro-title {
   font-size: 32px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary);
   margin: 0 0 16px;
   line-height: 1.2;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
 .topic-intro-desc {
   font-size: 15px;
-  color: #a0a0b8;
+  color: var(--text-secondary);
+  font-weight: 600;
   margin: 0 0 28px;
   line-height: 1.5;
 }
@@ -1882,7 +1902,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 8px 20px rgba(124, 111, 247, 0.3);
   transition: all 0.2s;
 }
 
@@ -1892,10 +1911,11 @@ body {
 
 .topic-intro-btn-secondary {
   background: transparent;
-  color: #888;
+  color: var(--text-muted);
   border: none;
   padding: 12px;
   font-size: 14px;
+  font-weight: 600;
 }
 
 
@@ -1906,7 +1926,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(10, 10, 20, 0.7);
+  background: var(--overlay);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 9999;
@@ -1919,7 +1939,7 @@ body {
 
 .topic-intro-modal {
   background: var(--bg-card);
-  border: 1px solid rgba(124, 111, 247, 0.3);
+  border: 1px solid var(--accent-ring);
   border-radius: 24px;
   padding: 32px 24px;
   width: 100%;
@@ -1943,15 +1963,15 @@ body {
 .topic-intro-title {
   font-size: 32px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary);
   margin: 0 0 16px;
   line-height: 1.2;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
 .topic-intro-desc {
   font-size: 15px;
-  color: #a0a0b8;
+  color: var(--text-secondary);
+  font-weight: 600;
   margin: 0 0 28px;
   line-height: 1.5;
 }
@@ -1975,7 +1995,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 8px 20px rgba(124, 111, 247, 0.3);
   transition: all 0.2s;
 }
 
@@ -1985,10 +2004,11 @@ body {
 
 .topic-intro-btn-secondary {
   background: transparent;
-  color: #888;
+  color: var(--text-muted);
   border: none;
   padding: 12px;
   font-size: 14px;
+  font-weight: 600;
   font-weight: 600;
   cursor: pointer;
   transition: color 0.2s;
@@ -2054,23 +2074,26 @@ body {
 .dt-quiz-opt:hover:not(.disabled) {
   border-color: var(--accent);
   transform: translateY(-2px);
-  background: rgba(124, 111, 247, 0.05);
+  background: var(--accent-soft);
 }
 
 .dt-quiz-opt:active:not(.disabled) {
   transform: translateY(0);
 }
 
+/* Right is the accent, wrong is the one red the palette allows. A quiz needs
+   the two answers to be unmistakable at a glance, and two shades of the same
+   purple is exactly the case where lightness alone is not enough. */
 .dt-quiz-opt.correct {
-  background: rgba(46, 213, 115, 0.15);
-  border-color: #2ed573;
-  color: #2ed573;
+  background: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success-fg);
 }
 
 .dt-quiz-opt.wrong {
-  background: rgba(255, 71, 87, 0.15);
-  border-color: #ff4757;
-  color: #ff4757;
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger-fg);
 }
 
 .dt-quiz-opt.disabled {
@@ -2088,7 +2111,6 @@ body {
   border: none;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(124, 111, 247, 0.3);
   transition: all 0.2s;
   margin-top: auto;
 }
@@ -2141,7 +2163,7 @@ body {
 }
 .puzzle-hint-text { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
 .puzzle-hint-az { font-size: 13px; font-weight: 700; color: var(--accent); margin: 6px 0 0; }
-.puzzle-hint-locked { font-size: 11px; color: var(--text-muted); margin: 6px 0 0; }
+.puzzle-hint-locked { font-size: 11px; font-weight: 600; color: var(--text-muted); margin: 6px 0 0; }
 
 .puzzle-grid {
   display: flex;
@@ -2166,8 +2188,12 @@ body {
   text-transform: uppercase;
 }
 .puzzle-tile.is-filled { border-color: var(--accent); }
-.puzzle-tile.is-correct { background: #22c55e; border-color: #22c55e; color: #fff; }
-.puzzle-tile.is-present { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+/* Right letter, right place / right letter, wrong place. Green-and-amber is the
+   Wordle convention, but neither hue exists in this app any more, so the two
+   states are two steps of the purple instead: solid accent = placed, pale
+   lilac = present. The gap between them is wide enough to read at a glance. */
+.puzzle-tile.is-correct { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+.puzzle-tile.is-present { background: var(--ai-fill); border-color: var(--ai-fill); color: var(--text-on-ai); }
 .puzzle-tile.is-absent {
   background: var(--bg-secondary);
   border-color: var(--bg-secondary);
@@ -2192,8 +2218,8 @@ body {
   border: 1px solid var(--border);
 }
 .puzzle-key--wide { max-width: 58px; font-size: 16px; }
-.puzzle-key.is-correct { background: #22c55e; border-color: #22c55e; color: #fff; }
-.puzzle-key.is-present { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+.puzzle-key.is-correct { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+.puzzle-key.is-present { background: var(--ai-fill); border-color: var(--ai-fill); color: var(--text-on-ai); }
 .puzzle-key.is-absent { background: var(--bg-secondary); color: var(--text-muted); }
 
 .puzzle-result {
@@ -2204,9 +2230,9 @@ body {
   text-align: center;
   margin-bottom: 14px;
 }
-.puzzle-result.is-win { border-color: #22c55e66; box-shadow: 0 0 18px rgba(34, 197, 94, 0.15); }
+.puzzle-result.is-win { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-ring); }
 .puzzle-result-title { font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; }
-.puzzle-result-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
+.puzzle-result-sub { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
   .puzzle-tile.is-correct,
@@ -2280,7 +2306,7 @@ body {
   height: 6px;
   margin: 0 3px;
   border-radius: 50%;
-  background: var(--text-muted, #7c84a2);
+  background: var(--text-muted);
   opacity: 0.35;
 }
 
@@ -2326,8 +2352,8 @@ body {
 }
 
 @keyframes tabooPulse {
-  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(139, 107, 255, 0.35); }
-  50%      { transform: scale(1.05); box-shadow: 0 0 0 18px rgba(139, 107, 255, 0); }
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0.30); }
+  50%      { transform: scale(1.05); box-shadow: 0 0 0 18px rgb(var(--accent-rgb) / 0); }
 }
 
 @keyframes tabooToastIn {
@@ -2368,10 +2394,14 @@ body {
   /* Android WebView düyməyə white-space: nowrap verə bilir — uzun sual bir
      sətirdə qalıb kartdan daşırdı. */
   white-space: normal;
-  background: var(--accent);
-  color: var(--text-on-accent);
-  box-shadow: 0 4px 12px var(--accent-soft);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  /* A TINT, not a fill. Ten of these sit on one screen: filled in the accent
+     they were ten primary buttons shouting at once, and the rule the whole
+     palette rests on is that the one coloured thing is the thing to tap. The
+     tint plus a ring still says "tappable", and the numbers stay readable. */
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-ring);
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .sc-card:active { transform: scale(0.96); }
@@ -2381,7 +2411,6 @@ body {
   background: var(--bg-card);
   color: var(--text-muted);
   border: 1px solid var(--border);
-  box-shadow: none;
 }
 
 .sc-face {
@@ -2404,7 +2433,6 @@ body {
   background: var(--bg-card);
   color: var(--text-primary);
   border: 2px solid var(--accent);
-  box-shadow: 0 6px 18px var(--accent-soft);
 }
 
 .sc-body {
@@ -2439,7 +2467,7 @@ body {
   color: var(--text-primary);
 }
 
-.sc-hint { font-size: 11px; color: var(--text-muted); }
+.sc-hint { font-size: 11px; font-weight: 600; color: var(--text-muted); }
 
 @media (min-width: 520px) {
   .sc-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }

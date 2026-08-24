@@ -76,7 +76,7 @@ export default function Chats({ user }) {
           <div className="empty-state">
             <div className="empty-icon"></div>
             <p>No conversations yet.</p>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
               Message your partner here before or after a call.
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function Chats({ user }) {
                       {unread > 0 && (
                         <span style={{
                           flexShrink: 0, minWidth: '20px', height: '20px', padding: '0 6px',
-                          borderRadius: '20px', background: 'var(--accent)', color: '#fff',
+                          borderRadius: '20px', background: 'var(--accent)', color: 'var(--text-on-accent)',
                           fontSize: '11px', fontWeight: 800,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>

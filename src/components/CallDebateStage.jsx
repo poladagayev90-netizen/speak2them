@@ -31,10 +31,10 @@ const CARD_BASE = {
   display: 'flex',
   flexDirection: 'column',
   gap: 10,
-  background: 'linear-gradient(160deg, #1e1b4b 0%, #2e1065 55%, #172554 100%)',
+  background: 'linear-gradient(160deg, #241e48 0%, #1e1940 55%, #171331 100%)',
   border: '1px solid rgba(255, 255, 255, 0.10)',
   boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45), 0 0 26px rgba(124,111,247,0.18)',
+    'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
 };
 
 const FOOT_BTN = {
@@ -49,25 +49,26 @@ const FOOT_BTN = {
 
 const GHOST_BTN = {
   ...FOOT_BTN,
-  border: '1px solid var(--border, #2a2947)',
-  background: 'var(--bg-input, var(--bg-input))',
-  color: 'var(--text-secondary, #a8afc9)',
+  border: '1px solid var(--border)',
+  background: 'var(--bg-input)',
+  color: 'var(--text-secondary)',
 };
 
 const SOLID_BTN = {
   ...FOOT_BTN,
   border: 'none',
   background: 'var(--accent)',
-  color: '#fff',
-  boxShadow: '0 6px 18px rgba(124,111,247,0.28)',
+  color: 'var(--text-on-accent)',
 };
 
 // Dek sadə və orta mövzuları növbələşdirir. Nişan olmasa istifadəçi bunu
 // görmür — kartın niyə birdən yüngülləşdiyi anlaşılmır. Rənglər
 // CallQuestionStage-dəki səviyyə rəngləri ilə eynidir (svetofor DEYİL).
 const LEVEL_META = {
-  simple: { text: 'SIMPLE', colour: 'var(--ai)' },   // Neon Cyan
-  normal: { text: 'ORTA', colour: 'var(--accent)' },   // Lab Violet
+  // `fill` is not `colour`: --ai has to survive as small text, which makes it
+  // too dark to put ink on, so the filled chip takes the pale --ai-fill.
+  simple: { text: 'SIMPLE', fill: 'var(--ai-fill)', ink: 'var(--text-on-ai)' },
+  normal: { text: 'ORTA', fill: 'var(--accent)', ink: 'var(--text-on-accent)' },
 };
 
 export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose }) {
@@ -121,7 +122,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
             </p>
             {level && (
               <span style={{
-                background: level.colour, color: '#fff', borderRadius: 20,
+                background: level.fill, color: level.ink, borderRadius: 20,
                 padding: '2px 9px', fontSize: 10, fontWeight: 800, letterSpacing: '0.8px',
               }}>
                 {level.text}
@@ -158,9 +159,9 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
                   background: 'rgba(255,255,255,0.06)',
                   border: '1px solid rgba(255,255,255,0.10)',
                   borderRadius: 10, padding: '8px 12px',
-                  color: '#e7e6fb', fontSize: 13, fontWeight: 500, lineHeight: 1.4,
+                  color: '#e7e6fb', fontSize: 13, fontWeight: 600, lineHeight: 1.4,
                 }}>
-                  <span aria-hidden="true" style={{ color: '#22d3ee', fontWeight: 800 }}>•</span>
+                  <span aria-hidden="true" style={{ color: '#c9b8ff', fontWeight: 800 }}>•</span>
                   {p}
                 </div>
               ))}
@@ -169,7 +170,7 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
         </div>
 
         <p style={{
-          color: 'var(--text-muted, #7c84a2)', fontSize: 12, textAlign: 'center',
+          color: 'var(--text-muted)', fontSize: 12, fontWeight: 600, textAlign: 'center',
           margin: '10px 16px 0', flexShrink: 0,
         }}>
           Other side: <strong>{theirLabel}</strong> — you cannot see their arguments, so listen closely

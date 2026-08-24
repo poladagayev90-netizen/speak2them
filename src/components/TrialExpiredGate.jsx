@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Hourglass, GraduationCap } from 'lucide-react';
+import { Hourglass, GraduationCap, MessageCircle } from 'lucide-react';
 import { redeemCourseCode, SUPPORT_WHATSAPP } from '../utils/redeem';
 import Logo from './Logo';
 
@@ -64,9 +64,9 @@ export default function TrialExpiredGate() {
                     href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi! I am writing about my course code.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ display: 'block', marginTop: '8px', color: '#25D366', fontWeight: 700 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: 'var(--accent)', fontWeight: 700 }}
                   >
-                    💬 Message us on WhatsApp
+                    <MessageCircle size={16} strokeWidth={1.75} aria-hidden="true" /> Message us on WhatsApp
                   </a>
                 )}
               </div>
@@ -97,14 +97,14 @@ export default function TrialExpiredGate() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 marginTop: '14px', padding: '12px', borderRadius: '14px',
-                border: '1px solid #25D36655', color: '#25D366',
+                border: '1px solid var(--accent-ring)', color: 'var(--accent)',
                 textDecoration: 'none', fontSize: '14px', fontWeight: 700,
               }}
             >
-              💬 No code? Message us
+              <MessageCircle size={16} strokeWidth={1.75} aria-hidden="true" /> No code? Message us
             </a>
 
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary, var(--text-muted))', marginTop: '16px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '16px' }}>
               Your Profile section stays open for account settings.
             </p>
           </>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { parseSlotId, dayLabel, hourLabel, respondSlotChange } from '../utils/practiceSlots';
+import { MessageCircle } from 'lucide-react';
 
 // Partnyorun vaxt dəyişikliyi təklifi.
 //
@@ -39,7 +40,7 @@ export default function SlotChangeBanner({ request, onDone }) {
       <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
         🕘 Time change request
       </div>
-      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
         <b style={{ color: 'var(--text-primary)' }}>{request.proposerName || 'Partnyorunuz'}</b>{' '}
         call <b style={{ color: 'var(--text-primary)' }}>{label(from)}</b> from{' '}
         <b style={{ color: 'var(--text-primary)' }}>{label(to)}</b> to. If you decline, the original time stands.
@@ -57,7 +58,7 @@ export default function SlotChangeBanner({ request, onDone }) {
           style={{
             flex: 1, padding: '11px', borderRadius: '11px', border: 'none',
             background: 'var(--accent)',
-            color: '#fff', fontSize: '14px', fontWeight: 800,
+            color: 'var(--text-on-accent)', fontSize: '14px', fontWeight: 800,
             cursor: busy ? 'default' : 'pointer',
           }}
         >
@@ -86,7 +87,7 @@ export default function SlotChangeBanner({ request, onDone }) {
             cursor: 'pointer',
           }}
         >
-          💬
+          <MessageCircle size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
       </div>
     </div>

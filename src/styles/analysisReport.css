@@ -175,7 +175,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #854D0E;
+  color: var(--doc-accent);
   display: block;
   margin-bottom: 4px;
 }
@@ -320,17 +320,17 @@
 /* İnteraktiv tapşırıqlar sənədin davamıdır, amma toxunulan elementlərdir —
    ağ kağız üzərində oxunaqlı qalsınlar deyə öz sabit rəngləri var. */
 .analysis-doc .homework-scope {
-  --bg-secondary: #F9FAFB;
-  --bg-card: #FFFFFF;
-  --border: #E5E7EB;
-  --text-primary: #1F2937;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
-  --accent: #E65100;
-  --accent-strong: #C2410C;
-  --text-on-accent: #FFFFFF;
-  --success: #10B981;
-  --danger: #EF4444;
+  --bg-secondary: #eae8f2;
+  --bg-card: #ffffff;
+  --border: rgba(24, 20, 48, 0.15);
+  --text-primary: #191727;
+  --text-secondary: #48445e;
+  --text-muted: #605c78;
+  --accent: #403a7e;
+  --accent-strong: #2e2960;
+  --text-on-accent: #ffffff;
+  --success: #403a7e;
+  --danger: #a5352f;
   color: var(--doc-ink);
 }
 .analysis-doc .homework-scope h3 {

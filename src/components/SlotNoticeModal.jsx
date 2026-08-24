@@ -29,7 +29,7 @@ export default function SlotNoticeModal({ uid }) {
     <div style={{
       position: 'fixed', inset: 0, zIndex: 4000,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(8, 8, 20, 0.72)', padding: '20px',
+      background: 'var(--overlay)', padding: '20px',
     }}>
       <div style={{
         width: '100%', maxWidth: '380px',
@@ -49,7 +49,7 @@ export default function SlotNoticeModal({ uid }) {
           style={{
             width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
             background: 'var(--accent)',
-            color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
+            color: 'var(--text-on-accent)', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
           }}
         >
           Got it

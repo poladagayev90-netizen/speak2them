@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { doc, setDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
@@ -48,7 +49,8 @@ function loadState(dayIndex) {
   return { dayIndex, guesses: [], won: false, rewarded: false };
 }
 
-export default function DailyPuzzle({ user }) {  const navigate = useNavigate();
+export default function DailyPuzzle({ user }) {
+  const navigate = useNavigate();
   const dayIndex = getTodayPuzzleIndex();
   const puzzle = useMemo(() => getTodayPuzzle(), []);
   const answer = puzzle.word;
@@ -163,7 +165,7 @@ export default function DailyPuzzle({ user }) {  const navigate = useNavigate()
               return (
                 <span key={i} className="taboo-confetti-piece" style={{
                   left: '50%', top: '30%',
-                  background: ['var(--warning)', 'var(--accent)', '#22d3ee', 'var(--danger)', '#22c55e'][i % 5],
+                  background: ['#b6a6ff', '#c9b8ff', '#8fa3e8', '#dfa6f0', '#a37fe8'][i % 5],
                   animationDelay: `${(i * 40) % 200}ms`,
                   '--tx': `${Math.cos(angle) * dist}px`,
                   '--ty': `${Math.sin(angle) * dist + 40}px`,

@@ -57,13 +57,13 @@ export default function PlacementTest({ user }) {
 
   const optionButtonStyle = {
     width: '100%',
-    border: '1px solid var(--bg-secondary)',
-    background: '#151520',
-    color: '#d1d5db',
+    border: '1px solid var(--border)',
+    background: 'var(--bg-card)',
+    color: 'var(--text-primary)',
     padding: '16px 14px',
     borderRadius: '14px',
     fontSize: '15px',
-    fontWeight: 500,
+    fontWeight: 600,
     textAlign: 'left',
     cursor: 'pointer',
     marginBottom: '10px',
@@ -77,7 +77,7 @@ export default function PlacementTest({ user }) {
           <h2>Test Completed!</h2>
           <p className="auth-sub">Thank you for taking the placement test.</p>
           
-          <div style={{ margin: '30px 0', padding: '20px', background: '#1a1a2e', borderRadius: '16px', border: '1px solid var(--bg-secondary)' }}>
+          <div style={{ margin: '30px 0', padding: '20px', background: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border)' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>Your estimated level is:</p>
             <h3 style={{ color: 'var(--accent)', fontSize: '24px', margin: 0 }}>{finalLevel}</h3>
           </div>
@@ -128,7 +128,7 @@ export default function PlacementTest({ user }) {
               onClick={() => handleAnswer(idx)}
               style={optionButtonStyle}
               onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-              onMouseOut={(e) => e.currentTarget.style.background = '#151520'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'var(--bg-card)'}
             >
               {option}
             </button>

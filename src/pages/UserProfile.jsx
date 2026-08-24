@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 import TutorBadge from '../components/TutorBadge';
+import { MessageCircle } from 'lucide-react';
 
 export default function UserProfile({ user: currentUser }) {
   const { uid } = useParams();
@@ -132,7 +133,7 @@ export default function UserProfile({ user: currentUser }) {
         {/* Tutor başlığı — nişana toxunan adam kimlə üzləşdiyini burada görür. */}
         {isTutor && (
           <>
-            <p style={{ fontSize: '13px', fontWeight: 700, color: '#0891b2', margin: '0 0 6px 0' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ai)', margin: '0 0 6px 0' }}>
               Verified English Tutor
             </p>
             {(specialties.length > 0 || years > 0) && (
@@ -166,7 +167,7 @@ export default function UserProfile({ user: currentUser }) {
                 onClick={() => navigate(`/chat/${uid}`)}
                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                💬 Chat
+                <MessageCircle size={16} strokeWidth={1.75} aria-hidden="true" /> Chat
               </button>
             )}
             <button
@@ -203,7 +204,7 @@ export default function UserProfile({ user: currentUser }) {
             ]
           ).map((tile) => (
             <div key={tile.label} style={{ textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
                 <span>{tile.icon}</span> {tile.label}
               </div>
               <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{tile.value}</div>
@@ -218,7 +219,7 @@ export default function UserProfile({ user: currentUser }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ background: 'var(--bg-secondary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}></div>
             <div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Plan</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, marginBottom: '2px' }}>Current Plan</div>
               <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>
                 {premiumPlan.charAt(0).toUpperCase() + premiumPlan.slice(1)} Member
               </div>
@@ -235,7 +236,7 @@ export default function UserProfile({ user: currentUser }) {
         <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ background: 'var(--accent-soft)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}></div>
           <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>English level</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, marginBottom: '2px' }}>English level</div>
             <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{level}</div>
           </div>
         </div>
@@ -244,7 +245,7 @@ export default function UserProfile({ user: currentUser }) {
         <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px' }}>
           <div style={{ background: 'var(--warning-bg)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginRight: '16px' }}></div>
           <div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px' }}>Current Streak</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, marginBottom: '2px' }}>Current Streak</div>
             <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600 }}>{stats.streak} Days</div>
           </div>
         </div>

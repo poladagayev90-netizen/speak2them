@@ -31,7 +31,10 @@ Load the matching one instead of re-deriving: `firebase-deploy`, `android-releas
 ## Conventions
 - HTTP functions: `setCors(res, ...)` on every path, 204 short-circuit for `OPTIONS`, `verifyAuth(req)` for auth, and **`enforceRateLimit(...)` on every AI/paid endpoint**.
 - **UI copy is English.** The whole interface was moved to English and `i18next` removed (2026-08-21). The ONE exception is the analysis report, which stays in the learner L1 (`users.preferredLanguage`, az/tr) — see `src/utils/feedbackLanguage.js`. `public/index.html` is `lang="en"`; do not set it back to `az` without also reverting the copy, or `text-transform: uppercase` breaks Azerbaijani text.
-- Use the design tokens in `src/index.css` (spacing `--s-*`, radius `--r-*`, type `--fs-*`, z `--z-*`) and the primitives in `src/components/ui/` — no raw px, no raw colours. **Colour carries meaning: `--ai` (cyan) = AInur, `--peer` (violet) = a real person.**
+- Use the design tokens in `src/index.css` (spacing `--s-*`, radius `--r-*`, type `--fs-*`, z `--z-*`) and the primitives in `src/components/ui/` — no raw px, no raw colours.
+- **Palette: Plum — ONE purple family.** `--peer`/`--accent` (deep purple) = a real person, `--ai` (lighter purple) = AInur; the five in-call activities are further steps of the same band. **No green, amber, teal or cyan anywhere.** Red (`--danger-solid` + `--ink-on-danger`) is the only exception, reserved for destructive controls and wrong answers. There is no `data-palette` switch — it was removed with the recolour. Nothing glows: `--glass-lift` is the only shadow a surface gets, and there is no page-wide radial background.
+- **`--ai` vs `--ai-fill`:** `--ai` is for text, icons and borders; a FILLED AInur control takes `--ai-fill` with `--text-on-ai`. Using `--ai` as a fill fails contrast in light mode.
+- Small `--text-secondary`/`--text-muted` text at 11–13px is `font-weight: 600`; bottom-nav labels are 700.
 - UI icons come from `lucide-react`, never emoji. Emoji are fine in CONTENT (a topic label), never as an icon.
 - Match surrounding code style; the codebase uses explanatory comments for non-obvious decisions — keep that habit.
 - No test suite is wired up; verify changes by running the app (see the `verify` skill). There is no Firebase emulator setup — the dev build talks to **production** Firebase.

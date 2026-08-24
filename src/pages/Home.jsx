@@ -227,7 +227,7 @@ export default function Home({ user }) {
                 Talk to someone
               </p>
               <p style={{
-                margin: '4px 0 0', fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)',
+                margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)',
                 lineHeight: 'var(--lh-body)',
               }}>
                 {searchingCount > 0

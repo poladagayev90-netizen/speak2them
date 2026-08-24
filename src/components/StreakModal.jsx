@@ -7,7 +7,8 @@ const prefersReducedMotion = () =>
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const CONFETTI_COLORS = ['var(--warning)', 'var(--accent)', '#22d3ee', 'var(--danger)', '#22c55e', '#fb923c'];
+// Six steps of the one purple — see the same list in CallTabooStage.
+const CONFETTI_COLORS = ['#b6a6ff', '#c9b8ff', '#8fa3e8', '#dfa6f0', '#a37fe8', '#e3d8ff'];
 
 // Full-screen daily streak celebration. Content scales with the streak tier;
 // heavy motion is gated behind prefers-reduced-motion.

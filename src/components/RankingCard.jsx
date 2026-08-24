@@ -13,8 +13,9 @@ export default function RankingCard({ user, rank, isCurrentUser = false, display
     return `#${rankNumber}`;
   };
 
-  // The literal medal colours are unreadable on a light surface, so the theme
-  // supplies a legible stand-in for each place.
+  // Gold/silver/bronze as literal metals would be three foreign hues on a
+  // screen that is nothing but a list, so --gold/--silver/--bronze are a
+  // lightness ramp of the one purple: first place deepest, third palest.
   const getMedalColor = (rankNumber) => {
     if (rankNumber === 1) return 'var(--gold)';
     if (rankNumber === 2) return 'var(--silver)';
@@ -61,11 +62,11 @@ export default function RankingCard({ user, rank, isCurrentUser = false, display
         <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
           {user.name}{isCurrentUser && <span style={{ color: 'var(--accent)', marginLeft: 6 }}>(you)</span>}{user.teacherVerified && <TutorBadge />}{user.isPremium && <PremiumBadge />}
         </p>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.level || 'English Speaker'}</p>
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>{user.level || 'English Speaker'}</p>
       </div>
       <div style={{ textAlign: 'right' }}>
         <p style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '15px' }}>{displayMinutes ?? (user.totalMinutes || 0)} min</p>
-        <p style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{user.callCount || 0} calls</p>
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>{user.callCount || 0} calls</p>
         {user.streak > 0 && <p style={{ fontSize: '11px', color: 'var(--gold)' }}>Streak {user.streak}</p>}
       </div>
     </div>

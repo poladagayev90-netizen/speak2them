@@ -25,11 +25,11 @@ The human side was kept and improved, not replaced.
 
 | Screen | What it is |
 |---|---|
-| **Today** (`/`) | One question: what do I do now. AInur task (cyan), talk to someone (violet), today's topic. Always has an answer, even at 3am with nobody online. |
+| **Today** (`/`) | One question: what do I do now. AInur task (light purple, with her avatar), talk to someone (deep purple), today's topic. Always has an answer, even at 3am with nobody online. |
 | **AInur** (`/ai-chat`) | Activity hub. Describe pictures, Free talk. Debate/Roleplay listed as not-yet. |
 | **Practice** (`/practice`, `?mode=free`) | The session itself. Full-screen, covers the tab bar. |
 | **Live** (`/live`) | Everything about talking to a person: search, searcher banner, slot board, people, level filters. |
-| **Profile** | Stats, feedback language, accent palette, settings. Leaderboard moved here. |
+| **Profile** | Stats, feedback language, settings. Leaderboard moved here. (The accent-palette picker was removed with the Plum recolour.) |
 
 ---
 
@@ -58,28 +58,37 @@ serious production bug once.
 
 ## 3. The design system
 
-Minimal and neutral-first. Two rules: neutrals carry the UI and one accent
-carries action; colour says who you are talking to. Measured target: **~7% of any
-screen is colour, in two hue families.** Verify with a pixel census, not by eye.
+**Plum — one purple family, two steps.** (Recoloured 2026-08-24 from the
+violet/cyan pair.) Three rules: every colour is a step of the same purple;
+colour says who you are talking to; nothing glows.
 
 - Scales in `src/index.css`: `--s-*`, `--r-*`, `--fs-*`, `--e-*`, and one
   z-ladder `--z-nav/sheet/stage/modal/toast`. Elevation is nearly nothing
   (`--e-1: none`) — a hairline border separates surfaces better than a shadow.
 - Primitives in `src/components/ui/`: `Button`, `Card`, `Pill`, `Sheet`, `Stat`.
-- **Palettes are data**: `data-palette` on `<html>` — `violet` (default),
-  `ocean`, `forest`, `mono`. Only the two hues move; neutrals never do, so no
-  user choice can break contrast. Applied pre-paint in the `public/index.html`
-  boot script, same as the theme. Picker is in Profile.
+- **One palette.** `data-palette` and the Profile picker are GONE — four
+  selectable palettes meant four products, and three of them introduced a hue
+  the design does not contain. The boot script clears the stored key.
+- **The room is never black.** Dark is a deep plum (`#171331`), surfaces sit a
+  step above the floor, and the page-wide radial "atmosphere" layer is deleted.
 - Light = deep accent + white text; dark = light accent + dark ink
   (`--text-on-accent`). Never reuse one accent value across themes.
+- **`--ai` is a hue, `--ai-fill` is a fill.** A purple deep enough to read as
+  13px text on white is too heavy as a 54px block, and the lilac that reads
+  right as a block is unreadable as text. Filled AInur controls take
+  `--ai-fill` + `--text-on-ai`; text, icons and borders take `--ai`.
+- **Red is the only exception**, and only on the controls that destroy
+  something (End call, Delete) or mark a wrong answer: `--danger-solid` +
+  `--ink-on-danger`. No green, no amber, no teal anywhere — "confirmed",
+  "waiting", the leaderboard medals, the Wordle tiles and the streak tiers are
+  all steps of the purple now.
+- **The one third-party exception**: Google's four-colour G on the sign-in
+  button in `Login.jsx` / `Register.jsx`. Recolouring it breaks Google's brand
+  terms and makes the button less recognisable.
 - No raw px, no raw hex, no gradients, no glows. Icons are lucide; emoji never
   as an icon, and stripped from topic labels inlined into prose
-  (`utils/topicLabel.js`).
-
-**Recommendation on the default:** Mono is the strongest of the four — it proves
-the layout works without colour doing any work, and the only hue on screen is
-AInur. Violet is the brand, so it remains the default; changing that is a brand
-call, not a design one.
+  (`utils/topicLabel.js`). Small `--text-secondary` / `--text-muted` text at
+  11–13px is **600 weight**; nav labels are 700.
 
 ---
 
@@ -135,7 +144,7 @@ each step** and assert on behaviour, not HTTP 200:
 Scripts live in the scratchpad under `pw/`: `behaviour.js` (grades AInur against
 the deployed endpoint), `timing.js` (polls the DOM for premature picture
 changes), `handsfree.js` (one tap, then hands off), `minimal.js` (screens ×
-themes × palettes), `report_shot.js`.
+themes), `report_shot.js`.
 
 **Generating test speech:** Windows SAPI, 48 kHz / 16-bit / mono, then
 `--use-file-for-fake-audio-capture=<wav>`. Chromium's default fake device is a
@@ -162,7 +171,7 @@ Use the **Bash** tool — PowerShell mangles the env prefix.
 | Live lobby state (shared) | `src/hooks/useLiveLobby.js` |
 | Report renderer | `src/pages/History.jsx` → `AnalysisDetail` |
 | Report styles | `src/styles/analysisReport.css` (`.rep-*`) |
-| Tokens + palettes | `src/index.css` |
+| Tokens | `src/index.css` |
 | Five-layer prompt | `functions/index.js` → `buildAinurPrompt` |
 | Turn endpoint | `functions/index.js` → `aiActivityTurn` |
 | Grading | `functions/index.js` → `analyzeAiSession` |

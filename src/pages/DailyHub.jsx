@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MessageCircleQuestion, BookOpen, Quote } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
 import SpeakingCards from '../components/SpeakingCards';
 
@@ -29,19 +30,19 @@ export default function DailyHub() {
           className={`hub-tab ${activeTab === 'questions' ? 'active' : ''}`}
           onClick={() => setActiveTab('questions')}
         >
-          🗣️ Questions
+          <MessageCircleQuestion size={16} strokeWidth={1.75} aria-hidden="true" /> Questions
         </button>
         <button
           className={`hub-tab ${activeTab === 'vocabulary' ? 'active' : ''}`}
           onClick={() => setActiveTab('vocabulary')}
         >
-          📚 Vocabulary
+          <BookOpen size={16} strokeWidth={1.75} aria-hidden="true" /> Vocabulary
         </button>
         <button
           className={`hub-tab ${activeTab === 'idioms' ? 'active' : ''}`}
           onClick={() => setActiveTab('idioms')}
         >
-          💬 Idioms
+          <Quote size={16} strokeWidth={1.75} aria-hidden="true" /> Idioms
         </button>
       </div>
 

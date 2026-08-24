@@ -85,7 +85,7 @@ export default function Live({ user }) {
               flex: 1, margin: 0, fontSize: 'var(--fs-sm)',
               color: 'var(--text-primary)', lineHeight: 'var(--lh-body)',
             }}>
-              <b>{activeSearchers.length}</b>
+              👋 <b>{activeSearchers.length}</b>
               {activeSearchers.length === 1 ? ' person is' : ' people are'} looking for a partner
               right now — join and you will connect immediately.
             </p>
@@ -99,7 +99,7 @@ export default function Live({ user }) {
         onClick={searching ? cancelSearch : startSearch}
         className={searching ? 'btn-random searching' : 'btn-random'}
         style={{
-          background: searching ? 'var(--danger)' : undefined,
+          background: searching ? 'var(--danger-solid)' : undefined,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
         }}
       >
@@ -174,7 +174,7 @@ export default function Live({ user }) {
 
       {displayUsers.length === 0 ? (
         <Card padding="lg" style={{ textAlign: 'center' }}>
-          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)', lineHeight: 'var(--lh-body)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 'var(--lh-body)' }}>
             {tab === 'online'
               ? 'Nobody is online right now. Tap Find a random partner and we will notify you the moment someone joins.'
               : 'No one here yet.'}

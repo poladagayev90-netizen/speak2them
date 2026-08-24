@@ -21,7 +21,7 @@
     <link rel="alternate icon" href="%PUBLIC_URL%/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#17161a" />
+    <meta name="theme-color" content="#171331" />
     <meta name="google" content="notranslate" />
     <script>
       // Apply the saved theme before first paint, otherwise the app renders in
@@ -42,16 +42,13 @@
             t = ls.getItem('theme') || 'dark';
           }
           document.documentElement.setAttribute('data-theme', t);
-          // Palette rides along: applied pre-paint for the same reason as the
-          // theme, or the accent flashes violet before switching.
-          var p = ls.getItem('palette');
-          var ok = ['violet', 'ocean', 'forest', 'mono'];
-          document.documentElement.setAttribute('data-palette', ok.indexOf(p) >= 0 ? p : 'violet');
+          // The palette switcher is gone — one hue family for the whole app —
+          // so the stored key is dropped here too, before anything can read it.
+          ls.removeItem('palette');
           var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', t === 'light' ? '#f6f6f7' : '#17161a');
+          if (m) m.setAttribute('content', t === 'light' ? '#f5f4f9' : '#171331');
         } catch (e) {
           document.documentElement.setAttribute('data-theme', 'dark');
-          document.documentElement.setAttribute('data-palette', 'violet');
         }
       })();
     </script>

@@ -74,7 +74,7 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
         </div>
         {tab === 'weekly' && (
           <p style={{
-            fontSize: 12, color: 'var(--text-muted)', textAlign: 'center',
+            fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
             margin: '0 0 12px',
           }}>
             {'Resets every Monday — everyone starts level again.'}

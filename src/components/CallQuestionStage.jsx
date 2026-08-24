@@ -27,9 +27,23 @@ const PANEL = {
 // Əvvəl Easy tam doymuş yaşıl, Hard tam doymuş qırmızı gradient idi (76px
 // hündürlük, 24px şrift, 26px emoji dairə) — ucuz görünürdü və «qırmızı = səhv»
 // assosiasiyası yaradırdı, halbuki Hard səhv deyil, sadəcə daha ağır seçimdir.
+// Two steps of the one purple: the lighter one for Easy, the deeper for Hard.
+// The chip that repeats the choice inside the question card sits on a fixed
+// dark surface, so these have to keep working against #241e48 as well.
 const LEVEL_ACCENT = {
-  easy: 'var(--ai)',  // Neon Cyan
-  hard: 'var(--accent)',  // Lab Violet
+  easy: 'var(--ai)',
+  hard: 'var(--accent)',
+};
+// The FILLED chip cannot use the values above: --ai has to survive as small
+// text on white, which makes it too dark to put ink on. Same hue, one step
+// paler, plus the ink that belongs with it.
+const LEVEL_FILL = {
+  easy: 'var(--ai-fill)',
+  hard: 'var(--accent)',
+};
+const LEVEL_INK = {
+  easy: 'var(--text-on-ai)',
+  hard: 'var(--text-on-accent)',
 };
 
 const LEVEL_CARD = {
@@ -75,16 +89,16 @@ const FOOT_BTN = {
 
 const GHOST_BTN = {
   ...FOOT_BTN,
-  border: '1px solid var(--border, #2a2947)',
-  background: 'var(--bg-input, var(--bg-input))',
-  color: 'var(--text-secondary, #a8afc9)',
+  border: '1px solid var(--border)',
+  background: 'var(--bg-input)',
+  color: 'var(--text-secondary)',
 };
 
 const SOLID_BTN = {
   ...FOOT_BTN,
   border: 'none',
   background: 'var(--accent)',
-  color: '#fff',
+  color: 'var(--text-on-accent)',
 };
 
 const LEVEL_CHIP = { easy: 'EASY', hard: 'HARD' };
@@ -150,7 +164,7 @@ export default function CallQuestionStage({
                 }}>
                   {name}
                 </span>
-                <span style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.35 }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, lineHeight: 1.35 }}>
                   {hint}
                 </span>
               </button>
@@ -172,7 +186,7 @@ export default function CallQuestionStage({
         <div key={safeIndex} className="qstage-card" style={{
           borderRadius: 20, padding: '26px 20px', minHeight: 210,
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16,
-          background: 'linear-gradient(160deg, #1e1b4b 0%, #2e1065 55%, #172554 100%)',
+          background: 'linear-gradient(160deg, #241e48 0%, #1e1940 55%, #171331 100%)',
           border: '1px solid rgba(255, 255, 255, 0.10)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
         }}>
@@ -186,8 +200,8 @@ export default function CallQuestionStage({
             <span style={{
               // Seçim ekranındakı ilə eyni brend rəngi — nişan orada seçilən
               // səviyyəni təkrarlayır, ona görə rəng də təkrarlanmalıdır.
-              background: LEVEL_ACCENT[difficulty],
-              color: '#fff', borderRadius: 20, padding: '4px 12px',
+              background: LEVEL_FILL[difficulty],
+              color: LEVEL_INK[difficulty], borderRadius: 20, padding: '4px 12px',
               fontSize: 12, fontWeight: 800, letterSpacing: '1px',
             }}>
               {LEVEL_CHIP[difficulty]}

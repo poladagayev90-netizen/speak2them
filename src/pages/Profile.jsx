@@ -11,21 +11,22 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Stat from '../components/ui/Stat';
 import { sfxEnabled, setSfxEnabled, sfxPop } from '../utils/sfx';
-import { useTheme, PALETTES } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import WordHistoryPanel from '../components/WordHistoryPanel';
 import StreakJourney from '../components/StreakJourney';
 import TutorBadge from '../components/TutorBadge';
 import { getStreakInfo } from '../utils/streak';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
-import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '../utils/feedbackLanguage';
+import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
+import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '../utils/feedbackLanguage';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
 export default function Profile({ user }) {
-  const { theme, toggleTheme, palette, setPalette } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -39,7 +40,8 @@ export default function Profile({ user }) {
   const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
   const [docId, setDocId] = useState(null);
   const [feedbackLang, setFeedbackLang] = useState(getFeedbackLanguage);
-  const navigate = useNavigate();
+  const navigate = useNavigate();
+
   // Dil dəyişimi: dərhal UI + localStorage (i18n modulu), sonra Firestore-a
   // yazılır ki, digər cihazlarda da tətbiq olunsun. Firestore yazısı uğursuz
   // olsa belə lokal seçim qalır — dil dəyişmək heç vaxt "uğursuz" görünməsin.
@@ -186,15 +188,15 @@ export default function Profile({ user }) {
           </button>
         </div>
         <div className="profile-form" style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '16px' }}>
-          <label style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Full Name</label>
+          <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Full Name</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-primary)', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }} />
           
-          <label style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>English Level</label>
+          <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>English Level</label>
           <select value={level} onChange={e => setLevel(e.target.value)} style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-primary)', padding: '12px', borderRadius: '8px', width: '100%', marginBottom: '16px' }}>
             {LEVELS.map(l => <option key={l}>{l}</option>)}
           </select>
           
-          <label style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Bio Status</label>
+          <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Bio Status</label>
           <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell others about yourself..." rows={3} style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-primary)', padding: '12px', borderRadius: '8px', width: '100%' }} />
         </div>
       </div>
@@ -232,7 +234,7 @@ export default function Profile({ user }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ color: danger ? 'var(--danger)' : 'var(--text-primary)', fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
-        {value && <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>}
+        {value && <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>}
       </div>
       {right !== undefined ? right : (onClick ? <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
     </div>
@@ -294,19 +296,22 @@ export default function Profile({ user }) {
           title under every account that had not written anything. */}
       {bio && (
         <p style={{
-          fontSize: 'var(--fs-sm)', color: 'var(--text-secondary)',
+          fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)',
           margin: '0 0 var(--s-4)', lineHeight: 'var(--lh-body)',
         }}>{bio}</p>
       )}
 
       {/* Four numbers that answer "am I getting anywhere". The old three were
-          Feedback / Talks / Mins, which read as trivia rather than progress. */}
+          Feedback / Talks / Mins, which read as trivia rather than progress.
+          The emoji is content, not an icon: four 9px uppercase labels in a row
+          are four identical grey smudges, and one character in front of each
+          gives the eye something to land on. */}
       <Card padding="md" style={{ marginBottom: 'var(--s-4)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--s-2)' }}>
-          <Stat value={stats.totalMinutes} label="Minutes" />
-          <Stat value={stats.calls} label="Sessions" />
-          <Stat value={streakInfo.count} label="Streak" />
-          <Stat value={avgRating} label="Rating" />
+          <Stat value={stats.totalMinutes} label="⏱ Minutes" />
+          <Stat value={stats.calls} label="🎙 Sessions" />
+          <Stat value={streakInfo.count} label="🔥 Streak" />
+          <Stat value={avgRating} label="⭐ Rating" />
         </div>
       </Card>
 
@@ -328,7 +333,7 @@ export default function Profile({ user }) {
           <GraduationCap size={22} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--accent)' }} />
           <span style={{ flex: 1, minWidth: 0 }}>
             <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>Join the course</span>
-            <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+            <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
               Have a code? Apply to a cohort
             </span>
           </span>
@@ -416,56 +421,6 @@ export default function Profile({ user }) {
             </span>
           ),
         })}
-      </div>
-
-      {/* TƏNZİMLƏMƏLƏR */}
-      {/* Accent choice. Each swatch is the actual --accent and --ai of that
-          palette, rendered in the CURRENT theme, so what you see is exactly
-          what you get. A palette only swaps those two hues — the neutrals
-          never move — which is why none of these can look broken. */}
-      {sectionLabel('Accent')}
-      <div style={{ ...listCard, padding: 'var(--s-3)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--s-2)' }}>
-          {PALETTES.map((p) => {
-            const active = palette === p.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setPalette(p.id)}
-                aria-pressed={active}
-                title={p.note}
-                data-palette={p.id}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  gap: 'var(--s-2)', padding: 'var(--s-2) var(--s-1)',
-                  borderRadius: 'var(--r-md)', cursor: 'pointer',
-                  background: active ? 'var(--accent-soft)' : 'transparent',
-                  border: active ? '1px solid var(--accent)' : '1px solid transparent',
-                  font: 'inherit',
-                }}
-              >
-                <span style={{ display: 'flex' }}>
-                  <span style={{
-                    width: 18, height: 18, borderRadius: 'var(--r-pill)',
-                    background: 'var(--accent)', border: '1px solid var(--border)',
-                  }} />
-                  <span style={{
-                    width: 18, height: 18, borderRadius: 'var(--r-pill)',
-                    background: 'var(--ai)', border: '1px solid var(--border)',
-                    marginLeft: -7,
-                  }} />
-                </span>
-                <span style={{
-                  fontSize: 'var(--fs-xs)', fontWeight: 600,
-                  color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-                }}>
-                  {p.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {sectionLabel('Settings')}

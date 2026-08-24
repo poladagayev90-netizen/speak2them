@@ -68,14 +68,12 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
   return (
     <div style={{
       position: 'relative',
-      background: 'linear-gradient(135deg, rgba(124,111,247,0.20), rgba(91,77,232,0.10))',
-      border: `1px solid ${live ? 'var(--success)' : 'var(--accent)'}`,
+      background: 'var(--accent-soft)',
+      border: `1px solid ${live ? 'var(--accent)' : 'var(--accent-ring)'}`,
       borderRadius: '18px',
       padding: '16px',
       marginBottom: '14px',
-      boxShadow: live
-        ? '0 0 0 1px rgba(34,197,94,0.25), 0 8px 26px rgba(34,197,94,0.14)'
-        : '0 8px 26px rgba(124,111,247,0.18)',
+      boxShadow: live ? '0 0 0 1px var(--accent-ring)' : 'var(--glass-lift)',
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -105,7 +103,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
           width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
           background: 'var(--accent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '19px', fontWeight: 800, color: '#fff',
+          fontSize: '19px', fontWeight: 800, color: 'var(--text-on-accent)',
         }}>
           {peerName.charAt(0).toUpperCase()}
         </div>
@@ -137,13 +135,13 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
               flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
               fontSize: '14px', fontWeight: 800, cursor: busy ? 'default' : 'pointer',
               background: 'var(--accent)',
-              color: '#fff',
+              color: 'var(--text-on-accent)',
             }}
           >
             🎙️ Join the call
           </button>
         ) : (
-          <span style={{ flex: 1, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+          <span style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
             The Join button appears here when it is time.
           </span>
         )}
@@ -187,14 +185,14 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
       </div>
 
       {notice && (
-        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '10px', lineHeight: 1.5 }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '10px', lineHeight: 1.5 }}>
           {notice}
         </div>
       )}
 
       {picking && (
         <div style={{ marginTop: '12px' }}>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>
             Pick a new time — your partner will get the request.
           </div>
           <div style={{

@@ -2,16 +2,17 @@
   position: relative;
   width: min(360px, calc(100vw - 32px));
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  /* The tour card draws over whichever screen it is explaining, in both
+     themes, so it keeps its own dark plum surface rather than following the
+     theme. It used to be a cyan-and-amber lit panel: three hues the app no
+     longer owns, on the very first thing a new learner sees. */
+  border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 18px;
-  background:
-    linear-gradient(145deg, rgba(20, 20, 33, 0.96), rgba(12, 18, 30, 0.96)),
-    radial-gradient(circle at 12% 0%, rgba(34, 211, 238, 0.16), transparent 34%),
-    radial-gradient(circle at 88% 100%, rgba(245, 158, 11, 0.14), transparent 36%);
+  background: linear-gradient(145deg, rgba(36, 30, 72, 0.96), rgba(23, 19, 49, 0.96));
   box-shadow:
     0 22px 70px rgba(0, 0, 0, 0.56),
     0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  color: #f8fafc;
+  color: #f4f2fc;
   padding: 18px;
   font-family: inherit;
   letter-spacing: 0;
@@ -24,7 +25,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.36), rgba(124, 111, 247, 0.32), rgba(245, 158, 11, 0.28));
+  background: linear-gradient(90deg, rgba(201, 184, 255, 0.42), rgba(182, 166, 255, 0.30));
   height: 2px;
 }
 
@@ -37,7 +38,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
-  color: #cbd5e1;
+  color: #c8c2e4;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -46,9 +47,9 @@
 }
 
 .guided-tour-close:hover {
-  border-color: rgba(34, 211, 238, 0.42);
-  background: rgba(34, 211, 238, 0.1);
-  color: #ffffff;
+  border-color: rgba(201, 184, 255, 0.42);
+  background: rgba(201, 184, 255, 0.14);
+  color: #f4f2fc;
   transform: translateY(-1px);
 }
 
@@ -66,10 +67,10 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid rgba(34, 211, 238, 0.18);
+  border: 1px solid rgba(201, 184, 255, 0.24);
   border-radius: 999px;
-  background: rgba(34, 211, 238, 0.1);
-  color: #a5f3fc;
+  background: rgba(201, 184, 255, 0.14);
+  color: #c9b8ff;
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 800;
@@ -78,7 +79,7 @@
 }
 
 .guided-tour-count {
-  color: #94a3b8;
+  color: #a49dc6;
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
@@ -93,7 +94,7 @@
 
 .guided-tour-heading h3 {
   margin: 0;
-  color: #ffffff;
+  color: #f4f2fc;
   font-size: 20px;
   font-weight: 850;
   line-height: 1.18;
@@ -107,23 +108,22 @@
   margin-top: 5px;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: #22d3ee;
-  box-shadow: 0 0 22px rgba(34, 211, 238, 0.9);
+  background: #c9b8ff;
 }
 
 .guided-tour-pulse::after {
   content: '';
   position: absolute;
   inset: -7px;
-  border: 1px solid rgba(34, 211, 238, 0.42);
+  border: 1px solid rgba(201, 184, 255, 0.42);
   border-radius: inherit;
   animation: guidedTourPulse 1.7s ease-out infinite;
 }
 
 .guided-tour-content {
-  color: #cbd5e1;
+  color: #c8c2e4;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.58;
   margin-bottom: 16px;
 }
@@ -138,13 +138,12 @@
 .guided-tour-progress span {
   height: 4px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.16);
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .guided-tour-progress span.active {
-  background: linear-gradient(90deg, #22d3ee, var(--accent));
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.42);
+  background: #c9b8ff;
 }
 
 .guided-tour-footer {
@@ -183,22 +182,21 @@
 
 .guided-tour-skip {
   background: transparent;
-  color: #94a3b8;
+  color: #a49dc6;
   padding: 0 2px;
 }
 
 .guided-tour-back {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.07);
-  color: #e2e8f0;
+  color: #e7e3fa;
   padding: 0 12px;
 }
 
 .guided-tour-next {
-  background: linear-gradient(135deg, #22d3ee, var(--accent) 55%, #f59e0b);
-  color: #ffffff;
+  background: #b6a6ff;
+  color: #171331;
   padding: 0 15px;
-  box-shadow: 0 12px 24px rgba(124, 111, 247, 0.3);
 }
 
 .guided-tour-skip:hover,

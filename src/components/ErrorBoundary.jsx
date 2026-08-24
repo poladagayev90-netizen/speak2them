@@ -24,14 +24,14 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{
           minHeight: '100vh',
-          background: '#0f0f1a',
+          background: 'var(--bg-primary)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           padding: '20px',
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#fff',
+          color: 'var(--text-primary)',
         }}>
           <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>Application Error</h1>
           <p style={{ marginBottom: '20px', textAlign: 'center', maxWidth: '500px' }}>
@@ -65,8 +65,8 @@ class ErrorBoundary extends React.Component {
             onClick={() => window.location.reload()}
             style={{
               padding: '10px 20px',
-              backgroundColor: 'var(--warning)',
-              color: '#000',
+              backgroundColor: 'var(--accent)',
+              color: 'var(--text-on-accent)',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',

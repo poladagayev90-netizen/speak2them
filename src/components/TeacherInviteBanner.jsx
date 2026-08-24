@@ -54,7 +54,7 @@ export default function TeacherInviteBanner({ user }) {
       <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
         🎓 {invite.teacherName || 'Your teacher'} wants to add you as a student
       </div>
-      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
         If you accept, your teacher will be able to see your speaking progress and call analyses.
       </div>
 

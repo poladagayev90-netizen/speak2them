@@ -1,26 +1,16 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const DEFAULT_THEME = 'dark';
-const DEFAULT_PALETTE = 'violet';
 
-// The accent combinations on offer. A palette only ever changes two hues — the
-// accent (a real person) and the AI hue (AInur) — while every neutral stays
-// put. That is deliberate: it means no choice a user makes can break contrast
-// or make the app look like a different product. The values themselves live in
-// src/index.css under [data-palette].
-export const PALETTES = [
-  { id: 'violet', label: 'Violet', note: 'SpeakLab’s own' },
-  { id: 'ocean', label: 'Ocean', note: 'Cool and quiet' },
-  { id: 'forest', label: 'Forest', note: 'Green and calm' },
-  { id: 'mono', label: 'Mono', note: 'No colour at all' },
-];
-const PALETTE_IDS = PALETTES.map((p) => p.id);
-
+// There used to be four selectable palettes here (violet / ocean / forest /
+// mono). They are gone: the app has ONE hue family now — a deep purple for a
+// real person, a lighter one for AInur — and three of those four palettes put
+// a colour on screen the design does not contain. The stored 'palette' key is
+// cleared once on boot so an old choice cannot leave a stale data-palette
+// attribute on <html>.
 const ThemeContext = createContext({
   theme: DEFAULT_THEME,
-  palette: DEFAULT_PALETTE,
   toggleTheme: () => {},
-  setPalette: () => {},
 });
 
 // A stored theme outlives a change of default, so bumping the default alone
@@ -43,20 +33,13 @@ const getInitialTheme = () => {
   return ls.getItem(THEME_KEY) || DEFAULT_THEME;
 };
 
-const getInitialPalette = () => {
-  if (typeof window === 'undefined') return DEFAULT_PALETTE;
-  const stored = window.localStorage.getItem(PALETTE_KEY);
-  return PALETTE_IDS.includes(stored) ? stored : DEFAULT_PALETTE;
-};
-
 // Keep the browser chrome (status bar, address bar) in step with the theme.
 // These are the --bg-primary values; a mismatch shows as a coloured seam above
 // the app on Android.
-const THEME_COLOR = { light: '#f6f6f7', dark: '#17161a' };
+const THEME_COLOR = { light: '#f5f4f9', dark: '#171331' };
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(getInitialTheme);
-  const [palette, setPaletteState] = useState(getInitialPalette);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -65,17 +48,18 @@ export function ThemeProvider({ children }) {
     if (meta) meta.setAttribute('content', THEME_COLOR[theme] || THEME_COLOR[DEFAULT_THEME]);
   }, [theme]);
 
+  // One-off cleanup for anyone who picked a palette while the switcher existed:
+  // the attribute no longer has any CSS behind it, but leaving it on <html>
+  // would keep the dead key alive in localStorage forever.
   useEffect(() => {
-    document.documentElement.setAttribute('data-palette', palette);
-    window.localStorage.setItem(PALETTE_KEY, palette);
-  }, [palette]);
+    document.documentElement.removeAttribute('data-palette');
+    window.localStorage.removeItem(PALETTE_KEY);
+  }, []);
 
   const value = useMemo(() => ({
     theme,
-    palette,
     toggleTheme: () => setTheme((current) => (current === 'dark' ? 'light' : 'dark')),
-    setPalette: (id) => setPaletteState(PALETTE_IDS.includes(id) ? id : DEFAULT_PALETTE),
-  }), [theme, palette]);
+  }), [theme]);
 
   return (
     <ThemeContext.Provider value={value}>

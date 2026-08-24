@@ -44,17 +44,17 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9500,
-      background: 'rgba(10, 10, 20, 0.85)', backdropFilter: 'blur(4px)',
+      background: 'var(--overlay)', backdropFilter: 'blur(4px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
     }}>
       <div style={{
-        width: '100%', maxWidth: 360, background: 'var(--bg-card, var(--bg-card))',
+        width: '100%', maxWidth: 360, background: 'var(--bg-card)',
         borderRadius: 20, border: '1px solid var(--border)', padding: '20px 18px',
       }}>
         <p style={{ color: 'var(--text-primary)', fontSize: 17, fontWeight: 800, margin: '0 0 6px' }}>
           Pick your interests
         </p>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: '0 0 14px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, margin: '0 0 14px' }}>
           We will match you with partners who share them (up to 3).
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
@@ -65,7 +65,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
               style={{
                 borderRadius: 20, padding: '8px 14px', fontSize: 13, fontWeight: 600,
                 cursor: 'pointer',
-                border: selected.includes(t.value) ? '1px solid var(--accent)' : '1px solid var(--border, var(--bg-secondary))',
+                border: selected.includes(t.value) ? '1px solid var(--accent)' : '1px solid var(--border)',
                 background: selected.includes(t.value) ? 'var(--accent)' : 'transparent',
                 color: selected.includes(t.value) ? '#fff' : 'var(--text-secondary)',
               }}
@@ -78,7 +78,7 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
           <button
             onClick={onClose}
             style={{
-              flex: 1, height: 46, borderRadius: 12, border: '1px solid var(--border, var(--bg-secondary))',
+              flex: 1, height: 46, borderRadius: 12, border: '1px solid var(--border)',
               background: 'transparent', color: 'var(--text-secondary)',
               fontSize: 14, fontWeight: 600, cursor: 'pointer',
             }}
@@ -90,8 +90,8 @@ export default function TopicPickerModal({ open, uid, onSave, onClose }) {
             disabled={!selected.length || saving}
             style={{
               flex: 2, height: 46, borderRadius: 12, border: 'none',
-              background: selected.length ? 'var(--accent)' : '#3a3a5a',
-              color: '#fff', fontSize: 14, fontWeight: 700,
+              background: selected.length ? 'var(--accent)' : 'var(--bg-secondary)',
+              color: 'var(--text-on-accent)', fontSize: 14, fontWeight: 700,
               cursor: selected.length ? 'pointer' : 'default',
             }}
           >

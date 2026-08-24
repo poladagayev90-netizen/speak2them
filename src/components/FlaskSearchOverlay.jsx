@@ -89,7 +89,7 @@ export default function FlaskSearchOverlay({
           </p>
         )}
         {subtitle && (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0' }}>{subtitle}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>{subtitle}</p>
         )}
       </div>
     );

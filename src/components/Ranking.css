@@ -14,14 +14,13 @@
 /* You Card */
 .ranking-you-card {
   background: var(--accent-soft);
-  border: 1px solid var(--accent);
-  border: 1px solid rgba(124, 111, 247, 0.3);
+  border: 1px solid var(--accent-ring);
   border-radius: 16px;
   padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 8px 32px rgba(124, 111, 247, 0.15);
+  box-shadow: var(--glass-lift);
   backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
@@ -36,6 +35,7 @@
 
 .ranking-you-label {
   font-size: 13px;
+  font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -46,7 +46,6 @@
   font-size: 32px;
   font-weight: 800;
   color: var(--text-primary);
-  text-shadow: var(--e-2);
   margin: 0;
 }
 
@@ -70,9 +69,9 @@
 }
 
 .streak-pill {
-  color: var(--gold) !important;
-  background: rgba(245, 158, 11, 0.15) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  border: 1px solid var(--accent-ring);
 }
 
 /* Podium */
@@ -134,7 +133,7 @@
   border-color: var(--gold); 
   width: 80px; 
   height: 80px; 
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4), 0 8px 24px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .rank-2 .ranking-podium-avatar { border-color: var(--silver); }
 .rank-3 .ranking-podium-avatar { border-color: var(--bronze); }
@@ -200,15 +199,12 @@
   pointer-events: none;
 }
 
-.rank-1 .ranking-podium-bar {
-  background: linear-gradient(180deg, #f59e0b, #b45309);
-}
-.rank-2 .ranking-podium-bar {
-  background: linear-gradient(180deg, #9ca3af, #4b5563);
-}
-.rank-3 .ranking-podium-bar {
-  background: linear-gradient(180deg, #d97706, #78350f);
-}
+/* The three bars are a lightness ramp of the one purple -- first place is the
+   deepest -- not gold, silver and bronze. See --gold/--silver/--bronze in
+   index.css for why the metals had to go. */
+.rank-1 .ranking-podium-bar { background: var(--gold); }
+.rank-2 .ranking-podium-bar { background: var(--silver); }
+.rank-3 .ranking-podium-bar { background: var(--bronze); }
 
 .ranking-podium-bar span {
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));

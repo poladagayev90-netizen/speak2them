@@ -164,7 +164,7 @@ export default function JoinTeacher({ user }) {
           onClick={dismiss}
           style={{
             width: '100%', background: 'none', border: 'none',
-            color: 'var(--text-secondary, var(--text-muted))', fontSize: '14px',
+            color: 'var(--text-secondary)', fontSize: '14px',
             marginTop: '12px', cursor: 'pointer',
           }}
         >

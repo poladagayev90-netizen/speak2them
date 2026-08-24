@@ -178,10 +178,10 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
             When are you free?
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
             {todayWaiting > 0
-              ? `${todayWaiting} ${todayWaiting === 1 ? 'block has' : 'blocks have'} someone waiting today`
-              : 'Pick a time — it is confirmed as soon as a second person joins'}
+              ? `🔥 ${todayWaiting} ${todayWaiting === 1 ? 'block has' : 'blocks have'} someone waiting today`
+              : '🗓️ Pick a time — it is confirmed as soon as a second person joins'}
           </div>
         </div>
         {todayWaiting > 0 && !expanded && (
@@ -205,7 +205,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
           <div style={{ flex: 1, minWidth: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-            <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.hour)}</b> block has someone waiting — join it and your call is confirmed straight away.
+            👋 <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.hour)}</b> block has someone waiting — join it and your call is confirmed straight away.
           </div>
           <button
             type="button"
@@ -213,7 +213,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
             disabled={busy === bridge.slotId}
             style={{
               flexShrink: 0, padding: '9px 12px', borderRadius: '9px', border: 'none',
-              background: 'linear-gradient(135deg, var(--warning), #d97706)', color: '#1a1000',
+              background: 'var(--ai-fill)', color: 'var(--text-on-ai)',
               fontSize: '12px', fontWeight: 800, cursor: 'pointer',
             }}
           >
@@ -346,7 +346,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                         }}>
                           {hourLabel(hour)}
                         </span>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
                           –{hourLabel((hour + 2) % 24)}
                         </span>
                         {popular && <Star size={11} strokeWidth={2} aria-label="Most people are here at this hour" style={{ color: 'var(--warning)' }} />}
@@ -398,7 +398,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
 
           {recurOpen && (
             <>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 2px 8px', lineHeight: 1.5 }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', margin: '4px 2px 8px', lineHeight: 1.5 }}>
                 The hours you pick are marked as free automatically, every day.
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>

@@ -15,6 +15,11 @@ import './ui/ui.css';
 //
 // At most one shows at a time, and it is dismissible: a prompt you cannot
 // silence stops being a prompt and becomes furniture.
+//
+// Each line opens with an emoji, as CONTENT rather than as an icon (icons are
+// lucide, always). One screen of same-weight sentences is a wall; a single
+// character at the head of the rotating line is what tells you at a glance
+// which of the three this one is.
 function pickNudge(user, mine) {
   const uc = mine?.upcomingCall;
   if (uc) {
@@ -25,7 +30,7 @@ function pickNudge(user, mine) {
     if (mins > 0 && mins <= 90) {
       return {
         id: 'call-soon',
-        text: `Your ${hourLabel(parsed?.hour ?? 0)} call starts in ${mins} ${mins === 1 ? 'minute' : 'minutes'}.`,
+        text: `⏱ Your ${hourLabel(parsed?.hour ?? 0)} call starts in ${mins} ${mins === 1 ? 'minute' : 'minutes'}.`,
       };
     }
     return null;
@@ -34,7 +39,7 @@ function pickNudge(user, mine) {
   if (!mine?.slotIds?.length) {
     return {
       id: 'pick-time',
-      text: 'Pick a time you are free and we will match you with someone.',
+      text: '🗓️ Pick a time you are free and we will match you with someone.',
       // openBoard: "Pick a time" landing on a COLLAPSED board meant the button
       // did not do what it said. Live reads this and opens the calendar.
       action: { label: 'Pick a time', to: '/live', state: { openBoard: true } },
@@ -45,7 +50,7 @@ function pickNudge(user, mine) {
   if (streak > 0 && user?.lastCallDate !== new Date().toDateString()) {
     return {
       id: 'streak',
-      text: `You are on a ${streak}-day streak. You have not spoken today.`,
+      text: `🔥 You are on a ${streak}-day streak. You have not spoken today.`,
       action: { label: 'Find a partner', to: '/live' },
     };
   }
@@ -65,6 +70,7 @@ export default function TodayNudge({ user, mine }) {
       <p style={{
         margin: 0,
         fontSize: 'var(--fs-sm)',
+        fontWeight: 600,
         color: 'var(--text-secondary)',
         lineHeight: 'var(--lh-body)',
       }}>

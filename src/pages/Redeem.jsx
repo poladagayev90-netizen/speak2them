@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { redeemCourseCode, SUPPORT_WHATSAPP } from '../utils/redeem';
 import Logo from '../components/Logo';
+import { MessageCircle } from 'lucide-react';
 
 export default function Redeem({ user }) {
   const [code, setCode] = useState('');
@@ -101,9 +102,9 @@ export default function Redeem({ user }) {
                 href={`${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hi! I am writing about my course code.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ display: 'block', marginTop: '8px', color: '#25D366', fontWeight: 700 }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: 'var(--accent)', fontWeight: 700 }}
               >
-                💬 Message us on WhatsApp
+                <MessageCircle size={16} strokeWidth={1.75} aria-hidden="true" /> Message us on WhatsApp
               </a>
             )}
           </div>
@@ -143,7 +144,7 @@ export default function Redeem({ user }) {
           onClick={() => navigate(-1)}
           style={{
             width: '100%', background: 'none', border: 'none',
-            color: 'var(--text-secondary, var(--text-muted))', fontSize: '14px',
+            color: 'var(--text-secondary)', fontSize: '14px',
             marginTop: '12px', cursor: 'pointer',
           }}
         >

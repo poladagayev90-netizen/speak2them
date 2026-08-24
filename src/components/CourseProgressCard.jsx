@@ -30,8 +30,8 @@ export default function CourseProgressCard({ user }) {
   }, [cohortId]);
 
   const cardStyle = {
-    background: 'linear-gradient(135deg, rgba(124,111,247,0.14), rgba(91,77,232,0.10))',
-    border: '1px solid rgba(124,111,247,0.35)',
+    background: 'var(--accent-soft)',
+    border: '1px solid var(--accent-ring)',
     borderRadius: '16px',
     padding: '14px 16px',
     marginTop: '12px',
@@ -51,7 +51,7 @@ export default function CourseProgressCard({ user }) {
     return (
       <div style={{ ...cardStyle, padding: '12px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '7px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #fff)' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>
             📖 Topic {completed}/{COURSE_TOPIC_COUNT}
           </span>
           <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>{pct}%</span>
@@ -59,7 +59,7 @@ export default function CourseProgressCard({ user }) {
 
         <div style={{
           height: '6px', borderRadius: '3px', overflow: 'hidden',
-          background: 'rgba(124,111,247,0.15)',
+          background: 'var(--accent-soft)',
         }}>
           <div style={{
             height: '100%', width: `${pct}%`,
@@ -71,12 +71,12 @@ export default function CourseProgressCard({ user }) {
 
         {(done || cohort) && (
           <div style={{
-            marginTop: '8px', fontSize: '12px', color: 'var(--text-secondary, #aaa)',
+            marginTop: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {done
               ? 'Course complete'
-              : <> <b style={{ color: 'var(--text-primary, #fff)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
+              : <> <b style={{ color: 'var(--text-primary)' }}>{cohort.name || cohort.title || 'Kohortunuz'}</b>
                   {Number(cohort.memberCount) > 0 && <> · {Number(cohort.memberCount)} members</>}</>}
           </div>
         )}
@@ -88,10 +88,10 @@ export default function CourseProgressCard({ user }) {
   if (user.cohortStatus === 'accepted') {
     return (
       <div style={cardStyle}>
-        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)', marginBottom: '4px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
           ✅ You have been accepted
         </div>
-        <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Waiting for the course to start. Topics open as soon as an admin starts it.
         </div>
       </div>
@@ -100,10 +100,10 @@ export default function CourseProgressCard({ user }) {
   if (user.cohortStatus === 'pending') {
     return (
       <div style={cardStyle}>
-        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #fff)', marginBottom: '4px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
           ⏳ Your application has been sent
         </div>
-        <div style={{ fontSize: '12px', color: 'var(--text-secondary, #aaa)' }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
           Waiting for admin approval. You will see it here once accepted.
         </div>
       </div>

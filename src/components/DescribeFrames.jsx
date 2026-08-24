@@ -105,7 +105,7 @@ export default function DescribeFrames({ compact = false, prompts = [] }) {
           {prompts.length > 0 && (
             <div style={{ marginTop: 10 }}>
               <p style={{
-                color: 'var(--text-secondary)', fontSize: 11, margin: '0 0 6px',
+                color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, margin: '0 0 6px',
                 textTransform: 'uppercase', letterSpacing: '0.5px',
               }}>
                 For this picture

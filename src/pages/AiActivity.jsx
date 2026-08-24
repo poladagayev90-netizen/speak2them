@@ -389,9 +389,12 @@ export default function AiActivity({ user }) {
           onClick={() => { introRef.current = false; stopSpeaking(); stop(); navigate('/'); }}
           icon={<ChevronLeft size={22} strokeWidth={1.75} />}
         />
+        {/* Her face in the header too, so the person you are speaking to is on
+            screen for the whole session and not only inside the bubbles. */}
+        <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
         <h1 className="ai-activity-title">{isFree ? 'Free talk' : 'Describe pictures'}</h1>
         {isFree ? (
-          <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
             {turnIndex} {turnIndex === 1 ? 'turn' : 'turns'}
           </span>
         ) : (

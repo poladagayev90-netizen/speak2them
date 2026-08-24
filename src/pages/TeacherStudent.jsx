@@ -97,14 +97,14 @@ export default function TeacherStudent({ user }) {
               <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--text-primary)' }}>
                 {tile.icon && `${tile.icon} `}{tile.value}
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{tile.label}</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '4px' }}>{tile.label}</div>
             </div>
           ))}
         </div>
 
         {student?.level && (
           <div style={{ ...panel, marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{'English level'}</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>{'English level'}</span>
             <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)' }}>{student.level}</span>
           </div>
         )}
@@ -129,7 +129,7 @@ export default function TeacherStudent({ user }) {
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>{'No analyses yet.'}</p>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
               {'An analysis appears here a few minutes after your student finishes their first call.'}
             </p>
           </div>
@@ -151,7 +151,7 @@ export default function TeacherStudent({ user }) {
                   <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 700, marginBottom: '4px' }}>
                     {a.peerName ? `Call with ${a.peerName}` : 'Call'}
                   </div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Clock size={14} />
                     {a.durationSeconds ? `${Math.floor(a.durationSeconds / 60)}m ${a.durationSeconds % 60}s` : '—'}
                     {a.timestamp?.seconds ? ` • ${fmtDate(a.timestamp.seconds)}` : ''}
