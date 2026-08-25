@@ -8,7 +8,7 @@ import {
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import {
-  BookOpen, MessageCircleQuestion, Image as ImageIcon, Drama, MessagesSquare,
+  BookOpen, MessageCircleQuestion, Image as ImageIcon, Drama, MessagesSquare, Target,
   Mic, MicOff, PhoneOff, Clock, X, Check, Trash2, Send, Phone, Calendar,
   BookMarked, Lightbulb,
 } from 'lucide-react';
@@ -32,8 +32,11 @@ import CallImageStage from '../components/CallImageStage';
 import CallTabooStage from '../components/CallTabooStage';
 import CallQuestionStage from '../components/CallQuestionStage';
 import CallDebateStage from '../components/CallDebateStage';
+import CallGuessStage from '../components/CallGuessStage';
 import { tabooWords } from '../data/tabooWords';
 import { debateTopics } from '../data/debateTopics';
+import { guessQuestions } from '../data/guessQuestions';
+import { GUESS_ROUND_SECONDS } from '../utils/guessGame';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallRoadmap from '../components/CallRoadmap';
 import CallInsights from '../components/CallInsights';
@@ -84,9 +87,21 @@ export default function Chat({ user }) {
   const [tabooStage, setTabooStage] = useState(null);
   const [questionStage, setQuestionStage] = useState(null);
   const [debateStage, setDebateStage] = useState(null);
-  // Any full-screen activity panel currently owning the call screen.
-  const stageOpen = !!(imageStage?.active || tabooStage?.active
-    || questionStage?.active || debateStage?.active || showDaily);
+  const [guessStage, setGuessStage] = useState(null);
+  // One activity at a time owns the call screen. Every launcher button used to
+  // repeat this list inline, which meant adding a game meant editing five
+  // conditions and forgetting one.
+  const activityOpen = !!(imageStage?.active || tabooStage?.active
+    || questionStage?.active || debateStage?.active || guessStage?.active);
+  // Any full-screen panel, activities plus the vocabulary sheet.
+  const stageOpen = activityOpen || showDaily;
+  // Starting an activity has to switch the other four off in the SAME write,
+  // or a peer mid-render can briefly see two panels. Spelling the list out at
+  // each call site meant five places to forget a stage; this derives it.
+  const ACTIVITY_STAGES = ['imageStage', 'tabooStage', 'questionStage', 'debateStage', 'guessStage'];
+  const closeActivitiesExcept = (keep) => Object.fromEntries(
+    ACTIVITY_STAGES.filter((k) => k !== keep).map((k) => [`${k}.active`, false]),
+  );
   // The post-call flow is a queue of full-screen stages. Normally it holds just
   // 'insights' (the single summary screen); 'quiz' is pushed only when the user
   // asks for it from that screen.
@@ -485,6 +500,10 @@ export default function Chat({ user }) {
       // Synced Debate game: same channel, but sideAUid decides which side's
       // talking points each peer gets — same split as Taboo's explainerUid.
       setDebateStage(data.debateStage || null);
+
+      // Synced Guess It: both peers see the same card and the same deadline,
+      // and each writes only their own guess into `answers`.
+      setGuessStage(data.guessStage || null);
 
       // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
@@ -1110,27 +1129,25 @@ export default function Chat({ user }) {
                   <button className="call-btn-big act-vocab" onClick={() => setShowDaily(true)}>
                     <BookOpen size={26} strokeWidth={2.25} aria-hidden="true" /><span>Vocabulary</span>
                   </button>
-                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
+                  {!activityOpen && (
                     <button
                       className="call-btn-big act-quiz"
                       onClick={() => {
                         // Same contentIndex pinning as the picture stage: the
                         // topic must not be recomputed per device mid-call.
                         updateDoc(doc(db, 'calls', callDocId), {
+                          ...closeActivitiesExcept('questionStage'),
                           questionStage: {
                             active: true, contentIndex: getTodayIndex(),
                             difficulty: null, cardIndex: 0,
                           },
-                          'imageStage.active': false,
-                          'tabooStage.active': false,
-                          'debateStage.active': false,
                         }).catch((e) => console.error('[Chat] questionStage start failed:', e));
                       }}
                     >
                       <MessageCircleQuestion size={26} strokeWidth={2.25} aria-hidden="true" /><span>Questions</span>
                     </button>
                   )}
-                  {!imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
+                  {!activityOpen && (
                     <button
                       className="call-btn-big act-picture"
                       onClick={() => {
@@ -1139,56 +1156,72 @@ export default function Chat({ user }) {
                         // clock-skewed or midnight-spanning call used to show
                         // two topics — same imageIndex, different pictures.
                         updateDoc(doc(db, 'calls', callDocId), {
+                          ...closeActivitiesExcept('imageStage'),
                           imageStage: {
                             active: true, imageIndex: 0, startedAtMs: Date.now(),
                             contentIndex: getTodayIndex(),
                           },
-                          'tabooStage.active': false,
-                          'questionStage.active': false,
-                          'debateStage.active': false,
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
                     >
                       <ImageIcon size={26} strokeWidth={2.25} aria-hidden="true" /><span>Picture</span>
                     </button>
                   )}
-                  {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
+                  {!activityOpen && (
                     <button
                       className="call-btn-big act-taboo"
                       onClick={() => {
                         updateDoc(doc(db, 'calls', callDocId), {
+                          ...closeActivitiesExcept('tabooStage'),
                           tabooStage: {
                             active: true,
                             explainerUid: user.uid,
                             cardIndex: Math.floor(Math.random() * tabooWords.length),
                             score: 0,
                           },
-                          'imageStage.active': false,
-                          'questionStage.active': false,
-                          'debateStage.active': false,
                         }).catch((e) => console.error('[Chat] tabooStage start failed:', e));
                       }}
                     >
                       <Drama size={26} strokeWidth={2.25} aria-hidden="true" /><span>Taboo</span>
                     </button>
                   )}
-                  {!tabooStage?.active && !imageStage?.active && !questionStage?.active && !debateStage?.active && (
+                  {!activityOpen && (
                     <button
                       className="call-btn-big act-debate"
                       onClick={() => {
                         updateDoc(doc(db, 'calls', callDocId), {
+                          ...closeActivitiesExcept('debateStage'),
                           debateStage: {
                             active: true,
                             topicIndex: Math.floor(Math.random() * debateTopics.length),
                             sideAUid: user.uid,
                           },
-                          'imageStage.active': false,
-                          'tabooStage.active': false,
-                          'questionStage.active': false,
                         }).catch((e) => console.error('[Chat] debateStage start failed:', e));
                       }}
                     >
                       <MessagesSquare size={26} strokeWidth={2.25} aria-hidden="true" /><span>Debate</span>
+                    </button>
+                  )}
+                  {!activityOpen && (
+                    <button
+                      className="call-btn-big act-guess"
+                      onClick={() => {
+                        updateDoc(doc(db, 'calls', callDocId), {
+                          ...closeActivitiesExcept('guessStage'),
+                          guessStage: {
+                            active: true,
+                            cardIndex: Math.floor(Math.random() * guessQuestions.length),
+                            deadlineMs: Date.now() + GUESS_ROUND_SECONDS * 1000,
+                            // Cleared explicitly rather than left over: a second
+                            // Guess It round in the same call would otherwise
+                            // open with both players already "locked in".
+                            answers: {},
+                            scores: {},
+                          },
+                        }).catch((e) => console.error('[Chat] guessStage start failed:', e));
+                      }}
+                    >
+                      <Target size={26} strokeWidth={2.25} aria-hidden="true" /><span>Guess It</span>
                     </button>
                   )}
                 </>
@@ -1340,7 +1373,47 @@ export default function Chat({ user }) {
         />
       )}
 
-      {inCall && showRoadmap && !imageStage?.active && !tabooStage?.active && !questionStage?.active && !debateStage?.active && (
+      {inCall && guessStage?.active && (
+        <CallGuessStage
+          cardIndex={guessStage.cardIndex || 0}
+          deadlineMs={guessStage.deadlineMs || 0}
+          myUid={user.uid}
+          peerUid={peerId}
+          peerName={peer?.name}
+          answers={guessStage.answers || {}}
+          scores={guessStage.scores || {}}
+          // Each peer writes only their own guess, so the two submits can never
+          // collide — and neither can overwrite the other's number.
+          onSubmit={(value) => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              [`guessStage.answers.${user.uid}`]: value,
+            }).catch((e) => console.error('[Chat] guessStage submit failed:', e));
+          }}
+          // Same reasoning for the point: I only ever touch my own score.
+          onWin={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              [`guessStage.scores.${user.uid}`]: increment(1),
+            }).catch((e) => console.error('[Chat] guessStage score failed:', e));
+          }}
+          onNext={() => {
+            // Explicit values, not increment: if both peers tap Next at the
+            // same moment the card still advances exactly one step. Same
+            // reasoning as debateStage.topicIndex.
+            updateDoc(doc(db, 'calls', callDocId), {
+              'guessStage.cardIndex': (guessStage.cardIndex || 0) + 1,
+              'guessStage.deadlineMs': Date.now() + GUESS_ROUND_SECONDS * 1000,
+              'guessStage.answers': {},
+            }).catch((e) => console.error('[Chat] guessStage next failed:', e));
+          }}
+          onClose={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'guessStage.active': false,
+            }).catch((e) => console.error('[Chat] guessStage close failed:', e));
+          }}
+        />
+      )}
+
+      {inCall && showRoadmap && !activityOpen && (
         <CallRoadmap
           content={content}
           onStart={() => setShowRoadmap(false)}

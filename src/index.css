@@ -80,10 +80,10 @@
   --bronze: #8a6fd8;
 
   /* ── In-call activity hues ───────────────────────────────────────────────
-     The five call activities are the product's main event, so each one owns a
+     The six call activities are the product's main event, so each one owns a
      shade and is recognisable before the label is read -- which is what the
      emoji used to do, minus the per-platform lottery over how a 🎭 is drawn.
-     Spread on LIGHTNESS inside the purple band rather than on hue: five
+     Spread on LIGHTNESS inside the purple band rather than on hue: six
      unrelated colours on the call screen was the loudest thing in the app.
      Values are literal per theme rather than mixed at runtime: this is the one
      screen that must never depend on an old WebView's colour-mix support. */
@@ -92,6 +92,7 @@
   --act-picture: #4a5bb0;   --act-picture-rgb:  74  91 176;
   --act-taboo:   #8c4a91;   --act-taboo-rgb:   140  74 145;
   --act-debate:  #5b3fa8;   --act-debate-rgb:   91  63 168;
+  --act-guess:   #3f47a0;   --act-guess-rgb:    63  71 160;
   /* Disc fill and ring, as an alpha of the hue above. Light needs less fill
      than dark to reach the same apparent separation from the page. */
   --act-fill: 0.10;
@@ -165,12 +166,13 @@
   --silver: #b6a6ff;
   --bronze: #8f85dd;
 
-  /* Same five steps, lifted for a dark page. See the light block. */
+  /* Same six steps, lifted for a dark page. See the light block. */
   --act-vocab:   #e3d8ff;   --act-vocab-rgb:   227 216 255;
   --act-quiz:    #8f85dd;   --act-quiz-rgb:    143 133 221;
   --act-picture: #8fa3e8;   --act-picture-rgb: 143 163 232;
   --act-taboo:   #dfa6f0;   --act-taboo-rgb:   223 166 240;
   --act-debate:  #a37fe8;   --act-debate-rgb:  163 127 232;
+  --act-guess:   #b0a6f2;   --act-guess-rgb:   176 166 242;
   --act-fill: 0.16;
   --act-ring: 0.42;
   /* --danger-solid / --warning-solid and their inks are intentionally NOT

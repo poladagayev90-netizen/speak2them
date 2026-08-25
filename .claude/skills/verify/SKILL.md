@@ -37,7 +37,7 @@ browser contexts.
   clicking Home buttons — their overlays intercept pointer events.
 
 ### Useful selectors
-- Home: `#tour-find-partner`, `#tour-daily-topic`, `#tour-puzzle`, searcher
+- **/live** (NOT Home — search moved there in the Home/Live split): `#tour-find-partner`, searcher
   banner `text=is looking for a partner` + `text=Join now`.
 - Call: `.call-roadmap` (+ `-start`, `-more`), `.daily-panel` / `.daily-close`,
   end call `.call-btn-big.end`, chat-page tour also uses `.guided-tour-next`.
@@ -47,18 +47,39 @@ browser contexts.
   hint lock msg `.puzzle-hint-locked`.
 
 ### Matching two accounts
-A clicks `#tour-find-partner`; B sees the searcher banner within ~1s and clicks
+Send BOTH pages to `/live` first. A clicks `#tour-find-partner`; B sees the
+searcher banner within ~1s and clicks
 `Join now`; both auto-navigate to `/chat/**` and the call connects in a few
 seconds (roadmap appears ⇒ call is live).
 
 ## Cleanup (test data lands in PROD)
 
-Firestore user docs are admin-delete-only via rules, but the CLI runs as the
-owner: get uids by querying `users` where `name >= 'TestVerify'` through the
-Firestore REST API (sign in via identitytoolkit with the `.env` API key), then
-`npx firebase-tools firestore:delete "users/<uid>" --force` (same for
-`matchQueue/<uid>`, `calls/call_<uidA>_<uidB>` sorted pair). Auth accounts
-can't be deleted from the CLI — orphans are harmless, but note them.
+**Use the app's own deletion endpoint — it works, and it removes the Auth
+account too.** Two earlier sessions gave up here and left orphans behind
+because they reached for `firebase-tools firestore:delete`, which the
+permission classifier blocks and which cannot touch Auth anyway.
+
+Sign each throwaway account in with the password the test used, then POST its
+own idToken to `deleteAccount`:
+
+```js
+const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${KEY}`,
+  { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, returnSecureToken: true }) });
+const { idToken } = await r.json();
+await fetch('https://us-central1-speak2them-64f2b.cloudfunctions.net/deleteAccount',
+  { method: 'POST', headers: { 'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}` }, body: '{}' });   // -> {"ok":true}
+```
+
+`KEY` is `REACT_APP_FIREBASE_API_KEY` from `.env`. The function wipes the user
+doc and its subcollections, `wordHistory`, `matchQueue`, `premiumRequests`,
+teacher rosters and storage, anonymises shared call/chat records, and finally
+calls `admin.auth().deleteUser`. Nothing is left over.
+
+So: **log the exact emails the run created** and delete them at the end of the
+same session. Querying `users` by `name >= 'TestVerify'` misses any run that
+used realistic display names — the email is the reliable handle.
 
 ## Gotchas
 - Functions logs: `npx firebase-tools functions:log --only <fn> -n 40`.
