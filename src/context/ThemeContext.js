@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-const DEFAULT_THEME = 'dark';
+const DEFAULT_THEME = 'light';
 
 // There used to be four selectable palettes here (violet / ocean / forest /
 // mono). They are gone: the app has ONE hue family now — a deep purple for a
@@ -18,7 +18,7 @@ const ThemeContext = createContext({
 // key: everyone is reset once, and their own choice wins from then on.
 const THEME_KEY = 'theme';
 const PALETTE_KEY = 'palette';
-const DEFAULT_MIGRATION_KEY = 'themeDefault:dark';
+const DEFAULT_MIGRATION_KEY = 'themeDefault:light';
 
 // Must agree with the boot script in public/index.html, which runs this same
 // logic before first paint so the app never flashes the wrong theme.

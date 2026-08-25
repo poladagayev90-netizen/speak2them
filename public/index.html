@@ -21,7 +21,7 @@
     <link rel="alternate icon" href="%PUBLIC_URL%/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#171331" />
+    <meta name="theme-color" content="#f5f4f9" />
     <meta name="google" content="notranslate" />
     <script>
       // Apply the saved theme before first paint, otherwise the app renders in
@@ -34,12 +34,12 @@
           // A saved theme outlives a change of default, so each new default
           // gets its own key: everyone is reset once, then their choice wins.
           // Keep this key and the fallback in sync with src/context/ThemeContext.js.
-          if (!ls.getItem('themeDefault:dark')) {
-            ls.setItem('themeDefault:dark', '1');
-            ls.setItem('theme', 'dark');
-            t = 'dark';
+          if (!ls.getItem('themeDefault:light')) {
+            ls.setItem('themeDefault:light', '1');
+            ls.setItem('theme', 'light');
+            t = 'light';
           } else {
-            t = ls.getItem('theme') || 'dark';
+            t = ls.getItem('theme') || 'light';
           }
           document.documentElement.setAttribute('data-theme', t);
           // The palette switcher is gone — one hue family for the whole app —
@@ -48,7 +48,7 @@
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', t === 'light' ? '#f5f4f9' : '#171331');
         } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-theme', 'light');
         }
       })();
     </script>

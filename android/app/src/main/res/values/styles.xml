@@ -17,7 +17,7 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">#171331</item>
-        <item name="android:background">#171331</item>
+        <item name="android:windowBackground">#f5f4f9</item>
+        <item name="android:background">#f5f4f9</item>
     </style>
 </resources>

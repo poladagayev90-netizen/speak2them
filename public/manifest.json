@@ -28,7 +28,7 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#171331",
-  "background_color": "#171331",
+  "theme_color": "#f5f4f9",
+  "background_color": "#f5f4f9",
   "scope": "/"
 }
