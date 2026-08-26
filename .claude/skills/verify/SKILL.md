@@ -81,6 +81,18 @@ So: **log the exact emails the run created** and delete them at the end of the
 same session. Querying `users` by `name >= 'TestVerify'` misses any run that
 used realistic display names — the email is the reliable handle.
 
+**Sweeping leftovers whose emails you no longer have:** sign in as any test
+account, then `POST` a `structuredQuery` to
+`https://firestore.googleapis.com/v1/projects/speak2them-64f2b/databases/(default)/documents:runQuery`
+filtering `name >= 'TestVerify'` AND `name < 'TestVerifz'`, read each hit's
+`email` field off its user doc, and run the delete above for each.
+
+This only reaches accounts created with the password the sweep tries, so
+**always register test accounts with `Test12345!`** — older runs used other
+passwords and those ~32 orphans are now unreachable by any means available
+here (Auth deletion needs either the account's own token or admin credentials,
+and there is no ADC on this machine — see the deploy-targets memory).
+
 ## Gotchas
 - Functions logs: `npx firebase-tools functions:log --only <fn> -n 40`.
 - `CI=true` makes ESLint warnings fatal — the deploy pipeline does the same.

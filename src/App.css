@@ -2404,6 +2404,46 @@ body {
   50%      { opacity: 1;    transform: translateY(-4px); }
 }
 
+/* ---- Guess It ----
+   The panel was correct and completely inert: nothing acknowledged a point,
+   a reveal or the clock running out, so a game read as a form. Motion here is
+   the visual half of that feedback -- the audible half lives in utils/sfx.js.
+   Every rule is inside the no-preference query, so a reduced-motion user gets
+   the same panel with none of it. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Keyed on the score, so winning a point remounts the chip. */
+  .guess-score-pop {
+    animation: tabooScorePop 460ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* The result block replaces the input in place; without this it snaps. */
+  .guess-reveal {
+    animation: guessRevealIn 340ms cubic-bezier(0.34, 1.32, 0.5, 1) both;
+  }
+
+  /* The winner's card lands a beat after the block arrives, so the eye is
+     already on the numbers when one of them is crowned. */
+  .guess-player.is-winner {
+    animation: tabooScorePop 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 280ms both;
+  }
+
+  /* Last five seconds. Scale only -- no colour change, because the colour is
+     already carrying "urgent" and doubling it just shouts. */
+  .guess-timer.is-urgent {
+    animation: guessTimerPulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes guessRevealIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes guessTimerPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.09); }
+}
+
 /* ---- Speaking cards (Wordwall tipli açılan sual kartları) ----
    DailyHub, DailyTopicModal və Chat-dakı gündəlik panel — üçü də eyni
    komponenti işlədir, ona görə stil bir yerdə saxlanılır. */

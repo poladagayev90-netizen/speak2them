@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Target, Timer, Trophy, Languages } from 'lucide-react';
+import { X, Target, Timer, Trophy, Languages, Volume2, VolumeX } from 'lucide-react';
 import { guessQuestions } from '../data/guessQuestions';
 import {
   parseGuess, formatNumber, describeNumber, accuracyLabel, pickWinners,
   GUESS_ROUND_SECONDS,
 } from '../utils/guessGame';
 import { getFeedbackLanguage, FEEDBACK_LANGUAGES } from '../utils/feedbackLanguage';
+import {
+  sfxEnabled, setSfxEnabled, sfxGameOpen, sfxLockIn, sfxPeerLock, sfxTick,
+  sfxReveal, sfxWin, sfxLose, sfxNextCard,
+} from '../utils/sfx';
 
 // In-call "Guess It" (bil bakalım). One question with a number nobody knows,
 // 45 seconds to write a guess, then the closer number wins and both players
@@ -103,7 +107,21 @@ export default function CallGuessStage({
   const [timeUp, setTimeUp] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(GUESS_ROUND_SECONDS);
+  // Kept separate from secondsLeft: the bar should drain smoothly, but the
+  // number must stay a whole second or it reads as a stopwatch, not a clock.
+  const [fraction, setFraction] = useState(1);
+  const [soundOn, setSoundOn] = useState(() => sfxEnabled());
+  // The answer counts up on reveal instead of appearing. A number that simply
+  // shows up reads like a form field; counting is the one cue that makes this
+  // feel like a game show, and it costs nothing.
+  const [rolled, setRolled] = useState(null);
   const scoredRef = useRef(null);
+  const revealSoundRef = useRef(null);
+  const tickedAtRef = useRef(null);
+  const peerWasLockedRef = useRef(false);
+
+  const reducedMotion = typeof window !== 'undefined'
+    && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   const lang = getFeedbackLanguage();
   const langLabel = FEEDBACK_LANGUAGES.find((l) => l.code === lang)?.label || 'Translate';
@@ -115,6 +133,7 @@ export default function CallGuessStage({
     setDraft('');
     setTimeUp(false);
     setShowTranslation(false);
+    setRolled(null);
   }, [cardIndex]);
 
   const bothAnswered = hasMine && hasTheirs;
@@ -125,9 +144,10 @@ export default function CallGuessStage({
   useEffect(() => {
     if (bothAnswered) return undefined;
     const tick = () => {
-      const left = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
-      setSecondsLeft(left);
-      if (left <= 0) setTimeUp(true);
+      const msLeft = Math.max(0, deadlineMs - Date.now());
+      setSecondsLeft(Math.ceil(msLeft / 1000));
+      setFraction(Math.min(1, msLeft / (GUESS_ROUND_SECONDS * 1000)));
+      if (msLeft <= 0) setTimeUp(true);
     };
     tick();
     const id = setInterval(tick, 250);
@@ -153,9 +173,69 @@ export default function CallGuessStage({
     onWin();
   }, [revealed, iWon, cardIndex, onWin]);
 
+  // ── Sound ─────────────────────────────────────────────────────────────────
+  // sfx.js normally refuses to play anything during a call; these game cues are
+  // its one deliberate exception and the reasoning lives there. Each of them is
+  // a single blip, never a loop.
+
+  // Opening chime. The tap that opened the panel is a user gesture on THIS
+  // device; on the peer's it may arrive with the audio context still suspended,
+  // in which case sfx.js drops it silently rather than throwing.
+  useEffect(() => { sfxGameOpen(); }, []);
+
+  // Your partner just committed. Nothing on screen moves at that moment, so
+  // without a sound the pressure of being the last one typing never lands.
+  useEffect(() => {
+    if (hasTheirs && !peerWasLockedRef.current && !revealed) sfxPeerLock();
+    peerWasLockedRef.current = hasTheirs;
+  }, [hasTheirs, revealed]);
+
+  // Last five seconds only. This is the shared round clock, so it ticks for
+  // both players — including the one who already answered, because the tension
+  // is the point. Any longer and it would sit on top of the conversation.
+  useEffect(() => {
+    if (revealed || secondsLeft > 5 || secondsLeft <= 0) return;
+    if (tickedAtRef.current === `${cardIndex}:${secondsLeft}`) return;
+    tickedAtRef.current = `${cardIndex}:${secondsLeft}`;
+    sfxTick();
+  }, [secondsLeft, revealed, cardIndex]);
+
+  // Reveal flourish, then the verdict — sequenced, not stacked, or they mush
+  // into one noise. Guarded per card so a re-render cannot replay it.
+  useEffect(() => {
+    if (!revealed) return undefined;
+    if (revealSoundRef.current === cardIndex) return undefined;
+    revealSoundRef.current = cardIndex;
+    sfxReveal();
+    const id = setTimeout(() => (iWon ? sfxWin() : sfxLose()), 620);
+    return () => clearTimeout(id);
+  }, [revealed, cardIndex, iWon]);
+
+  // Count the answer up. Skipped entirely under reduced motion — the value
+  // still lands, it just does not travel.
+  useEffect(() => {
+    if (!revealed) return undefined;
+    if (reducedMotion) { setRolled(card.a); return undefined; }
+    let raf;
+    const t0 = performance.now();
+    const step = (now) => {
+      // Clamped at BOTH ends. requestAnimationFrame hands the callback the
+      // frame's start time, which can be a hair EARLIER than the
+      // performance.now() taken just before scheduling it — so `now - t0` goes
+      // negative on the first frame, (1 - p) ** 3 exceeds 1, and the reveal
+      // flashes a minus sign before it starts counting.
+      const p = Math.min(1, Math.max(0, (now - t0) / 900));
+      setRolled(card.a * (1 - (1 - p) ** 3));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [revealed, card.a, cardIndex, reducedMotion]);
+
   const submit = () => {
     const value = parseGuess(draft);
     if (value === null) return;
+    sfxLockIn();
     onSubmit(value);
   };
 
@@ -184,13 +264,41 @@ export default function CallGuessStage({
             Guess It
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className="guess-score" style={{
-              color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700,
-              background: 'var(--bg-input)', border: '1px solid var(--border)',
-              borderRadius: 20, padding: '3px 10px',
-            }}>
+            {/* Keyed on the score so a point remounts the chip and it pops —
+                otherwise the number changes with no acknowledgement at all. */}
+            <span
+              key={`${myScore}-${peerScore}`}
+              className="guess-score guess-score-pop"
+              style={{
+                color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700,
+                background: 'var(--bg-input)', border: '1px solid var(--border)',
+                borderRadius: 20, padding: '3px 10px', whiteSpace: 'nowrap',
+              }}
+            >
               You {myScore} — {peerScore} {peerName || 'Partner'}
             </span>
+            {/* This is the app-wide sound switch, the same one Profile shows —
+                one setting, not a second one that quietly disagrees with it. */}
+            <button
+              className="guess-sound"
+              onClick={() => {
+                const next = !soundOn;
+                setSfxEnabled(next);
+                setSoundOn(next);
+                if (next) sfxLockIn();
+              }}
+              aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}
+              aria-pressed={soundOn}
+              style={{
+                background: 'transparent', border: 'none',
+                color: soundOn ? 'var(--accent)' : 'var(--text-muted)',
+                cursor: 'pointer', padding: '2px 2px', display: 'flex',
+              }}
+            >
+              {soundOn
+                ? <Volume2 size={17} strokeWidth={2} aria-hidden="true" />
+                : <VolumeX size={17} strokeWidth={2} aria-hidden="true" />}
+            </button>
             <button
               onClick={onClose}
               aria-label="Close"
@@ -254,13 +362,38 @@ export default function CallGuessStage({
 
           {!revealed && (
             <>
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                color: secondsLeft <= 10 ? 'var(--accent)' : 'var(--text-muted)',
-                fontSize: 13, fontWeight: 700, margin: '10px 0 12px',
-              }}>
+              <div
+                className={secondsLeft <= 5 ? 'guess-timer is-urgent' : 'guess-timer'}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  color: secondsLeft <= 10 ? 'var(--accent)' : 'var(--text-muted)',
+                  fontSize: 13, fontWeight: 700, margin: '10px 0 6px',
+                }}
+              >
                 <Timer size={15} strokeWidth={2} aria-hidden="true" />
                 {secondsLeft}s left
+              </div>
+
+              {/* A number alone does not read as pressure. The bar does the
+                  work a countdown is actually for: showing it shrinking. */}
+              <div
+                className="guess-bar"
+                role="progressbar"
+                aria-label="Time left in this round"
+                aria-valuemin={0}
+                aria-valuemax={GUESS_ROUND_SECONDS}
+                aria-valuenow={secondsLeft}
+                style={{
+                  height: 4, borderRadius: 4, background: 'var(--bg-input)',
+                  overflow: 'hidden', margin: '0 0 12px',
+                }}
+              >
+                <div style={{
+                  height: '100%', width: `${Math.max(0, fraction) * 100}%`,
+                  background: secondsLeft <= 10 ? 'var(--accent)' : 'var(--text-muted)',
+                  borderRadius: 4,
+                  transition: 'width 250ms linear, background 300ms ease',
+                }} />
               </div>
 
               {/* The player still typing had no way of knowing the other one
@@ -348,7 +481,7 @@ export default function CallGuessStage({
           )}
 
           {revealed && (
-            <div style={{ marginTop: 10 }}>
+            <div className="guess-reveal" style={{ marginTop: 10 }}>
               <div style={{
                 background: 'var(--bg-input)', border: '1px solid var(--border)',
                 borderRadius: 16, padding: '14px', textAlign: 'center',
@@ -359,8 +492,20 @@ export default function CallGuessStage({
                 }}>
                   The answer
                 </p>
-                <p className="guess-answer" style={{ color: 'var(--text-primary)', fontSize: 28, fontWeight: 800, margin: 0 }}>
-                  {formatNumber(card.a)}
+                {/* Tabular figures: without them every frame of the count-up
+                    changes the text width and the whole card jitters. */}
+                <p className="guess-answer" style={{
+                  color: 'var(--text-primary)', fontSize: 28, fontWeight: 800, margin: 0,
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {/* Before the first animation frame `rolled` is still null,
+                      and rendering card.a there flashed the real answer for one
+                      frame — the count-up then started over from zero, so the
+                      panel gave the number away and then pretended not to
+                      have. Start at zero and let the animation deliver it. */}
+                  {formatNumber(rolled === null
+                    ? (reducedMotion ? card.a : 0)
+                    : Math.round(rolled))}
                 </p>
                 <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 700, margin: '2px 0 0' }}>
                   {card.unit}{describeNumber(card.a) ? ` · ${describeNumber(card.a)}` : ''}
@@ -434,7 +579,13 @@ export default function CallGuessStage({
           {revealed ? (
             <>
               <button onClick={onClose} className="guess-finish" style={GHOST_BTN}>Finish</button>
-              <button onClick={onNext} className="guess-next" style={SOLID_BTN}>Next question →</button>
+              <button
+                onClick={() => { sfxNextCard(); onNext(); }}
+                className="guess-next"
+                style={SOLID_BTN}
+              >
+                Next question →
+              </button>
             </>
           ) : (
             <>
