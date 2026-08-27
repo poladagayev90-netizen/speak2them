@@ -119,8 +119,12 @@ async function readCycleIndex(db) {
 // yoxsa dəyişdirilmiş client mode:'course' qoyub TRIAL_DAYS limitini keçərdi.
 // (Kurs istifadəçiləri redeemCode-da isPremium:true alır, ona görə müstəsnadır.)
 // trialStartedAt olmayan köhnə userlər də bloklanmır.
-function isTrialExpired(u) {
+function isTrialExpired(u, uid) {
   if (!u) return false;
+  // Sahibin hesabı heç vaxt bloklanmır — users sənədindəki isPremium
+  // bayrağından asılı olmadan. Client tərəfdəki getTrialDaysLeft eyni
+  // istisnanı daşıyır; ikisi birlikdə dəyişməlidir.
+  if (uid === ADMIN_UID) return false;
   // Kohorta müraciəti gözlənilən user bloklanmır. Təhlükəsizdir, çünki
   // firestore.rules cohortStatus-u client yazısından qoruyur — bu vəziyyətə
   // yalnız redeemCode (etibarlı kodla) və admin sala bilər.
@@ -165,7 +169,7 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
 
   // Kodsuz trial TRIAL_DAYS gündən sonra zəngi serverdə bloklayır — token verilmir.
   const uDoc = await admin.firestore().collection("users").doc(decoded.uid).get().catch(() => null);
-  if (isTrialExpired(uDoc && uDoc.exists ? uDoc.data() : null)) {
+  if (isTrialExpired(uDoc && uDoc.exists ? uDoc.data() : null, decoded.uid)) {
     res.status(403).json({ error: "trial_expired" });
     return;
   }

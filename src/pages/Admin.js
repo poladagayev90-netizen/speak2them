@@ -311,7 +311,14 @@ export default function Admin({ user }) {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       ⏱ {u.totalMinutes || 0} min
                     </span>
-                    {!isAdmin && (
+                    {/* Adminin öz sətrində plan nişanı ÜMUMİYYƏTLƏ gizli idi,
+                        ona görə paneldən "mən Pro-yammı?" sualına cavab yox idi.
+                        Admin daimi Pro-dur (kod səviyyəsində, bax isAdminUser),
+                        ona görə burada sabit nişan göstərilir — düymə yox, çünki
+                        söndürüləsi bir bayraq deyil. */}
+                    {isAdmin ? (
+                      <span style={{ color: 'var(--accent)' }}>🎁 pro · admin</span>
+                    ) : (
                       <span style={{
                         color: u.subscriptionPlan === 'trial' ? 'var(--accent)' : (u.isPremium ? 'var(--warning)' : 'var(--text-muted)'),
                       }}>

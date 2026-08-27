@@ -20,6 +20,7 @@ import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
 import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '../utils/feedbackLanguage';
+import { isAdminUser } from '../utils/courseProgress';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -276,7 +277,8 @@ export default function Profile({ user }) {
           <div style={{ display: 'flex', gap: 'var(--s-2)', marginTop: '6px', flexWrap: 'wrap' }}>
             <span className="ui-pill ui-pill--accent"><Signal size={12} strokeWidth={2} />{level}</span>
             <span className="ui-pill">
-              {mode === 'course' ? 'Course member'
+              {isAdminUser(user) ? 'Pro'
+                : mode === 'course' ? 'Course member'
                 : isPremium ? 'Pro'
                 : user.cohortStatus === 'accepted' ? 'Cohort accepted'
                 : user.cohortStatus === 'pending' ? 'Cohort pending'

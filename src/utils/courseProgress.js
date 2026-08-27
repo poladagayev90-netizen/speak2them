@@ -1,5 +1,6 @@
 import { weeklyContent } from '../data/weeklyContent';
 import { getActiveDays, bakuDateStr, bakuWeekday } from './sessionSchedule';
+import { ADMIN_UID } from '../constants';
 
 // Kurs proqresi per-user Firestore-a YAZILMIR — hər şey cycleTick - startTick
 // fərqindən hesablanır (K2 backend konvensiyası). Bu modul həmin hesabları
@@ -49,6 +50,11 @@ export function getFinishDateStr(topicsCompleted, sessionConfig, nowMs = Date.no
 // eyni qaydalar, ekran heç vaxt serverin buraxdığı useri bloklamasın deyə.
 export function getTrialDaysLeft(user, nowMs = Date.now()) {
   if (!user) return null;
+  // Admin hesabı heç vaxt trial ilə məhdudlaşmır. Bu, users sənədindəki
+  // isPremium bayrağından ASILI DEYİL: bayraq bir dəfə söndürülsə (və ya
+  // sənəd sıfırlansa) sahib öz tətbiqindən kilidlənərdi. Server tərəfdəki
+  // isTrialExpired eyni istisnaya malikdir — ikisi birlikdə dəyişməlidir.
+  if (isAdminUser(user)) return null;
   // Kohorta müraciət edib admin təsdiqini/başlanğıcını gözləyən user trial
   // müddəti bitsə də bloklanmasın — gözləmə onun günahı deyil.
   if (user.cohortStatus === 'pending' || user.cohortStatus === 'accepted') return null;
@@ -66,6 +72,14 @@ export function getTrialDaysLeft(user, nowMs = Date.now()) {
 // vəziyyəti ekranda göstərmək üçündür (ADDIM 5 tam-ekran görünüşü).
 export function isTrialExpiredClient(user, nowMs = Date.now()) {
   return getTrialDaysLeft(user, nowMs) === 0;
+}
+
+// Admin hesabı = daimi Pro. Tək mənbə: hər iki sahə yoxlanılır, çünki bəzi
+// yerlərdə user obyekti Firestore sənədidir (id), bəzilərində App.js-in
+// birləşdirdiyi auth+doc obyektidir (uid).
+export function isAdminUser(user) {
+  if (!user) return false;
+  return user.uid === ADMIN_UID || user.id === ADMIN_UID;
 }
 
 // "YYYY-MM-DD" → "çərşənbə, 22 iyul" (az lokalında).
