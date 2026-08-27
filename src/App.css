@@ -550,6 +550,18 @@ body {
   align-items: flex-start;
 }
 
+/* Hesabat kartı danışıq baloncuğu DEYİL, ona görə 70% qaydasından çıxır.
+ * Ölçdüm: 360px telefonda 70% = 218px, o enə ikonu, iki mətn sətrini və
+ * chevron-u sığdırmaq mümkün deyil — kart 93px hündürlüyə qalxır və mövzu
+ * adları yenə kəsilirdi. 70% söhbətdə söz üçün doğru, struktur üçün yox.
+ * align-self .mine/.theirs-dən gəldiyi üçün kart yenə öz tərəfində qalır;
+ * 520px isə desktopda bütün pəncərəni tutmasın deyə. */
+.message.message--card {
+  max-width: min(100%, 520px);
+  align-items: stretch;
+  text-align: left;
+}
+
 .message-sender {
   font-size: 11px;
   font-weight: 600;

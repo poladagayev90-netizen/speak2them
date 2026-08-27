@@ -78,8 +78,12 @@ export default function History({ user }) {
     return <AnalysisDetail analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} lang={getFeedbackLanguage()} />;
   }
 
+  // maxWidth below: the report this list opens is already capped at 780px, but
+  // the list itself was uncapped — on a laptop each row stretched the full
+  // window and a one-line entry became a metre-wide band with its date floating
+  // far from its name. Same cap, so the list and the report line up.
   return (
-    <div className="history-page" style={{ padding: '20px 16px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+    <div className="history-page" style={{ padding: '20px 16px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-primary)', maxWidth: '780px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
         <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>

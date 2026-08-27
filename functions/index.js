@@ -1755,6 +1755,13 @@ exports.notifyChatMessage = onDocumentCreated("chats/{chatId}/messages/{messageI
       .collection("blocked").doc(msg.senderId).get();
     if (blocked.exists) return;
 
+    // Analiz kartı push GÖNDƏRMİR. Onu serverin özü yazır və müəllim həmin
+    // analiz üçün onsuz da `student_analysis_ready` bildirişini alıb — ikinci
+    // "yeni mesaj" push-u eyni hadisə üçün iki bildiriş deməkdir. Oxunmamış
+    // sayğac yuxarıda ARTIQ artırılıb, ona görə söhbət siyahısında nişan yenə
+    // görünür; itən yalnız təkrar bildirişdir.
+    if (msg.kind === "analysis") return;
+
     const body = String(msg.text || "").slice(0, 120);
     await sendPushToUser(db, recipient, {
       title: msg.senderName || "Yeni mesaj",
@@ -4192,6 +4199,65 @@ async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, 
   }
 }
 
+// ─── Hesabatın söhbətə düşməsi ─────────────────────────────────────
+//
+// Analiz bitəndə xülasə müəllim↔şagird söhbətinə kart kimi yazılır. Səbəb:
+// push bildirişi ANLIQdır — qaçırılsa itir — və hesabat Profil → Analiz
+// tarixçəsində basdırılı qalırdı. Söhbət isə müəllimin onsuz da hər gün
+// baxdığı yerdir, şagird üçün də hesabatın davamlı, görünən nüsxəsidir.
+//
+// ⚠️ MƏXFİLİK: bu YALNIZ müəllim söhbətinə yazılır, PARTNYOR söhbətinə ƏSLA.
+// Partnyor da bizim kimi öyrənəndir, müəllim deyil — onun səhvlərini başqa
+// öyrənənə göstərmək olmaz. Müəllim əlaqəsində razılıq claimTeacherCode-da
+// açıq alınıb (teacherConsentAt) və rules onsuz da müəllimə callAnalysis
+// oxumağa icazə verir; burada yeni heç nə açılmır.
+async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, analysis, studentName) {
+  if (!studentUid || !teacherId || studentUid === teacherId) return;
+
+  // Sənəd id-si HƏMİŞƏ sıralanmış uid cütüdür — rules üzvlüyü məhz bu
+  // sətirdən çıxarır (src/utils/chat.js chatIdFor ilə eyni olmalıdır).
+  const chatId = [studentUid, teacherId].sort().join("_");
+  const themes = (Array.isArray(analysis.errorThemes) ? analysis.errorThemes : [])
+    .map((t) => String(t?.title || "").trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+  const score = Number(analysis.overallScore);
+  // `text` KART DEYİL, ehtiyat nüsxədir. Native APK istifadəçiləri köhnə web
+  // bundle daşıya bilir və kartı render edən kodu tanımır — o halda bu sətir
+  // adi mesaj kimi görünür. Onsuz həmin cihazlarda BOŞ baloncuq çıxardı.
+  const text = `Session report: ${Number.isFinite(score) ? score : "—"}/100`
+    + (themes.length ? ` · Working on: ${themes.join(", ")}` : "");
+
+  try {
+    await db.collection("chats").doc(chatId).set({
+      participants: [studentUid, teacherId].sort(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastMessage: text,
+      lastSenderId: studentUid,
+    }, { merge: true });
+
+    // senderId şagirddir: hesabat ONUN haqqındadır, ona görə müəllimin
+    // gözündə şagirddən gələn mesaj kimi, şagirdin gözündə isə öz mesajı kimi
+    // oturur. Client məhz bu fərqdən "hesabatı aç" düyməsinin hara aparacağını
+    // çıxarır — əlavə rol sorğusu lazım deyil.
+    await db.collection("chats").doc(chatId).collection("messages").add({
+      senderId: studentUid,
+      senderName: studentName || "Student",
+      kind: "analysis",
+      analysisId,
+      score: Number.isFinite(score) ? score : null,
+      themes,
+      text,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    console.log("[AnalysisChat] posted to", chatId);
+  } catch (e) {
+    // Hesabat onsuz da yazılıb — söhbətə düşməməsi analizi öldürməməlidir.
+    console.warn("[AnalysisChat] failed:", e.message);
+  }
+}
+
 // Groq chat with strict JSON, in-call retries (max 3) and a schema→json_object
 // fallback, so json_validate_failed and malformed output self-heal instead of
 // failing the ticket permanently.
@@ -4858,6 +4924,9 @@ exports.processAnalysisQueue = onSchedule({
         } catch (e) {
           console.warn("[AnalysisQueue] teacher push failed:", e.message);
         }
+        // Push anlıqdır; kart qalıcıdır. İkisi bir-birini əvəz etmir.
+        await postAnalysisToTeacherChat(
+          db, ticket.uid, studentTeacherId, ticket.id, analysis, studentName);
       }
     } catch (error) {
       const retryCount = (ticket.retryCount || 0) + 1;
@@ -6111,6 +6180,10 @@ exports.analyzeAiSession = onRequest(
         } catch (e) {
           console.warn("[analyzeAiSession] roster rollup failed:", e.message);
         }
+        // Eyni kart AInur sessiyası üçün də düşür: müəllim üçün şagirdin AI
+        // məşqi ilə insan zəngi arasında fərq yoxdur, ikisi də real nitqdir.
+        await postAnalysisToTeacherChat(
+          db, uid, u.teacherId, analysisId, analysis, u.name || "");
       }
 
       // sendPushToUser resolves the token set and swallows its own failures.
