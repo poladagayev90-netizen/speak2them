@@ -64,7 +64,15 @@ export function buildTrackerRows(grammarDoc, lang = getFeedbackLanguage()) {
       };
     })
     .filter((r) => r.attempts > 0)
-    .sort((a, b) => (a.mastery ?? 101) - (b.mastery ?? 101) || b.attempts - a.attempts);
+    // Weakest first, but provisional rows sink to the bottom regardless of
+    // their number. They print "—", so leading the table with one puts the
+    // concept we have explicitly refused to judge in the position that reads
+    // as "your worst problem".
+    .sort((a, b) => (
+      (a.provisional ? 1 : 0) - (b.provisional ? 1 : 0)
+      || (a.mastery ?? 101) - (b.mastery ?? 101)
+      || b.attempts - a.attempts
+    ));
 }
 
 // What to work on next: weakest first, but only where there is enough evidence

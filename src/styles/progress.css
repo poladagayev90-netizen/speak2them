@@ -1,0 +1,407 @@
+/* The progress room.
+ *
+ * Written as a stylesheet rather than inline styles (which most of the older
+ * pages use) for one reason: this screen is a TABLE, and a table has to become
+ * a stack of cards on a narrow phone. Media queries cannot be expressed inline,
+ * and faking them with a JS width listener re-renders the whole tracker on
+ * every resize frame.
+ *
+ * Palette note: no colour tier encodes mastery. The Plum palette is one purple
+ * family and red is reserved for destructive controls and wrong answers, so a
+ * weak concept is signalled by BAR LENGTH and an explicit "Focus" pill, never
+ * by turning the row red. That also keeps the meter readable for anyone who
+ * cannot separate the hues.
+ */
+
+.progress-page {
+  padding: var(--s-5) var(--s-4) 100px;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  /* Desktop is a real target here — the teacher opens this on a laptop and the
+   * learner on a phone. Centring one column beats a bespoke desktop layout. */
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-bottom: var(--s-6);
+}
+
+.progress-back {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.progress-title {
+  font-size: var(--fs-h1);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.progress-section {
+  margin-top: var(--s-8);
+}
+
+.progress-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+
+.progress-section-title {
+  font-size: var(--fs-h2);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.progress-section-note {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── Hero ───────────────────────────────────────────────── */
+
+.progress-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--s-6);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--s-6);
+  box-shadow: var(--glass-lift);
+}
+
+.progress-ring {
+  flex-shrink: 0;
+}
+
+/* On a phone the ring and the text cannot share a line. Measured at 360px:
+ * the ring took 104px of a 264px card and left the headline a 150px column,
+ * which wrapped it to three lines and the sentence under it to four. The
+ * headline is the one thing this screen exists to say, so it gets the full
+ * width and the ring sits above it (smaller — the SVG scales from its
+ * viewBox, so only the box needs changing). */
+@media (max-width: 560px) {
+  .progress-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+  .progress-ring { width: 84px; height: 84px; }
+}
+
+.progress-ring-value {
+  font-size: 30px;
+  font-weight: 800;
+  fill: var(--text-primary);
+}
+
+.progress-hero-body {
+  min-width: 0;
+}
+
+.progress-hero-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 var(--s-1);
+}
+
+.progress-hero-headline {
+  font-size: var(--fs-h2);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--s-2);
+}
+
+.progress-hero-sub {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Stat tiles ─────────────────────────────────────────── */
+
+.progress-tiles {
+  display: grid;
+  /* Two up on a phone, four across once there is room. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+}
+
+@media (min-width: 700px) {
+  .progress-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.progress-tile {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  min-width: 0;
+}
+
+.progress-tile-label {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: var(--s-2);
+}
+
+.progress-tile-value {
+  font-size: var(--fs-display);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  /* A number that changes must not shift the layout under it. */
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.progress-tile-unit {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-left: var(--s-1);
+}
+
+.progress-tile-delta {
+  display: inline-block;
+  margin-top: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.progress-tile-cta {
+  margin-top: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* ── Focus cards ────────────────────────────────────────── */
+
+.progress-focus {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+}
+
+@media (min-width: 700px) {
+  .progress-focus { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.progress-focus-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+}
+
+.progress-focus-name {
+  font-size: var(--fs-body);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--s-2);
+}
+
+.progress-focus-meta {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── Tracker ────────────────────────────────────────────── */
+
+.progress-tracker {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.progress-row {
+  display: grid;
+  /* concept | difficulty | used | mastery
+   *
+   * The two middle tracks are FIXED, not auto. Every row is its own grid — the
+   * rows cannot share one, because `display: contents` would throw away the box
+   * the bottom border is painted on. With `auto` those tracks size to each
+   * row's own content, so "B2 / 2×" and "A1 / 224×" landed on different x
+   * positions and the columns wandered by ~16px down the table. Fixed widths
+   * are what makes it read as a table instead of a stack of rows.
+   * 56px fits a CEFR pill, 64px fits "224×" with room to spare. */
+  grid-template-columns: 1fr 56px 64px 160px;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Alignment lives here rather than on the cells so the header and the body
+ * always agree — a header label cannot drift away from the column it names. */
+.progress-row > *:nth-child(2) { text-align: left; }
+.progress-row > *:nth-child(3) { text-align: right; }
+
+.progress-row:last-child { border-bottom: none; }
+
+.progress-row--head {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-top: var(--s-3);
+  padding-bottom: var(--s-3);
+}
+
+.progress-cell-name {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 0;
+}
+
+.progress-cell-num {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.progress-cefr {
+  display: inline-block;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--accent-soft);
+  border-radius: var(--r-pill);
+  padding: 2px var(--s-2);
+}
+
+.progress-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.progress-meter-track {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.progress-meter-fill {
+  /* display:block is load-bearing, not tidiness. Both meter parts are <span>s
+   * (they sit inside an inline flow), and the track is not itself a flex
+   * container — so without this the fill stays inline, ignores width and
+   * height, and every bar renders at zero. */
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+
+/* A provisional row must not look like a confident one. The fill is dropped
+ * entirely rather than drawn faintly: a short faint bar still reads as "you are
+ * bad at this", which is exactly the claim we cannot support yet. */
+.progress-meter-track--provisional { background: var(--border); }
+
+.progress-meter-value {
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+  text-align: right;
+}
+
+.progress-meter-value--muted {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* Phone: the four columns become a two-line card. The header row is dropped
+ * because each value carries its own label at this width. */
+@media (max-width: 699px) {
+  .progress-row {
+    grid-template-columns: 1fr auto;
+    gap: var(--s-2) var(--s-3);
+  }
+  .progress-row--head { display: none; }
+  .progress-cell-name { grid-column: 1; }
+  .progress-cell-difficulty { grid-column: 2; text-align: right; }
+  .progress-cell-used { grid-column: 1; text-align: left; }
+  .progress-meter { grid-column: 1 / -1; }
+}
+
+/* ── Trend ──────────────────────────────────────────────── */
+
+.progress-trend {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+}
+
+.progress-trend svg { display: block; width: 100%; height: 90px; }
+
+/* ── Empty ──────────────────────────────────────────────── */
+
+.progress-empty {
+  text-align: center;
+  padding: var(--s-10) var(--s-4);
+  color: var(--text-secondary);
+}
+
+.progress-empty-icon { color: var(--text-muted); margin-bottom: var(--s-4); }
+
+.progress-empty-title {
+  font-size: var(--fs-h2);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--s-2);
+}
+
+.progress-empty-body {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 auto;
+  max-width: 380px;
+  line-height: 1.6;
+}

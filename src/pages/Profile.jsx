@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
   GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
+  LineChart,
 } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -403,6 +404,10 @@ export default function Profile({ user }) {
       <div style={listCard}>
         {row({ icon: BookMarked, label: 'My words', onClick: () => setShowWordHistory(true), notLast: true })}
         {row({ icon: Flame, label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: 'var(--warning)', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
+        {/* Above the per-call history on purpose: "how am I doing overall" is
+            the question people open this section with, and the list of single
+            reports is what they fall back to. */}
+        {row({ icon: LineChart, label: 'My progress', onClick: () => navigate('/progress'), notLast: true })}
         {row({ icon: BarChart3, label: 'Analysis history', onClick: () => navigate('/history'), notLast: true })}
         {row({ icon: Trophy, label: 'Leaderboard', onClick: () => navigate('/ranking') })}
       </div>
