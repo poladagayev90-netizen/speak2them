@@ -154,6 +154,9 @@ export default function Chat({ user }) {
   const localTrackRef = useRef(null);  // mic track — created on user gesture
   const bottomRef = useRef(null);
   const joinedRef = useRef(false);
+  // Birbaşa zəngin bir dəfə işə düşməsi üçün. `location.key` dəyişdikcə effekt
+  // təkrar qiymətləndirilir, bu ref isə eyni naviqasiyada ikinci zəngi saxlayır.
+  const autoCalledRef = useRef(false);
   const endingRef = useRef(false);
   const ringtoneRef = useRef(null);
   const timerRef = useRef(null);
@@ -454,6 +457,37 @@ export default function Chat({ user }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key, location.state?.acceptedCall, peerId]);
+
+  // "Birbaşa zəng et": Live siyahısındakı və ya profildəki zəng düyməsi bura
+  // `autoCall` ilə gətirir və zəng özü başlayır. Əvvəl adama zəng etmək üçün
+  // kart → profil → Söhbət → Zəng lazım idi — DÖRD toxunuş, halbuki tətbiqin
+  // bütün mənası danışmaqdır.
+  //
+  // Deps-də `location.key` MÜTLƏQDİR, `acceptedCall`-dakı ilə eyni səbəbdən:
+  // istifadəçi artıq hər hansı /chat/:peerId səhifəsindədirsə Router komponenti
+  // yenidən mount etmir, boş deps ilə effekt bir daha işləməzdi.
+  //
+  // QEYD: startCall() mikrofon trekini yaradır və burada istifadəçi jesti
+  // kontekstindən KƏNARDA çağırılır. Chrome/Android-də (əsas platforma) icazə
+  // bir dəfə verilib saxlanıldığı üçün problem yoxdur; bloklansa startCall öz
+  // catch-i ilə `error` vəziyyətinə düşür və istifadəçi söhbətdə qalır, adi
+  // "Zəng" düyməsi yerində olur — yəni ən pis halda köhnə davranış.
+  useEffect(() => {
+    if (!location.state?.autoCall || autoCalledRef.current) return;
+    // Boş `callStatus` = heç nə baş vermir. Dolu olsa (calling/connected/ended)
+    // zəng onsuz da gedir, üstünə ikincisini açmaq olmaz.
+    if (joinedRef.current || callStatus) return;
+    autoCalledRef.current = true;
+    // Bayraq DƏRHAL tarixçədən silinir. `autoCall` history entry-sində qalsaydı,
+    // istifadəçi zəngi bitirib başqa səhifəyə keçəndən sonra GERİ düyməsi ilə
+    // bu entry-yə qayıtdıqda komponent təzədən mount olur, `autoCalledRef`
+    // sıfırlanır və adama xəbərsiz İKİNCİ zəng gedərdi. replace: true yeni
+    // yazı yaratmır, mövcud entry-ni əvəz edir; qalan state (callId, slotId,
+    // matchedCall) olduğu kimi saxlanılır.
+    navigate(location.pathname, { replace: true, state: { ...location.state, autoCall: false } });
+    startCall();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key, location.state?.autoCall, peerId]);
 
   useEffect(() => {
     if (!isMatchedCall || !stateCallId) return;

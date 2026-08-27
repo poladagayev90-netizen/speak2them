@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 import TutorBadge from '../components/TutorBadge';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Phone } from 'lucide-react';
 
 export default function UserProfile({ user: currentUser }) {
   const { uid } = useParams();
@@ -162,6 +162,16 @@ export default function UserProfile({ user: currentUser }) {
         {/* Action Buttons */}
         {uid !== currentUser.uid && (
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+            {/* Zəng birinci: bu səhifəyə gələn adam adətən danışmaq üçün
+                gəlir, yazışmaq üçün yox. */}
+            {!isBlocked && (
+              <button
+                onClick={() => navigate(`/chat/${uid}`, { state: { autoCall: true } })}
+                style={{ background: 'var(--accent)', border: '1px solid var(--accent)', color: 'var(--text-on-accent)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Phone size={16} strokeWidth={2} aria-hidden="true" /> Call
+              </button>
+            )}
             {!isBlocked && (
               <button
                 onClick={() => navigate(`/chat/${uid}`)}
@@ -174,7 +184,7 @@ export default function UserProfile({ user: currentUser }) {
               onClick={handleBlockToggle}
               style={{ background: 'none', border: '1px solid var(--border)', color: isBlocked ? 'var(--text-secondary)' : 'var(--danger)', padding: '10px 18px', borderRadius: '24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
             >
-              {isBlocked ? '✓ Unblock' : 'Blokla'}
+              {isBlocked ? '✓ Unblock' : 'Block'}
             </button>
             <button
               onClick={reported ? undefined : handleReport}

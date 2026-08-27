@@ -20,14 +20,40 @@ export const FEEDBACK_LANGUAGES = [
 
 const SUPPORTED = FEEDBACK_LANGUAGES.map((l) => l.code);
 
+// The device's own language, when it is one we can write feedback in. Kept
+// local rather than imported from appLanguage.js: that module imports THIS one
+// for the storage key, and pointing them at each other would be a cycle.
+function deviceFeedbackLanguage() {
+  try {
+    const tags = [
+      ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+      navigator.language,
+    ].filter(Boolean);
+    for (const tag of tags) {
+      const base = String(tag).toLowerCase().split('-')[0];
+      if (SUPPORTED.includes(base)) return base;
+    }
+  } catch {
+    // no navigator (SSR, odd WebView) -- fall through
+  }
+  return null;
+}
+
 export function getFeedbackLanguage() {
   try {
     const stored = localStorage.getItem(LANG_STORAGE_KEY);
     if (SUPPORTED.includes(stored)) return stored;
   } catch {
-    // private mode / storage disabled -- fall through to the default
+    // private mode / storage disabled -- fall through to the device
   }
-  return 'az';
+  // Falling straight to 'az' here meant a Turkish learner who never opened
+  // Profile > Language read their report, and the concept names in the progress
+  // room, in Azerbaijani -- while their notifications were already correctly
+  // Turkish, because those resolve from the device. The two now agree.
+  // Anything other than az/tr still lands on 'az': the report itself can only
+  // be written in those two, so pretending otherwise here would label a screen
+  // in a language the content is not in.
+  return deviceFeedbackLanguage() || 'az';
 }
 
 export function setFeedbackLanguage(code) {

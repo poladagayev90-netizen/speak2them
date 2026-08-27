@@ -4698,6 +4698,25 @@ async function transcribeWithGroqWhisper(audioBuffer, ext) {
   return (await whisperRes.json()).text || "";
 }
 
+// Hesabatın dili. `preferredLanguage` YALNIZ Profil → Dil seçicisindən yazılır,
+// yəni həmin ekranı heç açmamış istifadəçidə o sahə YOXDUR — və o vaxta qədər
+// hamı azərbaycanca hesabat alırdı, telefonu türk olsa belə. Eyni istifadəçinin
+// BİLDİRİŞLƏRİ isə düzgün türkcə gəlirdi (`appLanguage` cihazdan gəlir), yəni
+// tətbiq eyni adama iki fərqli dildə yazırdı.
+//
+// `appLanguage` boşluğu doldurur: onu resolveAppLanguage() cihazın öz dilindən
+// çıxarır və hər girişdə yazır. Hesabat yalnız az/tr ola bilər (prompt-un
+// orfoqrafiya dayaqları yalnız bu ikisi üçün var), ona görə 'en' cihaz hələ də
+// azərbaycancaya düşür — bu, ayrıca iş.
+function reportLanguageFor(userData) {
+  const u = userData || {};
+  // Açıq seçim həmişə üstündür: türk telefonunda azərbaycanca seçən adam
+  // azərbaycanca istəyir.
+  if (u.preferredLanguage === "tr" || u.preferredLanguage === "az") return u.preferredLanguage;
+  if (u.appLanguage === "tr") return "tr";
+  return "az";
+}
+
 // `lang` = istifadəçinin ana dili ('az' | 'tr') — hesabat həmin dildə yazılır.
 async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az", db = null) {
   let transcript = "";
@@ -4824,8 +4843,7 @@ exports.processAnalysisQueue = onSchedule({
       try {
         const uSnap = await db.collection("users").doc(ticket.uid).get();
         const u = uSnap.exists ? uSnap.data() : {};
-        const pref = u.preferredLanguage;
-        if (pref === "tr" || pref === "az") lang = pref;
+        lang = reportLanguageFor(u);
         // Eyni oxudan müəllim bildirişi üçün lazım olanları da götürürük.
         studentTeacherId = u.teacherId || null;
         studentName = u.name || "";
@@ -6127,7 +6145,7 @@ exports.analyzeAiSession = onRequest(
 
       const userSnap = await db.collection("users").doc(uid).get();
       const u = userSnap.exists ? userSnap.data() : {};
-      const lang = u.preferredLanguage === "tr" ? "tr" : "az";
+      const lang = reportLanguageFor(u);
 
       // Real speaking time, summed from the turns. This was estimated from the
       // word count at an assumed 120 wpm, which meant a slow speaker was told
