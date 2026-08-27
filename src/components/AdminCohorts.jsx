@@ -193,7 +193,7 @@ export default function AdminCohorts() {
           color: 'var(--text-on-accent)', border: 'none', borderRadius: '10px', fontWeight: 700,
           fontSize: '13px', cursor: 'pointer',
         }}>
-          {creating ? '...' : 'Yarat'}
+          {creating ? '...' : 'Create'}
         </button>
       </form>
 
@@ -311,9 +311,9 @@ export default function AdminCohorts() {
               <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
               {stat('', 'Accept', acceptedList.length, 'var(--success)')}
               <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
-              {stat('', 'Aktiv', activeList.length, 'var(--accent)')}
+              {stat('', 'Active', activeList.length, 'var(--accent)')}
               <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
-              {stat('', maxUses > 0 ? 'Limit' : 'Yer', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, 'var(--text-primary)')}
+              {stat('', maxUses > 0 ? 'Limit' : 'Seats', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, 'var(--text-primary)')}
             </div>
 
             {/* Başlat düyməsi — hər zaman görünür (nə edəcəyi aydın olsun). */}

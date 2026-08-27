@@ -146,7 +146,7 @@ export default function Admin({ user }) {
         background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border)',
         position: 'sticky', top: 0, zIndex: 10,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+        boxShadow: 'var(--glass-lift)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <button onClick={() => navigate('/')} style={{
@@ -154,13 +154,13 @@ export default function Admin({ user }) {
             padding: '8px 14px', borderRadius: '8px', cursor: 'pointer',
             fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px'
           }}>
-            ← Geri
+            ← Back
           </button>
           <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px' }}>
               {{ cohorts: '', slots: '' }[adminTab] || ''}
             </span>
-            {{ cohorts: 'Kohortlar', slots: 'Sessions' }[adminTab] || 'Premium management'}
+            {{ cohorts: 'Cohorts', slots: 'Sessions' }[adminTab] || 'Premium management'}
           </h2>
           <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
         </div>
@@ -169,7 +169,7 @@ export default function Admin({ user }) {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {[
             { id: 'premium', label: 'Students' },
-            { id: 'cohorts', label: 'Kohortlar' },
+            { id: 'cohorts', label: 'Cohorts' },
             { id: 'slots', label: 'Sessions' },
           ].map((t) => (
             <button
@@ -177,9 +177,9 @@ export default function Admin({ user }) {
               onClick={() => setAdminTab(t.id)}
               style={{
                 flex: 1, padding: '8px 12px',
-                background: adminTab === t.id ? 'var(--accent)' : 'var(--text-primary)',
+                background: adminTab === t.id ? 'var(--accent)' : 'var(--bg-secondary)',
                 color: adminTab === t.id ? 'var(--text-on-accent)' : 'var(--text-secondary)',
-                border: `1px solid ${adminTab === t.id ? 'var(--accent)' : 'var(--bg-secondary)'}`,
+                border: `1px solid ${adminTab === t.id ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
               }}
             >
@@ -191,9 +191,8 @@ export default function Admin({ user }) {
         {/* Stats */}
         <div style={{ display: 'flex', gap: '12px' }}>
           <div style={{
-            flex: 1, background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px',
-            padding: '12px', textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)'
+            flex: 1, background: 'var(--bg-secondary)', borderRadius: '12px',
+            padding: '12px', textAlign: 'center', border: '1px solid var(--border)',
           }}>
             <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{users.length}</p>
             <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', margin: '4px 0 0' }}>All</p>
@@ -201,7 +200,6 @@ export default function Admin({ user }) {
           <div style={{
             flex: 1, background: 'var(--warning-bg)', borderRadius: '12px',
             padding: '12px', textAlign: 'center', border: '1px solid var(--warning-bg)',
-            backdropFilter: 'blur(10px)'
           }}>
             <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--warning)', margin: 0 }}>{users.filter(u => u.isPremium).length}</p>
             <p style={{ fontSize: '12px', color: 'var(--warning)', margin: '4px 0 0' }}>Premium</p>
@@ -243,7 +241,7 @@ export default function Admin({ user }) {
             { id: 'all', label: 'All time' },
             { id: 'day', label: 'Last 24 hours' },
             { id: 'week', label: 'Last 7 days' },
-            { id: 'month', label: 'Son 1 ay' },
+            { id: 'month', label: 'Last 30 days' },
           ].map(f => (
             <button
               key={f.id}
@@ -409,7 +407,7 @@ export default function Admin({ user }) {
                           transition: 'all 0.2s', width: '110px'
                         }}
                       >
-                        {loading[u.uid || u.id] ? '...' : 'PRO Ver'}
+                        {loading[u.uid || u.id] ? '...' : 'Make Pro'}
                       </button>
                     )
                   )}

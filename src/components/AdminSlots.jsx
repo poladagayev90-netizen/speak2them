@@ -40,7 +40,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
   // etiketi /admin səhifəsində qalıb heç yerə getmirdi.
   const UserCell = ({ uid }) => {
     const u = usersMap[uid] || {};
-    const name = u.name || 'Anonim';
+    const name = u.name || 'Anonymous';
     const email = u.email || uid;
     const level = u.level || '?';
     return (

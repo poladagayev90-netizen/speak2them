@@ -125,7 +125,7 @@ export default function Live({ user }) {
       )}
 
       <div ref={boardRef} style={{ marginTop: 'var(--s-4)', scrollMarginTop: 'var(--s-4)' }}>
-        <PracticeBoard mine={mine} openSignal={boardOpenSignal} />
+        <PracticeBoard mine={mine} openSignal={boardOpenSignal} user={user} />
       </div>
 
       <p className="ui-section-label" style={{ marginTop: 'var(--s-6)' }}>

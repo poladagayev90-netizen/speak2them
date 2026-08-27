@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Repeat, ChevronDown, ChevronUp, Star, CalendarDays, Flame } from 'lucide-react';
+import SlotInspector from './SlotInspector';
+import { ADMIN_UID } from '../constants';
 import {
   SLOT_BLOCK_HOURS,
   POPULAR_HOUR,
@@ -36,7 +38,13 @@ const DAY_PARTS = [
   { label: 'Evening', hours: [18, 20, 22] },
 ];
 
-export default function PracticeBoard({ mine, openSignal = 0 }) {
+export default function PracticeBoard({ mine, openSignal = 0, user = null }) {
+  // Admin bloka toxunanda ONA YAZILMIR — blokun içini görür. Lövhə adminin
+  // də şəxsi lövhəsidir, amma "bu saatda kim var?" sualı gündə bir neçə dəfə
+  // verilir, öz adını bloka yazmaq isə demək olar heç vaxt; toxunuşun daha
+  // faydalı mənası budur. Cavab pəncərənin içindədir, ona görə heç nə itmir.
+  const isAdmin = !!user && user.uid === ADMIN_UID;
+  const [inspect, setInspect] = useState(null); // { slotId, date, hour }
   const [board, setBoard] = useState({});
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -328,9 +336,15 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                     <button
                       key={slotId}
                       type="button"
-                      onClick={() => !past && toggleSlot(slotId, joined, iAmMatched)}
+                      onClick={() => {
+                        if (past) return;
+                        if (isAdmin) { setInspect({ slotId, date: activeDate, hour }); return; }
+                        toggleSlot(slotId, joined, iAmMatched);
+                      }}
                       disabled={past || working}
-                      aria-label={`${blockLabel(activeDate, hour)} — ${joined ? 'cancel' : 'mark me free'}`}
+                      aria-label={`${blockLabel(activeDate, hour)} — ${
+                        isAdmin ? 'see who is in this block' : (joined ? 'cancel' : 'mark me free')
+                      }`}
                       style={{
                         textAlign: 'left', cursor: past ? 'default' : 'pointer',
                         borderRadius: '12px', padding: '10px 11px', minWidth: 0,
@@ -426,6 +440,15 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
             </>
           )}
         </>
+      )}
+
+      {inspect && (
+        <SlotInspector
+          slotId={inspect.slotId}
+          date={inspect.date}
+          hour={inspect.hour}
+          onClose={() => setInspect(null)}
+        />
       )}
     </div>
   );
