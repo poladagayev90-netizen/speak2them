@@ -24,7 +24,7 @@ import { FUNCTIONS_BASE } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
-import { setInCallFlag } from '../utils/presence';
+import { setInCallFlag, isInCall } from '../utils/presence';
 import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
 import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
@@ -150,6 +150,13 @@ export default function Chat({ user }) {
   const callStartedAtRef = useRef(0);
   const warnedRef = useRef(false);
   const endCallRef = useRef(null);
+  // Rədd edilmiş zəngin təmizliyi. Ref-dir, çünki onu iki yerdən — sənədin
+  // SİLİNMƏSİ və status:'rejected' — çağırmaq lazımdır, ikisi də böyük
+  // snapshot effektinin içindədir.
+  const declinedRef = useRef(null);
+  // Eyni zəng üçün iki dəfə işləməsin (silinmə + status dəyişikliyi üst-üstə
+  // düşə bilər). Hər yeni zəngdə startCall sıfırlayır.
+  const declineHandledRef = useRef(false);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);  // mic track — created on user gesture
   const bottomRef = useRef(null);
@@ -210,7 +217,13 @@ export default function Chat({ user }) {
       // Navigating away is not endCall(), so the busy flag has to be cleared
       // here too — otherwise the user stays "Zəngdə" for the rest of the
       // session and the App-level presence writer keeps skipping status.
-      if (inCallRef.current) {
+      //
+      // Şərt `inCallRef` DEYİL, `isInCall()`-dur. inCallRef yalnız zəng
+      // QOŞULANDA true olur, halbuki busy statusu artıq ilk zəng siqnalında
+      // yazılır — yəni çalarkən səhifəni tərk edən adam sessiyanın sonuna
+      // qədər "In a call" qalırdı. Doğru sual "qoşulmuşam?" yox, "özümü busy
+      // elan etmişəm?"dir, o da elə bu bayraqdır.
+      if (isInCall()) {
         inCallRef.current = false;
         setInCallFlag(false);
         updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' }).catch(() => {});
@@ -502,15 +515,58 @@ export default function Chat({ user }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Qarşı tərəf zəngi RƏDD EDƏNDƏ zəng edənin geri qaytarmalı olduğu HƏR ŞEY.
+  //
+  // İki fərqli rədd yolu var və ikisi də buraya gəlməlidir:
+  //   • GlobalCallListener.rejectCall — zəng sənədini SİLİR (status yazmır),
+  //     yəni aşağıdakı `status === 'rejected'` budağı heç vaxt işə düşmür;
+  //   • söhbətin öz modalı — `status: 'rejected'` yazır.
+  // Əvvəl silinmə budağı yalnız ekrana "Declined" yazırdı və başqa heç nə
+  // etmirdi, ona görə zəng edən tərəf sözün əsl mənasında xətdə qalırdı:
+  //   1) 30 saniyəlik taymer ləğv edilmirdi → yarım dəqiqə sonra rədd edilmiş
+  //      adama yalan "No answer." xəbərdarlığı çıxırdı;
+  //   2) mikrofon treki bağlanmırdı → telefonda mikrofon açıq qalırdı;
+  //   3) `status: 'busy'` geri qaytarılmırdı → istifadəçi hamıya "In a call"
+  //      görünürdü, halbuki zəng heç başlamamışdı;
+  //   4) `setInCallFlag(false)` çağırılmırdı → App.js heartbeat-i də bunu
+  //      düzəldə bilmirdi, çünki o, isInCall() true olanda status yazmır.
+  // (3) və (4) məhz mənim "ilk zəngdən busy yaz" dəyişikliyimin nəticəsidir —
+  // yeni yazı əlavə edib onu təmizləyən bütün yolları yoxlamamışdım.
+  //
+  // endCall() çağırmıram: o, statistika, yazının yüklənməsi və reytinq axını
+  // üçündür. Qoşulmamış zəngdə bunların heç birinin işi yoxdur.
+  declinedRef.current = async () => {
+    if (declineHandledRef.current) return;
+    declineHandledRef.current = true;
+
+    if (callTimeoutRef.current) {
+      clearTimeout(callTimeoutRef.current);
+      callTimeoutRef.current = null;
+    }
+    ringtoneRef.current?.pause();
+    if (localTrackRef.current) {
+      try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
+      localTrackRef.current = null;
+    }
+    setInCallFlag(false);
+    try {
+      await updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' });
+    } catch (e) { /* presence is best-effort */ }
+
+    setCallStatus('rejected');
+    setTimeout(() => setCallStatus(''), 3000);
+  };
+
   // Firestore call listener
   useEffect(() => {
     if (!callDocId || !user.uid || !peerId) return;
 
     const unsub = onSnapshot(doc(db, 'calls', callDocId), (snap) => {
       if (!snap.exists()) {
+        // Sənədin yoxa çıxması = qarşı tərəf "Decline" basdı (rejectCall onu
+        // silir). Tam təmizlik, sadəcə etiket yox.
         if (prevCallStatus.current === 'calling') {
-          setCallStatus('rejected');
-          setTimeout(() => setCallStatus(''), 3000);
+          declinedRef.current?.();
         }
         setIncomingCallData(null);
         prevCallStatus.current = '';
@@ -557,15 +613,10 @@ export default function Chat({ user }) {
         }
       }
 
+      // Söhbətin öz modalından gələn rədd. Eyni təmizlik: bu budaq da taymeri
+      // ləğv etmirdi və busy statusunu geri qaytarmırdı.
       if (data.status === 'rejected' && data.callerId === user.uid) {
-        setCallStatus('rejected');
-        ringtoneRef.current?.pause();
-        // Clean up pre-created mic track since call was rejected
-        if (localTrackRef.current) {
-          try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
-          localTrackRef.current = null;
-        }
-        setTimeout(() => setCallStatus(''), 3000);
+        declinedRef.current?.();
       }
 
       if (data.status === 'ended') {
@@ -644,6 +695,9 @@ export default function Chat({ user }) {
   const startCall = async () => {
     if (!user.uid || !peerId) return;
     try {
+      // Yeni zəng = yeni rədd imkanı. Sıfırlanmasa, bir dəfə rədd edilmiş
+      // istifadəçiyə ikinci zəngin rəddi bir daha bildirilməzdi.
+      declineHandledRef.current = false;
       sessionIdRef.current = Date.now();
       // Pre-create mic track while we have user gesture context
       // This ensures iOS/Safari grants microphone permission
