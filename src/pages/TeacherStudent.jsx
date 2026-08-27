@@ -74,7 +74,7 @@ export default function TeacherStudent({ user }) {
           <button
             onClick={() => navigate('/teacher')}
             style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', cursor: 'pointer', padding: 0 }}
-            aria-label="Geri"
+            aria-label="Back"
           >
             <ChevronLeft size={22} />
           </button>

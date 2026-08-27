@@ -78,7 +78,7 @@ async function enforceRateLimit(uid, key, maxCalls, windowMs) {
 // topicIndex = cycleTick % TOPIC_COUNT. Proqres per-user YAZILMIR — client
 // currentCycleTick - startTick ilə hesablayır.
 const TOPIC_COUNT = require("./dailyQuestions.json").length; // src/data/weeklyContent.js ilə eyni
-const TRIAL_DAYS = 30;             // kodsuz trial: ilk girişdən 1 ay
+const TRIAL_DAYS = 60;             // kodsuz trial: ilk girişdən 2 ay
 const COURSE_FREE_MONTHS = 6;      // kurs bitəndən sonra pulsuz dövr
 // Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Admin appConfig/session-da dəyişir.
 const DEFAULT_SESSION_DAYS = [1, 3, 5];   // B.e / Çər / Cümə

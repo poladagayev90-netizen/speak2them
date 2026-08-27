@@ -67,7 +67,7 @@ export default function Register() {
           ratingCount: 0,
           surveyDone: false,
           // Kodsuz giriş = trial. Kurs kodu ilə redeemCode bunu 'course'-a keçirir.
-          // trialStartedAt server-side 2 günlük yoxlamanın başlanğıc nöqtəsidir.
+          // trialStartedAt server-side trial yoxlamasının (TRIAL_DAYS) başlanğıc nöqtəsidir.
           mode: 'trial',
           trialStartedAt: serverTimestamp(),
           createdAt: serverTimestamp(),

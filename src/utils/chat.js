@@ -66,7 +66,8 @@ export function touchChat({ chatId, myUid, peerId, lastMessage }) {
 }
 
 // Siyahıdakı qısa vaxt etiketi: bu gün saat, dünən "Dünən", sonra tarix.
-const AZ_MONTHS = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avq', 'sen', 'okt', 'noy', 'dek'];
+// Ay adları əl ilə: toLocaleDateString bəzi WebView-lərdə "M07" verir.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export function chatTimeLabel(ts) {
   const ms = ts?.toMillis?.() || (ts instanceof Date ? ts.getTime() : 0);
   if (!ms) return '';
@@ -76,5 +77,5 @@ export function chatTimeLabel(ts) {
   if (sameDay) return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   const yesterday = new Date(now.getTime() - 86400000);
   if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }

@@ -5,7 +5,7 @@ import { getActiveDays, bakuDateStr, bakuWeekday } from './sessionSchedule';
 // fərqindən hesablanır (K2 backend konvensiyası). Bu modul həmin hesabları
 // bir yerə yığır: Home proqres kartı, trial sayğacı, tamamlanma aşkarı.
 export const COURSE_TOPIC_COUNT = weeklyContent.length; // 28
-export const TRIAL_DAYS = 30; // functions/index.js TRIAL_DAYS ilə eyni
+export const TRIAL_DAYS = 60; // functions/index.js TRIAL_DAYS ilə eyni
 
 function toMillis(v) {
   if (!v) return null;

@@ -230,7 +230,7 @@ export default function TeacherUnlock({ user }) {
         marginTop: '16px', cursor: 'pointer',
       }}
     >
-      ← Geri
+      ← Back
     </button>
   );
 
@@ -391,14 +391,14 @@ export default function TeacherUnlock({ user }) {
   const link = buildJoinLink(myCode);
   const shareText = `My SpeakLab student code for English speaking practice: ${myCode}\n${link}`;
   const students = roster || [];
-  // toLocaleDateString('az-AZ') bəzi WebView-lərdə ay adını "M07" kimi verir —
+  // toLocaleDateString bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
-  const AZ_MONTHS = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avq', 'sen', 'okt', 'noy', 'dek'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const fmtDate = (ts) => {
     const ms = ts && ts.toMillis ? ts.toMillis() : (typeof ts === 'string' ? Date.parse(ts) : null);
     if (!ms) return '—';
     const d = new Date(ms);
-    return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]}`;
+    return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
   };
 
   // ─── Sinif analitikası ────────────────────────────────────────
@@ -469,7 +469,7 @@ export default function TeacherUnlock({ user }) {
                 fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)',
                 display: 'flex', alignItems: 'center', flexWrap: 'wrap',
               }}>
-                🎓 Tutor profiliniz
+                🎓 Your tutor profile
                 {verifState === 'verified' && <TutorBadge />}
               </div>
               <div style={{ fontSize: '12px', color: verifInfo.color, marginTop: '4px', lineHeight: 1.5 }}>
@@ -653,7 +653,7 @@ export default function TeacherUnlock({ user }) {
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="sagird@gmail.com"
+              placeholder="student@gmail.com"
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
