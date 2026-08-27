@@ -16,6 +16,11 @@ const {
   slotTimeLabel,
   hourOnlyLabel,
 } = require("./pushText");
+const {
+  CONCEPT_IDS,
+  CONCEPT_PROMPT_LIST,
+  isConceptId,
+} = require("./grammarConcepts");
 
 admin.initializeApp();
 
@@ -3595,6 +3600,7 @@ Rules:
     BAD: a vague description like "word choice is important" / "pay attention to tenses" — these teach nothing.
     Write the rule so that a learner who memorises just that one line stops making every error in this theme. If you show a wrong→right pair, use REAL English examples, never the placeholder symbols alone.
   - items: 1-4 real examples of THIS theme from the transcript. original = near-verbatim from the transcript; corrected = the fixed sentence; explanation = {{LANGUAGE}}, 1-2 sentences saying WHY, and naming the {{LANGUAGE}} interference when that is the cause. Example of the depth expected: {{L1_EXAMPLE}}
+  - concept: EVERY item must also carry a concept id copied EXACTLY from the CONCEPT LIST below. This is a machine key, not prose — never translate it, never invent one, never leave it out. Pick the single most specific concept the mistake is about. Use word_choice only for a genuinely lexical slip and l1_transfer only when the whole phrase is a word-for-word translation; if a named grammar concept fits, that one wins.
   - A theme with only ONE example is fine if the error is important. A theme with zero real examples must NOT exist.
 - report_markdown: an Executive Summary in {{LANGUAGE}}, in Markdown, 120-180 words. CRITICAL: every heading and every bullet MUST be on its own line — put a real newline ("\\n") between them, never run them together on one line. Follow this exact skeleton:
 "## 👋 {{GREETING}}!\\n\\n<one warm sentence referencing what they actually talked about>\\n\\n### 💪 {{H_STRENGTHS}}\\n- <concrete moment from THIS conversation>\\n- <another one>\\n\\n### 🌱 {{H_GROWTH}}\\n- **<pattern name>** — <one specific sentence>\\n- **<pattern name>** — <one specific sentence>\\n\\n<one short closing motivation sentence>"
@@ -3607,11 +3613,15 @@ Rules:
 - homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
   - multiple_choice: up to 5 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
   - word_order: up to 4 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, naming the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration"). State ONLY rules that are true of English — never invent word-order rules (English is Subject-Verb-Object; the verb does NOT go at the end). If unsure, just name the tense or structure being practised.
+- concepts_used: the learner's USAGE census, not their mistakes. For every concept from the CONCEPT LIST that the learner actually attempted in this transcript, report {concept, attempts}. attempts = roughly how many times they used that structure at all, RIGHT OR WRONG — a learner who spoke ten past-tense sentences and got one wrong has attempts 10 for past_simple, not 1. Count only what you can see in the transcript, list at most 12 concepts, and omit any concept they never attempted. Never include a concept with attempts 0. This is what makes progress measurable across sessions: without the attempts number, a learner who talks more simply looks better than one who takes risks.
 - Every explanation must teach something concrete. Write natural, correct, modern {{LANGUAGE}} — if you are not sure a morphological form is right, use a simpler phrasing.
 - recap, reason, strengths, tips and every explanation must be in {{LANGUAGE}}. word, example, question, options and English sentences stay in English.
 - corrected sentences and example sentences must sound like simple, natural, modern native-speaker English.
 - Base everything on the transcript; invent nothing about the conversation.
-- Be encouraging and honest — celebrate real progress, point out real mistakes with warmth.`;
+- Be encouraging and honest — celebrate real progress, point out real mistakes with warmth.
+
+CONCEPT LIST — the ONLY allowed values for every "concept" field (in error_themes items and in concepts_used). Copy the id on the left character-for-character; the text after the colon is only there to tell you what the id covers. Anything not on this list is discarded:
+${CONCEPT_PROMPT_LIST}`;
 
 // Whisper can return very long transcripts; the JSON answer must still fit in
 // the completion budget, so the model only sees a bounded slice.
@@ -3624,7 +3634,7 @@ const MAX_TRANSCRIPT_CHARS = 32000; // ~30 dəq nitq. 6000 idi: LLM yalnız ilk 
 const ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["report_markdown", "recap", "scores", "error_themes", "strengths", "tips", "vocabulary", "homework"],
+  required: ["report_markdown", "recap", "scores", "error_themes", "concepts_used", "strengths", "tips", "vocabulary", "homework"],
   properties: {
     report_markdown: { type: "string" },
     recap: { type: "string" },
@@ -3658,14 +3668,36 @@ const ANALYSIS_SCHEMA = {
             items: {
               type: "object",
               additionalProperties: false,
-              required: ["original", "corrected", "explanation"],
+              required: ["original", "corrected", "explanation", "concept"],
               properties: {
                 original: { type: "string" },
                 corrected: { type: "string" },
                 explanation: { type: "string" },
+                // enum = the taxonomy is enforced by the API itself on the Groq
+                // strict path. DeepSeek (the primary) only supports
+                // json_object, so the same check runs again in
+                // normalizeAnalysis — the enum is the belt, that filter the
+                // braces.
+                concept: { type: "string", enum: CONCEPT_IDS },
               },
             },
           },
+        },
+      },
+    },
+    // The DENOMINATOR. Errors alone can only ever produce a list of complaints;
+    // "articles: used 156, mastery 49%" needs to know how often the learner
+    // reached for the structure at all.
+    concepts_used: {
+      type: "array",
+      maxItems: 12,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["concept", "attempts"],
+        properties: {
+          concept: { type: "string", enum: CONCEPT_IDS },
+          attempts: { type: "integer", minimum: 1, maximum: 200 },
         },
       },
     },
@@ -3841,6 +3873,10 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     original: asStr(f?.original),
     corrected: asStr(f?.corrected),
     reason: asStr(f?.explanation) || asStr(f?.reason),
+    // An id the taxonomy does not contain is thrown away rather than stored:
+    // one bad key would otherwise sit in the learner's aggregate forever, and
+    // the aggregate is keyed by these ids.
+    concept: isConceptId(f?.concept) ? f.concept : null,
   });
 
   let invented = 0;
@@ -3865,6 +3901,52 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
   if (invented > 0) {
     console.log("[Analysis] dropped", invented, "quotes not found in transcript (hallucinated)");
   }
+
+  // ── Konsept sayğacı (sessiyalar arası izləyicinin xammalı) ────
+  // İki rəqəmin etibarlılığı FƏRQLİDİR və bu fərq qəsdən saxlanılır:
+  //   errors   — yalnız transkriptdə TƏSDİQLƏNMİŞ nümunələrdən sayılır, yəni
+  //              uydurma səhv sayğaca ümumiyyətlə düşə bilmir.
+  //   attempts — modelin təxminidir; dəqiq deyil, amma nisbi müqayisə üçün
+  //              kifayətdir və məxrəc olmadan mastery heç cür hesablanmır.
+  // attempts heç vaxt errors-dan kiçik ola bilməz — model 2 cəhd deyib biz 3
+  // real səhv təsdiqləmişiksə, doğru olan bizim saydığımızdır.
+  const conceptErrors = new Map();
+  for (const theme of errorThemes) {
+    for (const item of theme.items) {
+      if (!item.concept) continue;
+      conceptErrors.set(item.concept, (conceptErrors.get(item.concept) || 0) + 1);
+    }
+  }
+
+  // attempts modelin təxminidir, ona görə ÖLÇÜLƏN bir şeylə hədlənir: bir
+  // konsept transkriptdəki cümlə sayından çox işlədilə bilməz. Beş sözə bir
+  // cümlə səxavətli qiymətdir (real orta 8-12), yəni hədd uzun zəngdə demək
+  // olar heç vaxt işə düşmür — qısa transkriptdə isə məhz o vacibdir: 40
+  // sözlük nitqdə "modals: 5000" bir sessiyada mastery-ni tavana qaldırardı.
+  const transcriptWordCount = String(transcript || "").trim().split(/\s+/).filter(Boolean).length;
+  const attemptsCeiling = Math.max(1, Math.min(200, Math.ceil(transcriptWordCount / 5)));
+
+  const conceptAttempts = new Map();
+  for (const row of (Array.isArray(obj.concepts_used) ? obj.concepts_used : [])) {
+    if (!isConceptId(row?.concept)) continue;
+    const n = Math.round(Number(row.attempts));
+    if (!Number.isFinite(n) || n < 1) continue;
+    conceptAttempts.set(row.concept, Math.min(attemptsCeiling, n));
+  }
+  // Səhv tapdığımız, amma modelin "istifadə olunub" siyahısına salmadığı
+  // konseptlər də sayılmalıdır, yoxsa ən zəif mövzu izləyicidə heç görünmür.
+  for (const [concept, errors] of conceptErrors) {
+    conceptAttempts.set(concept, Math.max(conceptAttempts.get(concept) || 0, errors));
+  }
+
+  const conceptStats = [...conceptAttempts.entries()]
+    .map(([concept, attempts]) => ({
+      concept,
+      attempts,
+      errors: Math.min(attempts, conceptErrors.get(concept) || 0),
+    }))
+    .sort((a, b) => b.errors - a.errors || b.attempts - a.attempts)
+    .slice(0, 20);
 
   // Köhnə UI və homework.correction düz siyahı gözləyir — mövzulardan düzəldilir.
   const rawFeedback = errorThemes.length
@@ -3950,6 +4032,9 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     overallScore: Math.round((fluency + grammar + vocabScore) / 3),
     scores: { fluency, grammar, vocabulary: vocabScore },
     errorThemes,
+    // Bu sessiyanın konsept kəsiyi. Analiz sənədində qalır ki, aqreqat pozulsa
+    // və ya sonradan yenidən qurulmalı olsa, mənbə əldə olsun.
+    conceptStats,
     feedback,
     strengths: strList(obj.strengths, 2),
     tips: strList(obj.tips, 3),
@@ -3963,6 +4048,148 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
       correction: feedback,
     },
   };
+}
+
+// ─── Sessiyalar arası aqreqat (users/{uid}/insights/*) ─────────────
+//
+// Bir sessiyanın analizi History-də qalır; ÖYRƏNMƏ isə sessiyalar arasında baş
+// verir. Bu funksiya hər bitmiş analizi üç kiçik sənədə yığır:
+//
+//   insights/grammar    — konsept sayğacları (izləyici cədvəli buradan çıxır)
+//   insights/progress   — lüğət ölçüsü + son 30 sessiyanın seriyası (kiçik,
+//                         proqres otağı MÜTLƏQ bunu oxuyur)
+//   insights/vocabIndex — unikal sözlərin xam siyahısı (böyüyür, YALNIZ server
+//                         oxuyur; client-ə 40KB göndərməmək üçün progress-dən
+//                         ayrılıb)
+//
+// Sənəd sayı qəsdən sabitdir: alt-kolleksiya olsaydı, 30 konsept = 30 yazı və
+// otağı açmaq 30 oxu edərdi. Bu quruluşda analiz başına 3 yazı, otaq açılışı
+// isə 2 oxudur.
+const INSIGHTS_MAX_VOCAB = 6000;
+const INSIGHTS_SERIES_LEN = 30;
+const INSIGHTS_APPLIED_MEMORY = 50;
+
+// Deepgram `filler_words=false` ilə işləyir, amma Whisper fallback-ı dolğu
+// sözləri saxlayır — onlar "öyrənilmiş söz" deyil.
+const VOCAB_FILLER = new Set([
+  "uh", "um", "umm", "uhh", "mm", "mmm", "hmm", "hm", "ah", "eh", "oh", "er", "erm",
+]);
+
+// Unikal söz FORMALARI (lemma deyil). Lemmatizasiya üçün kitabxana lazımdır,
+// pulsuz həll isə "go/goes/going"-i üç söz sayar — ona görə UI-da bu rəqəm
+// "işlətdiyin fərqli sözlər" adlanır, "lüğət ehtiyatı" yox. Şişirdilmiş
+// rəqəmdənsə dürüst etiket seçilib.
+function transcriptVocabulary(transcript) {
+  const out = new Set();
+  const text = String(transcript || "").toLowerCase().replace(/[‘’]/g, "'");
+  for (const raw of text.split(/[^a-z']+/)) {
+    const word = raw.replace(/^'+|'+$/g, "");
+    if (word.length < 2 || VOCAB_FILLER.has(word)) continue;
+    out.add(word);
+  }
+  return out;
+}
+
+// `analysisId` idempotentlik açarıdır. Növbədəki bilet worker çökəndə
+// "pending"-ə qayıdır və analiz TƏKRAR işlənə bilər — qoruma olmasa həmin
+// sessiyanın səhvləri sayğaca iki dəfə düşərdi.
+async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, meta = {}) {
+  if (!uid || !analysisId) return;
+  const base = db.collection("users").doc(uid).collection("insights");
+  const stats = Array.isArray(analysis.conceptStats) ? analysis.conceptStats : [];
+
+  try {
+    // 1) Qrammatika sayğacları — idempotentlik yoxlaması da buradadır, ona görə
+    //    bu tranzaksiya "artıq tətbiq olunub" desə, qalanı da atlanır.
+    const applied = await db.runTransaction(async (tx) => {
+      const ref = base.doc("grammar");
+      const snap = await tx.get(ref);
+      const prev = snap.exists ? (snap.data() || {}) : {};
+      const seen = Array.isArray(prev.appliedIds) ? prev.appliedIds : [];
+      if (seen.includes(analysisId)) return false;
+
+      const concepts = { ...(prev.concepts && typeof prev.concepts === "object" ? prev.concepts : {}) };
+      const now = admin.firestore.Timestamp.now();
+      for (const row of stats) {
+        const cur = concepts[row.concept] || {};
+        concepts[row.concept] = {
+          attempts: (Number(cur.attempts) || 0) + row.attempts,
+          errors: (Number(cur.errors) || 0) + row.errors,
+          sessions: (Number(cur.sessions) || 0) + 1,
+          lastAt: now,
+        };
+      }
+
+      tx.set(ref, {
+        concepts,
+        sessionCount: (Number(prev.sessionCount) || 0) + 1,
+        appliedIds: [analysisId, ...seen].slice(0, INSIGHTS_APPLIED_MEMORY),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      return true;
+    });
+
+    if (!applied) {
+      console.log("[Insights] already applied, skipping:", analysisId);
+      return;
+    }
+
+    // 2) Lüğət — birləşmə (union) olduğu üçün oxu-yaz lazımdır.
+    const words = transcriptVocabulary(transcript);
+    let newWords = 0;
+    let totalWords = 0;
+    await db.runTransaction(async (tx) => {
+      const ref = base.doc("vocabIndex");
+      const snap = await tx.get(ref);
+      const known = new Set(Array.isArray(snap.data()?.words) ? snap.data().words : []);
+      const before = known.size;
+      for (const w of words) {
+        if (known.size >= INSIGHTS_MAX_VOCAB) break;
+        known.add(w);
+      }
+      newWords = known.size - before;
+      totalWords = known.size;
+      tx.set(ref, {
+        words: [...known],
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+
+    // 3) Otağın oxuduğu kiçik sənəd. Seriya massivdir, ona görə vaxt
+    //    serverTimestamp ola bilmir (sentinel massiv içində işləmir) — ms.
+    const pace = analysis.speakingPace || {};
+    const scores = analysis.scores || {};
+    const entry = {
+      at: Date.now(),
+      wpm: Number(pace.wpm) || 0,
+      seconds: Number(meta.seconds) || 0,
+      overall: Number(analysis.overallScore) || 0,
+      fluency: Number(scores.fluency) || 0,
+      grammar: Number(scores.grammar) || 0,
+      vocabulary: Number(scores.vocabulary) || 0,
+      source: meta.source || "call",
+    };
+
+    await db.runTransaction(async (tx) => {
+      const ref = base.doc("progress");
+      const snap = await tx.get(ref);
+      const prev = snap.exists ? (snap.data() || {}) : {};
+      const series = Array.isArray(prev.series) ? prev.series : [];
+      tx.set(ref, {
+        wordCount: totalWords,
+        lastNewWords: newWords,
+        // Yeni ən yenidir: otaq massivi tərsinə çevirmədən oxuyur.
+        series: [entry, ...series].slice(0, INSIGHTS_SERIES_LEN),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+
+    console.log("[Insights] updated:", uid, "concepts:", stats.length, "new words:", newWords);
+  } catch (e) {
+    // Aqreqat ikinci dərəcəlidir — analizin özü onsuz da yazılıb. Uğursuzluq
+    // istifadəçinin hesabatını əlindən almamalıdır.
+    console.warn("[Insights] update failed:", e.message);
+  }
 }
 
 // Groq chat with strict JSON, in-call retries (max 3) and a schema→json_object
@@ -4556,6 +4783,14 @@ exports.processAnalysisQueue = onSchedule({
         durationSeconds: ticket.callSeconds || ticket.audioSeconds || 0,
         analyzedSeconds: analyzeSeconds,
       }, { merge: true });
+      // Sessiyalar arası sayğaclar. Bileti "done" etməzdən ƏVVƏL çağırılır:
+      // aradakı çökmə biletin yenidən işlənməsinə səbəb olur, aqreqat isə
+      // analiz id-si ilə idempotentdir, ona görə ikiqat sayma baş vermir.
+      await updateLearnerInsights(db, ticket.uid, ticket.id, analysis, transcript, {
+        seconds: ticket.callSeconds || ticket.audioSeconds || 0,
+        source: "call",
+      });
+
       await ticket.ref.update({
         status: "done",
         finishedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -5851,6 +6086,13 @@ exports.analyzeAiSession = onRequest(
         analyzedSeconds: spokenSeconds,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
+
+      // AInur sessiyası da eyni sayğaclara yazır — proqres otağı üçün insan
+      // zəngi ilə AI praktikası arasında fərq yoxdur, ikisi də real nitqdir.
+      await updateLearnerInsights(db, uid, analysisId, analysis, studentText, {
+        seconds: spokenSeconds,
+        source: "ainur",
+      });
 
       await sessionRef.set({ status: "analyzed", analysisId }, { merge: true });
       recordAiUsage(uid, { sessions: 1 });

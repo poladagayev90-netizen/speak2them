@@ -63,8 +63,20 @@ export function toAnalysisView(analysis) {
     }))
     .filter((t) => t.title && t.items.length > 0);
 
+  // Bu sessiyanın konsept kəsiyi ({concept, attempts, errors}). Aqreqat
+  // users/{uid}/insights/grammar-dadır — bu sahə yalnız "bu zəngdə nə oldu"
+  // sualına cavab verir. Köhnə analizlərdə yoxdur, UI şərti göstərir.
+  const conceptStats = arr(analysis.conceptStats)
+    .filter((c) => c && typeof c.concept === 'string' && Number(c.attempts) > 0)
+    .map((c) => ({
+      concept: c.concept,
+      attempts: Number(c.attempts) || 0,
+      errors: Number(c.errors) || 0,
+    }));
+
   return {
     errorThemes,
+    conceptStats,
     reportMarkdown: typeof analysis.reportMarkdown === 'string' ? analysis.reportMarkdown : '',
     homework: homework && (homework.multipleChoice.length || homework.wordOrder.length || homework.correction.length)
       ? homework

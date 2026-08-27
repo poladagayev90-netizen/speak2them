@@ -109,6 +109,21 @@ service cloud.firestore {
         allow read: if isOwnDoc(userId);
         allow write: if false;
       }
+
+      // Sessiyalar arası öyrənmə aqreqatı (grammar / progress / vocabIndex).
+      // YALNIZ updateLearnerInsights (Admin SDK) yazır — client yaza bilsəydi,
+      // istifadəçi öz mastery faizini özü qura bilərdi və ondan törəyən hər
+      // rəqəm mənasını itirərdi.
+      //
+      // Oxu: sahibi + bağlı müəllim. Müəllim şərti callAnalysis-dəki ilə
+      // eynidir (şagird razılığı claimTeacherCode-da alınıb), amma burada
+      // əlavə get() ucuzdur: istifadəçi id-si onsuz da yoldadır.
+      match /insights/{docId} {
+        allow read: if isOwnDoc(userId)
+          || (isSignedIn()
+              && get(/databases/$(database)/documents/users/$(userId)).data.teacherId == request.auth.uid);
+        allow write: if false;
+      }
     }
 
     // İstifadəçi şikayətləri (Play UGC tələbi). Client yalnız ÖZ adından
