@@ -57,17 +57,14 @@ export default function UserCard({ user, onChat }) {
           siyahısıdır — cavab görünəndən sonra istənilən şey adamı zəngə
           aparmalıdır, profil oxumağa yox. Offline adama zəng düyməsi
           göstərilmir: onsuz da cavabsız qalacaq. */}
-      <div style={{ display: 'flex', gap: 'var(--s-2)' }}>
+      <div className="user-card-actions">
         {/* Only when genuinely free. A busy person is still "online", but
             startCall would reject them anyway — offering a button that is
             guaranteed to fail is worse than not offering one. */}
         {presence === 'online' && (
           <button
             className="btn-chat"
-            style={{
-              flex: 1, background: 'var(--accent)', color: 'var(--text-on-accent)',
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             onClick={() => navigate(`/chat/${user.uid || user.id}`, { state: { autoCall: true } })}
           >
             <Phone size={15} strokeWidth={2} aria-hidden="true" /> Call
@@ -75,7 +72,7 @@ export default function UserCard({ user, onChat }) {
         )}
         <button
           className="btn-chat"
-          style={{ flex: 1 }}
+          style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
           onClick={() => navigate(`/user/${user.uid || user.id}`)}
         >
           View profile

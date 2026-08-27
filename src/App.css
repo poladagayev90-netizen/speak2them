@@ -336,6 +336,33 @@ body {
   align-items: center;
   gap: 12px;
   transition: border-color 0.2s;
+  /* The card was one row: avatar | info | one button. A second button (Call)
+     turned the tail into two nowrap buttons demanding ~210px, which on a 360px
+     phone left the info column about 70px — the name wrapped to two lines, the
+     level to three, and the text ran underneath the buttons. Wrapping plus the
+     flex-basis below drops the actions onto their own row instead. */
+  flex-wrap: wrap;
+}
+
+.user-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Only where the room actually runs out. Above this the buttons stay at the
+   tail of the row at their natural size, which is what the card always did and
+   still reads best; forcing the full-width row everywhere gave a 600px-wide
+   "Call" button on a laptop. */
+@media (max-width: 599px) {
+  .user-card-actions {
+    flex-basis: 100%;
+  }
+  .user-card-actions .btn-chat {
+    /* Equal halves: two buttons of different label lengths sharing a row look
+       accidental when one is wider than the other. */
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .user-card:hover {
