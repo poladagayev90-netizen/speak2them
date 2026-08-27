@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { Trophy } from 'lucide-react';
+import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import HomeRanking from '../components/HomeRanking';
 
@@ -52,7 +54,7 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
               background: tab === 'weekly'
                 ? 'var(--accent)'
                 : 'var(--bg-card)',
-              color: tab === 'weekly' ? '#fff' : 'var(--text-secondary)',
+              color: tab === 'weekly' ? 'var(--text-on-accent)' : 'var(--text-secondary)',
             }}
           >
             {'This week'}
@@ -66,7 +68,7 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
               background: tab === 'all'
                 ? 'var(--accent)'
                 : 'var(--bg-card)',
-              color: tab === 'all' ? '#fff' : 'var(--text-secondary)',
+              color: tab === 'all' ? 'var(--text-on-accent)' : 'var(--text-secondary)',
             }}
           >
             {'All time'}
@@ -82,12 +84,11 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
         )}
         {loading ? (
           <div className="empty-state">
-            <div className="empty-icon"></div>
             <p>Loading the leaderboard...</p>
           </div>
         ) : allUsers.length === 0 ? (
           <div className="empty-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
-            <div className="empty-icon" style={{ fontSize: '48px', marginBottom: '16px' }}></div>
+            <Trophy className="empty-icon" size={44} strokeWidth={1.5} aria-hidden="true" />
             <p style={{ color: 'var(--text-secondary)' }}>{'Nobody has practised yet. Be the first.'}</p>
           </div>
         ) : (

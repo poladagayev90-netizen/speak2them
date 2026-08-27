@@ -33,6 +33,7 @@ import CallTabooStage from '../components/CallTabooStage';
 import CallQuestionStage from '../components/CallQuestionStage';
 import CallDebateStage from '../components/CallDebateStage';
 import CallGuessStage from '../components/CallGuessStage';
+import AvatarImage from '../components/ui/AvatarImage';
 import { tabooWords } from '../data/tabooWords';
 import { debateTopics } from '../data/debateTopics';
 import { guessQuestions } from '../data/guessQuestions';
@@ -1072,7 +1073,8 @@ export default function Chat({ user }) {
       {(inCall || callStatus === 'calling') && (
         <div className="fullscreen-call">
           <div className="call-avatar-big">
-            {peer?.photo ? <img src={peer.photo} alt={peer.name} /> : peer?.name?.charAt(0).toUpperCase()}
+            {peer?.name?.charAt(0).toUpperCase()}
+            <AvatarImage src={peer?.photo} />
           </div>
           <h2 className="call-peer-name">
             {peer?.name}
@@ -1465,10 +1467,8 @@ export default function Chat({ user }) {
         <button className="btn-back" onClick={() => { endCall(); navigate('/'); }}>← Back</button>
         <div className="chat-peer-info">
           <div className="chat-avatar">
-            {peer?.photo
-              ? <img src={peer.photo} alt={peer.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-              : peer?.name?.charAt(0).toUpperCase()
-            }
+            {peer?.name?.charAt(0).toUpperCase()}
+            <AvatarImage src={peer?.photo} />
           </div>
           <div>
             <h3 style={{ display: 'flex', alignItems: 'center' }}>

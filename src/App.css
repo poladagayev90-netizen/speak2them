@@ -347,6 +347,7 @@ body {
    A fixed circle + object-fit:cover crops any photo cleanly and centers the
    fallback initial. */
 .user-avatar {
+  position: relative;
   width: 52px;
   height: 52px;
   flex-shrink: 0;
@@ -461,6 +462,7 @@ body {
 }
 
 .chat-avatar {
+  position: relative;
   width: 40px;
   height: 40px;
   background: var(--accent);
@@ -899,6 +901,7 @@ body {
    the thing that gave -- it collapsed from a 120px circle into a flat violet
    ellipse. The same applies to the name and the status line under it. */
 .call-avatar-big {
+  position: relative;
   width: 120px;
   height: 120px;
   flex-shrink: 0;

@@ -1,5 +1,6 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
+import AvatarImage from './ui/AvatarImage';
 import { useNavigate } from 'react-router-dom';
 import { Phone, Clock, Flame, Star } from 'lucide-react';
 import { getPresence } from '../utils/presence';
@@ -19,10 +20,8 @@ export default function UserCard({ user, onChat }) {
           boxShadow: user.isPremium ? '0 0 12px var(--warning-bg)' : undefined,
           cursor: 'pointer'
         }}>
-        {user.photo
-          ? <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-          : user.name?.charAt(0).toUpperCase()
-        }
+        {user.name?.charAt(0).toUpperCase()}
+        <AvatarImage src={user.photo} />
       </div>
       <div className="user-info">
         <h3 

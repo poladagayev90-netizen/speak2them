@@ -1,6 +1,7 @@
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
 import TutorBadge from './TutorBadge';
+import AvatarImage from './ui/AvatarImage';
 import { useNavigate } from 'react-router-dom';
 
 export default function RankingCard({ user, rank, isCurrentUser = false, displayMinutes }) {
@@ -53,10 +54,8 @@ export default function RankingCard({ user, rank, isCurrentUser = false, display
         {getMedalEmoji(rank)}
       </div>
       <div className="user-avatar" style={{ width: '40px', height: '40px', minWidth: '40px' }}>
-        {user.photo
-          ? <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-          : user.name?.charAt(0).toUpperCase()
-        }
+        {user.name?.charAt(0).toUpperCase()}
+        <AvatarImage src={user.photo} />
       </div>
       <div style={{ flex: 1 }}>
         <p style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center' }}>

@@ -24,13 +24,7 @@
   backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
-}
-
-.ranking-you-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  gap: 12px;
 }
 
 .ranking-you-label {
@@ -60,12 +54,14 @@
   font-size: 12px;
   color: var(--text-primary);
   background: var(--bg-card);
+  border: 1px solid var(--border);
   padding: 4px 10px;
   border-radius: 20px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 600;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .streak-pill {
@@ -79,18 +75,21 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: 12px;
-  margin: 40px 0 20px;
+  gap: 10px;
+  /* Was 40px of top margin to clear a crown that no longer floats free, and a
+     240px well the columns never filled. */
+  margin: 12px 0 8px;
   padding: 0 10px;
-  height: 240px;
 }
 
 .ranking-podium-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   flex: 1;
-  max-width: 110px;
+  min-width: 0;
+  max-width: 118px;
   position: relative;
   animation: podiumRise 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
@@ -105,53 +104,62 @@
 }
 
 .ranking-podium-avatar {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   border: 3px solid var(--border);
-  background: var(--bg-card);
+  background: var(--accent-soft);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
+  font-weight: 800;
   color: var(--text-primary);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  box-shadow: var(--glass-lift);
   position: relative;
   z-index: 2;
 }
 
+.ranking-podium-initial {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+
+/* Absolutely positioned, so the photo covers the initial when it loads and is
+   simply absent when it does not. Previously the <img> REPLACED the initial,
+   so a dead photo URL left the browser rendering its alt text -- the winner's
+   whole name spilling out of a 74px circle. */
 .ranking-podium-avatar img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.rank-1 .ranking-podium-avatar { 
-  border-color: var(--gold); 
-  width: 80px; 
-  height: 80px; 
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+.rank-1 .ranking-podium-avatar {
+  border-color: var(--gold);
+  width: 74px;
+  height: 74px;
 }
+
+.rank-1 .ranking-podium-initial { font-size: 27px; }
 .rank-2 .ranking-podium-avatar { border-color: var(--silver); }
 .rank-3 .ranking-podium-avatar { border-color: var(--bronze); }
 
-/* Crown for rank 1 */
-.rank-1::before {
-  content: '👑';
+/* Crown for rank 1. It used to be an emoji positioned 110px above the SLOT,
+   which put it on top of the This week / All time tabs rather than on the
+   winner. It is a lucide icon anchored to the avatar now. */
+.ranking-crown {
   position: absolute;
-  top: -110px;
-  font-size: 32px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-  animation: floatCrown 2s ease-in-out infinite;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold);
   z-index: 4;
-}
-
-@keyframes floatCrown {
-  0%, 100% { transform: translateY(0) rotate(-5deg); }
-  50% { transform: translateY(-8px) rotate(5deg); }
 }
 
 .ranking-podium-name {
@@ -159,23 +167,36 @@
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 100%;
+  max-width: 100%;
 }
 
-.rank-1 .ranking-podium-name { font-size: 15px; color: var(--gold); }
+.rank-1 .ranking-podium-name { font-size: 14px; }
 
+/* THE reason the numbers did not show: this chip was a flat rgba(0,0,0,0.4),
+   which is a readable dark pill on a dark page and a mid-grey smear on a light
+   one -- measured at 3.0:1 against its own text in light, 11.3:1 in dark.
+   Card + border works in both, and the figure now carries the weight, because
+   the minutes are the entire point of a leaderboard. */
 .ranking-podium-minutes {
   font-size: 11px;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-weight: 600;
-  background: rgba(0,0,0,0.4);
-  padding: 2px 8px;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.ranking-podium-minutes strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .ranking-podium-bar {
@@ -184,19 +205,24 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 12px;
-  font-size: 28px;
-  box-shadow: inset 0 2px 15px rgba(255,255,255,0.3), 0 4px 10px rgba(0,0,0,0.5);
+  padding-top: 10px;
+  /* The inset white bloom and the 0 4px 10px black drop were dark-mode gloss
+     that reads as grime on a light page -- and the app has exactly one shadow. */
+  box-shadow: var(--glass-lift);
   position: relative;
   overflow: hidden;
 }
 
-.ranking-podium-bar::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
-  pointer-events: none;
+/* The placing, finally stated: the bar was an empty slab of colour holding an
+   empty <span> left behind when the medal emoji were removed, so the podium
+   never actually said which step was which.
+   --text-on-accent is right for all three: the bars are steps of the accent
+   ramp, so the ink that works on the accent works on each of them. */
+.ranking-podium-place {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-on-accent);
+  line-height: 1;
 }
 
 /* The three bars are a lightness ramp of the one purple -- first place is the
@@ -205,10 +231,6 @@
 .rank-1 .ranking-podium-bar { background: var(--gold); }
 .rank-2 .ranking-podium-bar { background: var(--silver); }
 .rank-3 .ranking-podium-bar { background: var(--bronze); }
-
-.ranking-podium-bar span {
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
-}
 
 .empty-state {
   display: flex;
@@ -221,8 +243,6 @@
 }
 
 .empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
-  opacity: 0.4;
-  filter: grayscale(1);
+  margin-bottom: 16px;
+  color: var(--text-muted);
 }
