@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Tint Android applies to the (alpha-only) notification icon and app
-         name in the tray — brand purple — matches --accent in dark, the theme the app ships in. -->
+         name in the tray — brand purple — matches the app's accent token.
+         NOTE: an XML comment may not contain a double hyphen, so that CSS
+         variable's name cannot be written literally here. Doing so broke
+         every Android build from c1f028b until this was fixed. -->
     <color name="notification_accent">#B6A6FF</color>
 </resources>
