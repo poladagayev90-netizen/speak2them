@@ -7,7 +7,12 @@ import { getPresence } from '../utils/presence';
 
 export default function UserCard({ user, onChat }) {
   const navigate = useNavigate();
-  const isOnline = getPresence(user) !== 'offline';
+  // getPresence has always returned THREE states, and .online-badge.busy has
+  // always existed in App.css — but this card collapsed the result to a boolean,
+  // so somebody in the middle of a call was advertised as "Online". They then
+  // got called, and the caller only found out from an alert after the ring
+  // failed. The dead CSS class was the giveaway.
+  const presence = getPresence(user);
 
   return (
     <div className="user-card" style={{
@@ -44,8 +49,8 @@ export default function UserCard({ user, onChat }) {
           {user.streak > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Flame size={11} strokeWidth={2} />{user.streak}</span>}
           {user.ratingCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Star size={11} strokeWidth={2} />{(user.rating / user.ratingCount).toFixed(1)}</span>}
         </div>
-        <span className={`online-badge ${isOnline ? 'online' : 'offline'}`}>
-          {isOnline ? 'Online' : 'Offline'}
+        <span className={`online-badge ${presence}`}>
+          {presence === 'busy' ? 'In a call' : presence === 'online' ? 'Online' : 'Offline'}
         </span>
       </div>
       {/* Zəng birinci, profil ikinci. Bu siyahı "indi kim danışa bilər"
@@ -53,7 +58,10 @@ export default function UserCard({ user, onChat }) {
           aparmalıdır, profil oxumağa yox. Offline adama zəng düyməsi
           göstərilmir: onsuz da cavabsız qalacaq. */}
       <div style={{ display: 'flex', gap: 'var(--s-2)' }}>
-        {isOnline && (
+        {/* Only when genuinely free. A busy person is still "online", but
+            startCall would reject them anyway — offering a button that is
+            guaranteed to fail is worse than not offering one. */}
+        {presence === 'online' && (
           <button
             className="btn-chat"
             style={{

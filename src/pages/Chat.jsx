@@ -673,6 +673,16 @@ export default function Chat({ user }) {
         createdAt: serverTimestamp(),
       });
           
+      // Busy from the first ring, not from the moment they answer. joinCall
+      // sets this too, but only once the call connects — so for the ~30s a
+      // phone is ringing the caller was still advertised as free, and a third
+      // person could ring THEM. The flag also stops the App.js heartbeat from
+      // writing "online" back over this.
+      setInCallFlag(true);
+      try {
+        await updateDoc(doc(db, 'users', user.uid), { status: 'busy' });
+      } catch (e) { /* presence is best-effort; never fail a call over it */ }
+
       callTimeoutRef.current = setTimeout(() => {
         if (!joinedRef.current) {
           setCallStatus('rejected');
@@ -699,6 +709,14 @@ export default function Chat({ user }) {
         try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
         localTrackRef.current = null;
       }
+      // A call that never started must not leave the caller marked busy — they
+      // would stop receiving calls and have no way to tell why. (The App.js
+      // heartbeat would repair it within a minute because isInCall() is back to
+      // false, but a minute of being unreachable is still a minute.)
+      setInCallFlag(false);
+      try {
+        await updateDoc(doc(db, 'users', user.uid), { status: 'online' });
+      } catch (e) { /* best-effort, as above */ }
       setCallStatus('error');
     }
   };

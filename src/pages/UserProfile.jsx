@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 import TutorBadge from '../components/TutorBadge';
+import { getPresence } from '../utils/presence';
 import { MessageCircle, Phone } from 'lucide-react';
 
 export default function UserProfile({ user: currentUser }) {
@@ -100,7 +101,13 @@ export default function UserProfile({ user: currentUser }) {
   };
   
   const avgRating = stats.ratingCount > 0 ? (stats.rating / stats.ratingCount).toFixed(1) : '—';
-  const isOnline = profileUser.online;
+  // `profileUser.online` is a raw flag: it is set on sign-in and only cleared by
+  // an explicit goOffline, so a crashed tab leaves it true for ever — and it
+  // cannot express "busy" at all, so this page showed a green dot for someone
+  // who was mid-call. getPresence applies the heartbeat window AND the busy
+  // state. The doc is on a live snapshot, so this now updates during a call.
+  const presence = getPresence(profileUser);
+  const isOnline = presence !== 'offline';
 
   return (
     <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
@@ -120,7 +127,10 @@ export default function UserProfile({ user: currentUser }) {
           </div>
           {/* Online Flag Indicator */}
           {isOnline && (
-            <div style={{ position: 'absolute', bottom: '0', right: '0', width: '22px', height: '22px', borderRadius: '50%', background: 'var(--success)', border: '3px solid var(--bg-primary)' }}></div>
+            <div
+              title={presence === 'busy' ? 'In a call' : 'Online'}
+              style={{ position: 'absolute', bottom: '0', right: '0', width: '22px', height: '22px', borderRadius: '50%', background: presence === 'busy' ? 'var(--warning)' : 'var(--success)', border: '3px solid var(--bg-primary)' }}
+            ></div>
           )}
         </div>
 
@@ -129,6 +139,11 @@ export default function UserProfile({ user: currentUser }) {
           {name}
           {isTutor && <TutorBadge />}
         </h2>
+        {isOnline && (
+          <p className={`online-badge ${presence}`} style={{ margin: '0 0 4px' }}>
+            {presence === 'busy' ? 'In a call' : 'Online'}
+          </p>
+        )}
 
         {/* Tutor başlığı — nişana toxunan adam kimlə üzləşdiyini burada görür. */}
         {isTutor && (
@@ -164,7 +179,7 @@ export default function UserProfile({ user: currentUser }) {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
             {/* Zəng birinci: bu səhifəyə gələn adam adətən danışmaq üçün
                 gəlir, yazışmaq üçün yox. */}
-            {!isBlocked && (
+            {!isBlocked && presence === 'online' && (
               <button
                 onClick={() => navigate(`/chat/${uid}`, { state: { autoCall: true } })}
                 style={{ background: 'var(--accent)', border: '1px solid var(--accent)', color: 'var(--text-on-accent)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
