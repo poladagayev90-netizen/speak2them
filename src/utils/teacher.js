@@ -140,6 +140,21 @@ export function teacherSetMatch(studentA, studentB, slotId) {
   return callTeacherFn('teacherSetMatch', { studentA, studentB, slotId }, SET_MATCH_ERROR_TEXT);
 }
 
+// Səhv qurulmuş cütü sökür. teacherSetMatch məşğul şagirdi rədd etdiyi üçün
+// səhvin üstündən düzgün cütü yazmaq mümkün deyil — əvvəlcə bu çağırılır.
+export const CANCEL_MATCH_ERROR_TEXT = {
+  'not-in-slot': 'That student is not in this block any more.',
+  'not-matched': 'That student has no confirmed call in this block.',
+  'not-your-student': 'Neither of them is on your list.',
+  'invalid-slot': 'That block is not valid.',
+  'invalid-student': 'Pick a student first.',
+  unauthorized: 'Your session has expired. Please sign in again.',
+};
+
+export function cancelSlotMatch(slotId, studentUid) {
+  return callTeacherFn('cancelSlotMatch', { slotId, studentUid }, CANCEL_MATCH_ERROR_TEXT);
+}
+
 // ── Tutor profili və təsdiqi ────────────────────────────────────
 // Siyahı SERVERDƏKİ TUTOR_SPECIALTIES ilə eyni olmalıdır — server siyahıdan
 // kənar dəyərləri sükutla atır, yəni burada əlavə edilən yeni ixtisas serverdə

@@ -108,6 +108,11 @@ const STRINGS = {
     slot_change_declined: () => ({ title: "Vaxt dəyişikliyi baş tutmadı", body: "Partnyorunuz üçün bu vaxt uyğun deyil — köhnə vaxt qüvvədə qalır." }),
     slot_reminder: (v) => ({ title: "⏰ 10 dəqiqəyə praktika", body: `${v.time} — zənginiz başlamaq üzrədir.` }),
     slot_start: () => ({ title: "🎙️ Praktika vaxtıdır", body: "Partnyorunuz sizi gözləyir — tətbiqi açın." }),
+    // Eşləşmədən sonra həmin günün qalan blokları buraxılır — bir gündə iki
+    // yerdə gözlənilməyəsən deyə. Bunu bildirmək VACİBDİR: bloklar lövhədən
+    // özbaşına yox olsaydı, istifadəçi seçiminin itdiyini düşünərdi.
+    slot_day_cleared: (v) => ({ title: "Bugünkü digər bloklarınız boşaldıldı", body: `Zənginiz ${v.time} vaxtına təsdiqləndi, ona görə bugünkü qalan bloklarınız axtarışdan çıxarıldı. Sabahkı seçimləriniz olduğu kimi qalır.` }),
+    slot_match_cancelled: (v, f) => ({ title: "Zənginiz ləğv edildi", body: `${v.byName || f.teacher} ${v.time} zəngini ləğv etdi. Blokda qalırsınız — yeni partnyor tapıla bilər.` }),
     slot_missed: (v) => ({ title: "🔕 Praktika keçmədi", body: `${v.time} zənginə heç kim qoşulmadı. Növbəti dəfə vaxtında qoşulmağa çalış!` }),
     session_reminder: (v) => ({ title: "Axşam sessiyasına az qaldı! 🌙", body: `Sessiya ${v.time}-da başlayır — günün mövzusuna bax və hazır ol.` }),
     search_ping: (v, f) => ({ title: "Kimsə praktika axtarır 🎙️", body: `${v.searcherName || f.someone} partnyor gözləyir — indi qoşul!` }),
@@ -137,6 +142,8 @@ const STRINGS = {
     slot_change_declined: () => ({ title: "Saat değişikliği olmadı", body: "Partneriniz için bu saat uygun değil — eski saat geçerli kalıyor." }),
     slot_reminder: (v) => ({ title: "⏰ Pratiğe 10 dakika", body: `${v.time} — görüşmeniz başlamak üzere.` }),
     slot_start: () => ({ title: "🎙️ Pratik zamanı", body: "Partneriniz sizi bekliyor — uygulamayı açın." }),
+    slot_day_cleared: (v) => ({ title: "Bugünkü diğer bloklarınız boşaltıldı", body: `Görüşmeniz ${v.time} için onaylandı, bu yüzden bugünkü diğer bloklarınız eşleşmeden çıkarıldı. Yarınki seçimleriniz olduğu gibi kalıyor.` }),
+    slot_match_cancelled: (v, f) => ({ title: "Görüşmeniz iptal edildi", body: `${v.byName || f.teacher} ${v.time} görüşmesini iptal etti. Blokta kalıyorsunuz — yeni bir partner bulunabilir.` }),
     slot_missed: (v) => ({ title: "🔕 Pratik gerçekleşmedi", body: `${v.time} görüşmesine kimse katılmadı. Bir dahaki sefere zamanında katılmayı dene!` }),
     session_reminder: (v) => ({ title: "Akşam seansına az kaldı! 🌙", body: `Seans ${v.time} itibarıyla başlıyor — günün konusuna bak ve hazır ol.` }),
     search_ping: (v, f) => ({ title: "Biri pratik arıyor 🎙️", body: `${v.searcherName || f.someone} partner bekliyor — hemen katıl!` }),
@@ -166,6 +173,8 @@ const STRINGS = {
     slot_change_declined: () => ({ title: "The time change didn't happen", body: "That time doesn't work for your partner — the original time stands." }),
     slot_reminder: (v) => ({ title: "⏰ Practice in 10 minutes", body: `${v.time} — your call is about to start.` }),
     slot_start: () => ({ title: "🎙️ Time to practise", body: "Your partner is waiting — open the app." }),
+    slot_day_cleared: (v) => ({ title: "Your other blocks today were released", body: `Your call is confirmed for ${v.time}, so the rest of today's blocks were taken out of matching. Your choices for the other days are untouched.` }),
+    slot_match_cancelled: (v, f) => ({ title: "Your call was cancelled", body: `${v.byName || f.teacher} cancelled the ${v.time} call. You are still in that block — a new partner can be found.` }),
     slot_missed: (v) => ({ title: "🔕 The practice didn't happen", body: `Nobody joined your call (${v.time}). Try to be there on time next round!` }),
     session_reminder: (v) => ({ title: "The evening session starts soon! 🌙", body: `The session starts at ${v.time} — check today's topic and get ready.` }),
     search_ping: (v, f) => ({ title: "Someone is looking for practice 🎙️", body: `${v.searcherName || f.someone} is waiting for a partner — join now!` }),

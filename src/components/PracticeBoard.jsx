@@ -448,6 +448,7 @@ export default function PracticeBoard({ mine, openSignal = 0, user = null }) {
           date={inspect.date}
           hour={inspect.hour}
           onClose={() => setInspect(null)}
+          canCancel={isAdmin}
         />
       )}
     </div>

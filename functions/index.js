@@ -2113,6 +2113,81 @@ function slotMatchPush(startMs, peerName, myRank, peerRank) {
 // pushText.slotTimeLabel(), which sendPushToUser calls with the reader's own
 // language and timezone; callers pass `vars.at` (an absolute ms timestamp).
 
+// Eşləşəndən SONRA həmin günün qalan bloklarını buraxır.
+//
+// Problem: `upcomingCall` istifadəçi sənədində TƏK sahədir, amma bir nəfər
+// istədiyi qədər bloka yazıla bilir. Beş bloka yazılan şagird beş blokda da
+// "waiting" qalırdı, yəni HƏR birində yenidən tutula bilirdi: ikinci eşləşmə
+// birincinin upcomingCall-unun üstünə səssizcə minir, birinci blokun member
+// sənədi isə "matched" qalır — şagird iki yerdə gözlənilir, birində görünür.
+// teacherSetMatch bu vəziyyəti onsuz da 409 ilə rədd edirdi; avtomatik yolda
+// isə heç bir yoxlama yox idi. Səhv cütləşmələrin kökü budur.
+//
+// Niyə YALNIZ həmin gün: bir gündə iki fərqli saatda danışmaq real ssenaridir
+// deyil — bir zəngi olan adam həmin günün qalan saatlarında artıq gözlənilməz.
+// Sabahkı və o biri günlərin seçimlərinə TOXUNULMUR.
+//
+// Niyə yalnız "waiting" sətirlər: "matched" bir sətri silmək BAŞQA birinin
+// randevusunu dağıdardı. Belə sətir varsa (köhnə məlumatda ikiqat rezervasiya
+// qalıbsa) ona dəymirik — orada qərar insana aiddir.
+//
+// Tranzaksiyadan KƏNARDA, commit-dən sonra işləyir: hər blok üçün ayrı-ayrı
+// oxu lazımdır və hamısını bir tranzaksiyaya yığmaq eşləşmənin özünü blokun
+// üzv sayına görə sındırardı. Ən pis halda burada bir blok buraxılmamış qalır
+// — bu, əvvəlki davranışdır, yəni geriyə doğru təhlükəsizdir.
+async function releaseOtherSlotsSameDay(db, uid, keepSlotId) {
+  const keep = parseSlotId(keepSlotId);
+  if (!keep) return [];
+
+  const uSnap = await db.collection("users").doc(uid).get().catch(() => null);
+  if (!uSnap || !uSnap.exists) return [];
+  const ids = (uSnap.data() || {}).practiceSlotIds || [];
+
+  const targets = ids.filter((id) => {
+    if (id === keepSlotId) return false;
+    const p = parseSlotId(id);
+    return !!p && p.date === keep.date && p.endMs > Date.now();
+  });
+
+  const released = [];
+  for (const slotId of targets) {
+    try {
+      const done = await db.runTransaction(async (tx) => {
+        const slotRef = db.collection("practiceSlots").doc(slotId);
+        const membersRef = slotRef.collection("members");
+        const snap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+        const members = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+        const mine = members.find((m) => m.id === uid);
+        if (!mine || mine.status !== "waiting") return false;
+
+        tx.delete(membersRef.doc(uid));
+        tx.set(db.collection("users").doc(uid), {
+          practiceSlotIds: admin.firestore.FieldValue.arrayRemove(slotId),
+        }, { merge: true });
+
+        // Sayğaclar qalan üzvlərdən yenidən hesablanır (leavePracticeSlot ilə
+        // eyni pattern) — increment zənciri sürüşsə də sənəd özünü bərpa edir.
+        let waitingCount = 0;
+        let matchedCount = 0;
+        for (const m of members) {
+          if (m.id === uid) continue;
+          if (m.status === "waiting") waitingCount += 1;
+          else if (m.status === "matched") matchedCount += 1;
+        }
+        tx.set(slotRef, {
+          waitingCount, matchedCount,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+        return true;
+      });
+      if (done) released.push(slotId);
+    } catch (e) {
+      console.warn("[releaseOtherSlotsSameDay]", slotId, e.message);
+    }
+  }
+  return released;
+}
+
 exports.joinPracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -2155,6 +2230,21 @@ exports.joinPracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (
         sendPushToUser(db, uid, slotMatchPush(slot.startMs, result.partnerName, myRank, peerRank)),
         sendPushToUser(db, result.partnerId, slotMatchPush(slot.startMs, me.name, peerRank, myRank)),
       ]).catch(() => null);
+
+      // Hər iki tərəf üçün həmin günün qalan blokları buraxılır. Bloklar
+      // lövhədən səssizcə yox olmasın deyə buraxılan tərəfə ayrıca bildiriş
+      // gedir — yalnız HƏQİQƏTƏN nəsə buraxılıbsa.
+      for (const who of [uid, result.partnerId]) {
+        const freed = await releaseOtherSlotsSameDay(db, who, slot.slotId);
+        if (freed.length > 0) {
+          await sendPushToUser(db, who, {
+            key: "slot_day_cleared",
+            vars: { at: slot.startMs },
+            type: "slot_day_cleared",
+            url: "/",
+          }).catch(() => null);
+        }
+      }
     } else if (!result.already) {
       // Tək qaldıq — həmin gün başqa blokda tək gözləyənlərə xəbər ver.
       await nudgeLoneWaiters(db, slot, uid);
@@ -2556,6 +2646,123 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
 // phones a teacher-set call is indistinguishable from a self-booked one and
 // every downstream path (reminder, no-show janitor, leave, slot change) keeps
 // working with no special case.
+// Səhv qurulmuş cütü sökür — müəllim və ya admin üçün.
+//
+// Buna ehtiyac teacherSetMatch-in ÖZ qorumasından doğur: hər iki şagird boş
+// olmalıdır, yoxsa 409 "student-a-busy". Yəni səhv cüt yarananda müəllim onun
+// üstündən düzgün cütü YAZA BİLMİRDİ — əvvəlcə sökmək lazımdır, sökmək üçünsə
+// heç bir yol yox idi. Bu funksiya həmin boşluğu bağlayır.
+//
+// Nə edir: hər ikisini "waiting"-ə qaytarır, upcomingCall-larını silir, zəng
+// sənədini ləğv edir. Blokdan ÇIXARMIR — şagird həmin saatda boş qalmaq
+// istəyir, sadəcə bu partnyorla yox. Avtomatik rematch QƏSDƏN edilmir:
+// leavePracticeSlot azad olanı dərhal başqası ilə cütləşdirir, burada isə
+// niyyət məhz "bu cüt olmasın"dır — dərhal yeni cüt qurmaq müəllimin düzgün
+// cütü təyin etməsinə mane olardı.
+//
+// İcazə: admin hər cütü söküb bilər; müəllim isə cütdə ƏN AZI BİR şagirdi
+// ona bağlıdırsa. Qarşı tərəf zərər görmür — blokda qalır və yenidən
+// eşləşə bilər.
+exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const callerUid = decoded.uid;
+  const { slotId, studentUid } = req.body || {};
+  if (!slotId || typeof slotId !== "string") return res.status(400).json({ error: "invalid-slot" });
+  if (!studentUid || typeof studentUid !== "string") return res.status(400).json({ error: "invalid-student" });
+
+  const slot = parseSlotId(slotId);
+  if (!slot) return res.status(400).json({ error: "invalid-slot" });
+
+  const db = admin.firestore();
+
+  try {
+    await enforceRateLimit(callerUid, "cancelSlotMatch", 60, 24 * 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const slotRef = db.collection("practiceSlots").doc(slotId);
+      const membersRef = slotRef.collection("members");
+      const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+      const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+      const mine = members.find((m) => m.id === studentUid);
+      if (!mine) throw Object.assign(new Error("not-in-slot"), { httpStatus: 404 });
+      if (mine.status !== "matched" || !mine.pairedWith) {
+        throw Object.assign(new Error("not-matched"), { httpStatus: 409 });
+      }
+      const peerId = mine.pairedWith;
+
+      // İcazə yoxlaması oxu mərhələsindədir — tranzaksiyada bütün oxular
+      // yazılardan ƏVVƏL olmalıdır.
+      const isAdminCaller = callerUid === ADMIN_UID;
+      let allowed = isAdminCaller;
+      let byName = "";
+      const [aSnap, bSnap, callerSnap] = await Promise.all([
+        tx.get(db.collection("users").doc(studentUid)),
+        tx.get(db.collection("users").doc(peerId)),
+        tx.get(db.collection("users").doc(callerUid)),
+      ]);
+      byName = (callerSnap.exists ? (callerSnap.data() || {}).name : "") || "";
+      if (!allowed) {
+        const a = aSnap.exists ? aSnap.data() || {} : {};
+        const b = bSnap.exists ? bSnap.data() || {} : {};
+        allowed = a.teacherId === callerUid || b.teacherId === callerUid;
+      }
+      if (!allowed) throw Object.assign(new Error("not-your-student"), { httpStatus: 403 });
+
+      const del = admin.firestore.FieldValue.delete();
+      const usersCol = db.collection("users");
+
+      for (const id of [studentUid, peerId]) {
+        tx.set(membersRef.doc(id), { status: "waiting", pairedWith: del, callId: del }, { merge: true });
+        tx.set(usersCol.doc(id), { upcomingCall: del }, { merge: true });
+      }
+
+      if (mine.callId) {
+        tx.set(db.collection("calls").doc(mine.callId), {
+          status: "cancelled",
+          cancelledBy: callerUid,
+          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
+
+      let waitingCount = 0;
+      let matchedCount = 0;
+      for (const m of members) {
+        const status = (m.id === studentUid || m.id === peerId) ? "waiting" : m.status;
+        if (status === "waiting") waitingCount += 1;
+        else if (status === "matched") matchedCount += 1;
+      }
+      tx.set(slotRef, {
+        waitingCount, matchedCount,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      return { peerId, byName };
+    });
+
+    await Promise.all([studentUid, result.peerId].map((id) => sendPushToUser(db, id, {
+      key: "slot_match_cancelled",
+      vars: { at: slot.startMs, byName: result.byName },
+      type: "slot_match_cancelled", url: "/",
+    }))).catch(() => null);
+
+    return res.status(200).json({ ok: true, peerId: result.peerId });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[cancelSlotMatch]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
 exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -2756,6 +2963,20 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
           type: "slot_released", url: "/",
         })),
       ]).catch(() => null);
+
+      // Əl ilə qurulan cüt də avtomatik cüt qədər "məşğuldur" — həmin günün
+      // qalan blokları eyni qayda ilə buraxılır, yoxsa müəllimin təyin etdiyi
+      // şagird başqa blokda yenidən tutula bilərdi.
+      for (const who of [uidA, uidB]) {
+        const freed = await releaseOtherSlotsSameDay(db, who, slot.slotId);
+        if (freed.length > 0) {
+          await sendPushToUser(db, who, {
+            key: "slot_day_cleared",
+            vars: { at: slot.startMs },
+            type: "slot_day_cleared", url: "/",
+          }).catch(() => null);
+        }
+      }
     }
 
     return res.status(200).json({

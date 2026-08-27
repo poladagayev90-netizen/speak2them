@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { blockLabel, dayLabel } from '../utils/practiceSlots';
+import { cancelSlotMatch } from '../utils/teacher';
 
 // Admin lövhədəki bloka toxunanda açılan pəncərə: HƏMİN blokda kim var.
 //
@@ -17,9 +18,24 @@ import { blockLabel, dayLabel } from '../utils/practiceSlots';
 // `allow read: if isOwnDoc(memberId) || isAdmin()`. Adi istifadəçi bu
 // komponenti heç vaxt görmür (PracticeBoard yalnız adminə açır), görsəydi də
 // qaydalar öz sətrindən başqasını qaytarmazdı.
-export default function SlotInspector({ slotId, date, hour, onClose }) {
+export default function SlotInspector({ slotId, date, hour, onClose, canCancel = false }) {
   const [members, setMembers] = useState(null); // null = yüklənir
   const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(null);   // ləğv edilən şagirdin uid-i
+  const [msg, setMsg] = useState(null);     // { ok, text }
+
+  // Ləğv serverdə cütü söküb hər ikisini "waiting"-ə qaytarır; onSnapshot
+  // dinlədiyi üçün siyahı özü yenilənir, burada əl ilə state düzəltmirik.
+  const cancel = async (uid) => {
+    if (busy) return;
+    setBusy(uid);
+    setMsg(null);
+    const res = await cancelSlotMatch(slotId, uid);
+    setBusy(null);
+    setMsg(res.ok
+      ? { ok: true, text: 'Cancelled — both are back to waiting in this block.' }
+      : { ok: false, text: res.errorText });
+  };
 
   useEffect(() => {
     if (!slotId) return undefined;
@@ -130,12 +146,37 @@ export default function SlotInspector({ slotId, date, hour, onClose }) {
             </div>
           )}
 
+          {msg && (
+            <div style={{
+              fontSize: '12px', fontWeight: 700, padding: '8px 10px', borderRadius: '10px',
+              color: msg.ok ? 'var(--success)' : 'var(--danger)',
+              background: msg.ok ? 'var(--success-bg)' : 'var(--danger-bg)',
+            }}>
+              {msg.text}
+            </div>
+          )}
+
           {pairs.map(([a, b]) => (
-            <div key={a.uid + b.uid} style={row}>
+            <div key={a.uid + b.uid} style={{ ...row, flexWrap: 'wrap' }}>
               <span style={{ color: 'var(--success)', fontWeight: 800, flexShrink: 0 }}>✓</span>
               <Person m={a} />
               <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>↔</span>
               <Person m={b} />
+              {canCancel && (
+                <button
+                  type="button"
+                  onClick={() => cancel(a.uid)}
+                  disabled={!!busy}
+                  style={{
+                    marginLeft: 'auto', flexShrink: 0, cursor: busy ? 'default' : 'pointer',
+                    padding: '6px 10px', borderRadius: '9px', fontSize: '12px', fontWeight: 700,
+                    border: '1px solid var(--danger-bg)', background: 'var(--danger-bg)',
+                    color: 'var(--danger)', fontFamily: 'inherit',
+                  }}
+                >
+                  {busy === a.uid ? '...' : 'Cancel'}
+                </button>
+              )}
             </div>
           ))}
 
