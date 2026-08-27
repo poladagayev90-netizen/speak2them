@@ -1,6 +1,7 @@
 /* AInur activity surfaces.
-   Cyan throughout: in SpeakLab colour says who you are talking to, and cyan is
-   AInur. Violet is a real person. See the token block in index.css. */
+   The lighter purple throughout: in SpeakLab colour says who you are talking
+   to, and that step of the family is AInur. The deeper one is a real person.
+   See the token block in index.css. */
 
 /* ------------------------------------------------------------- Activity -- */
 /* A session is a focused surface, like a call -- it covers the tab bar rather
@@ -157,7 +158,11 @@
 .ai-mic:disabled { opacity: .5; cursor: not-allowed; }
 .ai-mic:not(:disabled):active { transform: scale(.94); }
 .ai-mic:focus-visible { outline: 2px solid var(--ai); outline-offset: 4px; }
-.ai-mic--rec { background: var(--danger-solid); color: var(--ink-on-danger); }
+/* Listening is NOT a destructive state. This was the record-button red from
+   when the control meant "stop recording"; now that a tap sends the answer,
+   red said "cancel" on the one button the learner is meant to press. Red in
+   this app belongs to End call and Delete. */
+.ai-mic--rec { background: var(--ai-fill); color: var(--text-on-ai); }
 .ai-mic--speaking { background: var(--ai-fill-strong); }
 .ai-mic--busy { background: var(--bg-secondary); color: var(--text-secondary); }
 .ai-mic-label {
@@ -276,6 +281,16 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+/* The receipt is a confirmation, not a document. A learner who talks for a
+   minute produced a wall of italics that pushed the picture, the keywords and
+   the microphone off the screen — the transcript ended up being the activity.
+   Six lines is enough to recognise your own sentence. */
+.ai-heard {
+  max-height: 8.4em;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+  mask-image: linear-gradient(180deg, #000 70%, transparent);
 }
 .ai-heard-label {
   display: flex;

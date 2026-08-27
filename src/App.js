@@ -17,6 +17,7 @@ import { isTrialExpiredClient } from './utils/courseProgress';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
 import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
+import { resolveAppLanguage, deviceTimeZone } from './utils/appLanguage';
 import Logo from './components/Logo';
 import { Mic } from 'lucide-react';
 
@@ -288,6 +289,12 @@ function App() {
         const userRef = doc(db, 'users', uid);
         const userSnap = await getDoc(userRef);
 
+        // appLanguage/timeZone: bunlar SERVERİN push göndərərkən ehtiyac
+        // duyduğu iki siqnaldır — hansı dildə yazsın və randevu saatını hansı
+        // qurşaqda çap etsin. Onsuz da olan yazıya minilir, ona görə əlavə
+        // Firestore yazısı YOXDUR. Cihaz dəyişəndə (yeni telefon, başqa
+        // qurşaq) növbəti girişdə özü yenilənir.
+        const tz = deviceTimeZone();
         await setDoc(userRef, {
           uid,
           name: userSnap.exists() ? userSnap.data().name : (currentUser.displayName || 'User'),
@@ -295,6 +302,8 @@ function App() {
           photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (currentUser.photoURL || ''),
           online: true,
           lastSeen: serverTimestamp(),
+          appLanguage: resolveAppLanguage(),
+          ...(tz ? { timeZone: tz } : {}),
         }, { merge: true });
 
         // Keep this device's FCM token fresh for the whole session, not just at

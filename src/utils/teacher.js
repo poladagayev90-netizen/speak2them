@@ -117,6 +117,29 @@ export function respondTeacherInvite(inviteId, accept) {
   return callTeacherFn('respondTeacherInvite', { inviteId, accept }, INVITE_ERROR_TEXT);
 }
 
+// ── Müəllim əl ilə zəng təyin edir ──────────────────────────────
+// The board pairs whoever lands in the same block; a teacher needs to choose
+// the pair. Every rejection below is a real server check — a teacher who books
+// a student who already owes a call at another hour has to see WHICH student,
+// otherwise the only feedback is a dead button.
+export const SET_MATCH_ERROR_TEXT = {
+  'not-a-teacher': 'This action is for teachers only.',
+  'not-your-student': 'Both students have to be on your list.',
+  'student-not-found': 'That student account no longer exists.',
+  'invalid-student': 'Pick two students first.',
+  'same-student': 'Pick two different students.',
+  'invalid-slot': 'Pick a time first.',
+  'slot-past': 'That time has already passed.',
+  'slot-too-far': 'You cannot book that far ahead.',
+  'student-a-busy': 'The first student already has a call at another time. They need to cancel it first.',
+  'student-b-busy': 'The second student already has a call at another time. They need to cancel it first.',
+  unauthorized: 'Your session has expired. Please sign in again.',
+};
+
+export function teacherSetMatch(studentA, studentB, slotId) {
+  return callTeacherFn('teacherSetMatch', { studentA, studentB, slotId }, SET_MATCH_ERROR_TEXT);
+}
+
 // ── Tutor profili və təsdiqi ────────────────────────────────────
 // Siyahı SERVERDƏKİ TUTOR_SPECIALTIES ilə eyni olmalıdır — server siyahıdan
 // kənar dəyərləri sükutla atır, yəni burada əlavə edilən yeni ixtisas serverdə

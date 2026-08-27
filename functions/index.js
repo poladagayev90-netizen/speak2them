@@ -10,6 +10,12 @@ const {
   getAllTokens,
   sendPush,
 } = require("./pushTokens");
+const {
+  pushText,
+  pushLang,
+  slotTimeLabel,
+  hourOnlyLabel,
+} = require("./pushText");
 
 admin.initializeApp();
 
@@ -225,8 +231,8 @@ exports.sendCallNotification = onRequest({ secrets: [] }, async (req, res) => {
   const callerName = String(rawName).slice(0, 40);
 
   await sendPushToUser(db, receiverId, {
-    title: `📞 ${callerName} sizə zəng edir`,
-    body: "Qəbul etmək üçün tətbiqi açın",
+    key: "incoming_call",
+    vars: { callerName },
     type: "incoming_call",
     url: "/",
   });
@@ -252,8 +258,8 @@ exports.notifyPremiumActivated = onRequest({ secrets: [] }, async (req, res) => 
 
   const db = admin.firestore();
   await sendPushToUser(db, userId, {
-    title: "👑 Premium aktivləşdirildi",
-    body: `${userName || "Üzv"}, bütün premium xüsusiyyətlər indi sizin üçün açıqdır!`,
+    key: "premium_activated",
+    vars: { userName },
     type: "premium_activated",
     url: "/",
   });
@@ -342,6 +348,9 @@ exports.topicReminder = onSchedule({
     .filter((d) => d.data().role !== "teacher")
     .map(d => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
+  // The user documents are already in memory, so the language map costs no
+  // extra read; sendPushByLang then sends one multicast per language.
+  const langByUid = new Map(usersSnap.docs.map((d) => [d.id, pushLang(d.data())]));
 
   // A concrete question pulls far better than a bare topic name: the reader
   // can start answering it in their head before they even open the app.
@@ -356,20 +365,18 @@ exports.topicReminder = onSchedule({
   // Data-only so the messaging SW renders it and routes the click to `url`.
   // A `notification` payload is auto-displayed by the SDK and bypasses the
   // SW's notificationclick handler.
-  const { sent, failed, removed } = await sendPush(tokenEntries, {
-    title: `💬 ${todayContent.topic}`,
-    body: question
-      ? `${question} — Cavabını düşün və daxil ol!`
-      : "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir!",
-    type: "daily_reminder",
-    url: "/?daily=1",
-  });
+  const { sent, removed } = await sendPushByLang(
+    tokenEntries,
+    (uid) => langByUid.get(uid),
+    "daily_reminder",
+    { topic: todayContent.topic, question },
+    { type: "daily_reminder", url: "/?daily=1" },
+  );
 
   console.log("Daily reminder complete", {
     users: usersSnap.size,
     tokens: tokenEntries.length,
     sent,
-    failed,
     invalidTokensRemoved: removed,
   });
 });
@@ -414,19 +421,11 @@ exports.streakReminder = onSchedule({
     const entries = await getTokensForUser(db, u.ref.id, u.fcmToken, u.fcmTokenFailCount);
     if (!entries.length) continue;
     const streak = u.streak || 1;
-    const { sent: s, removed: r } = await sendPush(entries, urgent
-      ? {
-          title: "⚠️ Streak-in bu gecə sönəcək!",
-          body: `${streak} günlük əziyyətin gecə yarısı sıfırlanır. Qısa bir zəng kifayətdir! 🔥`,
-          type: "streak_rescue",
-          url: "/",
-        }
-      : {
-          title: `🔥 ${streak} günlük streak-in gözləyir`,
-          body: "Bu gün hələ danışmamısan — bir zəng et, alovu qoru!",
-          type: "streak_rescue",
-          url: "/",
-        });
+    // `u` is the whole user document, so the language is free here.
+    const copy = pushText(pushLang(u), urgent ? "streak_urgent" : "streak_soft", { streak });
+    const { sent: s, removed: r } = await sendPush(entries, {
+      ...copy, type: "streak_rescue", url: "/",
+    });
     sent += s;
     removed += r;
   }
@@ -1483,9 +1482,10 @@ exports.nudgeStudent = onRequest({ secrets: [], invoker: "public" }, async (req,
       return res.status(200).json({ ok: false, reason: "no-devices" });
     }
 
+    // `student` is the already-loaded student document, so no extra read.
+    const copy = pushText(pushLang(student), "teacher_nudge", { teacherName });
     const { sent } = await sendPush(entries, {
-      title: teacherName ? `${teacherName} is waiting for you` : "Your teacher is waiting for you",
-      body: "Today's speaking practice with AInur is not done yet — it takes about 8 minutes.",
+      ...copy,
       type: "teacher_nudge",
       url: "/practice",
     });
@@ -1575,8 +1575,8 @@ exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, asy
 
     // "Sorğu çatmır" probleminin əsas həlli: şagird bildirişlə xəbər tutur.
     await sendPushToUser(db, studentUid, {
-      title: "🎓 Müəllim dəvəti",
-      body: `${teacher.name || "Müəlliminiz"} sizi şagird kimi əlavə etmək istəyir — baxın.`,
+      key: "teacher_invite",
+      vars: { teacherName: teacher.name },
       type: "teacher_invite",
       url: "/",
     }).catch(() => null);
@@ -1701,8 +1701,8 @@ exports.respondTeacherInvite = onRequest({ secrets: [], invoker: "public" }, asy
       const uSnap = await db.collection("users").doc(uid).get();
       const name = uSnap.exists ? (uSnap.data().name || "") : "";
       await sendPushToUser(db, result.teacherId, {
-        title: "✅ Şagird qoşuldu",
-        body: `${name || "Şagirdiniz"} dəvətinizi qəbul etdi.`,
+        key: "invite_accepted",
+        vars: { studentName: name },
         type: "invite_accepted",
         url: `/teacher/student/${uid}`,
       }).catch(() => null);
@@ -1908,8 +1908,7 @@ exports.setTutorVerification = onRequest({ secrets: [], invoker: "public" }, asy
 
     if (isVerified) {
       await sendPushToUser(db, teacherId, {
-        title: "🎓 Tutor profiliniz təsdiqləndi",
-        body: "Adınızın yanında Tutor nişanı artıq görünür.",
+        key: "tutor_verified",
         type: "tutor_verified",
         url: "/teacher",
       }).catch(() => null);
@@ -2074,8 +2073,8 @@ async function nudgeLoneWaiters(db, slot, joinerUid) {
         if (m.id === joinerUid) continue;
         if (!(await claimSlotRun(db, `${slot.date}_nudge_${m.id}`))) continue;
         await sendPushToUser(db, m.id, {
-          title: "Yaxın vaxtda da adam var",
-          body: `${slotHourLabel(slot)} blokunda bir nəfər gözləyir — ora da yazılsanız zəng dərhal təsdiqlənəcək.`,
+          key: "slot_nearby",
+          vars: { at: slot.startMs },
           type: "slot_nearby",
           url: "/",
         }).catch(() => null);
@@ -2094,28 +2093,25 @@ const cefrRank = (level) => {
   return i === -1 ? null : i;
 };
 
-function slotMatchPush(hourLabel, peerName, myRank, peerRank) {
+// Copy is resolved inside sendPushToUser, in the recipient's own language and
+// timezone — this only decides WHICH of the two framings to use.
+function slotMatchPush(startMs, peerName, myRank, peerRank) {
   // Səviyyəsi daha yüksək tərəf zəngi ləğv etməsin deyə mentorluq çərçivəsi.
   const mentor = myRank !== null && peerRank !== null && myRank > peerRank;
   return {
-    title: "✅ Zənginiz təsdiqləndi",
-    body: mentor
-      ? `${hourLabel} — ${peerName} ilə. Partnyorunuz sizdən öyrənməyə həvəslidir; sizin axıcılığınız bugünkü söhbətdə ona böyük dəstək olacaq.`
-      : `${hourLabel} — ${peerName} ilə. Vaxtında qoşulun!`,
+    key: mentor ? "slot_matched_mentor" : "slot_matched",
+    vars: { at: startMs, peerName },
     type: "slot_matched",
     url: "/",
   };
 }
 
-// Blok saatının insan oxunaqlı etiketi: "Bu gün 14:00" / "Sabah 20:00".
-function slotHourLabel(slot, nowMs = Date.now()) {
-  const today = bakuDateStr(nowMs);
-  const tomorrow = bakuDateStr(nowMs + DAY_MS);
-  const hh = `${String(slot.hour).padStart(2, "0")}:00`;
-  if (slot.date === today) return `Bu gün ${hh}`;
-  if (slot.date === tomorrow) return `Sabah ${hh}`;
-  return `${slot.date} ${hh}`;
-}
+// The old slotHourLabel() lived here: it formatted "Bu gün 14:00" in Baku time
+// and in Azerbaijani, then handed the finished string to every push. It could
+// not do the right thing, because the SENDER does not know who is reading —
+// the label has to be built per recipient. That job now belongs to
+// pushText.slotTimeLabel(), which sendPushToUser calls with the reader's own
+// language and timezone; callers pass `vars.at` (an absolute ms timestamp).
 
 exports.joinPracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
@@ -2151,14 +2147,13 @@ exports.joinPracticeSlot = onRequest({ secrets: [], invoker: "public" }, async (
     });
 
     if (result.matched) {
-      const label = slotHourLabel(slot, now);
       const meSnap = await db.collection("users").doc(uid).get();
       const me = meSnap.exists ? meSnap.data() : {};
       const myRank = cefrRank(me.level);
       const peerRank = cefrRank(result.partnerLevel);
       await Promise.all([
-        sendPushToUser(db, uid, slotMatchPush(label, result.partnerName || "Partnyorunuz", myRank, peerRank)),
-        sendPushToUser(db, result.partnerId, slotMatchPush(label, me.name || "Partnyorunuz", peerRank, myRank)),
+        sendPushToUser(db, uid, slotMatchPush(slot.startMs, result.partnerName, myRank, peerRank)),
+        sendPushToUser(db, result.partnerId, slotMatchPush(slot.startMs, me.name, peerRank, myRank)),
       ]).catch(() => null);
     } else if (!result.already) {
       // Tək qaldıq — həmin gün başqa blokda tək gözləyənlərə xəbər ver.
@@ -2270,19 +2265,18 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
     });
 
     if (released && released.partnerId) {
-      const label = slotHourLabel(slot);
       if (released.rematchId) {
         // Yeni cüt quruldu — "planı dəyişdi" mesajı yanlış olardı, birbaşa
         // təsdiq göndərilir.
         await Promise.all([
           sendPushToUser(db, released.partnerId, {
-            title: "✅ Zənginiz təsdiqləndi",
-            body: `${label} — ${released.rematchName || "Partnyorunuz"} ilə.`,
+            key: "slot_matched",
+            vars: { at: slot.startMs, peerName: released.rematchName },
             type: "slot_matched", url: "/",
           }),
           sendPushToUser(db, released.rematchId, {
-            title: "✅ Zənginiz təsdiqləndi",
-            body: `${label} — ${released.partnerName || "Partnyorunuz"} ilə.`,
+            key: "slot_matched",
+            vars: { at: slot.startMs, peerName: released.partnerName },
             type: "slot_matched", url: "/",
           }),
         ]).catch(() => null);
@@ -2290,8 +2284,8 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
         // ÜZÜ QORUYAN mətn: rədd olunma və ad KEÇMİR. "X səni rədd etdi" hissi
         // istifadəçini tətbiqdən uzaqlaşdırır — bax plan sənədindəki qərar.
         await sendPushToUser(db, released.partnerId, {
-          title: "Slotunuz yenidən açıldı",
-          body: `Partnyorunuzun planı dəyişdi — ${label} slotunuz yenidən axtarışa açıldı.`,
+          key: "slot_released",
+          vars: { at: slot.startMs },
           type: "slot_released", url: "/",
         }).catch(() => null);
       }
@@ -2412,8 +2406,8 @@ exports.proposeSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
     });
 
     await sendPushToUser(db, me.pairedWith, {
-      title: "🕘 Vaxt dəyişikliyi təklifi",
-      body: `${me.name || "Partnyorunuz"} zəngi ${slotHourLabel(to, now)} vaxtına keçirmək istəyir.`,
+      key: "slot_change_request",
+      vars: { at: to.startMs, peerName: me.name },
       type: "slot_change_request",
       url: "/",
     }).catch(() => null);
@@ -2532,13 +2526,12 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
     const to = parseSlotId(result.toSlotId);
     await sendPushToUser(db, result.proposerUid, result.accepted
       ? {
-        title: "✅ Vaxt dəyişdirildi",
-        body: `Zənginiz ${to ? slotHourLabel(to) : "yeni vaxta"} keçirildi.`,
+        key: "slot_change_accepted",
+        vars: { at: to ? to.startMs : undefined },
         type: "slot_change_accepted", url: "/",
       }
       : {
-        title: "Vaxt dəyişikliyi baş tutmadı",
-        body: "Partnyorunuz üçün bu vaxt uyğun deyil — köhnə vaxt qüvvədə qalır.",
+        key: "slot_change_declined",
         type: "slot_change_declined", url: "/",
       }).catch(() => null);
 
@@ -2546,6 +2539,234 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
   } catch (e) {
     const status = e.httpStatus || 500;
     if (status === 500) console.error("[respondSlotChange]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// ─── Müəllim əl ilə zəng təyin edir ─────────────────────────────
+// The board pairs whoever happens to land in the same block. A teacher needs
+// the opposite: "these two, at this hour" — a weak student with a stronger one,
+// two people preparing the same exam, a pair who missed each other last week.
+//
+// This is the ONLY write path that creates a pair without both sides opting in,
+// so it is fenced on three sides: the caller must be a teacher, BOTH students
+// must be on that teacher's roster, and neither may already owe a call at
+// another time. It reuses joinSlotTx's data shapes exactly — member docs,
+// upcomingCall, calls/{callId} with status "accepted" — so from the students'
+// phones a teacher-set call is indistinguishable from a self-booked one and
+// every downstream path (reminder, no-show janitor, leave, slot change) keeps
+// working with no special case.
+exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const teacherUid = decoded.uid;
+
+  const body = req.body || {};
+  const uidA = String(body.studentA || body.studentA_uid || "").trim();
+  const uidB = String(body.studentB || body.studentB_uid || "").trim();
+  if (!uidA || !uidB || uidA.length > 128 || uidB.length > 128) {
+    return res.status(400).json({ error: "invalid-student" });
+  }
+  if (uidA === uidB) return res.status(400).json({ error: "same-student" });
+  if (uidA === teacherUid || uidB === teacherUid) {
+    return res.status(400).json({ error: "invalid-student" });
+  }
+
+  const slot = parseSlotId(body.slotId);
+  if (!slot) return res.status(400).json({ error: "invalid-slot" });
+
+  const now = Date.now();
+  if (slot.endMs <= now) return res.status(400).json({ error: "slot-past" });
+  if (slot.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+    return res.status(400).json({ error: "slot-too-far" });
+  }
+
+  const db = admin.firestore();
+  const fail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+  try {
+    // Same ceiling as nudgeStudent: far above any real class, still bounded.
+    await enforceRateLimit(teacherUid, "teacherSetMatch", 40, 24 * 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const usersCol = db.collection("users");
+      const [teacherSnap, aSnap, bSnap] = await Promise.all([
+        tx.get(usersCol.doc(teacherUid)),
+        tx.get(usersCol.doc(uidA)),
+        tx.get(usersCol.doc(uidB)),
+      ]);
+
+      const teacher = teacherSnap.exists ? (teacherSnap.data() || {}) : {};
+      if (teacher.role !== "teacher" && teacher.teacherEligible !== true) {
+        throw fail(403, "not-a-teacher");
+      }
+      if (!aSnap.exists || !bSnap.exists) throw fail(404, "student-not-found");
+
+      const a = aSnap.data() || {};
+      const b = bSnap.data() || {};
+      // A teacher may only schedule for their OWN students. Without this the
+      // endpoint would let any teacher account pair two arbitrary strangers.
+      if (a.teacherId !== teacherUid || b.teacherId !== teacherUid) {
+        throw fail(403, "not-your-student");
+      }
+
+      // ── Double-booking guard ──────────────────────────────────
+      // upcomingCall is a SINGLE field on the user document, so a student can
+      // only owe one call at a time. Writing a second one would silently
+      // overwrite the first while leaving the other slot's member doc matched
+      // — the student would then be expected in two places and shown in one.
+      // A call in this same block is fine (it is the one we are about to
+      // replace); one anywhere else is refused, and the teacher is told who.
+      const clashes = (u) => {
+        const uc = u.upcomingCall;
+        if (!uc || uc.slotId === slot.slotId) return false;
+        const other = parseSlotId(uc.slotId);
+        return !!other && other.endMs > now;
+      };
+      if (clashes(a)) throw fail(409, "student-a-busy");
+      if (clashes(b)) throw fail(409, "student-b-busy");
+
+      const slotRef = db.collection("practiceSlots").doc(slot.slotId);
+      const membersRef = slotRef.collection("members");
+      const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+      const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+      const memA = members.find((m) => m.id === uidA) || null;
+      const memB = members.find((m) => m.id === uidB) || null;
+      // Already exactly this pair? Nothing to write, and above all nothing to
+      // notify — a teacher pressing the button twice must not push twice.
+      if (memA && memB && memA.pairedWith === uidB && memB.pairedWith === uidA) {
+        return { alreadyPaired: true, released: [] };
+      }
+
+      const now2 = admin.firestore.FieldValue.serverTimestamp();
+      const del = admin.firestore.FieldValue.delete();
+      const callId = callIdForPair(uidA, uidB);
+      const sorted = [uidA, uidB].sort();
+
+      // ── Release whoever these two were paired with IN THIS BLOCK ──
+      // They go back to "waiting" rather than being dropped: they still said
+      // they were free at this hour, and the next joiner can take them.
+      const released = [];
+      for (const mem of [memA, memB]) {
+        const exPartnerId = mem && mem.pairedWith;
+        if (!exPartnerId || exPartnerId === uidA || exPartnerId === uidB) continue;
+        released.push(exPartnerId);
+        tx.set(membersRef.doc(exPartnerId), {
+          status: "waiting", pairedWith: del, callId: del,
+        }, { merge: true });
+        tx.set(usersCol.doc(exPartnerId), { upcomingCall: del }, { merge: true });
+        if (mem.callId) {
+          tx.set(db.collection("calls").doc(mem.callId), { status: "cancelled" }, { merge: true });
+        }
+      }
+
+      // ── Write the pair ────────────────────────────────────────
+      for (const [uid, u, mem, peerUid, peer] of [
+        [uidA, a, memA, uidB, b],
+        [uidB, b, memB, uidA, a],
+      ]) {
+        tx.set(membersRef.doc(uid), {
+          uid,
+          name: u.name || "",
+          level: u.level || null,
+          // A member who was already in the block keeps their original
+          // joinedAt; only a newly added one is stamped now.
+          ...(mem ? {} : { joinedAt: now2 }),
+          status: "matched",
+          pairedWith: peerUid,
+          callId,
+          setByTeacher: teacherUid,
+        }, { merge: true });
+
+        tx.set(usersCol.doc(uid), {
+          practiceSlotIds: admin.firestore.FieldValue.arrayUnion(slot.slotId),
+          upcomingCall: {
+            slotId: slot.slotId, startMs: slot.startMs,
+            peerUid, peerName: peer.name || "", callId,
+            setByTeacher: teacherUid,
+          },
+        }, { merge: true });
+      }
+
+      // status "accepted", not "calling": the appointment is in the FUTURE, so
+      // nobody's phone may ring now (see the same note in joinSlotTx).
+      tx.set(db.collection("calls").doc(callId), {
+        userA: sorted[0], userB: sorted[1],
+        callerId: uidA, receiverId: uidB,
+        status: "accepted", source: "teacher_match",
+        slotId: slot.slotId, setByTeacher: teacherUid, createdAt: now2,
+      }, { merge: true });
+
+      // Counters recomputed from the FINAL state rather than incremented —
+      // the same self-healing pattern leavePracticeSlot uses, and the reason
+      // an increment-by-2 would have been wrong here: either student may
+      // already have been counted as waiting in this block.
+      const finalStatus = new Map(members.map((m) => [m.id, m.status]));
+      released.forEach((id) => finalStatus.set(id, "waiting"));
+      finalStatus.set(uidA, "matched");
+      finalStatus.set(uidB, "matched");
+      let waitingCount = 0;
+      let matchedCount = 0;
+      for (const st of finalStatus.values()) {
+        if (st === "waiting") waitingCount += 1;
+        else if (st === "matched") matchedCount += 1;
+      }
+      tx.set(slotRef, {
+        date: slot.date, startHour: slot.hour, startMs: slot.startMs,
+        waitingCount, matchedCount, updatedAt: now2,
+      }, { merge: true });
+
+      return {
+        alreadyPaired: false,
+        released,
+        callId,
+        nameA: a.name || "",
+        nameB: b.name || "",
+        teacherName: teacher.name || "",
+      };
+    });
+
+    if (!result.alreadyPaired) {
+      // Pushes go out AFTER the commit (a transaction can retry; a push cannot
+      // be un-sent). Each is resolved in its own recipient's language and
+      // timezone by sendPushToUser.
+      const teacherName = result.teacherName;
+      await Promise.all([
+        sendPushToUser(db, uidA, {
+          key: "teacher_scheduled_call",
+          vars: { at: slot.startMs, peerName: result.nameB, teacherName },
+          type: "teacher_scheduled_call", url: "/",
+        }),
+        sendPushToUser(db, uidB, {
+          key: "teacher_scheduled_call",
+          vars: { at: slot.startMs, peerName: result.nameA, teacherName },
+          type: "teacher_scheduled_call", url: "/",
+        }),
+        ...result.released.map((id) => sendPushToUser(db, id, {
+          key: "slot_released",
+          vars: { at: slot.startMs },
+          type: "slot_released", url: "/",
+        })),
+      ]).catch(() => null);
+    }
+
+    return res.status(200).json({
+      ok: true,
+      alreadyPaired: !!result.alreadyPaired,
+      callId: result.callId || null,
+      released: result.released.length,
+    });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[teacherSetMatch]", e.message);
     return res.status(status).json({ error: e.message });
   }
 });
@@ -2646,8 +2867,8 @@ exports.practiceSlotTick = onSchedule(
           if (await claimSlotRun(db, `${doc.id}_reminder`)) {
             for (const m of await matchedMembers()) {
               await sendPushToUser(db, m.id, {
-                title: "⏰ 10 dəqiqəyə praktika",
-                body: `${slotHourLabel(slot, now)} — zənginiz başlamaq üzrədir.`,
+                key: "slot_reminder",
+                vars: { at: slot.startMs },
                 type: "slot_reminder", url: "/",
               }).catch(() => null);
             }
@@ -2659,8 +2880,7 @@ exports.practiceSlotTick = onSchedule(
           if (await claimSlotRun(db, `${doc.id}_start`)) {
             for (const m of await matchedMembers()) {
               await sendPushToUser(db, m.id, {
-                title: "🎙️ Praktika vaxtıdır",
-                body: "Partnyorunuz sizi gözləyir — tətbiqi açın.",
+                key: "slot_start",
                 type: "slot_start", url: "/",
               }).catch(() => null);
             }
@@ -2708,8 +2928,8 @@ exports.practiceSlotTick = onSchedule(
               const nobodyCame = !m.arrivedAt && (!peer || !peer.arrivedAt);
               if (nobodyCame) {
                 await sendPushToUser(db, m.id, {
-                  title: "🔕 Praktika keçmədi",
-                  body: `${slotHourLabel(slot, now)} zənginə heç kim qoşulmadı. Növbəti dəfə vaxtında qoşulmağa çalış!`,
+                  key: "slot_missed",
+                  vars: { at: slot.startMs },
                   type: "slot_missed", url: "/",
                 }).catch(() => null);
               }
@@ -3694,16 +3914,65 @@ function effectiveAnalyzeSeconds(audioSeconds) {
 // Data-only push to one user's device (the messaging SW displays it and
 // routes clicks via data.url); prunes dead tokens. Data-only avoids the
 // SDK double-display problem that notification payloads can cause.
-async function sendPushToUser(db, uid, { title, body, type, url }) {
+//
+// Two calling shapes:
+//   { key, vars }          — LOCALISED. Copy comes from pushText.js in the
+//                            recipient's own language. Prefer this.
+//   { title, body }        — a literal string, for the few pushes that carry no
+//                            translatable copy (a chat message body) or that
+//                            only ever reach the admin.
+//
+// The language is read off the user document this function already fetches for
+// the legacy fcmToken field, so localisation adds NO Firestore read. `vars.at`
+// (an absolute ms timestamp) is turned into a time label in the recipient's own
+// language AND timezone here — the caller must not pre-format it, because the
+// caller does not know who is reading. (The one push that needs a bare clock
+// time rather than a day+time label — the session reminder — is a broadcast
+// and formats its own groups with hourOnlyLabel.)
+async function sendPushToUser(db, uid, opts) {
   const userSnap = await db.collection("users").doc(uid).get();
   const data = userSnap.exists ? userSnap.data() : {};
   const entries = await getTokensForUser(db, uid, data.fcmToken, data.fcmTokenFailCount);
   if (!entries.length) return;
+
+  let { title, body } = opts;
+  if (opts.key) {
+    const lang = pushLang(data);
+    const vars = { ...(opts.vars || {}) };
+    if (typeof vars.at === "number") vars.time = slotTimeLabel(vars.at, lang, data.timeZone);
+    ({ title, body } = pushText(lang, opts.key, vars));
+  }
+
   try {
-    await sendPush(entries, { title, body, type, url });
+    await sendPush(entries, { title, body, type: opts.type, url: opts.url });
   } catch (error) {
     console.warn("[Push] send failed:", uid, error.message);
   }
+}
+
+// Multicast that respects each recipient's language. One sendPush per language
+// group instead of one per user: a 500-user broadcast stays 3 FCM calls, not
+// 500. `langOf` maps a token entry's uid to its language.
+async function sendPushByLang(entries, langOf, key, vars, { type, url }) {
+  const groups = new Map();
+  for (const e of entries) {
+    const lang = langOf(e.uid) || "az";
+    if (!groups.has(lang)) groups.set(lang, []);
+    groups.get(lang).push(e);
+  }
+  let sent = 0;
+  let removed = 0;
+  for (const [lang, group] of groups) {
+    const { title, body } = pushText(lang, key, vars);
+    try {
+      const r = await sendPush(group, { title, body, type, url });
+      sent += r.sent || 0;
+      removed += r.removed || 0;
+    } catch (error) {
+      console.warn("[Push] group send failed:", lang, error.message);
+    }
+  }
+  return { sent, removed };
 }
 
 // ─── Provayder nasazlığı xəbərdarlığı ────────────────────────────
@@ -3857,10 +4126,8 @@ async function failTicket(db, ticketRef, ticketId, ticketData, retryCount, messa
   // is never coming, because History only ever showed finished analyses.
   const noSpeech = text.startsWith("no-speech");
   await sendPushToUser(db, ticketData.uid, {
-    title: "Analiz alınmadı",
-    body: noSpeech
-      ? "Danışıq eşidilmədi — mikrofonu yoxlayıb yenidən cəhd et."
-      : "Zəngin analizi tamamlana bilmədi. Növbəti zəngdə yenidən cəhd edəcəyik.",
+    key: "analysis_failed",
+    vars: { noSpeech },
     type: "analysis_failed",
     url: "/history",
   });
@@ -4076,10 +4343,7 @@ exports.processAnalysisQueue = onSchedule({
       console.log("[AnalysisQueue] Done:", ticket.id);
 
       await sendPushToUser(db, ticket.uid, {
-        title: lang === "tr" ? "Analiziniz hazır 🎓" : "Analiziniz hazırdır 🎓",
-        body: lang === "tr"
-          ? "Görüşme analizin hazır — sonuca göz at!"
-          : "Zəng analizin hazır oldu — nəticəyə bax!",
+        key: "analysis_ready",
         type: "analysis_ready",
         url: "/history",
       });
@@ -4127,14 +4391,11 @@ exports.processAnalysisQueue = onSchedule({
       // topicReminder), ona görə bu bildiriş itmir və spam kimi görünmür.
       if (studentTeacherId) {
         try {
-          const tSnap = await db.collection("users").doc(studentTeacherId).get();
-          const tLang = tSnap.exists && tSnap.data().preferredLanguage === "tr" ? "tr" : "az";
-          const who = studentName || (tLang === "tr" ? "Öğrencinizin" : "Şagirdinizin");
+          // The teacher's own document used to be re-read here just to pick a
+          // language; sendPushToUser reads it anyway, so that read is gone.
           await sendPushToUser(db, studentTeacherId, {
-            title: tLang === "tr" ? "Öğrenci analizi hazır 🎓" : "Şagird analizi hazırdır 🎓",
-            body: tLang === "tr"
-              ? `${who} yeni konuşma analizi hazır — panelden inceleyin.`
-              : `${who} yeni danışıq analizi hazırdır — paneldən baxın.`,
+            key: "student_analysis_ready",
+            vars: { studentName },
             type: "student_analysis_ready",
             url: `/teacher/student/${ticket.uid}`,
           });
@@ -4276,11 +4537,7 @@ async function sendSessionEmails(db, startLabel, hour) {
 
 // One reminder push to every registered device, 15 min before the session.
 // The wording follows the session's time of day.
-async function broadcastSessionReminder(db, startLabel, hour) {
-  const title = hour < 18
-    ? "Günorta sessiyasına az qaldı! ☀️"
-    : "Axşam sessiyasına az qaldı! 🌙";
-
+async function broadcastSessionReminder(db, startLabel, startMs) {
   const usersSnap = await db.collection("users").get();
   // Müəllimlər sessiya xatırlatması almır (bax topicReminder şərhi).
   const users = usersSnap.docs
@@ -4288,12 +4545,39 @@ async function broadcastSessionReminder(db, startLabel, hour) {
     .map((d) => ({ ref: d.ref, fcmToken: d.data().fcmToken, fcmTokenFailCount: d.data().fcmTokenFailCount }));
   const tokenEntries = await getAllTokens(db, users);
 
-  const { sent, removed } = await sendPush(tokenEntries, {
-    title,
-    body: `Sessiya ${startLabel}-da başlayır — günün mövzusuna bax və hazır ol.`,
-    type: "session_reminder",
-    url: "/",
-  });
+  // Grouped by language AND timezone: a Baku 21:00 session is 20:00 in
+  // Istanbul, and the reminder has to say the hour the reader's own clock will
+  // show. Falls back to the Baku label when the device never reported a zone.
+  const metaByUid = new Map(usersSnap.docs.map((d) => {
+    const u = d.data();
+    return [d.id, { lang: pushLang(u), tz: u.timeZone || null }];
+  }));
+  const keyOf = (uid) => {
+    const m = metaByUid.get(uid) || {};
+    return `${m.lang || "az"}|${m.tz || ""}`;
+  };
+
+  const groups = new Map();
+  for (const e of tokenEntries) {
+    const k = keyOf(e.uid);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(e);
+  }
+
+  let sent = 0;
+  let removed = 0;
+  for (const [k, group] of groups) {
+    const [lang, tz] = k.split("|");
+    const time = Number.isFinite(startMs) && tz ? hourOnlyLabel(startMs, tz) : startLabel;
+    const copy = pushText(lang, "session_reminder", { time });
+    try {
+      const r = await sendPush(group, { ...copy, type: "session_reminder", url: "/" });
+      sent += r.sent || 0;
+      removed += r.removed || 0;
+    } catch (e) {
+      console.warn("[SessionMatch] group send failed:", k, e.message);
+    }
+  }
   console.log("[SessionMatch] reminder sent:", sent, "invalidTokensRemoved:", removed);
 }
 
@@ -4459,7 +4743,7 @@ exports.matchSessionQueue = onSchedule({
       });
       if (remClaimed) {
         const startLabel = `${pad(t.hour)}:${pad(t.minute)}`;
-        await broadcastSessionReminder(db, startLabel, t.hour);
+        await broadcastSessionReminder(db, startLabel, startMs);
         await sendSessionEmails(db, startLabel, t.hour);
       }
       continue;
@@ -4559,10 +4843,12 @@ exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event
   // Gather up to SEARCH_PING_MAX_RECIPIENTS candidate devices — each free,
   // online user contributes all of their device tokens.
   const recipients = [];
+  const langByUid = new Map();
   for (const docSnap of onlineSnap.docs) {
     if (docSnap.id === searcherUid) continue;
     const data = docSnap.data();
     if (data.status === "busy") continue; // already in a call
+    langByUid.set(docSnap.id, pushLang(data));
     const entries = await getTokensForUser(db, docSnap.id, data.fcmToken, data.fcmTokenFailCount);
     for (const e of entries) {
       recipients.push(e);
@@ -4571,13 +4857,14 @@ exports.notifySearchingUser = onDocumentWritten("matchQueue/{uid}", async (event
     if (recipients.length >= SEARCH_PING_MAX_RECIPIENTS) break;
   }
 
-  const searcherName = String(after.name || "Kimsə").slice(0, 30);
-  const { sent } = await sendPush(recipients, {
-    title: "Kimsə praktika axtarır 🎙️",
-    body: `${searcherName} partnyor gözləyir — indi qoşul!`,
-    type: "search_ping",
-    url: "/",
-  });
+  const searcherName = String(after.name || "").slice(0, 30);
+  const { sent } = await sendPushByLang(
+    recipients,
+    (uid) => langByUid.get(uid),
+    "search_ping",
+    { searcherName },
+    { type: "search_ping", url: "/" },
+  );
   console.log("[SearchPing] candidates:", recipients.length, "sent:", sent);
 });
 
@@ -5365,8 +5652,7 @@ exports.analyzeAiSession = onRequest(
 
       // sendPushToUser resolves the token set and swallows its own failures.
       await sendPushToUser(db, uid, {
-        title: "Your report is ready",
-        body: "See how your session with AInur went.",
+        key: "ai_report_ready",
         type: "analysis",
         url: "/history",
       });

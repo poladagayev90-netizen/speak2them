@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -22,23 +23,43 @@ function AdminSlotMembers({ slotId, usersMap }) {
 
   if (members.length === 0) return <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 600 }}>Empty</span>;
 
-  // Eyni ad birdən çox üzvdə varsa (məs. 3 "Sebine") kimin-kim olduğu qarışırdı.
-  // Ad təkrarlanırsa fərqləndirici əlavə olunur: email prefiksi, yoxsa qısa uid.
-  const nameCounts = {};
-  members.forEach((m) => {
-    const n = (usersMap[m.uid]?.name || 'Anonim').toLowerCase();
-    nameCounts[n] = (nameCounts[n] || 0) + 1;
-  });
-  const labelOf = (uid) => {
+  const nameStyle = {
+    color: 'var(--text-primary)', fontWeight: 600,
+    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+  };
+  const lvlStyle = { color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 400 };
+
+  // Ad + DƏQİQ hesab. Ad tək başına kifayət etmirdi: eyni sinifdə üç "Sebine"
+  // olanda kimin-kim olduğu bilinmirdi və admin heç kimlə əlaqə saxlaya
+  // bilmirdi. E-poçt 11px muted-dir və bir sətrə kəsilir — cütlər sətrində
+  // yan-yana iki hüceyrə var, tam e-poçt telefonda sətri partladardı; tam
+  // dəyər title-dadır (hover) və profil səhifəsində onsuz da görünür.
+  //
+  // Link (href="#/user/..." DEYİL): tətbiq web-də BrowserRouter işlədir
+  // (App.js — HashRouter yalnız native buildindədir), ona görə hash-lı a
+  // etiketi /admin səhifəsində qalıb heç yerə getmirdi.
+  const UserCell = ({ uid }) => {
     const u = usersMap[uid] || {};
     const name = u.name || 'Anonim';
-    if (nameCounts[name.toLowerCase()] > 1) {
-      const tag = (u.email ? u.email.split('@')[0] : uid).slice(0, 6);
-      return `${name} · ${tag}`;
-    }
-    return name;
+    const email = u.email || uid;
+    const level = u.level || '?';
+    return (
+      <Link
+        to={`/user/${uid}`}
+        title={email}
+        style={{
+          textDecoration: 'none', display: 'flex', flexDirection: 'column',
+          flex: 1, minWidth: 0,
+        }}
+      >
+        <span style={nameStyle}>{name} <span style={lvlStyle}>({level})</span></span>
+        <span style={{
+          fontSize: '11px', color: 'var(--text-muted)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{email}</span>
+      </Link>
+    );
   };
-  const levelOf = (uid) => usersMap[uid]?.level || '?';
 
   // Eşləşmişləri CÜTLƏRƏ topla (A ↔ B bir sətir), tək gözləyənləri ayrıca göstər.
   const byId = new Map(members.map((m) => [m.uid, m]));
@@ -56,9 +77,6 @@ function AdminSlotMembers({ slotId, usersMap }) {
     }
   });
 
-  const nameStyle = { color: 'var(--text-primary)', fontWeight: 600 };
-  const lvlStyle = { color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 400 };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
       {pairs.map(([a, b]) => (
@@ -68,9 +86,9 @@ function AdminSlotMembers({ slotId, usersMap }) {
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ color: 'var(--success)', fontWeight: 800 }}>✓</span>
-          <span style={nameStyle}>{labelOf(a.uid)} <span style={lvlStyle}>({levelOf(a.uid)})</span></span>
-          <span style={{ color: 'var(--success)', flexShrink: 0 }}>↔</span>
-          <span style={nameStyle}>{labelOf(b.uid)} <span style={lvlStyle}>({levelOf(b.uid)})</span></span>
+          <UserCell uid={a.uid} />
+          <span style={{ color: 'var(--success)', flexShrink: 0, margin: '0 4px' }}>↔</span>
+          <UserCell uid={b.uid} />
         </div>
       ))}
       {waiting.map((m) => (
@@ -79,7 +97,7 @@ function AdminSlotMembers({ slotId, usersMap }) {
           padding: '8px 12px', borderRadius: '8px', fontSize: '14px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <span style={nameStyle}>{labelOf(m.uid)} <span style={lvlStyle}>({levelOf(m.uid)})</span></span>
+          <UserCell uid={m.uid} />
           <span style={{ color: 'var(--warning)', fontWeight: 600, fontSize: '13px' }}>Waiting alone</span>
         </div>
       ))}

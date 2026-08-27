@@ -15,6 +15,7 @@ import {
   TUTOR_SPECIALTIES,
 } from '../utils/teacher';
 import TutorBadge from '../components/TutorBadge';
+import TeacherScheduler from '../components/TeacherScheduler';
 import { bakuDateStr } from '../utils/sessionSchedule';
 
 // Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
@@ -862,6 +863,10 @@ export default function TeacherUnlock({ user }) {
             )}
           </div>
         )}
+
+        {/* Əl ilə zəng təyini — lövhə cütü təsadüfən qurur, müəllim isə
+            konkret iki nəfəri seçir. İki şagirddən az olanda özü gizlənir. */}
+        <TeacherScheduler students={students} />
 
         {/* Roster */}
         <div style={{

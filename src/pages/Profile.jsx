@@ -51,7 +51,15 @@ export default function Profile({ user }) {
     setFeedbackLang(setFeedbackLanguage(code));
     try {
       const targetId = docId || user.uid;
-      if (targetId) await updateDoc(doc(db, 'users', targetId), { preferredLanguage: code });
+      // appLanguage birlikdə yazılır: seçim həm hesabatın dilidir, həm də
+      // bildirişlərin. Ayrı-ayrı yazılsaydı, dili dəyişən istifadəçi növbəti
+      // girişə qədər köhnə dildə push almağa davam edərdi.
+      if (targetId) {
+        await updateDoc(doc(db, 'users', targetId), {
+          preferredLanguage: code,
+          appLanguage: code,
+        });
+      }
     } catch (e) {
       console.warn('[Profile] preferredLanguage save failed:', e.message);
     }
