@@ -60,7 +60,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
 
   const parsed = parseSlotId(call.slotId);
   const startMs = Number(call.startMs) || parsed?.startMs || 0;
-  const when = parsed ? `${dayLabel(parsed.date, now)} ${hourLabel(parsed.hour)}` : '';
+  const when = parsed ? `${dayLabel(parsed.date, now)} ${hourLabel(parsed.date, parsed.hour)}` : '';
   const peerName = call.peerName || 'Partnyorunuz';
   const openable = now >= startMs - 5 * 60 * 1000;
   const live = now >= startMs;
@@ -214,7 +214,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
               >
                 {sending === b.slotId
                   ? '...'
-                  : `${dayLabel(b.date, now)} ${blockLabel(b.hour)}`}
+                  : `${dayLabel(b.date, now)} ${blockLabel(b.date, b.hour)}`}
               </button>
             ))}
           </div>

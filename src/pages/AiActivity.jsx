@@ -8,6 +8,7 @@ import { fetchTopicImages } from '../utils/fetchTopicImages';
 import { plainTopic } from '../utils/topicLabel';
 import useAinurSession from '../hooks/useAinurSession';
 import { speakLine, stopSpeaking, primeLine, hasLine } from '../utils/ainurVoice';
+import { cue, cueStep } from '../utils/cue';
 import AiDescribeStage from '../components/ai/AiDescribeStage';
 import MicButton from '../components/ai/MicButton';
 import Button from '../components/ui/Button';
@@ -81,6 +82,12 @@ export default function AiActivity({ user }) {
   const [intro, setIntro] = useState(false);   // the opening line is playing
   const [turnError, setTurnError] = useState('');
   const [done, setDone] = useState(null);     // null | 'analyzing' | 'ready' | 'short'
+  // The activity is SILENT — no voice after the opening line — so every step it
+  // takes has to be visible or the learner is left staring at a photo
+  // wondering whether anything happened. `advancing` is the hold before the
+  // next picture; `fresh` marks a question that has just arrived.
+  const [advancing, setAdvancing] = useState(false);
+  const [fresh, setFresh] = useState(false);
 
   const content = useMemo(() => getTodayContent(), []);
   const sessionIdRef = useRef(`${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
@@ -214,6 +221,12 @@ export default function AiActivity({ user }) {
   useEffect(() => {
     if (status !== 'listening' || !pendingAdvanceRef.current) return;
     pendingAdvanceRef.current = false;
+    // The hold is ANNOUNCED now. It used to be 2.8 seconds of nothing: the
+    // learner had answered, the screen did not move, and the only reasonable
+    // conclusion was that the app had missed them — "I answered, why is the
+    // picture not changing". Saying "next picture" out loud on screen turns
+    // the same pause into visible progress.
+    setAdvancing(true);
     // Held in a ref and deliberately NOT cleared when status changes: this
     // effect re-runs on every status transition, so cleaning up here would let
     // the learner cancel their own picture change simply by starting to speak
@@ -225,8 +238,22 @@ export default function AiActivity({ user }) {
       setHits([]);
       setHeard('');
       setReply('');
+      setAdvancing(false);
+      cueStep();
     }, CLOSING_READ_MS);
   }, [status]);
+
+  // A new question has to announce itself. Silent activity, same avatar, same
+  // bubble in the same place — the text simply changed, and nobody looking at
+  // the photo noticed. It now arrives with a buzz and a "New question" flag
+  // that fades on its own.
+  useEffect(() => {
+    if (!reply) return undefined;
+    setFresh(true);
+    cue();
+    const t = setTimeout(() => setFresh(false), 4000);
+    return () => clearTimeout(t);
+  }, [reply]);
 
   // Only leaving the screen cancels a pending picture change.
   useEffect(() => () => clearTimeout(advanceTimerRef.current), []);
@@ -460,17 +487,45 @@ export default function AiActivity({ user }) {
             {/* The question stays on screen while they answer it. It used to
                 vanish the moment they spoke, so a learner who lost the thread
                 mid-sentence had nothing to look back at. */}
-            <div className="ai-bubble">
+            <div className={`ai-bubble${fresh ? ' ai-bubble--new' : ''}`}>
               <img
                 src="/ainur_avatar.png"
                 alt=""
                 className={`ai-avatar${status === 'sending' ? ' ai-avatar--pulse' : ''}`}
               />
               <div className="ai-bubble-body">
-                <p className="ai-bubble-name">AInur</p>
-                <p className="ai-bubble-text">{reply || opener}</p>
+                <div className="ai-bubble-head">
+                  <p className="ai-bubble-name">AInur</p>
+                  {/* Which answer this is. Two answers per picture was a rule
+                      only the code knew: the learner could not tell whether
+                      they had finished with this photo or not. */}
+                  <span className="ai-step">
+                    {status === 'sending'
+                      ? 'Listening to your answer…'
+                      : `Answer ${Math.min(turnIndex + 1, TURNS_PER_PICTURE)} of ${TURNS_PER_PICTURE}`}
+                  </span>
+                  {fresh && status !== 'sending' && (
+                    <span className="ai-new-flag">New question</span>
+                  )}
+                </div>
+                <p className="ai-bubble-text">
+                  {status === 'sending' ? (reply || opener) : (reply || opener)}
+                </p>
               </div>
             </div>
+
+            {/* The hold before the next picture, said out loud. Without it the
+                screen sat still for nearly three seconds after the learner's
+                last answer and looked broken. */}
+            {advancing && (
+              <div className="ai-advancing" role="status">
+                <span className="ai-advancing-text">
+                  Got it — next picture…
+                </span>
+                <span className="ai-advancing-bar" aria-hidden="true" />
+              </div>
+            )}
+
             <AiDescribeStage image={image} hits={hits} heard={heard} />
           </>
         )}

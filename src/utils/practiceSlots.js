@@ -84,8 +84,16 @@ export function dayLabel(dateStr, nowMs = Date.now()) {
   return DAY_NAMES[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 }
 
-export const hourLabel = (hour) => `${String(hour).padStart(2, '0')}:00`;
-export const blockLabel = (hour) => `${hourLabel(hour)}–${hourLabel((hour + 2) % 24)}`;
+export const hourLabel = (dateStr, hour) => {
+  const d = new Date(slotStartMs(dateStr, hour));
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+export const blockLabel = (dateStr, hour) => {
+  const start = new Date(slotStartMs(dateStr, hour));
+  const end = new Date(slotStartMs(dateStr, hour) + SLOT_BLOCK_MS);
+  const fmt = { hour: '2-digit', minute: '2-digit', hour12: false };
+  return `${start.toLocaleTimeString([], fmt)}–${end.toLocaleTimeString([], fmt)}`;
+};
 
 // Lövhə BİR sorğu ilə yüklənir: ≤24 sənəd, tək sahəli avtomatik indeks.
 // Sənədlərdə ad yoxdur (yalnız saylar), ona görə anonimlik əlavə iş tələb etmir.

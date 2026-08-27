@@ -1395,6 +1395,105 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
 });
 
 
+// ─── Müəllimdən şagirdə "bugünkü məşqi bitir" xatırlatması ──────────
+// A teacher can see who has not practised today, and until now could do
+// nothing about it inside the app — the roster showed a stale date and the
+// only way to chase a student was WhatsApp. This sends one push.
+//
+// Three guards, and each of them exists to stop the feature becoming spam:
+//   1. Only the student's OWN teacher may send. Checked against
+//      users/<studentUid>.teacherId, not the roster row, which can outlive an
+//      unlink.
+//   2. Nobody who has already practised today gets nudged. Nagging someone who
+//      did the work is the fastest way to make a class mute notifications.
+//   3. One nudge per student per day, no matter how many times the button is
+//      pressed or how many teachers press it.
+//
+// The "did they practise" and "were they nudged" facts both live on the roster
+// row the teacher panel ALREADY loads, so neither check costs the panel an
+// extra read, and the button can render its own state after a reload.
+exports.nudgeStudent = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const teacherUid = decoded.uid;
+
+  const studentUid = String((req.body || {}).studentUid || "").trim();
+  if (!studentUid || studentUid.length > 128) {
+    return res.status(400).json({ error: "invalid-student" });
+  }
+  if (studentUid === teacherUid) return res.status(400).json({ error: "invalid-student" });
+
+  // A ceiling on the teacher as well as on each student: 40 a day is far more
+  // than any real class and still bounds what one account can send.
+  try {
+    await enforceRateLimit(teacherUid, "nudgeStudent", 40, 24 * 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(e.httpStatus || 429).json({ error: "rate-limited" });
+  }
+
+  const db = admin.firestore();
+  const today = bakuDateStr();
+
+  try {
+    const studentSnap = await db.collection("users").doc(studentUid).get();
+    if (!studentSnap.exists) return res.status(404).json({ error: "not-found" });
+    const student = studentSnap.data() || {};
+    if (student.teacherId !== teacherUid) {
+      return res.status(403).json({ error: "not-your-student" });
+    }
+
+    const rosterRef = db.collection("teachers").doc(teacherUid)
+      .collection("roster").doc(studentUid);
+    const rosterSnap = await rosterRef.get();
+    const roster = rosterSnap.exists ? (rosterSnap.data() || {}) : {};
+
+    // Already practised today? Then there is nothing to ask for. lastAnalysisAt
+    // is written by the analysis pipeline at the moment a session is graded.
+    const lastMs = roster.lastAnalysisAt && roster.lastAnalysisAt.toMillis
+      ? roster.lastAnalysisAt.toMillis()
+      : 0;
+    if (lastMs && bakuDateStr(lastMs) === today) {
+      return res.status(200).json({ ok: false, reason: "already-practised" });
+    }
+
+    if (roster.lastNudgedOn === today) {
+      return res.status(200).json({ ok: false, reason: "already-nudged" });
+    }
+
+    const teacherSnap = await db.collection("users").doc(teacherUid).get();
+    const teacherName = String((teacherSnap.data() || {}).name || "").trim();
+
+    const entries = await getTokensForUser(db, studentUid, student.fcmToken, student.fcmTokenFailCount);
+    if (!entries.length) {
+      // No device to reach. Still stamp it: the teacher should be told the
+      // difference between "sent" and "this student has notifications off"
+      // rather than pressing a button that quietly does nothing.
+      await rosterRef.set({ lastNudgedOn: today }, { merge: true });
+      return res.status(200).json({ ok: false, reason: "no-devices" });
+    }
+
+    const { sent } = await sendPush(entries, {
+      title: teacherName ? `${teacherName} is waiting for you` : "Your teacher is waiting for you",
+      body: "Today's speaking practice with AInur is not done yet — it takes about 8 minutes.",
+      type: "teacher_nudge",
+      url: "/practice",
+    });
+
+    await rosterRef.set({ lastNudgedOn: today }, { merge: true });
+    return res.status(200).json({ ok: sent > 0, sent, reason: sent > 0 ? "sent" : "no-devices" });
+  } catch (e) {
+    console.error("[nudgeStudent]", e);
+    return res.status(500).json({ error: "failed" });
+  }
+});
+
 // ─── Birbaşa şagird dəvəti ───────────────────────────────────────
 // Kod paylaşmaq həmişə işləmir: link mesajda itir, şagird kodu səhv yazır.
 // Bu axında müəllim şagirdin e-poçtunu yazır, dəvət ŞAGİRDİN HESABINA düşür

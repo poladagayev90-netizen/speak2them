@@ -205,7 +205,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
           display: 'flex', alignItems: 'center', gap: '10px',
         }}>
           <div style={{ flex: 1, minWidth: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-            👋 <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.hour)}</b> block has someone waiting — join it and your call is confirmed straight away.
+            👋 <b>{dayLabel(bridge.date, now)} {blockLabel(bridge.date, bridge.hour)}</b> block has someone waiting — join it and your call is confirmed straight away.
           </div>
           <button
             type="button"
@@ -330,7 +330,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                       type="button"
                       onClick={() => !past && toggleSlot(slotId, joined, iAmMatched)}
                       disabled={past || working}
-                      aria-label={`${blockLabel(hour)} — ${joined ? 'cancel' : 'mark me free'}`}
+                      aria-label={`${blockLabel(activeDate, hour)} — ${joined ? 'cancel' : 'mark me free'}`}
                       style={{
                         textAlign: 'left', cursor: past ? 'default' : 'pointer',
                         borderRadius: '12px', padding: '10px 11px', minWidth: 0,
@@ -344,10 +344,10 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                           fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)',
                           fontVariantNumeric: 'tabular-nums',
                         }}>
-                          {hourLabel(hour)}
+                          {hourLabel(activeDate, hour)}
                         </span>
                         <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
-                          –{hourLabel((hour + 2) % 24)}
+                          –{hourLabel(activeDate, (hour + 2) % 24)}
                         </span>
                         {popular && <Star size={11} strokeWidth={2} aria-label="Most people are here at this hour" style={{ color: 'var(--warning)' }} />}
                         {isNow && (
@@ -418,7 +418,7 @@ export default function PracticeBoard({ mine, openSignal = 0 }) {
                         color: on ? 'var(--accent)' : 'var(--text-secondary)',
                       }}
                     >
-                      {busy === `rec-${hour}` ? '...' : hourLabel(hour)}
+                      {busy === `rec-${hour}` ? '...' : hourLabel(dates[0], hour)}
                     </button>
                   );
                 })}

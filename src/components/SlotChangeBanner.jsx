@@ -20,7 +20,7 @@ export default function SlotChangeBanner({ request, onDone }) {
 
   const from = parseSlotId(request.fromSlotId);
   const to = parseSlotId(request.toSlotId);
-  const label = (s) => (s ? `${dayLabel(s.date)} ${hourLabel(s.hour)}` : '—');
+  const label = (s) => (s ? `${dayLabel(s.date)} ${hourLabel(s.date, s.hour)}` : '—');
 
   const respond = async (accept) => {
     setBusy(accept ? 'yes' : 'no');

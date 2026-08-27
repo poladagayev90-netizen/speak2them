@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ImageOff } from 'lucide-react';
+import { ImageOff, Check } from 'lucide-react';
 import Pill from '../ui/Pill';
 import DescribeFrames from '../DescribeFrames';
 import './ai.css';
@@ -77,8 +77,16 @@ export default function AiDescribeStage({ image, hits = [], heard }) {
         </div>
       )}
 
+      {/* A RECEIPT, not a decoration. On a silent activity this line is the
+          only proof the learner has that their voice reached AInur at all, and
+          unlabelled it just looked like more text on the screen. */}
       {heard && (
-        <p className="ai-heard">“{heard}”</p>
+        <div className="ai-heard-block">
+          <p className="ai-heard-label">
+            <Check size={12} strokeWidth={3} aria-hidden="true" /> AInur heard you say
+          </p>
+          <p className="ai-heard">“{heard}”</p>
+        </div>
       )}
 
       <DescribeFrames compact prompts={image.prompts || []} />

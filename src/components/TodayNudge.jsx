@@ -30,7 +30,7 @@ function pickNudge(user, mine) {
     if (mins > 0 && mins <= 90) {
       return {
         id: 'call-soon',
-        text: `⏱ Your ${hourLabel(parsed?.hour ?? 0)} call starts in ${mins} ${mins === 1 ? 'minute' : 'minutes'}.`,
+        text: `⏱ Your ${hourLabel(parsed?.date || '', parsed?.hour ?? 0)} call starts in ${mins} ${mins === 1 ? 'minute' : 'minutes'}.`,
       };
     }
     return null;

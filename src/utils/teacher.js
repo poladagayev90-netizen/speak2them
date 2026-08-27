@@ -91,6 +91,28 @@ export function inviteStudentByUid(studentUid) {
   return callTeacherFn('inviteStudentByEmail', { studentUid }, INVITE_ERROR_TEXT);
 }
 
+// ── "Bugünkü məşqi bitir" xatırlatması ──────────────────────────
+// Müəllim panelindən şagirdə bir push. Serverdə üç qoruma var (yalnız öz
+// şagirdin, bu gün məşq edibsə göndərilmir, günə bir dəfə), ona görə burada
+// yalnız nəticəni oxumaq qalır — reason sahəsi düymənin nə deyəcəyini seçir.
+const NUDGE_ERROR_TEXT = {
+  'not-your-student': 'This student is not linked to you any more.',
+  'not-found': 'That student account no longer exists.',
+  'invalid-student': 'Something went wrong. Please try again.',
+  'rate-limited': 'You have sent a lot of reminders today. Try again tomorrow.',
+};
+
+export const NUDGE_RESULT_TEXT = {
+  sent: 'Reminder sent',
+  'already-practised': 'Already practised today',
+  'already-nudged': 'Already reminded today',
+  'no-devices': 'Notifications are off on their phone',
+};
+
+export function nudgeStudent(studentUid) {
+  return callTeacherFn('nudgeStudent', { studentUid }, NUDGE_ERROR_TEXT);
+}
+
 export function respondTeacherInvite(inviteId, accept) {
   return callTeacherFn('respondTeacherInvite', { inviteId, accept }, INVITE_ERROR_TEXT);
 }

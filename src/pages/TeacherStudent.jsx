@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Clock, ChevronLeft } from 'lucide-react';
+import { Clock, ChevronLeft, BellRing, Check, User } from 'lucide-react';
+import { nudgeStudent, NUDGE_RESULT_TEXT } from '../utils/teacher';
 import { AnalysisDetail } from './History';
 
 // Müəllimin şagird səhifəsi — funnel-in ƏSAS dəyəri: şagirdin hər zənginin
@@ -12,10 +13,13 @@ import { AnalysisDetail } from './History';
 // Layout hər iki mühit üçün: maxWidth mərkəzləmə (PC) + dar ekranda sütun.
 export default function TeacherStudent({ user }) {
   const navigate = useNavigate();
-  const { studentId } = useParams();  const [student, setStudent] = useState(null);
+  const { studentId } = useParams();
+  const [student, setStudent] = useState(null);
   const [analyses, setAnalyses] = useState(null); // null=yüklənir, []=boş
   const [selected, setSelected] = useState(null);
   const [denied, setDenied] = useState(false);
+  // 'sending' | a NUDGE_RESULT_TEXT key | free-text error.
+  const [nudge, setNudge] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -74,7 +78,7 @@ export default function TeacherStudent({ user }) {
           >
             <ChevronLeft size={22} />
           </button>
-          👤 {student?.name || 'Student'}
+          <User size={20} strokeWidth={1.75} aria-hidden="true" /> {student?.name || 'Student'}
         </div>
       </div>
 
@@ -101,6 +105,34 @@ export default function TeacherStudent({ user }) {
             </div>
           ))}
         </div>
+
+        {/* Chasing a student was a WhatsApp job. One tap, one push, and the
+            server refuses it if they have already practised today — so this
+            cannot turn into nagging someone who did the work. */}
+        <button
+          type="button"
+          onClick={async () => {
+            if (nudge === 'sending') return;
+            setNudge('sending');
+            const res = await nudgeStudent(studentId);
+            setNudge(res.ok ? (res.data?.reason || 'sent') : (res.errorText || 'Could not send'));
+          }}
+          disabled={!!nudge && nudge !== 'sending'}
+          style={{
+            ...panel, marginBottom: '18px', width: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            cursor: nudge ? 'default' : 'pointer', fontFamily: 'inherit',
+            border: `1px solid ${nudge ? 'var(--border)' : 'var(--accent-ring)'}`,
+            background: nudge ? 'var(--bg-card)' : 'var(--accent-soft)',
+            color: nudge ? 'var(--text-secondary)' : 'var(--accent)',
+            fontSize: '14px', fontWeight: 700,
+          }}
+        >
+          {nudge === 'sending' ? 'Sending…'
+            : nudge
+              ? <><Check size={16} strokeWidth={2.5} aria-hidden="true" /> {NUDGE_RESULT_TEXT[nudge] || nudge}</>
+              : <><BellRing size={16} strokeWidth={2} aria-hidden="true" /> Remind them to practise today</>}
+        </button>
 
         {student?.level && (
           <div style={{ ...panel, marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

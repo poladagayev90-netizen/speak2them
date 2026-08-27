@@ -197,7 +197,7 @@ export default function AdminSlots({ users }) {
                     }}>
                       <strong style={{ color: 'var(--text-primary)', fontSize: '15px' }}>
                         {popular && <Star size={11} strokeWidth={2} aria-label="Busiest hour" style={{ marginRight: 4, color: 'var(--warning)' }} />}
-                        {blockLabel(s.hour)}
+                        {blockLabel(s.date, s.hour)}
                       </strong>
                       <span style={{ fontSize: 12, color: c.total ? 'var(--text-secondary)' : 'var(--text-muted)', fontWeight: 600 }}>
                         {c.total ? `${c.total} people${c.paired ? ` · ${c.paired} matched` : ''}` : 'empty'}

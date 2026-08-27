@@ -187,3 +187,104 @@
   border: 2px solid var(--ai);
   color: var(--ai);
 }
+
+/* ------------------------------------------------- Where am I in this? -- */
+/* Describing pictures is SILENT: after the opening line AInur never speaks
+   again. Everything below exists because a silent state machine that does not
+   show its state is indistinguishable from a broken app — "she asks, I answer,
+   and the picture does not change" was exactly that. */
+
+.ai-bubble-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+/* "Answer 1 of 2". Two answers per picture was a rule only the code knew. */
+.ai-step {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A new question arrives in the same bubble, in the same place, with the same
+   avatar — only the words change, which on a photo-heavy screen is no change at
+   all. The flag and the ring below are what make it an event. */
+.ai-new-flag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-on-ai);
+  background: var(--ai-fill);
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
+}
+
+.ai-bubble--new {
+  border-radius: var(--r-lg);
+  box-shadow: 0 0 0 2px var(--ai-ring);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ai-bubble--new { animation: ai-bubble-arrive 460ms ease both; }
+}
+@keyframes ai-bubble-arrive {
+  from { transform: translateY(-4px); box-shadow: 0 0 0 6px transparent; }
+  to   { transform: translateY(0);    box-shadow: 0 0 0 2px var(--ai-ring); }
+}
+
+/* The hold before the next picture. It is nearly three seconds long, and in
+   silence it read as the app having missed the answer. */
+.ai-advancing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+}
+.ai-advancing-text {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--accent);
+}
+.ai-advancing-bar {
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Runs for exactly CLOSING_READ_MS in AiActivity.jsx — if one changes the
+     other has to, or the bar finishes before or after the picture does. */
+  .ai-advancing-bar { animation: ai-advance-fill 2800ms linear both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-advancing-bar { transform: scaleX(1); }
+}
+@keyframes ai-advance-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* The transcript is the only proof the learner's voice arrived at all. */
+.ai-heard-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ai-heard-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--success);
+}

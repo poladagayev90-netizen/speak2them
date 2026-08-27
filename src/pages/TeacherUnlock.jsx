@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, MessageCircle, BarChart3 } from 'lucide-react';
+import { GraduationCap, MessageCircle, BarChart3, BellRing, Check } from 'lucide-react';
 import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -8,11 +8,14 @@ import {
   buildJoinLink,
   inviteStudentByEmail,
   inviteStudentByUid,
+  nudgeStudent,
+  NUDGE_RESULT_TEXT,
   updateTeacherProfile,
   TEACHER_SESSIONS_REQUIRED,
   TUTOR_SPECIALTIES,
 } from '../utils/teacher';
 import TutorBadge from '../components/TutorBadge';
+import { bakuDateStr } from '../utils/sessionSchedule';
 
 // Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
 // müsbətdir: müdafiə cümləsi ("şagirdinizi almırıq") qorxunu adlandırıb yaradır.
@@ -57,6 +60,10 @@ export default function TeacherUnlock({ user }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState(null); // {ok, text}
   // İstifadəçi kataloqu — e-poçt yazmadan bir toxunuşla dəvət.
+  // Per-student reminder state: uid -> 'sending' | one of NUDGE_RESULT_TEXT.
+  // Kept per row rather than as one global flag so a teacher with twenty
+  // students can see which of them they have already chased.
+  const [nudged, setNudged] = useState({});
   const [directory, setDirectory] = useState(null);
   const [dirOpen, setDirOpen] = useState(false);
   const [dirSearch, setDirSearch] = useState('');
@@ -365,6 +372,20 @@ export default function TeacherUnlock({ user }) {
       </div>
     );
   }
+
+  // Bir şagirdə "bugünkü məşqi bitir" xatırlatması. Nəticə düymənin öz
+  // üstündə qalır: müəllim "göndərildi" ilə "artıq məşq edib" arasındakı fərqi
+  // görməlidir, yoxsa eyni şagirdi təkrar-təkrar dürtər.
+  const sendNudge = async (studentUid) => {
+    if (nudged[studentUid] === 'sending') return;
+    setNudged((m) => ({ ...m, [studentUid]: 'sending' }));
+    const res = await nudgeStudent(studentUid);
+    const reason = res.ok ? (res.data?.reason || 'sent') : null;
+    setNudged((m) => ({
+      ...m,
+      [studentUid]: reason || res.errorText || 'Could not send',
+    }));
+  };
 
   // ─── 4. Dashboard: dəvət + roster ──────────────────────────────
   const link = buildJoinLink(myCode);
@@ -919,6 +940,45 @@ export default function TeacherUnlock({ user }) {
                 }}>
                   {s.status === 'active' ? 'Active' : 'Inactive'}
                 </span>
+                {/* Chasing a student used to mean leaving the app for WhatsApp.
+                    stopPropagation because the whole row navigates to their
+                    detail page — without it, reminding someone opens their
+                    profile at the same time. */}
+                {(() => {
+                  // The roster row already carries lastNudgedOn (the server
+                  // stamps it), so the button knows its own state after a
+                  // reload instead of offering to send a reminder that the
+                  // server will only refuse.
+                  const state = nudged[s.id]
+                    || (s.lastNudgedOn === bakuDateStr() ? 'already-nudged' : null);
+                  const label = state && NUDGE_RESULT_TEXT[state];
+                  const done = !!state && state !== 'sending';
+                  return (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); sendNudge(s.id); }}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      disabled={done || state === 'sending'}
+                      title={label || state || 'Remind this student to finish today’s practice'}
+                      aria-label={`Remind ${s.displayName || 'this student'} to practise`}
+                      style={{
+                        flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '5px',
+                        padding: '6px 10px', borderRadius: '99px', cursor: done ? 'default' : 'pointer',
+                        border: `1px solid ${done ? 'var(--border)' : 'var(--accent-ring)'}`,
+                        background: done ? 'transparent' : 'var(--accent-soft)',
+                        color: done ? 'var(--text-muted)' : 'var(--accent)',
+                        fontSize: '11px', fontWeight: 700, fontFamily: 'inherit',
+                        maxWidth: '46%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {state === 'sending'
+                        ? '…'
+                        : done
+                          ? <><Check size={12} strokeWidth={3} aria-hidden="true" /> {label || state}</>
+                          : <><BellRing size={12} strokeWidth={2} aria-hidden="true" /> Remind</>}
+                    </button>
+                  );
+                })()}
                 <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span>
               </div>
             ))}
