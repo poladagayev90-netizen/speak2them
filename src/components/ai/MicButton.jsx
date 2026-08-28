@@ -24,10 +24,15 @@ const fmt = (ms) => {
  */
 export default function MicButton({ status, active, intro = false, level = 0, elapsedMs = 0, onTap, disabled }) {
   const listening = !intro && status === 'listening';
-  const busy = !intro && status === 'sending';
-  // `intro` is the one spoken line at the top of a session. It is a separate
-  // flag rather than a status because the session has not started yet — the
-  // microphone deliberately stays shut until she has finished.
+  // 'held' is the loop parked while the picture turns over: the answer has
+  // landed and the microphone is deliberately shut until she has asked the next
+  // question. To the learner that is the same "one moment" as sending, and it
+  // must not read as "Tap to start" -- there is nothing to start.
+  const busy = !intro && (status === 'sending' || status === 'held');
+  // `intro` is AInur asking this picture's question out loud. It is a separate
+  // flag rather than a status because it straddles the session: on the first
+  // picture nothing has started yet, and on every one after it the loop is held.
+  // Either way the microphone stays shut until she has finished.
   const speaking = intro || status === 'speaking';
 
   const label = intro ? 'AInur is asking — tap to skip'

@@ -14,37 +14,52 @@ import MicButton from '../components/ai/MicButton';
 import Button from '../components/ui/Button';
 import '../components/ai/ai.css';
 
-// A describing session with AInur: five pictures, one question each.
+// A describing session with AInur: five pictures, one spoken question each.
 // Ends with the same analysis a human call produces, which is what reaches the
 // teacher.
 //
-// ONE TAP AND ONE SPOKEN LINE, for the whole session. She says a single
-// sentence as it opens; after that the activity is silent. You describe a
-// picture, she asks one follow-up IN WRITING, you answer, she says one line back
-// about that answer, and the next picture appears with the microphone already
-// live. There is no record button per picture and no waiting for her to stop
-// talking before you may speak.
+// THE SHAPE OF A PICTURE, and it is the same every time:
+//   she ASKS OUT LOUD → you answer → your answer is taken → next picture.
+// One question, one answer, no second question. Then the next photograph
+// arrives and she asks again, out loud.
 //
-// Why the voice went: hearing every reply cost five to eight seconds after each
-// answer, twice per picture, in which the learner could do nothing at all — and
-// it was most of what the activity cost to run. A written question is read in a
-// second and, unlike a spoken one, is still there while they think.
+// This replaces a two-turn picture where only the very first sentence of the
+// whole session was spoken and every question after it appeared silently as
+// text. That mismatch is what broke the activity for learners: the opening
+// line taught them AInur talks, so when the second question arrived without a
+// sound they did not notice it had been asked and sat waiting. Reported, in
+// those words, as "the first question is read out, then everything goes quiet
+// and I do not know what to do".
+//
+// Her voice costs nothing to keep. The five questions below are FIXED strings,
+// so each one is synthesised once and then played from the device for ever —
+// five TTS calls per device, total. What stays silent is her closing sentence
+// about the answer, which is different every time and would be paid for every
+// time; it is read, not heard, and the microphone reopens immediately instead
+// of after five to eight seconds of listening to her.
 const PICTURES_PER_SESSION = 5;
-// Describe the picture, then answer the one follow-up. She answers that answer
-// too, with a single sentence and no question, and the picture moves on once it
-// has been on screen long enough to read.
-const TURNS_PER_PICTURE = 2;
+// One answer per picture. She replies to it with a single sentence and no
+// question, and the picture moves on once that sentence has been on screen long
+// enough to read.
+const TURNS_PER_PICTURE = 1;
 
-// The one line she says out loud, at the start of the session only. It is a
-// fixed string, so its audio is synthesised once and then served from the
-// device forever. It also stays on screen for every picture as the standing
-// instruction, because a learner looking at a photo with nothing asked of them
-// freezes.
+// What she says out loud when each picture opens. One per picture, and they are
+// fixed strings for the caching reason above — never build one of these from
+// data.
 // ⚠️ The server keeps an allowlist of speakable lines (SPEAKABLE_LINES in
-// functions/index.js). Changing this string without adding it there makes
-// speakLine return 400 and AInur goes silent for every learner, with nothing on
-// screen to explain it. That is exactly how this activity broke once.
-const DESCRIBE_PROMPT = 'How can you describe this photo?';
+// functions/index.js). Adding or changing a line here without adding it there
+// makes speakLine return 400 and AInur goes silent, with nothing on screen to
+// explain it. That is exactly how this activity broke once.
+const DESCRIBE_QUESTIONS = [
+  'How can you describe this photo?',
+  'What can you see in this picture?',
+  'Tell me what is happening here.',
+  'What do you notice first in this picture?',
+  'Describe this picture for me. What is going on?',
+];
+// Wraps, so priming the NEXT picture's line never has to special-case the last
+// one.
+const questionFor = (i) => DESCRIBE_QUESTIONS[((i % DESCRIBE_QUESTIONS.length) + DESCRIBE_QUESTIONS.length) % DESCRIBE_QUESTIONS.length];
 
 // A turn can fail in six different ways and every one of them used to look
 // identical to the learner: nothing happened at all. No reply, no message, no
@@ -82,10 +97,10 @@ export default function AiActivity({ user }) {
   const [intro, setIntro] = useState(false);   // the opening line is playing
   const [turnError, setTurnError] = useState('');
   const [done, setDone] = useState(null);     // null | 'analyzing' | 'ready' | 'short'
-  // The activity is SILENT — no voice after the opening line — so every step it
-  // takes has to be visible or the learner is left staring at a photo
-  // wondering whether anything happened. `advancing` is the hold before the
-  // next picture; `fresh` marks a question that has just arrived.
+  // Her QUESTION is spoken; everything else the activity does is silent, so
+  // every other step has to be visible or the learner is left staring at a
+  // photo wondering whether anything happened. `advancing` is the hold before
+  // the next picture; `fresh` marks a question that has just been asked.
   const [advancing, setAdvancing] = useState(false);
   const [fresh, setFresh] = useState(false);
 
@@ -101,6 +116,11 @@ export default function AiActivity({ user }) {
   // activity had no end at all -- see the effect that consumes it.
   const pendingFinishRef = useRef(false);
   const advanceTimerRef = useRef(null);
+  const freshTimerRef = useRef(null);
+  // The picture whose question has already been asked. Without it the effect
+  // that asks would fire again on any unrelated re-render and talk over itself.
+  // Starts at 0 because the opening tap asks for the first picture.
+  const askedForRef = useRef(0);
   const finishTimerRef = useRef(null);
   const finishScheduledRef = useRef(false);
   // Live copy for the segment handler, which is created once and must not close
@@ -203,13 +223,19 @@ export default function AiActivity({ user }) {
       // and wrote a turn to Firestore.
       if (!st.isLastPicture) pendingAdvanceRef.current = true;
       else pendingFinishRef.current = true;
+      // HOLD THE LOOP. Left to itself it reopens the microphone the instant
+      // this returns, and the very next thing that happens is AInur asking the
+      // next picture's question out loud — through the speaker, into that open
+      // microphone, and back out to Whisper as the learner's own first
+      // sentence. Whoever holds owns the resume: askPicture() below.
+      return { ...data, hold: true };
     } else {
       setTurnIndex((t) => t + 1);
     }
     return data;
   }, [content.day, user]);
 
-  const { status, active, level, elapsedMs, error, start, stop, submit, interrupt } =
+  const { status, active, level, elapsedMs, error, start, stop, submit, resume, interrupt } =
     useAinurSession({ onSegment: handleSegment });
 
   // The picture changes once her closing line has been on screen long enough to
@@ -218,8 +244,12 @@ export default function AiActivity({ user }) {
   // by the photo silently swapping. She replies to it now, so the reply needs a
   // beat: swapping the picture under her sentence hides the very thing that was
   // missing.
+  //
+  // 'held' is where the loop parks itself after a closing answer. Waiting for
+  // 'listening' instead, as this did, would now never fire at all -- the
+  // microphone deliberately does not reopen until she has finished asking.
   useEffect(() => {
-    if (status !== 'listening' || !pendingAdvanceRef.current) return;
+    if (status !== 'held' || !pendingAdvanceRef.current) return;
     pendingAdvanceRef.current = false;
     // The hold is ANNOUNCED now. It used to be 2.8 seconds of nothing: the
     // learner had answered, the screen did not move, and the only reasonable
@@ -234,7 +264,6 @@ export default function AiActivity({ user }) {
     advanceTimerRef.current = setTimeout(() => {
       historyRef.current = [];
       setPicIndex((i) => i + 1);
-      setTurnIndex(0);
       setHits([]);
       setHeard('');
       setReply('');
@@ -243,20 +272,28 @@ export default function AiActivity({ user }) {
     }, CLOSING_READ_MS);
   }, [status]);
 
-  // A new question has to announce itself. Silent activity, same avatar, same
-  // bubble in the same place — the text simply changed, and nobody looking at
-  // the photo noticed. It now arrives with a buzz and a "New question" flag
-  // that fades on its own.
+  // Her closing sentence lands silently, so it buzzes. Without it the only
+  // evidence that an answer had been taken was one line of text changing on a
+  // screen the learner was not looking at -- they were looking at the photo.
   useEffect(() => {
-    if (!reply) return undefined;
-    setFresh(true);
-    cue();
-    const t = setTimeout(() => setFresh(false), 4000);
-    return () => clearTimeout(t);
+    if (reply) cue();
   }, [reply]);
 
+  // A question announces itself: a buzz and a "New question" flag that fades on
+  // its own. It is raised when she starts ASKING, which is also when her voice
+  // starts, so the two signals agree.
+  const markFresh = useCallback(() => {
+    setFresh(true);
+    cue();
+    clearTimeout(freshTimerRef.current);
+    freshTimerRef.current = setTimeout(() => setFresh(false), 4000);
+  }, []);
+
   // Only leaving the screen cancels a pending picture change.
-  useEffect(() => () => clearTimeout(advanceTimerRef.current), []);
+  useEffect(() => () => {
+    clearTimeout(advanceTimerRef.current);
+    clearTimeout(freshTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (isFree) return undefined;
@@ -267,19 +304,34 @@ export default function AiActivity({ user }) {
     return () => { cancelled = true; };
   }, [content, isFree]);
 
-  // One line for the whole session, not one per picture. It stays on screen
-  // under her name until she has asked her follow-up.
-  const opener = isFree ? freeOpener(plainTopic(content.topic)) : DESCRIBE_PROMPT;
+  // The question for the picture ON SCREEN. It is both what she says out loud
+  // and what stays written under her name while they answer it, because a
+  // spoken question is gone the moment it ends and a learner who loses the
+  // thread mid-sentence has to be able to look back at it.
+  const opener = isFree ? freeOpener(plainTopic(content.topic)) : questionFor(picIndex);
 
   const ready = isFree || !!image;
 
-  // Fetch the opening line while they are still looking at the first picture,
-  // so the tap does not wait on a network round trip. Costs nothing after the
-  // first time on this device: the audio is cached.
+  // Fetch this picture's line while they are still looking at it, and the NEXT
+  // picture's line too, so no question ever waits on a network round trip. Each
+  // costs one call the first time this device ever hears it and nothing after
+  // that.
   // Keyed on the uid, not just mount: auth restores asynchronously and a prime
   // fired before it lands has no token to send, so it would quietly do nothing
   // and never retry.
-  useEffect(() => { if (user?.uid) primeLine(opener); }, [opener, user?.uid]);
+  // SEQUENTIAL, not both at once. Fired together they race each other through
+  // the same cold function and the line actually on screen can lose -- which is
+  // exactly what happened: the first question of a session arrived a moment
+  // after the learner had already tapped, so the one question they most needed
+  // to hear was the one question that went unspoken.
+  useEffect(() => {
+    if (!user?.uid) return;
+    let cancelled = false;
+    primeLine(opener).then(() => {
+      if (!cancelled && !isFree) primeLine(questionFor(picIndex + 1));
+    });
+    return () => { cancelled = true; };
+  }, [opener, picIndex, isFree, user?.uid]);
 
   // She speaks BEFORE the microphone opens, never over it. Run together, the
   // recorder hears her through the speaker and Whisper hands back AInur's own
@@ -287,23 +339,48 @@ export default function AiActivity({ user }) {
   //
   // But the voice never delays the lesson. If the line is not already on the
   // device — offline, a cold start, or the server refused it — the microphone
-  // opens immediately and the sentence stays on screen unspoken.
-  const beginSession = useCallback(async () => {
-    if (!hasLine(opener)) {
-      // A prime is probably already in flight from the effect above. Give it a
-      // moment to land so even the very first session hears her — but cap the
-      // wait hard: a slow network must never hold the microphone shut.
-      await Promise.race([primeLine(opener), new Promise((r) => { setTimeout(r, 1200); })]);
-    }
-    if (!hasLine(opener)) { start(); return; }
+  // opens immediately and the question stays on screen unspoken. `open` is what
+  // hands the floor back: start() for the first picture, resume() for every
+  // one after it, because by then the session is already running and starting
+  // it again would open a second recorder.
+  const ask = useCallback(async (line, open) => {
+    markFresh();
+    // The asking state goes up BEFORE the wait, not after it. It used to cover
+    // only the playback, so a line that was not cached yet left the button
+    // reading "Tap to start" for a second or more after a tap that had already
+    // been taken -- a dead screen at the one moment the learner is looking for
+    // a response.
     introRef.current = true;
     setIntro(true);
-    await speakLine(opener);        // resolves when she has finished, not when she starts
-    if (!introRef.current) return;  // skipped, finished early, or the screen was left
+    if (!hasLine(line)) {
+      // A prime is probably already in flight from the effect above. Give it a
+      // moment to land so even the very first session on a device hears her.
+      // Capped, because a slow network must never hold the microphone shut:
+      // past this the question stays on screen unspoken and the lesson goes on.
+      await Promise.race([primeLine(line), new Promise((r) => { setTimeout(r, 2500); })]);
+      if (!introRef.current) return; // tapped through while we waited
+    }
+    if (hasLine(line)) {
+      await speakLine(line);        // resolves when she has finished, not when she starts
+      if (!introRef.current) return; // skipped, finished early, or the screen was left
+    }
     introRef.current = false;
     setIntro(false);
-    start();
-  }, [opener, start]);
+    open();
+  }, [markFresh]);
+
+  const beginSession = useCallback(() => ask(opener, start), [ask, opener, start]);
+
+  // Every picture after the first is announced the same way the first one was:
+  // she asks it out loud, and only then does the microphone reopen. The loop is
+  // sitting held at this point -- see the closing branch of handleSegment --
+  // so nothing is recording while she talks.
+  useEffect(() => {
+    if (isFree || !active || !image) return;
+    if (askedForRef.current === picIndex) return;
+    askedForRef.current = picIndex;
+    ask(questionFor(picIndex), resume);
+  }, [picIndex, active, image, isFree, ask, resume]);
 
   // The microphone button NEVER ends the session. It used to: any tap that was
   // not an interrupt fell through to stop(), which discards the segment being
@@ -315,12 +392,15 @@ export default function AiActivity({ user }) {
   // Tapping while listening now SENDS. Ending the session is the Finish button
   // below, which says so in words.
   const onTap = useCallback(() => {
-    // Tapping through the opening line skips it rather than restarting it.
+    // Tapping through a spoken question skips it rather than restarting it.
+    // The written question stays on screen, so nothing is lost by cutting her
+    // off -- and on the second picture onward the session is already running,
+    // which is why this resumes rather than starts.
     if (intro) {
       introRef.current = false;
       setIntro(false);
       stopSpeaking();
-      start();
+      if (active) resume(); else start();
       return;
     }
     if (!active) { beginSession(); return; }
@@ -329,7 +409,7 @@ export default function AiActivity({ user }) {
     // session down. Doing nothing is the honest response to "one moment".
     if (status === 'sending') return;
     submit();
-  }, [intro, active, status, beginSession, start, submit, interrupt]);
+  }, [intro, active, status, beginSession, start, submit, resume, interrupt]);
 
   // Leaving the screen must not leave her talking, and must not let a queued
   // opening line start a session nobody is looking at.
@@ -359,15 +439,15 @@ export default function AiActivity({ user }) {
 
   // Five pictures answered IS the end of the activity, so it ends itself and
   // goes straight to the report the learner did the work for. Queued on the
-  // return to 'listening' so it cannot cut across a reply still arriving, then
-  // held for the same beat as a picture change: without the hold, her sentence
+  // loop parking at 'held' so it cannot cut across a reply still arriving, then
+  // waits for the same beat as a picture change: without the hold, her sentence
   // about the FIFTH answer was generated, paid for, and replaced by the
   // "Marking your session" screen before anyone could read it -- the last
   // answer of the session being the one answer that still got nothing back.
   // Guarded by its own flag because this effect re-runs on every status change,
   // and the timer must not be rescheduled or cancelled once it is set.
   useEffect(() => {
-    if (!pendingFinishRef.current || status !== 'listening' || finishScheduledRef.current) return;
+    if (!pendingFinishRef.current || status !== 'held' || finishScheduledRef.current) return;
     finishScheduledRef.current = true;
     finishTimerRef.current = setTimeout(finish, CLOSING_READ_MS);
   }, [status, finish]);
@@ -496,21 +576,20 @@ export default function AiActivity({ user }) {
               <div className="ai-bubble-body">
                 <div className="ai-bubble-head">
                   <p className="ai-bubble-name">AInur</p>
-                  {/* Which answer this is. Two answers per picture was a rule
-                      only the code knew: the learner could not tell whether
-                      they had finished with this photo or not. */}
+                  {/* What is expected of them, in words, at every moment. The
+                      rule -- one answer and the picture moves on -- used to be
+                      known only to the code, so the learner could not tell
+                      whether they had finished with this photo or not. */}
                   <span className="ai-step">
-                    {status === 'sending'
-                      ? 'Listening to your answer…'
-                      : `Answer ${Math.min(turnIndex + 1, TURNS_PER_PICTURE)} of ${TURNS_PER_PICTURE}`}
+                    {intro ? 'Asking you…'
+                      : status === 'sending' ? 'Listening to your answer…'
+                        : 'One answer, then the next picture'}
                   </span>
                   {fresh && status !== 'sending' && (
                     <span className="ai-new-flag">New question</span>
                   )}
                 </div>
-                <p className="ai-bubble-text">
-                  {status === 'sending' ? (reply || opener) : (reply || opener)}
-                </p>
+                <p className="ai-bubble-text">{reply || opener}</p>
               </div>
             </div>
 

@@ -39,7 +39,7 @@ const VOICE_THRESHOLD = 0.045;  // peak amplitude that counts as speech
 const NO_VOICE_GRACE_MS = 12000; // if we never hear anything at all, give up politely
 
 export default function useAinurSession({ onSegment }) {
-  const [status, setStatus] = useState('idle'); // idle | listening | sending | speaking
+  const [status, setStatus] = useState('idle'); // idle | listening | sending | speaking | held
   const [active, setActive] = useState(false);  // is the session running?
   const [level, setLevel] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -58,6 +58,13 @@ export default function useAinurSession({ onSegment }) {
   // Set by submit(): this segment is ending because the learner said it was
   // finished, not because the room went quiet.
   const submitRef = useRef(false);
+  // The session is running but something else owns the audio right now — AInur
+  // saying a line out loud through the same speaker the microphone can hear. A
+  // held loop keeps the stream and the session alive and simply does not open a
+  // recorder, so her question cannot be recorded and sent back as the learner's
+  // own words. Set by a segment handler returning `hold: true`, cleared by
+  // resume().
+  const pausedRef = useRef(false);
   const audioElRef = useRef(null);
   const onSegmentRef = useRef(onSegment);
   onSegmentRef.current = onSegment;
@@ -186,6 +193,14 @@ export default function useAinurSession({ onSegment }) {
       }
       if (!activeRef.current) return;
 
+      // The handler has taken the floor: stop the loop here instead of opening
+      // the next recorder. Whoever asked for the hold owns resume().
+      if (result && result.hold) {
+        pausedRef.current = true;
+        setStatus('held');
+        return;
+      }
+
       if (result && result.audioBase64) {
         const el = new Audio(`data:audio/mp3;base64,${result.audioBase64}`);
         audioElRef.current = el;
@@ -235,6 +250,7 @@ export default function useAinurSession({ onSegment }) {
   const start = useCallback(() => {
     if (activeRef.current) return;
     setError('');
+    pausedRef.current = false;
     activeRef.current = true;
     setActive(true);
     listen();
@@ -258,9 +274,18 @@ export default function useAinurSession({ onSegment }) {
     return true;
   }, []);
 
+  // Give the floor back after a hold. Deliberately a no-op when the loop is not
+  // held, so a stray call cannot open a second recorder alongside a live one.
+  const resume = useCallback(() => {
+    if (!activeRef.current || !pausedRef.current) return;
+    pausedRef.current = false;
+    listen();
+  }, [listen]);
+
   const stop = useCallback(() => {
     activeRef.current = false;
     setActive(false);
+    pausedRef.current = false;
     submitRef.current = false;
     if (autoStopRef.current) { clearInterval(autoStopRef.current); autoStopRef.current = null; }
     const rec = recorderRef.current;
@@ -275,6 +300,7 @@ export default function useAinurSession({ onSegment }) {
   // Tapping while AInur talks cuts her off and starts listening immediately.
   const interrupt = useCallback(() => {
     stopPlayback();
+    pausedRef.current = false;
     if (activeRef.current) listen();
   }, [listen, stopPlayback]);
 
@@ -285,5 +311,5 @@ export default function useAinurSession({ onSegment }) {
     releaseMic();
   }, [releaseMic, stopPlayback]);
 
-  return { status, active, level, elapsedMs, error, setError, start, stop, submit, interrupt };
+  return { status, active, level, elapsedMs, error, setError, start, stop, submit, resume, interrupt };
 }

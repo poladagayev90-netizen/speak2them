@@ -6016,12 +6016,15 @@ exports.aiActivityTurn = onRequest(
 
       // 3. Text to speech.
       //
-      // Describing pictures is a SILENT activity now, apart from one spoken
-      // line at the very start of the session (src/utils/ainurVoice.js, cached
-      // on the device, so it costs one call ever). Her follow-up question is
-      // read, not heard. That drops the dominant cost of the activity -- TTS
-      // was more than half of it -- and, more importantly, it removes the wait
-      // between the learner finishing and being allowed to speak again.
+      // Describing pictures speaks only its QUESTIONS, and never from here.
+      // Those are five fixed strings served by speakLine (SPEAKABLE_LINES
+      // below) and cached on the device, so the whole activity costs five TTS
+      // calls per device ever. What this branch would synthesise is her closing
+      // sentence about the answer, which is different every time and so would
+      // be paid for every time -- and it is the one line that can be read
+      // instead of heard, because the learner is not waiting on it to know what
+      // to do. Speaking it also put five to eight dead seconds between the
+      // learner finishing and being allowed to speak again.
       //
       // Decided here rather than taken from the request: a client that asked
       // for a voice on every describe turn would simply be billing us for it.
@@ -6235,16 +6238,23 @@ exports.analyzeAiSession = onRequest(
 // the line the describing activity asks for; changing the string there without
 // adding it here returns 400 "Unknown line" and AInur goes COMPLETELY SILENT
 // with nothing on screen to say why. That has already shipped once.
+// Every line AInur is allowed to say out loud from a fixed string. They are
+// fixed precisely so the audio is synthesised once per device and then replayed
+// for ever -- which is what makes a spoken question per picture cost nothing to
+// keep. Keep in sync with DESCRIBE_QUESTIONS in src/pages/AiActivity.jsx; a
+// line missing from here returns 400 and AInur goes silent with nothing on
+// screen to explain why.
 const SPEAKABLE_LINES = new Set([
-  // The current describing opener -- keep in sync with DESCRIBE_PROMPT.
+  // The five per-picture questions, in the order the describing activity asks
+  // them.
   "How can you describe this photo?",
-  // The five per-picture openers this replaced. Kept because a client running
-  // an older bundle still asks for them, and a cached device still holds them.
   "What can you see in this picture?",
-  "How would you describe this picture?",
   "Tell me what is happening here.",
   "What do you notice first in this picture?",
   "Describe this picture for me. What is going on?",
+  // Retired, but kept: a device that cached it still asks for it by name, and a
+  // client on an older bundle still opens with it.
+  "How would you describe this picture?",
 ]);
 
 exports.speakLine = onRequest(
