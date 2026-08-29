@@ -37,6 +37,7 @@ const Register = React.lazy(() => import('./pages/Register'));
 const Home = React.lazy(importHome);
 const Chats = React.lazy(importChats);
 const Chat = React.lazy(() => import('./pages/Chat'));
+const AinurChat = React.lazy(() => import('./pages/AinurChat'));
 const AinurHub = React.lazy(importAIChat);
 const AiActivity = React.lazy(() => import('./pages/AiActivity'));
 const Profile = React.lazy(importProfile);
@@ -184,6 +185,10 @@ function AppShell({ user }) {
           <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
+          {/* BEFORE the :peerId route, and it has to be. AInur is not a user
+              account, so Chat.jsx would load a peer document that does not
+              exist and offer to call somebody who is not there. */}
+          <Route path="/chat/ainur" element={user ? <AinurChat user={user} /> : <Navigate to="/login" />} />
           <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
           <Route path="/ai-chat" element={user ? <AinurHub user={user} /> : <Navigate to="/login" />} />
           {/* A guided AInur session. Full-screen like a call, so it sits

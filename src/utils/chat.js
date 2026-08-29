@@ -8,6 +8,20 @@ import { db } from '../firebase';
 // məhz bu sətirdən çıxarır, ona görə başqa formatda id yaratmaq olmaz.
 export const chatIdFor = (a, b) => [a, b].sort().join('_');
 
+// AInur is a participant in a conversation, not a user account. A learner with
+// no teacher has nobody to receive their session report, so it used to go
+// nowhere they would see it — the report existed, and the only way to know was
+// to go looking. She gets a thread of her own instead, which the chat list and
+// its unread badge treat like any other.
+//
+// 'ainur' is safe as half of a chat id: Firebase uids are alphanumeric, so it
+// can never collide with a real one, and firestore.rules derives membership by
+// splitting the id, which still finds the learner's own uid in it.
+export const AINUR_UID = 'ainur';
+export const isAinurId = (id) => id === AINUR_UID;
+// Stands in for the user document she does not have.
+export const AINUR_PEER = { name: 'AInur', photo: '/ainur_avatar.png' };
+
 export const chatPeerId = (chatId, myUid) => {
   const parts = String(chatId || '').split('_');
   return parts[0] === myUid ? parts[1] : parts[0];

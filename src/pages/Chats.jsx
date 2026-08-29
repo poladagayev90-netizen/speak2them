@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { getPresence } from '../utils/presence';
-import { subscribeToChats, unreadFor, chatTimeLabel } from '../utils/chat';
+import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
 
 // Söhbətlər siyahısı.
 //
@@ -29,7 +29,9 @@ export default function Chats({ user }) {
     if (!chats) return;
     const missing = chats
       .map((c) => (c.participants || []).find((p) => p !== user.uid))
-      .filter((p) => p && !peerCacheRef.current[p]);
+      // AInur has no user document to fetch; asking for one returns nothing and
+      // the row would fall back to a nameless "User".
+      .filter((p) => p && !isAinurId(p) && !peerCacheRef.current[p]);
     if (missing.length === 0) return;
     let alive = true;
     (async () => {
@@ -51,7 +53,8 @@ export default function Chats({ user }) {
   const rows = (chats || [])
     .map((c) => {
       const peerId = (c.participants || []).find((p) => p !== user.uid);
-      return peerId ? { ...c, peerId, peer: peers[peerId] || {} } : null;
+      if (!peerId) return null;
+      return { ...c, peerId, peer: isAinurId(peerId) ? AINUR_PEER : (peers[peerId] || {}) };
     })
     .filter((c) => c && c.lastMessage && !blockedIds.has(c.peerId));
 
@@ -85,7 +88,9 @@ export default function Chats({ user }) {
             {rows.map((c) => {
               const unread = unreadFor(c, user.uid);
               const name = c.peer.name || 'User';
-              const presence = c.peer.lastSeen ? getPresence(c.peer) : 'offline';
+              // She has no presence and never will; a dot on her row would be
+              // claiming something about a person who is not there.
+              const presence = (!isAinurId(c.peerId) && c.peer.lastSeen) ? getPresence(c.peer) : 'offline';
               // A report card is written BY THE SERVER with the student as
               // sender, so the plain check called it the student's own message
               // and prefixed their row with "You:" — a report that had just

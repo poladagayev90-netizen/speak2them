@@ -4281,6 +4281,61 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
   }
 }
 
+// The same report card, delivered by AInur herself.
+//
+// A learner with no teacher has no conversation for a report to arrive in, so
+// the report existed and nothing anywhere said so — History had it, and you had
+// to already know to look. She gets a thread of her own. It is an ordinary chat
+// document, which is the whole point: the chat list renders it, the unread
+// badge counts it and notifyChatMessage raises that count on its own, because
+// the sender here is not the learner.
+//
+// AINUR_UID must match src/utils/chat.js. Firebase uids are alphanumeric, so
+// "ainur" cannot collide with a real one, and firestore.rules derives chat
+// membership by splitting the document id — which still finds the learner's uid
+// in "<uid>_ainur".
+const AINUR_UID = "ainur";
+
+async function postAnalysisToAinurChat(db, uid, analysisId, analysis) {
+  if (!uid) return;
+  const chatId = [uid, AINUR_UID].sort().join("_");
+  const themes = (Array.isArray(analysis.errorThemes) ? analysis.errorThemes : [])
+    .map((t) => String(t?.title || "").trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  const score = Number(analysis.overallScore);
+  const text = `Your session report is ready — ${Number.isFinite(score) ? score : "—"}/100`
+    + (themes.length ? ` · Working on: ${themes.join(", ")}` : "");
+
+  try {
+    await db.collection("chats").doc(chatId).set({
+      participants: [uid, AINUR_UID].sort(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastMessage: text,
+      lastSenderId: AINUR_UID,
+      lastKind: "analysis",
+    }, { merge: true });
+
+    // No manual unread bump here, unlike the teacher thread: the sender is
+    // AInur, so notifyChatMessage already counts this for the learner. Doing
+    // both would show two.
+    await db.collection("chats").doc(chatId).collection("messages").add({
+      senderId: AINUR_UID,
+      senderName: "AInur",
+      kind: "analysis",
+      analysisId,
+      score: Number.isFinite(score) ? score : null,
+      themes,
+      text,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    console.log("[AnalysisChat] posted to AInur thread", chatId);
+  } catch (e) {
+    // The report is already written; failing to announce it must not fail it.
+    console.warn("[AnalysisChat] ainur thread failed:", e.message);
+  }
+}
+
 // Groq chat with strict JSON, in-call retries (max 3) and a schema→json_object
 // fallback, so json_validate_failed and malformed output self-heal instead of
 // failing the ticket permanently.
@@ -6344,6 +6399,11 @@ exports.analyzeAiSession = onRequest(
         // məşqi ilə insan zəngi arasında fərq yoxdur, ikisi də real nitqdir.
         await postAnalysisToTeacherChat(
           db, uid, u.teacherId, analysisId, analysis, u.name || "");
+      } else {
+        // No teacher, so no conversation the report could land in. AInur
+        // delivers it herself rather than leaving it somewhere the learner has
+        // to go looking for.
+        await postAnalysisToAinurChat(db, uid, analysisId, analysis);
       }
 
       // sendPushToUser resolves the token set and swallows its own failures.
