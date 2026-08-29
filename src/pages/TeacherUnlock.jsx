@@ -396,6 +396,22 @@ export default function TeacherUnlock({ user }) {
   // toLocaleDateString bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // What this student has actually done, in one line. Calls and graded
+  // practice are counted separately because they are different things: a call
+  // is time with a person, a report is a session AInur marked.
+  const rosterLine = (s) => {
+    const calls = Number(s.completedSessions) || 0;
+    const reports = Number(s.scoreCount) || 0;
+    if (!calls && !reports) return `${'Joined'}: ${fmtDate(s.joinedAt)} · ${'nothing yet'}`;
+    const parts = [];
+    if (calls) parts.push(`${calls} ${calls === 1 ? 'call' : 'calls'}`);
+    if (reports) parts.push(`${reports} ${reports === 1 ? 'report' : 'reports'}`);
+    if (Number.isFinite(Number(s.lastScore))) parts.push(`${Number(s.lastScore)}/100`);
+    const last = s.lastAnalysisAt || s.lastActiveAt;
+    if (last) parts.push(`${'last'}: ${fmtDate(last)}`);
+    return parts.join(' · ');
+  };
+
   const fmtDate = (ts) => {
     const ms = ts && ts.toMillis ? ts.toMillis() : (typeof ts === 'string' ? Date.parse(ts) : null);
     if (!ms) return '—';
@@ -935,12 +951,15 @@ export default function TeacherUnlock({ user }) {
                       </span>
                     )}
                   </div>
-                  {/* Proqres sətri: consumeTrialMinutes hər ≥2 dəq zəngdən sonra
-                      roster-ə denormalizə yazır (sessiya sayı + son aktivlik). */}
+                  {/* Progress line. It read ONLY completedSessions, which
+                      consumeTrialMinutes writes after a human call of two
+                      minutes or more — so a student who had practised with
+                      AInur and been graded still showed "no calls yet", and the
+                      roster said they had done nothing. scoreCount and
+                      lastAnalysisAt are written by every analysis, AInur
+                      practice included, and were already sitting there unused. */}
                   <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    {Number(s.completedSessions) > 0
-                      ? `${s.completedSessions} ${'sessions'} · ${'last'}: ${fmtDate(s.lastActiveAt)}`
-                      : `${'Joined'}: ${fmtDate(s.joinedAt)} · ${'no calls yet'}`}
+                    {rosterLine(s)}
                   </div>
                 </div>
                 <span style={{
@@ -1000,7 +1019,7 @@ export default function TeacherUnlock({ user }) {
           fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
           marginTop: '14px', lineHeight: 1.5,
         }}>
-          {'Student progress and analysis reports arrive here next.'}
+          {'Tap a student to read their reports.'}
         </p>
       </div>
     </div>

@@ -5700,7 +5700,6 @@ Speak so they understand you easily:
 These are mistakes their first language causes. Do NOT correct them, but understand what they meant:
 ${watch}`;
 
-  const remaining = Array.isArray(state.remainingWords) ? state.remainingWords : [];
   const turnState = activity === "describe"
     ? (state.isLast
       // The answer to her question used to get NO reply at all: the server
@@ -5714,10 +5713,7 @@ Do NOT ask a question — the picture changes the moment you finish, so they cou
 Do NOT go back to describing the picture. Respond to their answer, not to the photograph.
 NEVER repeat a sentence you have already said, and never send the same sentence twice in one reply. If their answer does not really answer your question -- speech gets cut off, and people wander -- respond to whatever they DID say. Saying your own last line back to them is the one thing you must never do.`
       : `THIS TURN
-They are not finished with this picture: there are still words they have not used, and the picture does not move on until every one of them has been said.
-Still unused: ${remaining.join(", ")}.
-React to what they just said in ONE clause, then ask a question that would naturally make them say ${remaining.length > 1 ? "one or two of those words" : "that word"}. Naming the word plainly is fine — the words are printed on the learner's screen, so you are giving nothing away.
-Do not read the list out like a task list. Ask about the picture in a way that needs those words.`)
+This is your first and only QUESTION about this picture. React in a clause, ask your question, stop. They get one answer, and you will close the picture after it.`)
     : `THIS TURN
 Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
 ${state.isLast
@@ -5741,7 +5737,7 @@ ${state.isLast
 One short COMPLETE SENTENCE that picks up something concrete in the answer they just gave, in your own words. No question, no second sentence, no sign-off.`
   : `YOUR WHOLE REPLY IS TWO PARTS AND NOTHING ELSE
 1. One short COMPLETE SENTENCE naming ONE concrete thing they actually said, in your own words.
-2. One question that leads them towards a word they have not used yet${remaining.length ? ` (${remaining.join(", ")})` : ""}.
+2. One question.
 Write both on a single line, as ordinary prose. Never a line break, never a heading.`}
 
 YOUR FIRST SENTENCE MUST CONTAIN A FINITE VERB. This is the rule you break most often, so check it before you send.
@@ -6103,20 +6099,17 @@ exports.aiActivityTurn = onRequest(
 
       const matchedKeywords = matchKeywords(transcript, keywords);
 
-      // THE PICTURE ENDS WHEN EVERY WORD HAS BEEN USED, not after a fixed
-      // number of answers. A counted turn let a learner say two vague sentences
-      // and move on having practised nothing; the word list is the actual
-      // exercise, so it is the word list that decides when the exercise is
-      // over. Decided here rather than on the client for the usual reason: the
-      // client would otherwise be able to declare itself finished.
+      // The running word tally. It is only what lights the pills up now — the
+      // words were briefly REQUIRED before a picture would end, and that turned
+      // the activity into a word hunt: a learner who had described the
+      // photograph perfectly well was held on it until they happened to reach
+      // the last two. The description ends the picture; the words just help
+      // somebody who does not know what to say.
       const wordLabels = keywords.map((k) => (k && k.word ? k.word : k)).map(String);
       const already = hitsSoFar.map(String).filter((h) => wordLabels.includes(h));
       const allHits = Array.from(new Set([...already, ...matchedKeywords]));
       const remainingWords = wordLabels.filter((w) => !allHits.includes(w));
-      // `isLast` from the client is the SAFETY CAP, not the normal ending: a
-      // learner who cannot land the last word must still be able to leave the
-      // picture. Either reason closes it the same way.
-      const pictureDone = activity === "describe" && (remainingWords.length === 0 || isLast === true);
+      const pictureDone = activity === "describe" && isLast === true;
 
       // Writing the turn away. Server-side only -- see the note at the top of
       // this block -- and hoisted into a function because the closing answer

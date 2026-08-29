@@ -19,17 +19,20 @@ import '../components/ai/ai.css';
 // teacher.
 //
 // THE SHAPE OF A PICTURE, and it is the same every time:
-//   she ASKS OUT LOUD → you answer → any words you used light up →
-//   she asks again, out loud, for the words you have not used yet →
-//   when all five are used the picture is finished and the next one arrives.
+//   she ASKS OUT LOUD → you describe it, freely and for as long as you like →
+//   she answers what you said → the next picture arrives, asked out loud.
 //
-// THE WORD LIST IS THE EXERCISE. A picture is not over after a fixed number of
-// answers — it is over when every word under it has been said. That is what
-// makes the activity worth doing: a learner can no longer clear a photograph
-// with two vague sentences, and they always know exactly what is left to do,
-// because it is printed in front of them and it lights up as they get it.
-// The server decides when a picture is finished (aiActivityTurn), not this
-// file: a client that could declare itself done could skip the work.
+// THE WORDS ARE A HELP, NOT A GATE. They briefly required every word to be used
+// before a picture would end, and it turned the activity into a word hunt: a
+// learner who had described the photograph perfectly well was held on it and
+// told again and again to say the two words they had not happened to reach.
+// Free speech is the point of a speaking app, so the list went back to what it
+// is good at — giving somebody who does not know what to say five concrete
+// things to say — and a word still lights up, buzzes and pops when it is used.
+//
+// One description per picture, and it is not a short one: a segment runs to
+// forty-five seconds, silence only ends it after four, and the button sends it
+// the moment the learner decides they have finished.
 //
 // This replaces a two-turn picture where only the very first sentence of the
 // whole session was spoken and every question after it appeared silently as
@@ -46,11 +49,8 @@ import '../components/ai/ai.css';
 // time; it is read, not heard, and the microphone reopens immediately instead
 // of after five to eight seconds of listening to her.
 const PICTURES_PER_SESSION = 5;
-// A SAFETY CAP, not the rule. The picture normally ends when every word has
-// been used; this only exists so a learner who simply cannot land the last word
-// is not held on one photograph for ever. Reaching it moves them on with her
-// closing line exactly as finishing the words would.
-const MAX_ANSWERS_PER_PICTURE = 6;
+// One description, then she answers it and the picture moves on.
+const ANSWERS_PER_PICTURE = 1;
 
 // What she says out loud when each picture opens. One per picture, and they are
 // fixed strings for the caching reason above — never build one of these from
@@ -66,17 +66,6 @@ const DESCRIBE_QUESTIONS = [
   'What do you notice first in this picture?',
   'Describe this picture for me. What is going on?',
 ];
-// Said between answers on the SAME picture, when words are still unused. Fixed
-// strings for the same caching reason, and allowlisted server-side alongside
-// the questions above.
-const NUDGE_MORE = 'Good. Now use the words you have not said yet.';
-const NUDGE_LAST = 'One word left. Say it and we move on.';
-const nudgeFor = (remaining) => (remaining <= 1 ? NUDGE_LAST : NUDGE_MORE);
-
-// The rule is explained ONCE per device. Shown on the first picture and gone
-// the moment that picture is finished — after that the pills say it themselves.
-const RULE_SEEN_KEY = 'ai_describe_rule_v1';
-
 // Wraps, so priming the NEXT picture's line never has to special-case the last
 // one.
 const questionFor = (i) => DESCRIBE_QUESTIONS[((i % DESCRIBE_QUESTIONS.length) + DESCRIBE_QUESTIONS.length) % DESCRIBE_QUESTIONS.length];
@@ -127,12 +116,6 @@ export default function AiActivity({ user }) {
   // and only those. Without it every used word would re-animate on every turn
   // and the signal would mean nothing.
   const [justHit, setJustHit] = useState([]);
-  // Shown until the learner finishes their first picture, then never again on
-  // this device. The rule -- all the words, not one answer -- has to be said
-  // once or it is invisible; said every time it is nagging.
-  const [showRule, setShowRule] = useState(() => {
-    try { return localStorage.getItem(RULE_SEEN_KEY) !== '1'; } catch { return true; }
-  });
 
   const content = useMemo(() => getTodayContent(), []);
   const sessionIdRef = useRef(`${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
@@ -142,9 +125,6 @@ export default function AiActivity({ user }) {
   // that reset is what stops one picture leaking into the next.
   const historyRef = useRef([]);
   const pendingAdvanceRef = useRef(false);
-  // Words are still missing on this picture: she says so out loud, then the
-  // microphone reopens on the SAME picture.
-  const pendingNudgeRef = useRef(false);
   // The closing answer on the LAST picture ends the session. Without this the
   // activity had no end at all -- see the effect that consumes it.
   const pendingFinishRef = useRef(false);
@@ -155,10 +135,6 @@ export default function AiActivity({ user }) {
   // Starts at 0 because the opening tap asks for the first picture.
   const askedForRef = useRef(0);
   const hitTimerRef = useRef(null);
-  // How many words are still unused on this picture, as the SERVER last
-  // counted them. It picks the line she says next, and it is a ref because the
-  // segment handler reads it outside React's render.
-  const remainingRef = useRef(0);
   const finishTimerRef = useRef(null);
   const finishScheduledRef = useRef(false);
   // Live copy for the segment handler, which is created once and must not close
@@ -167,10 +143,7 @@ export default function AiActivity({ user }) {
 
   const image = images[picIndex];
   const isLastPicture = picIndex >= images.length - 1;
-  // Only the CAP is decided here. Whether the picture is actually finished
-  // comes back from the server as `closing`, because only the server knows
-  // which words it credited.
-  const isLastTurn = isFree ? false : turnIndex >= MAX_ANSWERS_PER_PICTURE - 1;
+  const isLastTurn = isFree ? false : turnIndex >= ANSWERS_PER_PICTURE - 1;
   stateRef.current = { image, picIndex, turnIndex, isLastTurn, isLastPicture, isFree, hits };
 
   // One segment of speech: send it, show what came back, and note whether the
@@ -207,7 +180,7 @@ export default function AiActivity({ user }) {
           // with the real word list before trusting a word of it.
           hitsSoFar: st.isFree ? [] : st.hits,
           turnIndex: st.turnIndex,
-          plannedTurns: st.isFree ? FREE_TURNS : MAX_ANSWERS_PER_PICTURE,
+          plannedTurns: st.isFree ? FREE_TURNS : ANSWERS_PER_PICTURE,
           isLast: st.isLastTurn,
           level: user?.level || 'B1',
           history: historyRef.current,
@@ -260,7 +233,6 @@ export default function AiActivity({ user }) {
     } else if (Array.isArray(data.matchedKeywords) && data.matchedKeywords.length) {
       setHits((prev) => Array.from(new Set([...prev, ...data.matchedKeywords])));
     }
-    remainingRef.current = Array.isArray(data.remainingWords) ? data.remainingWords.length : 0;
 
     if (st.isFree) {
       setLog((prev) => [...prev, { you: data.transcript || '', ainur: data.reply || '' }]);
@@ -288,7 +260,6 @@ export default function AiActivity({ user }) {
       else pendingFinishRef.current = true;
     } else {
       setTurnIndex((t) => t + 1);
-      pendingNudgeRef.current = true;
     }
     // HOLD THE LOOP, either way. Left to itself it reopens the microphone the
     // instant this returns, and the very next thing that happens is AInur
@@ -333,11 +304,6 @@ export default function AiActivity({ user }) {
       setHeard('');
       setReply('');
       setAdvancing(false);
-      remainingRef.current = 0;
-      // The rule has now been demonstrated once, which is better than being
-      // told it twice.
-      setShowRule(false);
-      try { localStorage.setItem(RULE_SEEN_KEY, '1'); } catch { /* private mode */ }
       cueStep();
     }, CLOSING_READ_MS);
   }, [status]);
@@ -348,18 +314,6 @@ export default function AiActivity({ user }) {
   useEffect(() => {
     if (reply) cue();
   }, [reply]);
-
-  // Words are still missing: she says so out loud and the microphone reopens on
-  // the SAME picture. This is the branch that used to not exist at all -- the
-  // follow-up simply appeared as text while the loop carried on listening.
-  useEffect(() => {
-    if (status !== 'held' || !pendingNudgeRef.current) return;
-    pendingNudgeRef.current = false;
-    ask(nudgeFor(remainingRef.current), resume);
-    // `ask` and `resume` are stable; re-running this on their identity would
-    // re-speak a nudge that has already been said.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
 
   // A question announces itself: a buzz and a "New question" flag that fades on
   // its own. It is raised when she starts ASKING, which is also when her voice
@@ -394,10 +348,6 @@ export default function AiActivity({ user }) {
   const opener = isFree ? freeOpener(plainTopic(content.topic)) : questionFor(picIndex);
 
   const ready = isFree || !!image;
-  // Straight from what is on screen, so the count and the pills can never
-  // disagree — both are the server's list.
-  const wordCount = (!isFree && image && Array.isArray(image.keywords)) ? image.keywords.length : 0;
-  const wordsLeft = Math.max(0, wordCount - hits.length);
 
   // Fetch this picture's line while they are still looking at it, and the NEXT
   // picture's line too, so no question ever waits on a network round trip. Each
@@ -419,14 +369,7 @@ export default function AiActivity({ user }) {
         if (cancelled || isFree) return null;
         return primeLine(questionFor(picIndex + 1));
       })
-      // The nudges are fetched too, and they have to be. They are needed the
-      // moment an answer lands with words still missing -- a couple of seconds
-      // after the learner starts, far too soon to fetch on demand. Measured:
-      // the line arrived 3 seconds after it was wanted, missed the wait cap,
-      // and the FIRST nudge a device ever needed was the one nudge it never
-      // said out loud. Cached from here on, so it is instant every time.
-      .then(() => { if (!cancelled && !isFree) return primeLine(NUDGE_MORE); return null; })
-      .then(() => { if (!cancelled && !isFree) return primeLine(NUDGE_LAST); return null; });
+      ;
     return () => { cancelled = true; };
   }, [opener, picIndex, isFree, user?.uid]);
 
@@ -680,9 +623,7 @@ export default function AiActivity({ user }) {
                   <span className="ai-step">
                     {intro ? 'Asking you…'
                       : status === 'sending' ? 'Listening to your answer…'
-                        : wordsLeft > 0
-                          ? `${wordsLeft} ${wordsLeft === 1 ? 'word' : 'words'} left on this picture`
-                          : 'All words used'}
+                        : 'Describe it, then tap to finish'}
                   </span>
                   {fresh && status !== 'sending' && (
                     <span className="ai-new-flag">New question</span>
@@ -709,7 +650,6 @@ export default function AiActivity({ user }) {
               hits={hits}
               justHit={justHit}
               heard={heard}
-              showRule={showRule}
             />
           </>
         )}

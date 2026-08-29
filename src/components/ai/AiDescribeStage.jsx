@@ -12,17 +12,18 @@ import './ai.css';
  * call document. Here there is no peer to stay in step with, so the two have
  * genuinely different jobs even though they read the same data.
  *
- * The keyword pills are the mechanic that makes this activity work, and since
- * the picture does not end until every one of them has been used, they are no
- * longer a hint — they ARE the task. So each one has to announce the moment it
- * is won: it flips, it pops, and a short blip plays (see wordWon in
- * utils/cue.js for why a sound is safe here and nowhere else). Getting a word
- * used to be a silent colour change nobody watching the photograph noticed.
+ * The keyword pills are what a learner falls back on when they do not know
+ * what to say: five concrete things they can name. They are a HELP, not a
+ * requirement — a picture ends when the learner has finished describing it,
+ * whether or not they reached every word. Using one is still worth marking, so
+ * the pill flips, pops and plays a short blip (see wordWon in utils/cue.js for
+ * why a sound is safe here and nowhere else); it used to be a silent colour
+ * change nobody watching the photograph noticed.
  *
  * Scoring is the server's: a stemming match on the transcript, so "kneeling"
  * counts for "kneel". Instant and free — no model is involved.
  */
-export default function AiDescribeStage({ image, hits = [], justHit = [], heard, showRule = false }) {
+export default function AiDescribeStage({ image, hits = [], justHit = [], heard }) {
   const [failed, setFailed] = useState(false);
   const [dead, setDead] = useState(false);
   const [loadedUrl, setLoadedUrl] = useState('');
@@ -38,7 +39,6 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard,
   const keywords = Array.isArray(image.keywords) ? image.keywords : [];
   const hitSet = new Set(hits.map((h) => String(h).toLowerCase()));
   const freshSet = new Set(justHit.map((h) => String(h).toLowerCase()));
-  const allUsed = keywords.length > 0 && hitSet.size >= keywords.length;
 
   return (
     <>
@@ -67,7 +67,7 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard,
       {keywords.length > 0 && (
         <div>
           <p className="ui-section-label">
-            Use all these words · {hitSet.size}/{keywords.length}
+            Words you can use · {hitSet.size}/{keywords.length}
           </p>
           <div className="ai-words">
             {keywords.map((k) => {
@@ -87,13 +87,6 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard,
               );
             })}
           </div>
-          {/* Said ONCE, on the first picture of a learner's first session. The
-              rule is not guessable from a row of words, and a learner who does
-              not know it reads the pills as decoration. After the first picture
-              the counter above carries the same meaning without the sentence. */}
-          {showRule && !allUsed && (
-            <p className="ai-word-rule">Use every word to finish the picture.</p>
-          )}
         </div>
       )}
 

@@ -54,8 +54,16 @@ export default function TeacherStudent({ user }) {
 
   const scoreTone = (s) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger');
   const fmtDate = (sec) => (sec ? new Date(sec * 1000).toLocaleDateString() : '');
-  const totalMinutes = Number(student?.totalMinutes) || 0;
-  const sessions = Number(student?.completedSessions) || 0;
+  // Practice with AInur was missing from both numbers, so a student who had
+  // done nothing but practice showed "0 speaking minutes, 0 sessions" directly
+  // above a list of their graded sessions. The call figures stay exactly as
+  // they are — they are authoritative and come from call timestamps — and the
+  // AInur seconds are added from the analyses this page has already loaded,
+  // which the server measured from the turns themselves.
+  const aiAnalyses = (analyses || []).filter((a) => a.source === 'ainur');
+  const aiSeconds = aiAnalyses.reduce((n, a) => n + (Number(a.durationSeconds) || 0), 0);
+  const totalMinutes = (Number(student?.totalMinutes) || 0) + Math.round(aiSeconds / 60);
+  const sessions = (Number(student?.completedSessions) || 0) + aiAnalyses.length;
   const streak = Number(student?.streak) || 0;
   // Ortalama bal — yalnız balı olan analizlərdən.
   const scored = (analyses || []).filter((a) => Number.isFinite(a.overallScore));
