@@ -12,12 +12,17 @@ import './ai.css';
  * call document. Here there is no peer to stay in step with, so the two have
  * genuinely different jobs even though they read the same data.
  *
- * The keyword pills are the mechanic that makes this activity work. They turn
- * green the moment the learner actually says the word, which is scored on the
- * server by a plain string match — instant, and free. A learner who does not
- * know what to say always has six concrete targets in front of them.
+ * The keyword pills are the mechanic that makes this activity work, and since
+ * the picture does not end until every one of them has been used, they are no
+ * longer a hint — they ARE the task. So each one has to announce the moment it
+ * is won: it flips, it pops, and a short blip plays (see wordWon in
+ * utils/cue.js for why a sound is safe here and nowhere else). Getting a word
+ * used to be a silent colour change nobody watching the photograph noticed.
+ *
+ * Scoring is the server's: a stemming match on the transcript, so "kneeling"
+ * counts for "kneel". Instant and free — no model is involved.
  */
-export default function AiDescribeStage({ image, hits = [], heard }) {
+export default function AiDescribeStage({ image, hits = [], justHit = [], heard, showRule = false }) {
   const [failed, setFailed] = useState(false);
   const [dead, setDead] = useState(false);
   const [loadedUrl, setLoadedUrl] = useState('');
@@ -32,6 +37,8 @@ export default function AiDescribeStage({ image, hits = [], heard }) {
   const loading = !dead && loadedUrl !== src;
   const keywords = Array.isArray(image.keywords) ? image.keywords : [];
   const hitSet = new Set(hits.map((h) => String(h).toLowerCase()));
+  const freshSet = new Set(justHit.map((h) => String(h).toLowerCase()));
+  const allUsed = keywords.length > 0 && hitSet.size >= keywords.length;
 
   return (
     <>
@@ -60,20 +67,33 @@ export default function AiDescribeStage({ image, hits = [], heard }) {
       {keywords.length > 0 && (
         <div>
           <p className="ui-section-label">
-            Use these words · {hitSet.size}/{keywords.length}
+            Use all these words · {hitSet.size}/{keywords.length}
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--s-2)' }}>
+          <div className="ai-words">
             {keywords.map((k) => {
               const word = k && k.word ? k.word : k;
-              const hit = hitSet.has(String(word).toLowerCase());
+              const lower = String(word).toLowerCase();
+              const hit = hitSet.has(lower);
               return (
-                <Pill key={word} tone={hit ? 'default' : 'ai'} hit={hit}>
-                  {hit && <span aria-hidden="true">✓</span>}
-                  {word}
-                </Pill>
+                <span
+                  key={word}
+                  className={`ai-word${hit ? ' ai-word--hit' : ''}${freshSet.has(lower) ? ' ai-word--won' : ''}`}
+                >
+                  <Pill tone={hit ? 'default' : 'ai'} hit={hit}>
+                    {hit && <span aria-hidden="true">✓</span>}
+                    {word}
+                  </Pill>
+                </span>
               );
             })}
           </div>
+          {/* Said ONCE, on the first picture of a learner's first session. The
+              rule is not guessable from a row of words, and a learner who does
+              not know it reads the pills as decoration. After the first picture
+              the counter above carries the same meaning without the sentence. */}
+          {showRule && !allUsed && (
+            <p className="ai-word-rule">Use every word to finish the picture.</p>
+          )}
         </div>
       )}
 

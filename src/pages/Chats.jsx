@@ -86,7 +86,11 @@ export default function Chats({ user }) {
               const unread = unreadFor(c, user.uid);
               const name = c.peer.name || 'User';
               const presence = c.peer.lastSeen ? getPresence(c.peer) : 'offline';
-              const mine = c.lastSenderId === user.uid;
+              // A report card is written BY THE SERVER with the student as
+              // sender, so the plain check called it the student's own message
+              // and prefixed their row with "You:" — a report that had just
+              // arrived for them read as one they had sent.
+              const mine = c.lastSenderId === user.uid && c.lastKind !== 'analysis';
               return (
                 <div
                   key={c.id}

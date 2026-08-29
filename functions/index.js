@@ -4226,7 +4226,9 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
   // `text` KART DEYİL, ehtiyat nüsxədir. Native APK istifadəçiləri köhnə web
   // bundle daşıya bilir və kartı render edən kodu tanımır — o halda bu sətir
   // adi mesaj kimi görünür. Onsuz həmin cihazlarda BOŞ baloncuq çıxardı.
-  const text = `Session report: ${Number.isFinite(score) ? score : "—"}/100`
+  // Shown as the last line in the chat list, so it has to say what arrived
+  // rather than name a number on its own.
+  const text = `Your session report is ready — ${Number.isFinite(score) ? score : "—"}/100`
     + (themes.length ? ` · Working on: ${themes.join(", ")}` : "");
 
   try {
@@ -4235,6 +4237,13 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastMessage: text,
       lastSenderId: studentUid,
+      // senderId has to stay the student -- the teacher's view and the "open
+      // the report" routing both read it. But the chat LIST then prefixed the
+      // student's own row with "You:", so the thing that had just arrived for
+      // them read as something they had sent: "You: Your session report is
+      // ready". lastKind lets the list drop that prefix for a card nobody
+      // typed, without touching who the message is from.
+      lastKind: "analysis",
     }, { merge: true });
 
     // senderId şagirddir: hesabat ONUN haqqındadır, ona görə müəllimin
@@ -4251,6 +4260,20 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
       text,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    // THE STUDENT'S OWN UNREAD COUNT, and it has to be set here.
+    // notifyChatMessage raises the count for whoever did not send the message,
+    // and senderId is the student — so the person the report is actually about
+    // got no badge at all. The report would land in their chat and sit there
+    // looking like something they had sent themselves. A count of their own is
+    // the thing that pulls them back to it: the tab shows a number, the row is
+    // highlighted, and one tap opens the report.
+    //
+    // Written as a set/merge with an increment rather than through the trigger
+    // so it cannot double-count: the trigger only ever touches the OTHER side.
+    await db.collection("chats").doc(chatId).set({
+      unread: { [studentUid]: admin.firestore.FieldValue.increment(1) },
+    }, { merge: true });
     console.log("[AnalysisChat] posted to", chatId);
   } catch (e) {
     // Hesabat onsuz da yazılıb — söhbətə düşməməsi analizi öldürməməlidir.
@@ -5622,6 +5645,7 @@ Speak so they understand you easily:
 These are mistakes their first language causes. Do NOT correct them, but understand what they meant:
 ${watch}`;
 
+  const remaining = Array.isArray(state.remainingWords) ? state.remainingWords : [];
   const turnState = activity === "describe"
     ? (state.isLast
       // The answer to her question used to get NO reply at all: the server
@@ -5635,7 +5659,10 @@ Do NOT ask a question — the picture changes the moment you finish, so they cou
 Do NOT go back to describing the picture. Respond to their answer, not to the photograph.
 NEVER repeat a sentence you have already said, and never send the same sentence twice in one reply. If their answer does not really answer your question -- speech gets cut off, and people wander -- respond to whatever they DID say. Saying your own last line back to them is the one thing you must never do.`
       : `THIS TURN
-This is your first and only QUESTION about this picture. React in a clause, ask your question, stop. They get one answer, and you will close the picture after it.`)
+They are not finished with this picture: there are still words they have not used, and the picture does not move on until every one of them has been said.
+Still unused: ${remaining.join(", ")}.
+React to what they just said in ONE clause, then ask a question that would naturally make them say ${remaining.length > 1 ? "one or two of those words" : "that word"}. Naming the word plainly is fine — the words are printed on the learner's screen, so you are giving nothing away.
+Do not read the list out like a task list. Ask about the picture in a way that needs those words.`)
     : `THIS TURN
 Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
 ${state.isLast
@@ -5659,7 +5686,7 @@ ${state.isLast
 One short COMPLETE SENTENCE that picks up something concrete in the answer they just gave, in your own words. No question, no second sentence, no sign-off.`
   : `YOUR WHOLE REPLY IS TWO PARTS AND NOTHING ELSE
 1. One short COMPLETE SENTENCE naming ONE concrete thing they actually said, in your own words.
-2. One question.
+2. One question that leads them towards a word they have not used yet${remaining.length ? ` (${remaining.join(", ")})` : ""}.
 Write both on a single line, as ordinary prose. Never a line break, never a heading.`}
 
 YOUR FIRST SENTENCE MUST CONTAIN A FINITE VERB. This is the rule you break most often, so check it before you send.
@@ -5737,15 +5764,92 @@ function sanitizeAinurReply(reply, history, fallback) {
   return out || fallback;
 }
 
+// Reduce a word to a crude stem so "kneel" matches "kneeling", "board" matches
+// "boarding" and "carry" matches "carried". Not a real stemmer and it does not
+// need to be: it only has to stop a learner who used the word correctly from
+// being told they did not.
+//
+// This matters far more than it used to. The pills were once a nudge you could
+// ignore; a picture now does not end until every word has been said, so a word
+// the matcher cannot recognise is a word the learner can never tick off, and
+// they are stuck on that photograph saying the same thing louder.
+const STEM_SUFFIXES = ["ingly", "edly", "ing", "ies", "ied", "es", "ed", "er", "s"];
+// Consonant doubling happens before -ing/-ed/-er (run -> running), NEVER before
+// a plural -s. Undoing it for every suffix turned "scrolls" into "scrol" while
+// the keyword "scroll" stayed itself, so the commonest word on the commonest
+// picture never matched.
+const DOUBLING_SUFFIXES = new Set(["ing", "ingly", "ed", "edly", "er"]);
+function stemWord(w) {
+  let x = String(w).toLowerCase();
+  for (const suf of STEM_SUFFIXES) {
+    if (x.length - suf.length >= 3 && x.endsWith(suf)) {
+      x = x.slice(0, -suf.length);
+      // "ies"/"ied" come off a y-stem: carries -> carr -> carry
+      if (suf === "ies" || suf === "ied") return x + "y";
+      if (DOUBLING_SUFFIXES.has(suf) && x.length > 2 && x[x.length - 1] === x[x.length - 2]) {
+        x = x.slice(0, -1);
+      }
+      return x;
+    }
+  }
+  return x;
+}
+
+// Every form of a word we are willing to call the same word. Stemming ONCE is
+// not enough and the asymmetry is silent: "volunteers" stems to "volunteer",
+// but "volunteer" stems again to "volunte", so the keyword and the word the
+// learner actually said landed on different stems and the pill never lit. Both
+// sides expand to a small set instead, and any overlap counts.
+function formsOf(w) {
+  const a = String(w).toLowerCase();
+  const b = stemWord(a);
+  const out = [a, b, stemWord(b)];
+  // The silent e. "sharing" stems to "shar" but "share" stems to itself, so the
+  // two never met; carrying both the bare and the e-form closes it, and the same
+  // trick handles "pose"/"posing" and "shape"/"shaping".
+  for (const f of out.slice()) {
+    if (f.endsWith("e")) out.push(f.slice(0, -1));
+    else out.push(f + "e");
+  }
+  return out;
+}
+
+const NORMALISE = (t) => String(t).toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+
+// STOP WORDS ONLY FOR PHRASES. "pay the bill" is ticked off by "I pay the bill"
+// and by "she is paying her bills", but never by "the" alone.
+const PHRASE_SKIP = new Set(["a", "an", "the", "your", "his", "her", "their", "my",
+  "of", "on", "in", "at", "to", "for", "with", "and", "up", "out", "down", "over"]);
+
 function matchKeywords(transcript, keywords) {
   if (!Array.isArray(keywords) || !keywords.length) return [];
-  const flat = " " + String(transcript).toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ") + " ";
+  const flat = NORMALISE(transcript);
+  if (!flat) return [];
+  const padded = " " + flat + " ";
+  const stems = new Set();
+  for (const tok of flat.split(" ")) for (const f of formsOf(tok)) stems.add(f);
+
   const hit = [];
   for (const raw of keywords) {
     const label = raw && raw.word ? raw.word : raw;
-    const w = String(label).toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+    const w = NORMALISE(label);
     if (!w) continue;
-    if (flat.includes(" " + w + " ") || flat.includes(" " + w + "s ") || flat.includes(" " + w + "es ")) hit.push(label);
+    const parts = w.split(" ");
+
+    if (parts.length === 1) {
+      // A single word counts however it was inflected.
+      if (padded.includes(" " + w + " ") || formsOf(w).some((f) => stems.has(f))) hit.push(label);
+      continue;
+    }
+
+    // A phrase counts when it is said whole, or when every word that carries
+    // meaning in it turns up somewhere in the answer. Requiring the exact
+    // wording made half the phrases unsayable: nobody narrates a photograph in
+    // the app's own words, they say "she is packing her clothes and folding
+    // them", which is plainly "folded clothes" and used to score nothing.
+    if (padded.includes(" " + w + " ")) { hit.push(label); continue; }
+    const content = parts.filter((x) => !PHRASE_SKIP.has(x));
+    if (content.length && content.every((x) => formsOf(x).some((f) => stems.has(f)))) hit.push(label);
   }
   return hit;
 }
@@ -5869,6 +5973,7 @@ exports.aiActivityTurn = onRequest(
       itemId = "",
       itemIndex = 0,
       keywords = [],
+      hitsSoFar = [],
       turnIndex = 0,
       plannedTurns = 2,
       isLast = false,
@@ -5891,6 +5996,14 @@ exports.aiActivityTurn = onRequest(
     }
     if (!Array.isArray(keywords) || keywords.length > 24) {
       return res.status(400).json({ error: "keywords must be an array of at most 24" });
+    }
+    // What the learner has already ticked off on this picture. The client keeps
+    // it because it is the client that shows the pills, but it is never trusted
+    // as-is: only labels that are actually in this picture's word list survive
+    // the intersection below, so a client cannot skip a picture by claiming it
+    // finished one.
+    if (!Array.isArray(hitsSoFar) || hitsSoFar.length > 24) {
+      return res.status(400).json({ error: "hitsSoFar must be an array of at most 24" });
     }
     // The exchange so far on THIS item. Without it every turn was a cold
     // call: AInur saw only the latest sentence, not her own question or the
@@ -5934,6 +6047,21 @@ exports.aiActivityTurn = onRequest(
       }
 
       const matchedKeywords = matchKeywords(transcript, keywords);
+
+      // THE PICTURE ENDS WHEN EVERY WORD HAS BEEN USED, not after a fixed
+      // number of answers. A counted turn let a learner say two vague sentences
+      // and move on having practised nothing; the word list is the actual
+      // exercise, so it is the word list that decides when the exercise is
+      // over. Decided here rather than on the client for the usual reason: the
+      // client would otherwise be able to declare itself finished.
+      const wordLabels = keywords.map((k) => (k && k.word ? k.word : k)).map(String);
+      const already = hitsSoFar.map(String).filter((h) => wordLabels.includes(h));
+      const allHits = Array.from(new Set([...already, ...matchedKeywords]));
+      const remainingWords = wordLabels.filter((w) => !allHits.includes(w));
+      // `isLast` from the client is the SAFETY CAP, not the normal ending: a
+      // learner who cannot land the last word must still be able to leave the
+      // picture. Either reason closes it the same way.
+      const pictureDone = activity === "describe" && (remainingWords.length === 0 || isLast === true);
 
       // Writing the turn away. Server-side only -- see the note at the top of
       // this block -- and hoisted into a function because the closing answer
@@ -5984,7 +6112,12 @@ exports.aiActivityTurn = onRequest(
         level,
         l1: "az",
         item: { keywords },
-        state: { turnIndex, plannedTurns, isLast },
+        state: {
+          turnIndex,
+          plannedTurns,
+          isLast: activity === "describe" ? pictureDone : isLast,
+          remainingWords,
+        },
       });
 
       const safeHistory = history
@@ -6005,7 +6138,7 @@ exports.aiActivityTurn = onRequest(
         return res.status(502).json({ error: "AInur could not answer just now. Please try again." });
       }
       const chatData = await chatRes.json();
-      const isDescribeClose = activity === "describe" && isLast;
+      const isDescribeClose = pictureDone;
       const reply = sanitizeAinurReply(
         chatData.choices?.[0]?.message?.content,
         safeHistory,
@@ -6067,8 +6200,14 @@ exports.aiActivityTurn = onRequest(
       // closing tells the client this picture is done, so it can show her line
       // and then move on. It is derived here rather than trusted from the
       // request, exactly like the TTS decision above.
+      //
+      // allHits and remainingWords are the running score for THIS picture. The
+      // client draws the pills from them rather than accumulating its own list,
+      // so what is on screen is always what the server actually credited — the
+      // one place the two could drift is the one place the learner would notice.
       return res.status(200).json({
         transcript, reply, audioBase64, matchedKeywords,
+        allHits, remainingWords,
         closing: isDescribeClose,
       });
     } catch (e) {
@@ -6252,6 +6391,12 @@ const SPEAKABLE_LINES = new Set([
   "Tell me what is happening here.",
   "What do you notice first in this picture?",
   "Describe this picture for me. What is going on?",
+  // Said between answers on the SAME picture, when words are still unused. They
+  // are fixed for the same reason the questions are: cached once per device,
+  // free ever after. Without them the follow-ups were silent, which is the
+  // exact failure the spoken questions were added to fix.
+  "Good. Now use the words you have not said yet.",
+  "One word left. Say it and we move on.",
   // Retired, but kept: a device that cached it still asks for it by name, and a
   // client on an older bundle still opens with it.
   "How would you describe this picture?",

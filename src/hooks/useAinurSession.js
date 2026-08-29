@@ -28,7 +28,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 //   3. State is set in one place per transition, so the button can never show
 //      one thing while the recorder is doing another.
 
-const SILENCE_STOP_MS = 2200;   // hang-up delay after you stop talking
+// How long the room has to stay quiet before a segment is treated as finished.
+//
+// 2.2 seconds was too short and it was breaking the activity: a learner who
+// stopped to think mid-answer -- searching for the word they had been asked to
+// use, which this activity asks for constantly -- had their half-sentence sent
+// while they were still composing it. Reported as "I pause to think and the
+// system decides I have stopped". Four seconds is longer than a thinking pause
+// inside a sentence and still shorter than the gap after a finished one, and
+// anyone who wants to send sooner taps the button, which says so.
+const SILENCE_STOP_MS = 4000;
 const MIN_SEGMENT_MS = 1200;    // ignore a stray tap
 // Hard ceiling. Two minutes was too generous: someone who talks without a clear
 // pause got no response at all for that whole time, which is indistinguishable
@@ -36,7 +45,10 @@ const MIN_SEGMENT_MS = 1200;    // ignore a stray tap
 // this activity asks for, and the loop simply picks up where it left off.
 const MAX_SEGMENT_MS = 45000;
 const VOICE_THRESHOLD = 0.045;  // peak amplitude that counts as speech
-const NO_VOICE_GRACE_MS = 12000; // if we never hear anything at all, give up politely
+// Nothing heard at ALL, as opposed to a pause inside an answer. Raised with the
+// silence delay above: a learner looking at a new photograph and thinking about
+// how to start needs longer than a learner mid-sentence, not less.
+const NO_VOICE_GRACE_MS = 16000;
 
 export default function useAinurSession({ onSegment }) {
   const [status, setStatus] = useState('idle'); // idle | listening | sending | speaking | held

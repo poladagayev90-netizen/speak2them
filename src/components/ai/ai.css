@@ -303,3 +303,40 @@
   text-transform: uppercase;
   color: var(--success);
 }
+
+/* ── The word list ────────────────────────────────────────────────────────────
+   A picture ends only when every one of these has been used, so winning one is
+   an event and has to look like one. The pop is deliberately short and scaled
+   rather than coloured: the pill is already changing colour underneath, and two
+   slow signals at once read as a glitch. Paired with a blip and a buzz
+   (utils/cue.js) so it lands even when the learner is looking at the photo. */
+.ai-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.ai-word {
+  display: inline-flex;
+  transform-origin: center;
+}
+.ai-word--won {
+  animation: ai-word-pop 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes ai-word-pop {
+  0%   { transform: scale(1); }
+  22%  { transform: scale(1.18); }
+  48%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+/* Anyone who has asked the system not to animate gets the colour change alone,
+   which was always the real signal. */
+@media (prefers-reduced-motion: reduce) {
+  .ai-word--won { animation: none; }
+}
+
+.ai-word-rule {
+  margin: var(--s-2) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
