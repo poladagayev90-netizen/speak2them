@@ -68,10 +68,7 @@ export default function Login() {
     setResetLoading(true);
 
     try {
-      await sendPasswordResetEmail(auth, normalizedEmail, {
-        url: `${window.location.origin}/login`,
-        handleCodeInApp: false,
-      });
+      await sendPasswordResetEmail(auth, normalizedEmail);
       setResetSent(true);
     } catch (err) {
       console.error('[Login] Password reset failed:', err?.code, err?.message);
