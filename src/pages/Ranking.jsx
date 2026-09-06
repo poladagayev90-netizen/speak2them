@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
-import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import HomeRanking from '../components/HomeRanking';
 
@@ -14,20 +14,12 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
   const [loading, setLoading] = useState(!usersCache.users);
   const [tab, setTab] = useState('weekly');
 
-  // One-shot read: a leaderboard doesn't need realtime, and a live listener
-  // on the whole collection re-streams every presence heartbeat to every
-  // viewer (read amplification at scale). Top-100 by all-time minutes also
-  // bounds the weekly board — with a small base the active weekly players
-  // are inside that set.
+  // Rank the complete roster: all-time top 100 excludes new weekly/AI learners.
   useEffect(() => {
     if (usersCache.users && Date.now() - usersCache.ts < CACHE_TTL_MS) return undefined;
     let cancelled = false;
     setLoading(true);
-    getDocs(query(
-      collection(db, 'users'),
-      orderBy('totalMinutes', 'desc'),
-      limit(100)
-    )).then((snap) => {
+    getDocs(collection(db, 'users')).then((snap) => {
       const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       usersCache = { users, ts: Date.now() };
       if (!cancelled) { setAllUsers(users); setLoading(false); }
@@ -79,7 +71,7 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
             fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
             margin: '0 0 12px',
           }}>
-            {'Resets every Monday — everyone starts level again.'}
+            {'Calls + analysed AInur practice. Resets Monday, Baku time.'}
           </p>
         )}
         {loading ? (

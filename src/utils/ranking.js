@@ -1,3 +1,5 @@
+import { practiceWeekKey, totalPracticeMinutes, weeklyPracticeMinutes } from './practiceStats';
+
 export function getUserKey(user) {
   return user?.uid || user?.id || '';
 }
@@ -8,8 +10,8 @@ export function dedupeUsers(users) {
     const key = getUserKey(user);
     if (!key) return;
     const existing = map.get(key);
-    const score = (user.totalMinutes || 0) * 1000 + (user.callCount || 0);
-    const existingScore = (existing?.totalMinutes || 0) * 1000 + (existing?.callCount || 0);
+    const score = totalPracticeMinutes(user) * 1000 + (user.callCount || 0);
+    const existingScore = totalPracticeMinutes(existing) * 1000 + (existing?.callCount || 0);
     if (!existing || score >= existingScore) {
       map.set(key, { ...user, uid: key, id: key });
     }
@@ -23,16 +25,11 @@ export function dedupeUsers(users) {
 // as 0 — the weekly board "resets" lazily, no cron needed (same pattern as
 // currentMonth/currentMonthMinutes).
 export function getWeekKey(d = new Date()) {
-  const date = new Date(d);
-  const day = date.getDay(); // 0=Sun..6=Sat
-  const diffToMonday = day === 0 ? 6 : day - 1;
-  date.setDate(date.getDate() - diffToMonday);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return practiceWeekKey(d);
 }
 
 export function weeklyMinutesOf(user, weekKey = getWeekKey()) {
-  return user?.currentWeek === weekKey ? (user.currentWeekMinutes || 0) : 0;
+  return weeklyPracticeMinutes(user, weekKey);
 }
 
 export function sortUsersForRanking(users, mode = 'all') {
@@ -42,7 +39,7 @@ export function sortUsersForRanking(users, mode = 'all') {
       const weeklyDiff = weeklyMinutesOf(b, weekKey) - weeklyMinutesOf(a, weekKey);
       if (weeklyDiff !== 0) return weeklyDiff;
     }
-    const minutesDiff = (b.totalMinutes || 0) - (a.totalMinutes || 0);
+    const minutesDiff = totalPracticeMinutes(b) - totalPracticeMinutes(a);
     if (minutesDiff !== 0) return minutesDiff;
 
     const callsDiff = (b.callCount || 0) - (a.callCount || 0);

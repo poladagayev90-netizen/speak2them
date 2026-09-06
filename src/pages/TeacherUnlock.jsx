@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, MessageCircle, BarChart3, BellRing, Check } from 'lucide-react';
-import { doc, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, limit, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
   createInviteCode,
@@ -18,6 +18,7 @@ import TutorBadge from '../components/TutorBadge';
 import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
 import { bakuDateStr } from '../utils/sessionSchedule';
+import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
 
 // Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
 // müsbətdir: müdafiə cümləsi ("şagirdinizi almırıq") qorxunu adlandırıb yaradır.
@@ -44,6 +45,8 @@ export default function TeacherUnlock({ user }) {
   // null = hələ yüklənir; [] = yüklənib, boşdur. İkisini ayırmaq vacibdir —
   // əks halda boş roster əbədi "yüklənir" kimi görünərdi (Ranking dərsi).
   const [roster, setRoster] = useState(null);
+  const [studentProfiles, setStudentProfiles] = useState({});
+  const [rosterError, setRosterError] = useState('');
   // Birbaşa dəvət: kod paylaşmaq həmişə işləmir (link itir, kod səhv yazılır).
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
@@ -103,15 +106,21 @@ export default function TeacherUnlock({ user }) {
           }
         }
       } catch { /* teachers sənədi hələ yoxdursa forma göstərilir */ }
-      try {
-        const rs = await getDocs(collection(db, 'teachers', user.uid, 'roster'));
-        if (alive) setRoster(rs.docs.map((d) => ({ id: d.id, ...d.data() })));
-      } catch {
-        if (alive) setRoster([]); // sənəd yoxdursa oxu icazəsi də yoxdur — boş say
-      }
       if (alive) setChecking(false);
     })();
     return () => { alive = false; };
+  }, [user?.uid, eligible]);
+
+  useEffect(() => {
+    if (!user?.uid || !eligible) return undefined;
+    const failed = () => setRosterError('Could not refresh student activity. Please reload to try again.');
+    const stopRoster = onSnapshot(collection(db, 'teachers', user.uid, 'roster'), snap => {
+      setRoster(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, failed);
+    const stopProfiles = onSnapshot(query(collection(db, 'users'), where('teacherId', '==', user.uid)), snap => {
+      setStudentProfiles(Object.fromEntries(snap.docs.map(d => [d.id, d.data()])));
+    }, failed);
+    return () => { stopRoster(); stopProfiles(); };
   }, [user?.uid, eligible]);
 
   const handleSubmit = async (e) => {
@@ -392,7 +401,10 @@ export default function TeacherUnlock({ user }) {
   // ─── 4. Dashboard: dəvət + roster ──────────────────────────────
   const link = buildJoinLink(myCode);
   const shareText = `My SpeakLab student code for English speaking practice: ${myCode}\n${link}`;
-  const students = roster || [];
+  const students = (roster || []).map(s => {
+    const p = studentProfiles[s.id] || {};
+    return { ...p, ...s, lastActiveAt: Math.max(timestampMs(s.lastActiveAt), timestampMs(p.lastPracticeAt), timestampMs(p.lastCallDate)) };
+  });
   // toLocaleDateString bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -400,23 +412,25 @@ export default function TeacherUnlock({ user }) {
   // practice are counted separately because they are different things: a call
   // is time with a person, a report is a session AInur marked.
   const rosterLine = (s) => {
-    const calls = Number(s.completedSessions) || 0;
+    const calls = Number(s.callCount ?? s.completedSessions) || 0;
     const reports = Number(s.scoreCount) || 0;
-    if (!calls && !reports) return `${'Joined'}: ${fmtDate(s.joinedAt)} · ${'nothing yet'}`;
+    if (!calls && !reports && !latestPracticeMs(s)) return `${'Joined'}: ${fmtDate(s.joinedAt)} · ${'nothing yet'}`;
     const parts = [];
     if (calls) parts.push(`${calls} ${calls === 1 ? 'call' : 'calls'}`);
     if (reports) parts.push(`${reports} ${reports === 1 ? 'report' : 'reports'}`);
-    if (Number.isFinite(Number(s.lastScore))) parts.push(`${Number(s.lastScore)}/100`);
-    const last = s.lastAnalysisAt || s.lastActiveAt;
-    if (last) parts.push(`${'last'}: ${fmtDate(last)}`);
+    if (typeof s.lastScore === 'number' && Number.isFinite(s.lastScore)) parts.push(`${Number(s.lastScore)}/100`);
+    parts.push(`${weeklyPracticeMinutes(s)} min this week`);
+    const last = latestPracticeMs(s);
+    if (last) parts.push(`Last practice: ${fmtDate(last)}`);
+    if (s.lastAnalysisAt) parts.push(`Last report: ${fmtDate(s.lastAnalysisAt)}`);
     return parts.join(' · ');
   };
 
   const fmtDate = (ts) => {
-    const ms = ts && ts.toMillis ? ts.toMillis() : (typeof ts === 'string' ? Date.parse(ts) : null);
+    const ms = timestampMs(ts);
     if (!ms) return '—';
-    const d = new Date(ms);
-    return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+    const d = new Date(ms + 4 * 3600000);
+    return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
   };
 
   // ─── Sinif analitikası ────────────────────────────────────────
@@ -430,10 +444,10 @@ export default function TeacherUnlock({ user }) {
       (sum, s) => sum + (Number(s.scoreSum) || 0) / Number(s.scoreCount), 0,
     ) / scored.length)
     : null;
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const weekAgo = Date.parse(`${practiceWeekKey()}T00:00:00+04:00`);
   const activeThisWeek = students.filter((s) => {
-    const ms = s.lastActiveAt && s.lastActiveAt.toMillis ? s.lastActiveAt.toMillis() : 0;
-    return ms > weekAgo;
+    const ms = latestPracticeMs(s);
+    return ms >= weekAgo;
   }).length;
 
   // Mövzu histoqramı. Açar `trim().toLowerCase()` ilə qurulur —
@@ -820,13 +834,14 @@ export default function TeacherUnlock({ user }) {
         </div>
 
         {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
+        {rosterError && <p role="alert">{rosterError}</p>}
         {students.length > 0 && (
           <div style={{
             background: 'var(--bg-secondary)', border: '1px solid var(--border)',
             borderRadius: '16px', padding: '16px', marginBottom: '16px',
           }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BarChart3 size={16} strokeWidth={1.75} aria-hidden="true" /> Your class this week
+              <BarChart3 size={16} strokeWidth={1.75} aria-hidden="true" /> Class overview
             </div>
 
             <div style={{
@@ -834,9 +849,9 @@ export default function TeacherUnlock({ user }) {
               gap: '10px',
             }}>
               {[
-                { label: 'Active students', value: `${activeThisWeek}/${students.length}` },
-                { label: 'Class average', value: classAvg ?? '—' },
-                { label: 'Analysed', value: scored.length },
+                { label: 'Active this week', value: `${activeThisWeek}/${students.length}` },
+                { label: 'All-time class average', value: classAvg ?? '—' },
+                { label: 'Students with reports', value: scored.length },
               ].map((tile) => (
                 <div key={tile.label} style={{
                   background: 'var(--bg-card)', borderRadius: '12px',

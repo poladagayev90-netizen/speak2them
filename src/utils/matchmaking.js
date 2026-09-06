@@ -157,7 +157,7 @@ export async function commitMatch(myUid, partnerUid) {
         source: sameSession ? 'session_match' : 'random_match',
         createdAt: serverTimestamp(),
         matchedAt: serverTimestamp(),
-      }, { merge: true });
+      }); // A new call must not inherit billing/stats flags from the previous call.
 
       transaction.update(myRef, {
         status: MATCH_STATUS.MATCHED,

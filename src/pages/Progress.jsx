@@ -1,3 +1,4 @@
+import { totalPracticeMinutes } from '../utils/practiceStats';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
@@ -78,7 +79,7 @@ export default function Progress({ user }) {
     ? Math.round(pacedSessions.reduce((sum, s) => sum + s.wpm, 0) / pacedSessions.length)
     : null;
 
-  const totalMinutes = Number(profile?.totalMinutes) || 0;
+  const totalMinutes = totalPracticeMinutes(profile);
   const wordCount = Number(progress?.wordCount) || 0;
   const newWords = Number(progress?.lastNewWords) || 0;
   // "A2 – Elementary" → "A2". The full label does not fit a tile.

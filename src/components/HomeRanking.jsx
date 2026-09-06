@@ -6,6 +6,7 @@ import AvatarImage from './ui/AvatarImage';
 import { getUserRank, sortUsersForRanking, weeklyMinutesOf } from '../utils/ranking';
 import { useNavigate } from 'react-router-dom';
 import './Ranking.css';
+import { totalPracticeMinutes } from '../utils/practiceStats';
 
 function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   // A gentler staircase than before (was 120/90/70 in a 240px well, which left
@@ -50,7 +51,7 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
   const sortedUsers = useMemo(() => sortUsersForRanking(users, mode), [users, mode]);
   const myRank = useMemo(() => getUserRank(sortedUsers, currentUserId), [sortedUsers, currentUserId]);
   const currentUser = sortedUsers.find((u) => (u.uid || u.id) === currentUserId);
-  const minutesOf = (u) => (mode === 'weekly' ? weeklyMinutesOf(u) : (u.totalMinutes || 0));
+  const minutesOf = (u) => (mode === 'weekly' ? weeklyMinutesOf(u) : totalPracticeMinutes(u));
   const topThree = sortedUsers.slice(0, 3);
   const rest = sortedUsers.slice(3);
   const podiumOrder = topThree.length >= 3

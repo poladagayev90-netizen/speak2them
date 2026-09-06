@@ -471,9 +471,9 @@ export default function AiActivity({ user }) {
         body: JSON.stringify({ sessionId: sessionIdRef.current }),
       });
       const data = await res.json().catch(() => ({}));
-      setDone(data.ok ? 'ready' : 'short');
+      setDone(res.ok && data.ok ? 'ready' : data.reason === 'too-short' ? 'short' : 'error');
     } catch {
-      setDone('short');
+      setDone('error');
     }
   }, [finishing, navigate, stop]);
 
@@ -521,6 +521,13 @@ export default function AiActivity({ user }) {
                 <Button variant="ai" size="lg" full onClick={() => navigate('/history')}>
                   See my report
                 </Button>
+              </>
+            )}
+            {done === 'error' && (
+              <>
+                <h2 className="ai-activity-title">Report could not be created</h2>
+                <p className="ai-bubble-text">Please try again. This was a connection or analysis error.</p>
+                <Button variant="ai" size="lg" full onClick={() => { setFinishing(false); setDone(null); }}>Return to practice</Button>
               </>
             )}
             {done === 'short' && (

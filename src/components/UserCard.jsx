@@ -1,3 +1,4 @@
+import { totalPracticeMinutes } from '../utils/practiceStats';
 import React from 'react';
 import PremiumBadge from './PremiumBadge';
 import AvatarImage from './ui/AvatarImage';
@@ -45,7 +46,7 @@ export default function UserCard({ user, onChat }) {
         )}
         <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Phone size={11} strokeWidth={2} />{user.callCount || 0}</span>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Clock size={11} strokeWidth={2} />{user.totalMinutes || 0} min</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Clock size={11} strokeWidth={2} />{totalPracticeMinutes(user)} min</span>
           {user.streak > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Flame size={11} strokeWidth={2} />{user.streak}</span>}
           {user.ratingCount > 0 && <span style={{ fontSize: '11px', color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Star size={11} strokeWidth={2} />{(user.rating / user.ratingCount).toFixed(1)}</span>}
         </div>

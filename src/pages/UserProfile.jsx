@@ -1,3 +1,4 @@
+import { totalPracticeMinutes } from '../utils/practiceStats';
 import React, { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -94,7 +95,7 @@ export default function UserProfile({ user: currentUser }) {
   
   const stats = {
     calls: profileUser.callCount || 0,
-    totalMinutes: profileUser.totalMinutes || 0,
+    totalMinutes: totalPracticeMinutes(profileUser),
     streak: profileUser.streak || 0,
     rating: profileUser.rating || 0,
     ratingCount: profileUser.ratingCount || 0

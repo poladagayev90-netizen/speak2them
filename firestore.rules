@@ -61,7 +61,7 @@ service cloud.firestore {
           'mode', 'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt',
           'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
-          'isAdult', 'completedSessions',
+          'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
           'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots'])
         && validRoleOneTimeSet();
@@ -71,7 +71,7 @@ service cloud.firestore {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
-          'isAdult', 'completedSessions',
+          'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
           'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots'])
         // A newly created doc may only self-declare the trial mode, never course.
@@ -93,6 +93,11 @@ service cloud.firestore {
       // manages them; Cloud Functions read/prune via the Admin SDK.
       match /fcmTokens/{tokenId} {
         allow read, write: if isOwnDoc(userId);
+      }
+
+      // Server audit ledger; no client writes or public access.
+      match /practiceSessions/{sessionId} {
+        allow read, write: if false;
       }
 
       // Blok siyahısı (Play UGC tələbi): sənədin mövcudluğu = blok. Yalnız

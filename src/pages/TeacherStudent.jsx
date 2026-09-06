@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { doc, collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
+import { totalPracticeMinutes } from '../utils/practiceStats';
 import { Clock, ChevronLeft, BellRing, Check, User } from 'lucide-react';
 import { nudgeStudent, NUDGE_RESULT_TEXT } from '../utils/teacher';
 import { AnalysisDetail } from './History';
@@ -18,34 +19,24 @@ export default function TeacherStudent({ user }) {
   const [analyses, setAnalyses] = useState(null); // null=yüklənir, []=boş
   const [selected, setSelected] = useState(null);
   const [denied, setDenied] = useState(false);
+  const [loadError, setLoadError] = useState('');
   // 'sending' | a NUDGE_RESULT_TEXT key | free-text error.
   const [nudge, setNudge] = useState(null);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const snap = await getDoc(doc(db, 'users', studentId));
-        if (alive && snap.exists()) setStudent(snap.data());
-      } catch { /* users hər signed-in üçün oxunandır; xəta = şəbəkə */ }
-      try {
-        const qs = await getDocs(query(
-          collection(db, 'callAnalysis'),
-          where('userId', '==', studentId),
-          orderBy('timestamp', 'desc'),
-          limit(30)
-        ));
-        if (alive) {
-          setAnalyses(qs.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .filter((d) => d.status !== 'queued' && d.status !== 'processing'));
-        }
-      } catch (e) {
-        // permission-denied = bu şagird bu müəllimə bağlı deyil (rules kəsdi).
-        if (alive) { setAnalyses([]); if (e.code === 'permission-denied') setDenied(true); }
-      }
-    })();
-    return () => { alive = false; };
+    setStudent(null); setAnalyses(null); setSelected(null); setDenied(false); setLoadError('');
+    const failed = e => {
+      if (e.code === 'permission-denied') setDenied(true);
+      else setLoadError('Could not load the latest reports. Please reload to try again.');
+      setAnalyses([]);
+    };
+    const stopUser = onSnapshot(doc(db, 'users', studentId), snap => {
+      setStudent(snap.exists() ? snap.data() : null);
+    }, failed);
+    const stopAnalyses = onSnapshot(query(collection(db, 'callAnalysis'), where('userId', '==', studentId), orderBy('timestamp', 'desc'), limit(30)), snap => {
+      setAnalyses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, failed);
+    return () => { stopUser(); stopAnalyses(); };
   }, [studentId]);
 
   if (selected) {
@@ -54,16 +45,12 @@ export default function TeacherStudent({ user }) {
 
   const scoreTone = (s) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger');
   const fmtDate = (sec) => (sec ? new Date(sec * 1000).toLocaleDateString() : '');
-  // Practice with AInur was missing from both numbers, so a student who had
-  // done nothing but practice showed "0 speaking minutes, 0 sessions" directly
-  // above a list of their graded sessions. The call figures stay exactly as
-  // they are — they are authoritative and come from call timestamps — and the
-  // AInur seconds are added from the analyses this page has already loaded,
-  // which the server measured from the turns themselves.
-  const aiAnalyses = (analyses || []).filter((a) => a.source === 'ainur');
-  const aiSeconds = aiAnalyses.reduce((n, a) => n + (Number(a.durationSeconds) || 0), 0);
-  const totalMinutes = (Number(student?.totalMinutes) || 0) + Math.round(aiSeconds / 60);
-  const sessions = (Number(student?.completedSessions) || 0) + aiAnalyses.length;
+  // Preserve the previous display during the server rollout; once backfilled,
+  // lifetime counters replace this fallback to the currently loaded reports.
+  const aiReports = (analyses || []).filter(a => a.source === 'ainur' && a.status === 'done');
+  const totalMinutes = totalPracticeMinutes({ ...student, aiPracticeSeconds: student?.aiPracticeSeconds
+    ?? aiReports.reduce((sum, a) => sum + (Number(a.durationSeconds) || 0), 0) });
+  const sessions = (Number(student?.callCount) || 0) + (student?.aiPracticeSessions ?? aiReports.length);
   const streak = Number(student?.streak) || 0;
   // Ortalama bal — yalnız balı olan analizlərdən.
   const scored = (analyses || []).filter((a) => Number.isFinite(a.overallScore));
@@ -103,7 +90,7 @@ export default function TeacherStudent({ user }) {
             { label: 'Speaking minutes', value: totalMinutes, icon: '' },
             { label: 'Sessions', value: sessions, icon: '' },
             { label: 'Streak', value: streak > 0 ? `🔥${streak}` : '—', icon: '' },
-            { label: 'Average score', value: avgScore ?? '—', icon: '' },
+            { label: 'Recent average score', value: avgScore ?? '—', icon: '' },
           ].map((tile) => (
             <div key={tile.label} style={{ ...panel, textAlign: 'center', padding: '14px 8px' }}>
               <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--text-primary)' }}>
@@ -153,7 +140,7 @@ export default function TeacherStudent({ user }) {
           {'AI analyses'}
         </div>
 
-        {analyses === null ? (
+        {loadError ? <p role="alert">{loadError}</p> : analyses === null ? (
           <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
             <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
@@ -170,7 +157,7 @@ export default function TeacherStudent({ user }) {
             <div className="empty-icon"></div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>{'No analyses yet.'}</p>
             <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
-              {'An analysis appears here a few minutes after your student finishes their first call.'}
+              {'Reports appear after calls of at least 2 minutes or completed AInur practice with enough speech. Short calls still count as practice.'}
             </p>
           </div>
         ) : (
@@ -178,10 +165,11 @@ export default function TeacherStudent({ user }) {
             {analyses.map((a) => (
               <div
                 key={a.id}
-                onClick={() => setSelected(a)}
+                onClick={() => { if (!['queued', 'processing'].includes(a.status)) setSelected(a); }}
                 role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter') setSelected(a); }}
+                aria-disabled={['queued', 'processing'].includes(a.status)}
+                tabIndex={['queued', 'processing'].includes(a.status) ? -1 : 0}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !['queued', 'processing'].includes(a.status)) setSelected(a); }}
                 style={{
                   ...panel, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
@@ -197,7 +185,7 @@ export default function TeacherStudent({ user }) {
                     {a.timestamp?.seconds ? ` • ${fmtDate(a.timestamp.seconds)}` : ''}
                   </div>
                 </div>
-                {Number.isFinite(a.overallScore) ? (
+                {['queued', 'processing'].includes(a.status) ? <span>{a.status === 'queued' ? 'Queued' : 'Analysing…'}</span> : Number.isFinite(a.overallScore) ? (
                   <div style={{
                     background: `var(--${scoreTone(a.overallScore)}-bg)`,
                     color: `var(--${scoreTone(a.overallScore)}-fg)`,

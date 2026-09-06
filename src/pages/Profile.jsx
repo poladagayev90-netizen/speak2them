@@ -1,3 +1,4 @@
+import { totalPracticeMinutes } from '../utils/practiceStats';
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { updateProfile, signOut } from 'firebase/auth';
@@ -90,7 +91,7 @@ export default function Profile({ user }) {
               setLevel(d.level || 'B1 – Intermediate');
               setIsPremium(d.isPremium || false);
               setMode(d.mode || '');
-              setStats({ calls: d.callCount || 0, totalMinutes: d.totalMinutes || 0, streak: d.streak || 0, rating: d.rating || 0, ratingCount: d.ratingCount || 0 });
+              setStats({ calls: d.callCount || 0, totalMinutes: totalPracticeMinutes(d), streak: d.streak || 0, rating: d.rating || 0, ratingCount: d.ratingCount || 0 });
               setStreakInfo(getStreakInfo(d));
             }
           });

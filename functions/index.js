@@ -5,6 +5,7 @@ const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
+const { syncAiPractice, recordCallPractice } = require("./practiceStats");
 const {
   getTokensForUser,
   getAllTokens,
@@ -23,6 +24,14 @@ const {
 } = require("./grammarConcepts");
 
 admin.initializeApp();
+
+exports.syncPracticeAnalysis = onDocumentWritten({
+  document: "callAnalysis/{analysisId}", region: "europe-west4", retry: true,
+}, async event => {
+  const analysis = event.data?.after?.data();
+  if (analysis?.source !== "ainur" || analysis.status !== "done" || !analysis.userId) return;
+  await syncAiPractice(admin.firestore(), analysis.userId);
+});
 
 const AGORA_APP_CERTIFICATE = defineSecret("AGORA_APP_CERTIFICATE");
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
@@ -662,11 +671,14 @@ function bakuWeekKey(ms = Date.now()) {
 // statsApplied_{uid} flag the client writes in Chat.jsx's endCall. Re-reads
 // both docs inside the transaction, so it is safe to call from multiple
 // places (or multiple times) without double-crediting.
-async function applyMissingCallStats(db, callRef, uid, durationMinutes) {
+async function applyMissingCallStats(db, callRef, uid, durationMinutes, expectedStart) {
   await db.runTransaction(async (tx) => {
     const freshCallSnap = await tx.get(callRef);
     if (!freshCallSnap.exists) return;
     const freshCall = freshCallSnap.data() || {};
+    if (freshCall.status !== "ended") return;
+    const start = freshCall.matchedAt?.toMillis?.() || freshCall.createdAt?.toMillis?.();
+    if (expectedStart && start !== expectedStart) return; // a newer call now occupies this ID
     if (freshCall[`statsApplied_${uid}`]) return; // already credited by the client or a prior run
 
     const userRef = db.collection("users").doc(uid);
@@ -725,7 +737,7 @@ async function applyMissingCallStats(db, callRef, uid, durationMinutes) {
 // This mirrors the exact statsApplied_{uid} flag the client writes in
 // Chat.jsx's endCall, so whichever side runs first (a client, or this
 // trigger) wins and the other is a no-op — safe to have both.
-exports.reconcileCallStats = onDocumentWritten("calls/{callId}", async (event) => {
+exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4", retry: true }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
   const call = after.data() || {};
@@ -740,18 +752,23 @@ exports.reconcileCallStats = onDocumentWritten("calls/{callId}", async (event) =
   )).slice(0, 2);
   if (participants.length < 2) return;
 
-  const durationMinutes = Math.ceil(durationSeconds / 60);
+  const durationMinutes = durationSeconds / 60;
   const db = admin.firestore();
   const callRef = after.ref;
 
+  const failures = [];
   for (const uid of participants) {
+    try { await recordCallPractice(db, after.id, call, uid); }
+    catch (e) { failures.push(e); }
     if (call[`statsApplied_${uid}`]) continue; // client already handled this side
     try {
-      await applyMissingCallStats(db, callRef, uid, durationMinutes);
+      await applyMissingCallStats(db, callRef, uid, durationMinutes, call.matchedAt?.toMillis?.() || call.createdAt?.toMillis?.());
     } catch (e) {
       console.error("[reconcileCallStats] failed for", uid, e.message);
+      failures.push(e);
     }
   }
+  if (failures.length) throw failures[0]; // retry after crediting the unaffected participant
 });
 
 // One-time admin action: scans every call doc that already finished
@@ -788,7 +805,7 @@ exports.backfillMissingCallStats = onRequest({ secrets: [] }, async (req, res) =
     )).slice(0, 2);
     if (participants.length < 2) continue;
 
-    const durationMinutes = Math.ceil(call.authoritativeDurationSec / 60);
+    const durationMinutes = call.authoritativeDurationSec / 60;
     for (const uid of participants) {
       if (call[`statsApplied_${uid}`]) continue;
       try {
@@ -5548,7 +5565,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     // 1) Owned documents (+ their sub-collections).
     //    'blocked' və 'private' (yaş təsdiqi) də silinməlidir — əks halda
     //    silinmiş hesabın şəxsi qeydləri Firestore-da qalır.
-    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "private"]);
+    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "private", "practiceSessions"]);
     await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
     await db.collection("premiumRequests").doc(uid).delete().catch(() => null);
@@ -6506,4 +6523,3 @@ exports.speakLine = onRequest(
     }
   },
 );
-

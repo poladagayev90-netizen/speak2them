@@ -906,7 +906,7 @@ export default function Chat({ user }) {
         } else {
           durationSeconds = secondsTalked; // legacy calls with no start timestamp
         }
-        const durationMinutes = Math.ceil(durationSeconds / 60);
+        const durationMinutes = durationSeconds / 60;
         const shouldApplyStats = durationSeconds > 5 && !callData[`statsApplied_${user.uid}`] && uniqueParticipants.length === 2;
 
         const callSessionUpdate = {
