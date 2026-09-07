@@ -26,7 +26,7 @@ const {
 admin.initializeApp();
 
 exports.syncPracticeAnalysis = onDocumentWritten({
-  document: "callAnalysis/{analysisId}", region: "europe-west4", retry: true,
+  document: "callAnalysis/{analysisId}", region: "europe-west4",
 }, async event => {
   const analysis = event.data?.after?.data();
   if (analysis?.source !== "ainur" || analysis.status !== "done" || !analysis.userId) return;
@@ -737,7 +737,7 @@ async function applyMissingCallStats(db, callRef, uid, durationMinutes, expected
 // This mirrors the exact statsApplied_{uid} flag the client writes in
 // Chat.jsx's endCall, so whichever side runs first (a client, or this
 // trigger) wins and the other is a no-op — safe to have both.
-exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4", retry: true }, async (event) => {
+exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4" }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
   const call = after.data() || {};
@@ -768,7 +768,7 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
       failures.push(e);
     }
   }
-  if (failures.length) throw failures[0]; // retry after crediting the unaffected participant
+  if (failures.length) throw failures[0]; // surface errors after crediting the unaffected participant
 });
 
 // One-time admin action: scans every call doc that already finished
