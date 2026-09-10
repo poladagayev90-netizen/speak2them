@@ -100,9 +100,9 @@ async function enforceRateLimit(uid, key, maxCalls, windowMs) {
 const TOPIC_COUNT = require("./dailyQuestions.json").length; // src/data/weeklyContent.js ilə eyni
 const TRIAL_DAYS = 60;             // kodsuz trial: ilk girişdən 2 ay
 const COURSE_FREE_MONTHS = 6;      // kurs bitəndən sonra pulsuz dövr
-// Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Admin appConfig/session-da dəyişir.
-const DEFAULT_SESSION_DAYS = [1, 3, 5];   // B.e / Çər / Cümə
-const DEFAULT_BONUS_DAYS = [0];           // Bazar — həftənin 7-ci günü (bonus)
+// Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Mövzuların hər gün irəliləməsi üçün bütün günlər aktivdir.
+const DEFAULT_SESSION_DAYS = [0, 1, 2, 3, 4, 5, 6];   // Hər gün (Bazar - Şənbə)
+const DEFAULT_BONUS_DAYS = [0];           // Bazar
 
 // Baku təqvim tarixi "YYYY-MM-DD" (UTC+4, DST yoxdur).
 function bakuDateStr(ms = Date.now()) {
@@ -346,6 +346,32 @@ exports.advanceCycle = onSchedule({
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
   });
+});
+
+exports.advanceTopicNow = onRequest(async (req, res) => {
+  setCors(res, "GET, POST");
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+  const db = admin.firestore();
+  const today = bakuDateStr();
+  const ref = db.collection("appConfig").doc("cycle");
+  let nextTopic = 0;
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    let nextTick = 0;
+    if (!snap.exists) {
+      nextTick = seedTickForDate(today) + 1;
+    } else {
+      nextTick = (Number(snap.data().cycleTick) || 0) + 1;
+    }
+    nextTopic = nextTick % TOPIC_COUNT;
+    tx.set(ref, {
+      cycleTick: nextTick,
+      currentTopicIndex: nextTopic,
+      lastAdvancedDate: today,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  });
+  res.status(200).json({ ok: true, currentTopicIndex: nextTopic, day: nextTopic + 1 });
 });
 
 // ─── Topic Practice Reminder ──────────────────────────────────

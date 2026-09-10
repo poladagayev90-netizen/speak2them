@@ -14,8 +14,8 @@ import { db } from '../firebase';
 //
 // DİQQƏT: Bazar = 0, 7 DEYİL. Konfiqə 7 yazılsa bakuWeekday (0–6) heç vaxt
 // uyğun gəlməyəcək və bazar səssizcə itəcək.
-export const DEFAULT_SESSION_DAYS = [1, 3, 5]; // Mon / Wed / Fri
-export const DEFAULT_BONUS_DAYS = [0];         // Sun — 7th day of the week (bonus)
+export const DEFAULT_SESSION_DAYS = [0, 1, 2, 3, 4, 5, 6]; // All days (Mon-Sun)
+export const DEFAULT_BONUS_DAYS = [0];         // Sun
 
 export const DEFAULT_SESSION_CONFIG = {
   enabled: false,
