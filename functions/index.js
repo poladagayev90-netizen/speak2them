@@ -25,6 +25,24 @@ const {
 
 admin.initializeApp();
 
+exports.removeStudent = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "POST") return res.status(405).json({ error: "method-not-allowed" });
+  let decoded;
+  try { decoded = await verifyAuth(req); }
+  catch { return res.status(401).json({ error: "unauthorized" }); }
+  try {
+    const result = await require("./removeStudent").removeStudent(
+      admin.firestore(), admin.firestore.FieldValue, decoded.uid, req.body?.studentUid,
+    );
+    return res.status(200).json({ ok: true, ...result });
+  } catch (e) {
+    if (!e.httpStatus) console.error("[removeStudent]", e);
+    return res.status(e.httpStatus || 500).json({ error: e.httpStatus ? e.message : "internal-error" });
+  }
+});
+
 exports.syncPracticeAnalysis = onDocumentWritten({
   document: "callAnalysis/{analysisId}", region: "europe-west4",
 }, async event => {
@@ -4275,7 +4293,10 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
     + (themes.length ? ` · Working on: ${themes.join(", ")}` : "");
 
   try {
-    await db.collection("chats").doc(chatId).set({
+    await db.runTransaction(async (tx) => {
+    const student = await tx.get(db.collection("users").doc(studentUid));
+    if (!student.exists || student.data().teacherId !== teacherId) return;
+    tx.set(db.collection("chats").doc(chatId), {
       participants: [studentUid, teacherId].sort(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastMessage: text,
@@ -4293,7 +4314,7 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
     // gözündə şagirddən gələn mesaj kimi, şagirdin gözündə isə öz mesajı kimi
     // oturur. Client məhz bu fərqdən "hesabatı aç" düyməsinin hara aparacağını
     // çıxarır — əlavə rol sorğusu lazım deyil.
-    await db.collection("chats").doc(chatId).collection("messages").add({
+    tx.set(db.collection("chats").doc(chatId).collection("messages").doc(), {
       senderId: studentUid,
       senderName: studentName || "Student",
       kind: "analysis",
@@ -4314,9 +4335,10 @@ async function postAnalysisToTeacherChat(db, studentUid, teacherId, analysisId, 
     //
     // Written as a set/merge with an increment rather than through the trigger
     // so it cannot double-count: the trigger only ever touches the OTHER side.
-    await db.collection("chats").doc(chatId).set({
+    tx.set(db.collection("chats").doc(chatId), {
       unread: { [studentUid]: admin.firestore.FieldValue.increment(1) },
     }, { merge: true });
+    });
     console.log("[AnalysisChat] posted to", chatId);
   } catch (e) {
     // Hesabat onsuz da yazılıb — söhbətə düşməməsi analizi öldürməməlidir.

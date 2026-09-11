@@ -1,11 +1,13 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
+import { removeStudent } from '../utils/teacher';
 import TeacherStudent from './TeacherStudent';
 
 const mockListeners = {};
+const mockNavigate = jest.fn();
 jest.mock('../firebase', () => ({ db: {} }));
-jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn(), useParams: () => ({ studentId: 'student' }) }), { virtual: true });
-jest.mock('../utils/teacher', () => ({ nudgeStudent: jest.fn(), NUDGE_RESULT_TEXT: {} }));
+jest.mock('react-router-dom', () => ({ useNavigate: () => mockNavigate, useParams: () => ({ studentId: 'student' }) }), { virtual: true });
+jest.mock('../utils/teacher', () => ({ nudgeStudent: jest.fn(), removeStudent: jest.fn(), NUDGE_RESULT_TEXT: {} }));
 jest.mock('./History', () => ({ AnalysisDetail: () => <div>Report detail</div> }));
 jest.mock('firebase/firestore', () => ({
   doc: () => 'student', collection: () => 'analyses', query: source => source,
@@ -30,4 +32,34 @@ test('a failed report query is shown as an error, not no practice', () => {
   act(() => mockListeners.analyses.error({code:'unavailable'}));
   expect(screen.getByRole('alert').textContent).toContain('Could not load');
   expect(screen.queryByText('No analyses yet.')).toBeNull();
+});
+
+test('removal requires confirmation, cancel leaves membership intact, success returns to class', async () => {
+  removeStudent.mockResolvedValue({ ok: true });
+  render(<TeacherStudent user={{uid:'teacher'}} />);
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Sabina',teacherId:'teacher'})}));
+  fireEvent.click(screen.getByText('Remove from class'));
+  expect(removeStudent).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByText('Cancel'));
+  expect(removeStudent).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByText('Remove from class'));
+  await act(async () => fireEvent.click(screen.getByText('Confirm removal')));
+  expect(removeStudent).toHaveBeenCalledWith('student');
+  expect(mockNavigate).toHaveBeenCalledWith('/teacher', {replace:true});
+});
+
+test('another teacher cannot see the removal control', () => {
+  render(<TeacherStudent user={{uid:'other'}} />);
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Sabina',teacherId:'teacher'})}));
+  expect(screen.queryByText('Remove from class')).toBeNull();
+});
+
+test('a failed removal keeps the confirmation open and shows the error', async () => {
+  removeStudent.mockResolvedValue({ok:false,errorText:'Network error'});
+  render(<TeacherStudent user={{uid:'teacher'}} />);
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Sabina',teacherId:'teacher'})}));
+  fireEvent.click(screen.getByText('Remove from class'));
+  await act(async () => fireEvent.click(screen.getByText('Confirm removal')));
+  expect(screen.getByRole('alert').textContent).toBe('Network error');
+  expect(screen.getByText('Confirm removal').disabled).toBe(false);
 });

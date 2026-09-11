@@ -4,7 +4,7 @@ import { doc, collection, query, where, orderBy, limit, onSnapshot } from 'fireb
 import { db } from '../firebase';
 import { totalPracticeMinutes } from '../utils/practiceStats';
 import { Clock, ChevronLeft, BellRing, Check, User } from 'lucide-react';
-import { nudgeStudent, NUDGE_RESULT_TEXT } from '../utils/teacher';
+import { nudgeStudent, NUDGE_RESULT_TEXT, removeStudent } from '../utils/teacher';
 import { AnalysisDetail } from './History';
 
 // Müəllimin şagird səhifəsi — funnel-in ƏSAS dəyəri: şagirdin hər zənginin
@@ -22,6 +22,9 @@ export default function TeacherStudent({ user }) {
   const [loadError, setLoadError] = useState('');
   // 'sending' | a NUDGE_RESULT_TEXT key | free-text error.
   const [nudge, setNudge] = useState(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState('');
 
   useEffect(() => {
     setStudent(null); setAnalyses(null); setSelected(null); setDenied(false); setLoadError('');
@@ -79,6 +82,26 @@ export default function TeacherStudent({ user }) {
 
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
+
+        {student?.teacherId === user.uid && (
+          <section style={{ ...panel, marginBottom: 18 }} aria-label="Class membership">
+            {confirmRemove ? <>
+              <p style={{ fontWeight: 700 }}>Remove {student.name || 'this student'} from your class?</p>
+              <p style={{ margin: '8px 0 14px', fontSize: 13, color: 'var(--text-secondary)' }}>Their account, practice history and messages will stay. You will lose access to their analyses. They can join a teacher again with a new invitation.</p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button type="button" disabled={removing} onClick={async () => {
+                  if (removing) return;
+                  setRemoving(true); setRemoveError('');
+                  const result = await removeStudent(studentId);
+                  if (result.ok) navigate('/teacher', { replace: true });
+                  else { setRemoveError(result.errorText); setRemoving(false); }
+                }} style={{ padding: '10px 14px', borderRadius: 10, border: 0, background: 'var(--danger-solid)', color: 'var(--ink-on-danger)', cursor: 'pointer' }}>{removing ? 'Removing…' : 'Confirm removal'}</button>
+                <button type="button" disabled={removing} onClick={() => { setConfirmRemove(false); setRemoveError(''); }} style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)', cursor: 'pointer' }}>Cancel</button>
+              </div>
+              {removeError && <p role="alert" style={{ marginTop: 10, color: 'var(--danger)' }}>{removeError}</p>}
+            </> : <button type="button" onClick={() => setConfirmRemove(true)} style={{ background: 'none', border: 0, color: 'var(--danger)', fontWeight: 700, cursor: 'pointer' }}>Remove from class</button>}
+          </section>
+        )}
 
         {/* Stat kartları */}
         <div style={{

@@ -113,6 +113,15 @@ export function nudgeStudent(studentUid) {
   return callTeacherFn('nudgeStudent', { studentUid }, NUDGE_ERROR_TEXT);
 }
 
+export function removeStudent(studentUid) {
+  return callTeacherFn('removeStudent', { studentUid }, {
+    'not-your-student': 'This student is no longer in your class.',
+    'student-not-found': 'This student account no longer exists.',
+    'invalid-student': 'Please reopen the student page and try again.',
+    unauthorized: 'Your session has expired. Please sign in again.',
+  });
+}
+
 export function respondTeacherInvite(inviteId, accept) {
   return callTeacherFn('respondTeacherInvite', { inviteId, accept }, INVITE_ERROR_TEXT);
 }

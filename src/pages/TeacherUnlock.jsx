@@ -115,7 +115,7 @@ export default function TeacherUnlock({ user }) {
     if (!user?.uid || !eligible) return undefined;
     const failed = () => setRosterError('Could not refresh student activity. Please reload to try again.');
     const stopRoster = onSnapshot(collection(db, 'teachers', user.uid, 'roster'), snap => {
-      setRoster(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setRoster(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(s => s.status !== 'removed'));
     }, failed);
     const stopProfiles = onSnapshot(query(collection(db, 'users'), where('teacherId', '==', user.uid)), snap => {
       setStudentProfiles(Object.fromEntries(snap.docs.map(d => [d.id, d.data()])));
