@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import { db } from '../firebase';
 import { chatIdFor, markChatRead, AINUR_UID } from '../utils/chat';
 import AnalysisMessage from '../components/AnalysisMessage';
+import MessageTimestamp from '../components/MessageTimestamp';
 
 // The AInur thread.
 //
@@ -99,14 +100,7 @@ export default function AinurChat({ user }) {
                 ) : (
                   <p className="ai-bubble-text">{m.text}</p>
                 )}
-                <p style={{
-                  margin: 'var(--s-1) 0 0', fontSize: 'var(--fs-xs)',
-                  fontWeight: 600, color: 'var(--text-muted)',
-                }}>
-                  {m.createdAt && m.createdAt.toDate
-                    ? m.createdAt.toDate().toLocaleString()
-                    : ''}
-                </p>
+                <MessageTimestamp createdAt={m.createdAt} />
               </div>
             ))}
           </div>

@@ -15,6 +15,7 @@ import {
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisMessage from '../components/AnalysisMessage';
+import MessageTimestamp from '../components/MessageTimestamp';
 import PremiumBadge from '../components/PremiumBadge';
 import TutorBadge from '../components/TutorBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
@@ -268,7 +269,7 @@ export default function Chat({ user }) {
       const msgs = snap.docs
         .map((d) => {
           const data = d.data();
-          return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || null };
+          return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || null, pending: d.metadata.hasPendingWrites };
         })
         .sort((a, b) => {
           if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
@@ -1571,7 +1572,7 @@ export default function Chat({ user }) {
       )}
 
       <div className="chat-header">
-        <button className="btn-back" onClick={() => { endCall(); navigate('/'); }}>← Back</button>
+        <button className="btn-back" onClick={() => { endCall(); navigate('/chats'); }}>← Back</button>
         <div className="chat-peer-info">
           <div className="chat-avatar">
             {peer?.name?.charAt(0).toUpperCase()}
@@ -1626,6 +1627,7 @@ export default function Chat({ user }) {
                     {m.text}
                   </p>
                 )}
+                <MessageTimestamp createdAt={m.createdAt} pending={m.pending} />
                 {/* Silmə yalnız öz mesajında və toxunuşdan sonra görünür —
                     hər baloncuğun yanında daimi zibil qutusu söhbəti qarışdırır. */}
                 {isMine && selected && !m.deleted && (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { subscribeToBlocked } from '../utils/blocklist';
@@ -27,24 +27,33 @@ export default function Chats({ user }) {
   // bir dəfə oxunur və keşlənir.
   useEffect(() => {
     if (!chats) return;
-    const missing = chats
+    // Publish cached results even if a previous effect was cancelled while
+    // reading profiles by a newer chat snapshot.
+    setPeers({ ...peerCacheRef.current });
+    const missing = [...new Set(chats
       .map((c) => (c.participants || []).find((p) => p !== user.uid))
       // AInur has no user document to fetch; asking for one returns nothing and
       // the row would fall back to a nameless "User".
-      .filter((p) => p && !isAinurId(p) && !peerCacheRef.current[p]);
+      .filter((p) => p && !isAinurId(p) && !peerCacheRef.current[p]))];
     if (missing.length === 0) return;
     let alive = true;
-    (async () => {
-      for (const pid of missing) {
+    missing.forEach(async (pid) => {
         try {
-          const snap = await getDocs(query(collection(db, 'users'), where('uid', '==', pid)));
-          peerCacheRef.current[pid] = snap.docs[0]?.data() || { name: 'User' };
-        } catch {
-          peerCacheRef.current[pid] = { name: 'User' };
+          // Profiles are keyed by uid; legacy profiles need not contain a uid field.
+          const snap = await getDoc(doc(db, 'users', pid));
+          if (!alive) return;
+          if (snap.exists()) {
+            peerCacheRef.current[pid] = snap.data();
+            setPeers((prev) => ({ ...prev, [pid]: snap.data() }));
+          } else {
+            setPeers((prev) => ({ ...prev, [pid]: { name: 'Unavailable account' } }));
+          }
+        } catch (error) {
+          // Do not permanently cache a temporary network/permission failure.
+          if (alive) setPeers((prev) => ({ ...prev, [pid]: { name: 'Could not load profile' } }));
+          console.error('[chats] profile', error);
         }
-      }
-      if (alive) setPeers({ ...peerCacheRef.current });
-    })();
+    });
     return () => { alive = false; };
   }, [chats, user.uid]);
 
@@ -87,7 +96,7 @@ export default function Chats({ user }) {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {rows.map((c) => {
               const unread = unreadFor(c, user.uid);
-              const name = c.peer.name || 'User';
+              const name = c.peer.name || c.peer.displayName || (peers[c.peerId] ? 'Unnamed account' : 'Loading...');
               // She has no presence and never will; a dot on her row would be
               // claiming something about a person who is not there.
               const presence = (!isAinurId(c.peerId) && c.peer.lastSeen) ? getPresence(c.peer) : 'offline';
