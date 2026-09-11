@@ -31,40 +31,28 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
   }, []);
 
   return (
-    <div className="home-page">
-      <div className="home-header">
-        <div className="home-logo">{'Leaderboard'}</div>
-      </div>
-      <div className="home-body" style={{ paddingBottom: '90px' }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+    <div className="home-page leaderboard-page">
+      <div className="home-body leaderboard-content">
+        <header className="leaderboard-header">
+          <div><p className="leaderboard-eyebrow">THE PRACTICE CLUB</p><h1>Little by little.<br /><span>Up the leaderboard.</span></h1><p>Show up. Speak more. Grow together.</p></div>
+          <div className="leaderboard-emblem"><Trophy size={34} strokeWidth={1.5} aria-hidden="true" /></div>
+        </header>
+        <div className="leaderboard-toolbar">
+        <h2>Leaderboard</h2>
+        <div className="leaderboard-tabs" aria-label="Ranking period">
           <button
             onClick={() => setTab('weekly')}
-            style={{
-              flex: 1, padding: '10px 0', borderRadius: 12, fontSize: 14, fontWeight: 700,
-              cursor: 'pointer',
-              border: tab === 'weekly' ? 'none' : '1px solid var(--border)',
-              background: tab === 'weekly'
-                ? 'var(--accent)'
-                : 'var(--bg-card)',
-              color: tab === 'weekly' ? 'var(--text-on-accent)' : 'var(--text-secondary)',
-            }}
+            aria-pressed={tab === 'weekly'}
           >
             {'This week'}
           </button>
           <button
             onClick={() => setTab('all')}
-            style={{
-              flex: 1, padding: '10px 0', borderRadius: 12, fontSize: 14, fontWeight: 700,
-              cursor: 'pointer',
-              border: tab === 'all' ? 'none' : '1px solid var(--border)',
-              background: tab === 'all'
-                ? 'var(--accent)'
-                : 'var(--bg-card)',
-              color: tab === 'all' ? 'var(--text-on-accent)' : 'var(--text-secondary)',
-            }}
+            aria-pressed={tab === 'all'}
           >
             {'All time'}
           </button>
+        </div>
         </div>
         {tab === 'weekly' && (
           <p style={{

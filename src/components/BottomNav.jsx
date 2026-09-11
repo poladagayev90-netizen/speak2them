@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bot, Home, LayoutDashboard, MessageCircle, Users, User } from 'lucide-react';
+import { Bot, Home, LayoutDashboard, MessageCircle, Users, User, Trophy } from 'lucide-react';
 import { subscribeToUnreadTotal } from '../utils/chat';
 import useSearcherCount from '../hooks/useSearcherCount';
 
@@ -35,6 +35,7 @@ export default function BottomNav({ user }) {
       // to, and this tab is the AI one. Every other tab leads to people.
       : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)', soft: 'var(--ai-soft)' },
     { icon: Users,         label: 'Live',    route: '/live', badge: searching, live: true },
+    { icon: Trophy,        label: 'Leaderboard', route: '/ranking' },
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
@@ -51,6 +52,7 @@ export default function BottomNav({ user }) {
             key={tab.route}
             id={tab.tourId}
             className={`bottom-nav-btn ${isActive ? 'active' : ''}`}
+            aria-current={isActive ? 'page' : undefined}
             onClick={() => navigate(tab.route)}
             // The pool behind the active icon has to be the tab's own step of
             // the purple, or the AI tab pools in the peer colour under an

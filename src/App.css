@@ -1535,6 +1535,7 @@ body {
 
 .bottom-nav-btn {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1597,7 +1598,7 @@ body {
 /* 700, not 500. At 10px on a translucent bar a medium weight is a smudge --
    the label has to be readable at a glance or the icon is doing all the work. */
 .bottom-nav-label {
-  font-size: 10px;
+  font-size: clamp(8px, 2.2vw, 10px);
   font-weight: 700;
   color: var(--text-secondary);
 }

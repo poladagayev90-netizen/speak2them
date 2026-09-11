@@ -19,6 +19,9 @@ function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   return (
     <div
       className={`ranking-podium-slot rank-${rank}`}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/user/${user.uid || user.id}`); } }}
       onClick={() => navigate(`/user/${user.uid || user.id}`)}
       style={{ cursor: 'pointer' }}
     >
@@ -86,7 +89,7 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
             </span>
             <span>
               <Phone size={13} strokeWidth={2} aria-hidden="true" />
-              {currentUser?.callCount || 0} calls
+              {currentUser?.callCount || 0} total calls
             </span>
             {(currentUser?.streak || 0) > 0 && (
               <span className="streak-pill">
@@ -99,6 +102,8 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
       )}
 
       {topThree.length > 0 && (
+        <section className="ranking-leaders">
+        <div className="ranking-section-heading"><h3>Leading the way</h3><span>{mode === 'weekly' ? 'THIS WEEK' : 'ALL TIME'}</span></div>
         <div className="ranking-podium">
           {podiumOrder.map((user) => {
             const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
@@ -113,8 +118,11 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
             );
           })}
         </div>
+        </section>
       )}
 
+      <div className="ranking-list">
+      {rest.length > 0 && <div className="ranking-section-heading"><h3>The community</h3><span>MINUTES</span></div>}
       {rest.map((user) => {
         const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
         return (
@@ -127,6 +135,7 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
           />
         );
       })}
+      </div>
     </div>
   );
 }
