@@ -46,6 +46,7 @@ export default function TeacherUnlock({ user }) {
   // əks halda boş roster əbədi "yüklənir" kimi görünərdi (Ranking dərsi).
   const [roster, setRoster] = useState(null);
   const [studentProfiles, setStudentProfiles] = useState({});
+  const [profilesLoading, setProfilesLoading] = useState(true);
   const [rosterError, setRosterError] = useState('');
   // Birbaşa dəvət: kod paylaşmaq həmişə işləmir (link itir, kod səhv yazılır).
   const [inviteEmail, setInviteEmail] = useState('');
@@ -119,6 +120,7 @@ export default function TeacherUnlock({ user }) {
     }, failed);
     const stopProfiles = onSnapshot(query(collection(db, 'users'), where('teacherId', '==', user.uid)), snap => {
       setStudentProfiles(Object.fromEntries(snap.docs.map(d => [d.id, d.data()])));
+      setProfilesLoading(false);
     }, failed);
     return () => { stopRoster(); stopProfiles(); };
   }, [user?.uid, eligible]);
@@ -898,12 +900,16 @@ export default function TeacherUnlock({ user }) {
 
         {/* Əl ilə zəng təyini — lövhə cütü təsadüfən qurur, müəllim isə
             konkret iki nəfəri seçir. İki şagirddən az olanda özü gizlənir. */}
+        <TeacherUpcoming
+          students={Object.entries(studentProfiles).map(([id, profile]) => ({ ...profile, id, displayName: profile.name }))}
+          loading={profilesLoading}
+          error={rosterError}
+        />
         <TeacherScheduler students={students} />
 
         {/* Təyin ediləni geri almaq da təyin etmək qədər vacibdir: səhv cüt
             qurulanda teacherSetMatch onun üstünə yaza bilmir (hər ikisi boş
             olmalıdır), ona görə sökmək yolu olmasa müəllim ilişib qalır. */}
-        <TeacherUpcoming students={students} />
 
         {/* Roster */}
         <div style={{
