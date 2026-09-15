@@ -376,14 +376,20 @@ exports.advanceTopicNow = onRequest(async (req, res) => {
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     let nextTick = 0;
-    if (!snap.exists) {
+    const reqDay = req.body?.day ?? req.query?.day;
+    const reqIndex = req.body?.topicIndex ?? req.query?.topicIndex;
+    if (reqDay !== undefined && Number.isFinite(Number(reqDay))) {
+      nextTick = Number(reqDay) - 1;
+    } else if (reqIndex !== undefined && Number.isFinite(Number(reqIndex))) {
+      nextTick = Number(reqIndex);
+    } else if (!snap.exists) {
       nextTick = seedTickForDate(today) + 1;
     } else {
       nextTick = (Number(snap.data().cycleTick) || 0) + 1;
     }
-    nextTopic = nextTick % TOPIC_COUNT;
+    nextTopic = ((nextTick % TOPIC_COUNT) + TOPIC_COUNT) % TOPIC_COUNT;
     tx.set(ref, {
-      cycleTick: nextTick,
+      cycleTick: nextTopic,
       currentTopicIndex: nextTopic,
       lastAdvancedDate: today,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),

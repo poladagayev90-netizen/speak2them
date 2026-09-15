@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircleQuestion, BookOpen, Quote, Headphones, ChevronDown, X } from 'lucide-react';
 import { getTodayIndex, getContentByIndex, weeklyContent } from '../data/weeklyContent';
+import { subscribeToCycle } from '../utils/cycle';
 import SpeakingCards from '../components/SpeakingCards';
 import ChapterListeningView from '../components/ChapterListeningView';
 
@@ -10,9 +11,15 @@ export default function DailyHub() {
   const [topicIndex, setTopicIndex] = useState(() => getTodayIndex());
   const content = getContentByIndex(topicIndex);
   const [showTopicModal, setShowTopicModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('story');
+  const [activeTab, setActiveTab] = useState('questions');
   const [difficulty, setDifficulty] = useState('easy');
   const [flipped, setFlipped] = useState({});
+
+  useEffect(() => {
+    return subscribeToCycle(() => {
+      setTopicIndex(getTodayIndex());
+    });
+  }, []);
 
   const toggleFlip = (index) => {
     setFlipped(prev => ({ ...prev, [index]: !prev[index] }));
