@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
-import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, connectAuthEmulator } from "firebase/auth";
+import { getFirestore, doc, setDoc, serverTimestamp, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
 
@@ -33,6 +33,15 @@ try {
 } catch (error) {
   console.error('[Firebase] Failed to initialize Firebase:', error);
   throw error;
+}
+
+// Local verification only. A build made with REACT_APP_USE_EMULATORS=true talks
+// to the Firebase emulators, so admin-only screens can be driven end to end
+// without production credentials. The variable is never in .env: CRA inlines
+// it at build time, so a production bundle does not even contain this branch.
+if (process.env.REACT_APP_USE_EMULATORS === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
 }
 
 // The CRA/Workbox service worker already owns scope "/". Registering the

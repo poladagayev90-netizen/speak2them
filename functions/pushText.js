@@ -121,6 +121,12 @@ const STRINGS = {
     student_analysis_ready: (v, f) => ({ title: "Şagird analizi hazırdır 🎓", body: `${v.studentName || f.student} yeni danışıq analizi hazırdır — paneldən baxın.` }),
     ai_report_ready: () => ({ title: "Hesabatın hazırdır", body: "AInur ilə sessiyanın necə keçdiyinə bax." }),
     admin_new_applicant: (v, f) => ({ title: "🆕 Yeni tələbə profili", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} onboarding-i bitirdi — həftədə ${v.target || "?"} praktika. Applicants-da bax.` }),
+    match_offer: (v, f) => ({ title: "🗓️ Praktika təklifi", body: `${v.time} — ${v.peerName || f.peer} ilə. İkiniz də təsdiqləyəndə zəng rezerv olunur.` }),
+    match_confirmed: (v, f) => ({ title: "✅ Praktika təsdiqləndi", body: `${v.time} — ${v.peerName || f.peer} ilə. İkiniz də razılaşdınız, görüşənədək!` }),
+    match_offer_withdrawn: (v) => ({ title: "Bu vaxt alınmadı", body: `${v.time} praktikası baş tutmayacaq. SpeakLab komandası sizə yeni vaxt təklif edəcək.` }),
+    admin_offer_declined: (v, f) => ({ title: "Təklif qəbul edilmədi", body: `${v.name || f.someone} (${v.time}): ${v.reason || "səbəb yoxdur"}.` }),
+    admin_offer_confirmed: (v) => ({ title: "✅ Cüt təsdiqləndi", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
+    admin_offer_failed: (v) => ({ title: "Təklif rezerv olunmadı", body: `${v.nameA} + ${v.nameB}: biri artıq başqa zəngə yazılıb.` }),
   },
 
   tr: {
@@ -153,6 +159,12 @@ const STRINGS = {
     student_analysis_ready: (v, f) => ({ title: "Öğrenci analizi hazır 🎓", body: `${v.studentName || f.student} yeni konuşma analizi hazır — panelden inceleyin.` }),
     ai_report_ready: () => ({ title: "Raporun hazır", body: "AInur ile seansının nasıl geçtiğine bak." }),
     admin_new_applicant: (v, f) => ({ title: "🆕 Yeni öğrenci profili", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} kaydı tamamladı — haftada ${v.target || "?"} pratik. Applicants sekmesine bak.` }),
+    match_offer: (v, f) => ({ title: "🗓️ Pratik teklifi", body: `${v.time} — ${v.peerName || f.peer} ile. İkiniz de onaylayınca görüşme ayrılır.` }),
+    match_confirmed: (v, f) => ({ title: "✅ Pratik onaylandı", body: `${v.time} — ${v.peerName || f.peer} ile. İkiniz de onayladınız, görüşmek üzere!` }),
+    match_offer_withdrawn: (v) => ({ title: "Bu saat olmadı", body: `${v.time} pratiği gerçekleşmeyecek. SpeakLab ekibi size yeni bir saat önerecek.` }),
+    admin_offer_declined: (v, f) => ({ title: "Teklif kabul edilmedi", body: `${v.name || f.someone} (${v.time}): ${v.reason || "sebep yok"}.` }),
+    admin_offer_confirmed: (v) => ({ title: "✅ Eşleşme onaylandı", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
+    admin_offer_failed: (v) => ({ title: "Teklif ayrılamadı", body: `${v.nameA} + ${v.nameB}: biri başka bir görüşmeye yazıldı.` }),
   },
 
   en: {
@@ -185,6 +197,12 @@ const STRINGS = {
     student_analysis_ready: (v, f) => ({ title: "Student analysis is ready 🎓", body: `A new speaking analysis for ${v.studentName || f.student} is ready — review it in your panel.` }),
     ai_report_ready: () => ({ title: "Your report is ready", body: "See how your session with AInur went." }),
     admin_new_applicant: (v, f) => ({ title: "🆕 New learner profile", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} finished onboarding — ${v.target || "?"} practices a week. See Applicants.` }),
+    match_offer: (v, f) => ({ title: "🗓️ Practice proposal", body: `${v.time} with ${v.peerName || f.peer}. It is booked once you both confirm.` }),
+    match_confirmed: (v, f) => ({ title: "✅ Practice confirmed", body: `${v.time} with ${v.peerName || f.peer}. You both said yes — see you there!` }),
+    match_offer_withdrawn: (v) => ({ title: "This time did not work out", body: `The ${v.time} practice will not go ahead. The SpeakLab team will suggest a new time.` }),
+    admin_offer_declined: (v, f) => ({ title: "Offer declined", body: `${v.name || f.someone} (${v.time}): ${v.reason || "no reason"}.` }),
+    admin_offer_confirmed: (v) => ({ title: "✅ Pair confirmed", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
+    admin_offer_failed: (v) => ({ title: "Offer could not be booked", body: `${v.nameA} + ${v.nameB}: one of them was booked elsewhere.` }),
   },
 };
 

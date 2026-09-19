@@ -121,3 +121,34 @@ $s.SetOutputToWaveFile("speech.wav", $fmt); $s.Speak("..."); $s.Dispose()
 A session needs ~60 spoken words before `analyzeAiSession` writes a report;
 below that it returns `{ok:false, reason:"too-short"}` by design. The result is
 a normal `callAnalysis` document, so it shows up on `/history` like any call.
+
+## Admin-only flows: local emulators (added 2026-09-19)
+
+There is no admin password on this machine, so admin screens (Applicants,
+proposals) cannot be driven against production. Run them locally instead —
+nothing here touches prod (`demo-` project ids never reach real resources):
+
+```bash
+npx firebase-tools emulators:start --config firebase.emu.json --only auth,firestore --project demo-speaklab   # run_in_background
+node scripts/emu-functions-server.js                                                                         # run_in_background, :5002
+REACT_APP_USE_EMULATORS=true REACT_APP_FIREBASE_PROJECT_ID=demo-speaklab \
+  REACT_APP_FUNCTIONS_BASE=http://127.0.0.1:5002/demo-speaklab/us-central1 \
+  BUILD_PATH=<scratchpad>/emu-build npx react-scripts build && npx serve -s <scratchpad>/emu-build -l 3400
+```
+
+- **Do not use the functions EMULATOR for HTTP endpoints.** Its firebase-admin
+  proxy has no `admin.firestore.FieldValue`, so every write in functions/index.js
+  500s with "reading 'serverTimestamp'" — even untouched ones like
+  joinPracticeSlot. `scripts/emu-functions-server.js` loads the real handlers in
+  plain Node against the Firestore/Auth emulators instead.
+- Accounts: create with a fixed uid via
+  `POST :9099/identitytoolkit.googleapis.com/v1/projects/demo-speaklab/accounts`
+  (`Authorization: Bearer owner`, body `{localId, email, password}`) — this is how
+  the admin uid `6Djehd9KB8dTZUgVwVJfLoPI5dF3` gets an account. Unsigned JWTs are
+  rejected by `verifyIdToken`; sign in with the password for a real emulator token.
+- Seed/read Firestore over REST with `Authorization: Bearer owner` (bypasses
+  rules); use a user's token to test the rules themselves.
+- Wipe between runs: `DELETE :8080/emulator/v1/projects/demo-speaklab/databases/(default)/documents`
+  and `DELETE :9099/emulator/v1/projects/demo-speaklab/accounts`.
+- The emulator does NOT enforce composite indexes — confirm a new index in prod
+  with one real query from a throwaway account.

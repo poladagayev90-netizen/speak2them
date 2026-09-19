@@ -5,6 +5,7 @@ import useLiveLobby from '../hooks/useLiveLobby';
 import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import PracticeBoard from '../components/PracticeBoard';
 import UpcomingCallCard from '../components/UpcomingCallCard';
+import MatchOfferCard from '../components/MatchOfferCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import UserCard from '../components/UserCard';
 import Card from '../components/ui/Card';
@@ -67,6 +68,9 @@ export default function Live({ user }) {
 
       {/* A confirmed appointment is the single most important thing on this
           page, so it sits above the search button. */}
+      {/* A proposal waiting for this learner's yes sits right above the
+          bookings it turns into. */}
+      <MatchOfferCard uid={user?.uid} />
       <UpcomingCallCard
         call={mine?.upcomingCall}
         busy={cancelBusy}

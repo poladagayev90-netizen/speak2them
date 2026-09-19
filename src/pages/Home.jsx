@@ -18,6 +18,7 @@ import DailyTopicBanner from '../components/DailyTopicBanner';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
+import MatchOfferCard from '../components/MatchOfferCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import TodayNudge from '../components/TodayNudge';
 import TodayTaskCard from '../components/ai/TodayTaskCard';
@@ -180,6 +181,9 @@ export default function Home({ user }) {
 
         {/* A confirmed appointment is the whole promise of the product —
             "someone is waiting for you at six" — so it outranks everything. */}
+        {/* A proposal waiting for this learner's yes sits right above the
+            bookings it turns into. */}
+        <MatchOfferCard uid={user?.uid} />
         <UpcomingCallCard
           call={mine?.upcomingCall}
           busy={cancelBusy}

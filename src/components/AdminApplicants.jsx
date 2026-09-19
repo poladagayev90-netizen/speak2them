@@ -7,6 +7,7 @@ import {
   formatLocalNow, formatOffsetVsBaku, offsetVsBaku, cityOf, totalHours,
 } from '../utils/timezone';
 import { AGE_BANDS, GOALS, LEVELS, labelOf } from '../utils/onboarding';
+import { ProposePanel, ProposalsPanel } from './AdminOffers';
 import './AdminApplicants.css';
 
 // Admin "Applicants": every learner's onboarding answers in one place, with
@@ -73,10 +74,11 @@ export default function AdminApplicants({ users }) {
     .sort((a, b) => (b.isNew - a.isNew) || (toMs(b.submittedAt) - toMs(a.submittedAt))), [rows, byUid, levelFilter, ageFilter]);
 
   const chosen = people.filter((p) => selected.includes(p.id));
-  const overlap = useMemo(
-    () => (chosen.length >= 2 ? intervalsByDay(overlapAll(chosen.map((p) => p.baku))) : []),
+  const overlapWeek = useMemo(
+    () => (chosen.length >= 2 ? overlapAll(chosen.map((p) => p.baku)) : []),
     [chosen],
   );
+  const overlap = useMemo(() => intervalsByDay(overlapWeek), [overlapWeek]);
 
   // How many (filtered) people are free in each Baku hour — the evidence for
   // choosing fixed practice hours, instead of guessing 15:00 or 21:00.
@@ -156,8 +158,13 @@ export default function AdminApplicants({ users }) {
               ))}
             </ul>
           )}
+          {chosen.length === 2
+            ? <ProposePanel a={chosen[0]} b={chosen[1]} overlapWeek={overlapWeek} />
+            : <p className="aa-empty">Keep exactly two people ticked to send them a proposal.</p>}
         </section>
       )}
+
+      <ProposalsPanel />
 
       <section className="aa-panel">
         <h3 className="aa-h"><CalendarClock size={16} /> Who is free when (Baku time)</h3>

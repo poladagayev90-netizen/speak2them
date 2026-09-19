@@ -1,0 +1,106 @@
+/* Practice proposal card (admin match offer). Tokens only. */
+
+.mo {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  margin-bottom: var(--s-3);
+  border-radius: var(--r-xl);
+  border: 1px solid rgb(var(--accent-rgb) / 0.36);
+  background: var(--tint-accent);
+  box-shadow: var(--glass-edge), var(--glass-lift);
+}
+.mo--waiting {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--s-3);
+  border-color: var(--border);
+  background: var(--bg-card);
+}
+.mo-head { display: flex; align-items: center; gap: var(--s-2); }
+.mo-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.mo-kicker {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.mo-when {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-2) 0 0;
+}
+.mo-day { font-size: var(--fs-body); font-weight: 700; color: var(--text-secondary); }
+.mo-time {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.mo-with {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+}
+.mo-with b { color: var(--text-primary); }
+.mo-level {
+  padding: 1px var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-secondary);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+.mo-note {
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.mo-title { margin: 0; font-size: var(--fs-body); font-weight: 700; }
+.mo-text {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.mo-error { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--danger); }
+.mo-actions { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
+.mo-decline { display: grid; gap: var(--s-2); margin-top: var(--s-1); }
+.mo-reasons { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.mo-reason {
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.mo-reason.is-on { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }

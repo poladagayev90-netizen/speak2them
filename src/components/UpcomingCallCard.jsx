@@ -118,7 +118,7 @@ export default function UpcomingCallCard({ call, onJoin, onCancel, busy }) {
             fontSize: '14px', color: 'var(--text-secondary)', marginTop: '2px',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
-            {peerName} with
+            with {peerName}
           </div>
         </div>
       </div>

@@ -2869,6 +2869,156 @@ exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (r
   }
 });
 
+// ── Pair booking core ─────────────────────────────────────────
+// Writes a confirmed pair into one slot block: member docs, both users'
+// upcomingCall, the calls/{id} doc and recomputed counters. Shared by
+// teacherSetMatch and respondMatchOffer so a hand-made pair behaves exactly
+// like one the board made — reminders, no-show marking, block close and
+// cancelSlotMatch all key off these same documents.
+// Runs INSIDE a transaction; the caller has already read users uidA/uidB (a, b)
+// in that transaction and done its own authorisation. `marker` is stamped on
+// every written doc to record who set the pair up. Throws 409 when either
+// person already owes a call in another, still-future block.
+const slotFail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
+
+async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source }) {
+  const usersCol = db.collection("users");
+  // ── Double-booking guard ──────────────────────────────────
+  // upcomingCall is a SINGLE field on the user document, so a student can
+  // only owe one call at a time. Writing a second one would silently
+  // overwrite the first while leaving the other slot's member doc matched
+  // — the student would then be expected in two places and shown in one.
+  // A call in this same block is fine (it is the one we are about to
+  // replace); one anywhere else is refused, and the teacher is told who.
+  const clashes = (u) => {
+    const uc = u.upcomingCall;
+    if (!uc || uc.slotId === slot.slotId) return false;
+    const other = parseSlotId(uc.slotId);
+    return !!other && other.endMs > now;
+  };
+  if (clashes(a)) throw slotFail(409, "student-a-busy");
+  if (clashes(b)) throw slotFail(409, "student-b-busy");
+
+  const slotRef = db.collection("practiceSlots").doc(slot.slotId);
+  const membersRef = slotRef.collection("members");
+  const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+  const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+  const memA = members.find((m) => m.id === uidA) || null;
+  const memB = members.find((m) => m.id === uidB) || null;
+  // Already exactly this pair? Nothing to write, and above all nothing to
+  // notify — a teacher pressing the button twice must not push twice.
+  if (memA && memB && memA.pairedWith === uidB && memB.pairedWith === uidA) {
+    return { alreadyPaired: true, released: [], callId: callIdForPair(uidA, uidB) };
+  }
+
+  const now2 = admin.firestore.FieldValue.serverTimestamp();
+  const del = admin.firestore.FieldValue.delete();
+  const callId = callIdForPair(uidA, uidB);
+  const sorted = [uidA, uidB].sort();
+
+  // ── Release whoever these two were paired with IN THIS BLOCK ──
+  // They go back to "waiting" rather than being dropped: they still said
+  // they were free at this hour, and the next joiner can take them.
+  const released = [];
+  for (const mem of [memA, memB]) {
+    const exPartnerId = mem && mem.pairedWith;
+    if (!exPartnerId || exPartnerId === uidA || exPartnerId === uidB) continue;
+    released.push(exPartnerId);
+    tx.set(membersRef.doc(exPartnerId), {
+      status: "waiting", pairedWith: del, callId: del,
+    }, { merge: true });
+    tx.set(usersCol.doc(exPartnerId), { upcomingCall: del }, { merge: true });
+    if (mem.callId) {
+      tx.set(db.collection("calls").doc(mem.callId), { status: "cancelled" }, { merge: true });
+    }
+  }
+
+  // ── Write the pair ────────────────────────────────────────
+  for (const [uid, u, mem, peerUid, peer] of [
+    [uidA, a, memA, uidB, b],
+    [uidB, b, memB, uidA, a],
+  ]) {
+    tx.set(membersRef.doc(uid), {
+      uid,
+      name: u.name || "",
+      level: u.level || null,
+      // A member who was already in the block keeps their original
+      // joinedAt; only a newly added one is stamped now.
+      ...(mem ? {} : { joinedAt: now2 }),
+      status: "matched",
+      pairedWith: peerUid,
+      callId,
+      ...marker,
+    }, { merge: true });
+
+    tx.set(usersCol.doc(uid), {
+      practiceSlotIds: admin.firestore.FieldValue.arrayUnion(slot.slotId),
+      upcomingCall: {
+        slotId: slot.slotId, startMs: slot.startMs,
+        peerUid, peerName: peer.name || "", callId,
+        ...marker,
+      },
+    }, { merge: true });
+  }
+
+  // status "accepted", not "calling": the appointment is in the FUTURE, so
+  // nobody's phone may ring now (see the same note in joinSlotTx).
+  tx.set(db.collection("calls").doc(callId), {
+    userA: sorted[0], userB: sorted[1],
+    callerId: uidA, receiverId: uidB,
+    status: "accepted", source,
+    slotId: slot.slotId, ...marker, createdAt: now2,
+  }, { merge: true });
+
+  // Counters recomputed from the FINAL state rather than incremented —
+  // the same self-healing pattern leavePracticeSlot uses, and the reason
+  // an increment-by-2 would have been wrong here: either student may
+  // already have been counted as waiting in this block.
+  const finalStatus = new Map(members.map((m) => [m.id, m.status]));
+  released.forEach((id) => finalStatus.set(id, "waiting"));
+  finalStatus.set(uidA, "matched");
+  finalStatus.set(uidB, "matched");
+  let waitingCount = 0;
+  let matchedCount = 0;
+  for (const st of finalStatus.values()) {
+    if (st === "waiting") waitingCount += 1;
+    else if (st === "matched") matchedCount += 1;
+  }
+  tx.set(slotRef, {
+    date: slot.date, startHour: slot.hour, startMs: slot.startMs,
+    waitingCount, matchedCount, updatedAt: now2,
+  }, { merge: true });
+
+  return { alreadyPaired: false, released, callId };
+}
+
+// After a pair is committed: tell both people (in their own language and
+// time zone), tell anyone who lost a partner in that block, and release the
+// rest of their day — a booked person must not be caught by another block.
+async function afterPairBooked(db, { uidA, uidB, slot, released, pushFor }) {
+  await Promise.all([
+    sendPushToUser(db, uidA, pushFor(uidA)),
+    sendPushToUser(db, uidB, pushFor(uidB)),
+    ...released.map((id) => sendPushToUser(db, id, {
+      key: "slot_released",
+      vars: { at: slot.startMs },
+      type: "slot_released", url: "/",
+    })),
+  ]).catch(() => null);
+
+  for (const who of [uidA, uidB]) {
+    const freed = await releaseOtherSlotsSameDay(db, who, slot.slotId);
+    if (freed.length > 0) {
+      await sendPushToUser(db, who, {
+        key: "slot_day_cleared",
+        vars: { at: slot.startMs },
+        type: "slot_day_cleared", url: "/",
+      }).catch(() => null);
+    }
+  }
+}
+
 exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -2930,117 +3080,13 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
         throw fail(403, "not-your-student");
       }
 
-      // ── Double-booking guard ──────────────────────────────────
-      // upcomingCall is a SINGLE field on the user document, so a student can
-      // only owe one call at a time. Writing a second one would silently
-      // overwrite the first while leaving the other slot's member doc matched
-      // — the student would then be expected in two places and shown in one.
-      // A call in this same block is fine (it is the one we are about to
-      // replace); one anywhere else is refused, and the teacher is told who.
-      const clashes = (u) => {
-        const uc = u.upcomingCall;
-        if (!uc || uc.slotId === slot.slotId) return false;
-        const other = parseSlotId(uc.slotId);
-        return !!other && other.endMs > now;
-      };
-      if (clashes(a)) throw fail(409, "student-a-busy");
-      if (clashes(b)) throw fail(409, "student-b-busy");
-
-      const slotRef = db.collection("practiceSlots").doc(slot.slotId);
-      const membersRef = slotRef.collection("members");
-      const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
-      const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
-
-      const memA = members.find((m) => m.id === uidA) || null;
-      const memB = members.find((m) => m.id === uidB) || null;
-      // Already exactly this pair? Nothing to write, and above all nothing to
-      // notify — a teacher pressing the button twice must not push twice.
-      if (memA && memB && memA.pairedWith === uidB && memB.pairedWith === uidA) {
-        return { alreadyPaired: true, released: [] };
-      }
-
-      const now2 = admin.firestore.FieldValue.serverTimestamp();
-      const del = admin.firestore.FieldValue.delete();
-      const callId = callIdForPair(uidA, uidB);
-      const sorted = [uidA, uidB].sort();
-
-      // ── Release whoever these two were paired with IN THIS BLOCK ──
-      // They go back to "waiting" rather than being dropped: they still said
-      // they were free at this hour, and the next joiner can take them.
-      const released = [];
-      for (const mem of [memA, memB]) {
-        const exPartnerId = mem && mem.pairedWith;
-        if (!exPartnerId || exPartnerId === uidA || exPartnerId === uidB) continue;
-        released.push(exPartnerId);
-        tx.set(membersRef.doc(exPartnerId), {
-          status: "waiting", pairedWith: del, callId: del,
-        }, { merge: true });
-        tx.set(usersCol.doc(exPartnerId), { upcomingCall: del }, { merge: true });
-        if (mem.callId) {
-          tx.set(db.collection("calls").doc(mem.callId), { status: "cancelled" }, { merge: true });
-        }
-      }
-
-      // ── Write the pair ────────────────────────────────────────
-      for (const [uid, u, mem, peerUid, peer] of [
-        [uidA, a, memA, uidB, b],
-        [uidB, b, memB, uidA, a],
-      ]) {
-        tx.set(membersRef.doc(uid), {
-          uid,
-          name: u.name || "",
-          level: u.level || null,
-          // A member who was already in the block keeps their original
-          // joinedAt; only a newly added one is stamped now.
-          ...(mem ? {} : { joinedAt: now2 }),
-          status: "matched",
-          pairedWith: peerUid,
-          callId,
-          setByTeacher: teacherUid,
-        }, { merge: true });
-
-        tx.set(usersCol.doc(uid), {
-          practiceSlotIds: admin.firestore.FieldValue.arrayUnion(slot.slotId),
-          upcomingCall: {
-            slotId: slot.slotId, startMs: slot.startMs,
-            peerUid, peerName: peer.name || "", callId,
-            setByTeacher: teacherUid,
-          },
-        }, { merge: true });
-      }
-
-      // status "accepted", not "calling": the appointment is in the FUTURE, so
-      // nobody's phone may ring now (see the same note in joinSlotTx).
-      tx.set(db.collection("calls").doc(callId), {
-        userA: sorted[0], userB: sorted[1],
-        callerId: uidA, receiverId: uidB,
-        status: "accepted", source: "teacher_match",
-        slotId: slot.slotId, setByTeacher: teacherUid, createdAt: now2,
-      }, { merge: true });
-
-      // Counters recomputed from the FINAL state rather than incremented —
-      // the same self-healing pattern leavePracticeSlot uses, and the reason
-      // an increment-by-2 would have been wrong here: either student may
-      // already have been counted as waiting in this block.
-      const finalStatus = new Map(members.map((m) => [m.id, m.status]));
-      released.forEach((id) => finalStatus.set(id, "waiting"));
-      finalStatus.set(uidA, "matched");
-      finalStatus.set(uidB, "matched");
-      let waitingCount = 0;
-      let matchedCount = 0;
-      for (const st of finalStatus.values()) {
-        if (st === "waiting") waitingCount += 1;
-        else if (st === "matched") matchedCount += 1;
-      }
-      tx.set(slotRef, {
-        date: slot.date, startHour: slot.hour, startMs: slot.startMs,
-        waitingCount, matchedCount, updatedAt: now2,
-      }, { merge: true });
-
+      const booked = await bookPairTx(db, tx, {
+        uidA, uidB, a, b, slot, now,
+        marker: { setByTeacher: teacherUid },
+        source: "teacher_match",
+      });
       return {
-        alreadyPaired: false,
-        released,
-        callId,
+        ...booked,
         nameA: a.name || "",
         nameB: b.name || "",
         teacherName: teacher.name || "",
@@ -3049,40 +3095,16 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
 
     if (!result.alreadyPaired) {
       // Pushes go out AFTER the commit (a transaction can retry; a push cannot
-      // be un-sent). Each is resolved in its own recipient's language and
-      // timezone by sendPushToUser.
-      const teacherName = result.teacherName;
-      await Promise.all([
-        sendPushToUser(db, uidA, {
+      // be un-sent).
+      const { teacherName } = result;
+      await afterPairBooked(db, {
+        uidA, uidB, slot, released: result.released,
+        pushFor: (uid) => ({
           key: "teacher_scheduled_call",
-          vars: { at: slot.startMs, peerName: result.nameB, teacherName },
+          vars: { at: slot.startMs, peerName: uid === uidA ? result.nameB : result.nameA, teacherName },
           type: "teacher_scheduled_call", url: "/",
         }),
-        sendPushToUser(db, uidB, {
-          key: "teacher_scheduled_call",
-          vars: { at: slot.startMs, peerName: result.nameA, teacherName },
-          type: "teacher_scheduled_call", url: "/",
-        }),
-        ...result.released.map((id) => sendPushToUser(db, id, {
-          key: "slot_released",
-          vars: { at: slot.startMs },
-          type: "slot_released", url: "/",
-        })),
-      ]).catch(() => null);
-
-      // Əl ilə qurulan cüt də avtomatik cüt qədər "məşğuldur" — həmin günün
-      // qalan blokları eyni qayda ilə buraxılır, yoxsa müəllimin təyin etdiyi
-      // şagird başqa blokda yenidən tutula bilərdi.
-      for (const who of [uidA, uidB]) {
-        const freed = await releaseOtherSlotsSameDay(db, who, slot.slotId);
-        if (freed.length > 0) {
-          await sendPushToUser(db, who, {
-            key: "slot_day_cleared",
-            vars: { at: slot.startMs },
-            type: "slot_day_cleared", url: "/",
-          }).catch(() => null);
-        }
-      }
+      });
     }
 
     return res.status(200).json({
@@ -3094,6 +3116,302 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
   } catch (e) {
     const status = e.httpStatus || 500;
     if (status === 500) console.error("[teacherSetMatch]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// ─── Admin match offers: two-sided confirmation ─────────────────
+// The admin pairs two learners by hand, but NOTHING is booked until both say
+// yes. This replaces the old routine of asking one person, promising them a
+// partner, then hearing "no" from the other — which left the first person
+// holding a promise nobody could keep.
+//
+//   adminProposeMatch → matchOffers/{id} status "pending", push to both
+//   respondMatchOffer → accept: waits for the other; the second accept books
+//                       the pair through bookPairTx (same docs as any pair)
+//                     → decline: the offer closes. WHO declined and WHY goes
+//                       to matchOfferNotes/{id}, which only the admin can
+//                       read. The other person is told "this time did not
+//                       work out", and only if they had already said yes.
+//   adminCancelOffer  → the admin withdraws a pending offer.
+//
+// One pending offer per person at a time: two open promises for one evening
+// is the same problem in a new place.
+const OFFER_DECLINE_REASONS = {
+  "not-free": "not free at that time",
+  "other-partner": "prefers another partner",
+  "other": "other reason",
+};
+
+// Reads (inside a transaction) the pending offers a person is in, split into
+// still-live ones and ones whose block has already started.
+async function livePendingOffersTx(db, tx, uid, now) {
+  const snap = await tx.get(db.collection("matchOffers")
+    .where("participants", "array-contains", uid)
+    .where("status", "==", "pending")
+    .limit(10));
+  const live = [];
+  const stale = [];
+  for (const d of snap.docs) {
+    const s = parseSlotId(d.get("slotId"));
+    if (s && s.startMs > now) live.push(d); else stale.push(d);
+  }
+  return { live, stale };
+}
+
+exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+
+  const body = req.body || {};
+  const uidA = String(body.userA || "").trim();
+  const uidB = String(body.userB || "").trim();
+  if (!uidA || !uidB || uidA.length > 128 || uidB.length > 128) {
+    return res.status(400).json({ error: "invalid-user" });
+  }
+  if (uidA === uidB) return res.status(400).json({ error: "same-user" });
+  const note = typeof body.note === "string" ? body.note.trim().slice(0, 200) : "";
+
+  const slot = parseSlotId(body.slotId);
+  if (!slot) return res.status(400).json({ error: "invalid-slot" });
+  const now = Date.now();
+  // An offer needs time to be answered, so the block must not have started.
+  if (slot.startMs <= now) return res.status(400).json({ error: "slot-past" });
+  if (slot.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+    return res.status(400).json({ error: "slot-too-far" });
+  }
+
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(decoded.uid, "adminProposeMatch", 60, 24 * 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const usersCol = db.collection("users");
+      const [aSnap, bSnap] = await Promise.all([tx.get(usersCol.doc(uidA)), tx.get(usersCol.doc(uidB))]);
+      if (!aSnap.exists || !bSnap.exists) throw slotFail(404, "user-not-found");
+      const a = aSnap.data() || {};
+      const b = bSnap.data() || {};
+
+      const busyElsewhere = (u) => {
+        const uc = u.upcomingCall;
+        const other = uc && parseSlotId(uc.slotId);
+        return !!other && other.endMs > now;
+      };
+      if (busyElsewhere(a)) throw slotFail(409, "user-a-busy");
+      if (busyElsewhere(b)) throw slotFail(409, "user-b-busy");
+
+      const pa = await livePendingOffersTx(db, tx, uidA, now);
+      const pb = await livePendingOffersTx(db, tx, uidB, now);
+      if (pa.live.length) throw slotFail(409, "user-a-has-offer");
+      if (pb.live.length) throw slotFail(409, "user-b-has-offer");
+
+      const ts = admin.firestore.FieldValue.serverTimestamp();
+      const staleIds = new Set();
+      for (const d of [...pa.stale, ...pb.stale]) {
+        if (staleIds.has(d.id)) continue;
+        staleIds.add(d.id);
+        tx.update(d.ref, { status: "expired", closedAt: ts });
+      }
+
+      const ref = db.collection("matchOffers").doc();
+      tx.set(ref, {
+        participants: [uidA, uidB],
+        userA: uidA, userB: uidB,
+        nameA: a.name || "", nameB: b.name || "",
+        levelA: a.level || null, levelB: b.level || null,
+        slotId: slot.slotId, startMs: slot.startMs,
+        status: "pending",
+        responses: { [uidA]: "pending", [uidB]: "pending" },
+        note,
+        createdAt: ts,
+      });
+      return { offerId: ref.id, nameA: a.name || "", nameB: b.name || "" };
+    });
+
+    await Promise.all([
+      sendPushToUser(db, uidA, { key: "match_offer", vars: { at: slot.startMs, peerName: result.nameB }, type: "match_offer", url: "/" }),
+      sendPushToUser(db, uidB, { key: "match_offer", vars: { at: slot.startMs, peerName: result.nameA }, type: "match_offer", url: "/" }),
+    ]).catch(() => null);
+
+    return res.status(200).json({ ok: true, offerId: result.offerId });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[adminProposeMatch]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const uid = decoded.uid;
+  const body = req.body || {};
+  const offerId = String(body.offerId || "").trim();
+  if (!offerId || offerId.length > 64) return res.status(400).json({ error: "invalid-offer" });
+  const accept = body.accept === true;
+  const reason = Object.prototype.hasOwnProperty.call(OFFER_DECLINE_REASONS, body.reason) ? body.reason : "other";
+
+  const db = admin.firestore();
+  const offerRef = db.collection("matchOffers").doc(offerId);
+  try {
+    await enforceRateLimit(uid, "respondMatchOffer", 30, 60 * 60 * 1000);
+
+    const result = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(offerRef);
+      if (!snap.exists) throw slotFail(404, "offer-not-found");
+      const offer = snap.data() || {};
+      if (!Array.isArray(offer.participants) || !offer.participants.includes(uid)) {
+        throw slotFail(403, "not-your-offer");
+      }
+      if (offer.status !== "pending") throw slotFail(409, "offer-closed");
+      const otherUid = offer.participants.find((p) => p !== uid);
+      const otherAccepted = (offer.responses || {})[otherUid] === "accepted";
+      const ts = admin.firestore.FieldValue.serverTimestamp();
+      const now = Date.now();
+
+      const slot = parseSlotId(offer.slotId);
+      if (!slot || slot.startMs <= now) {
+        tx.update(offerRef, { status: "expired", closedAt: ts });
+        return { kind: "expired" };
+      }
+
+      if (!accept) {
+        tx.update(offerRef, { status: "declined", closedAt: ts });
+        tx.set(db.collection("matchOfferNotes").doc(offerId), {
+          declinedBy: uid, reason, at: ts,
+        }, { merge: true });
+        return { kind: "declined", otherUid, otherAccepted, slot, offer };
+      }
+
+      if (!otherAccepted) {
+        tx.update(offerRef, { [`responses.${uid}`]: "accepted" });
+        return { kind: "waiting" };
+      }
+
+      // Second yes: book it. Users are read here, before bookPairTx writes.
+      const usersCol = db.collection("users");
+      const [aSnap, bSnap] = await Promise.all([tx.get(usersCol.doc(offer.userA)), tx.get(usersCol.doc(offer.userB))]);
+      if (!aSnap.exists || !bSnap.exists) throw slotFail(404, "user-not-found");
+      const booked = await bookPairTx(db, tx, {
+        uidA: offer.userA, uidB: offer.userB,
+        a: aSnap.data() || {}, b: bSnap.data() || {},
+        slot, now,
+        marker: { setByAdmin: true, offerId },
+        source: "admin_offer",
+      });
+      tx.update(offerRef, {
+        [`responses.${uid}`]: "accepted",
+        status: "confirmed",
+        callId: booked.callId,
+        closedAt: ts,
+      });
+      return { kind: "confirmed", slot, offer, released: booked.released };
+    });
+
+    if (result.kind === "declined") {
+      const { offer, slot } = result;
+      const myName = uid === offer.userA ? offer.nameA : offer.nameB;
+      await Promise.all([
+        sendPushToUser(db, ADMIN_UID, {
+          key: "admin_offer_declined",
+          vars: { name: myName, reason: OFFER_DECLINE_REASONS[reason], at: slot.startMs },
+          type: "admin_offer", url: "/admin?tab=applicants",
+        }),
+        result.otherAccepted ? sendPushToUser(db, result.otherUid, {
+          key: "match_offer_withdrawn", vars: { at: slot.startMs }, type: "match_offer", url: "/",
+        }) : null,
+      ]).catch(() => null);
+    } else if (result.kind === "confirmed") {
+      const { offer, slot } = result;
+      await afterPairBooked(db, {
+        uidA: offer.userA, uidB: offer.userB, slot, released: result.released,
+        pushFor: (u) => ({
+          key: "match_confirmed",
+          vars: { at: slot.startMs, peerName: u === offer.userA ? offer.nameB : offer.nameA },
+          type: "match_confirmed", url: "/",
+        }),
+      });
+      await sendPushToUser(db, ADMIN_UID, {
+        key: "admin_offer_confirmed",
+        vars: { nameA: offer.nameA, nameB: offer.nameB, at: slot.startMs },
+        type: "admin_offer", url: "/admin?tab=applicants",
+      }).catch(() => null);
+    }
+
+    return res.status(200).json({ ok: true, result: result.kind });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    // A second yes that cannot be booked (one of them was booked elsewhere in
+    // the meantime) must not leave the offer hanging as "pending".
+    if (e.message === "student-a-busy" || e.message === "student-b-busy") {
+      await offerRef.update({
+        status: "failed",
+        failReason: "busy",
+        closedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }).catch(() => null);
+      const failedSnap = await offerRef.get().catch(() => null);
+      const o = (failedSnap && failedSnap.data()) || {};
+      await sendPushToUser(db, ADMIN_UID, {
+        key: "admin_offer_failed",
+        vars: { nameA: o.nameA || "", nameB: o.nameB || "" },
+        type: "admin_offer", url: "/admin?tab=applicants",
+      }).catch(() => null);
+      return res.status(409).json({ error: "offer-failed" });
+    }
+    if (status === 500) console.error("[respondMatchOffer]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  const offerId = String((req.body || {}).offerId || "").trim();
+  if (!offerId || offerId.length > 64) return res.status(400).json({ error: "invalid-offer" });
+
+  const db = admin.firestore();
+  try {
+    const offer = await db.runTransaction(async (tx) => {
+      const ref = db.collection("matchOffers").doc(offerId);
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw slotFail(404, "offer-not-found");
+      const o = snap.data() || {};
+      if (o.status !== "pending") throw slotFail(409, "offer-closed");
+      tx.update(ref, { status: "cancelled", closedAt: admin.firestore.FieldValue.serverTimestamp() });
+      return o;
+    });
+    // Only someone who already said yes is waiting on this offer.
+    const accepted = Object.entries(offer.responses || {}).filter(([, v]) => v === "accepted").map(([k]) => k);
+    await Promise.all(accepted.map((u) => sendPushToUser(db, u, {
+      key: "match_offer_withdrawn", vars: { at: offer.startMs }, type: "match_offer", url: "/",
+    }))).catch(() => null);
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[adminCancelOffer]", e.message);
     return res.status(status).json({ error: e.message });
   }
 });

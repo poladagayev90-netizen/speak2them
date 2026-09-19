@@ -138,3 +138,72 @@
 .aa-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s-4); margin-top: var(--s-2); }
 .aa-sub { margin: 0 0 var(--s-1); font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
 .aa-range { margin: 0 0 2px; font-size: var(--fs-sm); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------ proposals (AdminOffers) -- */
+.aa-propose { display: grid; gap: var(--s-2); margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--border); }
+.aa-blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s-2); }
+.aa-block {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aa-block b { font-size: var(--fs-sm); }
+.aa-block span { font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
+.aa-block.is-weak { opacity: .7; }
+.aa-block.is-on { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }
+.aa-linkbtn {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.aa-linkbtn:disabled { opacity: .5; cursor: default; }
+.aa-input {
+  height: 40px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+}
+.aa-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  height: 44px;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.aa-send:disabled { opacity: .45; cursor: not-allowed; }
+.aa-ok { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--accent); }
+
+.aa-offers { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+.aa-offer { padding: var(--s-2) var(--s-3); border-radius: var(--r-md); border: 1px solid var(--border); display: grid; gap: var(--s-1); }
+.aa-offer.is-pending { border-color: var(--accent); }
+.aa-offer-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--fs-sm); }
+.aa-offer-sub { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); font-size: var(--fs-sm); font-weight: 600; }
+.aa-status { margin-left: auto; display: inline-flex; align-items: center; gap: var(--s-1); font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.aa-offer.is-confirmed .aa-status, .aa-offer.is-pending .aa-status { color: var(--accent); }
+.aa-offer.is-declined .aa-status, .aa-offer.is-failed .aa-status { color: var(--danger); }
