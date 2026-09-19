@@ -11,6 +11,8 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { authedFetch } from '../api';
+import { FUNCTIONS_BASE } from '../constants';
 
 export const MATCH_STATUS = {
   SEARCHING: 'searching',
@@ -62,9 +64,13 @@ export const SEARCH_STALE_MS = 60000;
 export const lastAliveMs = (c) =>
   c.lastPingMs || c.joinedAtMs || c.joinedAt?.toMillis?.() || 0;
 
-export function pickBestMatch(candidates, currentUser) {
+// Best-first list of the candidates THIS client may initiate with. Whether a
+// pair is actually allowed (blocks, "don't pair again", age, level
+// preference) is the server's call — see canPair — because those lists are
+// private to each side and the client must never be able to read them.
+export function rankMatches(candidates, currentUser) {
   const pool = candidates.filter((c) => c.uid && c.uid !== currentUser.uid);
-  if (pool.length === 0) return null;
+  if (pool.length === 0) return [];
 
   const now = Date.now();
   // Deterministic role: only the lexicographically SMALLER uid initiates the
@@ -74,11 +80,27 @@ export function pickBestMatch(candidates, currentUser) {
     if (currentUser.uid >= c.uid) return false;
     return now - lastAliveMs(c) <= SEARCH_STALE_MS;
   });
-  if (eligibleCandidates.length === 0) return null;
-
   return [...eligibleCandidates].sort(
     (a, b) => scoreCandidate(b, currentUser) - scoreCandidate(a, currentUser)
-  )[0];
+  );
+}
+
+export function pickBestMatch(candidates, currentUser) {
+  return rankMatches(candidates, currentUser)[0] || null;
+}
+
+// Server verdict for one pair: { ok, recent }. Never says why a pair is
+// refused. A network failure answers "no" — skipping a match is safe,
+// pairing two people who must not meet is not.
+export async function canPair(peerUid) {
+  try {
+    const res = await authedFetch(`${FUNCTIONS_BASE}/canPair`, { method: 'POST', body: JSON.stringify({ peerUid }) });
+    if (!res.ok) return { ok: false, recent: false };
+    const data = await res.json();
+    return { ok: data.ok === true, recent: data.recent === true };
+  } catch {
+    return { ok: false, recent: false };
+  }
 }
 
 export async function joinSearchQueue(entry) {

@@ -25,6 +25,10 @@ const ERROR_TEXT = {
   'slot-past': 'That time has already started.',
   'slot-too-far': 'Proposals can be made up to five days ahead.',
   'user-not-found': 'One of these learners no longer has an account.',
+  // Admin-only reasons (the admin sees them; learners never do).
+  'pair-blocked': 'One of them has blocked the other.',
+  'pair-avoided': 'One of them asked not to be paired with the other again.',
+  'pair-age': 'A learner under 18 cannot be paired with an adult.',
   unauthorized: 'Your session has expired. Please sign in again.',
 };
 

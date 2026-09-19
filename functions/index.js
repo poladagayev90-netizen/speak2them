@@ -2085,6 +2085,111 @@ async function recordAttendance(db, id, uid, outcome, atMs, extra = {}, { onlyIf
 }
 const callIdForPair = (a, b) => `call_${[a, b].sort().join("_")}`;
 
+// ── Who may be paired with whom (Phase 5) ────────────────────────
+// One verdict, used by every path that forms a pair: the slot board
+// (joinSlotTx), the rematch in leavePracticeSlot, teacher and admin pairs
+// (bookPairTx / adminProposeMatch) and random search (canPair).
+//
+// HARD rules — never paired:
+//   • either side blocked the other            users/{uid}/blocked/{peer}
+//   • either side asked "don't pair me again"   users/{uid}/avoid/{peer}
+//   • a minor with an adult (onboarding ageBand "under18"; no answer = adult)
+//   • either side chose partnerLevel "close" and the CEFR gap is more than 1
+//     (random search and the board only — a teacher or the admin choosing a
+//     pair by hand is a human judgment and may cross levels)
+// SOFT rule — "recent": the two spoke in the last 7 days. Callers prefer
+// someone else when they can, but pair them if nobody else fits: one repeat
+// partner beats no practice at all.
+//
+// The verdict never says WHICH rule fired to a learner: "they blocked you" or
+// "they asked not to meet you again" must never leak through the API.
+const LEVEL_CODES = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const RECENT_PARTNER_MS = 7 * DAY_MS;
+function levelRank(level) {
+  const m = /^(A1|A2|B1|B2|C1|C2)\b/.exec(String(level || ""));
+  return m ? LEVEL_CODES.indexOf(m[1]) : null;
+}
+
+// `get` is tx.get inside a transaction, or (ref) => ref.get() outside one.
+// `known` may carry user docs the caller has already read, to save reads.
+async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true } = {}) {
+  const users = db.collection("users");
+  const refs = {
+    blockAB: users.doc(uidA).collection("blocked").doc(uidB),
+    blockBA: users.doc(uidB).collection("blocked").doc(uidA),
+    avoidAB: users.doc(uidA).collection("avoid").doc(uidB),
+    avoidBA: users.doc(uidB).collection("avoid").doc(uidA),
+    obA: db.collection("onboarding").doc(uidA),
+    obB: db.collection("onboarding").doc(uidB),
+    call: db.collection("calls").doc(callIdForPair(uidA, uidB)),
+    ...(known[uidA] ? {} : { userA: users.doc(uidA) }),
+    ...(known[uidB] ? {} : { userB: users.doc(uidB) }),
+  };
+  const keys = Object.keys(refs);
+  const snaps = await Promise.all(keys.map((k) => get(refs[k])));
+  const s = Object.fromEntries(keys.map((k, i) => [k, snaps[i]]));
+  const data = (snap) => (snap && snap.exists ? (snap.data() || {}) : null);
+
+  const a = known[uidA] || data(s.userA) || {};
+  const b = known[uidB] || data(s.userB) || {};
+  const minor = (ob) => (ob && ob.ageBand) === "under18";
+
+  const blocked = !!(s.blockAB.exists || s.blockBA.exists);
+  const avoided = !!(s.avoidAB.exists || s.avoidBA.exists);
+  const ageClash = minor(data(s.obA)) !== minor(data(s.obB));
+  let levelClash = false;
+  if (checkLevel && (a.partnerLevel === "close" || b.partnerLevel === "close")) {
+    const ra = levelRank(a.level);
+    const rb = levelRank(b.level);
+    levelClash = ra !== null && rb !== null && Math.abs(ra - rb) > 1;
+  }
+  const call = data(s.call) || {};
+  const lastMs = call.matchedAt?.toMillis?.() || call.createdAt?.toMillis?.() || 0;
+  const recent = !!lastMs && Date.now() - lastMs < RECENT_PARTNER_MS;
+
+  return { ok: !blocked && !avoided && !ageClash && !levelClash, recent, blocked, avoided, ageClash, levelClash };
+}
+
+// From waiting members of one block, the best partner for `uid`: allowed by
+// pairVerdict, someone not met in the last week first, then whoever waited
+// longest. Returns null when nobody fits.
+async function choosePartnerTx(db, tx, uid, candidates, known) {
+  const verdicts = [];
+  for (const m of candidates.slice(0, 12)) {
+    const v = await pairVerdict(db, (r) => tx.get(r), uid, m.id, { known });
+    if (v.ok) verdicts.push({ m, recent: v.recent });
+  }
+  verdicts.sort((x, y) => (x.recent - y.recent)
+    || ((x.m.joinedAt?.toMillis?.() || 0) - (y.m.joinedAt?.toMillis?.() || 0)));
+  return verdicts.length ? verdicts[0].m : null;
+}
+
+// Random search: the initiating client asks before it commits a match. Only
+// a yes/no (plus the soft "recent" hint) comes back — never the reason.
+exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const peerUid = String((req.body || {}).peerUid || "").trim();
+  if (!peerUid || peerUid.length > 128 || peerUid === decoded.uid) return res.status(400).json({ error: "invalid-peer" });
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(decoded.uid, "canPair", 120, 60 * 60 * 1000);
+    const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid);
+    return res.status(200).json({ ok: v.ok, recent: v.recent });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[canPair]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+
 // Bloka qoşulma nüvəsi. HTTP funksiyası da, təkrarlanan slotları materiallaşdıran
 // planlaşdırıcı da eyni məntiqi işlədir — iki fərqli qoşulma yolu olmasın deyə.
 // Tranzaksiya daxilində çağırılır; push commit-dən SONRA göndərilir.
@@ -2097,7 +2202,10 @@ async function joinSlotTx(db, tx, slot, uid, user) {
 
   if (members.some((m) => m.id === uid)) return { already: true };
 
-  const partner = members.find((m) => m.id !== uid && m.status === "waiting") || null;
+  // Not simply the first one waiting: someone this learner may be paired
+  // with (pairVerdict), preferring a partner they have not met this week.
+  const waiting = members.filter((m) => m.id !== uid && m.status === "waiting");
+  const partner = waiting.length ? await choosePartnerTx(db, tx, uid, waiting, { [uid]: user }) : null;
   const now = admin.firestore.FieldValue.serverTimestamp();
   const usersCol = db.collection("users");
 
@@ -2416,7 +2524,8 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
       // bir-birini heç vaxt görmürdü — koordinasiya probleminin özü qayıdırdı.
       const partner = partnerId ? others.find((m) => m.id === partnerId) : null;
       const rematch = partner
-        ? others.find((m) => m.id !== partnerId && m.status === "waiting") || null
+        ? await choosePartnerTx(db, tx, partnerId,
+          others.filter((m) => m.id !== partnerId && m.status === "waiting"), {})
         : null;
 
       const usersCol = db.collection("users");
@@ -2931,6 +3040,11 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source 
   const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
   const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
 
+  // A teacher or the admin choosing a pair by hand may cross levels, but not
+  // a block, a "don't pair me again" or the minor/adult line.
+  const verdict = await pairVerdict(db, (r) => tx.get(r), uidA, uidB, { known: { [uidA]: a, [uidB]: b }, checkLevel: false });
+  if (!verdict.ok) throw slotFail(409, "pair-not-allowed");
+
   const memA = members.find((m) => m.id === uidA) || null;
   const memB = members.find((m) => m.id === uidB) || null;
   // Already exactly this pair? Nothing to write, and above all nothing to
@@ -3235,6 +3349,12 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       if (busyElsewhere(a)) throw slotFail(409, "user-a-busy");
       if (busyElsewhere(b)) throw slotFail(409, "user-b-busy");
 
+      // Only the admin sees this reason — learners are never told.
+      const v = await pairVerdict(db, (r) => tx.get(r), uidA, uidB, { known: { [uidA]: a, [uidB]: b }, checkLevel: false });
+      if (v.blocked) throw slotFail(409, "pair-blocked");
+      if (v.avoided) throw slotFail(409, "pair-avoided");
+      if (v.ageClash) throw slotFail(409, "pair-age");
+
       const pa = await livePendingOffersTx(db, tx, uidA, now);
       const pb = await livePendingOffersTx(db, tx, uidB, now);
       if (pa.live.length) throw slotFail(409, "user-a-has-offer");
@@ -3385,10 +3505,10 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
     const status = e.httpStatus || 500;
     // A second yes that cannot be booked (one of them was booked elsewhere in
     // the meantime) must not leave the offer hanging as "pending".
-    if (e.message === "student-a-busy" || e.message === "student-b-busy") {
+    if (e.message === "student-a-busy" || e.message === "student-b-busy" || e.message === "pair-not-allowed") {
       await offerRef.update({
         status: "failed",
-        failReason: "busy",
+        failReason: e.message === "pair-not-allowed" ? "not-allowed" : "busy",
         closedAt: admin.firestore.FieldValue.serverTimestamp(),
       }).catch(() => null);
       const failedSnap = await offerRef.get().catch(() => null);
@@ -6249,7 +6369,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     // 1) Owned documents (+ their sub-collections).
     //    'blocked' və 'private' (yaş təsdiqi) də silinməlidir — əks halda
     //    silinmiş hesabın şəxsi qeydləri Firestore-da qalır.
-    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "private", "practiceSessions"]);
+    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "avoid", "private", "practiceSessions"]);
     await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
     await db.collection("premiumRequests").doc(uid).delete().catch(() => null);

@@ -48,6 +48,20 @@ export default function Profile({ user }) {
   // Dil dəyişimi: dərhal UI + localStorage (i18n modulu), sonra Firestore-a
   // yazılır ki, digər cihazlarda da tətbiq olunsun. Firestore yazısı uğursuz
   // olsa belə lokal seçim qalır — dil dəyişmək heç vaxt "uğursuz" görünməsin.
+  // Partner level: 'any' (default) or 'close' = at most one CEFR step apart.
+  // Honoured by every automatic pairing (pairVerdict on the server).
+  const [partnerLevel, setPartnerLevel] = useState(user?.partnerLevel === 'close' ? 'close' : 'any');
+  const changePartnerLevel = async (value) => {
+    if (value === partnerLevel) return;
+    const prev = partnerLevel;
+    setPartnerLevel(value);
+    try {
+      await updateDoc(doc(db, 'users', docId || user.uid), { partnerLevel: value });
+    } catch (e) {
+      setPartnerLevel(prev);
+    }
+  };
+
   const changeLanguage = async (code) => {
     if (code === feedbackLang) return;
     setFeedbackLang(setFeedbackLanguage(code));
@@ -398,6 +412,41 @@ export default function Profile({ user }) {
             </button>
           );
         })}
+      </div>
+
+      {/* Who automatic matching may pair this learner with. */}
+      {sectionLabel('Practice partners')}
+      <div style={{ ...listCard, padding: 'var(--s-3)', display: 'grid', gap: 'var(--s-2)' }}>
+        <div style={{ display: 'flex', gap: 'var(--s-2)' }} role="radiogroup" aria-label="Partner level">
+          {[
+            { value: 'any', label: 'Any level' },
+            { value: 'close', label: 'Close to my level' },
+          ].map((o) => {
+            const active = partnerLevel === o.value;
+            return (
+              <button
+                key={o.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => changePartnerLevel(o.value)}
+                style={{
+                  flex: 1, padding: 'var(--s-3) var(--s-2)', borderRadius: 'var(--r-md)', cursor: 'pointer',
+                  border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+                  background: active ? 'var(--accent-soft)' : 'transparent',
+                  color: 'var(--text-primary)', fontSize: 'var(--fs-sm)', fontWeight: 700,
+                }}
+              >
+                {o.label}
+              </button>
+            );
+          })}
+        </div>
+        <p style={{ margin: 0, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 'var(--lh-body)' }}>
+          {partnerLevel === 'close'
+            ? 'You are matched only with learners one level above or below you. There are fewer of them, so a match can take longer.'
+            : 'You can be matched with learners of any level — the quickest way to find a partner.'}
+        </p>
       </div>
 
       {/* ÖYRƏNMƏ */}

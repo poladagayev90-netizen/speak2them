@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info } from 'lucide-react';
+import { collection, doc, limit, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
 import { subscribeToRecentAttendance, summarize } from '../utils/attendance';
@@ -17,6 +17,7 @@ import './AdminAttendance.css';
 // hence the chat button on every row.
 
 const DAY = 86400000;
+const TAG_LABEL = { on_time: 'On time', let_me_speak: 'Lets others speak', respectful: 'Respectful', prepared: 'Prepared' };
 const toMs = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : Number(t) || 0);
 
 function flagsFor(s, target, joinedMs, now) {
@@ -38,12 +39,39 @@ export default function AdminAttendance({ users }) {
   const [events, setEvents] = useState([]);
   const [onboarding, setOnboarding] = useState({});
   const [onlyFlagged, setOnlyFlagged] = useState(false);
+  const [feedback, setFeedback] = useState([]);
+  const [reports, setReports] = useState([]);
   const [now] = useState(Date.now());
 
   useEffect(() => subscribeToRecentAttendance(setEvents, now - 35 * DAY), [now]);
   useEffect(() => onSnapshot(collection(db, 'onboarding'), (snap) => {
     setOnboarding(Object.fromEntries(snap.docs.map((d) => [d.id, d.data()])));
   }, () => {}), []);
+
+  // What partners said about each learner's behaviour (admin-only data).
+  useEffect(() => onSnapshot(
+    query(collection(db, 'partnerFeedback'), orderBy('createdAt', 'desc'), limit(500)),
+    (snap) => setFeedback(snap.docs.map((d) => d.data())),
+    () => {},
+  ), []);
+  // Abuse reports have been collected since the Play UGC work, with no screen
+  // to read them on — this is that screen.
+  useEffect(() => onSnapshot(
+    query(collection(db, 'reports'), orderBy('createdAt', 'desc'), limit(50)),
+    (snap) => setReports(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    () => {},
+  ), []);
+  const praiseByUid = useMemo(() => {
+    const m = new Map();
+    for (const f of feedback) {
+      if (!m.has(f.ratee)) m.set(f.ratee, {});
+      const t = m.get(f.ratee);
+      for (const tag of f.tags || []) t[tag] = (t[tag] || 0) + 1;
+    }
+    return m;
+  }, [feedback]);
+  const resolveReport = (id) => updateDoc(doc(db, 'reports', id), { status: 'resolved', resolvedAt: serverTimestamp() }).catch(() => {});
+  const openReports = reports.filter((r) => r.status !== 'resolved');
 
   const rows = useMemo(() => {
     const byUid = new Map();
@@ -75,6 +103,26 @@ export default function AdminAttendance({ users }) {
         <div><b>{weekDone}/{withTarget}</b><span>on target this week</span></div>
         <div><b>{flagged}</b><span>need a conversation</span></div>
       </div>
+
+      {openReports.length > 0 && (
+        <section className="at-reports">
+          <h3 className="at-h"><Flag size={16} /> Open reports ({openReports.length})</h3>
+          {openReports.map((r) => (
+            <div key={r.id} className="at-report">
+              <div className="at-report-main">
+                <b>{r.reportedName || r.reportedId?.slice(0, 6)}</b>
+                <span className="at-muted">{r.reason || 'No reason given'}</span>
+                <span className="at-muted">
+                  by {(users || []).find((u) => (u.uid || u.id) === r.reporterId)?.name || 'a learner'}
+                  {r.createdAt?.toMillis ? ` · ${new Date(r.createdAt.toMillis()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}
+                </span>
+              </div>
+              <button type="button" className="at-chat" onClick={() => navigate(`/user/${r.reportedId}`)} aria-label="Open profile"><MessageCircle size={16} /></button>
+              <button type="button" className="at-resolve" onClick={() => resolveReport(r.id)}>Resolved</button>
+            </div>
+          ))}
+        </section>
+      )}
 
       <p className="at-note">
         <Info size={14} /> “Platform missed” = the partner did not come, or no partner was found.
@@ -117,6 +165,9 @@ export default function AdminAttendance({ users }) {
                 {s.lateCancel > 0 && <span className="at-chip is-bad">Late cancel {s.lateCancel}</span>}
                 {s.cancelled > 0 && <span className="at-chip">Cancelled in time {s.cancelled}</span>}
                 {s.platformMissed > 0 && <span className="at-chip is-platform">Platform missed {s.platformMissed}</span>}
+                {Object.entries(praiseByUid.get(u.uid) || {}).map(([tag, n]) => (
+                  <span key={tag} className="at-chip is-praise"><ThumbsUp size={11} /> {TAG_LABEL[tag] || tag} {n}</span>
+                ))}
                 <span className="at-chip">
                   Last practice {s.lastAttendedMs ? new Date(s.lastAttendedMs).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'}
                 </span>

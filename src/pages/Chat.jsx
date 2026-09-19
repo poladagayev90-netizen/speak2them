@@ -1036,7 +1036,7 @@ export default function Chat({ user }) {
 
   // Star/submit UI state lives in CallInsights (the rating is an inline block
   // there); this just performs the submission and throws on failure.
-  const submitRating = async (stars) => {
+  const submitRating = async (stars, { tags = [], avoid = false } = {}) => {
     // First read the peer's document to calculate badge unlocks accurately
     const peerRef = doc(db, 'users', peerId);
     const peerDoc = await getDoc(peerRef);
@@ -1074,6 +1074,27 @@ export default function Chat({ user }) {
     if (!res.ok && res.status !== 409) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body.error || `HTTP ${res.status}`);
+    }
+
+    // "Don't pair me again" lives in the rater's own private list; every
+    // automatic pairing honours it and the partner never learns of it.
+    if (avoid) {
+      await setDoc(doc(db, 'users', user.uid, 'avoid', peerId), {
+        name: (peer?.name || '').slice(0, 60),
+        callId: callDocId,
+        createdAt: serverTimestamp(),
+      });
+    }
+    // Behaviour tags for the team. One per call session (the id), never
+    // edited afterwards (rules), so a retry after a network error is a no-op.
+    if (tags.length > 0) {
+      await setDoc(doc(db, 'partnerFeedback', `${callDocId}_${sessionIdRef.current}_${user.uid}`), {
+        rater: user.uid,
+        ratee: peerId,
+        callId: callDocId,
+        tags: tags.slice(0, 4),
+        createdAt: serverTimestamp(),
+      }).catch((e) => console.warn('[Chat] feedback not saved', e.code));
     }
   };
 
@@ -1674,6 +1695,7 @@ export default function Chat({ user }) {
           enqueueFailed={enqueueFailed}
           ratingEnabled={ratingEligible}
           peerName={peer?.name}
+          peerId={peerId}
           onSubmitRating={submitRating}
           quizWordCount={callTranslations.length}
           onStartQuiz={() => setPostCallStages(['quiz'])}

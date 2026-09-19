@@ -106,6 +106,13 @@ service cloud.firestore {
         allow read, write: if isOwnDoc(userId);
       }
 
+      // "Don't pair me with this person again" — softer than a block (chat
+      // and calls still work) but every pairing path honours it (pairVerdict).
+      // Owner-only, like blocked: the other person must never learn of it.
+      match /avoid/{peerId} {
+        allow read, write: if isOwnDoc(userId);
+      }
+
       // Şəxsi məlumat (hazırda: yaş təsdiqi + valideyn razılığı). users/{uid}
       // sənədini hər daxil olmuş istifadəçi oxuya bilir (yuxarıdakı read
       // qaydası), ona görə xam doğum tarixi orada YOX, burada saxlanılır.
@@ -524,6 +531,28 @@ service cloud.firestore {
     match /attendance/{eventId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
       allow write: if false;
+    }
+
+    // Post-call feedback about the PARTNER's behaviour (on time, let me
+    // speak, respectful, prepared). Admin-only reading: it is for the team to
+    // spot patterns, never a public score. A learner may write one per call
+    // session, only about the other participant of a real call, only with the
+    // known tags — and never edit or delete it afterwards.
+    match /partnerFeedback/{feedbackId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['rater', 'ratee', 'callId', 'tags', 'createdAt'])
+        && request.resource.data.rater == request.auth.uid
+        && request.resource.data.ratee is string
+        && request.resource.data.ratee != request.auth.uid
+        && request.resource.data.callId is string
+        && request.resource.data.tags is list
+        && request.resource.data.tags.size() <= 4
+        && request.resource.data.tags.hasOnly(['on_time', 'let_me_speak', 'respectful', 'prepared'])
+        && [request.auth.uid, request.resource.data.ratee].hasAll([
+             get(/databases/$(database)/documents/calls/$(request.resource.data.callId)).data.userA,
+             get(/databases/$(database)/documents/calls/$(request.resource.data.callId)).data.userB]);
+      allow update, delete: if false;
     }
 
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız

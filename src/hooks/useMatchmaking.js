@@ -3,10 +3,11 @@ import { serverTimestamp } from 'firebase/firestore';
 import {
   MATCH_STATUS,
   SEARCH_PING_INTERVAL_MS,
+  canPair,
   commitMatch,
   joinSearchQueue,
   leaveSearchQueue,
-  pickBestMatch,
+  rankMatches,
   pingSearchQueue,
   subscribeToOwnQueue,
   subscribeToSearchingQueue,
@@ -18,6 +19,7 @@ import {
 // YAZILIR (onNoMatch), yəni 5 dəqiqə sonra gələn adam onu görüb qoşula bilir.
 // Əvvəl bilet sadəcə silinirdi və niyyətdən heç bir iz qalmırdı.
 const SEARCH_TIMEOUT_MS = 60000;
+const VERDICT_TTL_MS = 2 * 60 * 1000;
 
 export function useMatchmaking({
   user,
@@ -32,6 +34,8 @@ export function useMatchmaking({
   const queueUnsubRef = useRef(null);
   const timeoutRef = useRef(null);
   const pingIntervalRef = useRef(null);
+  // peerUid → { ok, recent, at } from canPair, for this session.
+  const verdictsRef = useRef(new Map());
 
   useEffect(() => {
     searchingRef.current = searching;
@@ -62,15 +66,30 @@ export function useMatchmaking({
   const tryMatchWithCandidates = useCallback(async (candidates) => {
     if (!searchingRef.current || matchingRef.current || !user.uid) return;
 
-    const best = pickBestMatch(
+    const ranked = rankMatches(
       candidates,
       { uid: user.uid, level: userLevel, topics: user.topics }
-    );
-    if (!best?.uid) return;
+    ).slice(0, 3);
+    if (ranked.length === 0) return;
 
     matchingRef.current = true;
     try {
-      await commitMatch(user.uid, best.uid);
+      // Ask the server about the top few (cached for two minutes, so a queue
+      // snapshot every second does not become a request every second). A
+      // partner met in the last week is taken only when nobody else fits.
+      const now = Date.now();
+      const allowed = [];
+      for (const c of ranked) {
+        let v = verdictsRef.current.get(c.uid);
+        if (!v || now - v.at > VERDICT_TTL_MS) {
+          v = { ...(await canPair(c.uid)), at: now };
+          verdictsRef.current.set(c.uid, v);
+        }
+        if (v.ok) allowed.push({ c, recent: v.recent });
+      }
+      if (!searchingRef.current || allowed.length === 0) return;
+      const pick = allowed.find((x) => !x.recent) || allowed[0];
+      await commitMatch(user.uid, pick.c.uid);
     } finally {
       matchingRef.current = false; // ALWAYS reset, even on failure
     }

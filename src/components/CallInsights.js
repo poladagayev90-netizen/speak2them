@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Star, GraduationCap, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Star, GraduationCap, AlertTriangle, Flag } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
@@ -37,9 +38,22 @@ function InsightsShell({ children, centered, onClose, extras }) {
   );
 }
 
-// Inline star rating — replaces the old separate full-screen rating modal.
-function RatingBlock({ peerName, onSubmitRating }) {
+// What went well — about the partner's BEHAVIOUR, not their English. Seen
+// only by the SpeakLab team (partnerFeedback is admin-read), so it can be
+// honest without becoming a public score.
+const GOOD_TAGS = [
+  { id: 'on_time', label: 'On time' },
+  { id: 'let_me_speak', label: 'Let me speak too' },
+  { id: 'respectful', label: 'Respectful' },
+  { id: 'prepared', label: 'Came prepared' },
+];
+
+// Inline rating — replaces the old separate full-screen rating modal.
+function RatingBlock({ peerName, peerId, onSubmitRating }) {
   const [selectedStar, setSelectedStar] = useState(0);
+  const [tags, setTags] = useState([]);
+  const [avoid, setAvoid] = useState(false);
+  const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -49,7 +63,7 @@ function RatingBlock({ peerName, onSubmitRating }) {
     setSubmitting(true);
     setError('');
     try {
-      await onSubmitRating(selectedStar);
+      await onSubmitRating(selectedStar, { tags, avoid });
       setDone(true);
     } catch (e) {
       console.error('[CallInsights] Rating error:', e);
@@ -81,6 +95,40 @@ function RatingBlock({ peerName, onSubmitRating }) {
               }}><Star size={30} strokeWidth={1.75} fill={star <= selectedStar ? 'currentColor' : 'none'} /></button>
             ))}
           </div>
+          {selectedStar > 0 && (
+            <div style={{ textAlign: 'left', margin: '4px 0 12px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--fs-sm)', fontWeight: 600, margin: '0 0 8px' }}>
+                What went well? <span style={{ color: 'var(--text-muted)' }}>Only the SpeakLab team sees this.</span>
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--s-2)' }}>
+                {GOOD_TAGS.map((t) => {
+                  const on = tags.includes(t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={on}
+                      disabled={submitting}
+                      onClick={() => setTags((prev) => (on ? prev.filter((x) => x !== t.id) : [...prev, t.id]))}
+                      style={{
+                        padding: '6px 12px', borderRadius: 'var(--r-pill)', cursor: 'pointer',
+                        border: on ? '1px solid var(--accent)' : '1px solid var(--border)',
+                        background: on ? 'var(--accent)' : 'transparent',
+                        color: on ? 'var(--text-on-accent)' : 'var(--text-primary)',
+                        fontSize: 'var(--fs-sm)', fontWeight: 700,
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-2)', marginTop: 'var(--s-3)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={avoid} disabled={submitting} onChange={(e) => setAvoid(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
+                {`Don't pair me with ${peerName || 'this person'} again`}
+              </label>
+            </div>
+          )}
           {error && (
             <p style={{ color: 'var(--danger-fg)', fontSize: 13, margin: '0 0 10px' }}>{error}</p>
           )}
@@ -95,6 +143,11 @@ function RatingBlock({ peerName, onSubmitRating }) {
               opacity: submitting ? 0.6 : 1,
             }}
           >{submitting ? 'Sending…' : 'Send'}</button>
+          {peerId && (
+            <button type="button" onClick={() => navigate(`/user/${peerId}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, padding: 0, border: 0, background: 'none', cursor: 'pointer', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              <Flag size={14} /> Something went wrong? Report it
+            </button>
+          )}
         </>
       )}
     </div>
@@ -103,7 +156,7 @@ function RatingBlock({ peerName, onSubmitRating }) {
 
 export default function CallInsights({
   userId, channelName, onClose, enqueueFailed = false,
-  ratingEnabled = false, peerName = null, onSubmitRating = null,
+  ratingEnabled = false, peerName = null, peerId = null, onSubmitRating = null,
   quizWordCount = 0, onStartQuiz = null,
 }) {
   const [analysis, setAnalysis] = useState(null);
@@ -138,7 +191,7 @@ const scoreColor = (s) => (s >= 80 ? 'var(--accent)' : s >= 60 ? 'var(--ai)' : '
   const extras = (
     <>
       {ratingEnabled && onSubmitRating && (
-        <RatingBlock peerName={peerName} onSubmitRating={onSubmitRating} />
+        <RatingBlock peerName={peerName} peerId={peerId} onSubmitRating={onSubmitRating} />
       )}
       {quizWordCount > 0 && onStartQuiz && (
         <button onClick={onStartQuiz} style={{
