@@ -1,0 +1,87 @@
+/* Intro-call booking. Builds on the onboarding layer (Onboarding.css). */
+
+.in-top-title { font-size: var(--fs-body); font-weight: 700; }
+
+.in-points {
+  list-style: none;
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+.in-points li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.in-points svg { color: var(--accent); flex-shrink: 0; }
+
+.in-empty {
+  margin: var(--s-6) 0 0;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  border: 1px dashed var(--border);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+.in-day { margin-top: var(--s-5); }
+.in-day-title {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.in-times { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--s-2); }
+.in-time {
+  height: 46px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.in-time.is-on { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+
+.in-booked {
+  margin-top: var(--s-5);
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  border: 1px solid rgb(var(--accent-rgb) / 0.36);
+  background: var(--tint-accent);
+  display: grid;
+  gap: var(--s-1);
+}
+.in-booked-day { margin: 0; font-size: var(--fs-body); font-weight: 700; color: var(--text-secondary); }
+.in-booked-time {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+.in-booked-host { margin: 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-secondary); }
+.in-booked-how {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+a.in-booked-how { color: var(--accent); }
+.in-booked-how svg { color: var(--accent); flex-shrink: 0; }
+
+.in-row { display: flex; gap: var(--s-2); margin-top: var(--s-4); }
+.in-later { display: block; margin: var(--s-3) auto 0; }

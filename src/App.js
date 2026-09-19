@@ -45,6 +45,7 @@ const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
+const IntroBooking = React.lazy(() => import('./pages/IntroBooking'));
 const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
@@ -74,6 +75,8 @@ const LIVE_USER_FIELDS = [
   // The onboarding gate reads this; without it the wizard's final write would
   // only lift the gate after a reload.
   'onboardingVersion',
+  // Set by the admin after the intro call; unlocks live practice without a reload.
+  'introDoneAt',
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
   // Admin təsdiq edən kimi Tutor nişanı reload olmadan görünsün.
   'teacherVerified',
@@ -192,6 +195,7 @@ function AppShell({ user }) {
           <Route path="/onboarding" element={user ? (isTeacherUser ? <Navigate to="/teacher" /> : <Onboarding user={user} />) : <Navigate to="/login" />} />
           {/* Old links (and Register on a stale bundle) still point here. */}
           <Route path="/survey" element={<Navigate to="/onboarding" replace />} />
+          <Route path="/intro" element={user ? <IntroBooking user={user} /> : <Navigate to="/login" />} />
           <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />

@@ -19,6 +19,7 @@ import CourseCompletionCelebration from '../components/CourseCompletionCelebrati
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import MatchOfferCard from '../components/MatchOfferCard';
+import IntroCard from '../components/IntroCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import TodayNudge from '../components/TodayNudge';
 import TodayTaskCard from '../components/ai/TodayTaskCard';
@@ -184,6 +185,7 @@ export default function Home({ user }) {
         {/* A proposal waiting for this learner's yes sits right above the
             bookings it turns into. */}
         <MatchOfferCard uid={user?.uid} />
+        <IntroCard user={user} />
         <UpcomingCallCard
           call={mine?.upcomingCall}
           busy={cancelBusy}

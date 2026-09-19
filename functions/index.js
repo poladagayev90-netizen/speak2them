@@ -3416,6 +3416,204 @@ exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (
   }
 });
 
+// ─── Intro call with the SpeakLab team (Phase 2) ────────────────
+// Every new learner meets the team for ~15 minutes before live partner
+// practice opens: the team gets to know who is joining (level, goals, how
+// serious they are), the learner gets a human welcome and a plan.
+//
+// It is REQUIRED but NOT BLOCKING: the rest of the app (AInur, topics, daily
+// content) works from day one; only random search and the slot board wait for
+// users.introDoneAt, which only adminMarkIntro can set (rules-protected).
+//
+//   teamSlots/{id}         admin writes directly (open times). Holds NO learner
+//                          identity — every signed-in user can list open times,
+//                          so a booked slot only says `booked: true`.
+//   introBookings/{uid}    one per learner, server-written; owner + admin read.
+//   bookIntro / cancelIntro (learner), adminMarkIntro (admin).
+const INTRO_MIN_LEAD_MS = 10 * 60 * 1000;   // no booking a slot starting in <10 min
+const INTRO_REMINDER_MS = 15 * 60 * 1000;
+
+exports.bookIntro = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const uid = decoded.uid;
+  const slotId = String((req.body || {}).slotId || "").trim();
+  if (!slotId || slotId.length > 64) return res.status(400).json({ error: "invalid-slot" });
+
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(uid, "bookIntro", 20, 60 * 60 * 1000);
+    const result = await db.runTransaction(async (tx) => {
+      const slotRef = db.collection("teamSlots").doc(slotId);
+      const bookingRef = db.collection("introBookings").doc(uid);
+      const userRef = db.collection("users").doc(uid);
+      const [slotSnap, bookingSnap, userSnap] = await Promise.all([tx.get(slotRef), tx.get(bookingRef), tx.get(userRef)]);
+      const now = Date.now();
+      if (!slotSnap.exists) throw slotFail(404, "slot-not-found");
+      const slot = slotSnap.data() || {};
+      const user = userSnap.exists ? (userSnap.data() || {}) : {};
+      if (user.introDoneAt) throw slotFail(409, "intro-done");
+      const prev = bookingSnap.exists ? (bookingSnap.data() || {}) : null;
+      if (prev && prev.status === "booked" && prev.slotId === slotId) return { same: true, startMs: slot.startMs };
+      if (slot.booked || slot.status === "cancelled") throw slotFail(409, "slot-taken");
+      if (!(Number(slot.startMs) > now + INTRO_MIN_LEAD_MS)) throw slotFail(409, "slot-too-soon");
+
+      // Moving to another time frees the old one for somebody else.
+      let prevSlotRef = null;
+      if (prev && prev.status === "booked" && prev.slotId && prev.slotId !== slotId) {
+        prevSlotRef = db.collection("teamSlots").doc(prev.slotId);
+        const prevSlotSnap = await tx.get(prevSlotRef);
+        if (!prevSlotSnap.exists) prevSlotRef = null;
+      }
+      const ts = admin.firestore.FieldValue.serverTimestamp();
+      if (prevSlotRef) tx.update(prevSlotRef, { booked: false, bookedAt: admin.firestore.FieldValue.delete() });
+      tx.update(slotRef, { booked: true, bookedAt: ts });
+      tx.set(bookingRef, {
+        uid,
+        name: user.name || "",
+        slotId,
+        startMs: Number(slot.startMs),
+        durationMin: Number(slot.durationMin) || 15,
+        meetUrl: slot.meetUrl || "",
+        hostName: slot.hostName || "",
+        status: "booked",
+        bookedAt: ts,
+        ...(prev ? {} : { firstBookedAt: ts }),
+      }, { merge: true });
+      return { same: false, startMs: Number(slot.startMs), name: user.name || "", moved: !!prevSlotRef };
+    });
+
+    if (!result.same) {
+      await sendPushToUser(db, ADMIN_UID, {
+        key: result.moved ? "admin_intro_moved" : "admin_intro_booked",
+        vars: { name: result.name, at: result.startMs },
+        type: "admin_intro", url: "/admin?tab=intros",
+      }).catch(() => null);
+    }
+    return res.status(200).json({ ok: true, startMs: result.startMs });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[bookIntro]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+exports.cancelIntro = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const uid = decoded.uid;
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(uid, "cancelIntro", 20, 60 * 60 * 1000);
+    const result = await db.runTransaction(async (tx) => {
+      const bookingRef = db.collection("introBookings").doc(uid);
+      const snap = await tx.get(bookingRef);
+      const b = snap.exists ? (snap.data() || {}) : null;
+      if (!b || b.status !== "booked") throw slotFail(409, "no-booking");
+      const slotRef = db.collection("teamSlots").doc(b.slotId);
+      const slotSnap = await tx.get(slotRef);
+      if (slotSnap.exists && Number(b.startMs) > Date.now()) {
+        tx.update(slotRef, { booked: false, bookedAt: admin.firestore.FieldValue.delete() });
+      }
+      tx.update(bookingRef, { status: "cancelled", cancelledAt: admin.firestore.FieldValue.serverTimestamp() });
+      return b;
+    });
+    await sendPushToUser(db, ADMIN_UID, {
+      key: "admin_intro_cancelled",
+      vars: { name: result.name || "", at: Number(result.startMs) },
+      type: "admin_intro", url: "/admin?tab=intros",
+    }).catch(() => null);
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[cancelIntro]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// outcome "done": unlock live practice (users.introDoneAt). Works with or
+// without a booking, so the admin can also record a meeting that happened
+// elsewhere. outcome "missed": the booking closes and the learner is asked to
+// pick a new time; nothing is unlocked.
+exports.adminMarkIntro = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  const body = req.body || {};
+  const uid = String(body.uid || "").trim();
+  const outcome = body.outcome;
+  if (!uid || uid.length > 128) return res.status(400).json({ error: "invalid-user" });
+  if (!["done", "missed"].includes(outcome)) return res.status(400).json({ error: "invalid-outcome" });
+  const note = typeof body.note === "string" ? body.note.trim().slice(0, 500) : "";
+
+  const db = admin.firestore();
+  try {
+    await db.runTransaction(async (tx) => {
+      const userRef = db.collection("users").doc(uid);
+      const bookingRef = db.collection("introBookings").doc(uid);
+      const [userSnap, bookingSnap] = await Promise.all([tx.get(userRef), tx.get(bookingRef)]);
+      if (!userSnap.exists) throw slotFail(404, "user-not-found");
+      if (outcome === "missed" && !bookingSnap.exists) throw slotFail(409, "no-booking");
+      const ts = admin.firestore.FieldValue.serverTimestamp();
+      if (outcome === "done") tx.set(userRef, { introDoneAt: ts }, { merge: true });
+      tx.set(bookingRef, {
+        uid,
+        name: (userSnap.data() || {}).name || "",
+        status: outcome,
+        markedAt: ts,
+        ...(note ? { adminNote: note } : {}),
+      }, { merge: true });
+    });
+    await sendPushToUser(db, uid, {
+      key: outcome === "done" ? "intro_done" : "intro_missed",
+      vars: {},
+      type: "intro", url: outcome === "done" ? "/live" : "/intro",
+    }).catch(() => null);
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[adminMarkIntro]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// Called from practiceSlotTick every minute: a reminder ~15 min before each
+// booked intro, to the learner and to the team. claimSlotRun makes it once.
+async function sendIntroReminders(db, now) {
+  const snap = await db.collection("introBookings")
+    .where("status", "==", "booked")
+    .where("startMs", ">", now)
+    .where("startMs", "<=", now + INTRO_REMINDER_MS)
+    .limit(20)
+    .get();
+  for (const d of snap.docs) {
+    const b = d.data() || {};
+    if (!(await claimSlotRun(db, `intro_${d.id}_${b.startMs}`))) continue;
+    await Promise.all([
+      sendPushToUser(db, d.id, { key: "intro_reminder", vars: { at: Number(b.startMs) }, type: "intro", url: "/intro" }),
+      sendPushToUser(db, ADMIN_UID, { key: "admin_intro_reminder", vars: { name: b.name || "", at: Number(b.startMs) }, type: "admin_intro", url: "/admin?tab=intros" }),
+    ]).catch(() => null);
+  }
+}
+
 // Bir dəfə iddia edilən marker — eyni push hər dəqiqə təkrarlanmasın deyə.
 // matchSessionQueue-dakı sessionRuns pattern-inin eynisi.
 async function claimSlotRun(db, id) {
@@ -3436,6 +3634,10 @@ exports.practiceSlotTick = onSchedule(
     const today = bakuDateStr(now);
     const dates = [];
     for (let i = 0; i < SLOT_HORIZON_DAYS; i++) dates.push(bakuDateStr(now + i * DAY_MS));
+
+    // Intro-call reminders ride on this minute tick instead of a schedule of
+    // their own (one small query per minute).
+    await sendIntroReminders(db, now).catch((e) => console.warn("[SlotTick] intro reminders failed:", e.message));
 
     // ① Gündə bir dəfə: təkrarlanan qrafikləri materiallaşdır + köhnəni təmizlə.
     if (await claimSlotRun(db, `${today}_daily`)) {
@@ -5971,6 +6173,17 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     // Onboarding answers hold age band, country and weekly availability —
     // personal data that must go with the account.
     await db.collection("onboarding").doc(uid).delete().catch(() => null);
+    // Intro booking: free a still-future team slot, then drop the booking.
+    try {
+      const ib = await db.collection("introBookings").doc(uid).get();
+      const b = ib.exists ? ib.data() : null;
+      if (b && b.status === "booked" && b.slotId && Number(b.startMs) > Date.now()) {
+        await db.collection("teamSlots").doc(b.slotId).update({ booked: false }).catch(() => null);
+      }
+      await ib.ref.delete().catch(() => null);
+    } catch (e) {
+      console.warn("[deleteAccount] intro cleanup failed:", e.message);
+    }
 
     // 1b) Müəllim funnel-i məlumatları.
     try {

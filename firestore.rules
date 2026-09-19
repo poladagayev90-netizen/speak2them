@@ -63,7 +63,7 @@ service cloud.firestore {
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
-          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots'])
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt'])
         && validRoleOneTimeSet();
     }
 
@@ -73,7 +73,7 @@ service cloud.firestore {
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
-          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots'])
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
         // Rol yaradılışda seçilə bilər; teacherEligible yalnız teacher rolu ilə birgə.
@@ -496,6 +496,23 @@ service cloud.firestore {
     // both at once instead of asking one and then the other.
     match /matchOfferNotes/{offerId} {
       allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Intro-call times the team offers. The admin writes them straight from
+    // the panel; every signed-in user may list them to book one. They carry
+    // NO learner identity (only `booked: true`) because they are readable by
+    // everyone — who booked what lives in introBookings.
+    match /teamSlots/{slotId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // One intro booking per learner. Written only by bookIntro / cancelIntro /
+    // adminMarkIntro: a client that could write here could mark its own intro
+    // as done and skip it.
+    match /introBookings/{uid} {
+      allow read: if isOwnDoc(uid) || isAdmin();
       allow write: if false;
     }
 

@@ -16,6 +16,7 @@ import {
 import {
   ONBOARDING_VERSION, GOALS, LEVELS, AGE_BANDS, COUNTRIES, TOPICS, WEEKLY_TARGETS, labelOf,
 } from '../utils/onboarding';
+import { needsIntro } from '../utils/intro';
 import './Onboarding.css';
 
 // One question per screen. The order is deliberate: the easy, identity
@@ -215,7 +216,10 @@ export default function Onboarding({ user }) {
         onboardedAt: serverTimestamp(),
       }, { merge: true });
       try { sessionStorage.removeItem(draftKey(uid)); } catch { /* ignore */ }
-      navigate('/', { replace: true });
+      // Joining ends with booking the intro call — the same full-screen layer,
+      // so it reads as the last step, not as an ad. Learners who are exempt
+      // (already practising, have a teacher) go straight home.
+      navigate(needsIntro(user) ? '/intro' : '/', { replace: true });
     } catch (e) {
       setError('Your answers were not saved. Check your connection and try again.');
       setSaving(false);

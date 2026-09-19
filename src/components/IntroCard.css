@@ -1,0 +1,62 @@
+/* Intro-call prompt (Home row / Live lock). Tokens only. */
+
+.ic {
+  width: 100%;
+  margin-bottom: var(--s-3);
+  border-radius: var(--r-xl);
+  border: 1px solid rgb(var(--accent-rgb) / 0.32);
+  background: var(--tint-accent);
+  box-shadow: var(--glass-edge), var(--glass-lift);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+}
+.ic-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ic--home {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer;
+}
+.ic--home:active { transform: scale(.99); }
+.ic-body { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.ic--home .ic-title { font-size: var(--fs-body); font-weight: 700; }
+.ic--home .ic-text { font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.ic-chev { color: var(--text-muted); flex-shrink: 0; }
+
+.ic--lock { display: grid; gap: var(--s-2); padding: var(--s-5); }
+.ic--lock .ic-title {
+  margin: var(--s-2) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+}
+.ic--lock .ic-text { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: var(--lh-body); }
+.ic-cta {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+  height: 44px;
+  padding: 0 var(--s-4);
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}

@@ -6,6 +6,8 @@ import FlaskSearchOverlay from '../components/FlaskSearchOverlay';
 import PracticeBoard from '../components/PracticeBoard';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import MatchOfferCard from '../components/MatchOfferCard';
+import IntroCard from '../components/IntroCard';
+import { needsIntro } from '../utils/intro';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import UserCard from '../components/UserCard';
 import Card from '../components/ui/Card';
@@ -31,6 +33,7 @@ export default function Live({ user }) {
   } = useLiveLobby(user);
 
   const [tab, setTab] = useState('online');
+  const introLocked = needsIntro(user);
 
   // Arriving from "Pick a time" — open the calendar and scroll to it, rather
   // than dropping the learner at the top of a page where the thing they asked
@@ -78,59 +81,66 @@ export default function Live({ user }) {
         onCancel={cancelUpcoming}
       />
 
-      {/* Names are deliberately NOT shown. Knowing who is waiting invites
-          cherry-picking: a lower-level learner sees a higher one and backs out,
-          and being passed over is worse. You join the POOL, not a person. */}
-      {activeSearchers.length > 0 && !searching && (
-        <Card tone="peer" padding="md" style={{ marginBottom: 'var(--s-3)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
-            <Search size={22} strokeWidth={1.75} style={{ color: 'var(--peer)', flexShrink: 0 }} />
-            <p style={{
-              flex: 1, margin: 0, fontSize: 'var(--fs-sm)',
-              color: 'var(--text-primary)', lineHeight: 'var(--lh-body)',
-            }}>
-              👋 <b>{activeSearchers.length}</b>
-              {activeSearchers.length === 1 ? ' person is' : ' people are'} looking for a partner
-              right now — join and you will connect immediately.
+      {/* Before the intro call with the team, random search and the board are
+          replaced by one card that says why and how to open them. Proposals
+          and bookings above stay: those are arranged by the team itself. */}
+      {introLocked ? <IntroCard user={user} variant="lock" /> : (
+      <>
+        {/* Names are deliberately NOT shown. Knowing who is waiting invites
+            cherry-picking: a lower-level learner sees a higher one and backs out,
+            and being passed over is worse. You join the POOL, not a person. */}
+        {activeSearchers.length > 0 && !searching && (
+          <Card tone="peer" padding="md" style={{ marginBottom: 'var(--s-3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
+              <Search size={22} strokeWidth={1.75} style={{ color: 'var(--peer)', flexShrink: 0 }} />
+              <p style={{
+                flex: 1, margin: 0, fontSize: 'var(--fs-sm)',
+                color: 'var(--text-primary)', lineHeight: 'var(--lh-body)',
+              }}>
+                👋 <b>{activeSearchers.length}</b>
+                {activeSearchers.length === 1 ? ' person is' : ' people are'} looking for a partner
+                right now — join and you will connect immediately.
+              </p>
+              <Button variant="primary" size="sm" onClick={startSearch}>Join now</Button>
+            </div>
+          </Card>
+        )}
+
+        <button
+          id="tour-find-partner"
+          onClick={searching ? cancelSearch : startSearch}
+          className={searching ? 'btn-random searching' : 'btn-random'}
+          style={{
+            background: searching ? 'var(--danger-solid)' : undefined,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+          }}
+        >
+          {searching
+            ? <><X size={20} /> Searching… (cancel)</>
+            : <><Shuffle size={20} /> Find a random partner</>}
+        </button>
+
+        <FlaskSearchOverlay
+          visible={searching}
+          title="Finding a partner…"
+          subtitle="Looking for a match — the call starts automatically once we find one"
+          onCancel={cancelSearch}
+          cancelLabel="Stop searching"
+        />
+
+        {slotToast && (
+          <Card padding="md" style={{ marginTop: 'var(--s-3)', textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>
+              {slotToast}
             </p>
-            <Button variant="primary" size="sm" onClick={startSearch}>Join now</Button>
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        <div ref={boardRef} style={{ marginTop: 'var(--s-4)', scrollMarginTop: 'var(--s-4)' }}>
+          <PracticeBoard mine={mine} openSignal={boardOpenSignal} user={user} />
+        </div>
+      </>
       )}
-
-      <button
-        id="tour-find-partner"
-        onClick={searching ? cancelSearch : startSearch}
-        className={searching ? 'btn-random searching' : 'btn-random'}
-        style={{
-          background: searching ? 'var(--danger-solid)' : undefined,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-        }}
-      >
-        {searching
-          ? <><X size={20} /> Searching… (cancel)</>
-          : <><Shuffle size={20} /> Find a random partner</>}
-      </button>
-
-      <FlaskSearchOverlay
-        visible={searching}
-        title="Finding a partner…"
-        subtitle="Looking for a match — the call starts automatically once we find one"
-        onCancel={cancelSearch}
-        cancelLabel="Stop searching"
-      />
-
-      {slotToast && (
-        <Card padding="md" style={{ marginTop: 'var(--s-3)', textAlign: 'center' }}>
-          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>
-            {slotToast}
-          </p>
-        </Card>
-      )}
-
-      <div ref={boardRef} style={{ marginTop: 'var(--s-4)', scrollMarginTop: 'var(--s-4)' }}>
-        <PracticeBoard mine={mine} openSignal={boardOpenSignal} user={user} />
-      </div>
 
       <p className="ui-section-label" style={{ marginTop: 'var(--s-6)' }}>
         <Users size={12} strokeWidth={2} style={{ verticalAlign: '-1px', marginRight: 4 }} />

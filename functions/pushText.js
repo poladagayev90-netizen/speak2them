@@ -127,6 +127,13 @@ const STRINGS = {
     admin_offer_declined: (v, f) => ({ title: "Təklif qəbul edilmədi", body: `${v.name || f.someone} (${v.time}): ${v.reason || "səbəb yoxdur"}.` }),
     admin_offer_confirmed: (v) => ({ title: "✅ Cüt təsdiqləndi", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
     admin_offer_failed: (v) => ({ title: "Təklif rezerv olunmadı", body: `${v.nameA} + ${v.nameB}: biri artıq başqa zəngə yazılıb.` }),
+    intro_reminder: (v) => ({ title: "👋 Tanışlıq görüşünə 15 dəqiqə", body: `${v.time} — SpeakLab komandası sizi gözləyir.` }),
+    intro_done: () => ({ title: "🎉 Canlı praktika açıldı", body: "Tanış olduğumuza şadıq! İndi partnyorlarla danışa bilərsiniz." }),
+    intro_missed: () => ({ title: "Tanışlıq görüşü üçün yeni vaxt", body: "Sizə uyğun yeni vaxt seçin — 15 dəqiqə çəkir." }),
+    admin_intro_booked: (v, f) => ({ title: "👋 Tanışlıq görüşü rezerv edildi", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_moved: (v, f) => ({ title: "Tanışlıq görüşü dəyişdi", body: `${v.name || f.someone} yeni vaxt seçdi: ${v.time}.` }),
+    admin_intro_cancelled: (v, f) => ({ title: "Tanışlıq görüşü ləğv edildi", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_reminder: (v, f) => ({ title: "👋 15 dəqiqəyə tanışlıq görüşü", body: `${v.name || f.someone} — ${v.time}.` }),
   },
 
   tr: {
@@ -165,6 +172,13 @@ const STRINGS = {
     admin_offer_declined: (v, f) => ({ title: "Teklif kabul edilmedi", body: `${v.name || f.someone} (${v.time}): ${v.reason || "sebep yok"}.` }),
     admin_offer_confirmed: (v) => ({ title: "✅ Eşleşme onaylandı", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
     admin_offer_failed: (v) => ({ title: "Teklif ayrılamadı", body: `${v.nameA} + ${v.nameB}: biri başka bir görüşmeye yazıldı.` }),
+    intro_reminder: (v) => ({ title: "👋 Tanışma görüşmesine 15 dakika", body: `${v.time} — SpeakLab ekibi sizi bekliyor.` }),
+    intro_done: () => ({ title: "🎉 Canlı pratik açıldı", body: "Tanıştığımıza sevindik! Artık partnerlerle konuşabilirsiniz." }),
+    intro_missed: () => ({ title: "Tanışma görüşmesi için yeni saat", body: "Size uygun yeni bir saat seçin — 15 dakika sürer." }),
+    admin_intro_booked: (v, f) => ({ title: "👋 Tanışma görüşmesi ayrıldı", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_moved: (v, f) => ({ title: "Tanışma görüşmesi değişti", body: `${v.name || f.someone} yeni saat seçti: ${v.time}.` }),
+    admin_intro_cancelled: (v, f) => ({ title: "Tanışma görüşmesi iptal edildi", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_reminder: (v, f) => ({ title: "👋 15 dakikaya tanışma görüşmesi", body: `${v.name || f.someone} — ${v.time}.` }),
   },
 
   en: {
@@ -203,6 +217,13 @@ const STRINGS = {
     admin_offer_declined: (v, f) => ({ title: "Offer declined", body: `${v.name || f.someone} (${v.time}): ${v.reason || "no reason"}.` }),
     admin_offer_confirmed: (v) => ({ title: "✅ Pair confirmed", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
     admin_offer_failed: (v) => ({ title: "Offer could not be booked", body: `${v.nameA} + ${v.nameB}: one of them was booked elsewhere.` }),
+    intro_reminder: (v) => ({ title: "👋 Your intro call in 15 minutes", body: `${v.time} — the SpeakLab team is looking forward to meeting you.` }),
+    intro_done: () => ({ title: "🎉 Live practice is open", body: "Great to meet you! You can now practise with partners." }),
+    intro_missed: () => ({ title: "A new time for your intro call", body: "Pick a time that suits you — it takes 15 minutes." }),
+    admin_intro_booked: (v, f) => ({ title: "👋 Intro call booked", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_moved: (v, f) => ({ title: "Intro call moved", body: `${v.name || f.someone} picked a new time: ${v.time}.` }),
+    admin_intro_cancelled: (v, f) => ({ title: "Intro call cancelled", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_reminder: (v, f) => ({ title: "👋 Intro call in 15 minutes", body: `${v.name || f.someone} — ${v.time}.` }),
   },
 };
 
