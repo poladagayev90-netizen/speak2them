@@ -446,6 +446,41 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Onboarding wizard answers: age band, country, confirmed time zone,
+    // weekly availability (in the learner's OWN time) and weekly target.
+    // Kept out of users/{uid} on purpose — that doc is readable by every
+    // signed-in user, and nobody but the learner and the SpeakLab team should
+    // see someone's age or when they are home in the evening.
+    // The learner writes it; the admin may only stamp adminSeenAt ("I read
+    // this"). The per-range shape (day 0..6, startMin < endMin) cannot be
+    // checked here — rules have no loops — so the list is bounded in size and
+    // the wizard builds ranges only from its own grid.
+    function validOnboarding() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'goal', 'level', 'ageBand', 'country', 'timeZone',
+          'availability', 'weeklyTarget', 'topics', 'version', 'submittedAt', 'updatedAt', 'adminSeenAt'])
+        && d.uid == request.auth.uid
+        && d.ageBand in ['under18', '18-24', '25-34', '35+']
+        && d.country is string && d.country.size() > 0 && d.country.size() <= 60
+        && d.timeZone is string && d.timeZone.size() > 0 && d.timeZone.size() <= 64
+        && d.availability is list && d.availability.size() > 0 && d.availability.size() <= 70
+        && d.weeklyTarget is int && d.weeklyTarget >= 1 && d.weeklyTarget <= 4
+        && d.topics is list && d.topics.size() <= 3
+        && d.goal is string && d.goal.size() <= 40
+        && d.level is string && d.level.size() <= 40
+        && d.version is int;
+    }
+
+    match /onboarding/{uid} {
+      allow read: if isOwnDoc(uid) || isAdmin();
+      allow create: if isOwnDoc(uid) && validOnboarding()
+        && !('adminSeenAt' in request.resource.data);
+      allow update: if (isOwnDoc(uid) && validOnboarding()
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['adminSeenAt', 'submittedAt', 'uid']))
+        || (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['adminSeenAt']));
+      allow delete: if false;
+    }
+
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız
     // "bu push artıq göndərilib" markerləridir, client-in nə oxumağa, nə də
     // yazmağa ehtiyacı var. Client yaza bilsəydi, xatırlatmaları susdura bilərdi.

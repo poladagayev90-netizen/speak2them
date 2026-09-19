@@ -14,6 +14,7 @@ import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
 import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
+import { needsOnboarding } from './utils/onboarding';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
 import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
@@ -43,7 +44,7 @@ const AiActivity = React.lazy(() => import('./pages/AiActivity'));
 const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
-const Survey = React.lazy(() => import('./pages/Survey'));
+const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
@@ -70,6 +71,9 @@ const LIVE_USER_FIELDS = [
   'mode', 'startTick', 'cohortId', 'cohortStatus', 'isPremium', 'subscriptionPlan',
   'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
   'freeAccessUntil', 'surveyDone',
+  // The onboarding gate reads this; without it the wizard's final write would
+  // only lift the gate after a reload.
+  'onboardingVersion',
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
   // Admin təsdiq edən kimi Tutor nişanı reload olmadan görünsün.
   'teacherVerified',
@@ -118,10 +122,10 @@ function AppShell({ user }) {
     if (c) setPendingJoinCode(c);
   }, [location.pathname, location.search]);
 
-  // Müəllim şagird sorğusuna göndərilmir (aşağıda /survey route-u onu
+  // Müəllim şagird sorğusuna göndərilmir (aşağıda /onboarding route-u onu
   // Dashboard-a yönləndirir), amma Lobby ona açıq qalır — özü də məşq edə
   // bilər. Bu cüt yoxlama auth yarışını da bağlayır: Register-in setDoc-u
-  // App-ın ilk getDoc-undan gec çatanda müəllim əvvəl /survey-ə düşür, rol
+  // App-ın ilk getDoc-undan gec çatanda müəllim əvvəl /onboarding-ə düşür, rol
   // LIVE_USER_FIELDS onSnapshot-u ilə gələn kimi oradan /teacher-ə atılır.
   const isTeacherUser = user?.role === 'teacher';
   // Register-in yazdığı birdəfəlik açar (bax /register route-undakı şərh).
@@ -159,8 +163,12 @@ function AppShell({ user }) {
     return <Navigate to={`/join?c=${encodeURIComponent(pendingJoin)}`} replace />;
   }
 
+  // Only the home route is gated, exactly like the old survey: a push that
+  // deep-links into /chat or a call must never be stopped by a questionnaire.
+  // needsOnboarding() is version-based, so learners who signed up on the old
+  // one-page survey are walked through the wizard once too.
   const homeElement = user
-    ? ((!user.surveyDone && !isTeacherUser) ? <Navigate to="/survey" /> : <Home user={user} />)
+    ? (needsOnboarding(user) ? <Navigate to="/onboarding" replace /> : <Home user={user} />)
     : <Navigate to="/register" />;
 
   if (showTrialGate) {
@@ -181,7 +189,9 @@ function AppShell({ user }) {
               rolu yazır; auth yarışında bu route-un stale Navigate effekti bizim
               /teacher naviqasiyasından sonra işləsə belə, eyni hədəfə gedir. */}
           <Route path="/register" element={!user ? <Register /> : <Navigate to={(isTeacherUser || postRegRole === 'teacher') ? '/teacher' : '/'} replace />} />
-          <Route path="/survey" element={user ? (isTeacherUser ? <Navigate to="/teacher" /> : <Survey user={user} />) : <Navigate to="/login" />} />
+          <Route path="/onboarding" element={user ? (isTeacherUser ? <Navigate to="/teacher" /> : <Onboarding user={user} />) : <Navigate to="/login" />} />
+          {/* Old links (and Register on a stale bundle) still point here. */}
+          <Route path="/survey" element={<Navigate to="/onboarding" replace />} />
           <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />

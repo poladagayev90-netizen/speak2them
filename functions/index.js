@@ -597,6 +597,33 @@ exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) 
   }, { merge: true });
 });
 
+// Tells the admin a learner has finished the onboarding wizard, so their
+// availability can be used for pairing the same day instead of whenever the
+// panel is next opened. Only on CREATE: a learner editing their answers later
+// shows as "Updated" in the Applicants tab, it is not worth a push.
+// europe-west4 like every other Firestore trigger in this project.
+exports.notifyAdminOnboarding = onDocumentCreated({ document: "onboarding/{uid}", region: "europe-west4" }, async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+  const uid = event.params.uid;
+  if (uid === ADMIN_UID) return;
+  const db = admin.firestore();
+  let name = "";
+  try {
+    const u = await db.collection("users").doc(uid).get();
+    name = (u.exists && u.data().name) || "";
+  } catch (e) {
+    console.warn("[notifyAdminOnboarding] user read failed:", e.message);
+  }
+  const d = snap.data() || {};
+  await sendPushToUser(db, ADMIN_UID, {
+    key: "admin_new_applicant",
+    vars: { name, country: d.country || "", target: d.weeklyTarget || "" },
+    type: "admin_new_applicant",
+    url: "/admin?tab=applicants",
+  });
+});
+
 // Bills a finished call against the caller's trial (then bonus) minutes.
 // Server-authoritative: the duration is computed from the call's own timestamps,
 // never taken from the client, and each participant is billed once per call.
@@ -5623,6 +5650,9 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
     await db.collection("premiumRequests").doc(uid).delete().catch(() => null);
+    // Onboarding answers hold age band, country and weekly availability —
+    // personal data that must go with the account.
+    await db.collection("onboarding").doc(uid).delete().catch(() => null);
 
     // 1b) Müəllim funnel-i məlumatları.
     try {

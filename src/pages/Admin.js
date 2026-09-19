@@ -7,6 +7,7 @@ import { authedFetch } from '../api';
 import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
 import AdminCohorts from '../components/AdminCohorts';
 import AdminSlots from '../components/AdminSlots';
+import AdminApplicants from '../components/AdminApplicants';
 import { setTutorVerification } from '../utils/teacher';
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
@@ -15,7 +16,11 @@ export default function Admin({ user }) {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
-  const [adminTab, setAdminTab] = useState('premium'); // premium | cohorts | slots
+  // ?tab= lets a push open the right tab (notifyAdminOnboarding → applicants).
+  const [adminTab, setAdminTab] = useState(() => {
+    const t = new URLSearchParams(window.location.search).get('tab');
+    return ['applicants', 'cohorts', 'slots'].includes(t) ? t : 'premium';
+  }); // premium | applicants | cohorts | slots
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -158,9 +163,9 @@ export default function Admin({ user }) {
           </button>
           <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px' }}>
-              {{ cohorts: '', slots: '' }[adminTab] || ''}
+              {{ cohorts: '', slots: '', applicants: '' }[adminTab] || ''}
             </span>
-            {{ cohorts: 'Cohorts', slots: 'Sessions' }[adminTab] || 'Premium management'}
+            {{ cohorts: 'Cohorts', slots: 'Sessions', applicants: 'Applicants' }[adminTab] || 'Premium management'}
           </h2>
           <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
         </div>
@@ -169,6 +174,7 @@ export default function Admin({ user }) {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
           {[
             { id: 'premium', label: 'Students' },
+            { id: 'applicants', label: 'Applicants' },
             { id: 'cohorts', label: 'Cohorts' },
             { id: 'slots', label: 'Sessions' },
           ].map((t) => (
@@ -208,7 +214,7 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '20px 16px' }}>
-        {adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts /> : (
+        {adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts /> : (
         <>
         {error && (
           <div style={{

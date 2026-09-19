@@ -78,7 +78,7 @@ export default function Register() {
         await setDoc(userRef, { name, ...roleFields }, { merge: true });
       }
 
-      navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/survey'));
+      navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/onboarding'));
     } catch (err) {
       setError(err.message);
     }
@@ -127,7 +127,7 @@ export default function Register() {
         // hələ yoxdursa merge edirik — mövcud user rolunu dəyişə bilməz.
         await setDoc(userRef, roleFields, { merge: true });
       }
-      navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/survey'));
+      navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/onboarding'));
     } catch (err) {
       console.error('[GoogleRegister]', err);
       setError('Google auth error: ' + (err.message || 'Unknown error'));

@@ -51,8 +51,11 @@ export default function PlacementTest({ user }) {
     setSaving(false);
   };
 
-  const goBackToSurvey = () => {
-    navigate('/survey');
+  // Back to the onboarding wizard, carrying the result so the Level slide can
+  // pre-select it (the wizard's draft lives in sessionStorage, so the other
+  // answers survive the round trip).
+  const goBackToOnboarding = () => {
+    navigate('/onboarding', { state: finalLevel ? { placementLevel: finalLevel } : undefined });
   };
 
   const optionButtonStyle = {
@@ -85,10 +88,10 @@ export default function PlacementTest({ user }) {
           <button
             type="button"
             className="btn-primary"
-            onClick={goBackToSurvey}
+            onClick={goBackToOnboarding}
             disabled={saving}
           >
-            {saving ? 'Saving...' : 'Continue to Survey'}
+            {saving ? 'Saving...' : 'Continue'}
           </button>
         </div>
       </div>

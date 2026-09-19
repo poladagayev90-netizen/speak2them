@@ -26,7 +26,7 @@ exports.myFn = onRequest({ secrets: [GROQ_API_KEY], invoker: "public" }, async (
 - `onSchedule(...)`, `onDocumentCreated/Written(...)`. **These run in europe-west4**, HTTP/scheduled in us-central1 — see `firebase-deploy`. Deploy the exact function name.
 
 ## Domain rules you must not break
-- **Trial gate** (`isTrialExpired`): trust only rules-protected fields (`isPremium`, `subscriptionPlan`, `cohortStatus`, `freeAccessUntil`) — NEVER the client-writable `mode`. `cohortStatus` pending/accepted and `isPremium` are exempt. `TRIAL_DAYS = 2`.
+- **Trial gate** (`isTrialExpired`): trust only rules-protected fields (`isPremium`, `subscriptionPlan`, `cohortStatus`, `freeAccessUntil`) — NEVER the client-writable `mode`. `cohortStatus` pending/accepted and `isPremium` are exempt. `TRIAL_DAYS = 60`.
 - **Topic cycle:** global monotonic `appConfig/cycle.currentTopicIndex`; `topicIndex = cycleTick % TOPIC_COUNT`. Progress is NOT stored per-user (client computes `currentCycleTick - startTick`). `TOPIC_COUNT` comes from `dailyQuestions.json` and must stay in sync with `src/data/weeklyContent.js`.
 - **Baku time:** use `bakuDateStr()` / `bakuWeekday()` helpers (UTC+4, no DST) — don't use server local time.
 - Session days default `[1,3,5]`, bonus `[0]`, overridable via `appConfig/session`.

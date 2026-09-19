@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { TOPICS } from '../utils/onboarding';
 
-// Keep in sync with the TOPICS list in src/pages/Survey.js.
-const TOPIC_OPTIONS = [
-  { value: 'Technology', label: 'Technology' },
-  { value: 'Movies', label: 'Movies' },
-  { value: 'Music', label: 'Music' },
-  { value: 'Travel', label: 'Travel' },
-  { value: 'Business', label: 'Business' },
-  { value: 'Sport', label: 'Sport' },
-  { value: 'General', label: 'General talk' },
-];
+// The same list the onboarding wizard offers, so a topic picked here can
+// match a partner who picked it there.
+const TOPIC_OPTIONS = TOPICS.map((t) => ({ value: t, label: t === 'General' ? 'General talk' : t }));
 
 // One-time interest picker shown to survey-skippers before they join a
 // session, so interest-based pairing has something to work with.

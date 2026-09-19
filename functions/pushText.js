@@ -120,6 +120,7 @@ const STRINGS = {
     analysis_failed: (v) => ({ title: "Analiz alınmadı", body: v.noSpeech ? "Danışıq eşidilmədi — mikrofonu yoxlayıb yenidən cəhd et." : "Zəngin analizi tamamlana bilmədi. Növbəti zəngdə yenidən cəhd edəcəyik." }),
     student_analysis_ready: (v, f) => ({ title: "Şagird analizi hazırdır 🎓", body: `${v.studentName || f.student} yeni danışıq analizi hazırdır — paneldən baxın.` }),
     ai_report_ready: () => ({ title: "Hesabatın hazırdır", body: "AInur ilə sessiyanın necə keçdiyinə bax." }),
+    admin_new_applicant: (v, f) => ({ title: "🆕 Yeni tələbə profili", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} onboarding-i bitirdi — həftədə ${v.target || "?"} praktika. Applicants-da bax.` }),
   },
 
   tr: {
@@ -151,6 +152,7 @@ const STRINGS = {
     analysis_failed: (v) => ({ title: "Analiz alınamadı", body: v.noSpeech ? "Konuşma duyulmadı — mikrofonu kontrol edip tekrar dene." : "Görüşmenin analizi tamamlanamadı. Bir sonraki görüşmede tekrar deneyeceğiz." }),
     student_analysis_ready: (v, f) => ({ title: "Öğrenci analizi hazır 🎓", body: `${v.studentName || f.student} yeni konuşma analizi hazır — panelden inceleyin.` }),
     ai_report_ready: () => ({ title: "Raporun hazır", body: "AInur ile seansının nasıl geçtiğine bak." }),
+    admin_new_applicant: (v, f) => ({ title: "🆕 Yeni öğrenci profili", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} kaydı tamamladı — haftada ${v.target || "?"} pratik. Applicants sekmesine bak.` }),
   },
 
   en: {
@@ -182,6 +184,7 @@ const STRINGS = {
     analysis_failed: (v) => ({ title: "The analysis failed", body: v.noSpeech ? "We heard no speech — check your microphone and try again." : "We could not finish the analysis of your call. We'll try again on your next one." }),
     student_analysis_ready: (v, f) => ({ title: "Student analysis is ready 🎓", body: `A new speaking analysis for ${v.studentName || f.student} is ready — review it in your panel.` }),
     ai_report_ready: () => ({ title: "Your report is ready", body: "See how your session with AInur went." }),
+    admin_new_applicant: (v, f) => ({ title: "🆕 New learner profile", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} finished onboarding — ${v.target || "?"} practices a week. See Applicants.` }),
   },
 };
 
