@@ -516,6 +516,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Attendance ledger: attended / no_show / late_cancel / cancelled /
+    // partner_no_show / unmatched. Server-written only (the slot tick,
+    // leavePracticeSlot, recordCallPractice) — a learner who could write here
+    // could erase their own no-shows. Each learner reads only their own events
+    // (the Home "your week" card queries uid == me); the admin reads all.
+    match /attendance/{eventId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız
     // "bu push artıq göndərilib" markerləridir, client-in nə oxumağa, nə də
     // yazmağa ehtiyacı var. Client yaza bilsəydi, xatırlatmaları susdura bilərdi.

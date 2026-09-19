@@ -34,3 +34,16 @@ test('short calls get an immutable activity record; retries do not duplicate it'
   assert.equal([...data.keys()].filter(k=>k.includes('practiceSessions')).length,1);
   assert.equal(data.get('users/u').lastPracticeAt.toMillis(),Date.parse(call.endedAt));
 });
+test('a call of 2+ minutes writes one attendance event; a short one writes none', async () => {
+  const {db,data}=database();
+  const long={createdAt:at,endedAt:'2026-09-07T00:10:00Z',authoritativeDurationSec:600,source:'slot_match',slotId:'2026-09-07-08'};
+  await recordCallPractice(db,'c',long,'u'); await recordCallPractice(db,'c',long,'u');
+  const events=[...data.entries()].filter(([k])=>k.startsWith('attendance/'));
+  assert.equal(events.length,1);
+  assert.equal(events[0][1].outcome,'attended');
+  assert.equal(events[0][1].source,'slot_match');
+  assert.equal(events[0][1].weekKey,'2026-09-07');
+  const short=database();
+  await recordCallPractice(short.db,'s',{createdAt:at,endedAt:'2026-09-07T00:00:35Z',authoritativeDurationSec:35},'u');
+  assert.equal([...short.data.keys()].filter(k=>k.startsWith('attendance/')).length,0);
+});

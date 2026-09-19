@@ -7,6 +7,22 @@ function weekKey(ms = Date.now()) {
   return d.toISOString().slice(0, 10);
 }
 
+// A practice counts from two minutes of real conversation — the same bar
+// consumeTrialMinutes uses for a completed session (SESSION_MIN_SECONDS).
+const ATTENDED_MIN_SECONDS = 120;
+
+// One attendance event. outcome: attended | no_show | late_cancel | cancelled
+// | partner_no_show | unmatched. The last two are the PLATFORM failing the
+// learner and must never count against them.
+function attendanceDoc(uid, outcome, atMs, extra = {}) {
+  return {
+    uid, outcome,
+    at: Timestamp.fromMillis(atMs), atMs,
+    weekKey: weekKey(atMs),
+    ...extra,
+  };
+}
+
 function summarizeAiPractice(analyses, now = Date.now()) {
   const week = weekKey(now);
   let seconds = 0, weeklySeconds = 0, sessions = 0, lastAt = 0;
@@ -64,9 +80,19 @@ async function recordCallPractice(db, callId, call, uid) {
     const rosterRef = teacherId ? db.doc(`teachers/${teacherId}/roster/${uid}`) : null;
     const roster = rosterRef ? await tx.get(rosterRef) : null;
     tx.set(record, { source: 'call', callId, startedAt: Timestamp.fromMillis(start), endedAt: Timestamp.fromMillis(end), durationSeconds: call.authoritativeDurationSec });
+    // Attendance ledger (Phase 4): a real conversation of at least two minutes
+    // is a practice the learner showed up for, whichever way it was arranged.
+    // Written in the same transaction as the practiceSessions record, so it is
+    // exactly-once for the same reason that record is.
+    if (call.authoritativeDurationSec >= ATTENDED_MIN_SECONDS) {
+      tx.set(db.doc(`attendance/${callId}_${start}_${uid}`), attendanceDoc(uid, 'attended', start, {
+        source: call.source || 'direct', slotId: call.slotId || null, callId,
+        durationSeconds: call.authoritativeDurationSec,
+      }));
+    }
     if (end > msOf(user.data().lastPracticeAt)) tx.set(userRef, { lastPracticeAt: Timestamp.fromMillis(end) }, { merge: true });
     if (rosterRef && end > msOf(roster.data()?.lastActiveAt)) tx.set(rosterRef, { lastActiveAt: Timestamp.fromMillis(end) }, { merge: true });
   });
 }
 
-module.exports = { summarizeAiPractice, syncAiPractice, recordCallPractice, weekKey };
+module.exports = { summarizeAiPractice, syncAiPractice, recordCallPractice, weekKey, attendanceDoc, ATTENDED_MIN_SECONDS };

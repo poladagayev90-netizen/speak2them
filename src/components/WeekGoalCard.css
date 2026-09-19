@@ -1,0 +1,59 @@
+/* "Your week" goal card on Today. Tokens only. */
+
+.wg {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  margin-bottom: var(--s-3);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--glass-edge), var(--glass-lift);
+}
+.wg.is-done { border-color: rgb(var(--accent-rgb) / 0.36); background: var(--tint-accent); }
+.wg-head { display: flex; align-items: center; gap: var(--s-2); }
+.wg-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.wg-title { flex: 1; font-size: var(--fs-body); font-weight: 700; }
+.wg-count {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.wg-dots { display: flex; gap: var(--s-1); }
+.wg-dots span {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg-secondary);
+}
+.wg-dots span.is-on { background: var(--accent); }
+.wg-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-2);
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.wg-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

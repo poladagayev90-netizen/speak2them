@@ -5,7 +5,7 @@ const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
-const { syncAiPractice, recordCallPractice } = require("./practiceStats");
+const { syncAiPractice, recordCallPractice, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
   getAllTokens,
@@ -2066,6 +2066,23 @@ function parseSlotId(slotId) {
 }
 
 const slotIdOf = (date, hour) => `${date}-${String(hour).padStart(2, "0")}`;
+
+// ── Attendance ledger (Phase 4) ──────────────────────────────────
+// attendance/{id}: one event per learner per booking outcome, server-written
+// only. The id is deterministic, so a retried tick or request rewrites the
+// same event instead of adding a second one. See attendanceDoc for outcomes.
+// Cancelling closer than this to the start leaves the partner stranded.
+const LATE_CANCEL_MS = 2 * 60 * 60 * 1000;
+// onlyIfMissing: never overwrite an event that is already there — the
+// backfill must not replace the richer record recordCallPractice wrote.
+async function recordAttendance(db, id, uid, outcome, atMs, extra = {}, { onlyIfMissing = false } = {}) {
+  const ref = db.collection("attendance").doc(id);
+  const data = attendanceDoc(uid, outcome, atMs, extra);
+  await (onlyIfMissing ? ref.create(data) : ref.set(data)).catch((e) => {
+    if (onlyIfMissing && e.code === 6) return; // ALREADY_EXISTS
+    console.warn("[attendance] write failed:", id, e.message);
+  });
+}
 const callIdForPair = (a, b) => `call_${[a, b].sort().join("_")}`;
 
 // Bloka qoşulma nüvəsi. HTTP funksiyası da, təkrarlanan slotları materiallaşdıran
@@ -2457,8 +2474,18 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
         partnerName: partner ? (partner.name || "") : "",
         rematchId: rematch ? rematch.id : null,
         rematchName: rematch ? (rematch.name || "") : "",
+        wasMatched: mine.status === "matched",
       };
     });
+
+    // Only a CONFIRMED booking counts: leaving a block you were merely waiting
+    // in is changing your availability, not letting anyone down.
+    if (released && released.wasMatched) {
+      const lead = slot.startMs - Date.now();
+      await recordAttendance(db, `${slot.slotId}_${uid}_cancel`, uid,
+        lead < LATE_CANCEL_MS ? "late_cancel" : "cancelled", slot.startMs,
+        { slotId: slot.slotId, leadMinutes: Math.round(lead / 60000), peerUid: released.partnerId || null });
+    }
 
     if (released && released.partnerId) {
       if (released.rematchId) {
@@ -3639,6 +3666,32 @@ exports.practiceSlotTick = onSchedule(
     // their own (one small query per minute).
     await sendIntroReminders(db, now).catch((e) => console.warn("[SlotTick] intro reminders failed:", e.message));
 
+    // One-time: copy the last 35 days of held calls (users/*/practiceSessions)
+    // into the attendance ledger, so learners who practised before it existed
+    // do not show up as inactive. Idempotent ids — a rerun rewrites the same docs.
+    if (await claimSlotRun(db, "attendance_backfill_v1")) {
+      try {
+        const since = admin.firestore.Timestamp.fromMillis(now - 35 * DAY_MS);
+        const usersSnap = await db.collection("users").select().get();
+        let n = 0;
+        for (const u of usersSnap.docs) {
+          const ps = await u.ref.collection("practiceSessions").where("startedAt", ">=", since).get();
+          for (const d of ps.docs) {
+            const x = d.data() || {};
+            if (x.source !== "call" || !(Number(x.durationSeconds) >= ATTENDED_MIN_SECONDS)) continue;
+            const start = x.startedAt.toMillis();
+            await recordAttendance(db, `${x.callId}_${start}_${u.id}`, u.id, "attended", start,
+              { source: "backfill", callId: x.callId || null, durationSeconds: x.durationSeconds },
+              { onlyIfMissing: true });
+            n += 1;
+          }
+        }
+        console.log("[SlotTick] attendance backfill wrote", n);
+      } catch (e) {
+        console.warn("[SlotTick] attendance backfill failed:", e.message);
+      }
+    }
+
     // ① Gündə bir dəfə: təkrarlanan qrafikləri materiallaşdır + köhnəni təmizlə.
     if (await claimSlotRun(db, `${today}_daily`)) {
       try {
@@ -3764,6 +3817,36 @@ exports.practiceSlotTick = onSchedule(
             const members = await matchedMembers();
             const byId = new Map(members.map((m) => [m.id, m]));
             const del = admin.firestore.FieldValue.delete();
+
+            // Attendance, decided at the END of the block so a late arrival
+            // still counts. A call that actually happened (>= 2 min) is
+            // recorded as "attended" by recordCallPractice, so nobody in a
+            // held call is marked absent here.
+            const held = new Set();
+            for (const m of members) {
+              if (!m.callId || held.has(m.callId)) continue;
+              const c = await db.collection("calls").doc(m.callId).get().catch(() => null);
+              const cd = c && c.exists ? (c.data() || {}) : {};
+              const startedMs = cd.matchedAt?.toMillis?.() || cd.createdAt?.toMillis?.() || 0;
+              if (cd.status === "ended" && Number(cd.authoritativeDurationSec) >= ATTENDED_MIN_SECONDS
+                && startedMs >= slot.startMs - 30 * 60000) held.add(m.callId);
+            }
+            for (const m of members) {
+              if (m.callId && held.has(m.callId)) continue;
+              const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
+              const outcome = !m.arrivedAt ? "no_show" : (peer && !peer.arrivedAt ? "partner_no_show" : null);
+              if (outcome) {
+                await recordAttendance(db, `${doc.id}_${m.id}`, m.id, outcome, slot.startMs,
+                  { slotId: doc.id, peerUid: m.pairedWith || null, callId: m.callId || null });
+              }
+            }
+            // Waited in the block and nobody was matched with them: the
+            // platform could not deliver a partner. Never counted against them.
+            const waitingSnap = await doc.ref.collection("members")
+              .where("status", "==", "waiting").limit(SLOT_MAX_MEMBERS).get().catch(() => null);
+            for (const w of (waitingSnap ? waitingSnap.docs : [])) {
+              await recordAttendance(db, `${doc.id}_${w.id}`, w.id, "unmatched", slot.startMs, { slotId: doc.id });
+            }
             for (const m of members) {
               const uref = db.collection("users").doc(m.id);
               const usnap = await uref.get();
@@ -6213,6 +6296,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     // 2) Owned collections keyed by a uid field.
     await deleteByQuery(db.collection("callAnalysis").where("userId", "==", uid));
     await deleteByQuery(db.collection("analysisQueue").where("uid", "==", uid));
+    await deleteByQuery(db.collection("attendance").where("uid", "==", uid));
 
     // 3) Stored call recordings (Storage), best-effort.
     await admin.storage().bucket()

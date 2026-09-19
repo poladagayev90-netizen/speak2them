@@ -9,6 +9,7 @@ import AdminCohorts from '../components/AdminCohorts';
 import AdminSlots from '../components/AdminSlots';
 import AdminApplicants from '../components/AdminApplicants';
 import AdminIntros from '../components/AdminIntros';
+import AdminAttendance from '../components/AdminAttendance';
 import { setTutorVerification } from '../utils/teacher';
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
@@ -20,8 +21,8 @@ export default function Admin({ user }) {
   // ?tab= lets a push open the right tab (notifyAdminOnboarding → applicants).
   const [adminTab, setAdminTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get('tab');
-    return ['applicants', 'intros', 'cohorts', 'slots'].includes(t) ? t : 'premium';
-  }); // premium | applicants | intros | cohorts | slots
+    return ['applicants', 'intros', 'attendance', 'cohorts', 'slots'].includes(t) ? t : 'premium';
+  }); // premium | applicants | intros | attendance | cohorts | slots
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -164,20 +165,21 @@ export default function Admin({ user }) {
           </button>
           <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px' }}>
-              {{ cohorts: '', slots: '', applicants: '', intros: '' }[adminTab] || ''}
+              {{ cohorts: '', slots: '', applicants: '', intros: '', attendance: '' }[adminTab] || ''}
             </span>
-            {{ cohorts: 'Cohorts', slots: 'Sessions', applicants: 'Applicants', intros: 'Intro calls' }[adminTab] || 'Premium management'}
+            {{ cohorts: 'Cohorts', slots: 'Sessions', applicants: 'Applicants', intros: 'Intro calls', attendance: 'Attendance' }[adminTab] || 'Premium management'}
           </h2>
           <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
         </div>
 
         {/* Bölmə keçidi */}
-        {/* Five tabs do not fit a phone width, so the row scrolls sideways. */}
+        {/* The tabs do not fit a phone width, so the row scrolls sideways. */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto', scrollbarWidth: 'none' }}>
           {[
             { id: 'premium', label: 'Students' },
             { id: 'applicants', label: 'Applicants' },
             { id: 'intros', label: 'Intros' },
+            { id: 'attendance', label: 'Attendance' },
             { id: 'cohorts', label: 'Cohorts' },
             { id: 'slots', label: 'Sessions' },
           ].map((t) => (
@@ -217,7 +219,7 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '20px 16px' }}>
-        {adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts /> : (
+        {adminTab === 'attendance' ? <AdminAttendance users={users} /> : adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts /> : (
         <>
         {error && (
           <div style={{

@@ -20,6 +20,7 @@ import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import MatchOfferCard from '../components/MatchOfferCard';
 import IntroCard from '../components/IntroCard';
+import WeekGoalCard from '../components/WeekGoalCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import TodayNudge from '../components/TodayNudge';
 import TodayTaskCard from '../components/ai/TodayTaskCard';
@@ -192,6 +193,9 @@ export default function Home({ user }) {
           onJoin={joinCallNow}
           onCancel={cancelUpcoming}
         />
+
+        {/* The weekly commitment from onboarding against what happened. */}
+        <WeekGoalCard user={user} />
 
         {/* The point of the release: there is always something to practise,
             whether or not anyone else is online. */}
