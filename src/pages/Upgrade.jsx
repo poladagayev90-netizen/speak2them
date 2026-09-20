@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
+import { whatsappLink } from '../constants';
 
 const PLANS = [
   {
@@ -109,8 +110,7 @@ export default function Upgrade({ user }) {
   const handleContinue = () => {
     if (!premiumPlan) return;
     const msg = `Hi! I am ${user?.name || 'a user'} (ID: ${user?.uid}). I would like to buy the ${premiumPlan.name} plan on SpeakLab.`;
-    const whatsappUrl = `https://wa.me/994513549195?text=${encodeURIComponent(msg)}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(whatsappLink(msg), '_blank');
   };
 
   return (

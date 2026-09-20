@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Bell, Share, Plus, MoreVertical, MessageCircle, Copy, Check, ExternalLink } from 'lucide-react';
+import { whatsappLink } from '../constants';
 
 const BYPASS_KEY = 'installGateBypass';
-const SUPPORT_WHATSAPP = 'https://wa.me/994513549195';
+
 
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
@@ -73,7 +74,7 @@ export default function InstallGate() {
 
   const openHelp = () => {
     const msg = 'Hi! I need help adding the SpeakLab app to my home screen.';
-    window.open(`${SUPPORT_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(whatsappLink(msg), '_blank');
   };
 
   const appUrl = window.location.origin;

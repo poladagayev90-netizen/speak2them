@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Users, Video, Smartphone, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Check, Users, Video, Smartphone, CalendarDays, MessageCircle } from 'lucide-react';
 import { auth } from '../firebase';
+import { whatsappLink } from '../constants';
 import { Button } from '../components/ui';
 import {
   subscribeToTeamSlots, subscribeToMyIntro, bookIntro, cancelIntro, introTimeLabel, localDayKey,
@@ -9,12 +10,21 @@ import {
 import './Onboarding.css';
 import './IntroBooking.css';
 
-// Book the 15-minute intro call with the SpeakLab team.
+// Arrange the 15-minute intro call with the SpeakLab team.
 //
 // It comes straight after onboarding, in the same full-screen layer, so it
 // reads as the last step of joining rather than as an ad. It is never a dead
 // end: "Explore the app first" is always there, and the rest of the app works
 // while the call is pending — only live partner practice waits for it.
+//
+// WHATSAPP IS THE FIRST STEP, for now. The slot board works, but nobody was
+// arranging anything through it: the team has to open times in advance, and
+// somebody who has just signed up wants to ask a question before they commit
+// to a time. So the first thing here is a message to the team's business
+// WhatsApp with the learner's name and level already written, and the time is
+// agreed there like any other appointment. Published times still appear
+// underneath for anyone who would rather just pick one, and everything behind
+// them — reminders, the admin's outcomes, introDoneAt — is untouched.
 export default function IntroBooking({ user }) {
   const navigate = useNavigate();
   const uid = auth.currentUser?.uid || user?.uid;
@@ -62,6 +72,13 @@ export default function IntroBooking({ user }) {
 
   const loading = slots === null || booking === undefined;
 
+  // Written for the team to read at a glance: who this is, what level they
+  // said, and what they are asking for. Their name saves the first two
+  // messages of every conversation.
+  const waText = `Salam! Mən ${user?.name || 'SpeakLab istifadəçisiyəm'}`
+    + `${user?.level ? ` (${user.level})` : ''}. SpeakLab-da tanışlıq zəngi üçün vaxt təyin etmək istəyirəm.`;
+  const openWhatsApp = () => window.open(whatsappLink(waText), '_blank', 'noopener');
+
   return (
     <div className="ob-page">
       <header className="ob-top">
@@ -108,12 +125,19 @@ export default function IntroBooking({ user }) {
                   <li><Users size={16} /> Live partner practice opens after the call</li>
                 </ul>
 
-                {groups.length === 0 ? (
-                  <p className="in-empty">
-                    The team adds new times every week — check back here soon.
-                    Meanwhile, try a session with AInur.
-                  </p>
-                ) : groups.map((g) => (
+                {/* The way in. A message, not a commitment — they can ask
+                    first and agree a time in the same thread. */}
+                <button type="button" className="in-wa" onClick={openWhatsApp}>
+                  <MessageCircle size={20} aria-hidden="true" />
+                  <span>
+                    <b>Write to us on WhatsApp</b>
+                    <small>We answer, and we agree a time that suits you</small>
+                  </span>
+                </button>
+
+                {groups.length > 0 && <p className="in-or">or pick one of our open times</p>}
+
+                {groups.map((g) => (
                   <div key={localDayKey(g[0].startMs)} className="in-day">
                     <h2 className="in-day-title">{introTimeLabel(g[0].startMs).day}</h2>
                     <div className="in-times" role="radiogroup" aria-label={introTimeLabel(g[0].startMs).day}>
@@ -142,9 +166,17 @@ export default function IntroBooking({ user }) {
       <footer className="ob-foot">
         {showPicker && !loading ? (
           <>
-            <Button size="lg" full onClick={confirm} disabled={!picked || busy} icon={<Check size={20} />}>
-              {busy ? 'Booking…' : 'Book this time'}
-            </Button>
+            {/* Nothing published to book? Then the button that fills the
+                footer has to be the one that actually leads somewhere. */}
+            {groups.length === 0 ? (
+              <Button size="lg" full onClick={openWhatsApp} icon={<MessageCircle size={20} />}>
+                Write to us on WhatsApp
+              </Button>
+            ) : (
+              <Button size="lg" full onClick={confirm} disabled={!picked || busy} icon={<Check size={20} />}>
+                {busy ? 'Booking…' : 'Book this time'}
+              </Button>
+            )}
             <button
               type="button"
               className="ob-link in-later"

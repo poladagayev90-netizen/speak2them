@@ -27,10 +27,10 @@ export default function IntroCard({ user, variant = 'home' }) {
         <p className="ic-text">
           {booked
             ? `Your 15-minute call with the SpeakLab team: ${when.day}, ${when.time.split('–')[0]}. Right after it, random partners and the practice board open here.`
-            : 'A short call with the SpeakLab team comes first: we get to know you and set up a practice plan. Book a time — it takes 15 minutes.'}
+            : 'A short call with the SpeakLab team comes first: we get to know you and set up a practice plan. Write to us on WhatsApp and we agree a time — it takes 15 minutes.'}
         </p>
         <button type="button" className="ic-cta" onClick={() => navigate('/intro')}>
-          {booked ? 'See my booking' : 'Book my intro call'} <ChevronRight size={18} />
+          {booked ? 'See my booking' : 'Arrange my intro call'} <ChevronRight size={18} />
         </button>
       </section>
     );
@@ -42,7 +42,7 @@ export default function IntroCard({ user, variant = 'home' }) {
       <span className="ic-body">
         <span className="ic-title">{booked ? 'Intro call with the team' : 'Meet the SpeakLab team'}</span>
         <span className="ic-text">
-          {booked ? `${when.day} · ${when.time}` : 'Book a 15-minute intro — live practice opens after it'}
+          {booked ? `${when.day} · ${when.time}` : 'A 15-minute intro on WhatsApp — live practice opens after it'}
         </span>
       </span>
       <ChevronRight size={18} className="ic-chev" aria-hidden="true" />
