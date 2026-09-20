@@ -4,6 +4,7 @@ import { MessageCircleQuestion, BookOpen, Quote, Headphones, ChevronDown, X } fr
 import { getTodayIndex, getContentByIndex, weeklyContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import SpeakingCards from '../components/SpeakingCards';
+import { localMeaning } from '../utils/feedbackLanguage';
 import ChapterListeningView from '../components/ChapterListeningView';
 
 export default function DailyHub() {
@@ -232,6 +233,10 @@ export default function DailyHub() {
                 ) : (
                   <div className="vocab-back">
                     <p className="vocab-meaning">{v.meaning}</p>
+                    {/* The learner's own language under the English one: the
+                        English definition of an unknown word is often another
+                        unknown word. Same L1 the analysis report uses. */}
+                    {localMeaning(v) && <p className="vocab-meaning vocab-meaning--l1">{localMeaning(v)}</p>}
                     <p className="vocab-example">"{v.example}"</p>
                   </div>
                 )}
@@ -247,6 +252,7 @@ export default function DailyHub() {
               <div key={i} className="idiom-card">
                 <h3>"{idiom.phrase}"</h3>
                 <p className="idiom-meaning"> {idiom.meaning}</p>
+                {localMeaning(idiom) && <p className="idiom-meaning idiom-meaning--l1">{localMeaning(idiom)}</p>}
                 <p className="idiom-example"> "{idiom.example}"</p>
               </div>
             ))}

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ImageOff, Check } from 'lucide-react';
 import Pill from '../ui/Pill';
 import DescribeFrames from '../DescribeFrames';
+import { keywordGlossary } from '../../data/keywordGlossary';
+import { getFeedbackLanguage } from '../../utils/feedbackLanguage';
 import './ai.css';
 
 /**
@@ -27,10 +29,15 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard 
   const [failed, setFailed] = useState(false);
   const [dead, setDead] = useState(false);
   const [loadedUrl, setLoadedUrl] = useState('');
+  // Which pills are currently showing their translation. Tapping a word is a
+  // deliberate act — the English stays the default, because the point of the
+  // list is to get those English words said out loud.
+  const [shown, setShown] = useState(() => new Set());
+  const lang = getFeedbackLanguage();
 
   // A new picture starts its own load bookkeeping, or the previous picture's
   // "loaded" flag would make this one flash in before it is ready.
-  useEffect(() => { setFailed(false); setDead(false); }, [image?.id]);
+  useEffect(() => { setFailed(false); setDead(false); setShown(new Set()); }, [image?.id]);
 
   if (!image) return null;
 
@@ -74,14 +81,26 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard 
               const word = k && k.word ? k.word : k;
               const lower = String(word).toLowerCase();
               const hit = hitSet.has(lower);
+              const translation = (keywordGlossary[lower] || {})[lang]
+                || (keywordGlossary[lower] || {}).az || '';
+              const showing = shown.has(lower) && translation;
               return (
                 <span
                   key={word}
                   className={`ai-word${hit ? ' ai-word--hit' : ''}${freshSet.has(lower) ? ' ai-word--won' : ''}`}
+                  role={translation ? 'button' : undefined}
+                  tabIndex={translation ? 0 : undefined}
+                  aria-label={translation ? `${word} — tap for translation` : undefined}
+                  onClick={translation ? () => setShown((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(lower)) next.delete(lower); else next.add(lower);
+                    return next;
+                  }) : undefined}
+                  style={translation ? { cursor: 'pointer' } : undefined}
                 >
                   <Pill tone={hit ? 'default' : 'ai'} hit={hit}>
                     {hit && <span aria-hidden="true">✓</span>}
-                    {word}
+                    {showing ? translation : word}
                   </Pill>
                 </span>
               );

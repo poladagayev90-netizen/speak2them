@@ -2588,3 +2588,13 @@ body {
   .sc-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
   .sc-question { font-size: 17px; }
 }
+
+/* The learner-language line under an English definition (DailyHub cards).
+ * Quieter than the English above it: the English is what they are learning,
+ * the translation is the safety net. */
+.vocab-meaning--l1,
+.idiom-meaning--l1 {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+}
