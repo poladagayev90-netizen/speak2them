@@ -1,3 +1,4 @@
+import KeywordChips from './KeywordChips';
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
@@ -139,22 +140,11 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
             paddingBottom: 'calc(16px + var(--safe-area-bottom, 0px))',
             borderTop: '1px solid var(--border)',
           }}>
-            <div style={{ padding: '12px 20px 8px' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Use these words
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {getVocabForImage(currentIndex).map((v, i) => (
-                  <span key={i} style={{
-                    background: 'var(--accent)', color: 'var(--text-on-accent)',
-                    borderRadius: 20, padding: '6px 14px',
-                    fontSize: 13, fontWeight: 600
-                  }}>
-                    {v?.word || v}
-                  </span>
-                ))}
-              </div>
-            </div>
+            <KeywordChips
+              words={getVocabForImage(currentIndex)}
+              label="Use these words"
+              style={{ padding: '12px 20px 8px' }}
+            />
             <DescribeFrames prompts={images[currentIndex]?.prompts || []} />
           </div>
         </>

@@ -1,3 +1,4 @@
+import KeywordChips from './KeywordChips';
 import React, { useEffect, useState } from 'react';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
 import { X, ImageOff } from 'lucide-react';
@@ -120,24 +121,13 @@ export default function CallImageStage({ content, imageIndex, onNext, onClose })
           )}
         </div>
 
-        {keywords.length > 0 && (
-          <div style={{ padding: '12px 16px 4px' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Keywords · {safeIndex + 1}/{images.length}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {keywords.map((v, i) => (
-                <span key={i} style={{
-                  background: 'var(--accent)', color: 'var(--text-on-accent)',
-                  borderRadius: 20, padding: '5px 14px',
-                  fontSize: 13, fontWeight: 600,
-                }}>
-                  {v.word || v}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Tappable: one tap on a word shows it in the learner's own language.
+            A partner call is exactly where a missing word stops a sentence. */}
+        <KeywordChips
+          words={keywords}
+          label={`Keywords · ${safeIndex + 1}/${images.length}`}
+          style={{ padding: '12px 16px 4px' }}
+        />
 
         {/* Zəngdə yer azdır — qəliblər yığılı gəlir, şagird lazım olanda açır.
             Kart uzanmasın deyə bu blok öz içində sürüşür. */}
