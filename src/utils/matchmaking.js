@@ -89,17 +89,30 @@ export function pickBestMatch(candidates, currentUser) {
   return rankMatches(candidates, currentUser)[0] || null;
 }
 
-// Server verdict for one pair: { ok, recent }. Never says why a pair is
+// Server verdict for one pair: { ok, recent, failed }. Never says why a pair is
 // refused. A network failure answers "no" — skipping a match is safe,
 // pairing two people who must not meet is not.
-export async function canPair(peerUid) {
+//
+// `failed` separates "the server said no" from "we could not ask", because the
+// two callers want opposite things from a failure. Automatic matching reads
+// `ok` alone and so keeps failing closed. A DIRECT call (someone tapped Call on
+// a specific person) reads `failed` and goes ahead: refusing a deliberate call
+// over a dropped request would be a mystery to the caller, and the real gate is
+// getAgoraToken, which runs the same rule server-side and cannot be skipped.
+//
+// `direct: true` also drops the CEFR rule, which exists only for AUTOMATIC
+// pairing — a person who picked this partner themselves is not being matched.
+export async function canPair(peerUid, { direct = false } = {}) {
   try {
-    const res = await authedFetch(`${FUNCTIONS_BASE}/canPair`, { method: 'POST', body: JSON.stringify({ peerUid }) });
-    if (!res.ok) return { ok: false, recent: false };
+    const res = await authedFetch(`${FUNCTIONS_BASE}/canPair`, {
+      method: 'POST',
+      body: JSON.stringify({ peerUid, direct }),
+    });
+    if (!res.ok) return { ok: false, recent: false, failed: true };
     const data = await res.json();
-    return { ok: data.ok === true, recent: data.recent === true };
+    return { ok: data.ok === true, recent: data.recent === true, failed: false };
   } catch {
-    return { ok: false, recent: false };
+    return { ok: false, recent: false, failed: true };
   }
 }
 

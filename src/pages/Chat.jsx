@@ -28,6 +28,8 @@ import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag, isInCall } from '../utils/presence';
 import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
+import { canPair } from '../utils/matchmaking';
+import { needsIntro } from '../utils/intro';
 import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
@@ -304,7 +306,18 @@ export default function Chat({ user }) {
         method: 'POST',
         body: JSON.stringify({ channelName: cId }),
       });
-      if (!tokenRes.ok) throw new Error('Token error: ' + tokenRes.status);
+      if (!tokenRes.ok) {
+        // 403 texniki nasazlıq deyil, istifadəçiyə aid səbəbdir. Əvvəl bu
+        // yalnız `throw` idi və ekranda HEÇ NƏ görünmürdü: şagird zəngin niyə
+        // qurulmadığını bilmirdi. Bu, zəngi qəbul EDƏN tərəf üçün də vacibdir.
+        const body = await tokenRes.json().catch(() => ({}));
+        if (tokenRes.status === 403) {
+          alert(body.error === 'trial_expired'
+            ? 'Your free access has ended. Message the team to keep practising.'
+            : 'This call cannot be connected.');
+        }
+        throw new Error('Token error: ' + tokenRes.status);
+      }
       const tokenData = await tokenRes.json();
       if (!tokenData.token) throw new Error('No token');
 
@@ -696,6 +709,31 @@ export default function Chat({ user }) {
   // ─────────────────────────────────────────────────────────────
   const startCall = async () => {
     if (!user.uid || !peerId) return;
+
+    // Hər birbaşa zəng buradan keçir — Live → People, profil səhifəsi və çat
+    // içindəki düymə, hamısı. Ona görə iki qapı da burada dayanır.
+    //
+    // 1) Tanışlıq görüşü. Axtarış və slot lövhəsi onsuz da kilidlidir; People
+    //    siyahısından birbaşa zəng isə kilidi yan keçirdi, yəni komandanı
+    //    görməmiş adam yad adama zəng edə bilirdi.
+    if (needsIntro(user)) {
+      alert('First meet the team — a short intro call opens live practice.');
+      navigate('/intro');
+      return;
+    }
+
+    // 2) Cütləşmə qaydası (blok, "bir daha salma", yaşyarası). Server token
+    //    verməzdən əvvəl bunu onsuz da yoxlayır; bu çağırış qarşı tərəfin
+    //    telefonunun BOŞ YERƏ zəng çalmasının qarşısını alır. Sorğu özü baş
+    //    tutmasa (`failed`) zəngi kəsmirik — əsl qapı token-dədir.
+    const verdict = await canPair(peerId, { direct: true });
+    if (!verdict.failed && !verdict.ok) {
+      // Səbəb deyilmir: "səni bloklayıb" cavabı blok siyahısını oxumağın
+      // yoluna çevrilər.
+      alert('This call cannot be connected.');
+      return;
+    }
+
     try {
       // Yeni zəng = yeni rədd imkanı. Sıfırlanmasa, bir dəfə rədd edilmiş
       // istifadəçiyə ikinci zəngin rəddi bir daha bildirilməzdi.

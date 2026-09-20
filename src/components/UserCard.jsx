@@ -6,7 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, Clock, Flame, Star } from 'lucide-react';
 import { getPresence } from '../utils/presence';
 
-export default function UserCard({ user, onChat }) {
+// `introLocked` — the viewer has not met the team yet. Live locks random
+// search and the slot board behind that meeting, but this list sits outside
+// the locked section, so its Call button was a way around the rule: someone
+// who had never spoken to the team could ring a stranger. The page above
+// already explains the lock (IntroCard), so the button is simply not offered.
+export default function UserCard({ user, onChat, introLocked = false }) {
   const navigate = useNavigate();
   // getPresence has always returned THREE states, and .online-badge.busy has
   // always existed in App.css — but this card collapsed the result to a boolean,
@@ -62,7 +67,7 @@ export default function UserCard({ user, onChat }) {
         {/* Only when genuinely free. A busy person is still "online", but
             startCall would reject them anyway — offering a button that is
             guaranteed to fail is worse than not offering one. */}
-        {presence === 'online' && (
+        {presence === 'online' && !introLocked && (
           <button
             className="btn-chat"
             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}

@@ -195,7 +195,7 @@ export default function Live({ user }) {
           </p>
         </Card>
       ) : (
-        displayUsers.map((u) => <UserCard key={u.id || u.uid} user={u} />)
+        displayUsers.map((u) => <UserCard key={u.id || u.uid} user={u} introLocked={introLocked} />)
       )}
 
       <style>{'.filter-chip-wrapper::-webkit-scrollbar { display: none; }'}</style>

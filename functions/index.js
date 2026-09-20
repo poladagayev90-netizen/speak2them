@@ -211,10 +211,41 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   }
 
   // Kodsuz trial TRIAL_DAYS gündən sonra zəngi serverdə bloklayır — token verilmir.
-  const uDoc = await admin.firestore().collection("users").doc(decoded.uid).get().catch(() => null);
+  const db = admin.firestore();
+  const uDoc = await db.collection("users").doc(decoded.uid).get().catch(() => null);
   if (isTrialExpired(uDoc && uDoc.exists ? uDoc.data() : null, decoded.uid)) {
     res.status(403).json({ error: "trial_expired" });
     return;
+  }
+
+  // Cütləşmə qaydası BİRBAŞA zəngə də aiddir.
+  //
+  // Faza 5 hər cütləşdirmə yolunu `pairVerdict`-dən keçirdi, amma birbaşa zəng
+  // (Live → People → "Call", profil səhifəsi, çat içindəki zəng düyməsi) heç
+  // birindən keçmir: `calls` sənədini CLIENT yazır. Yəni bloklanmış adam
+  // özünü bloklayana, "bir daha salma" deyilmiş adam həmin adama zəng edə
+  // bilirdi. Kanal adı həmişə `call_<uidA>_<uidB>`-dir, ona görə qarşı tərəf
+  // buradan çıxarılır və token verilməzdən əvvəl qayda yoxlanılır — token
+  // olmadan heç bir səs axını qurulmur.
+  //
+  // Səviyyə qaydası burada TƏTBİQ OLUNMUR (`checkLevel: false`): CEFR fərqi
+  // yalnız AVTOMATİK cütləşdirmənin qaydasıdır — konkret adama qəsdən zəng
+  // edən şəxs onu özü seçib, biz o seçimi ləğv etmirik.
+  const parts = String(channelName).split("_").filter((p) => p && p !== "call" && p !== decoded.uid);
+  if (parts.length === 1) {
+    try {
+      const verdict = await pairVerdict(db, (r) => r.get(), decoded.uid, parts[0], { checkLevel: false });
+      if (!verdict.ok) {
+        // Səbəb deyilmir — canPair-də olduğu kimi: "bloklayıb" cavabı blok
+        // siyahısını oxumağın yoluna çevrilərdi.
+        res.status(403).json({ error: "pair_refused" });
+        return;
+      }
+    } catch (e) {
+      // Qayda oxuna bilmirsə zəngi kəsmirik: bu yoxlama əlavə qoruma qatıdır,
+      // Firestore-un anlıq nasazlığı hamının zəngini dayandırmamalıdır.
+      console.warn("[getAgoraToken] pair check failed:", e.message);
+    }
   }
 
   const role = RtcRole.PUBLISHER;
@@ -2182,10 +2213,15 @@ exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res)
   }
   const peerUid = String((req.body || {}).peerUid || "").trim();
   if (!peerUid || peerUid.length > 128 || peerUid === decoded.uid) return res.status(400).json({ error: "invalid-peer" });
+  // `direct` = biri konkret adama zəng edir (People siyahısı, profil, çat).
+  // O halda CEFR fərqi qaydası düşür: o qayda yalnız AVTOMATİK cütləşdirmə
+  // üçündür. getAgoraToken də eyni şəkildə hesablayır, yəni bu ön yoxlama ilə
+  // əsl qapı eyni cavabı verir.
+  const direct = (req.body || {}).direct === true;
   const db = admin.firestore();
   try {
     await enforceRateLimit(decoded.uid, "canPair", 120, 60 * 60 * 1000);
-    const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid);
+    const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, { checkLevel: !direct });
     return res.status(200).json({ ok: v.ok, recent: v.recent });
   } catch (e) {
     const status = e.httpStatus || 500;

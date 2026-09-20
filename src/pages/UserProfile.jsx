@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 import TutorBadge from '../components/TutorBadge';
 import { getPresence } from '../utils/presence';
+import { needsIntro } from '../utils/intro';
 import { MessageCircle, Phone } from 'lucide-react';
 
 export default function UserProfile({ user: currentUser }) {
@@ -14,6 +15,7 @@ export default function UserProfile({ user: currentUser }) {
   const [profileUser, setProfileUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
+  const introLocked = needsIntro(currentUser);
   const [reported, setReported] = useState(false);
 
   useEffect(() => {
@@ -180,7 +182,18 @@ export default function UserProfile({ user: currentUser }) {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
             {/* Zəng birinci: bu səhifəyə gələn adam adətən danışmaq üçün
                 gəlir, yazışmaq üçün yox. */}
-            {!isBlocked && presence === 'online' && (
+            {/* Zəng düyməsi tanışlıq görüşündən əvvəl göstərilmir — Live-dakı
+                People siyahısı ilə eyni qayda. Burada izah edən kart yoxdur,
+                ona görə düymə gizlədilmir, görüşə yönləndirir. */}
+            {!isBlocked && presence === 'online' && introLocked && (
+              <button
+                onClick={() => navigate('/intro')}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Phone size={16} strokeWidth={2} aria-hidden="true" /> Meet the team first
+              </button>
+            )}
+            {!isBlocked && presence === 'online' && !introLocked && (
               <button
                 onClick={() => navigate(`/chat/${uid}`, { state: { autoCall: true } })}
                 style={{ background: 'var(--accent)', border: '1px solid var(--accent)', color: 'var(--text-on-accent)', padding: '10px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
