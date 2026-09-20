@@ -1,0 +1,327 @@
+/* The lessons: the map (Lessons.jsx) and the reader (Lesson.jsx).
+   Tokens only — no raw colours, and the one shadow a surface may have is
+   --glass-lift. Sizes come from --s-*, --r-*, --fs-*. */
+
+.lesson-page {
+  padding: var(--s-4);
+  padding-bottom: 120px;              /* the floating bottom nav */
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ── the map ─────────────────────────────────────────────── */
+.lesson-head-title {
+  margin: 0;
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+.lesson-head-sub {
+  margin: 4px 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+.lesson-bar {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  margin-top: var(--s-4);
+}
+
+.lesson-bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transition: width 240ms ease;
+}
+
+.lesson-bar-note {
+  margin: var(--s-2) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.lesson-module {
+  margin-top: var(--s-6);
+}
+
+.lesson-module-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+
+.lesson-module-title {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+.lesson-module-count {
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.lesson-module-blurb {
+  margin: 0 0 var(--s-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+/* One lesson in the list. A button, so it is keyboard reachable. */
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3) var(--s-3);
+  margin-bottom: var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lesson-row:active { transform: scale(0.995); }
+
+.lesson-row--next {
+  border-color: var(--accent);
+  box-shadow: var(--glass-lift);
+}
+
+.lesson-row-mark {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--text-muted);
+}
+
+.lesson-row-mark--done { color: var(--accent); }
+
+.lesson-row-title {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+.lesson-row-meta {
+  margin: 2px 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── the reader ──────────────────────────────────────────── */
+.lesson-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+
+.lesson-back {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.lesson-eyebrow {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.lesson-title {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+.lesson-why {
+  margin: 0 0 var(--s-5);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+.lesson-card {
+  padding: var(--s-4);
+  margin-bottom: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+
+.lesson-card-title {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+}
+
+.lesson-card-body {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+.lesson-card-body + .lesson-phrases { margin-top: var(--s-3); }
+
+.lesson-phrases { display: grid; gap: var(--s-2); }
+
+/* A phrase is a full sentence, so it gets a row rather than a chip. English is
+   what is shown; tapping swaps it for the meaning and tapping again brings it
+   back — the same deal as KeywordChips, and for the same reason: the
+   translation must be a deliberate act, not a crutch sitting on screen. */
+.lesson-phrase {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3);
+  border: 1px solid var(--accent-ring);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  font: inherit;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+  line-height: var(--lh-body);
+  cursor: pointer;
+  /* The row must not resize when the text swaps length, or the next tap lands
+     on the neighbouring phrase. */
+  min-height: 48px;
+}
+
+.lesson-phrase--shown {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.lesson-phrase-icon { flex-shrink: 0; color: var(--accent); display: grid; place-items: center; }
+
+.lesson-trap { display: grid; gap: var(--s-2); margin-bottom: var(--s-3); }
+
+.lesson-trap-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: var(--lh-body);
+}
+
+.lesson-trap-line--wrong {
+  background: var(--danger-bg);
+  color: var(--danger-fg);
+  text-decoration: line-through;
+  text-decoration-color: var(--danger);
+}
+
+.lesson-trap-line--right {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.lesson-trap-icon--wrong { flex-shrink: 0; color: var(--danger); }
+.lesson-trap-icon--right { flex-shrink: 0; color: var(--accent); }
+
+.lesson-example {
+  padding: var(--s-3);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: var(--bg-secondary);
+}
+
+.lesson-example-label {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.lesson-example-line {
+  margin: 0 0 6px;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: var(--lh-body);
+}
+
+.lesson-example-line:last-child { margin-bottom: 0; }
+
+/* The out-loud prompt. The point of the whole app is that a sentence is said,
+   not read, so it gets the loudest surface on the card. */
+.lesson-say {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  border: 1px dashed var(--accent);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+}
+
+.lesson-say-text {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-body);
+}
+
+.lesson-say-icon { flex-shrink: 0; color: var(--accent); margin-top: 2px; }
+
+.lesson-foot { margin-top: var(--s-6); display: grid; gap: var(--s-3); }
+
+.lesson-foot-note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: var(--lh-body);
+}

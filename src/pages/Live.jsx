@@ -12,6 +12,7 @@ import { ADMIN_UID } from '../constants';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import UserCard from '../components/UserCard';
 import Card from '../components/ui/Card';
+import LessonHint from '../components/LessonHint';
 import Button from '../components/ui/Button';
 import '../components/ui/ui.css';
 
@@ -120,6 +121,13 @@ export default function Live({ user }) {
             ? <><X size={20} /> Searching… (cancel)</>
             : <><Shuffle size={20} /> Find a random partner</>}
         </button>
+
+        {/* The one place a learner is a tap away from a stranger, and the one
+            place "I don't know what to say" actually bites. Hidden while the
+            search is running: leaving the page cancels it. */}
+        {!searching && (
+          <LessonHint user={user} moduleId="talk" text="Before you call:" />
+        )}
 
         <FlaskSearchOverlay
           visible={searching}

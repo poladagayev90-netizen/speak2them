@@ -4,6 +4,7 @@ import { Image as ImageIcon, MessageSquare, ChevronRight, Lock } from 'lucide-re
 import { getTodayContent } from '../data/weeklyContent';
 import { plainTopic } from '../utils/topicLabel';
 import Card from '../components/ui/Card';
+import LessonHint from '../components/LessonHint';
 import '../components/ai/ai.css';
 
 // The AInur tab. It used to be a single push-to-talk screen with a hardcoded
@@ -110,6 +111,8 @@ export default function AinurHub({ user }) {
           </Card>
         );
       })}
+
+      <LessonHint user={user} moduleId="describe" text="Not sure what to say about a photo?" />
 
       <p className="ui-section-label" style={{ marginTop: 'var(--s-6)' }}>Coming next</p>
       {SOON.map((a) => (

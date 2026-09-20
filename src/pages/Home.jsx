@@ -24,6 +24,7 @@ import WeekGoalCard from '../components/WeekGoalCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import TodayNudge from '../components/TodayNudge';
 import TodayTaskCard from '../components/ai/TodayTaskCard';
+import LessonsCard from '../components/LessonsCard';
 import useLiveLobby from '../hooks/useLiveLobby';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -273,6 +274,11 @@ export default function Home({ user }) {
               : <ChevronRight size={20} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
           </div>
         </Card>
+
+        {/* How to do any of it. It sits under the two "go and speak" cards on
+            purpose: a lesson is preparation, and preparation must never outrank
+            the thing it prepares you for. */}
+        <LessonsCard user={user} />
 
         <div id="tour-daily-topic">
           <DailyTopicBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />

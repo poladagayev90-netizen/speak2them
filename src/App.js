@@ -53,6 +53,8 @@ const Ranking = React.lazy(importRanking);
 const Live = React.lazy(importLive);
 const History = React.lazy(() => import('./pages/History'));
 const Progress = React.lazy(() => import('./pages/Progress'));
+const Lessons = React.lazy(() => import('./pages/Lessons'));
+const Lesson = React.lazy(() => import('./pages/Lesson'));
 const DailyPuzzle = React.lazy(() => import('./pages/DailyPuzzle'));
 const Redeem = React.lazy(() => import('./pages/Redeem'));
 const JoinTeacher = React.lazy(() => import('./pages/JoinTeacher'));
@@ -232,6 +234,12 @@ function AppShell({ user }) {
           {/* History = "what happened in that call"; Progress = "am I getting
               better". Separate routes because they answer separate questions. */}
           <Route path="/progress" element={user ? <Progress user={user} /> : <Navigate to="/login" />} />
+          {/* The lessons: how to describe, how to keep a call going, Taboo,
+              debate. The map and one lesson are separate routes so a lesson can
+              be linked to directly — and so Back from a lesson lands on the
+              map rather than leaving the section. */}
+          <Route path="/lessons" element={user ? <Lessons user={user} /> : <Navigate to="/login" />} />
+          <Route path="/lessons/:lessonId" element={user ? <Lesson user={user} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
         </Routes>
       </Suspense>

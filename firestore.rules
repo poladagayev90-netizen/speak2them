@@ -555,6 +555,25 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Which lessons a learner has read. The ONE client-written progress doc in
+    // this file, and it is safe precisely because nothing is granted by it: no
+    // minutes, no unlocked call, no badge, no gate anywhere in the app reads
+    // it. Should a lesson ever unlock something, this has to move to a Cloud
+    // Function first. Read by the owner and the admin (the team looks at it
+    // before an intro call); `completed` is a map of lessonId → millis, capped
+    // so it cannot be used as free storage.
+    match /lessonProgress/{uid} {
+      allow read: if isOwnDoc(uid) || isAdmin();
+      allow create, update: if isOwnDoc(uid)
+        && request.resource.data.keys().hasOnly(['uid', 'completed', 'lastLessonId', 'updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.completed is map
+        && request.resource.data.completed.size() <= 200
+        && request.resource.data.lastLessonId is string
+        && request.resource.data.lastLessonId.size() <= 64;
+      allow delete: if false;
+    }
+
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız
     // "bu push artıq göndərilib" markerləridir, client-in nə oxumağa, nə də
     // yazmağa ehtiyacı var. Client yaza bilsəydi, xatırlatmaları susdura bilərdi.
