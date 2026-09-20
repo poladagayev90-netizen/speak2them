@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
   GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
-  LineChart,
+  LineChart, Smartphone,
 } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -495,6 +495,25 @@ export default function Profile({ user }) {
           label: isDark ? 'Dark mode' : 'Light mode',
           onClick: toggleTheme,
           right: <span className={`theme-switch ${isDark ? 'dark' : 'light'}`} aria-hidden="true" style={{ display: 'inline-block', flexShrink: 0 }}><span className="theme-switch-thumb"></span></span>,
+          notLast: true,
+        })}
+        {/* The phone layout, on a computer. It used to live in the desktop
+            sidebar — a permanent 300px panel holding two switches — and that
+            sidebar is gone, so it lives where every other setting does. Hidden
+            on an actual phone, where it would mean nothing. */}
+        {typeof window !== 'undefined' && window.innerWidth > 768 && row({
+          icon: <Smartphone size={17} />,
+          label: 'Phone layout',
+          onClick: () => {
+            const next = localStorage.getItem('manualMobileMode') !== 'true';
+            localStorage.setItem('manualMobileMode', String(next));
+            window.location.reload();
+          },
+          right: (
+            <span className={`theme-switch ${localStorage.getItem('manualMobileMode') === 'true' ? 'dark' : 'light'}`} aria-hidden="true" style={{ display: 'inline-block', flexShrink: 0 }}>
+              <span className="theme-switch-thumb"></span>
+            </span>
+          ),
           notLast: true,
         })}
         {row({

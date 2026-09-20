@@ -54,6 +54,7 @@ const Live = React.lazy(importLive);
 const History = React.lazy(() => import('./pages/History'));
 const Progress = React.lazy(() => import('./pages/Progress'));
 const Lessons = React.lazy(() => import('./pages/Lessons'));
+const Teach = React.lazy(() => import('./pages/Teach'));
 const Lesson = React.lazy(() => import('./pages/Lesson'));
 const DailyPuzzle = React.lazy(() => import('./pages/DailyPuzzle'));
 const Redeem = React.lazy(() => import('./pages/Redeem'));
@@ -238,6 +239,9 @@ function AppShell({ user }) {
               debate. The map and one lesson are separate routes so a lesson can
               be linked to directly — and so Back from a lesson lands on the
               map rather than leaving the section. */}
+          {/* Lesson mode: today's topic as a deck, for a teacher sharing a
+              screen. Full-screen like a call, so it sits outside the tab set. */}
+          <Route path="/teach" element={user ? <Teach /> : <Navigate to="/login" />} />
           <Route path="/lessons" element={user ? <Lessons user={user} /> : <Navigate to="/login" />} />
           <Route path="/lessons/:lessonId" element={user ? <Lesson user={user} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />

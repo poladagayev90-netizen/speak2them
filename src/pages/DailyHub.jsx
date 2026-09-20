@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircleQuestion, BookOpen, Quote, Headphones, ChevronDown, X } from 'lucide-react';
+import { MessageCircleQuestion, BookOpen, Quote, Headphones, ChevronDown, X, Presentation } from 'lucide-react';
 import { getTodayIndex, getContentByIndex, weeklyContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import SpeakingCards from '../components/SpeakingCards';
@@ -57,6 +57,24 @@ export default function DailyHub() {
           <h1 className="hub-topic" style={{ margin: 0 }}>{content.topic}</h1>
         </div>
       </div>
+
+      {/* Teaching from the app: the same content, one thing at a time, big
+          enough to read over a shared screen. Offered only where there is a
+          screen worth sharing — on a phone it would be a button to nowhere. */}
+      {typeof window !== 'undefined' && window.innerWidth >= 768 && (
+        <button
+          onClick={() => navigate('/teach')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            margin: '0 0 var(--s-4)', padding: '10px 16px',
+            borderRadius: 'var(--r-md)', border: '1px solid var(--accent)',
+            background: 'var(--accent-soft)', color: 'var(--accent)',
+            font: 'inherit', fontSize: 'var(--fs-sm)', fontWeight: 700, cursor: 'pointer',
+          }}
+        >
+          <Presentation size={16} strokeWidth={2} /> Lesson mode
+        </button>
+      )}
 
       {/* TOPIC PICKER MODAL (FOR TEACHERS & STUDENTS) */}
       {showTopicModal && (

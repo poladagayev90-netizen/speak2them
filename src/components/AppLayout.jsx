@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import BottomNav from './BottomNav';
-import SettingsPanel from './SettingsPanel';
 import InstallGate from './InstallGate';
 import { useLocation } from 'react-router-dom';
 
@@ -98,18 +97,13 @@ export default function AppLayout({ children, user }) {
   // -------------------------
   // 2. DESKTOP LAYOUT
   // -------------------------
+  // NO SIDEBAR. It was a permanent 300px panel holding two switches — dark
+  // mode and "force mobile view" — which is a third of a laptop screen spent on
+  // settings nobody changes twice, while the content it pushed aside is what
+  // the lesson is taught from. Both switches now live in Profile, where every
+  // other setting already was.
   return (
     <div className="desktop-layout">
-      <div className="desktop-sidebar">
-        <SettingsPanel 
-          open={true} 
-          onClose={() => {}} 
-          isDesktop={true} 
-          manualMobileMode={manualMobileMode}
-          toggleManualMobileMode={toggleManualMobileMode}
-        />
-      </div>
-
       <main className="main-content">
         {children}
         {/* Desktop-da əvvəllər HEÇ BİR naviqasiya yox idi (sidebar yalnız

@@ -1,0 +1,228 @@
+/* Lesson mode — the one screen in this app that is READ FROM A DISTANCE, over
+   a shared screen and a compressed video call, by people who are not holding
+   the phone. So the type here is fluid (clamp + vw) rather than the fixed
+   --fs-* scale: the phone sizes are correct for a phone and far too small for
+   a projector, and a fixed size cannot be both. Colours stay on the tokens. */
+
+.teach {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-stage);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  padding-top: var(--safe-area-top, 0px);
+  padding-bottom: var(--safe-area-bottom, 0px);
+}
+
+.teach-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.teach-jump {
+  display: flex;
+  gap: var(--s-2);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.teach-jump::-webkit-scrollbar { display: none; }
+
+.teach-tab {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.teach-tab.is-on { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+
+.teach-count {
+  flex-shrink: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.teach-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.teach-icon:disabled { opacity: .35; cursor: default; }
+
+.teach-progress { height: 3px; background: var(--bg-secondary); flex-shrink: 0; }
+.teach-progress > div { height: 100%; background: var(--accent); transition: width 160ms ease; }
+
+.teach-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 64px);
+  cursor: pointer;
+  overflow-y: auto;
+}
+
+.teach-slide {
+  width: 100%;
+  max-width: 1100px;
+  text-align: center;
+}
+.teach-slide--cover { text-align: center; }
+
+.teach-eyebrow {
+  margin: 0 0 clamp(8px, 1.5vw, 20px);
+  font-size: clamp(12px, 1.3vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.teach-title {
+  margin: 0;
+  font-size: clamp(34px, 7vw, 104px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--text-primary);
+}
+
+/* A question is a whole sentence, so it cannot take the word size — but it is
+   still the only thing on the screen. */
+.teach-question {
+  margin: 0;
+  font-size: clamp(26px, 4.4vw, 62px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.teach-sub {
+  margin: clamp(12px, 2vw, 28px) 0 0;
+  font-size: clamp(14px, 1.6vw, 24px);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.teach-body {
+  margin: clamp(16px, 2.5vw, 36px) 0 0;
+  font-size: clamp(18px, 2.4vw, 36px);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+/* The learner's own language, one step quieter than the English above it —
+   the English is what is being taught. */
+.teach-l1 {
+  margin: clamp(6px, 1vw, 14px) 0 0;
+  font-size: clamp(15px, 1.9vw, 28px);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.teach-example {
+  margin: clamp(14px, 2vw, 30px) auto 0;
+  max-width: 24ch;
+  font-size: clamp(15px, 1.8vw, 26px);
+  font-weight: 600;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.teach-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: clamp(20px, 3vw, 44px) 0 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-pill);
+  background: var(--bg-secondary);
+  font-size: clamp(12px, 1.3vw, 18px);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.teach-hint svg { flex-shrink: 0; }
+
+/* A picture slide is the photo plus the words under it — side by side when
+   there is width for it, stacked when there is not. */
+.teach-slide--picture {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 40px);
+  align-items: center;
+  max-width: 1500px;
+  text-align: left;
+}
+
+.teach-photo {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  aspect-ratio: 4 / 3;
+}
+.teach-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.teach-words { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.teach-word {
+  padding: clamp(4px, .6vw, 10px) clamp(10px, 1.2vw, 20px);
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  color: var(--text-primary);
+  font-size: clamp(14px, 1.7vw, 26px);
+  font-weight: 700;
+}
+
+.teach-prompt {
+  margin: clamp(12px, 1.6vw, 22px) 0 0;
+  font-size: clamp(16px, 2vw, 30px);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.teach-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.teach-keyhint {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 860px) {
+  .teach-slide--picture { grid-template-columns: 1fr; text-align: center; }
+  .teach-words { justify-content: center; }
+  .teach-keyhint { display: none; }
+}

@@ -610,6 +610,28 @@ code {
    overflow — so this changes nothing except the case that was broken. */
 .main-content > * { flex-shrink: 0; }
 
+/* A COMPUTER IS NOT A BIG PHONE. Every size in this file is chosen for a
+   screen held at arm's length; on a laptop at a desk — and especially on a
+   laptop being SHARED into a video call, which is how lessons are taught from
+   this app — the same numbers read as small print in the middle of an empty
+   field. One step up for the type, and a column that stays a column instead of
+   stretching a card across 1200px of window. */
+@media (min-width: 1024px) {
+  :root {
+    --fs-display: 36px; --fs-h1: 28px; --fs-h2: 21px;
+    --fs-body: 17px;    --fs-sm: 15px; --fs-xs: 12px;
+  }
+
+  /* The nav and the layout-escape chip are position:fixed, so they are not in
+     this flow and keep their own width. */
+  .desktop-layout .main-content > *:not(.bottom-nav):not(.layout-escape) {
+    width: 100%;
+    max-width: 880px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 /* The way back out of "force mobile view" on a wide screen — see AppLayout.
    It floats over the page rather than pushing it, because it is a correction,
    not part of any screen. */
