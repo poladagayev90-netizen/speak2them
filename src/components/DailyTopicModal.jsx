@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
+import { localMeaning } from '../utils/feedbackLanguage';
 import PictureDescribing from './PictureDescribing';
 import SpeakingCards from './SpeakingCards';
 
@@ -210,7 +211,7 @@ export default function DailyTopicModal({ open, onClose }) {
                     {expandedVocab === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <p className="dt-vocab-meaning">{v.meaning}</p>
-                  {v.meaningAZ && <p className="dt-vocab-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '12px'}}>{v.meaningAZ}</p>}
+                  {localMeaning(v) && <p className="dt-vocab-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '12px'}}>{localMeaning(v)}</p>}
                   {expandedVocab === i && (
                     <p className="dt-vocab-example">"{v.example}"</p>
                   )}
@@ -225,7 +226,7 @@ export default function DailyTopicModal({ open, onClose }) {
                 <div key={i} className="dt-idiom-card">
                   <p className="dt-idiom-phrase">"{idm.phrase}"</p>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
-                  {idm.meaningAZ && <p className="dt-idiom-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '12px'}}>{idm.meaningAZ}</p>}
+                  {localMeaning(idm) && <p className="dt-idiom-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '12px'}}>{localMeaning(idm)}</p>}
                   <p className="dt-idiom-example"> {idm.example}</p>
                 </div>
               ))}

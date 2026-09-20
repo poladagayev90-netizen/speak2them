@@ -61,3 +61,16 @@ export function setFeedbackLanguage(code) {
   try { localStorage.setItem(LANG_STORAGE_KEY, next); } catch { /* ignore */ }
   return next;
 }
+
+// The learner-language meaning of a vocabulary or idiom entry.
+//
+// Every entry in weeklyContent.js carries both meaningAZ and meaningTR. Before
+// this existed the cards printed meaningAZ unconditionally, so a Turkish
+// learner read the English definition and an Azerbaijani one under it. The
+// fallbacks matter: older decks (chapterStories.js) only ever had AZ, and a
+// missing translation must show the other language rather than an empty line.
+export function localMeaning(item, lang = getFeedbackLanguage()) {
+  if (!item) return '';
+  const first = lang === 'tr' ? item.meaningTR : item.meaningAZ;
+  return first || item.meaningAZ || item.meaningTR || '';
+}

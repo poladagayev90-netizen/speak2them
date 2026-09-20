@@ -5,7 +5,7 @@ import { ADMIN_UID } from '../constants';
 // Kurs proqresi per-user Firestore-a YAZILMIR — hər şey cycleTick - startTick
 // fərqindən hesablanır (K2 backend konvensiyası). Bu modul həmin hesabları
 // bir yerə yığır: Home proqres kartı, trial sayğacı, tamamlanma aşkarı.
-export const COURSE_TOPIC_COUNT = weeklyContent.length; // 28
+export const COURSE_TOPIC_COUNT = weeklyContent.length; // 60 since the deck doubled
 export const TRIAL_DAYS = 60; // functions/index.js TRIAL_DAYS ilə eyni
 
 function toMillis(v) {
@@ -15,7 +15,7 @@ function toMillis(v) {
   return null;
 }
 
-// Kurs userinin tamamladığı mövzu sayı [0..28]; kurs userində deyilsə və ya
+// Kurs userinin tamamladığı mövzu sayı [0..COURSE_TOPIC_COUNT]; kurs userində deyilsə və ya
 // cycle hələ oxunmayıbsa null.
 export function getTopicsCompleted(user, cycle) {
   if (!user || user.mode !== 'course' || !Number.isFinite(user.startTick)) return null;
