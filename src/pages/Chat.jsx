@@ -22,7 +22,7 @@ import { BadgeUnlockModal } from '../components/BadgeSystem';
 import { checkNewBadges } from '../badges/checker';
 import { applyBadgeRewardsToData } from '../badges/rewards';
 import { authedFetch } from '../api';
-import { FUNCTIONS_BASE } from '../constants';
+import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
 import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../utils/localRecorder';
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
@@ -716,7 +716,14 @@ export default function Chat({ user }) {
     // 1) Tanışlıq görüşü. Axtarış və slot lövhəsi onsuz da kilidlidir; People
     //    siyahısından birbaşa zəng isə kilidi yan keçirdi, yəni komandanı
     //    görməmiş adam yad adama zəng edə bilirdi.
-    if (needsIntro(user)) {
+    // The team and the learner's own teacher are the ONE exception: the intro
+    // call itself is a call to the team, and a student must always be able to
+    // reach their teacher. Locking those was backwards — it left a brand-new
+    // learner unable to call the very people who unlock the rest.
+    const peerIsTeam = peerId === ADMIN_UID
+      || peer?.role === 'teacher'
+      || user?.teacherId === peerId;
+    if (needsIntro(user) && !peerIsTeam) {
       alert('First meet the team — a short intro call opens live practice.');
       navigate('/intro');
       return;

@@ -7,6 +7,7 @@ import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 import TutorBadge from '../components/TutorBadge';
 import { getPresence } from '../utils/presence';
 import { needsIntro } from '../utils/intro';
+import { ADMIN_UID } from '../constants';
 import { MessageCircle, Phone } from 'lucide-react';
 
 export default function UserProfile({ user: currentUser }) {
@@ -15,7 +16,12 @@ export default function UserProfile({ user: currentUser }) {
   const [profileUser, setProfileUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isBlocked, setIsBlocked] = useState(false);
-  const introLocked = needsIntro(currentUser);
+  // The intro lock never covers the team or this learner's own teacher: the
+  // intro call itself is a call to them.
+  const introLocked = needsIntro(currentUser)
+    && uid !== ADMIN_UID
+    && profileUser?.role !== 'teacher'
+    && currentUser?.teacherId !== uid;
   const [reported, setReported] = useState(false);
 
   useEffect(() => {

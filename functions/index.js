@@ -234,10 +234,32 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   const parts = String(channelName).split("_").filter((p) => p && p !== "call" && p !== decoded.uid);
   if (parts.length === 1) {
     try {
-      const verdict = await pairVerdict(db, (r) => r.get(), decoded.uid, parts[0], { checkLevel: false });
+      const peerUid = parts[0];
+      // NƏZARƏTLİ CÜT: komanda (admin), müəllim və ya öyrənənin ÖZ müəllimi.
+      // Tanışlıq görüşü və hər dərs məhz böyük adamın uşaqla danışmasıdır —
+      // yaş qaydası bu cütə tətbiq olunsa, 18 yaşdan kiçik şagirdi heç kim
+      // zəng edə bilməz. Blok və "bir daha salma" qaydaları yenə işləyir.
+      const [meDoc, peerDoc] = await Promise.all([
+        db.collection("users").doc(decoded.uid).get().catch(() => null),
+        db.collection("users").doc(peerUid).get().catch(() => null),
+      ]);
+      const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
+      const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
+      const supervised = decoded.uid === ADMIN_UID || peerUid === ADMIN_UID
+        || me.role === "teacher" || peer.role === "teacher"
+        || me.teacherId === peerUid || peer.teacherId === decoded.uid;
+
+      const verdict = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
+        checkLevel: false,
+        checkAge: !supervised,
+      });
       if (!verdict.ok) {
-        // Səbəb deyilmir — canPair-də olduğu kimi: "bloklayıb" cavabı blok
-        // siyahısını oxumağın yoluna çevrilərdi.
+        // Səbəb istifadəçiyə deyilmir — canPair-də olduğu kimi: "bloklayıb"
+        // cavabı blok siyahısını oxumağın yoluna çevrilərdi. Amma SERVER
+        // logunda yazılır, yoxsa "zəng alınmadı" şikayətini araşdırmaq
+        // mümkün olmur (2026-09-20-də məhz bu itdi).
+        console.warn("[getAgoraToken] pair refused:", decoded.uid, "→", peerUid,
+          JSON.stringify({ blocked: verdict.blocked, avoided: verdict.avoided, ageClash: verdict.ageClash, supervised }));
         res.status(403).json({ error: "pair_refused" });
         return;
       }
@@ -2148,7 +2170,7 @@ function levelRank(level) {
 
 // `get` is tx.get inside a transaction, or (ref) => ref.get() outside one.
 // `known` may carry user docs the caller has already read, to save reads.
-async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true } = {}) {
+async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true, checkAge = true } = {}) {
   const users = db.collection("users");
   const refs = {
     blockAB: users.doc(uidA).collection("blocked").doc(uidB),
@@ -2172,7 +2194,12 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true 
 
   const blocked = !!(s.blockAB.exists || s.blockBA.exists);
   const avoided = !!(s.avoidAB.exists || s.avoidBA.exists);
-  const ageClash = minor(data(s.obA)) !== minor(data(s.obB));
+  // The minor↔adult rule protects PEER practice. It must not be applied when
+  // one side is the team or the learner's own teacher: the intro call and every
+  // lesson a minor has are exactly an adult talking to a minor, supervised and
+  // arranged on purpose. Without this a learner under 18 could never be called
+  // by anyone at SpeakLab.
+  const ageClash = checkAge && minor(data(s.obA)) !== minor(data(s.obB));
   let levelClash = false;
   if (checkLevel && (a.partnerLevel === "close" || b.partnerLevel === "close")) {
     const ra = levelRank(a.level);

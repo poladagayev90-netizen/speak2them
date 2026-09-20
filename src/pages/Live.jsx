@@ -8,6 +8,7 @@ import UpcomingCallCard from '../components/UpcomingCallCard';
 import MatchOfferCard from '../components/MatchOfferCard';
 import IntroCard from '../components/IntroCard';
 import { needsIntro } from '../utils/intro';
+import { ADMIN_UID } from '../constants';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import UserCard from '../components/UserCard';
 import Card from '../components/ui/Card';
@@ -195,7 +196,18 @@ export default function Live({ user }) {
           </p>
         </Card>
       ) : (
-        displayUsers.map((u) => <UserCard key={u.id || u.uid} user={u} introLocked={introLocked} />)
+        displayUsers.map((u) => (
+          <UserCard
+            key={u.id || u.uid}
+            user={u}
+            // The team and the learner's own teacher are never behind the intro
+            // lock — the intro call IS a call to them.
+            introLocked={introLocked
+              && (u.uid || u.id) !== ADMIN_UID
+              && u.role !== 'teacher'
+              && user?.teacherId !== (u.uid || u.id)}
+          />
+        ))
       )}
 
       <style>{'.filter-chip-wrapper::-webkit-scrollbar { display: none; }'}</style>
