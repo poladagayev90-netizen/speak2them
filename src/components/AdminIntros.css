@@ -73,3 +73,80 @@
 }
 .ai-btn--ok { border-color: var(--accent); color: var(--accent); }
 .ai-btn:disabled { opacity: .5; cursor: default; }
+
+/* ── opening times by tap ───────────────────────────────────────────
+   Replaces a date picker, a time picker and two dropdowns. Native widgets
+   carry their own minimum width, and on a phone with a large system font that
+   minimum is what pushed this whole panel wider than the screen — the right
+   edge of the form was simply unreachable. Chips shrink, wrap and scroll. */
+.ai-pick-label {
+  margin: var(--s-3) 0 var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ai-pick-label:first-of-type { margin-top: 0; }
+
+.ai-chips {
+  display: flex;
+  gap: var(--s-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* The row scrolls; it must never be the thing that widens the page. */
+  max-width: 100%;
+  padding-bottom: 2px;
+}
+.ai-chips::-webkit-scrollbar { display: none; }
+
+.ai-chip {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ai-chip.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
+}
+.ai-chip--half { border-style: dashed; }
+
+.ai-more {
+  margin-top: var(--s-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ai-preview {
+  margin: var(--s-4) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* A panel may never be the reason the page scrolls sideways. */
+.ai, .ai-panel { min-width: 0; max-width: 100%; }
+
+/* Android's system font scaling inflates every label without giving the row
+   any more room, and .main-content clips horizontally — so an oversized row
+   does not scroll, it simply loses its right-hand button where nobody can
+   reach it. A row that wraps stays usable at any text size. */
+.ai-row { min-width: 0; flex-wrap: wrap; }
+.ai-row-main { overflow-wrap: anywhere; }

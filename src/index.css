@@ -598,6 +598,39 @@ code {
   -webkit-overflow-scrolling: touch;
 }
 
+/* A page is a FLEX ITEM in here, and a flex item shrinks by default. When a
+   page was taller than the viewport the browser squashed its box down to the
+   container height (measured: a 2013px admin list in an 812px box), and the
+   page's own padding-bottom — the gap that keeps the last row clear of the
+   floating nav — ended up inside the squashed box, scrolled far above the
+   content it was supposed to protect. Every long list in the app lost its last
+   rows under the nav because of this, which is why it looked like an admin-panel
+   quirk: the admin lists are simply the longest ones.
+   Items SHORTER than the container are unaffected — shrinking only happens on
+   overflow — so this changes nothing except the case that was broken. */
+.main-content > * { flex-shrink: 0; }
+
+/* The way back out of "force mobile view" on a wide screen — see AppLayout.
+   It floats over the page rather than pushing it, because it is a correction,
+   not part of any screen. */
+.layout-escape {
+  position: fixed;
+  top: calc(10px + var(--safe-area-top, 0px));
+  right: 12px;
+  z-index: var(--z-toast, 90);
+  height: 32px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--glass-lift);
+}
+
 /* Desktop Sidebar Settings */
 .settings-sidebar {
   width: 100%;

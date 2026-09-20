@@ -67,6 +67,13 @@ export default function AppLayout({ children, user }) {
   // -------------------------
   // 1. MOBILE / PWA LAYOUT
   // -------------------------
+  // A ONE-WAY DOOR, until now. "Force mobile view" lives in the desktop
+  // sidebar, and turning it on removes the desktop layout — which is where the
+  // switch was. The only way back was to clear the site's storage by hand, so a
+  // laptop stayed stuck with a phone layout stretched across a 1920px screen.
+  // On a wide window the way out is offered where the layout actually is.
+  const stuckOnDesktop = manualMobileMode && typeof window !== 'undefined' && window.innerWidth > 768;
+
   if (forceMobile) {
     // No SettingsPanel here: nothing ever opened it (setSettingsOpen(true) was
     // never called), so it sat closed and unreachable — which is why the theme
@@ -75,6 +82,11 @@ export default function AppLayout({ children, user }) {
     return (
       <div className="mobile-layout" style={{ paddingTop: 'var(--safe-area-top, 0px)', paddingBottom: 'var(--safe-area-bottom, 0px)' }}>
         <div className="main-content">
+          {stuckOnDesktop && (
+            <button type="button" className="layout-escape" onClick={toggleManualMobileMode}>
+              Desktop view
+            </button>
+          )}
           {children}
           <BottomNav user={user} />
           <InstallGate />

@@ -24,10 +24,26 @@ const fmtDay = (ms) => new Date(ms).toLocaleDateString('en-GB', { weekday: 'shor
 const localTimeIn = (ms, tz) => {
   try { return new Date(ms).toLocaleTimeString('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
 };
-const tomorrowStr = () => {
-  const d = new Date(Date.now() + 86400000);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-};
+const dayStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const tomorrowStr = () => dayStr(new Date(Date.now() + 86400000));
+
+// The next ten days as taps. A native <input type="date"> needs three
+// interactions to say "tomorrow", and on a phone with a large system font its
+// own minimum width is what pushed this panel wider than the screen.
+const DAY_CHOICES = () => Array.from({ length: 10 }, (_, i) => {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + i);
+  return {
+    value: dayStr(d),
+    label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
+      : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }),
+  };
+});
+
+// The hours the team actually opens. Anything else is still reachable through
+// the half-hour toggle; nobody opens an intro call at 03:15.
+const HOURS = [10, 12, 14, 16, 17, 18, 19, 20, 21, 22];
 
 export default function AdminIntros({ users }) {
   const navigate = useNavigate();
@@ -43,6 +59,13 @@ export default function AdminIntros({ users }) {
   const [count, setCount] = useState(4);
   const [meetUrl, setMeetUrl] = useState('');
   const [hostName, setHostName] = useState('Polad');
+  const [showDetails, setShowDetails] = useState(false);
+  const hourRowRef = React.useRef(null);
+
+  useEffect(() => {
+    const on = hourRowRef.current && hourRowRef.current.querySelector('.is-on');
+    if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [time]);
 
   useEffect(() => subscribeToAllTeamSlots(setSlots, Date.now() - 24 * 3600000), []);
   useEffect(() => subscribeToIntroBookings(setBookings), []);
@@ -51,6 +74,17 @@ export default function AdminIntros({ users }) {
   }, () => {}), []);
 
   const now = Date.now();
+
+  // "Tue 23 Sept · 19:00 → 20:00, 4 × 15 min" — the sentence the button is
+  // about to carry out, so a mistake is seen before it becomes six slots.
+  const spanLabel = useMemo(() => {
+    const start = new Date(`${date}T${time}:00`).getTime();
+    if (!Number.isFinite(start)) return '';
+    const end = start + count * duration * 60000;
+    const past = start < Date.now() ? ' · this time has passed' : '';
+    return `${fmtDay(start)} · ${fmtTime(start)} → ${fmtTime(end)}${past}`;
+  }, [date, time, count, duration]);
+
   const bookingBySlot = useMemo(() => {
     const m = new Map();
     for (const b of bookings) if (b.status === 'booked' && b.slotId) m.set(b.slotId, b);
@@ -131,26 +165,87 @@ export default function AdminIntros({ users }) {
 
       <section className="ai-panel">
         <h3 className="ai-h"><CalendarPlus size={16} /> Open intro times</h3>
-        <div className="ai-form">
-          <label>Day<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
-          <label>From<input type="time" value={time} step={300} onChange={(e) => setTime(e.target.value)} /></label>
-          <label>Length
-            <select value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
-              {[15, 20, 30].map((d) => <option key={d} value={d}>{d} min</option>)}
-            </select>
-          </label>
-          <label>In a row
-            <select value={count} onChange={(e) => setCount(Number(e.target.value))}>
-              {[1, 2, 3, 4, 6, 8].map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </label>
-          <label className="ai-wide">Video link (optional — otherwise you call them in the app)
-            <input type="url" value={meetUrl} placeholder="https://meet.google.com/…" onChange={(e) => setMeetUrl(e.target.value)} />
-          </label>
-          <label className="ai-wide">Host name<input value={hostName} maxLength={40} onChange={(e) => setHostName(e.target.value)} /></label>
+        {/* Taps, not fields. Opening times is the one thing done here every
+            week, and it used to take a date picker, a time picker and two
+            dropdowns — four native widgets whose own minimum widths pushed this
+            panel wider than a phone screen. */}
+        <p className="ai-pick-label">Day</p>
+        <div className="ai-chips">
+          {DAY_CHOICES().map((d) => (
+            <button
+              key={d.value}
+              type="button"
+              className={`ai-chip ${date === d.value ? 'is-on' : ''}`}
+              onClick={() => setDate(d.value)}
+            >
+              {d.label}
+            </button>
+          ))}
         </div>
+
+        <p className="ai-pick-label">Starting at</p>
+        {/* The chosen hour is usually an evening one, which sits off the right
+            edge of the row — so the row arrives scrolled to it instead of
+            looking as though 10:00 were selected. */}
+        <div className="ai-chips" ref={hourRowRef}>
+          {HOURS.map((h) => {
+            const value = `${pad(h)}:${time.slice(3)}`;
+            return (
+              <button
+                key={h}
+                type="button"
+                className={`ai-chip ${time.startsWith(pad(h)) ? 'is-on' : ''}`}
+                onClick={() => setTime(value)}
+              >
+                {pad(h)}:{time.slice(3)}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            className={`ai-chip ai-chip--half ${time.endsWith(':30') ? 'is-on' : ''}`}
+            onClick={() => setTime(`${time.slice(0, 3)}${time.endsWith(':30') ? '00' : '30'}`)}
+          >
+            +30 min
+          </button>
+        </div>
+
+        <p className="ai-pick-label">How many, back to back</p>
+        <div className="ai-chips">
+          {[1, 2, 3, 4, 6, 8].map((n) => (
+            <button key={n} type="button" className={`ai-chip ${count === n ? 'is-on' : ''}`} onClick={() => setCount(n)}>
+              {n}
+            </button>
+          ))}
+        </div>
+
+        <p className="ai-pick-label">Each one lasts</p>
+        <div className="ai-chips">
+          {[15, 20, 30].map((d) => (
+            <button key={d} type="button" className={`ai-chip ${duration === d ? 'is-on' : ''}`} onClick={() => setDuration(d)}>
+              {d} min
+            </button>
+          ))}
+        </div>
+
+        {/* Set once and then forgotten, so it does not take up room until it is
+            asked for. */}
+        <button type="button" className="ai-more" onClick={() => setShowDetails((v) => !v)}>
+          {showDetails ? 'Hide' : 'Video link and host name'}
+        </button>
+        {showDetails && (
+          <div className="ai-form">
+            <label className="ai-wide">Video link (optional — otherwise you call them in the app)
+              <input type="url" value={meetUrl} placeholder="https://meet.google.com/…" onChange={(e) => setMeetUrl(e.target.value)} />
+            </label>
+            <label className="ai-wide">Host name<input value={hostName} maxLength={40} onChange={(e) => setHostName(e.target.value)} /></label>
+          </div>
+        )}
+
+        {/* What will actually be created, in words, before it is created. */}
+        <p className="ai-preview">{spanLabel}</p>
         <button type="button" className="ai-add" disabled={busy === 'add'} onClick={add}>
-          <Plus size={16} /> {busy === 'add' ? 'Adding…' : `Add ${count} ${count === 1 ? 'time' : 'times'}`}
+          <Plus size={16} /> {busy === 'add' ? 'Adding…' : `Open ${count} ${count === 1 ? 'time' : 'times'}`}
         </button>
       </section>
 
