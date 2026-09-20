@@ -22,6 +22,11 @@ const {
   CONCEPT_PROMPT_LIST,
   isConceptId,
 } = require("./grammarConcepts");
+const {
+  seriesConcepts,
+  reviewFocus,
+  nextFocus,
+} = require("./learningFocus");
 
 admin.initializeApp();
 
@@ -4983,8 +4988,9 @@ async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, 
     //    serverTimestamp ola bilmir (sentinel massiv içində işləmir) — ms.
     const pace = analysis.speakingPace || {};
     const scores = analysis.scores || {};
+    const at = Date.now();
     const entry = {
-      at: Date.now(),
+      at,
       wpm: Number(pace.wpm) || 0,
       seconds: Number(meta.seconds) || 0,
       overall: Number(analysis.overallScore) || 0,
@@ -4992,6 +4998,14 @@ async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, 
       grammar: Number(scores.grammar) || 0,
       vocabulary: Number(scores.vocabulary) || 0,
       source: meta.source || "call",
+      // Faza 7 — sessiya bileti və konsept zaman xətti üçün:
+      //   id — hesabatın özünə keçid (History həmin analizi birbaşa açır)
+      //   nw — bu sessiyada ilk dəfə işlədilən söz sayı
+      //   c  — bu sessiyanın konsept kəsiyi { articles: [cəhd, səhv] }
+      // Köhnə yazılarda bu üç sahə yoxdur; oxuyan tərəf onsuz işləyir.
+      id: analysisId,
+      nw: newWords,
+      c: seriesConcepts(stats),
     };
 
     await db.runTransaction(async (tx) => {
@@ -4999,11 +5013,19 @@ async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, 
       const snap = await tx.get(ref);
       const prev = snap.exists ? (snap.data() || {}) : {};
       const series = Array.isArray(prev.series) ? prev.series : [];
+      // Əvvəlki hesabatın "bunu düzəlt" siyahısı məhz bu sessiyada ölçülür —
+      // ardıcıllıq vacibdir: ƏVVƏL köhnə fokusu qiymətləndir, SONRA yenisini
+      // qoy, yoxsa bu sessiyanın öz səhvləri özünü qiymətləndirərdi.
+      const review = reviewFocus(prev.focus, stats, { at, analysisId });
+      const focus = nextFocus(stats, analysis.errorThemes, prev.focus, { at, analysisId });
+
       tx.set(ref, {
         wordCount: totalWords,
         lastNewWords: newWords,
         // Yeni ən yenidir: otaq massivi tərsinə çevirmədən oxuyur.
         series: [entry, ...series].slice(0, INSIGHTS_SERIES_LEN),
+        ...(focus ? { focus } : {}),
+        ...(review ? { focusReview: review } : {}),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
     });

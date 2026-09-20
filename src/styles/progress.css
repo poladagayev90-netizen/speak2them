@@ -405,3 +405,278 @@
   max-width: 380px;
   line-height: 1.6;
 }
+
+/* ── Faza 7: carry-over, concept timeline, session tickets ─────────
+ *
+ * Same rule as the tracker above: no colour tier. A verdict is told by its
+ * icon, its tag and — above all — the numbers in its sentence, never by a
+ * green or red card. The only structural emphasis is a left border on the one
+ * verdict that asks for attention ("came up again"), which survives both
+ * themes and does not depend on hue at all.
+ */
+
+.progress-carry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+}
+
+@media (min-width: 700px) {
+  .progress-carry { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.progress-verdict {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  min-width: 0;
+}
+
+.progress-verdict--again,
+.progress-verdict--pending { border-left-color: var(--accent); }
+
+.progress-verdict-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+
+.progress-verdict-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.progress-verdict-name {
+  font-size: var(--fs-body);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.progress-verdict-tag {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.progress-verdict-line {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* The wrong sentence is struck through rather than coloured: red is reserved
+ * for destructive controls, and the strike says "not this" in any theme. */
+.progress-example-wrong {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.progress-example-arrow { color: var(--text-muted); }
+
+.progress-example-right {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ── Expandable tracker row ─────────────────────────────── */
+
+/* The row is a <button> when it can open, so it is reachable by keyboard and
+ * announces its state. Everything here is undoing the browser's button styling
+ * while keeping the grid the <div> rows use. */
+.progress-row--tap {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  /* The grid comes from .progress-row; a button's default border/padding must
+   * not fight it. */
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.progress-row--tap:hover { background: var(--accent-soft); }
+
+.progress-cell-name {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.progress-row-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.progress-row-chevron--open { transform: rotate(180deg); }
+
+.progress-timeline {
+  padding: 0 var(--s-4) var(--s-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+
+.progress-timeline-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 64px;
+  padding-top: var(--s-3);
+}
+
+.progress-timeline-bar {
+  flex: 1;
+  min-width: 6px;
+  max-width: 28px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: var(--accent-soft);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.progress-timeline-fill {
+  width: 100%;
+  background: var(--accent);
+  border-radius: var(--r-sm);
+}
+
+/* A session with no corrections is the best outcome, so it cannot look like
+ * an empty column: it keeps a visible stub in the muted tone instead. */
+.progress-timeline-fill--clean { background: var(--text-muted); opacity: 0.35; }
+
+.progress-timeline-note {
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Session tickets ────────────────────────────────────── */
+
+.progress-tickets {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+}
+
+@media (min-width: 700px) {
+  .progress-tickets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.progress-ticket {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  min-width: 0;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.progress-ticket--tap { cursor: pointer; }
+.progress-ticket--tap:hover { border-color: var(--accent); }
+
+.progress-ticket-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.progress-ticket-source {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.progress-ticket-date {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.progress-ticket-min {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.progress-ticket-score {
+  margin-left: auto;
+  font-size: var(--fs-h2);
+  font-weight: 800;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-ticket-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-3);
+  margin-top: var(--s-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-ticket-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+}
+
+.progress-ticket-tag {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--accent-soft);
+  border-radius: var(--r-pill);
+  padding: 2px var(--s-3);
+}
+
+.progress-ticket-tag b { font-weight: 800; }
+
+.progress-ticket-clean {
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}

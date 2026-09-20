@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useNavigate } from 'react-router-dom';import { Clock, ChevronLeft, FileText } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Clock, ChevronLeft, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
@@ -23,6 +24,10 @@ export default function History({ user }) {
   const [loading, setLoading] = useState(true);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const navigate = useNavigate();
+  // The progress room links a session ticket straight to its report
+  // (navigate('/history', { state: { analysisId } })). Without this the tap
+  // landed on the list and the learner had to find the row by date.
+  const { state } = useLocation();
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
@@ -55,6 +60,11 @@ export default function History({ user }) {
         });
         setHistory(results);
 
+        const wanted = state?.analysisId && results.find((d) => d.id === state.analysisId);
+        // Only auto-open a finished report: opening a failed ticket would show
+        // the error screen with no way back to the list the learner expected.
+        if (wanted && wanted.status === 'done') setSelectedAnalysis(wanted);
+
         // Home-dakı "analiziniz hazırdır" kartı bu açara baxır — səhifəyə
         // girmək ən yenisini "görülmüş" sayır, kart özbaşına qayıtmır.
         const newestDone = results.find(d => d.status === 'done');
@@ -68,7 +78,7 @@ export default function History({ user }) {
       }
     };
     fetchHistory();
-  }, [user]);
+  }, [user, state?.analysisId]);
 
   // A CSS variable cannot take an "22" alpha suffix the way a hex literal can,
   // so the score badge uses the paired bg/fg tokens instead of tinting one colour.

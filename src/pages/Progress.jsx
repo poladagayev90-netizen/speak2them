@@ -3,13 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { ChevronLeft, Clock, BookOpen, GraduationCap, Gauge, LineChart } from 'lucide-react';
+import {
+  ChevronLeft, Clock, BookOpen, GraduationCap, Gauge, LineChart, ChevronDown,
+  Check, TrendingUp, Minus, RotateCcw, CircleDashed, Bot, Users, Target,
+} from 'lucide-react';
 import {
   fetchLearnerInsights,
   buildTrackerRows,
   topWeaknesses,
   trackerCoverage,
   progressSeries,
+  sessionTickets,
+  conceptTimeline,
+  focusReview,
+  currentFocus,
 } from '../utils/insights';
 import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import '../styles/progress.css';
@@ -38,6 +45,9 @@ export default function Progress({ user }) {
   const [grammar, setGrammar] = useState(null);
   const [progress, setProgress] = useState(null);
   const [profile, setProfile] = useState(null);
+  // Which tracker row is open. One at a time: two timelines on a phone screen
+  // is two charts and no context for either.
+  const [openConcept, setOpenConcept] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -64,7 +74,16 @@ export default function Progress({ user }) {
   const rows = buildTrackerRows(grammar, lang);
   const series = progressSeries(progress);
   const coverage = trackerCoverage(rows);
-  const focus = topWeaknesses(rows, 3);
+  const review = focusReview(progress, lang);
+  const watching = currentFocus(progress, lang);
+  const tickets = sessionTickets(progress, lang);
+
+  // The carry-over already names the concepts the last report asked for, so
+  // "What to practise" only shows what it does NOT cover. Two sections naming
+  // the same three concepts read as a bug, and the learner stops reading both.
+  const weaknesses = topWeaknesses(rows, 3);
+  const pinned = new Set((review ? review.items : watching).map((i) => i.id));
+  const focus = weaknesses.filter((r) => !pinned.has(r.id));
 
   // The headline score is the average of the last five sessions, not the last
   // one. A single bad call is noise — a learner who had a tired evening should
@@ -134,13 +153,13 @@ export default function Progress({ user }) {
         <ScoreRing value={overall} />
         <div className="progress-hero-body">
           <p className="progress-hero-label">Across {grammar?.sessionCount || series.length} sessions</p>
-          {focus.length > 0 ? (
+          {weaknesses.length > 0 ? (
             <>
-              <p className="progress-hero-headline">Work on {focus[0].label.toLowerCase()}</p>
+              <p className="progress-hero-headline">Work on {weaknesses[0].label.toLowerCase()}</p>
               <p className="progress-hero-sub">
-                It is the pattern you repeat most — {focus[0].errors}{' '}
-                {focus[0].errors === 1 ? 'correction' : 'corrections'} across{' '}
-                {focus[0].sessions} {focus[0].sessions === 1 ? 'session' : 'sessions'}.
+                It is the pattern you repeat most — {weaknesses[0].errors}{' '}
+                {weaknesses[0].errors === 1 ? 'correction' : 'corrections'} across{' '}
+                {weaknesses[0].sessions} {weaknesses[0].sessions === 1 ? 'session' : 'sessions'}.
               </p>
             </>
           ) : (
@@ -172,6 +191,45 @@ export default function Progress({ user }) {
         />
         <Tile icon={Gauge} label="Speaking speed" value={avgWpm ?? '—'} unit={avgWpm ? 'wpm' : ''} />
       </div>
+
+      {/* The carry-over. This is the only thing on the page that answers "did I
+          actually apply it" — everything else is a total. The verdicts are
+          computed server-side from transcript-verified corrections, so a card
+          here never congratulates the learner for something we did not see. */}
+      {review ? (
+        <section className="progress-section">
+          <div className="progress-section-head">
+            <h3 className="progress-section-title">Did you apply it?</h3>
+            <span className="progress-section-note">
+              since {review.fromAt ? new Date(review.fromAt).toLocaleDateString() : 'your last report'}
+            </span>
+          </div>
+          <div className="progress-carry">
+            {review.items.map((item) => <VerdictCard key={item.id} item={item} />)}
+          </div>
+        </section>
+      ) : watching.length > 0 ? (
+        <section className="progress-section">
+          <div className="progress-section-head">
+            <h3 className="progress-section-title">Watching next session</h3>
+          </div>
+          <div className="progress-carry">
+            {watching.map((item) => (
+              <div key={item.id} className="progress-verdict progress-verdict--pending">
+                <div className="progress-verdict-head">
+                  <span className="progress-verdict-icon"><Target size={16} strokeWidth={2.2} /></span>
+                  <p className="progress-verdict-name">{item.label}</p>
+                </div>
+                <p className="progress-verdict-line">
+                  Corrected {item.errors}× in your last session. Your next session
+                  measures the same thing.
+                </p>
+                {item.examples[0] && <Example example={item.examples[0]} />}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {focus.length > 0 && (
         <section className="progress-section">
@@ -209,25 +267,60 @@ export default function Progress({ user }) {
             <span>Used</span>
             <span>Mastery</span>
           </div>
-          {rows.map((row) => (
-            <div className="progress-row" key={row.id}>
-              <span className="progress-cell-name">{row.label}</span>
-              <span className="progress-cell-difficulty">
-                <span className="progress-cefr">{row.cefr || '—'}</span>
-              </span>
-              <span className="progress-cell-num progress-cell-used">{row.attempts}×</span>
-              <span className="progress-meter">
-                <span className={`progress-meter-track${row.provisional ? ' progress-meter-track--provisional' : ''}`}>
-                  {!row.provisional && (
-                    <span className="progress-meter-fill" style={{ width: `${row.mastery}%` }} />
+          {rows.map((row) => {
+            // A concept is only worth opening once it has appeared in two
+            // different sessions — a single point is not a trend, and an
+            // expander that opens onto one dot teaches nothing.
+            const timeline = conceptTimeline(progress, row.id);
+            const expandable = timeline.length >= 2;
+            const open = openConcept === row.id;
+            const cells = (
+              <>
+                <span className="progress-cell-name">
+                  {row.label}
+                  {expandable && (
+                    <ChevronDown
+                      size={14}
+                      className={`progress-row-chevron${open ? ' progress-row-chevron--open' : ''}`}
+                      aria-hidden="true"
+                    />
                   )}
                 </span>
-                <span className={`progress-meter-value${row.provisional ? ' progress-meter-value--muted' : ''}`}>
-                  {row.provisional ? '—' : `${row.mastery}%`}
+                <span className="progress-cell-difficulty">
+                  <span className="progress-cefr">{row.cefr || '—'}</span>
                 </span>
-              </span>
-            </div>
-          ))}
+                <span className="progress-cell-num progress-cell-used">{row.attempts}×</span>
+                <span className="progress-meter">
+                  <span className={`progress-meter-track${row.provisional ? ' progress-meter-track--provisional' : ''}`}>
+                    {!row.provisional && (
+                      <span className="progress-meter-fill" style={{ width: `${row.mastery}%` }} />
+                    )}
+                  </span>
+                  <span className={`progress-meter-value${row.provisional ? ' progress-meter-value--muted' : ''}`}>
+                    {row.provisional ? '—' : `${row.mastery}%`}
+                  </span>
+                </span>
+              </>
+            );
+
+            return (
+              <React.Fragment key={row.id}>
+                {expandable ? (
+                  <button
+                    type="button"
+                    className="progress-row progress-row--tap"
+                    aria-expanded={open}
+                    onClick={() => setOpenConcept(open ? null : row.id)}
+                  >
+                    {cells}
+                  </button>
+                ) : (
+                  <div className="progress-row">{cells}</div>
+                )}
+                {open && <ConceptTimeline points={timeline} label={row.label} />}
+              </React.Fragment>
+            );
+          })}
         </div>
         <p className="progress-section-note" style={{ display: 'block', marginTop: 'var(--s-3)' }}>
           A dash means you have not used that structure enough times yet for a
@@ -246,7 +339,169 @@ export default function Progress({ user }) {
           </div>
         </section>
       )}
+
+      {/* One ticket per analysed session: what it scored, how long you spoke,
+          and what it was about. The full report is one tap away — this list is
+          the index to it, not a replacement for it. */}
+      {tickets.length > 0 && (
+        <section className="progress-section">
+          <div className="progress-section-head">
+            <h3 className="progress-section-title">Sessions</h3>
+            <span className="progress-section-note">newest first</span>
+          </div>
+          <div className="progress-tickets">
+            {tickets.map((t, i) => (
+              <Ticket
+                key={t.analysisId || `${t.at}-${i}`}
+                ticket={t}
+                // Sessions analysed before Faza 7 carry no analysis id, so they
+                // are shown but cannot open — better than a tap that silently
+                // does nothing.
+                onOpen={t.analysisId
+                  ? () => navigate('/history', { state: { analysisId: t.analysisId } })
+                  : null}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
+  );
+}
+
+// ─── Faza 7 pieces ─────────────────────────────────────────────────
+
+// Wording is the whole design here. Each verdict has to say what was MEASURED,
+// not how the learner should feel about it: "8 uses, no correction" is a fact
+// they can check against their own report, "great progress!" is not.
+const VERDICTS = {
+  clean: { icon: Check, title: 'Clean this time' },
+  better: { icon: TrendingUp, title: 'Better' },
+  same: { icon: Minus, title: 'About the same' },
+  again: { icon: RotateCcw, title: 'Came up again' },
+  unseen: { icon: CircleDashed, title: 'Not enough to judge' },
+};
+
+function verdictLine({ verdict, before, after }) {
+  const rate = (s) => Math.round((s.errors / Math.max(1, s.attempts)) * 100);
+  switch (verdict) {
+    case 'clean':
+      return `You used it ${after.attempts}× with nothing to correct, after ${before.errors} `
+        + `${before.errors === 1 ? 'correction' : 'corrections'} last time.`;
+    case 'better':
+      return `${after.errors} of ${after.attempts} uses needed a fix — ${rate(after)}%, down from ${rate(before)}%.`;
+    case 'same':
+      return `${after.errors} of ${after.attempts} uses needed a fix, about the same rate as last time.`;
+    case 'again':
+      return `${after.errors} of ${after.attempts} uses needed a fix — more often than last time.`;
+    default:
+      // The honest case, and the one a flattering feature would hide: it simply
+      // did not come up enough to say anything.
+      return after.attempts === 0
+        ? 'It did not come up in your last session, so there is nothing to compare.'
+        : `Only ${after.attempts} ${after.attempts === 1 ? 'use' : 'uses'} last session — too few to call.`;
+  }
+}
+
+function VerdictCard({ item }) {
+  const meta = VERDICTS[item.verdict] || VERDICTS.unseen;
+  const Icon = meta.icon;
+  return (
+    <div className={`progress-verdict progress-verdict--${item.verdict}`}>
+      <div className="progress-verdict-head">
+        <span className="progress-verdict-icon"><Icon size={16} strokeWidth={2.2} /></span>
+        <p className="progress-verdict-name">{item.label}</p>
+        <span className="progress-verdict-tag">{meta.title}</span>
+      </div>
+      <p className="progress-verdict-line">{verdictLine(item)}</p>
+      {item.examples[0] && <Example example={item.examples[0]} />}
+    </div>
+  );
+}
+
+// The learner's own sentence, struck through and fixed. Their words are what
+// makes the concept name mean something — "articles" is a label, "I go to the
+// school" is the mistake they recognise.
+function Example({ example }) {
+  return (
+    <p className="progress-example">
+      <span className="progress-example-wrong">{example.original}</span>
+      <span className="progress-example-arrow" aria-hidden="true">→</span>
+      <span className="progress-example-right">{example.corrected}</span>
+    </p>
+  );
+}
+
+// One concept over time. Bars, not a line: the sessions are not evenly spaced
+// in time and a line between them would imply a smooth slope through days the
+// learner never practised. Height is the error RATE, so a long session and a
+// short one can be compared at all.
+function ConceptTimeline({ points, label }) {
+  const worst = Math.max(...points.map((p) => p.rate), 1);
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  return (
+    <div className="progress-timeline">
+      <div className="progress-timeline-bars" role="img"
+        aria-label={`${label}: correction rate from ${first.rate}% to ${last.rate}% across ${points.length} sessions`}>
+        {points.map((p, i) => (
+          <span key={`${p.at}-${i}`} className="progress-timeline-bar">
+            <span
+              className={`progress-timeline-fill${p.errors === 0 ? ' progress-timeline-fill--clean' : ''}`}
+              // A clean session still needs a visible mark, otherwise the best
+              // days look like missing data.
+              style={{ height: `${Math.max(6, (p.rate / worst) * 100)}%` }}
+            />
+          </span>
+        ))}
+      </div>
+      <p className="progress-timeline-note">
+        Share of uses that needed correcting, {points.length} sessions where it came up
+        {' · '}
+        {first.rate}% → {last.rate}%
+      </p>
+    </div>
+  );
+}
+
+function Ticket({ ticket, onOpen }) {
+  const minutes = Math.round(ticket.seconds / 60);
+  const Icon = ticket.source === 'ainur' ? Bot : Users;
+  const body = (
+    <>
+      <div className="progress-ticket-head">
+        <span className="progress-ticket-source"><Icon size={14} strokeWidth={2.2} /></span>
+        <span className="progress-ticket-date">
+          {ticket.at ? new Date(ticket.at).toLocaleDateString() : '—'}
+        </span>
+        {minutes > 0 && <span className="progress-ticket-min">{minutes} min</span>}
+        <span className="progress-ticket-score">{ticket.overall || '—'}</span>
+      </div>
+      <div className="progress-ticket-stats">
+        {ticket.wpm > 0 && <span>{ticket.wpm} wpm</span>}
+        {ticket.newWords > 0 && <span>+{ticket.newWords} new words</span>}
+        {ticket.used > 0 && <span>{ticket.used} structures used</span>}
+      </div>
+      {ticket.corrected.length > 0 ? (
+        <div className="progress-ticket-tags">
+          {ticket.corrected.map((c) => (
+            <span key={c.id} className="progress-ticket-tag">
+              {c.label} <b>{c.errors}</b>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="progress-ticket-clean">Nothing needed correcting in this one.</p>
+      )}
+    </>
+  );
+
+  if (!onOpen) return <div className="progress-ticket">{body}</div>;
+  return (
+    <button type="button" className="progress-ticket progress-ticket--tap" onClick={onOpen}>
+      {body}
+    </button>
   );
 }
 
