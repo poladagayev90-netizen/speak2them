@@ -208,3 +208,65 @@ Kodda təsdiqlənmiş data toplama (APP_STORE_AUDIT.md §3.4-dən):
 ```
 ```
 ```
+
+---
+
+## 8. BURAXILIŞ 2026-09-21 — versionCode 19 / 1.9
+
+### 8.1 Nə dəyişdi (mətnə təsir edən)
+- Mövzular **30 → 60**, hər mövzuda 8 söz + 3 idiom + 20 sual + 12 foto.
+- **Dərslər** (yeni): 4 modul, 17 qısa dərs — necə təsvir etməli, söhbəti necə davam etdirməli, Taboo, debat.
+- **Dərs rejimi** (yeni, kompüter): müəllim ekran paylaşanda mövzunu böyük ekranda slayd-slayd keçir.
+- Tanışlıq zəngi artıq **WhatsApp-da** razılaşdırılır (tətbiqdəki slot lövhəsi ikinci seçim kimi qalır).
+- **⚠️ İNTERFEYS ARTIQ İNGİLİSCƏDİR** (2026-08-21-dən; `i18next` silinib). §2.1-dəki «UI türkcəni dəstəkləyir» əsaslandırması KÖHNƏLİB. Mağaza səhifəsi az/tr qalır — tətbiqi az/tr danışan öyrənən üçün TƏSVİR edir, amma UI-nin özünün ingiliscə olduğunu tam təsvirdə bir sətirlə demək lazımdır ki, saxta gözlənti yaranmasın.
+
+### 8.2 Yenilənmiş tam təsvir (az-AZ, kopyala-yapışdır)
+```
+İngilis dilini danışaraq öyrənməyin ən sürətli yolu — SpeakLab. 🎙️
+
+Qrammatika kitablarını bir kənara qoy. SpeakLab səni səviyyənə (A1–C2) uyğun REAL insanlarla canlı səsli zəngə bağlayır — bir toxunuşla partnyor tapılır və danışıq dərhal başlayır.
+
+🎯 NƏ ÜÇÜN SPEAKLAB?
+• Bir düymə — canlı partnyor. Səviyyənə uyğun danışan tapılır, zəng avtomatik başlayır.
+• 60 gündəlik mövzu. Hər mövzuda 8 söz, 3 idiom, 20 hazır sual və 12 foto — zəngə hazır gəl.
+• Qısa dərslər. «Nə deyəcəyimi bilmirəm» probleminin cavabı: zəngi davam etdirən hazır cümlələr.
+• AI təhlili. Zəngdən sonra tələffüzün, söz ehtiyatın və qrammatikan üzrə şəxsi hesabat al.
+• AInur ilə praktika. Real insana hazır deyilsənsə, AI müəllimlə istənilən vaxt səsli məşq et.
+• Zəngin içində oyunlar. Taboo və debat — danışmağı asanlaşdıran aktivliklər.
+• Streak və reytinq. Hər gün danış, seriyanı böyüt, liderlər cədvəlində yüksəl.
+
+🧪 NECƏ BAŞLAYIRSAN?
+Qeydiyyatdan sonra komanda ilə 15 dəqiqəlik tanışlıq söhbəti — səviyyəni və həftəlik ritmini birlikdə müəyyən edirik. Ondan sonra canlı partnyor praktikası açılır.
+
+💬 KİMLƏR ÜÇÜNDÜR?
+İngiliscə oxuyub-yaza bilən, amma DANIŞMAĞA çəkinən hər kəs üçün.
+
+Qeyd: tətbiqin interfeysi ingiliscədir — dil öyrənərkən ingiliscə mühitdə qalmaq üçün. Zəngdən sonrakı hesabat sənin dilində (az/tr) gəlir.
+
+Bu gün danışmağa başla — SpeakLab səni gözləyir. 🚀
+
+speaklab.az
+```
+
+### 8.3 Qrafika
+- Telefon screenshot-ları: **`store_assets/phone/01..07`** (1080×1920, 2026-09-21, əsl tətbiqdən).
+  Sıra: Today · Lessons · bir dərs · mövzu lüğəti · AInur şəkil təsviri · Live · Leaderboard.
+- İkon və feature graphic dəyişməyib (`store_assets/app-icon-512.png`, `feature-graphic-1024x500.png`).
+
+### 8.4 Yükləmə addımları (Play Console)
+1. **Test → Internal testing** (və ya birbaşa Production) → *Create new release*.
+2. AAB yüklə: **`SpeakLab-play-v19.aab`** (Desktop-da). versionCode 19 — əvvəlkindən böyük olmalıdır, yoxsa rədd edilir.
+3. **Release name:** `1.9 (19)`. **Release notes (az-AZ):**
+   ```
+   • 60 mövzu — hər birində yeni sözlər, idiomlar, suallar və 12 foto
+   • Yeni «Dərslər» bölməsi: zəngi davam etdirən hazır cümlələr
+   • Tanışlıq zəngi artıq WhatsApp-da razılaşdırılır
+   • Sürətli düzəlişlər: siyahıların sonu artıq alt menyunun altında qalmır
+   ```
+4. **Store listing → Phone screenshots:** köhnə 5-i sil, `store_assets/phone/`-dan 7-ni sıra ilə yüklə.
+5. **Tam təsviri** §8.2-dəki mətnlə əvəz et (az-AZ; tr-TR səhifəsi istəsən sonra).
+6. **App access** bölməsində test hesabı DƏYİŞMƏYİB: `speaklab.playreview@example.com` / `PlayReview2026!` — hesab canlıdır, girişi 2026-09-21-də yoxlanılıb.
+7. *Review release* → *Start rollout*.
+
+### 8.5 Yükləməzdən əvvəl telefonda
+`SpeakLab-test-v19.apk` sideload üçündür və **upload açarı ilə** imzalanıb; Play versiyası Play-in açarı ilə imzalanır. Play buraxılışını quraşdırmazdan ƏVVƏL test APK-nı telefondan sil, yoxsa imza uyğunsuzluğu xətası verir.
