@@ -2248,8 +2248,37 @@ exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res)
   const db = admin.firestore();
   try {
     await enforceRateLimit(decoded.uid, "canPair", 120, 60 * 60 * 1000);
-    const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, { checkLevel: !direct });
-    return res.status(200).json({ ok: v.ok, recent: v.recent });
+    // NƏZARƏTLİ CÜT — getAgoraToken-dəki İLƏ EYNİ. Bu istisna orada vardı,
+    // burada yox idi, və nəticə tam görünməz bir tıxac oldu: 18 yaşdan kiçik
+    // şagird komandaya zəng edəndə client ön-yoxlaması onu dayandırırdı
+    // ("This call cannot be connected"), halbuki əsl qapı — token — icazə
+    // verirdi. Serverdə 403 heç vaxt görünmədiyi üçün loglarda da izi yox idi.
+    // İki yoxlama EYNİ cavabı verməlidir, yoxsa biri digərini yalançı çıxarır.
+    const [meDoc, peerDoc] = await Promise.all([
+      db.collection("users").doc(decoded.uid).get().catch(() => null),
+      db.collection("users").doc(peerUid).get().catch(() => null),
+    ]);
+    const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
+    const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
+    const supervised = decoded.uid === ADMIN_UID || peerUid === ADMIN_UID
+      || me.role === "teacher" || peer.role === "teacher"
+      || me.teacherId === peerUid || peer.teacherId === decoded.uid;
+
+    const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
+      checkLevel: !direct,
+      checkAge: !supervised,
+    });
+    // SƏBƏB: yalnız yaş qaydası açıqlanır, və yalnız yeganə maneə odursa.
+    // Blok və "bir daha salma" susqun qalır — onları demək blok siyahısını
+    // oxumağın yoluna çevrilərdi. Yaş isə zəng EDƏNİN öz profilindəki
+    // məlumatdır: onu özünə demək heç nə sızdırmır, gizlətmək isə istifadəçini
+    // səbəbsiz bir divarın qarşısında qoyur.
+    const ageOnly = !v.ok && v.ageClash && !v.blocked && !v.avoided && !v.levelClash;
+    if (!v.ok) {
+      console.warn("[canPair] refused:", decoded.uid, "→", peerUid,
+        JSON.stringify({ blocked: v.blocked, avoided: v.avoided, ageClash: v.ageClash, levelClash: v.levelClash, supervised, direct }));
+    }
+    return res.status(200).json({ ok: v.ok, recent: v.recent, ...(ageOnly ? { reason: "age" } : {}) });
   } catch (e) {
     const status = e.httpStatus || 500;
     if (status === 500) console.error("[canPair]", e.message);

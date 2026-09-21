@@ -735,9 +735,13 @@ export default function Chat({ user }) {
     //    tutmasa (`failed`) zəngi kəsmirik — əsl qapı token-dədir.
     const verdict = await canPair(peerId, { direct: true });
     if (!verdict.failed && !verdict.ok) {
-      // Səbəb deyilmir: "səni bloklayıb" cavabı blok siyahısını oxumağın
-      // yoluna çevrilər.
-      alert('This call cannot be connected.');
+      // Səbəb ümumiyyətlə deyilmir — "səni bloklayıb" cavabı blok siyahısını
+      // oxumağın yoluna çevrilər. YEGANƏ istisna yaş qaydasıdır: o, zəng
+      // edənin öz profilindəki məlumatdır, gizlətmək heç nəyi qorumur, amma
+      // istifadəçini səbəbi bilinməyən bir divarın qarşısında qoyur.
+      alert(verdict.reason === 'age'
+        ? 'Your profile says you are under 18, so practice calls are with the SpeakLab team and your own teacher. Message us and we will arrange one.'
+        : 'This call cannot be connected.');
       return;
     }
 

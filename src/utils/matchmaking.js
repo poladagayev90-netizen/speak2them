@@ -108,11 +108,18 @@ export async function canPair(peerUid, { direct = false } = {}) {
       method: 'POST',
       body: JSON.stringify({ peerUid, direct }),
     });
-    if (!res.ok) return { ok: false, recent: false, failed: true };
+    if (!res.ok) return { ok: false, recent: false, failed: true, reason: '' };
     const data = await res.json();
-    return { ok: data.ok === true, recent: data.recent === true, failed: false };
+    // `reason` is only ever 'age' — the one refusal that is about the caller's
+    // OWN profile and so gives nothing away. A block stays silent.
+    return {
+      ok: data.ok === true,
+      recent: data.recent === true,
+      failed: false,
+      reason: data.reason || '',
+    };
   } catch {
-    return { ok: false, recent: false, failed: true };
+    return { ok: false, recent: false, failed: true, reason: '' };
   }
 }
 
