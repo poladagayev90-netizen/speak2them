@@ -195,7 +195,7 @@ export default function Register() {
                 </button>
               ))}
             </div>
-            {!role && <p className="auth-hint">Choose your role to continue</p>}
+            {!role && <p className="auth-hint">First, are you a student or a teacher?</p>}
           </>
         )}
 
@@ -253,7 +253,9 @@ export default function Register() {
           />
 
           <button type="submit" className="btn-primary" disabled={loading || !role}>
-            {loading ? 'Creating account...' : 'Get Started'}
+            {/* A disabled button that still says "Get Started" gives no reason
+                why it does nothing; this names the missing step. */}
+            {loading ? 'Creating account...' : (role ? 'Get Started' : 'Choose student or teacher above')}
           </button>
         </form>
 

@@ -146,9 +146,9 @@ body {
 
 .auth-hint {
   margin: 0 0 var(--s-3);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--accent);
   text-align: center;
 }
 
@@ -236,6 +236,7 @@ body {
   color: var(--text-on-accent);
   border: none;
   border-radius: 12px;
+  font-family: inherit; /* a <button> does not inherit it: "Get Started" rendered in the system font */
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -248,9 +249,11 @@ body {
      OXUNMAZ olurdu, düymə isə hələ də "aktiv" görünürdü (bax müəllim
      kod ekranının skrinşotu). Sönülü düymə həm açıq şəkildə sönülü
      görünməli, həm də yazısı oxunmalıdır. */
-  background: var(--bg-card);
+  /* A flat grey fill, not a white outlined box: outlined, it read as a
+     secondary button you could press (sign-up screen, 2026-09-23). */
+  background: var(--bg-secondary);
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   opacity: 1;
   cursor: not-allowed;
 }

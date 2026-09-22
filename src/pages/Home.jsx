@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, BookOpen, ChevronRight, Users } from 'lucide-react';
+import { Shield, BookOpen, Users } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -14,7 +14,6 @@ import Logo from '../components/Logo';
 import { ADMIN_UID } from '../constants';
 import GuidedTour from '../components/GuidedTour';
 import CourseProgressCard from '../components/CourseProgressCard';
-import DailyTopicBanner from '../components/DailyTopicBanner';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import UpcomingCallCard from '../components/UpcomingCallCard';
@@ -24,7 +23,8 @@ import WeekGoalCard from '../components/WeekGoalCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import TodayNudge from '../components/TodayNudge';
 import TodayTaskCard from '../components/ai/TodayTaskCard';
-import LessonsCard from '../components/LessonsCard';
+import TodayMore from '../components/TodayMore';
+import { needsIntro } from '../utils/intro';
 import useLiveLobby from '../hooks/useLiveLobby';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -128,6 +128,26 @@ export default function Home({ user }) {
   const onlineCount = onlineUsers.length;
   const searchingCount = activeSearchers.length;
 
+  // ONE next step, chosen by where the learner is. Everything else goes into
+  // the quiet "More for today" list below it.
+  //   1. someone is searching right now -> join them (they wait a minute or two)
+  //   2. the intro call is still to do   -> it is what opens live practice
+  //   3. otherwise                       -> today's AInur session, always there
+  // Appointments, offers and slot changes still sit ABOVE the hero: they are
+  // promises to another person, not suggestions.
+  const introFirst = needsIntro(user);
+  const hero = searchingCount > 0 && !introFirst ? 'live' : introFirst ? 'intro' : 'ainur';
+  const openLive = () => navigate('/live', {
+    // Nobody around? Then the useful thing on the Live tab is the calendar,
+    // not the empty people list — open it on arrival.
+    state: (searchingCount + onlineCount) === 0 && !introFirst ? { openBoard: true } : undefined,
+  });
+  const liveSummary = introFirst
+    ? 'Opens after your intro call'
+    : onlineCount > 0
+      ? `${onlineCount} ${onlineCount === 1 ? 'person' : 'people'} online`
+      : 'Book a time and we will match you';
+
   return (
     <div className="home-page">
       <GuidedTour
@@ -187,7 +207,6 @@ export default function Home({ user }) {
         {/* A proposal waiting for this learner's yes sits right above the
             bookings it turns into. */}
         <MatchOfferCard uid={user?.uid} />
-        <IntroCard user={user} />
         <UpcomingCallCard
           call={mine?.upcomingCall}
           busy={cancelBusy}
@@ -198,91 +217,73 @@ export default function Home({ user }) {
         {/* The weekly commitment from onboarding against what happened. */}
         <WeekGoalCard user={user} />
 
+        {hero === 'intro' && <IntroCard user={user} />}
+
         {/* The point of the release: there is always something to practise,
             whether or not anyone else is online. */}
-        <div id="tour-today-task">
-          <TodayTaskCard topic={todayTopic?.topic} hasTeacher={!!user?.teacherId} />
-        </div>
+        {hero === 'ainur' && (
+          <div id="tour-today-task">
+            <TodayTaskCard topic={todayTopic?.topic} hasTeacher={!!user?.teacherId} />
+          </div>
+        )}
+
+        {/* Somebody is searching right now: joining them IS the next step. The
+            card says so with a live dot and a button, because they only wait a
+            minute or two. The deep purple, because the other end is a person. */}
+        {hero === 'live' && (
+          <Card
+            tone="peer"
+            padding="md"
+            id="tour-live"
+            onClick={openLive}
+            style={{ marginBottom: 'var(--s-3)', borderColor: 'var(--accent)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
+              <div style={{
+                position: 'relative',
+                width: 44, height: 44, borderRadius: 'var(--r-md)', flexShrink: 0,
+                background: 'var(--peer-soft)', color: 'var(--peer)',
+                display: 'grid', placeItems: 'center',
+              }}>
+                <Users size={22} strokeWidth={1.75} aria-hidden="true" />
+                <span className="live-dot" aria-hidden="true" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{
+                  margin: 0, fontSize: 'var(--fs-h2)', fontWeight: 700,
+                  color: 'var(--text-primary)', lineHeight: 'var(--lh-tight)',
+                }}>
+                  Talk to someone
+                </p>
+                <p style={{
+                  margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600,
+                  color: 'var(--accent)', lineHeight: 'var(--lh-body)',
+                }}>
+                  {`${searchingCount} ${searchingCount === 1 ? 'person is waiting' : 'people are waiting'} right now — join and you connect immediately`}
+                </p>
+              </div>
+              <span style={{
+                flexShrink: 0, padding: '8px 14px', borderRadius: 'var(--r-pill)',
+                background: 'var(--accent)', color: 'var(--text-on-accent)',
+                fontSize: 'var(--fs-sm)', fontWeight: 700, whiteSpace: 'nowrap',
+              }}>
+                Join
+              </span>
+            </div>
+          </Card>
+        )}
 
         {/* A quiet contextual prompt, in the flow rather than floating over it,
             and BELOW the main action -- a nudge must never outrank the thing it
             is nudging you towards. */}
         <TodayNudge user={user} mine={mine} />
 
-        {/* Live is a summary here, not the whole lobby. The deep purple,
-            because the other end is a person; the card above is AInur's. */}
-        {/* When somebody is actually searching this stops being a summary and
-            becomes the thing to do: the card lights up, says so with a live
-            dot, and grows a button. It used to be one grey sentence in the
-            middle of a quiet card -- you had to be reading it to notice that a
-            person was waiting, and they only wait a minute or two. */}
-        <Card
-          tone="peer"
-          padding="md"
-          id="tour-live"
-          // Nobody around? Then the useful thing on the Live tab is the
-          // calendar, not the empty people list — open it on arrival.
-          onClick={() => navigate('/live', {
-            state: (searchingCount + onlineCount) === 0 ? { openBoard: true } : undefined,
-          })}
-          style={{
-            marginBottom: 'var(--s-3)',
-            ...(searchingCount > 0 ? { borderColor: 'var(--accent)' } : null),
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
-            <div style={{
-              position: 'relative',
-              width: 44, height: 44, borderRadius: 'var(--r-md)', flexShrink: 0,
-              background: 'var(--peer-soft)', color: 'var(--peer)',
-              display: 'grid', placeItems: 'center',
-            }}>
-              <Users size={22} strokeWidth={1.75} aria-hidden="true" />
-              {searchingCount > 0 && (
-                <span className="live-dot" aria-hidden="true" />
-              )}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{
-                margin: 0, fontSize: 'var(--fs-h2)', fontWeight: 700,
-                color: 'var(--text-primary)', lineHeight: 'var(--lh-tight)',
-              }}>
-                Talk to someone
-              </p>
-              <p style={{
-                margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600,
-                color: searchingCount > 0 ? 'var(--accent)' : 'var(--text-secondary)',
-                lineHeight: 'var(--lh-body)',
-              }}>
-                {searchingCount > 0
-                  ? `${searchingCount} ${searchingCount === 1 ? 'person is waiting' : 'people are waiting'} right now — join and you connect immediately`
-                  : onlineCount > 0
-                    ? `${onlineCount} ${onlineCount === 1 ? 'person' : 'people'} online`
-                    : 'Book a time and we will match you'}
-              </p>
-            </div>
-            {searchingCount > 0
-              ? (
-                <span style={{
-                  flexShrink: 0, padding: '8px 14px', borderRadius: 'var(--r-pill)',
-                  background: 'var(--accent)', color: 'var(--text-on-accent)',
-                  fontSize: 'var(--fs-sm)', fontWeight: 700, whiteSpace: 'nowrap',
-                }}>
-                  Join
-                </span>
-              )
-              : <ChevronRight size={20} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
-          </div>
-        </Card>
-
-        {/* How to do any of it. It sits under the two "go and speak" cards on
-            purpose: a lesson is preparation, and preparation must never outrank
-            the thing it prepares you for. */}
-        <LessonsCard user={user} />
-
-        <div id="tour-daily-topic">
-          <DailyTopicBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
-        </div>
+        <TodayMore
+          user={user}
+          showAinur={hero !== 'ainur'}
+          live={hero === 'live' ? null : { text: liveSummary, onClick: openLive }}
+          onOpenTopic={() => setDailyTopicOpen(true)}
+        />
 
         <NotificationPrompt user={user} />
 

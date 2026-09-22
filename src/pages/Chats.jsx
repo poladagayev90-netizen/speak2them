@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { getPresence } from '../utils/presence';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
+import { MessageCircle, Users } from 'lucide-react';
+import { Button, EmptyState, PageHeader } from '../components/ui';
 
 // Söhbətlər siyahısı.
 //
@@ -70,8 +72,8 @@ export default function Chats({ user }) {
   if (chats === null) {
     return (
       <div className="home-page">
-        <div className="home-header"><div className="home-logo">{'Chats'}</div></div>
         <div className="home-body" style={{ paddingBottom: '90px' }}>
+          <PageHeader title="Chats" />
           <div className="empty-state"><p>{'Loading...'}</p></div>
         </div>
       </div>
@@ -80,18 +82,21 @@ export default function Chats({ user }) {
 
   return (
     <div className="home-page">
-      <div className="home-header">
-        <div className="home-logo">{'Chats'}</div>
-      </div>
       <div className="home-body" style={{ paddingBottom: '90px' }}>
+        {/* Same header as every other tab — this one used to be a small
+            accent-coloured logo line. */}
+        <PageHeader title="Chats" />
         {rows.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon"></div>
-            <p>No conversations yet.</p>
-            <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
-              Message your partner here before or after a call.
-            </p>
-          </div>
+          // The first thing a new learner sees here, so it points somewhere.
+          <EmptyState
+            icon={<MessageCircle size={26} strokeWidth={1.75} />}
+            title="No conversations yet"
+            text="After a call you can message your partner here, to say thanks or plan the next one."
+          >
+            <Button variant="secondary" icon={<Users size={16} strokeWidth={2} />} onClick={() => navigate('/live')}>
+              Find a partner
+            </Button>
+          </EmptyState>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {rows.map((c) => {

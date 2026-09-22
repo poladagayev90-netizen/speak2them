@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
   GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
-  LineChart, Smartphone,
+  LineChart, Smartphone, Clock, Mic, Star,
 } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -27,6 +27,17 @@ import { isAdminUser } from '../utils/courseProgress';
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
+
+// A stat caption with its glyph. Inline-flex so the 11px icon sits on the
+// caption's line instead of dropping below it.
+function StatLabel({ icon: Icon, children }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--s-1)' }}>
+      <Icon size={11} strokeWidth={2.25} aria-hidden="true" />
+      {children}
+    </span>
+  );
+}
 
 export default function Profile({ user }) {
   const { theme, toggleTheme } = useTheme();
@@ -329,15 +340,15 @@ export default function Profile({ user }) {
 
       {/* Four numbers that answer "am I getting anywhere". The old three were
           Feedback / Talks / Mins, which read as trivia rather than progress.
-          The emoji is content, not an icon: four 9px uppercase labels in a row
-          are four identical grey smudges, and one character in front of each
-          gives the eye something to land on. */}
+          Four 9px uppercase labels in a row are four identical grey smudges, so
+          each gets a glyph for the eye to land on. It was an emoji; now it is a
+          lucide icon, which follows the theme instead of each phone's emoji font. */}
       <Card padding="md" style={{ marginBottom: 'var(--s-4)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--s-2)' }}>
-          <Stat value={stats.totalMinutes} label="⏱ Minutes" />
-          <Stat value={stats.calls} label="🎙 Sessions" />
-          <Stat value={streakInfo.count} label="🔥 Streak" />
-          <Stat value={avgRating} label="⭐ Rating" />
+          <Stat value={stats.totalMinutes} label={<StatLabel icon={Clock}>Minutes</StatLabel>} />
+          <Stat value={stats.calls} label={<StatLabel icon={Mic}>Sessions</StatLabel>} />
+          <Stat value={streakInfo.count} label={<StatLabel icon={Flame}>Streak</StatLabel>} />
+          <Stat value={avgRating} label={<StatLabel icon={Star}>Rating</StatLabel>} />
         </div>
       </Card>
 

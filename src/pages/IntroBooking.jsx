@@ -126,14 +126,19 @@ export default function IntroBooking({ user }) {
                 </ul>
 
                 {/* The way in. A message, not a commitment — they can ask
-                    first and agree a time in the same thread. */}
-                <button type="button" className="in-wa" onClick={openWhatsApp}>
-                  <MessageCircle size={20} aria-hidden="true" />
-                  <span>
-                    <b>Write to us on WhatsApp</b>
-                    <small>We answer, and we agree a time that suits you</small>
-                  </span>
-                </button>
+                    first and agree a time in the same thread. Only when there
+                    ARE open times: with none, the footer button is already
+                    "Write to us on WhatsApp", and the page offered the same
+                    action twice, one above the other. */}
+                {groups.length > 0 && (
+                  <button type="button" className="in-wa" onClick={openWhatsApp}>
+                    <MessageCircle size={20} aria-hidden="true" />
+                    <span>
+                      <b>Write to us on WhatsApp</b>
+                      <small>We answer, and we agree a time that suits you</small>
+                    </span>
+                  </button>
+                )}
 
                 {groups.length > 0 && <p className="in-or">or pick one of our open times</p>}
 

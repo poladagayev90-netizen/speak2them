@@ -1,4 +1,4 @@
-/* Intro-call prompt (Home row / Live lock). Tokens only. */
+/* Intro-call prompt (Home hero / Live lock). Tokens only. */
 
 .ic {
   width: 100%;
@@ -22,18 +22,18 @@
   color: var(--accent);
 }
 
-.ic--home {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  cursor: pointer;
-}
-.ic--home:active { transform: scale(.99); }
+.ic--hero { display: grid; gap: var(--s-3); padding: var(--s-4); }
+.ic-hero-head { display: flex; align-items: center; gap: var(--s-3); }
+.ic--hero .ic-icon { width: 44px; height: 44px; }
 .ic-body { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.ic--home .ic-title { font-size: var(--fs-body); font-weight: 700; }
-.ic--home .ic-text { font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
-.ic-chev { color: var(--text-muted); flex-shrink: 0; }
+.ic-eyebrow { font-size: var(--fs-xs); font-weight: 700; color: var(--accent); }
+.ic--hero .ic-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+}
+.ic--hero .ic-text { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: var(--lh-body); }
 
 .ic--lock { display: grid; gap: var(--s-2); padding: var(--s-5); }
 .ic--lock .ic-title {

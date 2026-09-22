@@ -1,4 +1,5 @@
 import React from 'react';
+import { GraduationCap } from 'lucide-react';
 
 // Təsdiqlənmiş müəllim nişanı. YEGANƏ şərti `user.teacherVerified` sahəsidir —
 // `role === 'teacher'` DEYİL: rol qeydiyyatda istifadəçinin öz seçimidir
@@ -24,7 +25,8 @@ export default function TutorBadge() {
       marginLeft: '6px',
       whiteSpace: 'nowrap',
     }}>
-      🎓 Tutor
+      <GraduationCap size={11} strokeWidth={2.25} aria-hidden="true" />
+      Tutor
     </span>
   );
 }

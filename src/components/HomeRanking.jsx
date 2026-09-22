@@ -1,18 +1,19 @@
 import React, { useMemo } from 'react';
-import { Crown, Clock, Phone, Flame, Trophy } from 'lucide-react';
+import { Crown, Trophy, Mic, Users, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import RankingCard from './RankingCard';
 import TutorBadge from './TutorBadge';
 import AvatarImage from './ui/AvatarImage';
-import { getUserRank, sortUsersForRanking, weeklyMinutesOf } from '../utils/ranking';
-import { useNavigate } from 'react-router-dom';
-import './Ranking.css';
+import { Button, EmptyState } from './ui';
+import { sortUsersForRanking, weeklyMinutesOf, getUserKey } from '../utils/ranking';
 import { totalPracticeMinutes } from '../utils/practiceStats';
+import './Ranking.css';
 
 function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   // A gentler staircase than before (was 120/90/70 in a 240px well, which left
   // a large dead gap under the shortest column). The steps still read as first,
   // second and third; they just stop dominating the screen.
-  const heights = { 1: 104, 2: 78, 3: 60 };
+  const heights = { 1: 64, 2: 46, 3: 34 };
   const navigate = useNavigate();
   const initial = user.name?.charAt(0).toUpperCase();
 
@@ -21,9 +22,8 @@ function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
       className={`ranking-podium-slot rank-${rank}`}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/user/${user.uid || user.id}`); } }}
-      onClick={() => navigate(`/user/${user.uid || user.id}`)}
-      style={{ cursor: 'pointer' }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/user/${getUserKey(user)}`); } }}
+      onClick={() => navigate(`/user/${getUserKey(user)}`)}
     >
       <div className="ranking-podium-avatar">
         {/* The initial sits UNDER the photo rather than being replaced by
@@ -31,18 +31,14 @@ function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
         <span className="ranking-podium-initial" aria-hidden="true">{initial}</span>
         <AvatarImage src={user.photo} />
         {rank === 1 && (
-          <Crown className="ranking-crown" size={22} strokeWidth={2.25} aria-hidden="true" />
+          <Crown className="ranking-crown" size={18} strokeWidth={2.25} aria-hidden="true" />
         )}
       </div>
       <p className="ranking-podium-name">
         {user.name}{isCurrentUser && ' (you)'}{user.teacherVerified && <TutorBadge />}
       </p>
-      <p className="ranking-podium-minutes">
-        <strong>{displayMinutes ?? (user.totalMinutes || 0)}</strong> min
-      </p>
-      {/* The bar carries the placing. It used to be an empty slab of colour
-          with an empty <span> left over from the removed medal emoji, so the
-          podium never actually said which step was which. */}
+      <p className="ranking-podium-minutes"><strong>{displayMinutes}</strong> min</p>
+      {/* The bar carries the placing, so the podium says which step is which. */}
       <div className="ranking-podium-bar" style={{ height: heights[rank] }}>
         <span className="ranking-podium-place">{rank}</span>
       </div>
@@ -50,92 +46,120 @@ function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   );
 }
 
+// Only people who actually spoke are ranked.
+//
+// With a small community most of the roster has 0 minutes in any given week,
+// and ranking them anyway turned the page into a wall of "0 min" rows under a
+// "YOUR POSITION #67" card — it read as a place nobody uses. Now the board is
+// the people who practised, the pulse line counts them, and a learner with no
+// minutes yet gets the one thing that puts them on it instead of a big number.
 export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
-  const sortedUsers = useMemo(() => sortUsersForRanking(users, mode), [users, mode]);
-  const myRank = useMemo(() => getUserRank(sortedUsers, currentUserId), [sortedUsers, currentUserId]);
-  const currentUser = sortedUsers.find((u) => (u.uid || u.id) === currentUserId);
-  const minutesOf = (u) => (mode === 'weekly' ? weeklyMinutesOf(u) : totalPracticeMinutes(u));
-  const topThree = sortedUsers.slice(0, 3);
-  const rest = sortedUsers.slice(3);
-  const podiumOrder = topThree.length >= 3
-    ? [topThree[1], topThree[0], topThree[2]]
-    : topThree;
+  const navigate = useNavigate();
+  const weekly = mode === 'weekly';
+  const minutesOf = (u) => (weekly ? weeklyMinutesOf(u) : totalPracticeMinutes(u));
 
-  if (sortedUsers.length === 0) {
+  const board = useMemo(
+    () => sortUsersForRanking(users, mode).filter((u) => minutesOf(u) > 0),
+    // minutesOf only depends on mode, which is already a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [users, mode],
+  );
+  const myIndex = board.findIndex((u) => getUserKey(u) === currentUserId);
+  const me = myIndex === -1 ? null : board[myIndex];
+  const totalMinutes = Math.round(board.reduce((sum, u) => sum + minutesOf(u), 0));
+
+  const goPractise = () => navigate('/practice');
+  const goPartner = () => navigate('/live');
+
+  if (board.length === 0) {
     return (
-      <div className="empty-state">
-        <Trophy className="empty-icon" size={44} strokeWidth={1.5} aria-hidden="true" />
-        <p>No rankings yet.</p>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, marginTop: 8 }}>Complete a call to appear on the board.</p>
-      </div>
+      <EmptyState
+        icon={<Trophy size={26} strokeWidth={1.75} />}
+        title={weekly ? 'A fresh week' : 'No minutes yet'}
+        text={weekly
+          ? 'Nobody has spoken yet this week. Your first call or AInur session puts you at the top.'
+          : 'Your first call or AInur session puts you on the board.'}
+      >
+        <Button variant="ai" icon={<Mic size={16} strokeWidth={2} />} onClick={goPractise}>Practise with AInur</Button>
+        <Button variant="secondary" icon={<Users size={16} strokeWidth={2} />} onClick={goPartner}>Find a partner</Button>
+      </EmptyState>
     );
   }
 
+  // The next person up, and how far away they are: a goal for this week that
+  // is always within reach, which a rank number on its own never is.
+  const above = myIndex > 0 ? board[myIndex - 1] : null;
+  const gap = above ? Math.max(1, Math.ceil(minutesOf(above) - minutesOf(me))) : 0;
+
+  const topThree = board.length >= 3 ? board.slice(0, 3) : [];
+  const rest = board.length >= 3 ? board.slice(3) : board;
+
   return (
     <div className="ranking-board">
-      {myRank !== null && (
+      <p className="ranking-pulse">
+        <TrendingUp size={15} strokeWidth={2} aria-hidden="true" />
+        <span>
+          <strong>{board.length}</strong> {board.length === 1 ? 'learner' : 'learners'} {weekly ? 'practised this week' : 'on the board'}
+          {' · '}<strong>{totalMinutes}</strong> min {weekly ? 'together' : 'in total'}
+        </span>
+      </p>
+
+      {me ? (
         <div className="ranking-you-card">
-          <div>
-            <p className="ranking-you-label">Your position</p>
-            <p className="ranking-you-rank">#{myRank}</p>
+          <div className="ranking-you-rank">
+            <span className="ranking-you-label">Your spot</span>
+            <span className="ranking-you-number">#{myIndex + 1}<small> of {board.length}</small></span>
           </div>
-          {/* Each pill used to open with a stray space where an emoji had been
-              removed, and the streak was a bare number with nothing to say what
-              it counted — a lone "1" floating beside the minutes. */}
-          <div className="ranking-you-stats">
-            <span>
-              <Clock size={13} strokeWidth={2} aria-hidden="true" />
-              {currentUser ? minutesOf(currentUser) : 0} min
-            </span>
-            <span>
-              <Phone size={13} strokeWidth={2} aria-hidden="true" />
-              {currentUser?.callCount || 0} total calls
-            </span>
-            {(currentUser?.streak || 0) > 0 && (
-              <span className="streak-pill">
-                <Flame size={13} strokeWidth={2} aria-hidden="true" />
-                {currentUser.streak} day streak
-              </span>
-            )}
+          <div className="ranking-you-detail">
+            <strong>{minutesOf(me)} min</strong>
+            <span>{above
+              ? `${gap} min more to pass ${above.name || 'the next learner'}`
+              : (weekly ? 'You are leading this week' : 'You are leading')}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="ranking-you-card is-new">
+          <p className="ranking-you-title">{weekly ? 'You are not on this week’s board yet' : 'You are not on the board yet'}</p>
+          <p className="ranking-you-text">One call, or a few minutes with AInur, puts you on it.</p>
+          <div className="ranking-you-actions">
+            <Button variant="ai" size="sm" icon={<Mic size={15} strokeWidth={2} />} onClick={goPractise}>Practise with AInur</Button>
+            <Button variant="secondary" size="sm" icon={<Users size={15} strokeWidth={2} />} onClick={goPartner}>Find a partner</Button>
           </div>
         </div>
       )}
 
-      {topThree.length > 0 && (
-        <section className="ranking-leaders">
-        <div className="ranking-section-heading"><h3>Leading the way</h3><span>{mode === 'weekly' ? 'THIS WEEK' : 'ALL TIME'}</span></div>
-        <div className="ranking-podium">
-          {podiumOrder.map((user) => {
-            const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
-            return (
-              <PodiumCard
-                key={user.uid || user.id}
-                user={user}
-                rank={rank}
-                isCurrentUser={(user.uid || user.id) === currentUserId}
-                displayMinutes={minutesOf(user)}
-              />
-            );
-          })}
-        </div>
+      {topThree.length === 3 && (
+        <section className="ranking-leaders" aria-label="Top three">
+          <div className="ranking-podium">
+            {[topThree[1], topThree[0], topThree[2]].map((u) => {
+              const rank = board.indexOf(u) + 1;
+              return (
+                <PodiumCard
+                  key={getUserKey(u)}
+                  user={u}
+                  rank={rank}
+                  isCurrentUser={getUserKey(u) === currentUserId}
+                  displayMinutes={minutesOf(u)}
+                />
+              );
+            })}
+          </div>
         </section>
       )}
 
-      <div className="ranking-list">
-      {rest.length > 0 && <div className="ranking-section-heading"><h3>The community</h3><span>MINUTES</span></div>}
-      {rest.map((user) => {
-        const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
-        return (
-          <RankingCard
-            key={user.uid || user.id}
-            user={user}
-            rank={rank}
-            isCurrentUser={(user.uid || user.id) === currentUserId}
-            displayMinutes={minutesOf(user)}
-          />
-        );
-      })}
-      </div>
+      {rest.length > 0 && (
+        <div className="ranking-list">
+          {rest.map((u) => (
+            <RankingCard
+              key={getUserKey(u)}
+              user={u}
+              rank={board.indexOf(u) + 1}
+              isCurrentUser={getUserKey(u) === currentUserId}
+              displayMinutes={minutesOf(u)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

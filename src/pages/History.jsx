@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Clock, ChevronLeft, FileText } from 'lucide-react';
+import { Clock, ChevronLeft, FileText, Mic } from 'lucide-react';
+import { Button, EmptyState, PageHeader } from '../components/ui';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
@@ -94,23 +95,24 @@ export default function History({ user }) {
   // far from its name. Same cap, so the list and the report line up.
   return (
     <div className="history-page" style={{ padding: '20px 16px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-primary)', maxWidth: '780px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
-          <ChevronLeft size={24} />
-        </button>
-        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>{'Analysis history'}</h2>
-      </div>
+      <PageHeader title="Analysis history" onBack={() => navigate('/profile')} />
 
       <GuidedTour user={user} steps={PROFILE_TOUR_STEPS} tourKey="tourDone_profile" />
 
       {loading ? (
         <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>{'Loading...'}</div>
       ) : history.length === 0 ? (
-        <div style={{ textAlign: 'center', marginTop: '60px' }}>
-          <div style={{ marginBottom: '16px', color: 'var(--text-muted)' }}><FileText size={40} strokeWidth={1.5} /></div>
-          <p style={{ color: 'var(--text-secondary)' }}>{'No analyses yet.'}</p>
-        </div>
+        // Say what WILL be here and how to get the first one — "No analyses
+        // yet." on its own was a dead end.
+        <EmptyState
+          icon={<FileText size={26} strokeWidth={1.75} />}
+          title="No reports yet"
+          text="Every call and AInur session turns into a report of what to work on next. Your first one will be here."
+        >
+          <Button variant="ai" icon={<Mic size={16} strokeWidth={2} />} onClick={() => navigate('/practice')}>
+            Practise with AInur
+          </Button>
+        </EmptyState>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {history.map((call, idx) => (

@@ -49,7 +49,10 @@ export default function Lessons({ user }) {
         {left > 0 ? ` · about ${left} minutes left` : ' · all of them'}
       </p>
 
-      {next ? (
+      {/* "Carry on" earns its place once the next lesson is somewhere down the
+          list. Before the first one it only repeated the first row, which sits
+          right below it and is already outlined as the next lesson. */}
+      {next && doneCount === 0 ? null : next ? (
         <Card
           tone="peer"
           padding="md"
@@ -64,7 +67,7 @@ export default function Lessons({ user }) {
               <Play size={20} strokeWidth={2} aria-hidden="true" />
             </div>
             <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-              <p className="lesson-eyebrow">{doneCount ? 'Carry on' : 'Start here'}</p>
+              <p className="lesson-eyebrow">Carry on</p>
               <p className="lesson-row-title" style={{ marginTop: 2 }}>{next.title}</p>
               <p className="lesson-row-meta">{next.moduleTitle} · {next.minutes} min</p>
             </div>

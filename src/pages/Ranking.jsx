@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Trophy } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import HomeRanking from '../components/HomeRanking';
+import { PageHeader } from '../components/ui';
 
 // Module-level cache: switching to the Ranking tab remounts this page, and
 // without the cache every visit re-fetched and re-parsed the whole list on
@@ -10,7 +10,8 @@ import HomeRanking from '../components/HomeRanking';
 const CACHE_TTL_MS = 120000;
 let usersCache = { users: null, ts: 0 };
 
-export default function Ranking({ user }) {  const [allUsers, setAllUsers] = useState(usersCache.users || []);
+export default function Ranking({ user }) {
+  const [allUsers, setAllUsers] = useState(usersCache.users || []);
   const [loading, setLoading] = useState(!usersCache.users);
   const [tab, setTab] = useState('weekly');
 
@@ -30,51 +31,26 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
     return () => { cancelled = true; };
   }, []);
 
+  // One header, like every other tab. The page used to stack four of them
+  // ("The practice club / Little by little… / Leaderboard / Leading the way")
+  // before the first name appeared.
   return (
-    <div className="home-page leaderboard-page">
-      <div className="home-body leaderboard-content">
-        <header className="leaderboard-header">
-          <div><p className="leaderboard-eyebrow">THE PRACTICE CLUB</p><h1>Little by little.<br /><span>Up the leaderboard.</span></h1><p>Show up. Speak more. Grow together.</p></div>
-          <div className="leaderboard-emblem"><Trophy size={34} strokeWidth={1.5} aria-hidden="true" /></div>
-        </header>
-        <div className="leaderboard-toolbar">
-        <h2>Leaderboard</h2>
-        <div className="leaderboard-tabs" aria-label="Ranking period">
-          <button
-            onClick={() => setTab('weekly')}
-            aria-pressed={tab === 'weekly'}
-          >
-            {'This week'}
-          </button>
-          <button
-            onClick={() => setTab('all')}
-            aria-pressed={tab === 'all'}
-          >
-            {'All time'}
-          </button>
-        </div>
-        </div>
-        {tab === 'weekly' && (
-          <p style={{
-            fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
-            margin: '0 0 12px',
-          }}>
-            {'Calls + analysed AInur practice. Resets Monday, Baku time.'}
-          </p>
-        )}
-        {loading ? (
-          <div className="empty-state">
-            <p>Loading the leaderboard...</p>
-          </div>
-        ) : allUsers.length === 0 ? (
-          <div className="empty-state" style={{ padding: '40px 20px', textAlign: 'center' }}>
-            <Trophy className="empty-icon" size={44} strokeWidth={1.5} aria-hidden="true" />
-            <p style={{ color: 'var(--text-secondary)' }}>{'Nobody has practised yet. Be the first.'}</p>
-          </div>
-        ) : (
-          <HomeRanking users={allUsers} currentUserId={user.uid} mode={tab === 'weekly' ? 'weekly' : 'all'} />
-        )}
+    <div className="leaderboard-page">
+      <PageHeader
+        title="Leaderboard"
+        subtitle={tab === 'weekly'
+          ? 'Minutes spoken this week, in calls and with AInur. Starts again every Monday.'
+          : 'Minutes spoken since each learner joined.'}
+      />
+      <div className="leaderboard-tabs" role="group" aria-label="Ranking period">
+        <button onClick={() => setTab('weekly')} aria-pressed={tab === 'weekly'}>This week</button>
+        <button onClick={() => setTab('all')} aria-pressed={tab === 'all'}>All time</button>
       </div>
+      {loading ? (
+        <p className="leaderboard-loading">Loading the leaderboard…</p>
+      ) : (
+        <HomeRanking users={allUsers} currentUserId={user.uid} mode={tab === 'weekly' ? 'weekly' : 'all'} />
+      )}
     </div>
   );
 }

@@ -1,0 +1,63 @@
+/* "More for today" on Home. Tokens only. */
+
+.today-more { margin-bottom: var(--s-3); }
+
+.today-more-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--bg-card);
+  box-shadow: var(--glass-lift);
+}
+
+.today-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--s-3) var(--s-4);
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.today-row:first-child { border-top: 0; }
+.today-row:hover { background: var(--bg-secondary); }
+.today-row:active { background: var(--bg-secondary); }
+
+.today-row-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.today-row-icon--peer { background: var(--peer-soft); color: var(--peer); }
+.today-row-icon--ai { border-radius: var(--r-pill); background: var(--ai-fill); }
+.today-row-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+.today-row-body { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.today-row-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-body);
+  font-weight: 700;
+}
+.today-row-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.today-row-chev { color: var(--text-muted); flex-shrink: 0; }

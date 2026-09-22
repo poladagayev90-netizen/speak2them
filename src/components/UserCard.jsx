@@ -21,16 +21,13 @@ export default function UserCard({ user, onChat, introLocked = false }) {
   const presence = getPresence(user);
 
   return (
-    <div className="user-card" style={{
-      border: user.isPremium ? '1px solid var(--warning-bg)' : undefined,
-    }}>
+    // No amber ring or glow for premium users: the Pro badge beside the name
+    // already says it, and the Plum system has no amber and nothing glows.
+    <div className="user-card">
       <div 
         className="user-avatar" 
         onClick={() => navigate(`/user/${user.uid || user.id}`)}
-        style={{
-          boxShadow: user.isPremium ? '0 0 12px var(--warning-bg)' : undefined,
-          cursor: 'pointer'
-        }}>
+        style={{ cursor: 'pointer' }}>
         {user.name?.charAt(0).toUpperCase()}
         <AvatarImage src={user.photo} />
       </div>

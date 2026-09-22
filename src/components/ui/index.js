@@ -3,3 +3,5 @@ export { default as Card } from './Card';
 export { default as Pill } from './Pill';
 export { default as Sheet } from './Sheet';
 export { default as Stat } from './Stat';
+export { default as PageHeader } from './PageHeader';
+export { default as EmptyState } from './EmptyState';
