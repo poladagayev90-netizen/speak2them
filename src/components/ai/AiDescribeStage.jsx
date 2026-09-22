@@ -40,11 +40,13 @@ export default function AiDescribeStage({ image, isVideo = false, hits = [], jus
   // list is to get those English words said out loud.
   const [shown, setShown] = useState(() => new Set());
   const videoRef = useRef(null);
+  // See TopicVideos: the box takes the clip's own shape, capped by the CSS.
+  const [ratio, setRatio] = useState(null);
   const lang = getFeedbackLanguage();
 
   // A new picture starts its own load bookkeeping, or the previous picture's
   // "loaded" flag would make this one flash in before it is ready.
-  useEffect(() => { setFailed(false); setDead(false); setShown(new Set()); }, [image?.id]);
+  useEffect(() => { setFailed(false); setDead(false); setShown(new Set()); setRatio(null); }, [image?.id]);
 
   if (!image) return null;
 
@@ -56,7 +58,10 @@ export default function AiDescribeStage({ image, isVideo = false, hits = [], jus
 
   return (
     <>
-      <div className={`ai-photo${isVideo ? ' ai-photo--video' : ''}`}>
+      <div
+        className={`ai-photo${isVideo ? ' ai-photo--video' : ''}`}
+        style={isVideo && ratio ? { aspectRatio: String(ratio) } : undefined}
+      >
         {isVideo ? (
           dead ? (
             <div className="ai-photo-fallback">
@@ -76,6 +81,10 @@ export default function AiDescribeStage({ image, isVideo = false, hits = [], jus
                 autoPlay
                 preload="auto"
                 aria-label={image.alt || 'Video to describe'}
+                onLoadedMetadata={(e) => {
+                  const { videoWidth: w, videoHeight: h } = e.currentTarget;
+                  if (w && h) setRatio(w / h);
+                }}
                 onError={() => setDead(true)}
               />
               {/* "Play it again" is half of what a learner says out loud while

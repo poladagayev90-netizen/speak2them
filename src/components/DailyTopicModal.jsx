@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon } from 'lucide-react';
+import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import PictureDescribing from './PictureDescribing';
+import TopicVideos from './TopicVideos';
 import SpeakingCards from './SpeakingCards';
 
 function shuffle(array) {
@@ -167,31 +168,37 @@ export default function DailyTopicModal({ open, onClose }) {
             className={`dt-tab ${activeSection === 'vocabulary' ? 'active' : ''}`}
             onClick={() => setActiveSection('vocabulary')}
           >
-            <BookOpen size={14} /> Words
+            <BookOpen size={16} /> Words
           </button>
           <button
             className={`dt-tab ${activeSection === 'idioms' ? 'active' : ''}`}
             onClick={() => setActiveSection('idioms')}
           >
-            <Lightbulb size={14} /> Idioms
+            <Lightbulb size={16} /> Idioms
           </button>
           <button
             className={`dt-tab ${activeSection === 'questions' ? 'active' : ''}`}
             onClick={() => setActiveSection('questions')}
           >
-            <MessageCircle size={14} /> Questions
+            <MessageCircle size={16} /> Questions
           </button>
           <button
             className={`dt-tab ${activeSection === 'quiz' ? 'active' : ''}`}
             onClick={() => setActiveSection('quiz')}
           >
-            <Brain size={14} /> Quiz
+            <Brain size={16} /> Quiz
           </button>
           <button
             className={`dt-tab ${activeSection === 'pictures' ? 'active' : ''}`}
             onClick={() => setActiveSection('pictures')}
           >
-            🖼️ Pictures
+            <ImageIcon size={16} /> Pictures
+          </button>
+          <button
+            className={`dt-tab ${activeSection === 'videos' ? 'active' : ''}`}
+            onClick={() => setActiveSection('videos')}
+          >
+            <VideoIcon size={16} /> Videos
           </button>
         </div>
 
@@ -211,7 +218,7 @@ export default function DailyTopicModal({ open, onClose }) {
                     {expandedVocab === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <p className="dt-vocab-meaning">{v.meaning}</p>
-                  {localMeaning(v) && <p className="dt-vocab-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '12px'}}>{localMeaning(v)}</p>}
+                  {localMeaning(v) && <p className="dt-vocab-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '15px'}}>{localMeaning(v)}</p>}
                   {expandedVocab === i && (
                     <p className="dt-vocab-example">"{v.example}"</p>
                   )}
@@ -226,7 +233,7 @@ export default function DailyTopicModal({ open, onClose }) {
                 <div key={i} className="dt-idiom-card">
                   <p className="dt-idiom-phrase">"{idm.phrase}"</p>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
-                  {localMeaning(idm) && <p className="dt-idiom-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '12px'}}>{localMeaning(idm)}</p>}
+                  {localMeaning(idm) && <p className="dt-idiom-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '15px'}}>{localMeaning(idm)}</p>}
                   <p className="dt-idiom-example"> {idm.example}</p>
                 </div>
               ))}
@@ -258,6 +265,8 @@ export default function DailyTopicModal({ open, onClose }) {
               <DailyQuiz content={content} onFinish={() => setActiveSection('vocabulary')} />
             </div>
           )}
+
+          {activeSection === 'videos' && <TopicVideos day={content.day} />}
 
           {activeSection === 'pictures' && (
             <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>

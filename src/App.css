@@ -1662,11 +1662,17 @@ body {
 .dt-header-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  /* The title grew for the shared screen, so the row has to be allowed to
+     give it the space: without this the day badge wrapped onto two lines and
+     pushed the topic's emoji down a line of its own. */
+  flex: 1;
+  min-width: 0;
 }
 
 .dt-badge {
-  font-size: 11px;
+  white-space: nowrap;
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent);
   background: var(--accent-soft);
@@ -1675,9 +1681,10 @@ body {
 }
 
 .dt-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   margin: 0;
+  line-height: 1.2;
   color: var(--text-primary);
 }
 
@@ -1717,8 +1724,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 12px 10px;
-  font-size: 14px;
+  padding: 13px 10px;
+  font-size: 15px;
   font-weight: 700;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1783,13 +1790,13 @@ body {
 }
 
 .dt-vocab-word {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .dt-vocab-meaning {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
   margin: 6px 0 0;
@@ -1797,7 +1804,7 @@ body {
 }
 
 .dt-vocab-example {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--accent);
   margin: 8px 0 0;
   padding: 10px 12px;
@@ -1817,20 +1824,20 @@ body {
 }
 
 .dt-idiom-phrase {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--accent);
   margin: 0 0 6px;
 }
 
 .dt-idiom-meaning {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-primary);
   margin: 0 0 8px;
 }
 
 .dt-idiom-example {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
   margin: 0;
@@ -1846,8 +1853,8 @@ body {
 
 .dt-diff-btn {
   flex: 1;
-  padding: 10px;
-  font-size: 14px;
+  padding: 12px;
+  font-size: 15px;
   font-weight: 700;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -1880,27 +1887,116 @@ body {
 }
 
 .dt-q-num {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--accent);
   color: var(--text-on-accent);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .dt-q-text {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-primary);
   margin: 0;
   line-height: 1.5;
   padding-top: 3px;
 }
 
+
+/* Topic videos — the clip is the biggest thing in the sheet, because this is
+   the page a teacher shares with the class. 56dvh keeps a portrait clip large
+   without pushing the words and the questions off the screen. */
+.dt-video-frame {
+  position: relative;
+  width: 100%;
+  height: 56dvh;
+  max-height: 520px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.dt-video-frame video {
+  width: 100%;
+  height: 100%;
+  /* contain, not cover: a 9:16 clip cropped to this box loses the part being
+     described. */
+  object-fit: contain;
+  display: block;
+  background: var(--bg-secondary);
+}
+
+.dt-video-dead {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dt-video-replay {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  /* Sits ON the clip, so it cannot take a surface token: what is under it is
+     whatever the video is showing, in either theme. */
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.dt-video-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dt-video-arrow {
+  width: 52px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.dt-video-arrow:hover {
+  border-color: var(--accent);
+}
+
+.dt-video-arrow:active {
+  transform: scale(0.96);
+}
+
+.dt-video-count {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
 
 /* Topic Intro Modal */
 .topic-intro-overlay {

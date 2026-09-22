@@ -22,6 +22,8 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
   const videoRef = useRef(null);
   const [dead, setDead] = useState({});
   const [paused, setPaused] = useState(false);
+  // See TopicVideos: a fixed box wastes the card's height on a landscape clip.
+  const [ratio, setRatio] = useState(null);
 
   const safeIndex = videos.length ? videoIndex % videos.length : 0;
   const clip = videos[safeIndex];
@@ -33,6 +35,7 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
     const el = videoRef.current;
     if (!el) return;
     setPaused(false);
+    setRatio(null);
     el.currentTime = 0;
     const p = el.play();
     if (p && p.catch) p.catch(() => setPaused(true));
@@ -113,7 +116,10 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
             enough to see a face, capped so the card still fits a short phone
             with the keywords and the Next button on it. */}
         <div style={{
-          position: 'relative', width: '100%', height: 'min(46vh, 340px)',
+          position: 'relative', width: '100%',
+          ...(ratio
+            ? { aspectRatio: String(ratio), maxHeight: 'min(46vh, 340px)' }
+            : { height: 'min(46vh, 340px)' }),
           background: 'var(--bg-secondary)', flexShrink: 0,
         }}>
           {isDead ? (
@@ -139,6 +145,10 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
                 autoPlay
                 preload="auto"
                 onClick={togglePlay}
+                onLoadedMetadata={(e) => {
+                  const { videoWidth: w, videoHeight: h } = e.currentTarget;
+                  if (w && h) setRatio(w / h);
+                }}
                 onError={() => setDead((prev) => ({ ...prev, [clip.id]: true }))}
                 aria-label={clip.alt}
                 style={{
