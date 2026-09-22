@@ -1639,12 +1639,17 @@ body {
   to { transform: translateY(0); }
 }
 
+/* Full height, not a 92dvh sheet peeking up from the bottom. The strip that
+   used to be left above it was dead space on the one screen that gets SHARED
+   in a lesson -- it showed a blurred home page and stole the height the clip
+   wanted. The sheet now owns the screen; the header carries the status-bar
+   inset itself so the title never sits under the clock. */
 .dt-modal {
   width: 100%;
   max-width: 480px;
-  height: 92dvh;
+  height: 100dvh;
   background: var(--bg-primary);
-  border-radius: 24px 24px 0 0;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1655,7 +1660,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 12px;
+  /* The sheet reaches the top edge now, so the status bar is this row's job. */
+  padding: calc(12px + var(--safe-area-top, 0px)) 20px 12px;
   flex-shrink: 0;
 }
 
@@ -1913,8 +1919,8 @@ body {
    the page a teacher shares with the class. 56dvh keeps a portrait clip large
    without pushing the words and the questions off the screen. */
 /* Plain block, not the flex column the other tabs use: .dt-video-fit needs a
-   definite height to resolve its 100% against, and the questions simply flow
-   below it (and below the fold). */
+   definite height to resolve its max-height against, and the questions simply
+   flow below it. */
 .dt-section--video {
   display: block;
   height: 100%;
@@ -1922,13 +1928,19 @@ body {
 
 /* The clip, the arrows and the words are ONE screenful: the words are the
    second half of this activity, and they used to sit under the bottom edge, so
-   the page had to be scrolled to read them. This block is exactly the sheet's
-   visible height and only the clip inside it can shrink — so the clip is as
-   big as the phone allows and never one pixel bigger. A fixed cap in dvh could
-   not do that: it was either too tall on a short phone or wasted space on a
-   tall one. The questions stay below the fold, where scrolling is fine. */
+   the page had to be scrolled to read them. The CAP is the sheet's visible
+   height and only the clip inside it can shrink — so the clip is as big as
+   the phone allows and never one pixel bigger. A fixed cap in dvh could not do
+   that: it was either too tall on a short phone or wasted space on a tall one.
+
+   max-height, not height: a landscape clip is limited by the sheet's WIDTH, so
+   pinning this block to the full height left a band of nothing between the
+   words and the first question, which then sat exactly on the bottom edge.
+   Capped instead, the block is only as tall as the clip needs and the
+   questions move up into what is left. On a portrait clip there is nothing
+   left over, the cap bites, and the flex line shrinks the clip as before. */
 .dt-video-fit {
-  height: 100%;
+  max-height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -1940,7 +1952,10 @@ body {
   width: 100%;
   flex: 0 1 auto;
   min-height: 120px;
-  height: 100%;
+  /* Only until the clip reports its own shape (see the inline aspectRatio) --
+     without it the frame would open as a 120px sliver and jump. */
+  aspect-ratio: 4 / 3;
+  height: auto;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 16px;
