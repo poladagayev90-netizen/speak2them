@@ -15,6 +15,7 @@ import GlobalCallListener from './components/GlobalCallListener';
 import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
 import { needsOnboarding } from './utils/onboarding';
+import useBackButton from './hooks/useBackButton';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
 import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
@@ -110,6 +111,11 @@ const TRIAL_GATE_EXEMPT = ['/redeem', '/profile', '/login', '/register', '/join'
 
 function AppShell({ user }) {
   const location = useLocation();
+  // Baseline handler for Android's back button: it consumes nothing, so the
+  // hook falls through to history and, at the root, minimises instead of
+  // letting Android close the app. Screens that need their own behaviour —
+  // Chat during a call — register on top of this one.
+  useBackButton(() => false);
   // Dəqiqəlik tick: app açıq qalarkən trial tam bu anda bitərsə, gate növbəti
   // yoxlamada (naviqasiyasız da) görünsün.
   const [, setGateTick] = useState(0);

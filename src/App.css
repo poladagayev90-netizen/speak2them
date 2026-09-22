@@ -1011,6 +1011,21 @@ body {
   flex-shrink: 0;
 }
 
+/* "Your partner muted their mic" — a note beside the running timer, not an
+   alarm. It replaced "Partner left", which is what a mute used to say. */
+.call-peer-muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .fullscreen-call-buttons {
   display: flex;
   gap: 16px;

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
+import useBackButton from '../hooks/useBackButton';
 import AnalysisMessage from '../components/AnalysisMessage';
 import MessageTimestamp from '../components/MessageTimestamp';
 import PremiumBadge from '../components/PremiumBadge';
@@ -83,6 +84,9 @@ export default function Chat({ user }) {
   // gözləmə otağıdır: birinci gələn qoşulub gözləyir, ikinci gələn kimi səs
   // açılır. Ayrıca "rendezvous" maşını qurmağa ehtiyac qalmır.
   const [peerJoined, setPeerJoined] = useState(false);
+  // Qarşı tərəf mikrofonu bağlayıb. Agora bunu ayrılma kimi deyil, ayrıca
+  // vəziyyət kimi göstərməlidir — aşağıdakı `user-unpublished`-ə bax.
+  const [peerMuted, setPeerMuted] = useState(false);
   // Toxunulmuş öz mesajım — silmə düyməsi yalnız onun altında görünür.
   const [selectedMsg, setSelectedMsg] = useState(null);
   const [callSeconds, setCallSeconds] = useState(0);
@@ -102,6 +106,19 @@ export default function Chat({ user }) {
     || questionStage?.active || debateStage?.active || guessStage?.active);
   // Any full-screen panel, activities plus the vocabulary sheet.
   const stageOpen = activityOpen || showDaily;
+
+  // Android's back button used to close the whole app (see useBackButton).
+  // On this screen it also killed live calls: leaving the route unmounts Chat,
+  // and the cleanup stops the microphone and leaves the Agora channel. So:
+  // the vocabulary sheet closes first, and while a call is up the press is
+  // swallowed — End is how you leave a call. The activities are NOT closed
+  // from here on purpose; each one is synced through the `calls` doc, so
+  // closing one side only would leave the peers looking at different screens.
+  useBackButton(() => {
+    if (showDaily) { setShowDaily(false); return true; }
+    if (inCall) return true;
+    return false;
+  });
   // Starting an activity has to switch the other four off in the SAME write,
   // or a peer mid-render can briefly see two panels. Spelling the list out at
   // each call site meant five places to forget a stage; this derives it.
@@ -336,11 +353,30 @@ export default function Chat({ user }) {
             addRemoteStream(remoteUser.audioTrack);
             setCallStatus('connected');
             setPeerJoined(true);
+            // Unmute də bu hadisəni doğurur, ona görə nişanı burada silirik.
+            setPeerMuted(false);
           }
         } catch (e) { console.error('[Chat] Subscribe error:', e); }
       });
 
-      client.on('user-unpublished', () => setCallStatus('left'));
+      // Agora bu hadisəni qarşı tərəf MİKROFONU BAĞLAYANDA da göndərir — öz
+      // sənədində yazılıb: dərc olunmuş trekdə `setMuted(true)` uzaqda
+      // `user-unpublished` doğurur. Onu "getdi" kimi oxumaq real zəngləri
+      // öldürürdü: adam sadəcə mikrofonu bağlayırdı, qarşı ekranda taymer
+      // yox olub "Partner left" yazılırdı və ən görünən düymə qırmızı End
+      // idi. İndi yalnız nişan qoyulur, zəng davam edir.
+      client.on('user-unpublished', (_remoteUser, mediaType) => {
+        if (mediaType === 'audio') setPeerMuted(true);
+      });
+
+      // Həqiqi ayrılma. Qəsdən qapatma onsuz da `calls` sənədindən gəlir
+      // (`status: 'ended'` → endCall), bu isə heç nə yazılmayan halları tutur:
+      // tətbiq öldürülüb, şəbəkə gedib.
+      client.on('user-left', () => {
+        setPeerMuted(false);
+        setPeerJoined(false);
+        setCallStatus('left');
+      });
 
       // Reverting to null. Do NOT use string uid because the backend token is generated for integers (0).
       // Agora will auto-generate unique IDs for both users automatically.
@@ -906,6 +942,7 @@ export default function Chat({ user }) {
     
     setCallStatus('');
     setMuted(false);
+    setPeerMuted(false);
     setShowRoadmap(false);
     joinedRef.current = false;
     ringtoneRef.current?.pause();
@@ -1276,6 +1313,13 @@ export default function Chat({ user }) {
               <>
                 <span className="call-live-dot" aria-hidden="true" />
                 {formatTime(callSeconds)}
+                {/* Taymer qalır: zəng davam edir, sadəcə qarşı tərəf səssizdir. */}
+                {peerMuted && (
+                  <span className="call-peer-muted">
+                    <MicOff size={13} strokeWidth={2} aria-hidden="true" />
+                    Muted
+                  </span>
+                )}
               </>
             )}
             {callStatus === 'left' && 'Partner left'}
