@@ -43,15 +43,18 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
 
   // Warm the next clip while this one is on screen, so "Next" starts instantly
   // instead of showing a poster and a spinner.
+  //
+  // Keyed on the SRC string, not on `videos`: videosForTopic builds a new array
+  // on every call, and Chat re-renders this stage once a second for the call
+  // timer — so an array dependency started a fresh preload every second, on
+  // the same connection that carries the voice.
+  const nextSrc = videos.length ? videos[(safeIndex + 1) % videos.length]?.src : null;
   useEffect(() => {
-    if (!videos.length) return;
-    const next = videos[(safeIndex + 1) % videos.length];
-    if (next?.src) {
-      const pre = document.createElement('video');
-      pre.preload = 'auto';
-      pre.src = next.src;
-    }
-  }, [videos, safeIndex]);
+    if (!nextSrc) return;
+    const pre = document.createElement('video');
+    pre.preload = 'auto';
+    pre.src = nextSrc;
+  }, [nextSrc]);
 
   if (!clip) return null;
 
