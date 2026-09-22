@@ -33,3 +33,4 @@ android/keystore.properties
 android/app/gradle.properties
 *.jks
 *.keystore
+video_review/

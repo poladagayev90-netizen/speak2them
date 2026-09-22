@@ -30,6 +30,7 @@
 // rename.
 export const describeVideos = [
   {
+    // source: video_2026-09-22_00-21-50.mp4
     id: 'garden-guitar',
     src: '/videos/garden-guitar.mp4',
     poster: '/videos/garden-guitar.jpg',
@@ -42,6 +43,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-21-54.mp4
     id: 'rope-swing',
     src: '/videos/rope-swing.mp4',
     poster: '/videos/rope-swing.jpg',
@@ -54,6 +56,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-21-56.mp4
     id: 'gorilla-meet',
     src: '/videos/gorilla-meet.mp4',
     poster: '/videos/gorilla-meet.jpg',
@@ -66,6 +69,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-21-58.mp4
     id: 'garden-camera',
     src: '/videos/garden-camera.mp4',
     poster: '/videos/garden-camera.jpg',
@@ -78,6 +82,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-21-59.mp4
     id: 'stairs-fall',
     src: '/videos/stairs-fall.mp4',
     poster: '/videos/stairs-fall.jpg',
@@ -90,6 +95,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-01.mp4
     id: 'petting-hen',
     src: '/videos/petting-hen.mp4',
     poster: '/videos/petting-hen.jpg',
@@ -102,6 +108,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-03.mp4
     id: 'kangaroo-fence',
     src: '/videos/kangaroo-fence.mp4',
     poster: '/videos/kangaroo-fence.jpg',
@@ -114,6 +121,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-09.mp4
     id: 'kangaroo-birds',
     src: '/videos/kangaroo-birds.mp4',
     poster: '/videos/kangaroo-birds.jpg',
@@ -126,6 +134,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-11.mp4
     id: 'leopard-road',
     src: '/videos/leopard-road.mp4',
     poster: '/videos/leopard-road.jpg',
@@ -138,6 +147,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-15.mp4
     id: 'table-knife',
     src: '/videos/table-knife.mp4',
     poster: '/videos/table-knife.jpg',
@@ -150,6 +160,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-17.mp4
     id: 'pier-fish',
     src: '/videos/pier-fish.mp4',
     poster: '/videos/pier-fish.jpg',
@@ -162,6 +173,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-19.mp4
     id: 'eagle-field',
     src: '/videos/eagle-field.mp4',
     poster: '/videos/eagle-field.jpg',
@@ -174,6 +186,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-21.mp4
     id: 'rain-drive',
     src: '/videos/rain-drive.mp4',
     poster: '/videos/rain-drive.jpg',
@@ -186,6 +199,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-23.mp4
     id: 'dream-fall',
     src: '/videos/dream-fall.mp4',
     poster: '/videos/dream-fall.jpg',
@@ -198,6 +212,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-41.mp4
     id: 'tv-studio',
     src: '/videos/tv-studio.mp4',
     poster: '/videos/tv-studio.jpg',
@@ -210,6 +225,7 @@ export const describeVideos = [
     ],
   },
   {
+    // source: video_2026-09-22_00-22-47.mp4
     id: 'canal-slide',
     src: '/videos/canal-slide.mp4',
     poster: '/videos/canal-slide.jpg',
@@ -223,13 +239,7 @@ export const describeVideos = [
   },
 ];
 
-// Per-topic decks, the same shape as topicImages: { [day]: [clip, ...] }.
-// Empty for now ON PURPOSE — 16 hand-checked clips is one shared library, not
-// 60 curated sets, and a half-filled map would hand some topics five clips and
-// others none. videosForTopic() below gives every topic a full, stable deck out
-// of the shared library until the curated sets exist; the day a topic gets its
-// own six clips, drop them in here and that topic starts using them with no
-// other change.
-export const topicVideos = {};
-
+// Which clips a topic gets lives in topicVideos.js, which
+// scripts/assign_topic_videos.js generates from this deck — see
+// utils/fetchTopicVideos.js.
 export default describeVideos;

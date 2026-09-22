@@ -1,4 +1,5 @@
-import { describeVideos, topicVideos } from '../data/describeVideos';
+import { describeVideos } from '../data/describeVideos';
+import { topicVideos } from '../data/topicVideos';
 
 // How many clips one topic is worth. Six is the number the activity was
 // designed around: at ~20 s a clip plus two people describing it, six clips is
@@ -11,15 +12,16 @@ export const VIDEOS_PER_TOPIC = 6;
 // index alone, so the same index is the same clip on both phones. Nothing is
 // fetched, nothing is random, there is no per-peer fallback branch.
 //
-// Until the curated per-topic sets exist (topicVideos), every topic gets its
-// own WINDOW over the shared library instead of the whole library: topic 1 gets
-// clips 1-6, topic 2 gets 7-12 and so on, wrapping around. With 16 clips the
-// windows still overlap between distant topics — unavoidable, and better than
-// showing every topic the same first six — but inside one topic no clip repeats
-// and the order never changes between the two sides of a call.
+// topicVideos holds the assignment (scripts/assign_topic_videos.js): six clip
+// ids per topic, spread so that no clip repeats inside a topic and none carries
+// over into the next one. A topic missing from that map — a clip id renamed, a
+// new topic added before the script is re-run — falls back to a window over the
+// deck rather than an empty screen.
+const byId = new Map(describeVideos.map((v) => [v.id, v]));
+
 export function videosForTopic(day, count = VIDEOS_PER_TOPIC) {
-  const curated = topicVideos[day];
-  if (Array.isArray(curated) && curated.length > 0) return curated;
+  const curated = (topicVideos[day] || []).map((id) => byId.get(id)).filter(Boolean);
+  if (curated.length > 0) return curated.slice(0, count);
 
   const deck = describeVideos;
   if (!deck.length) return [];
