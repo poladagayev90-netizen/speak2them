@@ -67,6 +67,30 @@ const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
 // start timestamp can never inflate a user's minutes.
 const AUTHORITATIVE_CALL_CAP_SECONDS = 60 * 60;
 
+// The moment the conversation actually began: both people in the channel.
+// Written ONCE per call (the transaction skips it if already set, and a
+// reconnect fires `user-joined` again). Without it a call's start was
+// matchedAt/createdAt — the first ring of a direct call, or the BOOKING time
+// of a slot or teacher call, so a short booked call was credited up to the
+// 60-minute cap. The server counts from here too (callStartMs in
+// functions/practiceStats.js), and the rules only accept serverTimestamp().
+async function markCallConnected(callId) {
+  if (!callId) return;
+  try {
+    await runTransaction(db, async (tx) => {
+      const ref = doc(db, 'calls', callId);
+      const snap = await tx.get(ref);
+      if (!snap.exists()) return;
+      const d = snap.data() || {};
+      if (d.connectedAt || d.status === 'ended') return;
+      tx.update(ref, { connectedAt: serverTimestamp() });
+    });
+  } catch (e) {
+    // Best-effort: without it the call simply keeps the old, earlier start.
+    console.warn('[Chat] connectedAt not written:', e.message);
+  }
+}
+
 export default function Chat({ user }) {
   const { peerId } = useParams();
   const navigate = useNavigate();
@@ -377,6 +401,11 @@ export default function Chat({ user }) {
         setPeerJoined(false);
         setCallStatus('left');
       });
+
+      // Both of us are in the channel — the talk starts now. Fires for a
+      // peer who was already there when we joined, too.
+      const callIdAtJoin = callDocIdRef.current;
+      client.on('user-joined', () => { markCallConnected(callIdAtJoin); });
 
       // Reverting to null. Do NOT use string uid because the backend token is generated for integers (0).
       // Agora will auto-generate unique IDs for both users automatically.
@@ -984,7 +1013,8 @@ export default function Chat({ user }) {
         // counting and records ~2x the minutes — the 40-vs-20 leaderboard bug.
         // The first participant to end computes the value and pins it on the
         // call doc; the second reuses the stored value verbatim.
-        const startMs = callData.matchedAt?.toMillis?.()
+        const startMs = callData.connectedAt?.toMillis?.()
+          || callData.matchedAt?.toMillis?.()
           || callData.createdAt?.toMillis?.()
           || callData.timestamp?.toMillis?.()
           || null;

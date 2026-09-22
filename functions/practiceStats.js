@@ -63,12 +63,46 @@ async function syncAiPractice(db, uid) {
   });
 }
 
+// How long a call really was, in seconds, as far as the server will credit it.
+//
+// `authoritativeDurationSec` is written by the CLIENT that ends the call first
+// (Chat.jsx endCall) — honest clients compute it from the call's own start
+// timestamp, but the rules cannot check a number, so on its own it is only a
+// claim. The start and end timestamps can be checked: firestore.rules pins
+// createdAt / matchedAt / endedAt to request.time, i.e. serverTimestamp(). So
+// the claim is clamped to the server-clock span between them. A forged
+// "one hour" call now has to actually last an hour; an honest call is
+// unchanged (its claim is already <= the span, give or take clock skew).
+const CALL_CAP_SECONDS = 60 * 60;
+
+// When the conversation began. `connectedAt` is written once, by whichever
+// client first sees the other person in the Agora channel (Chat.jsx). Before
+// it existed the start was matchedAt/createdAt — for a direct call that is the
+// first RING, and for a booked or slot call it is the moment of BOOKING, hours
+// or days earlier, so a 3-minute booked call was credited up to the 60-minute
+// cap. Older clients never write connectedAt; their calls keep the old start.
+function callStartMs(call) {
+  return msOf(call?.connectedAt) || msOf(call?.matchedAt) || msOf(call?.createdAt);
+}
+
+function trustedCallSeconds(call) {
+  const start = callStartMs(call);
+  const end = msOf(call?.endedAt);
+  if (!start || !end || end <= start) return 0;
+  const span = Math.floor((end - start) / 1000);
+  // No claim = no credit, as before: every honest ending pins one.
+  const claimed = call.authoritativeDurationSec;
+  if (typeof claimed !== 'number' || !Number.isFinite(claimed)) return 0;
+  return Math.max(0, Math.min(claimed, span, CALL_CAP_SECONDS));
+}
+
 // Keep a distinct immutable record even though legacy clients reuse a call ID.
 // The trigger snapshot, rather than a later read of that reused document, is the source.
 async function recordCallPractice(db, callId, call, uid) {
-  const start = msOf(call.matchedAt) || msOf(call.createdAt);
+  const start = callStartMs(call);
   const end = msOf(call.endedAt);
-  if (!start || !end || !(call.authoritativeDurationSec > 5)) return;
+  const seconds = trustedCallSeconds(call);
+  if (!start || !end || !(seconds > 5)) return;
   return db.runTransaction(async tx => {
     const userRef = db.doc(`users/${uid}`);
     const user = await tx.get(userRef);
@@ -79,15 +113,15 @@ async function recordCallPractice(db, callId, call, uid) {
     const teacherId = user.data().teacherId;
     const rosterRef = teacherId ? db.doc(`teachers/${teacherId}/roster/${uid}`) : null;
     const roster = rosterRef ? await tx.get(rosterRef) : null;
-    tx.set(record, { source: 'call', callId, startedAt: Timestamp.fromMillis(start), endedAt: Timestamp.fromMillis(end), durationSeconds: call.authoritativeDurationSec });
+    tx.set(record, { source: 'call', callId, startedAt: Timestamp.fromMillis(start), endedAt: Timestamp.fromMillis(end), durationSeconds: seconds });
     // Attendance ledger (Phase 4): a real conversation of at least two minutes
     // is a practice the learner showed up for, whichever way it was arranged.
     // Written in the same transaction as the practiceSessions record, so it is
     // exactly-once for the same reason that record is.
-    if (call.authoritativeDurationSec >= ATTENDED_MIN_SECONDS) {
+    if (seconds >= ATTENDED_MIN_SECONDS) {
       tx.set(db.doc(`attendance/${callId}_${start}_${uid}`), attendanceDoc(uid, 'attended', start, {
         source: call.source || 'direct', slotId: call.slotId || null, callId,
-        durationSeconds: call.authoritativeDurationSec,
+        durationSeconds: seconds,
       }));
     }
     if (end > msOf(user.data().lastPracticeAt)) tx.set(userRef, { lastPracticeAt: Timestamp.fromMillis(end) }, { merge: true });
@@ -95,4 +129,4 @@ async function recordCallPractice(db, callId, call, uid) {
   });
 }
 
-module.exports = { summarizeAiPractice, syncAiPractice, recordCallPractice, weekKey, attendanceDoc, ATTENDED_MIN_SECONDS };
+module.exports = { summarizeAiPractice, syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, weekKey, attendanceDoc, ATTENDED_MIN_SECONDS };

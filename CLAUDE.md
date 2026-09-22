@@ -4,7 +4,7 @@ English speaking-practice app: React PWA + Firebase + Agora voice calls, wrapped
 
 ## Stack
 - **Frontend**: React 19, CRA (`react-scripts`), PWA. `src/pages`, `src/components`, `src/utils`, `src/hooks`.
-- **Backend**: Firebase Cloud Functions **v2** — everything in `functions/index.js` (~2300 lines) + `functions/pushTokens.js`. Native `fetch`, no AI SDKs.
+- **Backend**: Firebase Cloud Functions **v2** — almost everything in `functions/index.js` (~7,500 lines) plus small modules beside it (`pushTokens.js`, `practiceStats.js`, …). Native `fetch`, no AI SDKs.
 - **Data**: Firestore (`firestore.rules` + `firestore.indexes.json`).
 - **Voice**: Agora RTC. **AI**: Groq (Whisper STT + Llama), Deepgram (TTS), DeepSeek/Gemini (analysis).
 - **Mobile**: Capacitor 8, package `com.speaklab.app`.
@@ -30,7 +30,7 @@ Load the matching one instead of re-deriving: `firebase-deploy`, `android-releas
 - **Lessons** (`/lessons`, `/lessons/:lessonId`): 17 short lessons in 4 modules (`src/data/lessons.js`) teaching HOW to practise — describing, keeping a call alive, Taboo, debate. Written because the median production call ran 40 s and two thirds opened no activity. **Nothing is locked**: `nextLesson()` (`src/utils/lessonMap.js`, pure + tested) only RECOMMENDS. Progress is the one client-written progress doc, `lessonProgress/{uid}` — safe only because nothing is granted by it; if a lesson ever unlocks anything, move the write to a Cloud Function. Lesson **ids are storage keys** — add, never rename. Phrase meanings (az/tr) live in the lesson data and are revealed on tap, like `KeywordChips`.
 - **Topic cycle**: global monotonic tick in `appConfig/cycle`; `topicIndex = cycleTick % TOPIC_COUNT`. Progress is **not** stored per user — the client computes `currentCycleTick - startTick`. `functions/dailyQuestions.json` and `src/data/weeklyContent.js` must stay the same length.
 - **Session schedule**: `src/utils/sessionSchedule.js` + `appConfig/session`. Times are **Baku (UTC+4, no DST)** so every client computes the same window. **One session only: 21:00** (the 16:00 afternoon session was removed — never re-add a daytime reminder). 21:00 is a **recommended hour shown every day**; `sessionDays` Mon/Wed/Fri + `bonusDays` Sun only mark the **main** days (crowd + topic-cycle advance), they never gate practice — any user can search for a partner at any time. Weekdays are **0=Sunday…6=Saturday — Sunday is 0, not 7**. Use `getUpcomingSessionWindow()` (countdown) / `getSessionWindow()` / `getNextSessionDay()` — don't hand-roll time math. The Firestore doc's `sessions` array **overrides** the code defaults, so a config change needs both.
-- **Call minutes are authoritative from call timestamps**, never the client stopwatch.
+- **Call minutes are authoritative from call timestamps**, never the client stopwatch. A call starts at `connectedAt` (written once when both are in the Agora channel) → `matchedAt` → `createdAt`. The client's `authoritativeDurationSec` is only a claim: the server credits `trustedCallSeconds` (functions/practiceStats.js) = min(claim, endedAt − start, 60 min), and the rules only accept `serverTimestamp()` for a call's clock fields. Call ids are per PAIR (`call_<a>_<b>`), so server code creating a call must overwrite the doc, never merge — a merge inherits the previous call's flags and duration.
 - **Firestore rules end in a catch-all deny** — a new collection without an explicit `match` is fully blocked.
 - **Push payloads differ by platform** (`functions/pushTokens.js`): web = data-only + `Urgency: high` (the SW displays it); Android = `notification` block + `priority: high`. Adding a notification block to web causes duplicate notifications.
 
@@ -43,12 +43,11 @@ Load the matching one instead of re-deriving: `firebase-deploy`, `android-releas
 - Small `--text-secondary`/`--text-muted` text at 11–13px is `font-weight: 600`; bottom-nav labels are 700.
 - UI icons come from `lucide-react`, never emoji. Emoji are fine in CONTENT (a topic label), never as an icon.
 - Match surrounding code style; the codebase uses explanatory comments for non-obvious decisions — keep that habit.
-- No test suite is wired up; verify changes by running the app (see the `verify` skill). The dev build talks to **production** Firebase; admin-only flows are verified on local emulators (`firebase.emu.json`, `scripts/emu-functions-server.js`, `REACT_APP_USE_EMULATORS` — see the `verify` skill).
+- Tests cover pure helpers only: `CI=true npx react-scripts test --watchAll=false` (web) and `node --test` in `functions/`. Behaviour is still verified by running the app (see the `verify` skill). The dev build talks to **production** Firebase; admin-only flows are verified on local emulators (`firebase.emu.json`, `scripts/emu-functions-server.js`, `REACT_APP_USE_EMULATORS` — see the `verify` skill).
 
 ## Project state docs
 `APP_STORE_AUDIT.md` (Play Store blockers), `HANDOFF_REPORT.md` (architecture + tech debt), `STORE_LISTING.md`.
 
 ## Known open debt
 - ~~`src/utils/analyzeWithOpenAI.js`~~ — the file no longer exists; the analysis is server-side. If those `REACT_APP_*` keys were ever real they are still in old build artifacts and should be rotated.
-- `testPush` (functions) is still **auth-less** — lock or remove before public release.
 - Web SW notifications share a `tag` per type, so same-type notifications replace each other.

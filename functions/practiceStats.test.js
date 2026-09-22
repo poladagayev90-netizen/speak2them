@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { summarizeAiPractice, syncAiPractice, recordCallPractice } = require('./practiceStats');
+const { summarizeAiPractice, syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs } = require('./practiceStats');
 const at = '2026-09-07T00:00:00Z';
 const report = { source:'ainur', status:'done', durationSeconds:90, timestamp:at };
 
@@ -46,4 +46,25 @@ test('a call of 2+ minutes writes one attendance event; a short one writes none'
   const short=database();
   await recordCallPractice(short.db,'s',{createdAt:at,endedAt:'2026-09-07T00:00:35Z',authoritativeDurationSec:35},'u');
   assert.equal([...short.data.keys()].filter(k=>k.startsWith('attendance/')).length,0);
+});
+test('a forged duration claim is clamped to the server-clock span', () => {
+  assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z',authoritativeDurationSec:3600}),120);
+  assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z',authoritativeDurationSec:90}),90);
+  assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T05:00:00Z',authoritativeDurationSec:99999}),3600);
+  assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z'}),0); // no claim, no credit
+  assert.equal(trustedCallSeconds({createdAt:at,authoritativeDurationSec:60}),0); // not ended
+  assert.equal(trustedCallSeconds({createdAt:'2026-09-07T00:05:00Z',endedAt:at,authoritativeDurationSec:60}),0); // stale end
+});
+test('a booked call counts from connectedAt, not from the booking', () => {
+  const booked={createdAt:'2026-09-05T10:00:00Z',connectedAt:'2026-09-07T00:00:00Z',endedAt:'2026-09-07T00:03:00Z',authoritativeDurationSec:3600};
+  assert.equal(callStartMs(booked),Date.parse('2026-09-07T00:00:00Z'));
+  assert.equal(trustedCallSeconds(booked),180);
+  assert.equal(callStartMs({matchedAt:at,createdAt:'2026-09-01T00:00:00Z'}),Date.parse(at));
+});
+test('attendance uses the clamped length: a forged 10-minute claim on a 1-minute span attends nothing', async () => {
+  const {db,data}=database();
+  await recordCallPractice(db,'f',{createdAt:at,endedAt:'2026-09-07T00:01:00Z',authoritativeDurationSec:600},'u');
+  assert.equal([...data.keys()].filter(k=>k.startsWith('attendance/')).length,0);
+  const rec=[...data.entries()].find(([k])=>k.includes('practiceSessions'));
+  assert.equal(rec[1].durationSeconds,60);
 });

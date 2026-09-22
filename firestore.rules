@@ -67,6 +67,22 @@ service cloud.firestore {
         && validRoleOneTimeSet();
     }
 
+    // A call's clock fields may only be written as serverTimestamp() (which is
+    // exactly request.time) or removed. The server credits a call's length as
+    // min(the client's claimed seconds, endedAt - connectedAt/matchedAt/createdAt), see
+    // trustedCallSeconds in functions/practiceStats.js — that clamp is only
+    // worth something because nobody can back-date these. Removal stays
+    // allowed: a direct call reuses its doc id and setDoc without merge drops
+    // the previous call's matchedAt/endedAt.
+    function callTimesAreServerTime(changed) {
+      let d = request.resource.data;
+      return (!changed.hasAny(['createdAt']) || !('createdAt' in d) || d.createdAt == request.time)
+        && (!changed.hasAny(['matchedAt']) || !('matchedAt' in d) || d.matchedAt == request.time)
+        && (!changed.hasAny(['connectedAt']) || !('connectedAt' in d) || d.connectedAt == request.time)
+        && (!changed.hasAny(['endedAt']) || !('endedAt' in d) || d.endedAt == request.time)
+        && (!changed.hasAny(['timestamp']) || !('timestamp' in d) || d.timestamp == request.time);
+    }
+
     function isNotCreatingPremiumFields() {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
@@ -76,6 +92,11 @@ service cloud.firestore {
           'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
+        // The trial clock starts NOW, by the server's clock. Register writes
+        // serverTimestamp(), which is exactly request.time; anything else — a
+        // date in the future, a string — would make isTrialExpired never fire.
+        && (!request.resource.data.keys().hasAny(['trialStartedAt'])
+          || request.resource.data.trialStartedAt == request.time)
         // Rol yaradılışda seçilə bilər; teacherEligible yalnız teacher rolu ilə birgə.
         && (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role in ['student', 'teacher'])
         && (!request.resource.data.keys().hasAny(['teacherEligible'])
@@ -249,13 +270,15 @@ service cloud.firestore {
         request.auth.uid == resource.data.userA ||
         request.auth.uid == resource.data.userB
       );
-      allow create: if request.auth.uid == request.resource.data.callerId || 
-                       request.auth.uid == request.resource.data.userA || 
-                       request.auth.uid == request.resource.data.userB;
-      allow update: if request.auth.uid == resource.data.callerId || 
+      allow create: if (request.auth.uid == request.resource.data.callerId ||
+                       request.auth.uid == request.resource.data.userA ||
+                       request.auth.uid == request.resource.data.userB)
+                    && callTimesAreServerTime(request.resource.data.keys());
+      allow update: if (request.auth.uid == resource.data.callerId ||
                        request.auth.uid == resource.data.receiverId ||
-                       request.auth.uid == resource.data.userA || 
-                       request.auth.uid == resource.data.userB;
+                       request.auth.uid == resource.data.userA ||
+                       request.auth.uid == resource.data.userB)
+                    && callTimesAreServerTime(request.resource.data.diff(resource.data).affectedKeys());
       allow delete: if request.auth.uid == resource.data.callerId || 
                        request.auth.uid == resource.data.receiverId ||
                        request.auth.uid == resource.data.userA || 

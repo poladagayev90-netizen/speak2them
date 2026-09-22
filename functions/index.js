@@ -5,7 +5,7 @@ const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
-const { syncAiPractice, recordCallPractice, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
+const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
   getAllTokens,
@@ -642,6 +642,15 @@ exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) 
   if (!snap) return;
   const data = snap.data() || {};
   if (data.subscriptionPlan) return; // already provisioned (e.g. admin-granted)
+  // Keep the client's trialStartedAt only when it is a real Timestamp from the
+  // last few minutes (Register writes serverTimestamp(), the same moment). The
+  // rules pin it too; this is the second lock, because a future date or a
+  // non-Timestamp here means isTrialExpired never fires.
+  const clientStart = data.trialStartedAt;
+  const clientStartMs = clientStart && typeof clientStart.toMillis === "function" ? clientStart.toMillis() : null;
+  const trustClientStart = clientStartMs !== null
+    && clientStartMs <= Date.now() + 60 * 1000
+    && clientStartMs >= Date.now() - 10 * 60 * 1000;
   await snap.ref.set({
     subscriptionPlan: "trial",
     availableTrialMinutes: TRIAL_MINUTES,
@@ -651,7 +660,7 @@ exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) 
     // App.js user sənədini əvvəl yaradan) yeni userdə boş qalırdı və
     // isTrialExpired heç vaxt işə düşmürdü → sonsuz pulsuz giriş. Client onu
     // yazmasa da (yaza da bilər — eyni an), gate indi mütləq işləyir.
-    trialStartedAt: data.trialStartedAt || admin.firestore.FieldValue.serverTimestamp(),
+    trialStartedAt: trustClientStart ? clientStart : admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
 });
 
@@ -715,9 +724,15 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
       if (!participants.includes(uid)) throw Object.assign(new Error("Not a participant"), { httpStatus: 403 });
       if (call[billedFlag]) return null; // already billed for this user — idempotent
 
-      const startMs = (call.matchedAt && call.matchedAt.toMillis && call.matchedAt.toMillis())
-        || (call.createdAt && call.createdAt.toMillis && call.createdAt.toMillis()) || 0;
-      const elapsedSec = startMs ? Math.max(0, Math.floor((Date.now() - startMs) / 1000)) : 0;
+      const startMs = callStartMs(call);
+      // An ended call bills its pinned length, clamped to the server-clock span
+      // (trustedCallSeconds). "Now minus start" is only for a call still in
+      // progress: used on an ended call it grew with every minute the request
+      // was held back, so a two-second call billed late counted as a full
+      // session toward teacherEligible.
+      const elapsedSec = call.status === "ended"
+        ? trustedCallSeconds(call)
+        : (startMs ? Math.max(0, Math.floor((Date.now() - startMs) / 1000)) : 0);
       const billedSec = Math.min(elapsedSec, CALL_CAP_SECONDS);
       const minutes = Math.ceil(billedSec / 60);
 
@@ -812,7 +827,7 @@ async function applyMissingCallStats(db, callRef, uid, durationMinutes, expected
     if (!freshCallSnap.exists) return;
     const freshCall = freshCallSnap.data() || {};
     if (freshCall.status !== "ended") return;
-    const start = freshCall.matchedAt?.toMillis?.() || freshCall.createdAt?.toMillis?.();
+    const start = callStartMs(freshCall);
     if (expectedStart && start !== expectedStart) return; // a newer call now occupies this ID
     if (freshCall[`statsApplied_${uid}`]) return; // already credited by the client or a prior run
 
@@ -879,7 +894,8 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
   if (call.status !== "ended") return;
   if (typeof call.authoritativeDurationSec !== "number") return;
 
-  const durationSeconds = call.authoritativeDurationSec;
+  // The client's claim, clamped to the server-clock span (see trustedCallSeconds).
+  const durationSeconds = trustedCallSeconds(call);
   if (durationSeconds <= 5) return; // matches the client's shouldApplyStats gate
 
   const participants = Array.from(new Set(
@@ -897,7 +913,7 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
     catch (e) { failures.push(e); }
     if (call[`statsApplied_${uid}`]) continue; // client already handled this side
     try {
-      await applyMissingCallStats(db, callRef, uid, durationMinutes, call.matchedAt?.toMillis?.() || call.createdAt?.toMillis?.());
+      await applyMissingCallStats(db, callRef, uid, durationMinutes, callStartMs(call));
     } catch (e) {
       console.error("[reconcileCallStats] failed for", uid, e.message);
       failures.push(e);
@@ -933,14 +949,14 @@ exports.backfillMissingCallStats = onRequest({ secrets: [] }, async (req, res) =
   for (const docSnap of snap.docs) {
     scanned++;
     const call = docSnap.data() || {};
-    if (typeof call.authoritativeDurationSec !== "number" || call.authoritativeDurationSec <= 5) continue;
+    if (trustedCallSeconds(call) <= 5) continue;
 
     const participants = Array.from(new Set(
       [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean),
     )).slice(0, 2);
     if (participants.length < 2) continue;
 
-    const durationMinutes = call.authoritativeDurationSec / 60;
+    const durationMinutes = trustedCallSeconds(call) / 60;
     for (const uid of participants) {
       if (call[`statsApplied_${uid}`]) continue;
       try {
@@ -2344,12 +2360,18 @@ async function joinSlotTx(db, tx, slot, uid, user) {
     // status "accepted" QƏSDƏNDİR: "calling" olsaydı GlobalCallListener qarşı
     // tərəfin telefonunu ELƏ İNDİ çaldırardı. Randevu gələcəkdədir — hər iki
     // tərəf öz vaxtında bu kanala qoşulur (Chat.jsx matchedCall yolu).
+    // NO merge: the id is per PAIR (callIdForPair), so this document may still
+    // hold the pair's previous call — its endedAt, authoritativeDurationSec,
+    // statsApplied_* / minutesBilled_* flags and open activity panels. Merged,
+    // the new call inherited them: endCall reused the old duration and skipped
+    // stats and billing because the flags said "already done". commitMatch
+    // overwrites for the same reason.
     tx.set(db.collection("calls").doc(callId), {
       userA: sorted[0], userB: sorted[1],
       callerId: uid, receiverId: partner.id,
       status: "accepted", source: "slot_match",
       slotId: slot.slotId, createdAt: now,
-    }, { merge: true });
+    });
   }
 
   const others = members.filter((m) => m.id !== uid);
@@ -2649,12 +2671,13 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
             },
           }, { merge: true });
         }
+        // NO merge — see joinSlotTx: the per-pair doc may hold the previous call.
         tx.set(db.collection("calls").doc(newCallId), {
           userA: sorted[0], userB: sorted[1],
           callerId: partnerId, receiverId: rematch.id,
           status: "accepted", source: "slot_match",
           slotId: slot.slotId, createdAt: now,
-        }, { merge: true });
+        });
       } else if (partner) {
         tx.set(membersRef.doc(partnerId), {
           status: "waiting", pairedWith: del, callId: del,
@@ -3202,12 +3225,13 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source 
 
   // status "accepted", not "calling": the appointment is in the FUTURE, so
   // nobody's phone may ring now (see the same note in joinSlotTx).
+  // NO merge — see joinSlotTx: the per-pair doc may hold the previous call.
   tx.set(db.collection("calls").doc(callId), {
     userA: sorted[0], userB: sorted[1],
     callerId: uidA, receiverId: uidB,
     status: "accepted", source,
     slotId: slot.slotId, ...marker, createdAt: now2,
-  }, { merge: true });
+  });
 
   // Counters recomputed from the FINAL state rather than incremented —
   // the same self-healing pattern leavePracticeSlot uses, and the reason
@@ -4044,8 +4068,8 @@ exports.practiceSlotTick = onSchedule(
               if (!m.callId || held.has(m.callId)) continue;
               const c = await db.collection("calls").doc(m.callId).get().catch(() => null);
               const cd = c && c.exists ? (c.data() || {}) : {};
-              const startedMs = cd.matchedAt?.toMillis?.() || cd.createdAt?.toMillis?.() || 0;
-              if (cd.status === "ended" && Number(cd.authoritativeDurationSec) >= ATTENDED_MIN_SECONDS
+              const startedMs = callStartMs(cd);
+              if (cd.status === "ended" && trustedCallSeconds(cd) >= ATTENDED_MIN_SECONDS
                 && startedMs >= slot.startMs - 30 * 60000) held.add(m.callId);
             }
             for (const m of members) {
@@ -6226,7 +6250,7 @@ async function matchSessionWaiters(db, sessionId, final) {
           source: "session_match",
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           matchedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+        }); // NO merge — see joinSlotTx: the per-pair doc may hold the previous call.
         tx.update(a.ref, {
           status: "matched", matchedWith: b.uid, callId,
           matchedAt: admin.firestore.FieldValue.serverTimestamp(),
