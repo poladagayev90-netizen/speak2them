@@ -5,6 +5,7 @@ import { auth } from '../firebase';
 import { FUNCTIONS_BASE } from '../constants';
 import { getTodayContent } from '../data/weeklyContent';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
+import { videosForTopic } from '../utils/fetchTopicVideos';
 import { plainTopic } from '../utils/topicLabel';
 import useAinurSession from '../hooks/useAinurSession';
 import { speakLine, stopSpeaking, primeLine, hasLine } from '../utils/ainurVoice';
@@ -66,9 +67,22 @@ const DESCRIBE_QUESTIONS = [
   'What do you notice first in this picture?',
   'Describe this picture for me. What is going on?',
 ];
+// The same five slots for the clip variant. A clip has a beginning and an end,
+// so these ask for the STORY — which is the whole reason the video activity
+// exists next to the photo one. Fixed strings, same allowlist, same caching.
+const VIDEO_QUESTIONS = [
+  'What is happening in this video?',
+  'Tell me what you saw. What happened first?',
+  'Describe this clip for me. Who is in it?',
+  'What happened at the end?',
+  'Watch it again and tell me the whole story.',
+];
 // Wraps, so priming the NEXT picture's line never has to special-case the last
 // one.
-const questionFor = (i) => DESCRIBE_QUESTIONS[((i % DESCRIBE_QUESTIONS.length) + DESCRIBE_QUESTIONS.length) % DESCRIBE_QUESTIONS.length];
+const questionFor = (i, video = false) => {
+  const list = video ? VIDEO_QUESTIONS : DESCRIBE_QUESTIONS;
+  return list[((i % list.length) + list.length) % list.length];
+};
 
 // A turn can fail in six different ways and every one of them used to look
 // identical to the learner: nothing happened at all. No reply, no message, no
@@ -94,6 +108,11 @@ export default function AiActivity({ user }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const isFree = params.get('mode') === 'free';
+  // The same describing session, run on clips instead of photographs. It is a
+  // mode rather than a second page because everything around the item — the
+  // turn loop, the keyword scoring, the report — is identical; only what is on
+  // screen and the noun in her questions change.
+  const isVideo = params.get('mode') === 'video';
 
   const [images, setImages] = useState([]);
   const [picIndex, setPicIndex] = useState(0);
@@ -176,6 +195,9 @@ export default function AiActivity({ user }) {
           itemId: st.isFree ? 'free' : st.image.id,
           itemIndex: st.isFree ? 0 : st.picIndex,
           keywords: st.isFree ? [] : (st.image.keywords || []).map((k) => (k && k.word ? k.word : k)),
+          // What she is being asked about. Without it she calls a clip "this
+          // picture", which reads as the app having lost track of the screen.
+          medium: isVideo ? 'video' : '',
           // What is already ticked off on this picture. The server intersects it
           // with the real word list before trusting a word of it.
           hitsSoFar: st.isFree ? [] : st.hits,
@@ -267,7 +289,7 @@ export default function AiActivity({ user }) {
     // to Whisper as the learner's own next sentence. Whoever holds owns the
     // resume: the nudge effect and the ask effect below.
     return { ...data, hold: true };
-  }, [content.day, user]);
+  }, [content.day, user, isVideo]);
 
   const { status, active, level, elapsedMs, error, start, stop, submit, resume, interrupt } =
     useAinurSession({ onSegment: handleSegment });
@@ -335,17 +357,24 @@ export default function AiActivity({ user }) {
   useEffect(() => {
     if (isFree) return undefined;
     let cancelled = false;
+    if (isVideo) {
+      // Local, static deck — no fetch, so nothing to cancel and nothing to wait
+      // for. Sliced the same way, so the dots and "last picture" logic are
+      // unchanged.
+      setImages(videosForTopic(content.day, PICTURES_PER_SESSION));
+      return undefined;
+    }
     fetchTopicImages(content.day, content.imageKeywords, content.manualImageUrls).then((list) => {
       if (!cancelled) setImages((list || []).slice(0, PICTURES_PER_SESSION));
     });
     return () => { cancelled = true; };
-  }, [content, isFree]);
+  }, [content, isFree, isVideo]);
 
   // The question for the picture ON SCREEN. It is both what she says out loud
   // and what stays written under her name while they answer it, because a
   // spoken question is gone the moment it ends and a learner who loses the
   // thread mid-sentence has to be able to look back at it.
-  const opener = isFree ? freeOpener(plainTopic(content.topic)) : questionFor(picIndex);
+  const opener = isFree ? freeOpener(plainTopic(content.topic)) : questionFor(picIndex, isVideo);
 
   const ready = isFree || !!image;
 
@@ -558,13 +587,15 @@ export default function AiActivity({ user }) {
         {/* Her face in the header too, so the person you are speaking to is on
             screen for the whole session and not only inside the bubbles. */}
         <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
-        <h1 className="ai-activity-title">{isFree ? 'Free talk' : 'Describe pictures'}</h1>
+        <h1 className="ai-activity-title">
+          {isFree ? 'Free talk' : isVideo ? 'Describe videos' : 'Describe pictures'}
+        </h1>
         {isFree ? (
           <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
             {turnIndex} {turnIndex === 1 ? 'turn' : 'turns'}
           </span>
         ) : (
-          <div className="ai-dots" aria-label={`Picture ${picIndex + 1} of ${images.length || PICTURES_PER_SESSION}`}>
+          <div className="ai-dots" aria-label={`${isVideo ? 'Video' : 'Picture'} ${picIndex + 1} of ${images.length || PICTURES_PER_SESSION}`}>
             {Array.from({ length: images.length || PICTURES_PER_SESSION }).map((_, i) => (
               <span
                 key={i}
@@ -608,7 +639,9 @@ export default function AiActivity({ user }) {
             )}
           </>
         ) : !image ? (
-          <p className="ai-bubble-text" style={{ color: 'var(--text-secondary)' }}>Loading pictures…</p>
+          <p className="ai-bubble-text" style={{ color: 'var(--text-secondary)' }}>
+            {isVideo ? 'Loading videos…' : 'Loading pictures…'}
+          </p>
         ) : (
           <>
             {/* The question stays on screen while they answer it. It used to
@@ -646,7 +679,7 @@ export default function AiActivity({ user }) {
             {advancing && (
               <div className="ai-advancing" role="status">
                 <span className="ai-advancing-text">
-                  Got it — next picture…
+                  Got it — next {isVideo ? 'video' : 'picture'}…
                 </span>
                 <span className="ai-advancing-bar" aria-hidden="true" />
               </div>
@@ -654,6 +687,7 @@ export default function AiActivity({ user }) {
 
             <AiDescribeStage
               image={image}
+              isVideo={isVideo}
               hits={hits}
               justHit={justHit}
               heard={heard}

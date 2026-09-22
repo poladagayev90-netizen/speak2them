@@ -8,7 +8,7 @@ import {
 import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import {
-  BookOpen, MessageCircleQuestion, Image as ImageIcon, Drama, MessagesSquare, Target,
+  BookOpen, MessageCircleQuestion, Image as ImageIcon, Video as VideoIcon, Drama, MessagesSquare, Target,
   Mic, MicOff, PhoneOff, Clock, X, Check, Trash2, Send, Phone, Calendar,
   BookMarked, Lightbulb,
 } from 'lucide-react';
@@ -33,6 +33,7 @@ import { needsIntro } from '../utils/intro';
 import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
+import CallVideoStage from '../components/CallVideoStage';
 import CallTabooStage from '../components/CallTabooStage';
 import CallQuestionStage from '../components/CallQuestionStage';
 import CallDebateStage from '../components/CallDebateStage';
@@ -89,6 +90,7 @@ export default function Chat({ user }) {
   const [timeWarning, setTimeWarning] = useState(false);
   const [showDaily, setShowDaily] = useState(false);
   const [imageStage, setImageStage] = useState(null);
+  const [videoStage, setVideoStage] = useState(null);
   const [tabooStage, setTabooStage] = useState(null);
   const [questionStage, setQuestionStage] = useState(null);
   const [debateStage, setDebateStage] = useState(null);
@@ -96,14 +98,14 @@ export default function Chat({ user }) {
   // One activity at a time owns the call screen. Every launcher button used to
   // repeat this list inline, which meant adding a game meant editing five
   // conditions and forgetting one.
-  const activityOpen = !!(imageStage?.active || tabooStage?.active
+  const activityOpen = !!(imageStage?.active || videoStage?.active || tabooStage?.active
     || questionStage?.active || debateStage?.active || guessStage?.active);
   // Any full-screen panel, activities plus the vocabulary sheet.
   const stageOpen = activityOpen || showDaily;
   // Starting an activity has to switch the other four off in the SAME write,
   // or a peer mid-render can briefly see two panels. Spelling the list out at
   // each call site meant five places to forget a stage; this derives it.
-  const ACTIVITY_STAGES = ['imageStage', 'tabooStage', 'questionStage', 'debateStage', 'guessStage'];
+  const ACTIVITY_STAGES = ['imageStage', 'videoStage', 'tabooStage', 'questionStage', 'debateStage', 'guessStage'];
   const closeActivitiesExcept = (keep) => Object.fromEntries(
     ACTIVITY_STAGES.filter((k) => k !== keep).map((k) => [`${k}.active`, false]),
   );
@@ -594,6 +596,10 @@ export default function Chat({ user }) {
 
       // Synced picture stage: either side writes it, both render it.
       setImageStage(data.imageStage || null);
+
+      // Synced clip stage: same contract as the picture one — the deck comes
+      // from the pinned topic, the doc carries only which clip is open.
+      setVideoStage(data.videoStage || null);
 
       // Synced Taboo game: same channel, but explainerUid decides which half
       // of the UI each peer gets.
@@ -1349,6 +1355,25 @@ export default function Chat({ user }) {
                   )}
                   {!activityOpen && (
                     <button
+                      className="call-btn-big act-video"
+                      onClick={() => {
+                        // Same contentIndex pinning as the picture stage: the
+                        // deck is a function of the topic, so the topic must be
+                        // decided once, by the starter, not per device.
+                        updateDoc(doc(db, 'calls', callDocId), {
+                          ...closeActivitiesExcept('videoStage'),
+                          videoStage: {
+                            active: true, videoIndex: 0, startedAtMs: Date.now(),
+                            contentIndex: getTodayIndex(),
+                          },
+                        }).catch((e) => console.error('[Chat] videoStage start failed:', e));
+                      }}
+                    >
+                      <VideoIcon size={26} strokeWidth={2.25} aria-hidden="true" /><span>Video</span>
+                    </button>
+                  )}
+                  {!activityOpen && (
+                    <button
                       className="call-btn-big act-taboo"
                       onClick={() => {
                         updateDoc(doc(db, 'calls', callDocId), {
@@ -1463,6 +1488,28 @@ export default function Chat({ user }) {
             updateDoc(doc(db, 'calls', callDocId), {
               'imageStage.active': false,
             }).catch((e) => console.error('[Chat] imageStage close failed:', e));
+          }}
+        />
+      )}
+
+      {inCall && videoStage?.active && content && (
+        <CallVideoStage
+          content={videoStage.contentIndex != null
+            ? getContentByIndex(videoStage.contentIndex)
+            : content}
+          videoIndex={videoStage.videoIndex || 0}
+          onNext={() => {
+            // Explicit value, not increment(): two peers tapping "Next" in the
+            // same moment write the same number and the deck moves one clip,
+            // not two.
+            updateDoc(doc(db, 'calls', callDocId), {
+              'videoStage.videoIndex': (videoStage.videoIndex || 0) + 1,
+            }).catch((e) => console.error('[Chat] videoStage next failed:', e));
+          }}
+          onClose={() => {
+            updateDoc(doc(db, 'calls', callDocId), {
+              'videoStage.active': false,
+            }).catch((e) => console.error('[Chat] videoStage close failed:', e));
           }}
         />
       )}

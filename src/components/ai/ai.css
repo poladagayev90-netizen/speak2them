@@ -71,6 +71,11 @@
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
+  /* The body is a flex column, so this box was free to shrink — and it did:
+     once the transcript receipt and her reply were both on screen mid-session,
+     the thing being described was squeezed into a ~60px sliver. It keeps its
+     aspect ratio and the column scrolls instead. */
+  flex-shrink: 0;
   border-radius: var(--r-lg);
   overflow: hidden;
   background: var(--bg-secondary);
@@ -81,6 +86,29 @@
   object-fit: cover;          /* cover, not contain: no letterbox bars */
   display: block;
   transition: opacity 220ms ease;
+}
+/* A clip is vertical far more often than a photograph is, and `cover` on a 9:16
+   frame crops it down to its middle third — which is exactly the part the
+   learner is being asked to describe. So the clip box is portrait and the frame
+   is contained whole, bars and all. */
+.ai-photo--video {
+  aspect-ratio: 3 / 4;
+  max-height: 52vh;
+}
+.ai-photo video {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+  background: var(--bg-secondary);
+}
+.ai-photo-replay {
+  position: absolute; right: var(--s-2); bottom: var(--s-2);
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  /* Sits ON the clip, so it cannot take a surface token: what is underneath is
+     whatever the video is showing, in either theme. */
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff; border: none; cursor: pointer;
 }
 .ai-photo-fallback {
   position: absolute; inset: 0;

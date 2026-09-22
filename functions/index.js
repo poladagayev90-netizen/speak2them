@@ -6650,6 +6650,15 @@ Speak so they understand you easily:
 These are mistakes their first language causes. Do NOT correct them, but understand what they meant:
 ${watch}`;
 
+  // The describing activity runs on photographs AND on short silent video
+  // clips, and she has to name what the learner is actually looking at — a
+  // learner watching a clip being asked about "this picture" reads as the app
+  // having lost track. The medium rides on the item, so no other branch in this
+  // file has to know about it: `activity` is still "describe" either way.
+  const isClip = item.medium === "video";
+  const M = isClip ? "clip" : "picture";
+  const MEDIUM = isClip ? "a short video clip with no sound" : "a photograph";
+
   const turnState = activity === "describe"
     ? (state.isLast
       // The answer to her question used to get NO reply at all: the server
@@ -6657,13 +6666,13 @@ ${watch}`;
       // and receiving silence is indistinguishable from the app being broken,
       // which is exactly how it was reported. She now closes the picture.
       ? `THIS TURN
-They have just ANSWERED the question you asked about this picture, and the picture is finished.
+They have just ANSWERED the question you asked about this ${M}, and the ${M} is finished.
 Say ONE short warm sentence that shows you took in what they just told you, and stop.
-Do NOT ask a question — the picture changes the moment you finish, so they could never answer it.
-Do NOT go back to describing the picture. Respond to their answer, not to the photograph.
+Do NOT ask a question — the ${M} changes the moment you finish, so they could never answer it.
+Do NOT go back to describing the ${M}. Respond to their answer, not to what they were watching.
 NEVER repeat a sentence you have already said, and never send the same sentence twice in one reply. If their answer does not really answer your question -- speech gets cut off, and people wander -- respond to whatever they DID say. Saying your own last line back to them is the one thing you must never do.`
       : `THIS TURN
-This is your first and only QUESTION about this picture. React in a clause, ask your question, stop. They get one answer, and you will close the picture after it.`)
+This is your first and only QUESTION about this ${M}. React in a clause, ask your question, stop. They get one answer, and you will close the ${M} after it.`)
     : `THIS TURN
 Turn ${(state.turnIndex || 0) + 1} of about ${state.plannedTurns || 2} on this item.
 ${state.isLast
@@ -6673,14 +6682,15 @@ ${state.isLast
   let contract;
   if (activity === "describe") {
     const kw = Array.isArray(item.keywords) && item.keywords.length ? item.keywords.join(", ") : "(none given)";
-    contract = `THE ACTIVITY: describing a picture
-The learner is looking at a photograph. YOU CANNOT SEE IT.
+    contract = `THE ACTIVITY: describing a ${M}
+The learner is looking at ${MEDIUM}. YOU CANNOT SEE IT.
 The only thing you know is that these things are probably in it: ${kw}.
-Because you cannot see the picture:
-- Never describe the picture yourself.
+Because you cannot see the ${M}:
+- Never describe the ${M} yourself.
 - Never state a detail the learner has not stated.
 - Never say whether their description is right or wrong. You have no way to know.
-This is about THIS picture only. Never mention an earlier picture — you cannot see any of them and the learner has moved on.
+- ${isClip ? "It MOVES: things happen in an order, so ask what happened, what happened next, and how it ended." : "It is a still moment: ask about what is in it and what is going on in it."}
+This is about THIS ${M} only. Never mention an earlier ${M} — you cannot see any of them and the learner has moved on.
 
 ${state.isLast
   ? `YOUR WHOLE REPLY IS ONE SENTENCE AND NOTHING ELSE
@@ -6973,6 +6983,7 @@ exports.aiActivityTurn = onRequest(
       topicIndex = 0,
       itemId = "",
       itemIndex = 0,
+      medium = "",
       keywords = [],
       hitsSoFar = [],
       turnIndex = 0,
@@ -7109,7 +7120,7 @@ exports.aiActivityTurn = onRequest(
         activity,
         level,
         l1: "az",
-        item: { keywords },
+        item: { keywords, medium: medium === "video" ? "video" : "" },
         state: {
           turnIndex,
           plannedTurns,
@@ -7400,6 +7411,13 @@ const SPEAKABLE_LINES = new Set([
   // exact failure the spoken questions were added to fix.
   "Good. Now use the words you have not said yet.",
   "One word left. Say it and we move on.",
+  // The five per-clip questions of the video variant of the same activity. A
+  // clip has an order of events, so these ask for the story, not the contents.
+  "What is happening in this video?",
+  "Tell me what you saw. What happened first?",
+  "Describe this clip for me. Who is in it?",
+  "What happened at the end?",
+  "Watch it again and tell me the whole story.",
   // Retired, but kept: a device that cached it still asks for it by name, and a
   // client on an older bundle still opens with it.
   "How would you describe this picture?",

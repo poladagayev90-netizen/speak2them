@@ -83,13 +83,16 @@
      The six call activities are the product's main event, so each one owns a
      shade and is recognisable before the label is read -- which is what the
      emoji used to do, minus the per-platform lottery over how a 🎭 is drawn.
-     Spread on LIGHTNESS inside the purple band rather than on hue: six
+     Spread on LIGHTNESS inside the purple band rather than on hue: seven
      unrelated colours on the call screen was the loudest thing in the app.
+     Picture and Video are neighbours on purpose — they are the same activity
+     in two media, so they read as a pair rather than as two strangers.
      Values are literal per theme rather than mixed at runtime: this is the one
      screen that must never depend on an old WebView's colour-mix support. */
   --act-vocab:   #8a6fd8;   --act-vocab-rgb:   138 111 216;
   --act-quiz:    #2b2668;   --act-quiz-rgb:     43  38 104;
   --act-picture: #4a5bb0;   --act-picture-rgb:  74  91 176;
+  --act-video:   #6156bd;   --act-video-rgb:    97  86 189;
   --act-taboo:   #8c4a91;   --act-taboo-rgb:   140  74 145;
   --act-debate:  #5b3fa8;   --act-debate-rgb:   91  63 168;
   --act-guess:   #3f47a0;   --act-guess-rgb:    63  71 160;
@@ -166,10 +169,11 @@
   --silver: #b6a6ff;
   --bronze: #8f85dd;
 
-  /* Same six steps, lifted for a dark page. See the light block. */
+  /* Same seven steps, lifted for a dark page. See the light block. */
   --act-vocab:   #e3d8ff;   --act-vocab-rgb:   227 216 255;
   --act-quiz:    #8f85dd;   --act-quiz-rgb:    143 133 221;
   --act-picture: #8fa3e8;   --act-picture-rgb: 143 163 232;
+  --act-video:   #a2b0f0;   --act-video-rgb:   162 176 240;
   --act-taboo:   #dfa6f0;   --act-taboo-rgb:   223 166 240;
   --act-debate:  #a37fe8;   --act-debate-rgb:  163 127 232;
   --act-guess:   #b0a6f2;   --act-guess-rgb:   176 166 242;

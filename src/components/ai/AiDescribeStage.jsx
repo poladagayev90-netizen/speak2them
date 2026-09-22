@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ImageOff, Check } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ImageOff, VideoOff, Check, RotateCcw } from 'lucide-react';
 import Pill from '../ui/Pill';
 import DescribeFrames from '../DescribeFrames';
 import { keywordGlossary } from '../../data/keywordGlossary';
@@ -24,8 +24,14 @@ import './ai.css';
  *
  * Scoring is the server's: a stemming match on the transcript, so "kneeling"
  * counts for "kneel". Instant and free — no model is involved.
+ *
+ * `isVideo` swaps the photograph for a muted looping clip. Same item shape,
+ * same keyword pills, same report — a clip is just a picture that moves, and
+ * the learner describes it the same way. It loops on purpose: describing is
+ * slower than watching, and a still last frame would leave them talking about
+ * something they can no longer see.
  */
-export default function AiDescribeStage({ image, hits = [], justHit = [], heard }) {
+export default function AiDescribeStage({ image, isVideo = false, hits = [], justHit = [], heard }) {
   const [failed, setFailed] = useState(false);
   const [dead, setDead] = useState(false);
   const [loadedUrl, setLoadedUrl] = useState('');
@@ -33,6 +39,7 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard 
   // deliberate act — the English stays the default, because the point of the
   // list is to get those English words said out loud.
   const [shown, setShown] = useState(() => new Set());
+  const videoRef = useRef(null);
   const lang = getFeedbackLanguage();
 
   // A new picture starts its own load bookkeeping, or the previous picture's
@@ -49,8 +56,46 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard 
 
   return (
     <>
-      <div className="ai-photo">
-        {dead ? (
+      <div className={`ai-photo${isVideo ? ' ai-photo--video' : ''}`}>
+        {isVideo ? (
+          dead ? (
+            <div className="ai-photo-fallback">
+              <VideoOff size={28} strokeWidth={1.5} aria-hidden="true" />
+              The clip did not load. Describe the words below instead.
+            </div>
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                key={image.id}
+                src={image.src}
+                poster={image.poster}
+                muted
+                loop
+                playsInline
+                autoPlay
+                preload="auto"
+                aria-label={image.alt || 'Video to describe'}
+                onError={() => setDead(true)}
+              />
+              {/* "Play it again" is half of what a learner says out loud while
+                  describing a clip, so it is a button and not a gesture. */}
+              <button
+                type="button"
+                className="ai-photo-replay"
+                aria-label="Play again"
+                onClick={() => {
+                  const el = videoRef.current;
+                  if (!el) return;
+                  el.currentTime = 0;
+                  el.play().catch(() => {});
+                }}
+              >
+                <RotateCcw size={15} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </>
+          )
+        ) : dead ? (
           <div className="ai-photo-fallback">
             <ImageOff size={28} strokeWidth={1.5} aria-hidden="true" />
             The picture did not load. Describe the words below instead.
@@ -68,7 +113,7 @@ export default function AiDescribeStage({ image, hits = [], justHit = [], heard 
             }}
           />
         )}
-        {loading && !dead && <div className="ai-photo-fallback">Loading picture…</div>}
+        {!isVideo && loading && !dead && <div className="ai-photo-fallback">Loading picture…</div>}
       </div>
 
       {keywords.length > 0 && (

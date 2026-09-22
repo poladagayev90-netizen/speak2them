@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image as ImageIcon, MessageSquare, ChevronRight, Lock } from 'lucide-react';
+import { Image as ImageIcon, Video as VideoIcon, MessageSquare, ChevronRight, Lock } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
 import { plainTopic } from '../utils/topicLabel';
 import Card from '../components/ui/Card';
@@ -27,6 +27,14 @@ const ACTIVITIES = [
     blurb: 'Five photos. Say what you see, AInur asks for more.',
     minutes: 8,
     to: '/practice',
+  },
+  {
+    id: 'describe-video',
+    icon: VideoIcon,
+    title: 'Describe videos',
+    blurb: 'Five short clips. Tell AInur the story of what happened.',
+    minutes: 8,
+    to: '/practice?mode=video',
   },
   {
     id: 'free',

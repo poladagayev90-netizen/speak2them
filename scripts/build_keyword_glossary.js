@@ -24,6 +24,7 @@ const OUT = path.join(__dirname, '../src/data/keywordGlossary.js');
 const SOURCES = [
   path.join(__dirname, '../src/data/topicImages.js'),
   path.join(__dirname, '../src/data/describeImages.js'),
+  path.join(__dirname, '../src/data/describeVideos.js'),
 ];
 
 // Kontekstdən asılı sözlər — şəkil altındakı mənası ilə.
@@ -67,6 +68,72 @@ const OVERRIDES = {
   'standing': { az: 'ayaq üstə', tr: 'ayakta' },
   'serving': { az: 'süfrəyə verir', tr: 'servis yapıyor' },
   'scales': { az: 'tərəzi', tr: 'terazi' },
+  // Video dəsti (describeVideos.js) — hamısı ƏL İLƏ yazılıb: bu sözlərin çoxu
+  // söz birləşməsidir və maşın onları hərfi tərcümə edir ("open palm" →
+  // "açıq xurma", yəni palma meyvəsi).
+  'open palm': { az: 'açıq ovuc', tr: 'açık avuç' },
+  'standing still': { az: 'tərpənmədən dayanıb', tr: 'kıpırdamadan duruyor' },
+  'blanket': { az: 'ədyal', tr: 'battaniye' },
+  'falling': { az: 'aşağı düşür', tr: 'düşüyor' },
+  'soaked': { az: 'başdan-ayağa islanıb', tr: 'sırılsıklam' },
+  'rooster': { az: 'xoruz', tr: 'horoz' },
+  'vegetable patch': { az: 'tərəvəz ləki', tr: 'sebze bahçesi' },
+  'cross-legged': { az: 'bardaş qurub', tr: 'bağdaş kurmuş' },
+  'rope swing': { az: 'kəndir yelləncək', tr: 'ip salıncak' },
+  'pond': { az: 'gölməçə', tr: 'gölet' },
+  'let go': { az: 'əlini buraxmaq', tr: 'bırakmak' },
+  'splash': { az: 'suyun sıçraması', tr: 'su sıçraması' },
+  'reeds': { az: 'qamışlıq', tr: 'sazlık' },
+  'gorilla': { az: 'qorilla', tr: 'goril' },
+  'chewing leaves': { az: 'yarpaq çeynəyir', tr: 'yaprak çiğniyor' },
+  'bird feeder': { az: 'quş yemliyi', tr: 'kuş yemliği' },
+  'squirrel': { az: 'dələ', tr: 'sincap' },
+  'dove': { az: 'göyərçin', tr: 'güvercin' },
+  'seeds': { az: 'dən', tr: 'yem tanesi' },
+  'deer': { az: 'maral', tr: 'geyik' },
+  'estate agent': { az: 'əmlak agenti', tr: 'emlakçı' },
+  'staircase': { az: 'pilləkən', tr: 'merdiven' },
+  'carpet': { az: 'xalça', tr: 'halı' },
+  'slip': { az: 'sürüşmək', tr: 'kaymak' },
+  'empty house': { az: 'boş ev', tr: 'boş ev' },
+  'hen': { az: 'toyuq', tr: 'tavuk' },
+  'stroke': { az: 'sığallamaq', tr: 'okşamak' },
+  'feathers': { az: 'lələklər', tr: 'tüyler' },
+  'kangaroo': { az: 'kenquru', tr: 'kanguru' },
+  'stand upright': { az: 'dik dayanmaq', tr: 'dik durmak' },
+  'muscles': { az: 'əzələlər', tr: 'kaslar' },
+  'stare': { az: 'gözünü zilləmək', tr: 'dik dik bakmak' },
+  'white birds': { az: 'ağ quşlar', tr: 'beyaz kuşlar' },
+  'treeline': { az: 'meşənin kənarı', tr: 'ağaç sınırı' },
+  'leopard': { az: 'bəbir', tr: 'leopar' },
+  'dirt track': { az: 'torpaq yol', tr: 'toprak yol' },
+  'safari vehicle': { az: 'safari maşını', tr: 'safari aracı' },
+  'dry grass': { az: 'quru ot', tr: 'kuru ot' },
+  'spots': { az: 'xallar', tr: 'benekler' },
+  'huge knife': { az: 'nəhəng bıçaq', tr: 'kocaman bıçak' },
+  'flatbread': { az: 'yastı çörək', tr: 'yassı ekmek' },
+  'salads': { az: 'salatlar', tr: 'salatalar' },
+  'pier': { az: 'taxta körpü', tr: 'iskele' },
+  'big fish': { az: 'iri balıq', tr: 'büyük balık' },
+  'put back': { az: 'geri qoymaq', tr: 'geri koymak' },
+  'lose balance': { az: 'müvazinətini itirmək', tr: 'dengesini kaybetmek' },
+  'eagle': { az: 'qartal', tr: 'kartal' },
+  'spread wings': { az: 'qanadlarını açmaq', tr: 'kanatlarını açmak' },
+  'mound': { az: 'torpaq təpəciyi', tr: 'toprak tümsek' },
+  'open field': { az: 'açıq sahə', tr: 'açık arazi' },
+  'take off': { az: 'uçub qalxmaq', tr: 'havalanmak' },
+  'wipers': { az: 'şüşəsilənlər', tr: 'silecekler' },
+  'city below': { az: 'aşağıdakı şəhər', tr: 'aşağıdaki şehir' },
+  'wake up': { az: 'oyanmaq', tr: 'uyanmak' },
+  'news studio': { az: 'xəbər studiyası', tr: 'haber stüdyosu' },
+  'presenter': { az: 'aparıcı', tr: 'sunucu' },
+  'crawl': { az: 'sürünmək', tr: 'sürünmek' },
+  'live tv': { az: 'canlı efir', tr: 'canlı yayın' },
+  'screen': { az: 'ekran', tr: 'ekran' },
+  'canal': { az: 'su arxı', tr: 'sulama kanalı' },
+  'rice field': { az: 'çəltik tarlası', tr: 'pirinç tarlası' },
+  'toy boat': { az: 'oyuncaq qayıq', tr: 'oyuncak tekne' },
+  'current': { az: 'suyun axını', tr: 'akıntı' },
 };
 
 function loadKeywords(file) {
@@ -75,7 +142,7 @@ function loadKeywords(file) {
   return [...src.matchAll(/"keywords":\s*\[([^\]]*)\]/g)]
     .flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]))
     .concat([...src.matchAll(/keywords:\s*\[([^\]]*)\]/g)]
-      .flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1])));
+      .flatMap((m) => [...m[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1])));
 }
 
 async function translate(text, target) {
@@ -119,7 +186,8 @@ async function translate(text, target) {
   }
 
   // Əl ilə yazılanlar maşını həmişə üstələyir.
-  for (const [w, v] of Object.entries(OVERRIDES)) if (out[w]) out[w] = v;
+  const wanted = new Set(words);
+  for (const [w, v] of Object.entries(OVERRIDES)) if (out[w] || wanted.has(w)) out[w] = v;
 
   const sorted = Object.fromEntries(Object.keys(out).sort().map((k) => [k, out[k]]));
   const header = `// Şəkil açar sözlərinin lüğəti — söz → { az, tr }.

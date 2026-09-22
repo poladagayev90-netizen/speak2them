@@ -1016,9 +1016,9 @@ body {
   gap: 16px;
   justify-content: center;
   align-items: center;
-  /* Six activity buttons do not fit one row on a phone. Capping the row at
-     three makes the break an even 3+3, instead of 4+2 with the second row
-     hanging off-centre. */
+  /* Seven activity buttons do not fit one row on a phone. Capping the row at
+     three keeps every row centred (3+3+1) instead of 4+3 with the wide row
+     running off the edge of a 320px screen. */
   flex-wrap: wrap;
   max-width: 282px;   /* 3 x 70px + 2 x 16px gap */
   margin: 0 auto;
@@ -1064,6 +1064,7 @@ body {
 .call-btn-big.act-vocab   { --act: var(--act-vocab);   --act-rgb: var(--act-vocab-rgb); }
 .call-btn-big.act-quiz    { --act: var(--act-quiz);    --act-rgb: var(--act-quiz-rgb); }
 .call-btn-big.act-picture { --act: var(--act-picture); --act-rgb: var(--act-picture-rgb); }
+.call-btn-big.act-video   { --act: var(--act-video);   --act-rgb: var(--act-video-rgb); }
 .call-btn-big.act-taboo   { --act: var(--act-taboo);   --act-rgb: var(--act-taboo-rgb); }
 .call-btn-big.act-debate  { --act: var(--act-debate);  --act-rgb: var(--act-debate-rgb); }
 .call-btn-big.act-guess   { --act: var(--act-guess);   --act-rgb: var(--act-guess-rgb); }
