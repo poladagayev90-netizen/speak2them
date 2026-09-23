@@ -4,6 +4,7 @@ import { getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
+import { VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
 import SpeakingCards from './SpeakingCards';
 
 function shuffle(array) {
@@ -194,12 +195,14 @@ export default function DailyTopicModal({ open, onClose }) {
           >
             <ImageIcon size={16} /> Pictures
           </button>
-          <button
-            className={`dt-tab ${activeSection === 'videos' ? 'active' : ''}`}
-            onClick={() => setActiveSection('videos')}
-          >
-            <VideoIcon size={16} /> Videos
-          </button>
+          {VIDEOS_ENABLED && (
+            <button
+              className={`dt-tab ${activeSection === 'videos' ? 'active' : ''}`}
+              onClick={() => setActiveSection('videos')}
+            >
+              <VideoIcon size={16} /> Videos
+            </button>
+          )}
         </div>
 
         {/* Content Area */}
@@ -266,7 +269,7 @@ export default function DailyTopicModal({ open, onClose }) {
             </div>
           )}
 
-          {activeSection === 'videos' && <TopicVideos day={content.day} />}
+          {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} />}
 
           {activeSection === 'pictures' && (
             <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>

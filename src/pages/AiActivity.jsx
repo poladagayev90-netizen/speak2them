@@ -5,7 +5,7 @@ import { auth } from '../firebase';
 import { FUNCTIONS_BASE } from '../constants';
 import { getTodayContent } from '../data/weeklyContent';
 import { fetchTopicImages } from '../utils/fetchTopicImages';
-import { videosForTopic } from '../utils/fetchTopicVideos';
+import { videosForTopic, VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
 import { plainTopic } from '../utils/topicLabel';
 import useAinurSession from '../hooks/useAinurSession';
 import { speakLine, stopSpeaking, primeLine, hasLine } from '../utils/ainurVoice';
@@ -112,7 +112,9 @@ export default function AiActivity({ user }) {
   // mode rather than a second page because everything around the item — the
   // turn loop, the keyword scoring, the report — is identical; only what is on
   // screen and the noun in her questions change.
-  const isVideo = params.get('mode') === 'video';
+  // Web-only (see VIDEOS_ENABLED): an old link to ?mode=video in the Android
+  // app runs the picture session instead.
+  const isVideo = VIDEOS_ENABLED && params.get('mode') === 'video';
 
   const [images, setImages] = useState([]);
   const [picIndex, setPicIndex] = useState(0);

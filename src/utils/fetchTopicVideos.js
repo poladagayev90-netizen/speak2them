@@ -1,5 +1,12 @@
+import { Capacitor } from '@capacitor/core';
 import { describeVideos } from '../data/describeVideos';
 import { topicVideos } from '../data/topicVideos';
+
+// The clips are web-only (decided 2026-09-23): they are not licensed for the
+// Play Store build, so the Android app neither shows the video activity nor
+// ships the files (scripts/strip-native-videos.js removes them from the APK).
+// Every video entry point checks this one flag.
+export const VIDEOS_ENABLED = !Capacitor.isNativePlatform();
 
 // How many clips one topic is worth. Six is the number the activity was
 // designed around: at ~20 s a clip plus two people describing it, six clips is

@@ -6,6 +6,7 @@ import { plainTopic } from '../utils/topicLabel';
 import Card from '../components/ui/Card';
 import LessonHint from '../components/LessonHint';
 import '../components/ai/ai.css';
+import { VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
 
 // The AInur tab. It used to be a single push-to-talk screen with a hardcoded
 // background that ignored the theme, no saved history and no report — the
@@ -77,7 +78,7 @@ export default function AinurHub({ user }) {
 
       <p className="ui-section-label">Practice · {plainTopic(content.topic)}</p>
 
-      {ACTIVITIES.map((a) => {
+      {ACTIVITIES.filter((a) => VIDEOS_ENABLED || a.id !== 'describe-video').map((a) => {
         const Icon = a.icon;
         return (
           <Card
