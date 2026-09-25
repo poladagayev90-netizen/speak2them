@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, MessageCircle, BarChart3, BellRing, Check } from 'lucide-react';
+import { GraduationCap, MessageCircle, BarChart3, BellRing, Check, Clapperboard, ChevronRight } from 'lucide-react';
 import { doc, getDoc, collection, getDocs, query, limit, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -15,6 +15,8 @@ import {
   TUTOR_SPECIALTIES,
 } from '../utils/teacher';
 import TutorBadge from '../components/TutorBadge';
+import { describeVideos } from '../data/describeVideos';
+import { canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
 import { bakuDateStr } from '../utils/sessionSchedule';
@@ -626,6 +628,39 @@ export default function TeacherUnlock({ user }) {
             </form>
           )}
         </div>
+
+        {/* Video library — the whole describe-video deck, not a topic's six.
+            A single row, not a section: it is a tool the teacher reaches for
+            mid-lesson, and it must not push invites and the roster down. */}
+        {canBrowseAllVideos(user) && (
+          <button
+            type="button"
+            onClick={() => navigate('/teacher/videos')}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: '16px', padding: '14px 16px', marginBottom: '16px',
+              textAlign: 'left', cursor: 'pointer', color: 'var(--text-primary)',
+              // A <button> does not inherit the page font on its own.
+              font: 'inherit',
+            }}
+          >
+            <span style={{
+              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+              display: 'grid', placeItems: 'center',
+              background: 'var(--accent-soft)', color: 'var(--accent)',
+            }}>
+              <Clapperboard size={20} aria-hidden="true" />
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'block', fontSize: '15px', fontWeight: 800 }}>Video library</span>
+              <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
+                All {describeVideos.length} clips to describe — pick one and share your screen
+              </span>
+            </span>
+            <ChevronRight size={20} aria-hidden="true" style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          </button>
+        )}
 
         {/* Dəvət bölməsi */}
         <div style={{

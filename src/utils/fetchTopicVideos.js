@@ -1,12 +1,27 @@
 import { Capacitor } from '@capacitor/core';
 import { describeVideos } from '../data/describeVideos';
 import { topicVideos } from '../data/topicVideos';
+import { ADMIN_UID } from '../constants';
 
 // The clips are web-only (decided 2026-09-23): they are not licensed for the
 // Play Store build, so the Android app neither shows the video activity nor
 // ships the files (scripts/strip-native-videos.js removes them from the APK).
 // Every video entry point checks this one flag.
 export const VIDEOS_ENABLED = !Capacitor.isNativePlatform();
+
+// Who may open the whole deck (/teacher/videos) instead of a topic's six.
+// A teacher running a lesson needs to pick the clip that fits the student in
+// front of them, not the six the rotation handed out today.
+//
+// `role === 'teacher'` is the user's own choice at registration, and that is
+// enough here: the clips are public files under /videos, so this gate decides
+// what the interface offers, not what anyone can fetch. Nothing is granted by
+// it — if the library ever unlocks something that matters, gate it on the
+// rules-protected `teacherVerified` instead.
+export function canBrowseAllVideos(user) {
+  if (!VIDEOS_ENABLED || !user) return false;
+  return user.role === 'teacher' || user.teacherVerified === true || user.uid === ADMIN_UID;
+}
 
 // How many clips one topic is worth. Six is the number the activity was
 // designed around: at ~20 s a clip plus two people describing it, six clips is

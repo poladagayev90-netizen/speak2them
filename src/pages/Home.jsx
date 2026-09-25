@@ -291,7 +291,7 @@ export default function Home({ user }) {
         <CourseProgressCard user={user} />
       </div>
 
-      <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} />
+      <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} user={user} />
       <AnalysisReadyModal
         user={user}
         suppressed={streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen}

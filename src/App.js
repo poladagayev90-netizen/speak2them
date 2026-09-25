@@ -62,6 +62,7 @@ const Redeem = React.lazy(() => import('./pages/Redeem'));
 const JoinTeacher = React.lazy(() => import('./pages/JoinTeacher'));
 const TeacherUnlock = React.lazy(() => import('./pages/TeacherUnlock'));
 const TeacherStudent = React.lazy(() => import('./pages/TeacherStudent'));
+const VideoLibrary = React.lazy(() => import('./pages/VideoLibrary'));
 
 // Shown INSIDE the layout while a page chunk loads — the bottom nav stays
 // mounted, so a tab switch never blanks the whole screen.
@@ -233,6 +234,10 @@ function AppShell({ user }) {
           <Route path="/teacher" element={user ? <TeacherUnlock user={user} /> : (auth.currentUser ? <PageFallback /> : <Navigate to="/login" />)} />
           {/* Şagird detalı yalnız müəllim üçündür — qeyri-müəllim Lobby-yə. */}
           <Route path="/teacher/student/:studentId" element={user ? (isTeacherUser ? <TeacherStudent user={user} /> : <Navigate to="/" />) : <Navigate to="/login" />} />
+          {/* The whole describe-video deck. Teachers (and the admin) only, and
+              web only — the page checks canBrowseAllVideos itself, so the deck
+              data stays out of the main bundle. */}
+          <Route path="/teacher/videos" element={user ? <VideoLibrary user={user} /> : <Navigate to="/login" />} />
           <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
           <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />

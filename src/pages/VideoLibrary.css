@@ -1,0 +1,252 @@
+/* Teacher video library. The grid is a picker, the stage is a shared screen:
+   the grid stays quiet (posters do the talking), the stage gives the clip the
+   whole viewport. The player inside the stage is ClipViewer and keeps the
+   topic sheet's .dt-video-* styles, so a clip looks the same in both places. */
+
+.vl-page {
+  padding: var(--s-4);
+  padding-bottom: 120px;              /* the floating bottom nav */
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.vl-page ::selection { background: var(--accent-ring); }
+
+/* ── head ────────────────────────────────────────────────── */
+.vl-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+
+.vl-head-text { min-width: 0; padding-top: 2px; }
+
+.vl-title {
+  margin: 0;
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+}
+
+.vl-sub {
+  margin: var(--s-1) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+}
+
+/* ── search ──────────────────────────────────────────────── */
+.vl-search {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 46px;
+  padding: 0 var(--s-2) 0 var(--s-3);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vl-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.vl-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-body);
+  caret-color: var(--accent);
+}
+
+.vl-search input::placeholder { color: var(--text-muted); }
+/* The browser's own clear cross would sit next to ours. */
+.vl-search input::-webkit-search-cancel-button { display: none; }
+
+.vl-search-clear {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.vl-search-clear:hover { background: var(--accent-soft); }
+.vl-search-clear:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.vl-count {
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── grid ────────────────────────────────────────────────── */
+.vl-grid {
+  list-style: none;
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  display: grid;
+  /* Two columns on a phone, four or five on a laptop — the laptop is where a
+     teacher shares from. */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--s-4) var(--s-3);
+}
+
+.vl-tile {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  border-radius: var(--r-lg);
+}
+
+.vl-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.vl-thumb {
+  position: relative;
+  display: block;
+  /* One shape for every tile: the deck mixes 9:16 phone clips and 16:9 ones,
+     and a grid of mixed heights reads as broken. The full shape is on the
+     stage. */
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  box-shadow: var(--glass-lift);
+}
+
+.vl-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vl-tile:hover .vl-thumb img { transform: scale(1.04); }
+.vl-tile:hover .vl-thumb { border-color: var(--accent); }
+.vl-tile:active .vl-thumb { transform: scale(0.98); }
+
+.vl-dur {
+  position: absolute;
+  right: var(--s-2);
+  bottom: var(--s-2);
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  /* Sits ON the poster, so it cannot take a surface token: under it is
+     whatever the frame shows, in either theme (same rule as .dt-video-replay). */
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.vl-words {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 0 2px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: var(--lh-tight);
+}
+
+/* ── empty ───────────────────────────────────────────────── */
+.vl-empty {
+  margin-top: var(--s-10);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.vl-empty-title {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.vl-empty-sub {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── stage ───────────────────────────────────────────────── */
+/* Over everything, the bottom nav included: this is what the class sees when
+   the tab is shared, and a nav bar across the bottom of the clip is noise on
+   someone else's screen. */
+.vl-stage {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-stage);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  padding: var(--safe-area-top, 0px) 0 var(--safe-area-bottom, 0px);
+  animation: vl-stage-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vl-stage-bar {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--s-2) var(--s-3);
+}
+
+/* A definite height for ClipViewer's .dt-section--video (height: 100%) to
+   resolve against — that is what keeps clip + arrows + words on one screen.
+   The questions scroll below inside this box. */
+.vl-stage-body {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--s-4) var(--s-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@keyframes vl-stage-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vl-stage { animation: none; }
+  .vl-thumb img { transition: none; }
+}

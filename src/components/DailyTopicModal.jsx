@@ -4,7 +4,7 @@ import { getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
-import { VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
+import { VIDEOS_ENABLED, canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import SpeakingCards from './SpeakingCards';
 
 function shuffle(array) {
@@ -131,7 +131,7 @@ function DailyQuiz({ content, onFinish }) {
   );
 }
 
-export default function DailyTopicModal({ open, onClose }) {
+export default function DailyTopicModal({ open, onClose, user }) {
   const [content, setContent] = useState(null);
   const [activeSection, setActiveSection] = useState('vocabulary');
   const [difficulty, setDifficulty] = useState('easy');
@@ -269,7 +269,7 @@ export default function DailyTopicModal({ open, onClose }) {
             </div>
           )}
 
-          {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} />}
+          {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} showLibrary={canBrowseAllVideos(user)} />}
 
           {activeSection === 'pictures' && (
             <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>
