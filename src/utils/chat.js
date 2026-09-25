@@ -3,6 +3,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { subscribeToBlocked } from './blocklist';
 
 // Çat köməkçiləri. Sənəd id-si HƏMİŞƏ sıralanmış uid cütüdür — rules üzvlüyü
 // məhz bu sətirdən çıxarır, ona görə başqa formatda id yaratmaq olmaz.
@@ -46,10 +47,19 @@ export function subscribeToChats(uid, cb) {
 }
 
 // Bütün oxunmamışların cəmi — aşağı naviqasiyadakı nişan üçün.
+//
+// Chats with someone I blocked are left out. The Chats list hides them, so a
+// count they carried from before the block could never be cleared and the
+// badge stayed lit for good.
 export function subscribeToUnreadTotal(uid, cb) {
-  return subscribeToChats(uid, (chats) => {
-    cb(chats.reduce((sum, c) => sum + unreadFor(c, uid), 0));
-  });
+  let chats = [];
+  let blocked = new Set();
+  const emit = () => cb(chats
+    .filter((c) => !(c.participants || []).some((p) => p !== uid && blocked.has(p)))
+    .reduce((sum, c) => sum + unreadFor(c, uid), 0));
+  const stopChats = subscribeToChats(uid, (next) => { chats = next; emit(); });
+  const stopBlocked = subscribeToBlocked(uid, (next) => { blocked = next; emit(); });
+  return () => { stopChats(); stopBlocked(); };
 }
 
 // Söhbət açılanda öz sayğacımı sıfırlayıram. Rules qarşı tərəfinkinə toxunmağa

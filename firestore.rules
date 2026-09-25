@@ -453,6 +453,12 @@ service cloud.firestore {
     // analysisUserBudget (per-learner daily analysis ceiling, claimTicket) is
     // server-only for the same reason: a client that could write it could
     // reset its own limit.
+    // Same for the leaderboard truth and its proofs (functions/userStats.js):
+    // userStats (the server's copy of each user's stats; guardUserDoc puts
+    // hand-edited users/{uid} numbers back to it), statsLedger / ratingLedger
+    // (once-per-call records) and agoraJoins (who fetched a voice token for
+    // which pair — the proof a call really happened). A read rule here would
+    // leak who called whom; a write rule would let a client forge the proof.
 
     match /wordHistory/{userId}/words/{wordId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;

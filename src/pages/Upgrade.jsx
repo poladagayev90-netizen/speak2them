@@ -73,8 +73,8 @@ export default function Upgrade({ user }) {
             hasVisitedPremium: true,
             visitedPremium: true,
             premiumVisitedAt: serverTimestamp(),
-            ...(newBadges.length > 0 ? rewardResult.updates : {}),
-            ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
+            // The badge itself (premium_curious) is awarded by the server when it
+            // sees visitedPremium (guardUserDoc); a client-written badge is undone.
           }, { merge: true });
 
           if (newBadges.length > 0) {

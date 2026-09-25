@@ -5,6 +5,7 @@ const { defineSecret, defineString } = require("firebase-functions/params");
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
+const userStatsLib = require("./userStats");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -98,7 +99,7 @@ async function verifyAuth(req) {
 // E-mail addresses live in Firebase Auth ONLY. They used to be copied onto
 // users/{uid}, which every signed-in account may read and list — so one
 // sign-up was enough to download every learner's address, minors included.
-// Server code that needs an address asks Auth; stripPublicEmail removes the
+// Server code that needs an address asks Auth; guardUserDoc removes the
 // copy that older app builds still write on login.
 async function uidForEmail(email) {
   try {
@@ -301,6 +302,19 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
     console.warn("[getAgoraToken] pair check failed:", e.message);
   }
 
+  // Voice-join log: the only server-side proof that this person really took
+  // part in a call with this peer. creditCallStats and updatePeerStats need
+  // BOTH people in it before a call counts — the call doc alone is client-
+  // written. Server-only collection (rules catch-all).
+  try {
+    const pairKey = [decoded.uid, parts[0]].sort().join("_");
+    await db.collection("agoraJoins").doc(`${pairKey}_${decoded.uid}`).set({
+      uid: decoded.uid, pair: pairKey, at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    console.warn("[getAgoraToken] join log failed:", e.message);
+  }
+
   const role = RtcRole.PUBLISHER;
   const expireTime = 3600;
 
@@ -438,18 +452,50 @@ exports.adminUserEmails = onRequest({ invoker: "public" }, async (req, res) => {
   }
 });
 
-// Older app builds (every APK before this change) still write `email` onto
-// users/{uid} at each login. This removes it within a second or two, so the
-// address never stays readable. Most writes here are the presence heartbeat,
-// which has no `email`, so the trigger returns at once.
-exports.stripPublicEmail = onDocumentWritten({ document: "users/{uid}", region: "europe-west4" }, async (event) => {
+// Guards users/{uid} after every write — the doc is its owner's to write, so
+// two things are fixed up here rather than refused in the rules (refusing
+// would break every installed APK, whose writes carry these fields):
+//   • `email` — older builds still copy the address on at each login; it is
+//     removed (addresses live only in Firebase Auth, see uidForEmail).
+//   • leaderboard stats — any value that differs from the server's own copy
+//     in userStats/{uid} is put back (userStats.js). Profile-based badges
+//     (a bio + level, the Pro page visit) are awarded here too.
+// Most writes are the presence heartbeat: it touches neither, so the trigger
+// returns without a single read.
+exports.guardUserDoc = onDocumentWritten({ document: "users/{uid}", region: "europe-west4" }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
-  const data = after.data() || {};
-  if (!("email" in data)) return;
-  await after.ref.update({ email: admin.firestore.FieldValue.delete() }).catch((e) => {
-    console.warn("[stripPublicEmail] failed:", event.params.uid, e.message);
-  });
+  const afterData = after.data() || {};
+  const beforeData = event.data.before?.exists ? (event.data.before.data() || {}) : null;
+  const touched = userStatsLib.touchesGuarded(beforeData, afterData);
+  if (!("email" in afterData) && !touched) return;
+
+  const db = admin.firestore();
+  const uid = event.params.uid;
+  const del = admin.firestore.FieldValue.delete();
+  try {
+    await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(after.ref);
+      if (!fresh.exists) return;
+      const current = fresh.data() || {};
+      const mirrorSnap = touched ? await tx.get(statsRef(db, uid)) : null;
+      const updates = {};
+      if ("email" in current) updates.email = del;
+      if (touched) {
+        // No mirror yet: the stats the doc held BEFORE this write are the
+        // baseline — the write being judged is exactly what might be forged.
+        const base = mirrorSnap.exists
+          ? (mirrorSnap.data() || {})
+          : userStatsLib.seedFrom(beforeData || {});
+        const { stats, awarded } = userStatsLib.awardBadges(base, {}, current);
+        if (awarded.length || !mirrorSnap.exists) tx.set(statsRef(db, uid), stats);
+        Object.assign(updates, userStatsLib.corrections(current, stats, del));
+      }
+      if (Object.keys(updates).length) tx.update(after.ref, updates);
+    });
+  } catch (e) {
+    console.warn("[guardUserDoc] failed:", uid, e.message);
+  }
 });
 
 // Snapshot of src/data/weeklyContent.js (topic + easy/hard questions per day),
@@ -845,6 +891,8 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
       const userSnap = await tx.get(userRef);
       const user = userSnap.exists ? userSnap.data() : {};
       const metered = METERED_PLANS.has(user.subscriptionPlan || "free");
+      // bonusMinutes is a guarded stat: spend it from the server copy.
+      const mirror = await mirrorTx(tx, db, uid, user);
 
       tx.update(callRef, { [billedFlag]: true });
 
@@ -890,14 +938,12 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
       if (!metered || minutes <= 0) return null; // paid plans / no-op calls: mark billed, don't decrement
 
       const trial = Number(user.availableTrialMinutes) || 0;
-      const bonus = Number(user.bonusMinutes) || 0;
+      const bonus = Number(mirror.bonusMinutes) || 0;
       const fromTrial = Math.min(trial, minutes);
       const fromBonus = Math.min(bonus, minutes - fromTrial);
 
-      tx.set(userRef, {
-        availableTrialMinutes: trial - fromTrial,
-        bonusMinutes: bonus - fromBonus,
-      }, { merge: true });
+      tx.set(userRef, { availableTrialMinutes: trial - fromTrial }, { merge: true });
+      if (fromBonus > 0) writeMirrorTx(tx, db, uid, { ...mirror, bonusMinutes: bonus - fromBonus });
       return (trial - fromTrial) + (bonus - fromBonus);
     });
 
@@ -907,119 +953,130 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
-// Monday-of-the-week "YYYY-MM-DD", computed from Baku's calendar date rather
-// than the server's own clock — mirrors src/utils/ranking.js:getWeekKey, which
-// runs on the user's device (assumed Baku, same as the rest of the backend's
-// day-boundary logic). Pure calendar math on the (y,m,d) triple, no real TZ
-// conversion, so it stays correct across month/year rollovers.
-function bakuWeekKey(ms = Date.now()) {
-  const todayStr = bakuDateStr(ms);
-  const [y, m, d] = todayStr.split("-").map(Number);
-  const weekday = bakuWeekday(todayStr); // 0=Sun..6=Sat
-  const diffToMonday = weekday === 0 ? 6 : weekday - 1;
-  const monday = new Date(Date.UTC(y, m - 1, d - diffToMonday));
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${monday.getUTCFullYear()}-${pad(monday.getUTCMonth() + 1)}-${pad(monday.getUTCDate())}`;
+// ─── Server-owned leaderboard stats (userStats.js) ────────────────
+// userStats/{uid} is the truth; users/{uid} carries a copy the owner can
+// scribble on and guardUserDoc puts back. Every server write of a stat goes
+// through mirrorTx so the mirror always exists and is complete — a partial
+// mirror would make guardUserDoc delete the fields it lacks.
+const statsRef = (db, uid) => db.collection("userStats").doc(uid);
+
+// Reads (or seeds) the mirror inside a transaction. A missing mirror is
+// seeded from the stats the user doc holds at that moment; `seeded` tells
+// the caller it happened (see creditCallStats).
+async function mirrorTx(tx, db, uid, userData) {
+  const snap = await tx.get(statsRef(db, uid));
+  if (snap.exists) return snap.data() || {};
+  return Object.defineProperty({ ...userStatsLib.seedFrom(userData) }, "seeded", { value: true });
 }
 
-// Shared by the trigger and the one-time backfill below: credits ONE
-// participant's leaderboard stats for a finished call, guarded by the same
-// statsApplied_{uid} flag the client writes in Chat.jsx's endCall. Re-reads
-// both docs inside the transaction, so it is safe to call from multiple
-// places (or multiple times) without double-crediting.
-async function applyMissingCallStats(db, callRef, uid, durationMinutes, expectedStart) {
-  await db.runTransaction(async (tx) => {
-    const freshCallSnap = await tx.get(callRef);
-    if (!freshCallSnap.exists) return;
-    const freshCall = freshCallSnap.data() || {};
-    if (freshCall.status !== "ended") return;
-    const start = callStartMs(freshCall);
-    if (expectedStart && start !== expectedStart) return; // a newer call now occupies this ID
-    if (freshCall[`statsApplied_${uid}`]) return; // already credited by the client or a prior run
+function writeMirrorTx(tx, db, uid, mirror) {
+  tx.set(statsRef(db, uid), mirror);
+  const copy = {};
+  for (const f of userStatsLib.ENFORCED_FIELDS) {
+    copy[f] = mirror[f] === undefined ? admin.firestore.FieldValue.delete() : mirror[f];
+  }
+  tx.set(db.collection("users").doc(uid), copy, { merge: true });
+}
+
+// A call only counts if BOTH people really asked for its voice channel.
+// getAgoraToken records every token it hands out (agoraJoins, server-only);
+// the call document itself is client-written, so on its own it proves nothing
+// — one account could create call_<me>_<anyone>, wait an hour and "end" it.
+const JOIN_WINDOW_BEFORE_MS = 30 * 60 * 1000;
+const agoraJoinRef = (db, pairKey, uid) => db.collection("agoraJoins").doc(`${pairKey}_${uid}`);
+
+// Credits ONE participant's stats for a finished call. Idempotent through
+// statsLedger/{callId}_{uid}_{start} (server-only), not through the call
+// doc's statsApplied_ flags: participants can write the call doc, so a flag
+// there could be cleared to get the same call counted again.
+async function creditCallStats(db, callRef, uid, { requireJoins = true, expectedStart } = {}) {
+  return db.runTransaction(async (tx) => {
+    const callSnap = await tx.get(callRef);
+    if (!callSnap.exists) return "no-call";
+    const call = callSnap.data() || {};
+    if (call.status !== "ended") return "not-ended";
+    const start = callStartMs(call);
+    if (!start) return "no-start";
+    if (expectedStart && start !== expectedStart) return "newer-call"; // a newer call now occupies this ID
+    const seconds = trustedCallSeconds(call);
+    if (seconds <= 5) return "too-short";
+    const endMs = call.endedAt?.toMillis?.() || Date.now();
+
+    const ledgerRef = db.collection("statsLedger").doc(`${callRef.id}_${uid}_${start}`);
+    const ledger = await tx.get(ledgerRef);
+    if (ledger.exists) return "already";
+
+    const people = Array.from(new Set([call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean))).slice(0, 2);
+    if (people.length < 2 || !people.includes(uid)) return "not-participant";
+    if (requireJoins) {
+      const pairKey = [...people].sort().join("_");
+      const joins = await Promise.all(people.map((p) => tx.get(agoraJoinRef(db, pairKey, p))));
+      const joinedInWindow = joins.every((j) => {
+        const at = j.exists ? j.data().at?.toMillis?.() : 0;
+        return at && at >= start - JOIN_WINDOW_BEFORE_MS && at <= endMs + 2 * 60 * 1000;
+      });
+      if (!joinedInWindow) return "no-join";
+    }
 
     const userRef = db.collection("users").doc(uid);
     const userSnap = await tx.get(userRef);
-    if (!userSnap.exists) return;
-    const userData = userSnap.data() || {};
-
-    const todayStr = bakuDateStr();
-    const yesterdayStr = bakuDateStr(Date.now() - 86400000);
-    const today = new Date(`${todayStr}T00:00:00Z`).toDateString();
-    const yesterday = new Date(`${yesterdayStr}T00:00:00Z`).toDateString();
-    let streak = userData.streak || 0;
-    if (userData.lastCallDate === today) {
-      // already counted today
-    } else if (userData.lastCallDate === yesterday) {
-      streak += 1;
-    } else {
-      streak = 1;
+    if (!userSnap.exists) return "no-user";
+    const user = userSnap.data() || {};
+    const mirror = await mirrorTx(tx, db, uid, user);
+    // First server credit for this user, and an old app build already added
+    // this very call to the user doc (it sets statsApplied_ in the same
+    // transaction as its own numbers): the seed includes the call, so it is
+    // recorded, not added again.
+    if (mirror.seeded && call[`statsApplied_${uid}`]) {
+      writeMirrorTx(tx, db, uid, { ...mirror });
+      tx.set(ledgerRef, { uid, callId: callRef.id, seconds, legacy: true, at: admin.firestore.FieldValue.serverTimestamp() });
+      return "seeded-legacy";
     }
 
-    const currentMonthStr = new Date().toISOString().slice(0, 7);
-    const isSameMonth = userData.currentMonth === currentMonthStr;
-    const newMonthMinutes = (isSameMonth ? (userData.currentMonthMinutes || 0) : 0) + durationMinutes;
-
-    const weekKey = bakuWeekKey();
-    const isSameWeek = userData.currentWeek === weekKey;
-    const newWeekMinutes = (isSameWeek ? (userData.currentWeekMinutes || 0) : 0) + durationMinutes;
-
-    tx.set(userRef, {
-      callCount: (userData.callCount || 0) + 1,
-      totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
-      streak,
-      lastCallDate: today,
-      currentMonth: currentMonthStr,
-      currentMonthMinutes: newMonthMinutes,
-      currentWeek: weekKey,
-      currentWeekMinutes: newWeekMinutes,
-    }, { merge: true });
-
+    const credited = userStatsLib.creditCall(mirror, seconds, endMs);
+    const { stats } = userStatsLib.awardBadges(credited, {
+      duration: seconds,
+      hour: userStatsLib.localHour(endMs, user.timeZone),
+      matchTime: typeof call.matchTimeSeconds === "number" ? call.matchTimeSeconds
+        : (typeof call.matchTime === "number" ? call.matchTime : undefined),
+    }, user);
+    writeMirrorTx(tx, db, uid, stats);
+    tx.set(ledgerRef, { uid, callId: callRef.id, seconds, at: admin.firestore.FieldValue.serverTimestamp() });
+    // Still set for old app builds: their endCall skips its own (now
+    // pointless) stats write when it sees this flag.
     tx.set(callRef, {
       [`statsApplied_${uid}`]: true,
       [`statsAppliedAt_${uid}`]: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
+    return "credited";
   });
 }
 
-// Safety net for leaderboard stats (totalMinutes/callCount/streak/weekly &
-// monthly minutes). The client normally applies these itself when its own
-// endCall() runs — but that requires the participant's OWN device to still be
-// alive at hangup. If their app was backgrounded, killed, or crashed before
-// that transaction ran, their side of the call was never credited: not wrong
-// stats, ZERO stats, and they silently vanish from the leaderboard even
-// though the call happened (observed 2026-08-08 — a full hour call where one
-// side got nothing).
-//
-// This mirrors the exact statsApplied_{uid} flag the client writes in
-// Chat.jsx's endCall, so whichever side runs first (a client, or this
-// trigger) wins and the other is a no-op — safe to have both.
+// Every finished call is credited HERE, for both participants — whether or
+// not a client already wrote its own numbers (those are no longer trusted and
+// guardUserDoc reverts them). Also covers the old failure this trigger was
+// born for: a phone killed at hangup no longer means zero stats.
 exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4" }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
   const call = after.data() || {};
   if (call.status !== "ended") return;
   if (typeof call.authoritativeDurationSec !== "number") return;
-
-  // The client's claim, clamped to the server-clock span (see trustedCallSeconds).
-  const durationSeconds = trustedCallSeconds(call);
-  if (durationSeconds <= 5) return; // matches the client's shouldApplyStats gate
+  if (trustedCallSeconds(call) <= 5) return;
 
   const participants = Array.from(new Set(
     [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean),
   )).slice(0, 2);
   if (participants.length < 2) return;
 
-  const durationMinutes = durationSeconds / 60;
   const db = admin.firestore();
-  const callRef = after.ref;
-
   const failures = [];
   for (const uid of participants) {
     try { await recordCallPractice(db, after.id, call, uid); }
     catch (e) { failures.push(e); }
-    if (call[`statsApplied_${uid}`]) continue; // client already handled this side
     try {
-      await applyMissingCallStats(db, callRef, uid, durationMinutes, callStartMs(call));
+      const outcome = await creditCallStats(db, after.ref, uid, { expectedStart: callStartMs(call) });
+      if (outcome === "no-join") console.warn("[reconcileCallStats] not credited, no voice join:", after.id, uid);
     } catch (e) {
       console.error("[reconcileCallStats] failed for", uid, e.message);
       failures.push(e);
@@ -1028,12 +1085,9 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
   if (failures.length) throw failures[0]; // surface errors after crediting the unaffected participant
 });
 
-// One-time admin action: scans every call doc that already finished
-// ('ended' + a pinned authoritativeDurationSec) for a participant whose
-// statsApplied_{uid} flag was never set — i.e. calls that happened BEFORE
-// reconcileCallStats existed, where one side's own client never ran endCall.
-// Safe to run more than once: applyMissingCallStats re-checks the flag inside
-// its own transaction, so an already-applied side is a no-op.
+// Admin tool: credits finished calls nobody has credited yet. Skips the
+// voice-join proof (calls from before the join log existed have none) — the
+// ledger still stops anything being counted twice.
 exports.backfillMissingCallStats = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -1056,19 +1110,19 @@ exports.backfillMissingCallStats = onRequest({ secrets: [] }, async (req, res) =
     scanned++;
     const call = docSnap.data() || {};
     if (trustedCallSeconds(call) <= 5) continue;
-
     const participants = Array.from(new Set(
       [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean),
     )).slice(0, 2);
     if (participants.length < 2) continue;
-
-    const durationMinutes = trustedCallSeconds(call) / 60;
     for (const uid of participants) {
+      // Already counted by the old client/server code (the flag predates the
+      // ledger) — without the join proof this is the only thing telling us.
       if (call[`statsApplied_${uid}`]) continue;
       try {
-        await applyMissingCallStats(db, docSnap.ref, uid, durationMinutes);
-        fixed++;
-        fixedDetails.push({ callId: docSnap.id, uid, durationMinutes });
+        if (await creditCallStats(db, docSnap.ref, uid, { requireJoins: false }) === "credited") {
+          fixed++;
+          fixedDetails.push({ callId: docSnap.id, uid, minutes: trustedCallSeconds(call) / 60 });
+        }
       } catch (e) {
         console.error("[backfillMissingCallStats] failed for", docSnap.id, uid, e.message);
       }
@@ -1389,73 +1443,53 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
       if (instance && call[ratedFlag] === instance) {
         throw fail(409, "This call has already been rated");
       }
+      // The flag above lives on the call doc, which participants can edit —
+      // cleared, it would let one person rate a friend over and over. The
+      // real once-per-call record is server-only (ratingLedger), and a vote
+      // needs the same proof as crediting a call: both people fetched a voice
+      // token for this pair around the time the call ran (agoraJoins).
+      const start = callStartMs(call);
+      if (!start) throw fail(409, "Call has no start");
+      const ratingRef = db.collection("ratingLedger").doc(`${callId}_${decoded.uid}_${start}`);
+      const pairKey = [decoded.uid, peerId].sort().join("_");
+      const [ratingSnap, joinMe, joinPeer] = await Promise.all([
+        tx.get(ratingRef),
+        tx.get(agoraJoinRef(db, pairKey, decoded.uid)),
+        tx.get(agoraJoinRef(db, pairKey, peerId)),
+      ]);
+      if (ratingSnap.exists) throw fail(409, "This call has already been rated");
+      const joinedSince = (j) => (j.exists ? j.data().at?.toMillis?.() || 0 : 0) >= start - JOIN_WINDOW_BEFORE_MS;
+      if (!joinedSince(joinMe) || !joinedSince(joinPeer)) throw fail(403, "No call to rate");
 
       const peerSnap = await tx.get(peerRef);
       if (!peerSnap.exists) throw fail(404, "Peer not found");
       const peerData = peerSnap.data() || {};
+      const mirror = await mirrorTx(tx, db, peerId, peerData);
 
-      const allowedKeys = ["rating", "ratingCount", "receivedFiveStar", "badges", "bonusMinutes"];
-      const safeUpdates = {};
-      for (const key of allowedKeys) {
-        if (updates[key] !== undefined) safeUpdates[key] = updates[key];
-      }
-
-      if (hasStars) {
-        // Derived from the values just read in this transaction, so a rating
-        // that landed while the user was choosing stars cannot invalidate it.
-        safeUpdates.rating = (typeof peerData.rating === "number" ? peerData.rating : 0) + stars;
-        safeUpdates.ratingCount = (typeof peerData.ratingCount === "number" ? peerData.ratingCount : 0) + 1;
-        if (stars === 5) safeUpdates.receivedFiveStar = true;
-        else delete safeUpdates.receivedFiveStar;
-      }
-
-      // rating may only rise by one vote's worth, ratingCount by exactly one.
-      if (safeUpdates.rating !== undefined) {
-        const prevRating = typeof peerData.rating === "number" ? peerData.rating : 0;
-        const delta = safeUpdates.rating - prevRating;
-        if (typeof safeUpdates.rating !== "number" || !Number.isFinite(delta) || delta < 1 || delta > 5) {
-          throw fail(400, "Invalid rating value");
-        }
-      }
-      if (safeUpdates.ratingCount !== undefined) {
-        const prevCount = typeof peerData.ratingCount === "number" ? peerData.ratingCount : 0;
-        if (safeUpdates.ratingCount !== prevCount + 1) throw fail(400, "Invalid ratingCount value");
-      }
-      if (safeUpdates.receivedFiveStar !== undefined && safeUpdates.receivedFiveStar !== true) {
-        throw fail(400, "Invalid receivedFiveStar value");
-      }
-      // Badges and bonus minutes belong to the PEER, and the rater sends the
-      // whole new value. Checking only the shape let one call partner replace
-      // someone's badges with [] or set their bonus minutes to 0 (or 10000).
-      // A rating can only ADD: the old badges must all still be there, and the
-      // bonus can only grow by what badge rewards are worth (all of them
-      // together are 120 minutes, src/badges/config.js).
-      if (safeUpdates.badges !== undefined) {
-        const prevBadges = Array.isArray(peerData.badges) ? peerData.badges : [];
-        const badgesValid = Array.isArray(safeUpdates.badges)
-          && safeUpdates.badges.length <= 100
-          && safeUpdates.badges.every((b) => typeof b === "string" && b.length <= 64)
-          && prevBadges.every((b) => safeUpdates.badges.includes(b))
-          // 17 badges exist; a long-time user can unlock several at once.
-          && safeUpdates.badges.length - prevBadges.length <= 20;
-        if (!badgesValid) throw fail(400, "Invalid badges value");
-      }
-      if (safeUpdates.bonusMinutes !== undefined) {
-        const prevBonus = typeof peerData.bonusMinutes === "number" ? peerData.bonusMinutes : 0;
-        if (typeof safeUpdates.bonusMinutes !== "number"
-          || safeUpdates.bonusMinutes < prevBonus
-          || safeUpdates.bonusMinutes > prevBonus + 150) {
-          throw fail(400, "Invalid bonusMinutes value");
-        }
+      // The vote. Modern clients send `stars`; older ones send the peer's new
+      // rating TOTAL, and the vote is the difference (1–5, anything else is
+      // refused). Nothing else the client sends is used any more: badges and
+      // bonus minutes used to arrive as whole new values for the PEER — so a
+      // call partner could wipe or inflate them — and are now awarded by the
+      // server from its own copy of the peer's stats (userStats.js).
+      let vote = hasStars ? stars : null;
+      if (vote === null) {
+        const shown = typeof peerData.rating === "number" ? peerData.rating : 0;
+        const delta = typeof updates.rating === "number" ? updates.rating - shown : NaN;
+        if (!Number.isInteger(delta) || delta < 1 || delta > 5) throw fail(400, "Invalid rating value");
+        vote = delta;
       }
 
-      if (updates.badgeUpdatedAt === "SERVER_TIMESTAMP") {
-        safeUpdates.badgeUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
-      }
-      if (Object.keys(safeUpdates).length === 0) throw fail(400, "No valid fields to update");
-
-      tx.update(peerRef, safeUpdates);
+      const rated = {
+        ...mirror,
+        rating: (typeof mirror.rating === "number" ? mirror.rating : 0) + vote,
+        ratingCount: (Number(mirror.ratingCount) || 0) + 1,
+        ...(vote === 5 ? { receivedFiveStar: true } : {}),
+      };
+      const { stats } = userStatsLib.awardBadges(rated, {}, peerData);
+      writeMirrorTx(tx, db, peerId, stats);
       tx.update(callRef, { [ratedFlag]: instance });
+      tx.set(ratingRef, { rater: decoded.uid, ratee: peerId, callId, at: admin.firestore.FieldValue.serverTimestamp() });
     });
     res.status(200).json({ ok: true });
   } catch (e) {
@@ -2035,15 +2069,18 @@ exports.notifyChatMessage = onDocumentCreated("chats/{chatId}/messages/{messageI
     const recipient = pair.find((p) => p && p !== msg.senderId);
     if (!recipient) return;
 
-    // Oxunmamış sayğac hər halda artır — bloklanmış olsa belə siyahı düzgün
-    // qalsın deyə; yalnız PUSH bloklanır.
-    await chatRef.set({
-      unread: { [recipient]: admin.firestore.FieldValue.increment(1) },
-    }, { merge: true });
-
+    // Bloklanmış göndərən: mesaj yazılır (rules onu rədd etmir — rədd etmək
+    // göndərənə "səni bloklayıblar" deyərdi), amma alan heç nə hiss etmir:
+    // oxunmamış sayğac ARTMIR, push getmir, və client həmin adamın mesajlarını
+    // blok qüvvədə olduqca göstərmir (Chat.jsx). Əvvəl sayğac hər halda
+    // artırdı, yəni bloklanmış adam nişanı hər mesajla yenidən yandırırdı.
     const blocked = await db.collection("users").doc(recipient)
       .collection("blocked").doc(msg.senderId).get();
     if (blocked.exists) return;
+
+    await chatRef.set({
+      unread: { [recipient]: admin.firestore.FieldValue.increment(1) },
+    }, { merge: true });
 
     // Analiz kartı push GÖNDƏRMİR. Onu serverin özü yazır və müəllim həmin
     // analiz üçün onsuz da `student_analysis_ready` bildirişini alıb — ikinci
@@ -6457,9 +6494,13 @@ async function matchSessionWaiters(db, sessionId, final) {
     for (const u of leftover) {
       try {
         await u.ref.update({ status: "unmatched" });
-        await db.collection("users").doc(u.uid).set({
-          bonusMinutes: admin.firestore.FieldValue.increment(5),
-        }, { merge: true });
+        // bonusMinutes is a guarded stat — it goes through the server copy.
+        await db.runTransaction(async (tx) => {
+          const userSnap = await tx.get(db.collection("users").doc(u.uid));
+          if (!userSnap.exists) return;
+          const mirror = await mirrorTx(tx, db, u.uid, userSnap.data() || {});
+          writeMirrorTx(tx, db, u.uid, { ...mirror, bonusMinutes: (Number(mirror.bonusMinutes) || 0) + 5 });
+        });
       } catch (e) { /* ticket gone — matched or left on their own */ }
     }
   }
@@ -6690,6 +6731,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     //    silinmiş hesabın şəxsi qeydləri Firestore-da qalır.
     await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "avoid", "private", "practiceSessions"]);
     await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
+    await db.collection("userStats").doc(uid).delete().catch(() => null); // server copy of the stats
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
     await db.collection("premiumRequests").doc(uid).delete().catch(() => null);
     // Onboarding answers hold age band, country and weekly availability —

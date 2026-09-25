@@ -29,9 +29,9 @@ import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag, isInCall } from '../utils/presence';
 import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
+import { subscribeToBlocked } from '../utils/blocklist';
 import { canPair } from '../utils/matchmaking';
 import { needsIntro } from '../utils/intro';
-import { getWeekKey } from '../utils/ranking';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import CallVideoStage from '../components/CallVideoStage';
@@ -100,6 +100,13 @@ export default function Chat({ user }) {
   const audioBlobRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
+  // While I have this person blocked, nothing they send is shown. Their
+  // messages are still written (refusing them in the rules would tell them
+  // they are blocked) — the server skips the push and the unread count, and
+  // this view simply leaves them out.
+  const [peerBlocked, setPeerBlocked] = useState(false);
+  useEffect(() => subscribeToBlocked(user.uid, (ids) => setPeerBlocked(ids.has(peerId))), [user.uid, peerId]);
+  const shownMessages = peerBlocked ? messages.filter((m) => m.senderId !== peerId) : messages;
   const [text, setText] = useState('');
   const [peer, setPeer] = useState(null);
   const [inCall, setInCall] = useState(false);
@@ -1061,45 +1068,30 @@ export default function Chat({ user }) {
           status: 'ended',
         };
 
-        if (!shouldApplyStats) {
-          if (callData.status !== 'ended') {
-            transaction.set(callRef, callSessionUpdate, { merge: true });
-          }
-          return;
+        // Stats are the SERVER's job now (reconcileCallStats → userStats):
+        // numbers written from here were never trustworthy, and the server
+        // puts back anything a client writes. This transaction only pins the
+        // end of the call; the user doc is read solely to show the badge
+        // pop-up, which the server awards for real on its own.
+        const userSnap = shouldApplyStats ? await transaction.get(doc(db, 'users', user.uid)) : null;
+        if (callData.status !== 'ended' || typeof callData.authoritativeDurationSec !== 'number') {
+          transaction.set(callRef, callSessionUpdate, { merge: true });
         }
+        if (!shouldApplyStats) return;
 
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 86400000).toDateString();
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await transaction.get(userRef);
-
         const userData = userSnap.data() || {};
         let streak = userData.streak || 0;
-
         if (userData.lastCallDate === today) {}
         else if (userData.lastCallDate === yesterday) streak += 1;
         else streak = 1;
-
-        const currentMonthStr = new Date().toISOString().slice(0, 7);
-        const isSameMonth = userData.currentMonth === currentMonthStr;
-        const newMonthMinutes = (isSameMonth ? (userData.currentMonthMinutes || 0) : 0) + durationMinutes;
-
-        // Weekly leaderboard counter — same lazy-rollover pattern as the
-        // monthly one: a stored key from an old week reads as 0.
-        const weekKey = getWeekKey();
-        const isSameWeek = userData.currentWeek === weekKey;
-        const newWeekMinutes = (isSameWeek ? (userData.currentWeekMinutes || 0) : 0) + durationMinutes;
 
         const updatedStats = {
           ...userData,
           callCount: (userData.callCount || 0) + 1,
           totalMinutes: (userData.totalMinutes || 0) + durationMinutes,
           streak,
-          lastCallDate: today,
-          currentMonth: currentMonthStr,
-          currentMonthMinutes: newMonthMinutes,
-          currentWeek: weekKey,
-          currentWeekMinutes: newWeekMinutes,
         };
         const badgeCallData = {
           duration: durationSeconds,
@@ -1108,33 +1100,12 @@ export default function Chat({ user }) {
         };
         const newBadges = checkNewBadges(updatedStats, badgeCallData);
         const rewardResult = applyBadgeRewardsToData(updatedStats, newBadges);
-
-        transaction.set(userRef, {
-          callCount: updatedStats.callCount,
-          totalMinutes: updatedStats.totalMinutes,
-          streak: updatedStats.streak,
-          lastCallDate: updatedStats.lastCallDate,
-          currentMonth: updatedStats.currentMonth,
-          currentMonthMinutes: updatedStats.currentMonthMinutes,
-          currentWeek: updatedStats.currentWeek,
-          currentWeekMinutes: updatedStats.currentWeekMinutes,
-          ...(newBadges.length > 0 ? rewardResult.updates : {}),
-          ...(newBadges.length > 0 ? { badgeUpdatedAt: serverTimestamp() } : {}),
-        }, { merge: true });
-
         if (newBadges.length > 0) {
           currentUserUnlocks = newBadges.map((badgeId, badgeIndex) => ({
             badge: badgeId,
             rewardMessage: rewardResult.rewardMessages[badgeIndex] || '',
-            bonusMinutes: rewardResult.updates.bonusMinutes,
           }));
         }
-
-        transaction.set(callRef, {
-          ...callSessionUpdate,
-          [`statsApplied_${user.uid}`]: true,
-          [`statsAppliedAt_${user.uid}`]: serverTimestamp(),
-        }, { merge: true });
       });
 
       // Bill the call against trial/bonus minutes. The server computes the
@@ -1805,12 +1776,12 @@ export default function Chat({ user }) {
       </div>
 
       <div className="chat-messages">
-        {messages.length === 0 ? (
+        {shownMessages.length === 0 ? (
           <div className="chat-empty-hint">
             <p>Say hello and start practising.</p>
           </div>
         ) : (
-          messages.map((m) => {
+          shownMessages.map((m) => {
             const isMine = m.senderId === user.uid;
             const selected = selectedMsg === m.id;
             return (
