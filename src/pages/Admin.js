@@ -27,12 +27,33 @@ export default function Admin({ user }) {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const [rawUsers, setRawUsers] = useState([]);
+  const [emails, setEmails] = useState({});
+
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'users'), snap => {
-      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setRawUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     return unsub;
   }, []);
+
+  // E-poçtlar artıq users sənədində DEYİL: o sənədi hər daxil olmuş hesab
+  // oxuya (və siyahılaya) bilir, yəni hər kəsin e-poçtu bir sorğu ilə
+  // toplana bilirdi. Admin onları Firebase Auth-dan, yalnız adminə açıq
+  // adminUserEmails funksiyası ilə alır və burada birləşdirir — alt tablar
+  // (Applicants, Intros, Slots…) `u.email`-i əvvəlki kimi görür.
+  useEffect(() => {
+    let alive = true;
+    authedFetch(`${FUNCTIONS_BASE}/adminUserEmails`, { method: 'POST' })
+      .then(res => (res.ok ? res.json() : null))
+      .then(body => { if (alive && body && body.emails) setEmails(body.emails); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    setUsers(rawUsers.map(u => ({ ...u, email: emails[u.id] || u.email || '' })));
+  }, [rawUsers, emails]);
 
   // Tutor nişanı. Serverdən keçir, çünki teachers/{tid} sənədi rules-da hər kəsə
   // (admin daxil) yazılmazdır və users/{tid}.teacherVerified ilə birgə atomik
@@ -219,7 +240,7 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '20px 16px' }}>
-        {adminTab === 'attendance' ? <AdminAttendance users={users} /> : adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts /> : (
+        {adminTab === 'attendance' ? <AdminAttendance users={users} /> : adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts emails={emails} /> : (
         <>
         {error && (
           <div style={{

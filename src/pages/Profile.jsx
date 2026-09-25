@@ -85,16 +85,12 @@ export default function Profile({ user }) {
     let unsub = null;
     const setup = async () => {
       try {
-        const email = user.email || auth.currentUser?.email;
+        // Profil sənədi uid ilə tapılır. E-poçt artıq users sənədində
+        // saxlanılmır (hər kəsə oxunan sənəddir), ona görə köhnə e-poçt
+        // sorğusu heç nə tapmazdı.
         let foundDocId = null;
-        if (email) {
-          const snap = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
-          if (!snap.empty) foundDocId = snap.docs[0].id;
-        }
-        if (!foundDocId) {
-          const snap2 = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)));
-          if (!snap2.empty) foundDocId = snap2.docs[0].id;
-        }
+        const snap2 = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)));
+        if (!snap2.empty) foundDocId = snap2.docs[0].id;
         if (foundDocId) {
           setDocId(foundDocId);
           unsub = onSnapshot(doc(db, 'users', foundDocId), (snap) => {

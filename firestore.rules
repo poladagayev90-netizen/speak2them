@@ -83,6 +83,24 @@ service cloud.firestore {
         && (!changed.hasAny(['timestamp']) || !('timestamp' in d) || d.timestamp == request.time);
     }
 
+    // Every call document is named after its PAIR: call_<uidA>_<uidB>
+    // (callIdForPair on the server, getMatchCallId / `call_${chatId}` on the
+    // client). The people on the document must be exactly that pair, and the
+    // writer must be one of them. Before this, a participant could rewrite
+    // userA/userB/receiverId to anyone — so a client could file a "call"
+    // between strangers (partnerFeedback trusts userA/userB), or ring a user
+    // with a document whose id names someone else.
+    function callPeopleMatchId(callId) {
+      let p = callId.split('_');
+      let d = request.resource.data;
+      return p.size() == 3 && p[0] == 'call'
+        && request.auth.uid in [p[1], p[2]]
+        && (!('userA' in d) || d.userA in [p[1], p[2]])
+        && (!('userB' in d) || d.userB in [p[1], p[2]])
+        && (!('callerId' in d) || d.callerId in [p[1], p[2]])
+        && (!('receiverId' in d) || d.receiverId in [p[1], p[2]]);
+    }
+
     function isNotCreatingPremiumFields() {
       return !request.resource.data.keys().hasAny(['isPremium', 'premiumSince', 'premiumPlan', 'isPro', 'subscriptionPlan', 'availableTrialMinutes',
           'startTick', 'cohortId', 'cohortStatus', 'cohortAppliedAt', 'courseActivatedAt', 'courseCompletedAt', 'freeAccessUntil',
@@ -169,7 +187,9 @@ service cloud.firestore {
         && request.resource.data.status == 'open'
         && request.resource.data.reportedId is string
         && request.resource.data.reason is string
-        && request.resource.data.reason.size() <= 500;
+        && request.resource.data.reason.size() <= 500
+        && (!('reportedName' in request.resource.data)
+          || (request.resource.data.reportedName is string && request.resource.data.reportedName.size() <= 100));
       allow read, update, delete: if isAdmin();
     }
 
@@ -199,6 +219,11 @@ service cloud.firestore {
         chatId.split("_")[1] == request.auth.uid
       );
     }
+    function chatParticipantsMatchId(chatId) {
+      return !('participants' in request.resource.data)
+        || (request.resource.data.participants is list
+          && request.resource.data.participants.hasOnly(chatId.split("_")));
+    }
     function chatPeer(chatId) {
       return chatId.split("_")[0] == request.auth.uid
         ? chatId.split("_")[1]
@@ -227,26 +252,40 @@ service cloud.firestore {
       allow get: if isChatMember(chatId);
       allow list: if isSignedIn()
         && request.auth.uid in resource.data.participants;
-      allow create: if isChatMember(chatId);
+      // `participants` may only name the two people in the id. The list rule
+      // above trusts it, so a forged entry would plant this chat — with any
+      // lastMessage text — in a stranger's Chats tab.
+      allow create: if isChatMember(chatId) && chatParticipantsMatchId(chatId);
       // Oxunmamış sayğac: hər kəs YALNIZ öz sayını sıfırlaya bilər. Qarşı
       // tərəfinki toxunulmazdır — əks halda mesaj göndərən adam qarşı tərəfin
       // "oxunmamış" nişanını silib bildirişi gizlədə bilərdi. Sayğacı artıran
       // yeganə yer serverdir (notifyChatMessage).
       allow update: if isChatMember(chatId)
+        && chatParticipantsMatchId(chatId)
         && request.resource.data.get('unread', {}).get(chatPeer(chatId), 0)
            == resource.data.get('unread', {}).get(chatPeer(chatId), 0);
       allow delete: if false;
 
       match /messages/{messageId} {
         allow read: if isChatMember(chatId);
+        // A client message is plain text and nothing else. `kind` is left out
+        // on purpose: kind 'analysis' is the report card only the server
+        // writes (postAnalysisToTeacherChat), and a client could otherwise post
+        // a fake one with any score into a teacher's chat.
         allow create: if isChatMember(chatId)
-          && request.auth.uid == request.resource.data.senderId;
+          && request.auth.uid == request.resource.data.senderId
+          && request.resource.data.keys().hasOnly(['text', 'senderId', 'senderName', 'createdAt', 'timestamp'])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() <= 4000;
         // "Hamı üçün sil" = mətnin boşaldılması + deleted bayrağı. Yalnız bu iki
-        // sahəyə icazə var: əks halda göndərən köhnə mesajın mətnini sonradan
-        // tamamilə dəyişib söhbətin gedişini saxtalaşdıra bilərdi.
+        // sahəyə icazə var, VƏ yalnız boşaltmaq üçün: əvvəl `text` istənilən
+        // dəyərə dəyişdirilə bilirdi, yəni göndərən köhnə mesajın mətnini
+        // sonradan tamamilə dəyişib söhbətin gedişini saxtalaşdıra bilərdi.
         allow update: if request.auth.uid == resource.data.senderId
           && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['deleted', 'text']);
+               .hasOnly(['deleted', 'text'])
+          && request.resource.data.deleted == true
+          && request.resource.data.text == '';
         allow delete: if request.auth.uid == resource.data.senderId;
       }
     }
@@ -273,11 +312,13 @@ service cloud.firestore {
       allow create: if (request.auth.uid == request.resource.data.callerId ||
                        request.auth.uid == request.resource.data.userA ||
                        request.auth.uid == request.resource.data.userB)
+                    && callPeopleMatchId(callId)
                     && callTimesAreServerTime(request.resource.data.keys());
       allow update: if (request.auth.uid == resource.data.callerId ||
                        request.auth.uid == resource.data.receiverId ||
                        request.auth.uid == resource.data.userA ||
                        request.auth.uid == resource.data.userB)
+                    && callPeopleMatchId(callId)
                     && callTimesAreServerTime(request.resource.data.diff(resource.data).affectedKeys());
       allow delete: if request.auth.uid == resource.data.callerId || 
                        request.auth.uid == resource.data.receiverId ||
@@ -409,6 +450,9 @@ service cloud.firestore {
     // NOTE: aiUsage has NO match block on purpose. It is the per-user daily AI
     // cost meter (STT seconds, TTS characters, tokens) and only the server
     // writes it, exactly like analysisBudget. The catch-all below denies it.
+    // analysisUserBudget (per-learner daily analysis ceiling, claimTicket) is
+    // server-only for the same reason: a client that could write it could
+    // reset its own limit.
 
     match /wordHistory/{userId}/words/{wordId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;

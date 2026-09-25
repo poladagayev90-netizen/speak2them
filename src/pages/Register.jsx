@@ -62,7 +62,6 @@ export default function Register() {
         await setDoc(userRef, {
           uid: user.uid,
           name,
-          email,
           rating: 0,
           ratingCount: 0,
           surveyDone: false,
@@ -102,7 +101,6 @@ export default function Register() {
           await setDoc(userRef, {
             uid: user.uid,
             name: user.displayName || 'User',
-            email: user.email || '',
             photo: user.photoURL || '',
             bio: '',
             online: true,

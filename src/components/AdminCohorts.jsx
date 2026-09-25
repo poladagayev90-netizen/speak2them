@@ -36,7 +36,7 @@ function lastCallMs(u) {
 // kohort seç → üzv siyahısı (son iştirak + topicsCompleted). Son 2 sessiyada
 // görünməyən üzvlər qırmızı işarələnir — erkən müdaxilə siqnalı. Bütün
 // oxu/yazılar mövcud admin rules-u ilə gedir; yeni endpoint yoxdur.
-export default function AdminCohorts() {
+export default function AdminCohorts({ emails = {} }) {
   const [cohorts, setCohorts] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [members, setMembers] = useState([]);
@@ -267,7 +267,7 @@ export default function AdminCohorts() {
             <span style={{ fontSize: '18px', flexShrink: 0 }}>{accepted ? '' : ''}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {m.name || m.email || m.id}
+                {m.name || emails[m.id] || m.email || m.id}
               </p>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: accepted ? 'var(--success)' : 'var(--warning)' }}>
                 {accepted ? 'Accepted, waiting to start' : 'New application'}
@@ -367,7 +367,7 @@ export default function AdminCohorts() {
                   <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.fading ? '' : ''}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: m.fading ? 'var(--danger)' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {m.name || m.email || m.id}
+                      {m.name || emails[m.id] || m.email || m.id}
                     </p>
                     <p style={{ margin: '2px 0 0', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                       Last seen: {m.callMs

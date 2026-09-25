@@ -344,7 +344,6 @@ function App() {
         await setDoc(userRef, {
           uid,
           name: userSnap.exists() ? userSnap.data().name : (currentUser.displayName || 'User'),
-          email: currentUser.email || userSnap.data()?.email || '',
           photo: userSnap.exists() && userSnap.data().photo ? userSnap.data().photo : (currentUser.photoURL || ''),
           online: true,
           lastSeen: serverTimestamp(),

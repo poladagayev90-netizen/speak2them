@@ -95,6 +95,31 @@ async function verifyAuth(req) {
   return admin.auth().verifyIdToken(token);
 }
 
+// E-mail addresses live in Firebase Auth ONLY. They used to be copied onto
+// users/{uid}, which every signed-in account may read and list — so one
+// sign-up was enough to download every learner's address, minors included.
+// Server code that needs an address asks Auth; stripPublicEmail removes the
+// copy that older app builds still write on login.
+async function uidForEmail(email) {
+  try {
+    return (await admin.auth().getUserByEmail(String(email).trim().toLowerCase())).uid;
+  } catch (e) {
+    if (e.code === "auth/user-not-found" || e.code === "auth/invalid-email") return null;
+    throw e;
+  }
+}
+
+// uid -> email for many users (getUsers takes at most 100 identifiers a call).
+async function authEmailsFor(uids) {
+  const out = new Map();
+  const list = [...new Set(uids)].filter(Boolean);
+  for (let i = 0; i < list.length; i += 100) {
+    const { users } = await admin.auth().getUsers(list.slice(i, i + 100).map((uid) => ({ uid })));
+    for (const u of users) if (u.email) out.set(u.uid, u.email);
+  }
+  return out;
+}
+
 // Every AI endpoint costs money per call and was callable in a loop by any
 // signed-in account. A rolling-window counter per user per endpoint keeps a
 // real user well clear of the limit while bounding what one account can spend.
@@ -232,40 +257,48 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   // yalnız AVTOMATİK cütləşdirmənin qaydasıdır — konkret adama qəsdən zəng
   // edən şəxs onu özü seçib, biz o seçimi ləğv etmirik.
   const parts = String(channelName).split("_").filter((p) => p && p !== "call" && p !== decoded.uid);
-  if (parts.length === 1) {
-    try {
-      const peerUid = parts[0];
-      // NƏZARƏTLİ CÜT: komanda (admin) və ya öyrənənin ÖZ müəllimi (isSupervisedPair).
-      // Tanışlıq görüşü və hər dərs məhz böyük adamın uşaqla danışmasıdır —
-      // yaş qaydası bu cütə tətbiq olunsa, 18 yaşdan kiçik şagirdi heç kim
-      // zəng edə bilməz. Blok və "bir daha salma" qaydaları yenə işləyir.
-      const [meDoc, peerDoc] = await Promise.all([
-        db.collection("users").doc(decoded.uid).get().catch(() => null),
-        db.collection("users").doc(peerUid).get().catch(() => null),
-      ]);
-      const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
-      const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
-      const supervised = isSupervisedPair(decoded.uid, peerUid, me, peer);
+  // Every real channel is a PAIR ("uidA_uidB" / "call_uidA_uidB"), so it names
+  // exactly one other person. Anything else is refused: the pair rule below
+  // used to run only when there was one peer, so a crafted channel such as
+  // "call_me_minor_x" (two other names) skipped the block, avoid and age checks
+  // entirely — and the call doc, which a client writes, can point the other
+  // side at such a channel.
+  if (parts.length !== 1) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  try {
+    const peerUid = parts[0];
+    // NƏZARƏTLİ CÜT: komanda (admin) və ya öyrənənin ÖZ müəllimi (isSupervisedPair).
+    // Tanışlıq görüşü və hər dərs məhz böyük adamın uşaqla danışmasıdır —
+    // yaş qaydası bu cütə tətbiq olunsa, 18 yaşdan kiçik şagirdi heç kim
+    // zəng edə bilməz. Blok və "bir daha salma" qaydaları yenə işləyir.
+    const [meDoc, peerDoc] = await Promise.all([
+      db.collection("users").doc(decoded.uid).get().catch(() => null),
+      db.collection("users").doc(peerUid).get().catch(() => null),
+    ]);
+    const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
+    const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
+    const supervised = isSupervisedPair(decoded.uid, peerUid, me, peer);
 
-      const verdict = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
-        checkLevel: false,
-        checkAge: !supervised,
-      });
-      if (!verdict.ok) {
-        // Səbəb istifadəçiyə deyilmir — canPair-də olduğu kimi: "bloklayıb"
-        // cavabı blok siyahısını oxumağın yoluna çevrilərdi. Amma SERVER
-        // logunda yazılır, yoxsa "zəng alınmadı" şikayətini araşdırmaq
-        // mümkün olmur (2026-09-20-də məhz bu itdi).
-        console.warn("[getAgoraToken] pair refused:", decoded.uid, "→", peerUid,
-          JSON.stringify({ blocked: verdict.blocked, avoided: verdict.avoided, ageClash: verdict.ageClash, supervised }));
-        res.status(403).json({ error: "pair_refused" });
-        return;
-      }
-    } catch (e) {
-      // Qayda oxuna bilmirsə zəngi kəsmirik: bu yoxlama əlavə qoruma qatıdır,
-      // Firestore-un anlıq nasazlığı hamının zəngini dayandırmamalıdır.
-      console.warn("[getAgoraToken] pair check failed:", e.message);
+    const verdict = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
+      checkLevel: false,
+      checkAge: !supervised,
+    });
+    if (!verdict.ok) {
+      // Səbəb istifadəçiyə deyilmir — canPair-də olduğu kimi: "bloklayıb"
+      // cavabı blok siyahısını oxumağın yoluna çevrilərdi. Amma SERVER
+      // logunda yazılır, yoxsa "zəng alınmadı" şikayətini araşdırmaq
+      // mümkün olmur (2026-09-20-də məhz bu itdi).
+      console.warn("[getAgoraToken] pair refused:", decoded.uid, "→", peerUid,
+        JSON.stringify({ blocked: verdict.blocked, avoided: verdict.avoided, ageClash: verdict.ageClash, supervised }));
+      res.status(403).json({ error: "pair_refused" });
+      return;
     }
+  } catch (e) {
+    // Qayda oxuna bilmirsə zəngi kəsmirik: bu yoxlama əlavə qoruma qatıdır,
+    // Firestore-un anlıq nasazlığı hamının zəngini dayandırmamalıdır.
+    console.warn("[getAgoraToken] pair check failed:", e.message);
   }
 
   const role = RtcRole.PUBLISHER;
@@ -301,20 +334,43 @@ exports.sendCallNotification = onRequest({ secrets: [] }, async (req, res) => {
   if (!callerId || !receiverId) return res.status(400).json({ error: "callerId and receiverId required" });
   if (decoded.uid !== callerId) return res.status(403).json({ error: "Forbidden" });
   if (callerId === receiverId) return res.status(400).json({ error: "Cannot call yourself" });
+  if (typeof receiverId !== "string" || receiverId.length > 128 || receiverId.includes("/")) {
+    return res.status(400).json({ error: "invalid receiver" });
+  }
+
+  // Without a ceiling one account could ring any phone in a loop. 30 an hour
+  // is far above anyone really calling people.
+  try {
+    await enforceRateLimit(decoded.uid, "callNotification", 30, 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(429).json({ error: "rate_limited" });
+  }
 
   // The caller's name is resolved server-side, never trusted from the request,
   // so a client cannot spoof a "X is calling you" push to an arbitrary device.
   const db = admin.firestore();
 
-  // Blok: qəbul edən bu zəng edəni bloklayıbsa, push ümumiyyətlə göndərilmir
-  // (client onsuz da modalı göstərmir — bu, cihaz bildirişini də kəsir).
-  const blockSnap = await db.collection("users").doc(receiverId)
-    .collection("blocked").doc(callerId).get().catch(() => null);
-  if (blockSnap && blockSnap.exists) {
-    return res.status(200).json({ ok: true, blocked: true });
+  const callerSnap = await db.collection("users").doc(callerId).get().catch(() => null);
+
+  // The same pair rule getAgoraToken applies (block, "don't pair me again",
+  // minor ↔ adult unless supervised). The token already stops the audio; this
+  // stops the RING — otherwise a refused caller could still make a minor's
+  // phone ring at will. The answer looks like a sent push either way, so the
+  // caller learns nothing about the reason.
+  try {
+    const receiverSnap = await db.collection("users").doc(receiverId).get();
+    const me = (callerSnap && callerSnap.exists ? callerSnap.data() : null) || {};
+    const peer = (receiverSnap.exists ? receiverSnap.data() : null) || {};
+    const verdict = await pairVerdict(db, (r) => r.get(), callerId, receiverId, {
+      checkLevel: false,
+      checkAge: !isSupervisedPair(callerId, receiverId, me, peer),
+    });
+    if (!verdict.ok) return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.warn("[sendCallNotification] pair check failed:", e.message);
+    return res.status(200).json({ ok: true });
   }
 
-  const callerSnap = await db.collection("users").doc(callerId).get().catch(() => null);
   const rawName = (callerSnap && callerSnap.exists ? callerSnap.data().name : "") || "Someone";
   const callerName = String(rawName).slice(0, 40);
 
@@ -352,6 +408,48 @@ exports.notifyPremiumActivated = onRequest({ secrets: [] }, async (req, res) => 
     url: "/",
   });
   res.status(200).json({ ok: true });
+});
+
+// ─── E-poçtlar: yalnız admin, yalnız Auth-dan ─────────────────
+// The admin panel shows learners' addresses; it used to read them off the
+// world-readable user docs. Now they come from Firebase Auth, through here.
+exports.adminUserEmails = onRequest({ invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+  try {
+    const emails = {};
+    let pageToken;
+    do {
+      const page = await admin.auth().listUsers(1000, pageToken);
+      for (const u of page.users) if (u.email) emails[u.uid] = u.email;
+      pageToken = page.pageToken;
+    } while (pageToken);
+    return res.status(200).json({ emails });
+  } catch (e) {
+    console.error("[adminUserEmails]", e.message);
+    return res.status(500).json({ error: "failed" });
+  }
+});
+
+// Older app builds (every APK before this change) still write `email` onto
+// users/{uid} at each login. This removes it within a second or two, so the
+// address never stays readable. Most writes here are the presence heartbeat,
+// which has no `email`, so the trigger returns at once.
+exports.stripPublicEmail = onDocumentWritten({ document: "users/{uid}", region: "europe-west4" }, async (event) => {
+  const after = event.data?.after;
+  if (!after?.exists) return;
+  const data = after.data() || {};
+  if (!("email" in data)) return;
+  await after.ref.update({ email: admin.firestore.FieldValue.delete() }).catch((e) => {
+    console.warn("[stripPublicEmail] failed:", event.params.uid, e.message);
+  });
 });
 
 // Snapshot of src/data/weeklyContent.js (topic + easy/hard questions per day),
@@ -422,9 +520,19 @@ exports.advanceCycle = onSchedule({
   });
 });
 
+// Admin-only. It had NO auth at all: anyone with the URL could move the
+// global topic for every learner — and because it writes cycleTick as the
+// wrapped topic index, one call also rewound every cohort's course progress
+// (cycleTick - startTick). No client calls it; it is a manual admin tool.
 exports.advanceTopicNow = onRequest(async (req, res) => {
   setCors(res, "GET, POST");
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+  try {
+    const decoded = await verifyAuth(req);
+    if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
   const db = admin.firestore();
   const today = bakuDateStr();
   const ref = db.collection("appConfig").doc("cycle");
@@ -577,9 +685,9 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
 
   const db = admin.firestore();
   if (!uid) {
-    const q = await db.collection("users").where("email", "==", email).limit(1).get();
-    if (q.empty) return res.status(404).json({ error: "user not found by email" });
-    uid = q.docs[0].id;
+    const found = await uidForEmail(email);
+    if (!found) return res.status(404).json({ error: "user not found by email" });
+    uid = found;
   }
   const userSnap = await db.collection("users").doc(uid).get();
   if (!userSnap.exists) return res.status(404).json({ error: "user not found" });
@@ -1316,16 +1424,27 @@ exports.updatePeerStats = onRequest({ secrets: [] }, async (req, res) => {
       if (safeUpdates.receivedFiveStar !== undefined && safeUpdates.receivedFiveStar !== true) {
         throw fail(400, "Invalid receivedFiveStar value");
       }
+      // Badges and bonus minutes belong to the PEER, and the rater sends the
+      // whole new value. Checking only the shape let one call partner replace
+      // someone's badges with [] or set their bonus minutes to 0 (or 10000).
+      // A rating can only ADD: the old badges must all still be there, and the
+      // bonus can only grow by what badge rewards are worth (all of them
+      // together are 120 minutes, src/badges/config.js).
       if (safeUpdates.badges !== undefined) {
+        const prevBadges = Array.isArray(peerData.badges) ? peerData.badges : [];
         const badgesValid = Array.isArray(safeUpdates.badges)
           && safeUpdates.badges.length <= 100
-          && safeUpdates.badges.every((b) => typeof b === "string" && b.length <= 64);
+          && safeUpdates.badges.every((b) => typeof b === "string" && b.length <= 64)
+          && prevBadges.every((b) => safeUpdates.badges.includes(b))
+          // 17 badges exist; a long-time user can unlock several at once.
+          && safeUpdates.badges.length - prevBadges.length <= 20;
         if (!badgesValid) throw fail(400, "Invalid badges value");
       }
       if (safeUpdates.bonusMinutes !== undefined) {
+        const prevBonus = typeof peerData.bonusMinutes === "number" ? peerData.bonusMinutes : 0;
         if (typeof safeUpdates.bonusMinutes !== "number"
-          || safeUpdates.bonusMinutes < 0
-          || safeUpdates.bonusMinutes > 10000) {
+          || safeUpdates.bonusMinutes < prevBonus
+          || safeUpdates.bonusMinutes > prevBonus + 150) {
           throw fail(400, "Invalid bonusMinutes value");
         }
       }
@@ -1719,11 +1838,14 @@ exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, asy
       studentUid = snap.id;
       student = snap.data() || {};
     } else {
-      // Şagirdi e-poçta görə tap. Firestore-da e-poçt users sənədində saxlanılır.
-      const found = await db.collection("users").where("email", "==", email).limit(1).get();
-      if (found.empty) throw fail(404, "student-not-found");
-      studentUid = found.docs[0].id;
-      student = found.docs[0].data() || {};
+      // Şagirdi e-poçta görə Firebase Auth-da tap. E-poçt artıq users
+      // sənədində saxlanılmır — o sənəd hər daxil olmuş hesaba açıqdır.
+      const foundUid = await uidForEmail(email);
+      if (!foundUid) throw fail(404, "student-not-found");
+      const snap = await db.collection("users").doc(foundUid).get();
+      if (!snap.exists) throw fail(404, "student-not-found");
+      studentUid = snap.id;
+      student = snap.data() || {};
     }
 
     if (studentUid === teacherId) throw fail(400, "self-invite");
@@ -1739,7 +1861,9 @@ exports.inviteStudentByEmail = onRequest({ secrets: [], invoker: "public" }, asy
       teacherId,
       teacherName: teacher.name || "",
       studentUid,
-      studentEmail: student.email || email || "",
+      // Only what the teacher typed. On the uid path this stays empty: the
+      // teacher picked the learner from a list and must not learn their email.
+      studentEmail: email || "",
       status: "pending",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
@@ -1929,8 +2053,13 @@ exports.notifyChatMessage = onDocumentCreated("chats/{chatId}/messages/{messageI
     if (msg.kind === "analysis") return;
 
     const body = String(msg.text || "").slice(0, 120);
+    // The push title is the sender's name from THEIR user doc, never the
+    // message's own senderName: that field is whatever the client wrote, so
+    // anyone could send a push titled "SpeakLab Team" to phish a learner.
+    const senderSnap = await db.collection("users").doc(msg.senderId).get().catch(() => null);
+    const senderName = String((senderSnap && senderSnap.exists && senderSnap.data().name) || "").slice(0, 40);
     await sendPushToUser(db, recipient, {
-      title: msg.senderName || "Yeni mesaj",
+      title: senderName || "Yeni mesaj",
       body: body || "Yeni mesaj",
       type: "chat_message",
       // Birbaşa həmin söhbətə aparır — istifadəçi mesajı axtarmamalıdır.
@@ -4346,6 +4475,14 @@ exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memo
   if (!Array.isArray(history) || history.length > 20) {
     return res.status(400).json({ error: "history must be an array of at most 20 turns" });
   }
+  // History went to the LLM verbatim: any role (a second "system" prompt
+  // included) and any length, so 20 huge turns were billed as tokens. Only
+  // user/assistant turns of bounded size get through — like aiActivityTurn.
+  const safeHistory = history
+    .filter((h) => h && (h.role === "user" || h.role === "assistant") && typeof h.content === "string")
+    .map((h) => ({ role: h.role, content: h.content.slice(0, 1200) }));
+  const safeLevel = String(userLevel).slice(0, 20);
+  const safeTopic = String(topic).slice(0, 120);
 
   try {
     const audioBuffer = Buffer.from(base64Audio, "base64");
@@ -4381,15 +4518,15 @@ exports.chatWithAI = onRequest({ secrets: [GROQ_API_KEY, DEEPGRAM_API_KEY], memo
 
     // 2. Generate AI Reply via Groq LLM (Llama 3 8B or 70B)
     const systemPrompt = `You are AInur, a friendly English tutor. 
-The user's English level is ${userLevel}. Speak clearly, simply, and naturally at this level.
-Today's topic is: ${topic}.
+The user's English level is ${safeLevel}. Speak clearly, simply, and naturally at this level.
+Today's topic is: ${safeTopic}.
 You are having a casual voice conversation. Keep your responses VERY CONCISE (1-3 short sentences). 
 Do NOT use markdown, emojis, or special characters. Speak like a real human on a phone call. 
 Ask a follow-up question to keep the conversation going.`;
 
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history,
+      ...safeHistory,
       { role: "user", content: transcript }
     ];
 
@@ -4458,6 +4595,10 @@ const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
 const ANALYSIS_INVOCATION_BUDGET_MS = 200 * 1000;
 // 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
 const ANALYSIS_HOURLY_AUDIO_BUDGET = 21600; // 6 saat audio/saat — 50% analiz üçün 5760 çox dar idi
+// Per learner per Baku day. A ticket is analysed up to ANALYSIS_MAX_SECONDS
+// (30 min), so this is at least six full calls a day — far above real use,
+// and it stops one account from eating the global hourly budget above.
+const ANALYSIS_USER_DAILY_SECONDS = 3 * 60 * 60;
 
 // İstifadəçinin ana dili — hesabatın yazıldığı dil. users/{uid}.preferredLanguage
 // -dən gəlir; yoxdursa 'az'. Türkiyə bazarı üçün 'tr'.
@@ -5642,6 +5783,21 @@ async function claimTicket(db, ticketRef) {
       }
     }
     const analyzeSeconds = effectiveAnalyzeSeconds(ticket.audioSeconds || 0);
+
+    // Per-learner daily ceiling. The hourly budget above is GLOBAL and a
+    // ticket is a client write (analysisQueue rules), so without this one
+    // account could file hour-long tickets in a loop, spend the whole budget
+    // every hour and stall analysis for everybody else. A retry of the same
+    // ticket is not charged twice here.
+    const day = bakuDateStr();
+    const userBudgetRef = db.collection("analysisUserBudget").doc(`${ticket.uid}_${day}`);
+    const userBudgetSnap = await tx.get(userBudgetRef);
+    const userUsed = userBudgetSnap.exists ? (Number(userBudgetSnap.data().usedAudioSeconds) || 0) : 0;
+    const firstAttempt = !(ticket.retryCount > 0);
+    if (firstAttempt && userUsed + analyzeSeconds > ANALYSIS_USER_DAILY_SECONDS) {
+      return { overQuota: true, id: ticketSnap.id, ref: ticketRef, ...ticket };
+    }
+
     // Budget counts attempts (no refund on retry) — deliberately conservative.
     if (used + analyzeSeconds > ANALYSIS_HOURLY_AUDIO_BUDGET) return null;
 
@@ -5649,6 +5805,14 @@ async function claimTicket(db, ticketRef) {
       windowStart: admin.firestore.Timestamp.fromMillis(windowStart),
       usedAudioSeconds: used + analyzeSeconds,
     });
+    if (firstAttempt) {
+      tx.set(userBudgetRef, {
+        uid: ticket.uid,
+        day,
+        usedAudioSeconds: userUsed + analyzeSeconds,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
     tx.update(ticketRef, {
       status: "processing",
       processingStartedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -5850,6 +6014,12 @@ exports.processAnalysisQueue = onSchedule({
     const ticket = await claimTicket(db, docSnap.ref);
     if (!ticket) {
       console.log("[AnalysisQueue] Skipped (budget or already claimed):", docSnap.id);
+      continue;
+    }
+    if (ticket.overQuota) {
+      console.warn("[AnalysisQueue] Daily per-user limit reached:", ticket.uid, docSnap.id);
+      await failTicket(db, ticket.ref, ticket.id, ticket, ticket.retryCount || 0,
+        "Daily analysis limit reached. Please try again tomorrow.");
       continue;
     }
 
@@ -6055,11 +6225,13 @@ async function sendSessionEmails(db, startLabel, hour) {
 
   const usersSnap = await db.collection("users").get();
   const cutoff = Date.now() - EMAIL_ACTIVE_WINDOW_MS;
+  // Addresses come from Firebase Auth, not the (world-readable) user doc.
+  const addressOf = await authEmailsFor(usersSnap.docs.map((d) => d.id));
   const seen = new Set();
   const recipients = [];
   for (const d of usersSnap.docs) {
     const u = d.data() || {};
-    const email = typeof u.email === "string" ? u.email.trim() : "";
+    const email = String(addressOf.get(d.id) || "").trim();
     const lastSeen = u.lastSeen && u.lastSeen.toMillis ? u.lastSeen.toMillis() : 0;
     if (!email || !email.includes("@")) continue;
     // Müəllimlər şagird xatırlatmalarından azaddır — push tərəfində bu filtr

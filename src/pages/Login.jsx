@@ -92,7 +92,6 @@ export default function Login() {
         await setDoc(userRef, {
           uid: user.uid,
           name: user.displayName || 'User',
-          email: user.email || '',
           photo: user.photoURL || '',
           online: true,
           lastSeen: serverTimestamp()
