@@ -235,7 +235,7 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   if (parts.length === 1) {
     try {
       const peerUid = parts[0];
-      // NƏZARƏTLİ CÜT: komanda (admin), müəllim və ya öyrənənin ÖZ müəllimi.
+      // NƏZARƏTLİ CÜT: komanda (admin) və ya öyrənənin ÖZ müəllimi (isSupervisedPair).
       // Tanışlıq görüşü və hər dərs məhz böyük adamın uşaqla danışmasıdır —
       // yaş qaydası bu cütə tətbiq olunsa, 18 yaşdan kiçik şagirdi heç kim
       // zəng edə bilməz. Blok və "bir daha salma" qaydaları yenə işləyir.
@@ -245,9 +245,7 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
       ]);
       const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
       const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
-      const supervised = decoded.uid === ADMIN_UID || peerUid === ADMIN_UID
-        || me.role === "teacher" || peer.role === "teacher"
-        || me.teacherId === peerUid || peer.teacherId === decoded.uid;
+      const supervised = isSupervisedPair(decoded.uid, peerUid, me, peer);
 
       const verdict = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
         checkLevel: false,
@@ -2229,6 +2227,19 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true,
   return { ok: !blocked && !avoided && !ageClash && !levelClash, recent, blocked, avoided, ageClash, levelClash };
 }
 
+// A SUPERVISED pair is exempt from the minor↔adult rule: the team (the intro
+// call) or a teacher and a learner who LINKED to that teacher with consent
+// (claimTeacherCode / respondTeacherInvite write teacherId). It used to be
+// `role === "teacher"` as well — but `role` is chosen by the client at sign-up
+// (firestore.rules), so any adult who picked "teacher" could call any minor.
+// teacherVerified does not grant it either: a verified tutor supervises their
+// own students, not everyone's. getAgoraToken and canPair both use this, so
+// the pre-check and the real gate can never disagree again.
+function isSupervisedPair(uidA, uidB, a, b) {
+  return uidA === ADMIN_UID || uidB === ADMIN_UID
+    || (a || {}).teacherId === uidB || (b || {}).teacherId === uidA;
+}
+
 // From waiting members of one block, the best partner for `uid`: allowed by
 // pairVerdict, someone not met in the last week first, then whoever waited
 // longest. Returns null when nobody fits.
@@ -2276,9 +2287,7 @@ exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res)
     ]);
     const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
     const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
-    const supervised = decoded.uid === ADMIN_UID || peerUid === ADMIN_UID
-      || me.role === "teacher" || peer.role === "teacher"
-      || me.teacherId === peerUid || peer.teacherId === decoded.uid;
+    const supervised = isSupervisedPair(decoded.uid, peerUid, me, peer);
 
     const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
       checkLevel: !direct,
