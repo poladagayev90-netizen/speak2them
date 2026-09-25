@@ -135,32 +135,6 @@ export const describeVideos = [
     ],
   },
   {
-    // source: video_2026-09-22_00-22-03.mp4
-    id: 'kangaroo-fence',
-    src: '/videos/kangaroo-fence.mp4',
-    poster: '/videos/kangaroo-fence.jpg',
-    seconds: 11,
-    alt: 'A muscular red kangaroo stands upright against a wire fence and stares at the camera while others graze behind it.',
-    keywords: ['kangaroo', 'wire fence', 'stand upright', 'muscles', 'stare'],
-    prompts: [
-      'What does the kangaroo want from the person filming?',
-      'Does it look friendly or dangerous? Say why.',
-    ],
-  },
-  {
-    // source: video_2026-09-22_00-22-09.mp4
-    id: 'kangaroo-birds',
-    src: '/videos/kangaroo-birds.mp4',
-    poster: '/videos/kangaroo-birds.jpg',
-    seconds: 8,
-    alt: 'A kangaroo stands alone in a wide green field at the edge of a forest while white birds fly around it.',
-    keywords: ['kangaroo', 'open field', 'white birds', 'treeline', 'sunny'],
-    prompts: [
-      'Where in the world is this, do you think?',
-      'What is the kangaroo watching?',
-    ],
-  },
-  {
     // source: video_2026-09-22_00-22-11.mp4
     id: 'leopard-road',
     src: '/videos/leopard-road.mp4',
@@ -197,32 +171,6 @@ export const describeVideos = [
     prompts: [
       'Tell the whole story in three sentences.',
       'Was it his own fault? Why?',
-    ],
-  },
-  {
-    // source: video_2026-09-22_00-22-19.mp4
-    id: 'eagle-field',
-    src: '/videos/eagle-field.mp4',
-    poster: '/videos/eagle-field.jpg',
-    seconds: 13,
-    alt: 'A golden eagle lands on a low mound in an empty field near the sea, folds its wings, looks around and flies off.',
-    keywords: ['eagle', 'spread wings', 'mound', 'open field', 'take off'],
-    prompts: [
-      'What has the eagle come down for?',
-      'What do you notice about its wings?',
-    ],
-  },
-  {
-    // source: video_2026-09-22_00-22-21.mp4
-    id: 'rain-drive',
-    src: '/videos/rain-drive.mp4',
-    poster: '/videos/rain-drive.jpg',
-    seconds: 24,
-    alt: 'From inside a car: traffic crawls through heavy rain at a junction, brake lights blur and the wipers sweep the windscreen.',
-    keywords: ['heavy rain', 'brake lights', 'wipers', 'traffic lights', 'windscreen'],
-    prompts: [
-      'How does the driver feel right now?',
-      'Describe the weather without using the word “rain”.',
     ],
   },
   {
