@@ -29,6 +29,17 @@ const SOURCES = [
 
 // Kontekstdən asılı sözlər — şəkil altındakı mənası ilə.
 const OVERRIDES = {
+  // Pexels batch (2026-09-25): "counter" came back as a meter, "fingerpicking"
+  // as picking things up, and "steamed milk" as cooked milk.
+  'chef apron': { az: 'aşbaz önlüyü', tr: 'şef önlüğü' },
+  'tossing vegetables': { az: 'tərəvəzi tavada çevirmək', tr: 'sebzeleri havada çevirmek' },
+  'kitchen counter': { az: 'mətbəx tezgahı', tr: 'mutfak tezgahı' },
+  'coffee counter': { az: 'qəhvə piştaxtası', tr: 'kahve tezgahı' },
+  'running in circles': { az: 'dairə vurub qaçmaq', tr: 'daireler çizerek koşmak' },
+  'steamed milk': { az: 'köpüklənmiş süd', tr: 'köpürtülmüş süt' },
+  'shaping vase': { az: 'vaza formalaşdırmaq', tr: 'vazo şekillendirmek' },
+  'spinning wheel': { az: 'fırlanan dulus çarxı', tr: 'dönen çömlekçi çarkı' },
+  'fingerpicking': { az: 'barmaqla çalmaq', tr: 'parmakla çalmak' },
   'bank': { az: 'çay sahili', tr: 'nehir kıyısı' },
   'spring': { az: 'yaz', tr: 'ilkbahar' },
   'light': { az: 'işıq', tr: 'ışık' },

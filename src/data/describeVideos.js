@@ -30,6 +30,72 @@
 // rename.
 export const describeVideos = [
   {
+    // source: pexels_4253330.mp4 (CC0 Free Commercial License)
+    id: 'chef-stir-fry',
+    src: '/videos/chef-stir-fry.mp4',
+    poster: '/videos/chef-stir-fry.jpg',
+    seconds: 16,
+    alt: 'A chef in a white uniform rapidly tosses vegetables in a hot wok over a gas flame.',
+    keywords: ["chef apron","frying pan","tossing vegetables","gas flame","kitchen counter"],
+    prompts: [
+      'What cooking technique is the chef using?',
+      'Have you ever tried making a dish that required high heat like this?',
+    ],
+  },
+  {
+    // source: pexels_35282483.mp4 (CC0 Free Commercial License)
+    id: 'dog-park-chase',
+    src: '/videos/dog-park-chase.mp4',
+    poster: '/videos/dog-park-chase.jpg',
+    seconds: 15,
+    alt: 'Two happy dogs chase each other in circles across a green park lawn on a sunny morning.',
+    keywords: ["playful dogs","green grass","running in circles","wagging tails","sunny day"],
+    prompts: [
+      'What are the two dogs doing together?',
+      'Why do dogs enjoy running in open spaces so much?',
+    ],
+  },
+  {
+    // source: pexels_6683374.mp4 (CC0 Free Commercial License)
+    id: 'barista-latte-art',
+    src: '/videos/barista-latte-art.mp4',
+    poster: '/videos/barista-latte-art.jpg',
+    seconds: 10,
+    alt: 'A barista steams milk and carefully pours delicate leaf pattern latte art into a ceramic cup.',
+    keywords: ["barista","steamed milk","latte art","ceramic cup","coffee counter"],
+    prompts: [
+      'What pattern did the barista create in the cup?',
+      'Do you care about presentation when you order a drink?',
+    ],
+  },
+  {
+    // source: pexels_35487051.mp4 (CC0 Free Commercial License)
+    id: 'pottery-clay-wheel',
+    src: '/videos/pottery-clay-wheel.mp4',
+    poster: '/videos/pottery-clay-wheel.jpg',
+    seconds: 11,
+    alt: 'A potter shapes wet grey clay on a spinning wheel, smoothing the rim with wet fingers.',
+    keywords: ["potter wheel","wet clay","shaping vase","spinning wheel","artisan hands"],
+    prompts: [
+      'What is the craftsperson making on the wheel?',
+      'Have you ever tried making something by hand with clay?',
+    ],
+  },
+  {
+    // source: pexels_8103500.mp4 (CC0 Free Commercial License)
+    id: 'acoustic-guitar-park',
+    src: '/videos/acoustic-guitar-park.mp4',
+    poster: '/videos/acoustic-guitar-park.jpg',
+    seconds: 15,
+    alt: 'A musician sits on a park bench gently fingerpicking chords on a wooden acoustic guitar.',
+    keywords: ["acoustic guitar","fingerpicking","park bench","wooden guitar","relaxed posture"],
+    prompts: [
+      'Where is the musician playing and what is the atmosphere like?',
+      'Can you play any musical instruments or would you like to learn?',
+    ],
+  },
+
+  {
     // source: video_2026-09-22_00-21-50.mp4
     id: 'garden-guitar',
     src: '/videos/garden-guitar.mp4',
