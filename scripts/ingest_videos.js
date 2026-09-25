@@ -148,8 +148,10 @@ ${pr}
   }
   if (!entries.length) { console.log('yeni giriş yoxdur'); return; }
 
-  const marker = '\n];\n';
-  const at = deckSrc.lastIndexOf(marker);
+  // The closing "];" of the deck array. CRLF-tolerant: a Windows checkout
+  // (core.autocrlf) turns the file into CRLF and a plain '\n];\n' never matches.
+  const ends = [...deckSrc.matchAll(/\n\];\r?\n/g)];
+  const at = ends.length ? ends[ends.length - 1].index : -1;
   if (at < 0) { console.error('describeVideos.js-in sonu tapılmadı'); process.exit(1); }
   fs.writeFileSync(DECK, deckSrc.slice(0, at + 1) + entries.join('\n') + deckSrc.slice(at + 1));
   console.log(`\n${entries.length} klip → describeVideos.js  (${skipped} doldurulmamış giriş atlandı)`);
