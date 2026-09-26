@@ -393,6 +393,227 @@ export const describeVideos = [
       'How long do you think they have not seen each other?',
       'Tell about a time you met an old friend.',
     ],
+  },
+  {
+    // source: acrobat-handstand.mp4
+    id: 'contortionist-heels',
+    src: '/videos/contortionist-heels.mp4',
+    poster: '/videos/contortionist-heels.jpg',
+    seconds: 18,
+    alt: 'A contortionist in a black bodysuit bends backwards to the floor and puts on a pair of high-heeled shoes with her feet in the air.',
+    keywords: ['contortionist', 'backbend', 'high heels', 'staircase', 'bare feet'],
+    prompts: [
+      'How does she put the shoes on? Tell it step by step.',
+      'How much training do you think a trick like this takes?',
+    ],
+  },
+  {
+    // source: baby-calves-milk.mp4
+    id: 'goat-calf-milk',
+    src: '/videos/goat-calf-milk.mp4',
+    poster: '/videos/goat-calf-milk.jpg',
+    seconds: 10,
+    alt: 'A baby goat and a fluffy white calf drink milk side by side from metal feeding chutes in a barn, then wander off.',
+    keywords: ['baby goat', 'fluffy calf', 'milk', 'metal chute', 'barn'],
+    prompts: [
+      'What are the two babies doing together?',
+      'How are the two animals different from each other?',
+    ],
+  },
+  {
+    // source: baby-donkey-jump.mp4
+    id: 'baby-donkey-jump',
+    src: '/videos/baby-donkey-jump.mp4',
+    poster: '/videos/baby-donkey-jump.jpg',
+    seconds: 12,
+    alt: 'A small grey donkey foal bucks and kicks its back legs in a sandy yard, then trots up to the camera and sniffs it.',
+    keywords: ['donkey foal', 'kicking', 'sandy yard', 'wooden fence', 'long ears'],
+    prompts: [
+      'Why is the little donkey jumping and kicking like that?',
+      'What does it do when it comes close to the camera?',
+    ],
+  },
+  {
+    // source: baby-giraffe-hair.mp4
+    id: 'baby-giraffe-hair',
+    src: '/videos/baby-giraffe-hair.mp4',
+    poster: '/videos/baby-giraffe-hair.jpg',
+    seconds: 10,
+    alt: 'A baby giraffe with a funny tuft of dark hair on its head walks up to the camera in a stable and stares straight into it.',
+    keywords: ['baby giraffe', 'tuft of hair', 'long neck', 'spots', 'stable'],
+    prompts: [
+      'What makes this young giraffe look funny?',
+      'What do you think it is thinking when it looks at the camera?',
+    ],
+  },
+  {
+    // source: bear-water-hose.mp4
+    id: 'bear-water-hose',
+    src: '/videos/bear-water-hose.mp4',
+    poster: '/videos/bear-water-hose.jpg',
+    seconds: 18,
+    alt: 'A brown bear sits in a muddy puddle in the forest, plays with a water hose that sprays everywhere, then runs straight at the camera.',
+    keywords: ['brown bear', 'muddy puddle', 'water hose', 'splashing', 'forest'],
+    prompts: [
+      'What is the bear doing with the hose?',
+      'What happens at the end? How would you feel if you were filming?',
+    ],
+  },
+  {
+    // source: canopy-tree-climb.mp4
+    id: 'canopy-tree-climb',
+    src: '/videos/canopy-tree-climb.mp4',
+    poster: '/videos/canopy-tree-climb.jpg',
+    seconds: 26,
+    alt: 'Filmed from his own point of view, a barefoot man climbs a very tall tree above a green jungle, with the ground far below.',
+    keywords: ['tree trunk', 'bare feet', 'jungle', 'climbing', 'branches'],
+    prompts: [
+      'How high up do you think he is?',
+      'Would you ever climb a tree like this? Why or why not?',
+    ],
+  },
+  {
+    // source: dancing-lemur.mp4
+    id: 'dancing-lemur',
+    src: '/videos/dancing-lemur.mp4',
+    poster: '/videos/dancing-lemur.jpg',
+    seconds: 26,
+    alt: 'A white and brown sifaka lemur takes a piece of fruit, climbs a tree, then hops sideways along a forest path on two legs with its arms open.',
+    keywords: ['lemur', 'hopping sideways', 'forest path', 'piece of fruit', 'open arms'],
+    prompts: [
+      'Describe the strange way this animal moves.',
+      'What happens before it starts hopping?',
+    ],
+  },
+  {
+    // source: dog-wizard.mp4
+    id: 'dog-wizard',
+    src: '/videos/dog-wizard.mp4',
+    poster: '/videos/dog-wizard.jpg',
+    seconds: 14,
+    alt: 'A golden retriever dressed in a black hooded wizard cloak sits on rocks in a forest holding a wooden staff, while someone hangs an amulet on it.',
+    keywords: ['wizard cloak', 'wooden staff', 'golden retriever', 'amulet', 'forest'],
+    prompts: [
+      'Why do you think the dog is dressed like this?',
+      'Describe the dog\'s face and how it sits.',
+    ],
+  },
+  {
+    // source: ginger-trio.mp4
+    id: 'ginger-trio',
+    src: '/videos/ginger-trio.mp4',
+    poster: '/videos/ginger-trio.jpg',
+    seconds: 14,
+    alt: 'A ginger chick, a ginger kitten and a ginger rabbit sit side by side in the grass, and the kitten keeps looking at the others.',
+    keywords: ['chick', 'kitten', 'rabbit', 'grass', 'side by side'],
+    prompts: [
+      'What three animals are sitting together here?',
+      'Why is it surprising that they get along so well?',
+    ],
+  },
+  {
+    // source: hammock-highrise.mp4
+    id: 'hammock-highrise',
+    src: '/videos/hammock-highrise.mp4',
+    poster: '/videos/hammock-highrise.jpg',
+    seconds: 10,
+    alt: 'A man lies in a hammock tied between two tall apartment buildings, reading high above the street, next to laundry drying on a line.',
+    keywords: ['hammock', 'apartment block', 'laundry', 'windows', 'reading'],
+    prompts: [
+      'How do you think he got the hammock up there?',
+      'Would you ever lie in a hammock like this? Why or why not?',
+    ],
+  },
+  {
+    // source: hedgehog-run.mp4
+    id: 'hedgehog-run',
+    src: '/videos/hedgehog-run.mp4',
+    poster: '/videos/hedgehog-run.jpg',
+    seconds: 6,
+    alt: 'A tiny pet hedgehog runs fast across a wooden floor straight at the camera and bumps past it.',
+    keywords: ['hedgehog', 'wooden floor', 'running', 'spines', 'tiny legs'],
+    prompts: [
+      'Where do you think the hedgehog is running to?',
+      'Would a hedgehog be a good pet? Why?',
+    ],
+  },
+  {
+    // source: kittens-bottle-play.mp4
+    id: 'kittens-bottle-play',
+    src: '/videos/kittens-bottle-play.mp4',
+    poster: '/videos/kittens-bottle-play.jpg',
+    seconds: 8,
+    alt: 'A group of black-and-white kittens chase and bat a green plastic bottle across a wooden floor while an adult cat lies watching.',
+    keywords: ['kittens', 'plastic bottle', 'rolling', 'wooden floor', 'chest of drawers'],
+    prompts: [
+      'How do the kittens react when the bottle rolls?',
+      'What is the grown-up cat doing in the background?',
+    ],
+  },
+  {
+    // source: man-seagull-argument.mp4
+    id: 'man-seagull-argument',
+    src: '/videos/man-seagull-argument.mp4',
+    poster: '/videos/man-seagull-argument.jpg',
+    seconds: 6,
+    alt: 'A man in a cap and an orange shirt leans on a stone wall and waves his hands as if arguing with a seagull standing next to him.',
+    keywords: ['seagull', 'orange shirt', 'stone wall', 'waving hands', 'cap'],
+    prompts: [
+      'What do you think the man is saying to the seagull?',
+      'What would the seagull say back?',
+    ],
+  },
+  {
+    // source: moose-roadside.mp4
+    id: 'moose-roadside',
+    src: '/videos/moose-roadside.mp4',
+    poster: '/videos/moose-roadside.jpg',
+    seconds: 18,
+    alt: 'Filmed from a moving car, two huge moose walk along the grass beside a busy road while cars drive past.',
+    keywords: ['moose', 'antlers', 'car window', 'roadside', 'pine trees'],
+    prompts: [
+      'How big do the animals look next to the cars?',
+      'What should drivers do when wild animals are near the road?',
+    ],
+  },
+  {
+    // source: round-blue-bird.mp4
+    id: 'round-blue-bird',
+    src: '/videos/round-blue-bird.mp4',
+    poster: '/videos/round-blue-bird.jpg',
+    seconds: 13,
+    alt: 'A very round, fluffy blue and white bird sits on a thin branch in a garden and turns to show its bright blue tail.',
+    keywords: ['round bird', 'blue feathers', 'thin branch', 'garden', 'brick wall'],
+    prompts: [
+      'Describe the bird\'s shape and colours.',
+      'Is it a real bird or a toy? What makes you think so?',
+    ],
+  },
+  {
+    // source: toad-apple-bite.mp4
+    id: 'tortoise-apple-bite',
+    src: '/videos/tortoise-apple-bite.mp4',
+    poster: '/videos/tortoise-apple-bite.jpg',
+    seconds: 9,
+    alt: 'A small tortoise with orange spots, wearing a tiny backpack next to a toy truck, takes big bites from an apple slice someone holds out.',
+    keywords: ['tortoise', 'apple slice', 'toy truck', 'tiny backpack', 'orange spots'],
+    prompts: [
+      'What is funny about how this tortoise is dressed?',
+      'Describe how it eats the apple.',
+    ],
+  },
+  {
+    // source: woman-brick-wall.mp4
+    id: 'grandma-brick-wall',
+    src: '/videos/grandma-brick-wall.mp4',
+    poster: '/videos/grandma-brick-wall.jpg',
+    seconds: 16,
+    alt: 'An older woman in glasses and a flowery dress spreads mortar and lays bricks on a house wall, then gives the camera a thumbs up.',
+    keywords: ['bricks', 'mortar', 'trowel', 'flowery dress', 'thumbs up'],
+    prompts: [
+      'What is she building? Tell it step by step.',
+      'Why do you think she is doing this job herself?',
+    ],
   },];
 
 // Which clips a topic gets lives in topicVideos.js, which
