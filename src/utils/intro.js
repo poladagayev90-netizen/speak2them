@@ -7,9 +7,12 @@ import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
 
 // Intro call with the SpeakLab team — client side (see bookIntro in functions).
 //
-// Required, not blocking: until users.introDoneAt is set (only the admin can
-// set it), random search and the slot board are locked. Everything else —
-// AInur, topics, daily content — is open from day one.
+// NOT REQUIRED, for now (2026-09-28): forcing every newcomer through a call
+// and a picked time caused problems, so new learners are only pointed to the
+// team's WhatsApp and the time is arranged there by hand. Nothing is locked.
+// Flip INTRO_REQUIRED back to true to lock random search, the slot board and
+// direct calls again until users.introDoneAt is set (only the admin sets it).
+export const INTRO_REQUIRED = false;
 
 // Who still has to meet the team. Everyone ALREADY practising is exempt, so
 // switching this on does not lock out the learners who have been using the
@@ -23,6 +26,16 @@ export function needsIntro(user) {
   if ((Number(user.callCount) || 0) > 0) return false;
   return true;
 }
+
+// Whether live practice is locked for this user. needsIntro alone still
+// drives the WhatsApp nudge and the admin's "not met yet" list.
+export const introLocks = (user) => INTRO_REQUIRED && needsIntro(user);
+
+// The first message to the team's WhatsApp, already written: who this is and
+// what level they said. Their name saves the first two messages of every
+// conversation.
+export const introWhatsAppText = (user) => `Salam! Mən ${user?.name || 'SpeakLab istifadəçisiyəm'}`
+  + `${user?.level ? ` (${user.level})` : ''}. SpeakLab-a yeni qoşulmuşam.`;
 
 const ERROR_TEXT = {
   'slot-taken': 'Someone just booked this time. Please pick another.',

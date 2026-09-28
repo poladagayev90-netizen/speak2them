@@ -216,9 +216,10 @@ export default function Onboarding({ user }) {
         onboardedAt: serverTimestamp(),
       }, { merge: true });
       try { sessionStorage.removeItem(draftKey(uid)); } catch { /* ignore */ }
-      // Joining ends with booking the intro call — the same full-screen layer,
-      // so it reads as the last step, not as an ad. Learners who are exempt
-      // (already practising, have a teacher) go straight home.
+      // Joining ends with a pointer to the team's WhatsApp — the same
+      // full-screen layer, so it reads as the last step, not as an ad. It is
+      // not a gate: "Continue to the app" is right there. Learners who are
+      // exempt (already practising, have a teacher) go straight home.
       navigate(needsIntro(user) ? '/intro' : '/', { replace: true });
     } catch (e) {
       setError('Your answers were not saved. Check your connection and try again.');

@@ -31,7 +31,7 @@ import { setInCallFlag, isInCall } from '../utils/presence';
 import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { canPair } from '../utils/matchmaking';
-import { needsIntro } from '../utils/intro';
+import { introLocks } from '../utils/intro';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import CallVideoStage from '../components/CallVideoStage';
@@ -819,7 +819,7 @@ export default function Chat({ user }) {
     const peerIsTeam = peerId === ADMIN_UID
       || peer?.role === 'teacher'
       || user?.teacherId === peerId;
-    if (needsIntro(user) && !peerIsTeam) {
+    if (introLocks(user) && !peerIsTeam) {
       alert('First meet the team — a short intro call opens live practice.');
       navigate('/intro');
       return;

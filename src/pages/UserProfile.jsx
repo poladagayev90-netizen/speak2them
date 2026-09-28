@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { blockUser, unblockUser, submitReport } from '../utils/blocklist';
 import TutorBadge from '../components/TutorBadge';
 import { getPresence } from '../utils/presence';
-import { needsIntro } from '../utils/intro';
+import { introLocks } from '../utils/intro';
 import { ADMIN_UID } from '../constants';
 import { MessageCircle, Phone } from 'lucide-react';
 
@@ -18,7 +18,7 @@ export default function UserProfile({ user: currentUser }) {
   const [isBlocked, setIsBlocked] = useState(false);
   // The intro lock never covers the team or this learner's own teacher: the
   // intro call itself is a call to them.
-  const introLocked = needsIntro(currentUser)
+  const introLocked = introLocks(currentUser)
     && uid !== ADMIN_UID
     && profileUser?.role !== 'teacher'
     && currentUser?.teacherId !== uid;

@@ -7,7 +7,7 @@ import PracticeBoard from '../components/PracticeBoard';
 import UpcomingCallCard from '../components/UpcomingCallCard';
 import MatchOfferCard from '../components/MatchOfferCard';
 import IntroCard from '../components/IntroCard';
-import { needsIntro } from '../utils/intro';
+import { introLocks } from '../utils/intro';
 import { ADMIN_UID } from '../constants';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import UserCard from '../components/UserCard';
@@ -35,7 +35,7 @@ export default function Live({ user }) {
   } = useLiveLobby(user);
 
   const [tab, setTab] = useState('online');
-  const introLocked = needsIntro(user);
+  const introLocked = introLocks(user);
 
   // Arriving from "Pick a time" — open the calendar and scroll to it, rather
   // than dropping the learner at the top of a page where the thing they asked

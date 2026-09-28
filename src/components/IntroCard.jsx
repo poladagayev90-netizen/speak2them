@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, ChevronRight, Lock } from 'lucide-react';
-import { needsIntro, subscribeToMyIntro, introTimeLabel } from '../utils/intro';
+import { Users, ChevronRight, Lock, MessageCircle } from 'lucide-react';
+import { whatsappLink } from '../constants';
+import {
+  needsIntro, subscribeToMyIntro, introTimeLabel, introWhatsAppText,
+} from '../utils/intro';
 import './IntroCard.css';
 
 // The intro call, surfaced where it matters.
-//   variant "home": a quiet row on Today — book it, or when it is.
+//   variant "home": a quiet row on Today — opens the team's WhatsApp (or,
+//                   for a booking made earlier, shows when it is).
 //   variant "lock": on Live, in place of search and the slot board, saying
 //                   plainly why they are not there yet and how to open them.
+//                   Only reached while INTRO_REQUIRED (utils/intro.js) is on.
 // Renders nothing for anyone who does not need an intro.
 export default function IntroCard({ user, variant = 'home' }) {
   const navigate = useNavigate();
@@ -37,12 +42,18 @@ export default function IntroCard({ user, variant = 'home' }) {
   }
 
   return (
-    <button type="button" className="ic ic--home" onClick={() => navigate('/intro')}>
-      <span className="ic-icon" aria-hidden="true"><Users size={18} /></span>
+    <button
+      type="button"
+      className="ic ic--home"
+      onClick={() => (booked
+        ? navigate('/intro')
+        : window.open(whatsappLink(introWhatsAppText(user)), '_blank', 'noopener'))}
+    >
+      <span className="ic-icon" aria-hidden="true">{booked ? <Users size={18} /> : <MessageCircle size={18} />}</span>
       <span className="ic-body">
-        <span className="ic-title">{booked ? 'Intro call with the team' : 'Meet the SpeakLab team'}</span>
+        <span className="ic-title">{booked ? 'Intro call with the team' : 'Say hi to the SpeakLab team'}</span>
         <span className="ic-text">
-          {booked ? `${when.day} · ${when.time}` : 'A 15-minute intro on WhatsApp — live practice opens after it'}
+          {booked ? `${when.day} · ${when.time}` : 'Write to us on WhatsApp — goals, questions, your practice plan'}
         </span>
       </span>
       <ChevronRight size={18} className="ic-chev" aria-hidden="true" />

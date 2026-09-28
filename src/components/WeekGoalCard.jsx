@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { Target, Check } from 'lucide-react';
 import { db } from '../firebase';
 import { subscribeToMyWeek } from '../utils/attendance';
-import { needsIntro } from '../utils/intro';
+import { introLocks } from '../utils/intro';
 import './WeekGoalCard.css';
 
 // "Your week": the practices the learner committed to in onboarding
@@ -18,7 +18,7 @@ export default function WeekGoalCard({ user }) {
   const [target, setTarget] = useState(0);
   const [attended, setAttended] = useState(0);
   const uid = user?.uid;
-  const locked = needsIntro(user);
+  const locked = introLocks(user);
 
   useEffect(() => {
     if (!uid || locked) return undefined;
