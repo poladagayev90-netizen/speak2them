@@ -1,5 +1,5 @@
 import {
-  collection, query, where, orderBy, limit, onSnapshot, doc, addDoc, deleteDoc, serverTimestamp,
+  collection, query, where, orderBy, limit, onSnapshot, doc, addDoc, deleteDoc, updateDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { authedFetch } from '../api';
@@ -30,6 +30,26 @@ export function needsIntro(user) {
 // Whether live practice is locked for this user. needsIntro alone still
 // drives the WhatsApp nudge and the admin's "not met yet" list.
 export const introLocks = (user) => INTRO_REQUIRED && needsIntro(user);
+
+// WHATSAPP FIRST (2026-09-28). Calls are open, but a newcomer's first step is
+// a message to the team: home redirects to /intro until they have tapped the
+// WhatsApp button there once. We cannot see whether the message was actually
+// sent — the tap is the best signal a web app has — so this is a firm nudge,
+// not proof. Only accounts created from this date on: the learners who joined
+// earlier already use the app and are not sent back to a first step.
+const WHATSAPP_FIRST_SINCE = Date.UTC(2026, 8, 28);
+const millisOf = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : Number(v) || 0);
+
+export function mustWriteWhatsApp(user) {
+  if (!needsIntro(user) || user.introWhatsAppAt) return false;
+  return millisOf(user.trialStartedAt || user.createdAt) >= WHATSAPP_FIRST_SINCE;
+}
+
+// Client-written on purpose: it grants nothing (every lock goes through
+// introLocks), it only stops the redirect above.
+export const markWhatsAppOpened = (uid) => (uid
+  ? updateDoc(doc(db, 'users', uid), { introWhatsAppAt: serverTimestamp() }).catch((e) => console.warn('[intro] mark failed', e.code))
+  : Promise.resolve());
 
 // The first message to the team's WhatsApp, already written: who this is and
 // what level they said. Their name saves the first two messages of every

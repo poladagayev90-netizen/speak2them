@@ -15,6 +15,7 @@ import GlobalCallListener from './components/GlobalCallListener';
 import TrialExpiredGate from './components/TrialExpiredGate';
 import { isTrialExpiredClient } from './utils/courseProgress';
 import { needsOnboarding } from './utils/onboarding';
+import { mustWriteWhatsApp } from './utils/intro';
 import useBackButton from './hooks/useBackButton';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
@@ -82,6 +83,8 @@ const LIVE_USER_FIELDS = [
   'onboardingVersion',
   // Set by the admin after the intro call; unlocks live practice without a reload.
   'introDoneAt',
+  // Set when a newcomer taps "Write to us on WhatsApp"; lifts the /intro redirect.
+  'introWhatsAppAt',
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
   // Admin təsdiq edən kimi Tutor nişanı reload olmadan görünsün.
   'teacherVerified',
@@ -181,7 +184,10 @@ function AppShell({ user }) {
   // needsOnboarding() is version-based, so learners who signed up on the old
   // one-page survey are walked through the wizard once too.
   const homeElement = user
-    ? (needsOnboarding(user) ? <Navigate to="/onboarding" replace /> : <Home user={user} />)
+    ? (needsOnboarding(user) ? <Navigate to="/onboarding" replace />
+      // A newcomer writes to the team on WhatsApp first (utils/intro.js).
+      : mustWriteWhatsApp(user) ? <Navigate to="/intro" replace />
+        : <Home user={user} />)
     : <Navigate to="/register" />;
 
   if (showTrialGate) {

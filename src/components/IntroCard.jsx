@@ -20,6 +20,8 @@ export default function IntroCard({ user, variant = 'home' }) {
   const need = needsIntro(user);
   useEffect(() => (need ? subscribeToMyIntro(user.uid, setBooking) : undefined), [need, user?.uid]);
   if (!need) return null;
+  // Already wrote to the team and nothing booked: the row has done its job.
+  if (variant === 'home' && user.introWhatsAppAt && !(booking?.status === 'booked')) return null;
 
   const booked = booking?.status === 'booked' && Number(booking.startMs) > Date.now() - 30 * 60000;
   const when = booked ? introTimeLabel(Number(booking.startMs), booking.durationMin) : null;

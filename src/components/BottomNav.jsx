@@ -39,6 +39,10 @@ export default function BottomNav({ user }) {
     { icon: User,          label: 'Profile', route: '/profile' },
   ];
 
+  // Joining is a full-screen layer: the wizard, then the WhatsApp step. The nav
+  // peeking out under it offered a way round "write to us first".
+  if (path === '/onboarding' || path === '/intro') return null;
+
   return (
     // No safe-area padding here any more. The bar floats now — .bottom-nav sits
     // at `bottom: calc(14px + safe-area)`, so padding it as well would count the

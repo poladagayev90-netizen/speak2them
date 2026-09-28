@@ -4,7 +4,9 @@ import { ArrowLeft, Check, Users, Video, Smartphone, MessageCircle } from 'lucid
 import { auth } from '../firebase';
 import { whatsappLink } from '../constants';
 import { Button } from '../components/ui';
-import { subscribeToMyIntro, cancelIntro, introTimeLabel, introWhatsAppText } from '../utils/intro';
+import {
+  subscribeToMyIntro, cancelIntro, introTimeLabel, introWhatsAppText, mustWriteWhatsApp, markWhatsAppOpened,
+} from '../utils/intro';
 import './Onboarding.css';
 import './IntroBooking.css';
 
@@ -14,7 +16,9 @@ import './IntroBooking.css';
 // call and pick a time in the app caused problems, so this screen just opens
 // the team's business WhatsApp with the learner's name and level written in,
 // and anything else — an intro call, its time — is arranged there by hand.
-// Nothing in the app waits for it (see INTRO_REQUIRED in utils/intro.js).
+// Calls do not wait for it (see INTRO_REQUIRED in utils/intro.js), but a
+// NEWCOMER must write first: until they tap the WhatsApp button once, home
+// sends them back here and this screen offers no way on (mustWriteWhatsApp).
 //
 // The team slot board is not offered here any more. A learner who booked a
 // time before this change still sees that booking and can cancel it, so no
@@ -25,6 +29,10 @@ export default function IntroBooking({ user }) {
   const [booking, setBooking] = useState(undefined);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // Local, so the way on appears the moment they tap — the users doc echo
+  // (introWhatsAppAt) arrives a beat later.
+  const [wrote, setWrote] = useState(false);
+  const mustWrite = mustWriteWhatsApp(user) && !wrote;
 
   useEffect(() => subscribeToMyIntro(uid, setBooking), [uid]);
 
@@ -39,14 +47,20 @@ export default function IntroBooking({ user }) {
     if (!res.ok) setError(res.errorText);
   };
 
-  const openWhatsApp = () => window.open(whatsappLink(introWhatsAppText(user)), '_blank', 'noopener');
+  const openWhatsApp = () => {
+    window.open(whatsappLink(introWhatsAppText(user)), '_blank', 'noopener');
+    setWrote(true);
+    markWhatsAppOpened(uid);
+  };
 
   return (
     <div className="ob-page">
       <header className="ob-top">
-        <button type="button" className="ob-back" onClick={() => navigate('/')} aria-label="Back to the app">
-          <ArrowLeft size={20} />
-        </button>
+        {!mustWrite && (
+          <button type="button" className="ob-back" onClick={() => navigate('/')} aria-label="Back to the app">
+            <ArrowLeft size={20} />
+          </button>
+        )}
         <span className="in-top-title">Meet the team</span>
       </header>
 
@@ -78,8 +92,9 @@ export default function IntroBooking({ user }) {
               <>
                 <h1 className="ob-title">Say hi to the SpeakLab team</h1>
                 <p className="ob-sub">
-                  Write to us on WhatsApp: ask anything, tell us your goals, and we help you plan
-                  your practice week. The whole app is open to you right now.
+                  {mustWrite
+                    ? 'Your first step: write to us on WhatsApp. Tell us your goals, ask anything, and we help you plan your practice week. Then the whole app is yours, calls included.'
+                    : 'Write to us on WhatsApp: ask anything, tell us your goals, and we help you plan your practice week. The whole app is open to you right now.'}
                 </p>
               </>
             )}
@@ -96,7 +111,13 @@ export default function IntroBooking({ user }) {
       </main>
 
       <footer className="ob-foot">
-        <Button size="lg" full onClick={() => navigate('/')}>Continue to the app</Button>
+        {mustWrite ? (
+          <Button size="lg" full onClick={openWhatsApp} icon={<MessageCircle size={20} />}>
+            Write to us on WhatsApp
+          </Button>
+        ) : (
+          <Button size="lg" full onClick={() => navigate('/')}>Continue to the app</Button>
+        )}
       </footer>
     </div>
   );
