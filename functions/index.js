@@ -6,6 +6,7 @@ const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
 const userStatsLib = require("./userStats");
+const { ensurePostCallChat } = require("./postCallChat");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -875,6 +876,10 @@ exports.consumeTrialMinutes = onRequest({ secrets: [] }, async (req, res) => {
       const participants = [call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean);
       if (!participants.includes(uid)) throw Object.assign(new Error("Not a participant"), { httpStatus: 403 });
       if (call[billedFlag]) return null; // already billed for this user — idempotent
+      // Nobody to talk to = nothing to bill. Left UNflagged on purpose: the
+      // doc is per pair, and a flag set here would let the pair's next real
+      // call on it go unbilled.
+      if (call.status === "ended" && !(await callBothJoined(db, call, (ref) => tx.get(ref)))) return null;
 
       const startMs = callStartMs(call);
       // An ended call bills its pinned length, clamped to the server-clock span
@@ -985,6 +990,23 @@ function writeMirrorTx(tx, db, uid, mirror) {
 const JOIN_WINDOW_BEFORE_MS = 30 * 60 * 1000;
 const agoraJoinRef = (db, pairKey, uid) => db.collection("agoraJoins").doc(`${pairKey}_${uid}`);
 
+// Did BOTH people take a voice token for this call? `get` is `tx.get` inside a
+// transaction, a plain read outside one. A booked call's doc is written by the
+// server hours ahead, so one person alone in the room (an app that joined too
+// early, a partner who never came) must not turn into a "held" call.
+async function callBothJoined(db, call, get = (ref) => ref.get()) {
+  const people = Array.from(new Set([call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean))).slice(0, 2);
+  const start = callStartMs(call);
+  if (people.length < 2 || !start) return false;
+  const endMs = call.endedAt?.toMillis?.() || Date.now();
+  const pairKey = [...people].sort().join("_");
+  const joins = await Promise.all(people.map((p) => get(agoraJoinRef(db, pairKey, p))));
+  return joins.every((j) => {
+    const at = j.exists ? j.data().at?.toMillis?.() : 0;
+    return at && at >= start - JOIN_WINDOW_BEFORE_MS && at <= endMs + 2 * 60 * 1000;
+  });
+}
+
 // Credits ONE participant's stats for a finished call. Idempotent through
 // statsLedger/{callId}_{uid}_{start} (server-only), not through the call
 // doc's statsApplied_ flags: participants can write the call doc, so a flag
@@ -1008,15 +1030,7 @@ async function creditCallStats(db, callRef, uid, { requireJoins = true, expected
 
     const people = Array.from(new Set([call.userA, call.userB, call.callerId, call.receiverId].filter(Boolean))).slice(0, 2);
     if (people.length < 2 || !people.includes(uid)) return "not-participant";
-    if (requireJoins) {
-      const pairKey = [...people].sort().join("_");
-      const joins = await Promise.all(people.map((p) => tx.get(agoraJoinRef(db, pairKey, p))));
-      const joinedInWindow = joins.every((j) => {
-        const at = j.exists ? j.data().at?.toMillis?.() : 0;
-        return at && at >= start - JOIN_WINDOW_BEFORE_MS && at <= endMs + 2 * 60 * 1000;
-      });
-      if (!joinedInWindow) return "no-join";
-    }
+    if (requireJoins && !(await callBothJoined(db, call, (ref) => tx.get(ref)))) return "no-join";
 
     const userRef = db.collection("users").doc(uid);
     const userSnap = await tx.get(userRef);
@@ -1070,9 +1084,12 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
   if (participants.length < 2) return;
 
   const db = admin.firestore();
+  // Asked once for both people: practice, attendance and the post-call chat
+  // all need the same answer.
+  const joined = await callBothJoined(db, call);
   const failures = [];
   for (const uid of participants) {
-    try { await recordCallPractice(db, after.id, call, uid); }
+    try { await recordCallPractice(db, after.id, call, uid, { joined }); }
     catch (e) { failures.push(e); }
     try {
       const outcome = await creditCallStats(db, after.ref, uid, { expectedStart: callStartMs(call) });
@@ -1081,6 +1098,12 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
       console.error("[reconcileCallStats] failed for", uid, e.message);
       failures.push(e);
     }
+  }
+  // Two people who really talked can find each other again: the chat thread
+  // appears on both sides without either of them typing first.
+  if (joined && trustedCallSeconds(call) >= ATTENDED_MIN_SECONDS) {
+    try { await ensurePostCallChat(db, participants, trustedCallSeconds(call)); }
+    catch (e) { console.error("[reconcileCallStats] post-call chat failed:", after.id, e.message); failures.push(e); }
   }
   if (failures.length) throw failures[0]; // surface errors after crediting the unaffected participant
 });

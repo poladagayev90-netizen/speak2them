@@ -47,6 +47,12 @@ test('a call of 2+ minutes writes one attendance event; a short one writes none'
   await recordCallPractice(short.db,'s',{createdAt:at,endedAt:'2026-09-07T00:00:35Z',authoritativeDurationSec:35},'u');
   assert.equal([...short.data.keys()].filter(k=>k.startsWith('attendance/')).length,0);
 });
+test('a call one person sat through alone records nothing — no practice, no attendance', async () => {
+  const {db,data}=database();
+  const alone={createdAt:at,endedAt:'2026-09-07T00:10:00Z',authoritativeDurationSec:600,source:'slot_match'};
+  await recordCallPractice(db,'c',alone,'u',{joined:false});
+  assert.equal([...data.keys()].filter(k=>k.includes('practiceSessions')||k.startsWith('attendance/')).length,0);
+});
 test('a forged duration claim is clamped to the server-clock span', () => {
   assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z',authoritativeDurationSec:3600}),120);
   assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z',authoritativeDurationSec:90}),90);

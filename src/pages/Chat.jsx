@@ -227,6 +227,16 @@ export default function Chat({ user }) {
   const timerRef = useRef(null);
   const callTimeoutRef = useRef(null);
   const prevCallStatus = useRef('');
+  // True only while THIS device is ringing someone (set in startCall). The
+  // caller's "they accepted → join" branch needs it: a booked call's doc is
+  // written by the server already `accepted`, with one of the pair as
+  // callerId, so without it just opening the chat hours early dropped that
+  // person into an empty call room.
+  const ringingOutRef = useRef(false);
+  // The partner was in the voice channel with us at some point this call.
+  // Without it, ending a call nobody else joined pinned the time spent alone
+  // (from the BOOKING, for a booked call) as the call's length.
+  const peerSeenRef = useRef(false);
   const sessionIdRef = useRef(Date.now());
   
   const recognitionRef = useRef(null);
@@ -377,8 +387,10 @@ export default function Chat({ user }) {
 
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
+      peerSeenRef.current = false;
 
       client.on('user-published', async (remoteUser, mediaType) => {
+        peerSeenRef.current = true;
         try {
           await client.subscribe(remoteUser, mediaType);
           if (mediaType === 'audio') {
@@ -416,7 +428,10 @@ export default function Chat({ user }) {
       // Both of us are in the channel — the talk starts now. Fires for a
       // peer who was already there when we joined, too.
       const callIdAtJoin = callDocIdRef.current;
-      client.on('user-joined', () => { markCallConnected(callIdAtJoin); });
+      client.on('user-joined', () => {
+        peerSeenRef.current = true;
+        markCallConnected(callIdAtJoin);
+      });
 
       // Reverting to null. Do NOT use string uid because the backend token is generated for integers (0).
       // Agora will auto-generate unique IDs for both users automatically.
@@ -564,7 +579,16 @@ export default function Chat({ user }) {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
       const delay = isMatchedCall ? (user.uid < peerId ? 0 : 1200) : 0;
-      const timer = setTimeout(() => { joinCall(); }, delay);
+      const timer = setTimeout(() => {
+        joinCall();
+        // Consumed — taken out of the history entry, the same way autoCall
+        // is. Left in, Back (or the WebView restoring this page) remounted
+        // Chat with a fresh joinedRef and walked straight back into a call
+        // that was already over. Cleared INSIDE the timer: the replace changes
+        // location.key, re-running this effect, and its cleanup would cancel
+        // a timer that had not fired yet.
+        navigate(location.pathname, { replace: true, state: { ...location.state, acceptedCall: false } });
+      }, delay);
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -637,6 +661,7 @@ export default function Chat({ user }) {
   declinedRef.current = async () => {
     if (declineHandledRef.current) return;
     declineHandledRef.current = true;
+    ringingOutRef.current = false;
 
     if (callTimeoutRef.current) {
       clearTimeout(callTimeoutRef.current);
@@ -715,7 +740,10 @@ export default function Chat({ user }) {
       // CALLER side: receiver accepted → join now
       // Mic track was already created in startCall (user gesture),
       // so joinCall can safely run from Firestore snapshot here
-      if (data.status === 'accepted' && data.callerId === user.uid && prevStatus !== 'accepted') {
+      // Only for a call this device is ringing right now (ringingOutRef): a
+      // booked call's doc arrives already `accepted` on the first snapshot.
+      if (data.status === 'accepted' && data.callerId === user.uid && prevStatus !== 'accepted'
+        && ringingOutRef.current) {
         if (!joinedRef.current) {
           joinedRef.current = true;
           setIncomingCallData(null);
@@ -864,6 +892,7 @@ export default function Chat({ user }) {
         return;
       }
 
+      ringingOutRef.current = true;
       await setDoc(doc(db, 'calls', callDocId), {
         userA: user.uid,
         userB: peerId,
@@ -906,6 +935,7 @@ export default function Chat({ user }) {
       } catch (e) {}
     } catch (error) {
       console.error('[Chat] startCall error:', error);
+      ringingOutRef.current = false;
       if (localTrackRef.current) {
         try { localTrackRef.current.stop(); localTrackRef.current.close(); } catch (e) {}
         localTrackRef.current = null;
@@ -937,6 +967,11 @@ export default function Chat({ user }) {
     const secondsTalked = callStartedAtRef.current
       ? Math.max(0, Math.floor((Date.now() - callStartedAtRef.current) / 1000))
       : callSecondsRef.current;
+    // Read before the resets below. False = nobody else was ever in the room:
+    // a partner who never came, or a ring that went unanswered.
+    const peerWasHere = peerSeenRef.current;
+    peerSeenRef.current = false;
+    ringingOutRef.current = false;
 
     // Stop recording; only calls of at least 2 MINUTES get analyzed. Shorter
     // calls carry too little speech to score usefully and just burn STT/LLM
@@ -944,7 +979,7 @@ export default function Chat({ user }) {
     // worker never runs ⇒ no "analysis ready" push either).
     const MIN_ANALYSIS_SECONDS = 120; // 2 dəqiqə
     const { blob: recordingBlob, voicedSeconds } = await stopLocalRecording();
-    if (recordingBlob && secondsTalked >= MIN_ANALYSIS_SECONDS) {
+    if (recordingBlob && peerWasHere && secondsTalked >= MIN_ANALYSIS_SECONDS) {
       audioBlobRef.current = recordingBlob;
       const sessionId = sessionIdRef.current;
       console.log('[Chat] Recording stored, size:', recordingBlob.size, 'voiced:', voicedSeconds);
@@ -1022,6 +1057,17 @@ export default function Chat({ user }) {
         if (!callSnap.exists()) return;
 
         const callData = callSnap.data() || {};
+
+        // Nobody to talk to, and no length pinned by a partner who did talk:
+        // close the call and stop there. No length is written, so there is
+        // nothing to bill, credit or count as attended — and a booked pair's
+        // real call later on this same doc starts from a clean slate instead
+        // of reusing a length made of waiting alone.
+        if (!peerWasHere && typeof callData.authoritativeDurationSec !== 'number') {
+          if (callData.status !== 'ended') transaction.set(callRef, { status: 'ended' }, { merge: true });
+          return;
+        }
+
         const participantSet = new Set([
           callData.userA, callData.userB,
           callData.callerId, callData.receiverId,
@@ -1111,7 +1157,7 @@ export default function Chat({ user }) {
       // Bill the call against trial/bonus minutes. The server computes the
       // duration from the call's own timestamps and is idempotent per call, so
       // this is a safe fire-and-forget for any real call.
-      if (secondsTalked > 5) {
+      if (peerWasHere && secondsTalked > 5) {
         authedFetch(`${FUNCTIONS_BASE}/consumeTrialMinutes`, {
           method: 'POST',
           body: JSON.stringify({ callId: callDocId }),
@@ -1131,7 +1177,7 @@ export default function Chat({ user }) {
       // never marched through a chain of full-screen modals. Only shown for
       // calls that were actually analyzed (>= 2 min) — a shorter call gets no
       // analysis, so it also gets no post-call screen and no notification.
-      if (secondsTalked >= MIN_ANALYSIS_SECONDS) {
+      if (peerWasHere && secondsTalked >= MIN_ANALYSIS_SECONDS) {
         setRatingEligible(secondsTalked >= 180);
         setPostCallStages(['insights']);
       }

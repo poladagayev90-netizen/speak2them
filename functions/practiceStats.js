@@ -98,7 +98,12 @@ function trustedCallSeconds(call) {
 
 // Keep a distinct immutable record even though legacy clients reuse a call ID.
 // The trigger snapshot, rather than a later read of that reused document, is the source.
-async function recordCallPractice(db, callId, call, uid) {
+//
+// `joined: false` = the voice-join log shows one person was never in the room
+// (callBothJoined in index.js). Then nothing is recorded: sitting alone in a
+// booked call's room is not a practice, and must not show up as `attended`.
+async function recordCallPractice(db, callId, call, uid, { joined = true } = {}) {
+  if (!joined) return;
   const start = callStartMs(call);
   const end = msOf(call.endedAt);
   const seconds = trustedCallSeconds(call);
