@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
 const admin = require("firebase-admin");
 const userStatsLib = require("./userStats");
 const { ensurePostCallChat } = require("./postCallChat");
+const bookingsLib = require("./bookings");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -1070,6 +1071,21 @@ async function creditCallStats(db, callRef, uid, { requireJoins = true, expected
 // not a client already wrote its own numbers (those are no longer trusted and
 // guardUserDoc reverts them). Also covers the old failure this trigger was
 // born for: a phone killed at hangup no longer means zero stats.
+// users.upcomingCall = the nearest confirmed booking (bookings.js). Every path
+// that books, cancels, moves or closes a pair only writes the booking; this
+// keeps the field that older app builds read in step with it, for everyone
+// the booking names before or after the change.
+exports.syncUpcomingCall = onDocumentWritten({ document: "bookings/{bookingId}", region: "europe-west4" }, async (event) => {
+  const people = new Set([
+    ...((event.data?.before?.exists && event.data.before.get("participants")) || []),
+    ...((event.data?.after?.exists && event.data.after.get("participants")) || []),
+  ]);
+  const db = admin.firestore();
+  for (const uid of people) {
+    await bookingsLib.refreshUpcomingCall(db, uid);
+  }
+});
+
 exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4" }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
@@ -2309,6 +2325,9 @@ const SLOT_BLOCK_MS = 2 * 60 * 60 * 1000;
 // lövhə beş gün göstərir, joinPracticeSlot isə üfüqdən kənar slotu rədd edir —
 // fərq olsa lövhədəki son günlər "slot-too-far" verib səssizcə işləməzdi.
 const SLOT_HORIZON_DAYS = 5;
+// Pairs made ahead (admin offers, teacher pairs, the weekly plan) reach
+// further than the board: a plan sent on Sunday covers the whole next week.
+const BOOKING_HORIZON_DAYS = 9;
 const SLOT_REMINDER_MS = 10 * 60 * 1000;
 const SLOT_NOSHOW_GRACE_MS = 10 * 60 * 1000;
 const SLOT_MAX_MEMBERS = 60;
@@ -2517,6 +2536,8 @@ async function joinSlotTx(db, tx, slot, uid, user) {
   // with (pairVerdict), preferring a partner they have not met this week.
   const waiting = members.filter((m) => m.id !== uid && m.status === "waiting");
   const partner = waiting.length ? await choosePartnerTx(db, tx, uid, waiting, { [uid]: user }) : null;
+  // Read before any write (transaction rule): planCallDocTx needs it.
+  const callSnap = partner ? await tx.get(db.collection("calls").doc(callIdForPair(uid, partner.id))) : null;
   const now = admin.firestore.FieldValue.serverTimestamp();
   const usersCol = db.collection("users");
 
@@ -2529,46 +2550,33 @@ async function joinSlotTx(db, tx, slot, uid, user) {
     ...(partner ? { pairedWith: partner.id, callId: callIdForPair(uid, partner.id) } : {}),
   });
 
+  // upcomingCall is not written here any more: the booking below is the
+  // record, and syncUpcomingCall derives the field from it.
   tx.set(usersCol.doc(uid), {
     practiceSlotIds: admin.firestore.FieldValue.arrayUnion(slot.slotId),
-    ...(partner ? {
-      upcomingCall: {
-        slotId: slot.slotId, startMs: slot.startMs,
-        peerUid: partner.id, peerName: partner.name || "",
-        callId: callIdForPair(uid, partner.id),
-      },
-    } : {}),
   }, { merge: true });
 
   if (partner) {
     const callId = callIdForPair(uid, partner.id);
-    const sorted = [uid, partner.id].sort();
 
     tx.set(membersRef.doc(partner.id), {
       status: "matched", pairedWith: uid, callId,
     }, { merge: true });
 
-    tx.set(usersCol.doc(partner.id), {
-      upcomingCall: {
-        slotId: slot.slotId, startMs: slot.startMs,
-        peerUid: uid, peerName: user.name || "", callId,
-      },
-    }, { merge: true });
+    const bookingId = bookingsLib.writeBookingTx(tx, db, {
+      slot, uidA: uid, uidB: partner.id,
+      nameA: user.name, nameB: partner.name,
+      levelA: user.level, levelB: partner.level,
+      source: "slot_match",
+    });
 
     // status "accepted" QƏSDƏNDİR: "calling" olsaydı GlobalCallListener qarşı
     // tərəfin telefonunu ELƏ İNDİ çaldırardı. Randevu gələcəkdədir — hər iki
     // tərəf öz vaxtında bu kanala qoşulur (Chat.jsx matchedCall yolu).
-    // NO merge: the id is per PAIR (callIdForPair), so this document may still
-    // hold the pair's previous call — its endedAt, authoritativeDurationSec,
-    // statsApplied_* / minutesBilled_* flags and open activity panels. Merged,
-    // the new call inherited them: endCall reused the old duration and skipped
-    // stats and billing because the flags said "already done". commitMatch
-    // overwrites for the same reason.
-    tx.set(db.collection("calls").doc(callId), {
-      userA: sorted[0], userB: sorted[1],
-      callerId: uid, receiverId: partner.id,
-      status: "accepted", source: "slot_match",
-      slotId: slot.slotId, createdAt: now,
+    // The doc itself is written only close to the start (planCallDocTx).
+    bookingsLib.planCallDocTx(tx, db, {
+      callSnap, slot, callerUid: uid, receiverUid: partner.id,
+      source: "slot_match", bookingId, nowMs: Date.now(), parseSlotId,
     });
   }
 
@@ -2844,43 +2852,55 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
         ? await choosePartnerTx(db, tx, partnerId,
           others.filter((m) => m.id !== partnerId && m.status === "waiting"), {})
         : null;
+      // Reads before writes: the cancelled pair's call doc, and the new pair's.
+      const oldCallRef = partner ? db.collection("calls").doc(callIdForPair(uid, partnerId)) : null;
+      const [oldCallSnap, newCallSnap] = await Promise.all([
+        oldCallRef ? tx.get(oldCallRef) : null,
+        rematch ? tx.get(db.collection("calls").doc(callIdForPair(partnerId, rematch.id))) : null,
+      ]);
 
       const usersCol = db.collection("users");
       const del = admin.firestore.FieldValue.delete();
       const now = admin.firestore.FieldValue.serverTimestamp();
+      const nowMs = Date.now();
 
       tx.delete(membersRef.doc(uid));
       tx.set(usersCol.doc(uid), {
         practiceSlotIds: admin.firestore.FieldValue.arrayRemove(slot.slotId),
-        // upcomingCall yalnız BU slota aiddirsə silinir — başqa blokdakı
-        // randevu təsadüfən uçmasın.
-        ...(mine.status === "matched" ? { upcomingCall: del } : {}),
       }, { merge: true });
+
+      if (partner) {
+        bookingsLib.closeBookingTx(tx, db, {
+          slot, uidA: uid, uidB: partnerId, status: "cancelled",
+          extra: { cancelledBy: uid, late: slot.startMs - nowMs < LATE_CANCEL_MS }, nowMs,
+        });
+        // The cancelled appointment's doc must not stay "accepted": opening
+        // the chat on an old app build would still walk into it.
+        const oc = oldCallSnap && oldCallSnap.exists ? (oldCallSnap.data() || {}) : null;
+        if (oc && oc.status === "accepted" && oc.slotId === slot.slotId && !bookingsLib.callIsLive(oc, nowMs)) {
+          tx.set(oldCallRef, { status: "cancelled" }, { merge: true });
+        }
+      }
 
       if (partner && rematch) {
         const newCallId = callIdForPair(partnerId, rematch.id);
-        const sorted = [partnerId, rematch.id].sort();
         for (const [a, b] of [[partnerId, rematch], [rematch.id, partner]]) {
           tx.set(membersRef.doc(a), { status: "matched", pairedWith: b.id, callId: newCallId }, { merge: true });
-          tx.set(usersCol.doc(a), {
-            upcomingCall: {
-              slotId: slot.slotId, startMs: slot.startMs,
-              peerUid: b.id, peerName: b.name || "", callId: newCallId,
-            },
-          }, { merge: true });
         }
-        // NO merge — see joinSlotTx: the per-pair doc may hold the previous call.
-        tx.set(db.collection("calls").doc(newCallId), {
-          userA: sorted[0], userB: sorted[1],
-          callerId: partnerId, receiverId: rematch.id,
-          status: "accepted", source: "slot_match",
-          slotId: slot.slotId, createdAt: now,
+        const bookingId = bookingsLib.writeBookingTx(tx, db, {
+          slot, uidA: partnerId, uidB: rematch.id,
+          nameA: partner.name, nameB: rematch.name,
+          levelA: partner.level, levelB: rematch.level,
+          source: "slot_match", nowMs,
+        });
+        bookingsLib.planCallDocTx(tx, db, {
+          callSnap: newCallSnap, slot, callerUid: partnerId, receiverUid: rematch.id,
+          source: "slot_match", bookingId, nowMs, parseSlotId,
         });
       } else if (partner) {
         tx.set(membersRef.doc(partnerId), {
           status: "waiting", pairedWith: del, callId: del,
         }, { merge: true });
-        tx.set(usersCol.doc(partnerId), { upcomingCall: del }, { merge: true });
       }
 
       // Sayğaclar son vəziyyətdən yenidən hesablanır — increment zənciri
@@ -3019,7 +3039,8 @@ exports.proposeSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
 
   const now = Date.now();
   if (to.endMs <= now) return res.status(400).json({ error: "slot-past" });
-  if (to.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+  // A booking can be up to BOOKING_HORIZON_DAYS out, so it can be moved as far.
+  if (to.startMs > now + BOOKING_HORIZON_DAYS * DAY_MS) {
     return res.status(400).json({ error: "slot-too-far" });
   }
 
@@ -3131,6 +3152,16 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
 
       const callId = callIdForPair(a.id, b.id);
       const usersCol = db.collection("users");
+      // One practice a day holds here too: moving onto a day where either
+      // already has another booked call is refused.
+      const [aDay, bDay, callSnap] = await Promise.all([
+        bookingsLib.sameDayBookingsTx(tx, db, a.id, to),
+        bookingsLib.sameDayBookingsTx(tx, db, b.id, to),
+        tx.get(db.collection("calls").doc(callId)),
+      ]);
+      const elsewhere = (docs) => docs.some((d) => d.get("slotId") !== from.slotId);
+      if (elsewhere(aDay) || elsewhere(bDay)) throw fail(409, "busy-that-day");
+      const nowMs = Date.now();
 
       // Köhnə blokdan çıxar.
       tx.delete(fromRef.collection("members").doc(a.id));
@@ -3154,10 +3185,6 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
         }, { merge: true });
         tx.set(usersCol.doc(x.id), {
           practiceSlotIds: admin.firestore.FieldValue.arrayUnion(to.slotId),
-          upcomingCall: {
-            slotId: to.slotId, startMs: to.startMs,
-            peerUid: y.id, peerName: y.name || "", callId,
-          },
         }, { merge: true });
       }
       tx.set(toRef, {
@@ -3167,7 +3194,24 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
         updatedAt: now,
       }, { merge: true });
 
-      tx.set(db.collection("calls").doc(callId), { slotId: to.slotId }, { merge: true });
+      // The booking moves with the pair; upcomingCall follows via the trigger.
+      bookingsLib.closeBookingTx(tx, db, {
+        slot: from, uidA: a.id, uidB: b.id, status: "moved", extra: { movedTo: to.slotId }, nowMs,
+      });
+      const bookingId = bookingsLib.writeBookingTx(tx, db, {
+        slot: to, uidA: a.id, uidB: b.id,
+        nameA: a.name, nameB: b.name, levelA: a.level, levelB: b.level,
+        source: "slot_change", nowMs,
+      });
+      const plan = bookingsLib.planCallDocTx(tx, db, {
+        callSnap, slot: to, callerUid: a.id, receiverUid: b.id,
+        source: "slot_match", bookingId, nowMs, parseSlotId,
+      });
+      // A doc already prepared for the OLD time must not stay open.
+      const oc = callSnap.exists ? (callSnap.data() || {}) : {};
+      if (plan === "deferred" && oc.status === "accepted" && oc.slotId === from.slotId) {
+        tx.set(callSnap.ref, { status: "cancelled" }, { merge: true });
+      }
       tx.update(reqRef, { status: "accepted", respondedAt: now });
 
       return { accepted: true, proposerUid: r.proposerUid, toSlotId: r.toSlotId };
@@ -3279,12 +3323,13 @@ exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (r
       if (!allowed) throw Object.assign(new Error("not-your-student"), { httpStatus: 403 });
 
       const del = admin.firestore.FieldValue.delete();
-      const usersCol = db.collection("users");
 
       for (const id of [studentUid, peerId]) {
         tx.set(membersRef.doc(id), { status: "waiting", pairedWith: del, callId: del }, { merge: true });
-        tx.set(usersCol.doc(id), { upcomingCall: del }, { merge: true });
       }
+      bookingsLib.closeBookingTx(tx, db, {
+        slot, uidA: studentUid, uidB: peerId, status: "cancelled", extra: { cancelledBy: callerUid },
+      });
 
       if (mine.callId) {
         tx.set(db.collection("calls").doc(mine.callId), {
@@ -3324,34 +3369,31 @@ exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (r
 });
 
 // ── Pair booking core ─────────────────────────────────────────
-// Writes a confirmed pair into one slot block: member docs, both users'
-// upcomingCall, the calls/{id} doc and recomputed counters. Shared by
-// teacherSetMatch and respondMatchOffer so a hand-made pair behaves exactly
-// like one the board made — reminders, no-show marking, block close and
-// cancelSlotMatch all key off these same documents.
+// Writes a confirmed pair into one slot block: member docs, the bookings/
+// record (upcomingCall is derived from it), the calls/{id} doc when the start
+// is close, and recomputed counters. Shared by teacherSetMatch and
+// respondMatchOffer so a hand-made pair behaves exactly like one the board
+// made — reminders, no-show marking, block close and cancelSlotMatch all key
+// off these same documents.
 // Runs INSIDE a transaction; the caller has already read users uidA/uidB (a, b)
 // in that transaction and done its own authorisation. `marker` is stamped on
 // every written doc to record who set the pair up. Throws 409 when either
-// person already owes a call in another, still-future block.
+// person already has a booked call on the same Baku day.
 const slotFail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
 
 async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source }) {
   const usersCol = db.collection("users");
-  // ── Double-booking guard ──────────────────────────────────
-  // upcomingCall is a SINGLE field on the user document, so a student can
-  // only owe one call at a time. Writing a second one would silently
-  // overwrite the first while leaving the other slot's member doc matched
-  // — the student would then be expected in two places and shown in one.
-  // A call in this same block is fine (it is the one we are about to
-  // replace); one anywhere else is refused, and the teacher is told who.
-  const clashes = (u) => {
-    const uc = u.upcomingCall;
-    if (!uc || uc.slotId === slot.slotId) return false;
-    const other = parseSlotId(uc.slotId);
-    return !!other && other.endMs > now;
-  };
-  if (clashes(a)) throw slotFail(409, "student-a-busy");
-  if (clashes(b)) throw slotFail(409, "student-b-busy");
+  // ── One practice a day ────────────────────────────────────
+  // A learner may hold several booked calls now (bookings/), but not two on
+  // the same Baku day. The error names stay "student-*-busy" — the teacher
+  // and admin screens already explain them.
+  const [aDay, bDay, callSnap] = await Promise.all([
+    bookingsLib.sameDayBookingsTx(tx, db, uidA, slot),
+    bookingsLib.sameDayBookingsTx(tx, db, uidB, slot),
+    tx.get(db.collection("calls").doc(callIdForPair(uidA, uidB))),
+  ]);
+  if (aDay.length) throw slotFail(409, "student-a-busy");
+  if (bDay.length) throw slotFail(409, "student-b-busy");
 
   const slotRef = db.collection("practiceSlots").doc(slot.slotId);
   const membersRef = slotRef.collection("members");
@@ -3374,7 +3416,6 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source 
   const now2 = admin.firestore.FieldValue.serverTimestamp();
   const del = admin.firestore.FieldValue.delete();
   const callId = callIdForPair(uidA, uidB);
-  const sorted = [uidA, uidB].sort();
 
   // ── Release whoever these two were paired with IN THIS BLOCK ──
   // They go back to "waiting" rather than being dropped: they still said
@@ -3387,16 +3428,18 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source 
     tx.set(membersRef.doc(exPartnerId), {
       status: "waiting", pairedWith: del, callId: del,
     }, { merge: true });
-    tx.set(usersCol.doc(exPartnerId), { upcomingCall: del }, { merge: true });
+    bookingsLib.closeBookingTx(tx, db, {
+      slot, uidA: mem.id, uidB: exPartnerId, status: "cancelled", extra: { replacedBy: source },
+    });
     if (mem.callId) {
       tx.set(db.collection("calls").doc(mem.callId), { status: "cancelled" }, { merge: true });
     }
   }
 
   // ── Write the pair ────────────────────────────────────────
-  for (const [uid, u, mem, peerUid, peer] of [
-    [uidA, a, memA, uidB, b],
-    [uidB, b, memB, uidA, a],
+  for (const [uid, u, mem, peerUid] of [
+    [uidA, a, memA, uidB],
+    [uidB, b, memB, uidA],
   ]) {
     tx.set(membersRef.doc(uid), {
       uid,
@@ -3413,22 +3456,18 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source 
 
     tx.set(usersCol.doc(uid), {
       practiceSlotIds: admin.firestore.FieldValue.arrayUnion(slot.slotId),
-      upcomingCall: {
-        slotId: slot.slotId, startMs: slot.startMs,
-        peerUid, peerName: peer.name || "", callId,
-        ...marker,
-      },
     }, { merge: true });
   }
 
+  // The booking is the record; upcomingCall is derived from it (syncUpcomingCall).
+  const bookingId = bookingsLib.writeBookingTx(tx, db, {
+    slot, uidA, uidB, nameA: a.name, nameB: b.name, levelA: a.level, levelB: b.level,
+    source, marker, nowMs: now,
+  });
   // status "accepted", not "calling": the appointment is in the FUTURE, so
-  // nobody's phone may ring now (see the same note in joinSlotTx).
-  // NO merge — see joinSlotTx: the per-pair doc may hold the previous call.
-  tx.set(db.collection("calls").doc(callId), {
-    userA: sorted[0], userB: sorted[1],
-    callerId: uidA, receiverId: uidB,
-    status: "accepted", source,
-    slotId: slot.slotId, ...marker, createdAt: now2,
+  // nobody's phone may ring now. Written only close to the start.
+  bookingsLib.planCallDocTx(tx, db, {
+    callSnap, slot, callerUid: uidA, receiverUid: uidB, source, marker, bookingId, nowMs: now, parseSlotId,
   });
 
   // Counters recomputed from the FINAL state rather than incremented —
@@ -3507,7 +3546,7 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
 
   const now = Date.now();
   if (slot.endMs <= now) return res.status(400).json({ error: "slot-past" });
-  if (slot.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+  if (slot.startMs > now + BOOKING_HORIZON_DAYS * DAY_MS) {
     return res.status(400).json({ error: "slot-too-far" });
   }
 
@@ -3645,7 +3684,7 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
   const now = Date.now();
   // An offer needs time to be answered, so the block must not have started.
   if (slot.startMs <= now) return res.status(400).json({ error: "slot-past" });
-  if (slot.startMs > now + SLOT_HORIZON_DAYS * DAY_MS) {
+  if (slot.startMs > now + BOOKING_HORIZON_DAYS * DAY_MS) {
     return res.status(400).json({ error: "slot-too-far" });
   }
 
@@ -3660,13 +3699,13 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       const a = aSnap.data() || {};
       const b = bSnap.data() || {};
 
-      const busyElsewhere = (u) => {
-        const uc = u.upcomingCall;
-        const other = uc && parseSlotId(uc.slotId);
-        return !!other && other.endMs > now;
-      };
-      if (busyElsewhere(a)) throw slotFail(409, "user-a-busy");
-      if (busyElsewhere(b)) throw slotFail(409, "user-b-busy");
+      // Several booked calls are fine now; two on the same day are not.
+      const [aDay, bDay] = await Promise.all([
+        bookingsLib.sameDayBookingsTx(tx, db, uidA, slot),
+        bookingsLib.sameDayBookingsTx(tx, db, uidB, slot),
+      ]);
+      if (aDay.length) throw slotFail(409, "user-a-busy");
+      if (bDay.length) throw slotFail(409, "user-b-busy");
 
       // Only the admin sees this reason — learners are never told.
       const v = await pairVerdict(db, (r) => tx.get(r), uidA, uidB, { known: { [uidA]: a, [uidB]: b }, checkLevel: false });
@@ -4131,22 +4170,56 @@ exports.practiceSlotTick = onSchedule(
       }
     }
 
+    // One-time: every pair already booked in a block that has not ended gets
+    // its bookings/ record. Only missing ones are created, so a pair booked
+    // by the new code in the meantime is left as it is; the trigger then
+    // derives upcomingCall from them.
+    if (await claimSlotRun(db, "bookings_backfill_v1")) {
+      try {
+        const upcoming = await db.collection("practiceSlots")
+          .where("date", ">=", bakuDateStr(now - DAY_MS)).get();
+        let n = 0;
+        for (const s of upcoming.docs) {
+          const slot = parseSlotId(s.id);
+          if (!slot || slot.endMs <= now) continue;
+          const mem = await s.ref.collection("members").where("status", "==", "matched").get();
+          const byId = new Map(mem.docs.map((d) => [d.id, d.data() || {}]));
+          for (const [uid, m] of byId) {
+            const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
+            if (!peer || uid > m.pairedWith) continue; // each pair once
+            const ref = db.collection("bookings").doc(bookingsLib.bookingIdFor(slot.slotId, uid, m.pairedWith));
+            const source = m.setByTeacher ? "teacher_match" : (m.setByAdmin ? "admin_offer" : "slot_match");
+            const marker = m.setByTeacher ? { setByTeacher: m.setByTeacher }
+              : (m.setByAdmin ? { setByAdmin: true, ...(m.offerId ? { offerId: m.offerId } : {}) } : {});
+            const created = await ref.create(bookingsLib.bookingDoc({
+              slot, uidA: uid, uidB: m.pairedWith, nameA: m.name, nameB: peer.name,
+              levelA: m.level, levelB: peer.level, source, marker, nowMs: now,
+            })).then(() => true).catch((e) => { if (e.code !== 6) throw e; return false; });
+            if (created) n += 1;
+          }
+        }
+        console.log("[SlotTick] bookings backfill wrote", n);
+      } catch (e) {
+        console.warn("[SlotTick] bookings backfill failed:", e.message);
+      }
+    }
+
     // ① Gündə bir dəfə: təkrarlanan qrafikləri materiallaşdır + köhnəni təmizlə.
     if (await claimSlotRun(db, `${today}_daily`)) {
       try {
         const usersSnap = await db.collection("users").get();
         for (const uDoc of usersSnap.docs) {
           const u = uDoc.data() || {};
-          // Janitor: bloku artıq bitmiş upcomingCall ilişib qalmasın. Blok-bağlama
-          // keçidi yalnız bugün/sabah pəncərəsini işləyir, ona görə köhnə
-          // (keçmiş günlərdən qalan) randevular bura düşür və gündə bir dəfə silinir.
+          // Janitor: an upcomingCall whose block has ended is recomputed from
+          // the bookings — the next one takes its place, or the field goes.
+          // Block close already does this for today and tomorrow; this catches
+          // anything older.
           const uc = u.upcomingCall;
           if (uc && uc.slotId) {
             const ucSlot = parseSlotId(uc.slotId);
-            if (ucSlot && ucSlot.startMs + SLOT_BLOCK_MS < now) {
-              await uDoc.ref.set(
-                { upcomingCall: admin.firestore.FieldValue.delete() }, { merge: true },
-              ).catch(() => null);
+            if (!ucSlot || ucSlot.startMs + SLOT_BLOCK_MS < now) {
+              await bookingsLib.refreshUpcomingCall(db, uDoc.id, now)
+                .catch((e) => console.warn("[SlotTick] janitor refresh failed:", uDoc.id, e.message));
             }
           }
           const rec = Array.isArray(u.recurringSlots) ? u.recurringSlots : [];
@@ -4214,6 +4287,30 @@ exports.practiceSlotTick = onSchedule(
           }
         }
 
+        // The pair's call doc is written now, not at booking time (see
+        // bookings.js planCallDocTx). Every minute in the window, but it is a
+        // no-op once the doc carries this booking's id, and a live call is
+        // never touched. If this ever misses, the app's Join still creates it.
+        if (untilStart <= bookingsLib.CALL_PREP_TICK_MS && untilStart > -10 * 60000) {
+          const seen = new Set();
+          for (const m of await matchedMembers()) {
+            if (!m.pairedWith) continue;
+            const bookingId = bookingsLib.bookingIdFor(slot.slotId, m.id, m.pairedWith);
+            if (seen.has(bookingId)) continue;
+            seen.add(bookingId);
+            await db.runTransaction(async (tx) => {
+              const callSnap = await tx.get(db.collection("calls").doc(callIdForPair(m.id, m.pairedWith)));
+              if (callSnap.exists && callSnap.get("bookingId") === bookingId) return;
+              const booking = await tx.get(db.collection("bookings").doc(bookingId));
+              const bd = booking.exists ? (booking.data() || {}) : {};
+              bookingsLib.planCallDocTx(tx, db, {
+                callSnap, slot, callerUid: m.id, receiverUid: m.pairedWith,
+                source: bd.source || "slot_match", marker: bd.marker || {}, bookingId, nowMs: Date.now(), parseSlotId,
+              });
+            }).catch((e) => console.warn("[SlotTick] call prep failed:", bookingId, e.message));
+          }
+        }
+
         // Randevu anı.
         if (untilStart <= 0 && untilStart > -60000) {
           if (await claimSlotRun(db, `${doc.id}_start`)) {
@@ -4255,7 +4352,6 @@ exports.practiceSlotTick = onSchedule(
           if (await claimSlotRun(db, `${doc.id}_close`)) {
             const members = await matchedMembers();
             const byId = new Map(members.map((m) => [m.id, m]));
-            const del = admin.firestore.FieldValue.delete();
 
             // Attendance, decided at the END of the block so a late arrival
             // still counts. A call that actually happened (>= 2 min) is
@@ -4270,14 +4366,32 @@ exports.practiceSlotTick = onSchedule(
               if (cd.status === "ended" && trustedCallSeconds(cd) >= ATTENDED_MIN_SECONDS
                 && startedMs >= slot.startMs - 30 * 60000) held.add(m.callId);
             }
+            const outcomes = {};
             for (const m of members) {
-              if (m.callId && held.has(m.callId)) continue;
+              if (m.callId && held.has(m.callId)) { outcomes[m.id] = "attended"; continue; }
               const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
               const outcome = !m.arrivedAt ? "no_show" : (peer && !peer.arrivedAt ? "partner_no_show" : null);
+              outcomes[m.id] = outcome || "arrived";
               if (outcome) {
                 await recordAttendance(db, `${doc.id}_${m.id}`, m.id, outcome, slot.startMs,
                   { slotId: doc.id, peerUid: m.pairedWith || null, callId: m.callId || null });
               }
+            }
+            // The booking closes with how each side did. Writing it also
+            // moves both people's upcomingCall on to their next booking
+            // (syncUpcomingCall) — that replaced the direct delete here.
+            const closed = new Set();
+            for (const m of members) {
+              if (!m.pairedWith) continue;
+              const bookingId = bookingsLib.bookingIdFor(doc.id, m.id, m.pairedWith);
+              if (closed.has(bookingId)) continue;
+              closed.add(bookingId);
+              await db.runTransaction(async (tx) => {
+                bookingsLib.closeBookingTx(tx, db, {
+                  slot, uidA: m.id, uidB: m.pairedWith, status: "done",
+                  extra: { outcome: { [m.id]: outcomes[m.id] || null, [m.pairedWith]: outcomes[m.pairedWith] || null } },
+                });
+              }).catch((e) => console.warn("[SlotTick] booking close failed:", bookingId, e.message));
             }
             // Waited in the block and nobody was matched with them: the
             // platform could not deliver a partner. Never counted against them.
@@ -4287,12 +4401,6 @@ exports.practiceSlotTick = onSchedule(
               await recordAttendance(db, `${doc.id}_${w.id}`, w.id, "unmatched", slot.startMs, { slotId: doc.id });
             }
             for (const m of members) {
-              const uref = db.collection("users").doc(m.id);
-              const usnap = await uref.get();
-              const uc = usnap.exists ? (usnap.data() || {}).upcomingCall : null;
-              if (uc && uc.slotId === doc.id) {
-                await uref.set({ upcomingCall: del }, { merge: true }).catch(() => null);
-              }
               const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
               const nobodyCame = !m.arrivedAt && (!peer || !peer.arrivedAt);
               if (nobodyCame) {
@@ -4302,9 +4410,15 @@ exports.practiceSlotTick = onSchedule(
                   type: "slot_missed", url: "/",
                 }).catch(() => null);
               }
+              // Only this appointment's own doc, and never a call in progress:
+              // the per-pair doc may by now hold a direct call the two started.
               if (m.callId) {
-                await db.collection("calls").doc(m.callId)
-                  .set({ status: "expired" }, { merge: true }).catch(() => null);
+                const cref = db.collection("calls").doc(m.callId);
+                const c = await cref.get().catch(() => null);
+                const cd = c && c.exists ? (c.data() || {}) : null;
+                if (cd && cd.status === "accepted" && cd.slotId === doc.id && !bookingsLib.callIsLive(cd, Date.now())) {
+                  await cref.set({ status: "expired" }, { merge: true }).catch(() => null);
+                }
               }
             }
           }
@@ -6821,6 +6935,18 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
         await Promise.all(snap.docs.map((d) =>
           d.ref.update({ receiverName: DELETED_LABEL }).catch(() => null)));
       }
+      // Bookings: the name goes, and a call still ahead is cancelled — the
+      // partner must not be kept waiting for someone who no longer exists
+      // (syncUpcomingCall then moves them on to their next booking).
+      const bookings = await db.collection("bookings").where("participants", "array-contains", uid).limit(400).get();
+      await Promise.all(bookings.docs.map((d) => {
+        const b = d.data() || {};
+        const ahead = b.status === "confirmed" && Number(b.endMs) > Date.now();
+        return d.ref.update({
+          [`names.${uid}`]: DELETED_LABEL,
+          ...(ahead ? { status: "cancelled", cancelledBy: uid, cancelReason: "account_deleted", updatedAt: admin.firestore.FieldValue.serverTimestamp() } : {}),
+        }).catch(() => null);
+      }));
       const chats = await db.collection("chats").where("participants", "array-contains", uid).limit(200).get();
       for (const chat of chats.docs) {
         const msgs = await chat.ref.collection("messages").where("senderId", "==", uid).limit(400).get();

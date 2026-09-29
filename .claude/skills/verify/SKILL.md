@@ -94,6 +94,12 @@ here (Auth deletion needs either the account's own token or admin credentials,
 and there is no ADC on this machine — see the deploy-targets memory).
 
 ## Gotchas
+- **In a call, the daily panel covers the End button.** Close `.daily-close`
+  (and `.call-roadmap-start`) first and click End WITHOUT `force: true` — a
+  forced click lands on the panel, the call never ends, and a check on the
+  call doc fails for a reason that has nothing to do with the app.
+- Receiving side of a direct call: park it on `/chats`, not `/` — a fresh
+  account on `/` is sent to onboarding, whose overlay eats the Accept click.
 - Functions logs: `npx firebase-tools functions:log --only <fn> -n 40`.
 - `CI=true` makes ESLint warnings fatal — the deploy pipeline does the same.
 - PowerShell mangles `CI=true` env prefix; use the Bash tool.

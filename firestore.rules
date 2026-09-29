@@ -571,6 +571,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // One booked pair per block (functions/bookings.js). Only the two people
+    // in it and the admin can read it; the list rule works for the
+    // "participants array-contains me" query because it filters on that
+    // field. Written by the server only — a client-made booking would let
+    // anyone book anyone.
+    match /bookings/{bookingId} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+      allow write: if false;
+    }
+
     // Who declined an offer and why. Admin-only ON PURPOSE: the other person
     // must never learn who said no — that is the whole point of proposing to
     // both at once instead of asking one and then the other.

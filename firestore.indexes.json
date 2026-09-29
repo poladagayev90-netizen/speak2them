@@ -33,6 +33,15 @@
       ]
     },
     {
+      "collectionGroup": "bookings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participants", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startMs", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "introBookings",
       "queryScope": "COLLECTION",
       "fields": [
