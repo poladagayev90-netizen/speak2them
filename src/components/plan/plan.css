@@ -10,8 +10,39 @@
   padding: var(--s-4);
   margin-bottom: var(--s-3);
 }
-.pl-card--hero { background: var(--accent-soft); border-color: var(--accent-ring); }
-.pl-card--live { border-color: var(--accent); }
+/* The headline card is the one solid-filled surface on Today, so the eye goes
+   there first (Polad 2026-09-30: the pale lavender version "doesn't catch the
+   eye"). Everything inside switches to --text-on-accent, which is white in
+   light mode and dark ink in dark mode, where --accent is a light lavender. */
+.pl-card--hero {
+  background: linear-gradient(160deg, var(--accent-strong), var(--accent));
+  border-color: transparent;
+  color: var(--text-on-accent);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+}
+.pl-card--hero .pl-kicker,
+.pl-card--hero .pl-kicker-end,
+.pl-card--hero .pl-when,
+.pl-card--hero .pl-with,
+.pl-card--hero .pl-with b,
+.pl-card--hero .pl-title,
+.pl-card--hero .pl-text,
+.pl-card--hero .pl-hint { color: var(--text-on-accent); }
+.pl-card--hero .pl-kicker,
+.pl-card--hero .pl-with,
+.pl-card--hero .pl-text,
+.pl-card--hero .pl-hint { opacity: .88; }
+.pl-card--hero .pl-level { background: transparent; border-color: currentColor; color: var(--text-on-accent); }
+.pl-card--hero .pl-row-icon { background: color-mix(in srgb, var(--text-on-accent) 18%, transparent); color: var(--text-on-accent); }
+.pl-card--hero .pl-actions { margin-top: var(--s-3); }
+/* Buttons on the fill: the main one inverts, the others are outlines. */
+.pl-card--hero .ui-btn--primary { background: var(--text-on-accent); color: var(--accent-strong); box-shadow: none; }
+.pl-card--hero .ui-btn--secondary,
+.pl-card--hero .ui-btn--ghost {
+  background: transparent; color: var(--text-on-accent);
+  border-color: color-mix(in srgb, var(--text-on-accent) 45%, transparent); box-shadow: none;
+}
+.pl-card--live { box-shadow: 0 0 0 3px var(--accent-ring), var(--glass-lift); }
 
 .pl-kicker {
   display: flex; align-items: center; gap: var(--s-2);
@@ -32,7 +63,7 @@
 .pl-text { margin: var(--s-1) 0 0; font-size: var(--fs-sm); font-weight: 600; line-height: var(--lh-body); color: var(--text-secondary); }
 .pl-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .pl-actions > .ui-btn--primary { flex: 1 1 160px; }
-.pl-hint { margin: var(--s-3) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.pl-hint { margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
 
 /* A plain row that opens something — Get ready, the week list, settings. */
 /* minmax(0, 1fr): a grid column otherwise grows to its longest nowrap line
@@ -82,3 +113,36 @@
 
 .pl-switch { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-2); }
 .pl-switch input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* Today's topic: a photo card — the one picture on Today, a different shape
+   from the text cards around it. Text sits on a dark scrim, so it is white in
+   both themes (not a token: the photo, not the theme, is its background). */
+.pl-topic {
+  position: relative; display: block; width: 100%;
+  min-height: 190px; margin-bottom: var(--s-3); padding: 0;
+  border: none; border-radius: var(--r-xl); overflow: hidden;
+  background: var(--ai-soft); box-shadow: var(--glass-lift);
+  font: inherit; text-align: left; cursor: pointer; color: #fff;
+}
+.pl-topic-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pl-topic-body {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: var(--s-1);
+  min-height: 190px; padding: var(--s-4);
+  background: linear-gradient(180deg, rgba(10, 8, 30, 0) 20%, rgba(10, 8, 30, .82) 100%);
+}
+.pl-topic-kicker {
+  display: inline-flex; align-items: center; gap: var(--s-1); align-self: flex-start;
+  padding: 3px 10px; border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .22); backdrop-filter: blur(6px);
+  font-size: var(--fs-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+}
+.pl-topic-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 800; line-height: var(--lh-tight); }
+.pl-topic-q {
+  font-size: var(--fs-sm); font-weight: 600; opacity: .92;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.pl-topic-cta { display: inline-flex; align-items: center; gap: 2px; margin-top: var(--s-1); font-size: var(--fs-sm); font-weight: 800; }
+/* No photo (offline, or it failed): the same card on AInur's lilac. */
+.pl-topic--plain { color: var(--text-primary); min-height: 0; }
+.pl-topic--plain .pl-topic-body { min-height: 0; background: none; }
+.pl-topic--plain .pl-topic-kicker { background: var(--bg-card); color: var(--ai); }

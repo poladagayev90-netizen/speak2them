@@ -20,6 +20,7 @@ import IntroCard from '../components/IntroCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
+import TopicCard from '../components/plan/TopicCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import useMyPlan from '../hooks/useMyPlan';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
@@ -47,9 +48,9 @@ const HOME_TOUR_STEPS = [
     text: 'Your practices are planned for you every week. This card always shows the next one, or what is happening with your plan.',
   },
   {
-    target: '#tour-get-ready',
-    title: 'Get ready',
-    text: 'Today’s topic, a warm-up with AInur and short lessons on keeping a conversation going.',
+    target: '#tour-topic',
+    title: 'Today’s topic',
+    text: 'Words, idioms and questions for today — open it before you talk.',
   },
   {
     target: '#tour-plan-tab',
@@ -205,8 +206,10 @@ export default function Home({ user }) {
           </button>
         )}
 
-        {/* 3. Preparation — below the practice it prepares you for. */}
-        <GetReadyCard user={user} topic={todayTopic} onOpenTopic={() => setDailyTopicOpen(true)} />
+        {/* 3. Preparation — below the practice it prepares you for. The
+            topic is a picture card so Today is not only text. */}
+        <TopicCard topic={todayTopic} onOpen={() => setDailyTopicOpen(true)} />
+        <GetReadyCard user={user} />
 
         {/* 4. The week in one line. */}
         {target > 0 && (

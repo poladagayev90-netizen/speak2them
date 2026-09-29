@@ -33,7 +33,7 @@ export default function NextPracticeCard({ uid, headline, now }) {
         </p>
         <p className="pl-when">{whenLabel(b.startMs, now)}</p>
         <p className="pl-with">
-          with <b style={{ color: 'var(--text-primary)' }}>{h.peerName}</b>
+          with <b>{h.peerName}</b>
           {h.peerLevel && <span className="pl-level">{String(h.peerLevel).slice(0, 2)}</span>}
         </p>
         <div className="pl-actions">

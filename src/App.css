@@ -466,8 +466,8 @@ body {
 .chat-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
 }
@@ -479,6 +479,9 @@ body {
   font-size: 15px;
   cursor: pointer;
   font-weight: 600;
+  display: grid; place-items: center;
+  width: 40px; height: 40px; margin-left: calc(-1 * var(--s-2));
+  flex-shrink: 0;
 }
 
 .chat-peer-info {
@@ -486,10 +489,17 @@ body {
   align-items: center;
   gap: 12px;
   flex: 1;
+  /* Without min-width:0 a long name + badges refused to shrink and pushed
+     the Call button off the right edge of a phone. */
+  min-width: 0;
 }
+.chat-peer-text { min-width: 0; }
+.chat-peer-info h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-peer-info .chat-peer-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 
 .chat-avatar {
   position: relative;
+  flex-shrink: 0;
   width: 40px;
   height: 40px;
   background: var(--accent);
@@ -516,6 +526,7 @@ body {
 .call-controls {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .btn-call {
@@ -614,14 +625,15 @@ body {
 
 .chat-input {
   display: flex;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
   background: var(--bg-card);
   border-top: 1px solid var(--border);
 }
 
 .chat-input input {
   flex: 1;
+  min-width: 0;
   padding: 12px 16px;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1414,13 +1426,14 @@ body {
    was a white disc on a white page with a white glyph: three ways invisible.
    The button is styled by .act-vocab now; this rule has nothing left to say. */
 
-.btn-daily-chat {
-  padding: 8px 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text-primary);
-  font-size: 16px;
+.chat-topic-btn {
+  flex-shrink: 0;
+  display: grid; place-items: center;
+  width: 46px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  border-radius: var(--r-md);
+  color: var(--accent);
   cursor: pointer;
 }
 .splash-screen {

@@ -8,6 +8,7 @@ const admin = require("firebase-admin");
 const userStatsLib = require("./userStats");
 const { ensurePostCallChat } = require("./postCallChat");
 const bookingsLib = require("./bookings");
+const { truncatedError, badJsonError, classifyLlmError } = require("./llmErrors");
 const weeklyPlanner = require("./weeklyPlanner");
 const { weekKey: bakuWeekKey } = require("./practiceStats");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
@@ -6037,7 +6038,7 @@ const ANALYSIS_MAX_TOKENS = [6000, 7000, 8000]; // mövzu qrupları + böyüdül
 // eyni səxavəti versək, DeepSeek sıradan çıxan gün limit bir neçə analizdən
 // sonra tükənir və HEÇ KİM analiz almır. Ehtiyat yol qəsdən daha qənaətcildir:
 // hesabat bir az qısa olur, amma işləyir.
-const GROQ_FALLBACK_MAX_TOKENS = [3000, 3600, 4200];
+const GROQ_FALLBACK_MAX_TOKENS = [4200, 5000, 6000];
 
 // DeepSeek V3 — analizin ƏSAS modeli. Səbəb: Llama-nın Azərbaycan dili real
 // istifadədə pozulur ("alıb-san" kimi morfologiya, mənasız izahlar); DeepSeek
@@ -6047,7 +6048,7 @@ const GROQ_FALLBACK_MAX_TOKENS = [3000, 3600, 4200];
 // hər sahəni yoxlayır. Xəta halında Groq fallback (aşağıda) işə düşür.
 const DEEPSEEK_CHAT_TIMEOUT_MS = 90000;
 
-async function callDeepSeekChat(userContent) {
+async function callDeepSeekChat(userContent, maxTokens = ANALYSIS_MAX_TOKENS[0]) {
   const res = await fetchWithTimeout("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: {
@@ -6058,7 +6059,9 @@ async function callDeepSeekChat(userContent) {
       model: "deepseek-chat",
       messages: [{ role: "user", content: userContent }],
       temperature: 0.3,
-      max_tokens: 4000,
+      // deepseek-chat allows 8K output. The old fixed 4000 cut long AZ/TR
+      // reports mid-JSON (2026-09-30: parse error at char 12002).
+      max_tokens: maxTokens,
       response_format: { type: "json_object" },
     }),
   }, DEEPSEEK_CHAT_TIMEOUT_MS, "DeepSeek chat");
@@ -6069,7 +6072,30 @@ async function callDeepSeekChat(userContent) {
       retryable: isRetryableStatus(res.status),
     });
   }
-  return parseJsonLoose((await res.json()).choices?.[0]?.message?.content);
+  const choice = (await res.json()).choices?.[0];
+  // A cut answer can never parse — say so instead of failing inside JSON.parse.
+  if (choice?.finish_reason === "length") throw truncatedError("DeepSeek");
+  try {
+    return parseJsonLoose(choice?.message?.content);
+  } catch (e) {
+    throw badJsonError("DeepSeek", e);
+  }
+}
+
+// One more DeepSeek try when the answer was cut or not valid JSON: that is
+// fixed by asking again (bigger budget / shorter answer), not by Groq.
+async function callDeepSeekWithRepair(userContent) {
+  try {
+    return await callDeepSeekChat(userContent);
+  } catch (e) {
+    const kind = classifyLlmError(e);
+    if (kind === "down") throw e;
+    console.warn(`[Analysis] DeepSeek ${kind}, retrying once:`, e.message);
+    const nudge = kind === "truncated"
+      ? "\n\nIMPORTANT: your previous answer was too long and was cut off. Keep every explanation to one sentence and use the fewest items the schema allows."
+      : "\n\nIMPORTANT: your previous answer was not valid JSON. Return ONLY one valid JSON object.";
+    return callDeepSeekChat(userContent + nudge, ANALYSIS_MAX_TOKENS[2]);
+  }
 }
 
 // DeepSeek bəzən Azərbaycan/Türk mətninin ortasına Çin ieroqlifi qoyur
@@ -6085,13 +6111,13 @@ function hasForeignScript(value) {
 // Analiz asinxron növbədədir, latency fərqi istifadəçiyə görünmür.
 async function callAnalysisLLM(userContent, db) {
   try {
-    const first = await callDeepSeekChat(userContent);
+    const first = await callDeepSeekWithRepair(userContent);
     if (!hasForeignScript(first)) return first;
 
     // Bir dəfə təkrar cəhd — analiz ~$0.005-dir, sınıq hesabat isə istifadəçiyə
     // birbaşa görünür. Təkrar da uğursuz olsa, heç nədənsə bu yaxşıdır.
     console.warn("[Analysis] foreign script in output, retrying once");
-    const second = await callDeepSeekChat(
+    const second = await callDeepSeekWithRepair(
       userContent
       + "\n\nCRITICAL: your previous answer contained characters from another"
       + " writing system (Chinese/Japanese/Korean/Arabic/Cyrillic). Rewrite it"
@@ -6103,8 +6129,11 @@ async function callAnalysisLLM(userContent, db) {
     return second;
   } catch (e) {
     console.warn("[Analysis] DeepSeek failed, falling back to Groq:", e.message);
-    // Səssiz keçid ən təhlükəli haldır — admin dərhal xəbər tutmalıdır.
-    if (db) await alertProviderIssue(db, "deepseek-down", e.message);
+    // Səssiz keçid ən təhlükəli haldır — admin dərhal xəbər tutmalıdır. Amma
+    // kəsilmiş/sınıq JSON (təkrar cəhddən sonra da) balans problemi DEYİL —
+    // ayrı növ ilə gedir ki, məktub yanlış düzəliş tövsiyə etməsin.
+    const kind = classifyLlmError(e) === "down" ? "deepseek-down" : "deepseek-bad-json";
+    if (db) await alertProviderIssue(db, kind, e.message);
     return callGroqChat(userContent);
   }
 }
@@ -6163,7 +6192,13 @@ async function callGroqChat(userContent) {
       });
     }
 
-    const rawText = (await res.json()).choices?.[0]?.message?.content;
+    const groqChoice = (await res.json()).choices?.[0];
+    const rawText = groqChoice?.message?.content;
+    if (groqChoice?.finish_reason === "length") {
+      messages.push({ role: "system", content: "Cavab çox uzun idi və kəsildi. Qısalt: report_markdown maksimum 100 söz, feedback ən çox 3, multiple_choice ən çox 2, word_order ən çox 2, izahlar 1 cümlə." });
+      lastErr = Object.assign(new Error("json_truncated"), { retryable: true });
+      continue;
+    }
     try {
       return parseJsonLoose(rawText);
     } catch (e) {
@@ -6315,19 +6350,26 @@ DETAL: ${text}
         + ` analizlər tamamilə uğursuz olur.
 
 `
-        + `NƏ ETMƏLİ:
-`
-        + `1. platform.deepseek.com -> balans və API açarını yoxla
-`
-        + `2. Yeni açar lazımdırsa:
-`
-        + `   firebase functions:secrets:set DEEPSEEK_API_KEY --project speak2them-64f2b
-`
-        + `3. Sonra mütləq deploy et:
-`
-        + `   firebase deploy --only functions:processAnalysisQueue --project speak2them-64f2b
+        + (kind === "deepseek-bad-json"
+          ? `NƏ ETMƏLİ: balans/açar problemi DEYİL. DeepSeek cavabı iki cəhddə də`
+            + ` kəsildi və ya keçərli JSON olmadı; bu analiz Groq ilə yazıldı.`
+            + ` Tez-tez təkrarlanarsa: prompt-u/hesabat uzunluğunu qısalt`
+            + ` (ANALYSIS_MAX_TOKENS, functions/index.js).
 
 `
+          : `NƏ ETMƏLİ:
+`
+            + `1. platform.deepseek.com -> balans və API açarını yoxla
+`
+            + `2. Yeni açar lazımdırsa:
+`
+            + `   firebase functions:secrets:set DEEPSEEK_API_KEY --project speak2them-64f2b
+`
+            + `3. Sonra mütləq deploy et:
+`
+            + `   firebase deploy --only functions:processAnalysisQueue --project speak2them-64f2b
+
+`)
         + `Bu xəbərdarlıq eyni problem üçün saatda bir dəfə göndərilir.`,
     });
     console.log("[OpsAlert] email sent to", to);

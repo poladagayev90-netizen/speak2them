@@ -319,6 +319,9 @@ body, #root {
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
   font-family: var(--font-ui);
+  /* Manrope at its default 400 reads thin on phones (Polad 2026-09-30:
+     "I don't like thin text"). 500 is the floor for running text. */
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;

@@ -9,7 +9,7 @@ import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import {
   BookOpen, MessageCircleQuestion, Image as ImageIcon, Video as VideoIcon, Drama, MessagesSquare, Target,
-  Mic, MicOff, PhoneOff, Clock, X, Check, Trash2, Send, Phone, Calendar,
+  Mic, MicOff, PhoneOff, Clock, X, Check, Trash2, Send, Phone, ArrowLeft,
   BookMarked, Lightbulb,
 } from 'lucide-react';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
@@ -1798,26 +1798,25 @@ export default function Chat({ user }) {
       )}
 
       <div className="chat-header">
-        <button className="btn-back" onClick={() => { endCall(); navigate('/chats'); }}>← Back</button>
+        <button className="btn-back" aria-label="Back" onClick={() => { endCall(); navigate('/chats'); }}><ArrowLeft size={22} aria-hidden="true" /></button>
         <div className="chat-peer-info">
           <div className="chat-avatar">
             {peer?.name?.charAt(0).toUpperCase()}
             <AvatarImage src={peer?.photo} />
           </div>
-          <div>
-            <h3 style={{ display: 'flex', alignItems: 'center' }}>
-              {peer?.name}
+          <div className="chat-peer-text">
+            <h3>{peer?.name}</h3>
+            <span className="chat-peer-sub">
+              {peer?.level || 'English Speaker'}
               {peer?.teacherVerified && <TutorBadge />}
               {peer?.isPremium && <PremiumBadge />}
-            </h3>
-            <span>{peer?.level || 'English Speaker'}</span>
+            </span>
           </div>
         </div>
         <div className="call-controls">
           {!inCall && callStatus !== 'calling' && (
             <button className="btn-call" onClick={startCall}><Phone size={18} strokeWidth={1.75} aria-hidden="true" /> Call</button>
           )}
-          <button className="btn-daily-chat" onClick={() => setShowDaily(!showDaily)}><Calendar size={20} strokeWidth={1.75} aria-hidden="true" /></button>
         </div>
       </div>
 
@@ -1877,6 +1876,12 @@ export default function Chat({ user }) {
       </div>
 
       <form className="chat-input" onSubmit={sendMessage}>
+        {/* Today's topic lives beside the composer, not in the header: as an
+            unlabeled calendar icon up there it read as a stray button and,
+            with a long name, was pushed off the screen. */}
+        <button type="button" className="chat-topic-btn" aria-label="Today's topic" title="Today's topic" onClick={() => setShowDaily(!showDaily)}>
+          <BookOpen size={20} strokeWidth={1.9} aria-hidden="true" />
+        </button>
         <input
           type="text"
           placeholder="Write a message..."

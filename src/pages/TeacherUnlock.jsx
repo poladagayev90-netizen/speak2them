@@ -408,26 +408,31 @@ export default function TeacherUnlock({ user }) {
   const students = (roster || []).map(s => {
     const p = studentProfiles[s.id] || {};
     return { ...p, ...s, lastActiveAt: Math.max(timestampMs(s.lastActiveAt), timestampMs(p.lastPracticeAt), timestampMs(p.lastCallDate)) };
-  });
+  })
+    // Whoever practised most recently first; those who never did, newest
+    // joiner first, at the bottom. Firestore returned uid order — random to a
+    // teacher.
+    .sort((a, b) => (latestPracticeMs(b) - latestPracticeMs(a))
+      || (timestampMs(b.joinedAt) - timestampMs(a.joinedAt)));
   // toLocaleDateString bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   // What this student has actually done, in one line. Calls and graded
   // practice are counted separately because they are different things: a call
   // is time with a person, a report is a session AInur marked.
-  const rosterLine = (s) => {
+  const rosterStats = (s) => {
     const calls = Number(s.callCount ?? s.completedSessions) || 0;
     const reports = Number(s.scoreCount) || 0;
-    if (!calls && !reports && !latestPracticeMs(s)) return `${'Joined'}: ${fmtDate(s.joinedAt)} · ${'nothing yet'}`;
-    const parts = [];
-    if (calls) parts.push(`${calls} ${calls === 1 ? 'call' : 'calls'}`);
-    if (reports) parts.push(`${reports} ${reports === 1 ? 'report' : 'reports'}`);
-    if (typeof s.lastScore === 'number' && Number.isFinite(s.lastScore)) parts.push(`${Number(s.lastScore)}/100`);
-    parts.push(`${weeklyPracticeMinutes(s)} min this week`);
     const last = latestPracticeMs(s);
-    if (last) parts.push(`Last practice: ${fmtDate(last)}`);
-    if (s.lastAnalysisAt) parts.push(`Last report: ${fmtDate(s.lastAnalysisAt)}`);
-    return parts.join(' · ');
+    if (!calls && !reports && !last) return { chips: [], when: `Joined ${fmtDate(s.joinedAt)} · nothing yet` };
+    const week = weeklyPracticeMinutes(s);
+    // This week first — it is what a reminder is about.
+    const chips = [{ key: 'week', value: week, label: 'min this week', strong: week > 0 }];
+    if (calls) chips.push({ key: 'calls', value: calls, label: calls === 1 ? 'call' : 'calls' });
+    if (reports) chips.push({ key: 'reports', value: reports, label: reports === 1 ? 'report' : 'reports' });
+    if (typeof s.lastScore === 'number' && Number.isFinite(s.lastScore)) chips.push({ key: 'score', value: Number(s.lastScore), label: '/100' });
+    const when = [last && `Last practice ${fmtDate(last)}`, s.lastAnalysisAt && `report ${fmtDate(s.lastAnalysisAt)}`].filter(Boolean).join(' · ');
+    return { chips, when };
   };
 
   const fmtDate = (ts) => {
@@ -493,6 +498,237 @@ export default function TeacherUnlock({ user }) {
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
 
+        {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
+        {rosterError && <p role="alert">{rosterError}</p>}
+        {students.length > 0 && (
+          <div style={{
+            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+            borderRadius: '16px', padding: '16px', marginBottom: '16px',
+          }}>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BarChart3 size={16} strokeWidth={1.75} aria-hidden="true" /> Class overview
+            </div>
+
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))',
+              gap: '10px',
+            }}>
+              {[
+                { label: 'Active this week', value: `${activeThisWeek}/${students.length}` },
+                { label: 'All-time class average', value: classAvg ?? '—' },
+                { label: 'Students with reports', value: scored.length },
+              ].map((tile) => (
+                <div key={tile.label} style={{
+                  background: 'var(--bg-card)', borderRadius: '12px',
+                  padding: '12px 8px', textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text-primary)' }}>{tile.value}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>{tile.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {topThemes.length > 0 ? (
+              <>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: '16px 2px 8px' }}>
+                  Most repeated error themes
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {topThemes.map((th, i) => (
+                    <div key={th.title} style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      background: 'var(--bg-card)', borderRadius: '10px', padding: '10px 12px',
+                    }}>
+                      <span style={{ fontSize: '13px', fontWeight: 900, color: 'var(--accent)', minWidth: '16px' }}>{i + 1}</span>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', flex: 1, minWidth: 0 }}>
+                        {th.title}
+                      </span>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        {th.count}×
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '10px 2px 0' }}>
+                  Cover these in your next lesson and you address the whole class at once.
+                </p>
+              </>
+            ) : (
+              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '14px 2px 0' }}>
+                As your students speak, the errors your class repeats most will appear here.
+              </p>
+            )}
+          </div>
+        )}
+
+
+        {/* Roster */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          margin: '4px 2px 8px',
+        }}>
+          <span style={{ fontSize: '15px', fontWeight: 800 }}>{'My students'}</span>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            {roster === null ? '' : `${students.length} ${'people'}`}
+          </span>
+        </div>
+
+        {roster === null ? (
+          <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
+            <div className="empty-icon"></div>
+            <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
+          </div>
+        ) : students.length === 0 ? (
+          <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
+            <div className="empty-icon"></div>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              {'No students yet.'}
+            </p>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
+              {'Send the invite link below to your students — they appear here as soon as they join.'}
+            </p>
+          </div>
+        ) : (
+          <div style={{
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            borderRadius: '16px', overflow: 'hidden',
+          }}>
+            {students.map((s, i) => (
+              <div
+                key={s.id}
+                onClick={() => navigate(`/teacher/student/${s.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/teacher/student/${s.id}`); }}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '12px',
+                  padding: '14px 16px', cursor: 'pointer',
+                  borderBottom: i < students.length - 1 ? '1px solid var(--border)' : 'none',
+                }}
+              >
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
+                  background: 'linear-gradient(135deg, var(--border), var(--accent-soft))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '16px', fontWeight: 800, color: 'var(--accent)',
+                }}>
+                  {(s.displayName || '?').slice(0, 1).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* Name and status on one line, the numbers under it, the
+                      reminder under those. One horizontal row left the text
+                      ~20px once the button read "Already reminded today", so
+                      it wrapped one word per line. */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ flex: 1, minWidth: 0, fontSize: '15px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {s.displayName || 'Student'}
+                      {Number(s.streak) > 0 && (
+                        <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 800, marginLeft: '6px' }}>
+                          {s.streak}-day streak
+                        </span>
+                      )}
+                    </span>
+                    <span style={{
+                      fontSize: '11px', fontWeight: 800, padding: '3px 9px',
+                      borderRadius: '99px', flexShrink: 0,
+                      background: s.status === 'active' ? 'var(--success-bg)' : 'var(--warning-bg)',
+                      color: s.status === 'active' ? 'var(--success-fg)' : 'var(--warning-fg)',
+                    }}>
+                      {s.status === 'active' ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  {/* Progress. completedSessions alone missed AInur practice;
+                      scoreCount / lastAnalysisAt come from every analysis. */}
+                  {(() => {
+                    const r = rosterStats(s);
+                    // The roster row carries lastNudgedOn (server-stamped), so
+                    // after a reload the button already knows.
+                    const state = nudged[s.id]
+                      || (s.lastNudgedOn === bakuDateStr() ? 'already-nudged' : null);
+                    const done = !!state && state !== 'sending';
+                    // A short, quiet mark — the long "Already reminded today"
+                    // piled up down the list as a wall of identical labels.
+                    const short = { sent: 'Reminded', 'already-nudged': 'Reminded', 'already-practised': 'Practised today', 'no-devices': 'No device' }[state];
+                    return (
+                      <>
+                        {r.chips.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                            {r.chips.map((c) => (
+                              <span key={c.key} style={{
+                                display: 'inline-flex', alignItems: 'baseline', gap: '4px',
+                                padding: '3px 8px', borderRadius: '8px',
+                                background: c.strong ? 'var(--accent-soft)' : 'var(--bg-secondary)',
+                                fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)',
+                              }}>
+                                <b style={{ fontSize: '13px', fontWeight: 800, color: c.strong ? 'var(--accent)' : 'var(--text-primary)' }}>{c.value}</b>
+                                {c.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                            {r.when}
+                          </span>
+                          {/* stopPropagation: the whole row opens the student. */}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); sendNudge(s.id); }}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            disabled={done || state === 'sending'}
+                            title={(state && NUDGE_RESULT_TEXT[state]) || 'Remind this student to finish today’s practice'}
+                            aria-label={`Remind ${s.displayName || 'this student'} to practise`}
+                            style={{
+                              flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '5px',
+                              padding: done ? '4px 6px' : '6px 12px', borderRadius: '99px',
+                              cursor: done ? 'default' : 'pointer',
+                              border: done ? '1px solid transparent' : '1px solid var(--accent-ring)',
+                              background: done ? 'transparent' : 'var(--accent-soft)',
+                              color: done ? 'var(--text-muted)' : 'var(--accent)',
+                              fontSize: '12px', fontWeight: 700, fontFamily: 'inherit', whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {state === 'sending'
+                              ? '…'
+                              : done
+                                ? <><Check size={13} strokeWidth={3} aria-hidden="true" /> {short || state}</>
+                                : <><BellRing size={13} strokeWidth={2} aria-hidden="true" /> Remind</>}
+                          </button>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{
+          fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
+          marginTop: '14px', lineHeight: 1.5,
+        }}>
+          {'Tap a student to read their reports.'}
+        </p>
+
+        {/* Əl ilə zəng təyini — lövhə cütü təsadüfən qurur, müəllim isə
+            konkret iki nəfəri seçir. İki şagirddən az olanda özü gizlənir. */}
+        <TeacherUpcoming
+          students={Object.entries(studentProfiles).map(([id, profile]) => ({ ...profile, id, displayName: profile.name }))}
+          loading={profilesLoading}
+          error={rosterError}
+        />
+        <TeacherScheduler students={students} />
+
+        {/* Təyin ediləni geri almaq da təyin etmək qədər vacibdir: səhv cüt
+            qurulanda teacherSetMatch onun üstünə yaza bilmir (hər ikisi boş
+            olmalıdır), ona görə sökmək yolu olmasa müəllim ilişib qalır. */}
+
+
+        {/* Invites and the tutor profile are set up once; the daily work
+            (who practised, who to remind) comes first. Polad 2026-09-30. */}
+        <p className="ui-section-label" style={{ margin: '28px 2px 8px' }}>Invite students · your profile</p>
         {/* Tutor profili — nişanın arxasındakı məzmun. Yığcam status sətri +
             açılan forma: gündəlik işi (dəvət, roster) yuxarıdan itələməsin. */}
         <div style={{
@@ -869,214 +1105,6 @@ export default function TeacherUnlock({ user }) {
             </div>
           )}
         </div>
-
-        {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
-        {rosterError && <p role="alert">{rosterError}</p>}
-        {students.length > 0 && (
-          <div style={{
-            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-            borderRadius: '16px', padding: '16px', marginBottom: '16px',
-          }}>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BarChart3 size={16} strokeWidth={1.75} aria-hidden="true" /> Class overview
-            </div>
-
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))',
-              gap: '10px',
-            }}>
-              {[
-                { label: 'Active this week', value: `${activeThisWeek}/${students.length}` },
-                { label: 'All-time class average', value: classAvg ?? '—' },
-                { label: 'Students with reports', value: scored.length },
-              ].map((tile) => (
-                <div key={tile.label} style={{
-                  background: 'var(--bg-card)', borderRadius: '12px',
-                  padding: '12px 8px', textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text-primary)' }}>{tile.value}</div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>{tile.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {topThemes.length > 0 ? (
-              <>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: '16px 2px 8px' }}>
-                  Most repeated error themes
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {topThemes.map((th, i) => (
-                    <div key={th.title} style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      background: 'var(--bg-card)', borderRadius: '10px', padding: '10px 12px',
-                    }}>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: 'var(--accent)', minWidth: '16px' }}>{i + 1}</span>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', flex: 1, minWidth: 0 }}>
-                        {th.title}
-                      </span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                        {th.count}×
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '10px 2px 0' }}>
-                  Cover these in your next lesson and you address the whole class at once.
-                </p>
-              </>
-            ) : (
-              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '14px 2px 0' }}>
-                As your students speak, the errors your class repeats most will appear here.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Əl ilə zəng təyini — lövhə cütü təsadüfən qurur, müəllim isə
-            konkret iki nəfəri seçir. İki şagirddən az olanda özü gizlənir. */}
-        <TeacherUpcoming
-          students={Object.entries(studentProfiles).map(([id, profile]) => ({ ...profile, id, displayName: profile.name }))}
-          loading={profilesLoading}
-          error={rosterError}
-        />
-        <TeacherScheduler students={students} />
-
-        {/* Təyin ediləni geri almaq da təyin etmək qədər vacibdir: səhv cüt
-            qurulanda teacherSetMatch onun üstünə yaza bilmir (hər ikisi boş
-            olmalıdır), ona görə sökmək yolu olmasa müəllim ilişib qalır. */}
-
-        {/* Roster */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          margin: '4px 2px 8px',
-        }}>
-          <span style={{ fontSize: '15px', fontWeight: 800 }}>{'My students'}</span>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            {roster === null ? '' : `${students.length} ${'people'}`}
-          </span>
-        </div>
-
-        {roster === null ? (
-          <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon"></div>
-            <p style={{ color: 'var(--text-secondary)' }}>{'Loading...'}</p>
-          </div>
-        ) : students.length === 0 ? (
-          <div className="empty-state" style={{ padding: '30px 20px', textAlign: 'center' }}>
-            <div className="empty-icon"></div>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              {'No students yet.'}
-            </p>
-            <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
-              {'Send the link above to your students — they appear here as soon as they join.'}
-            </p>
-          </div>
-        ) : (
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border)',
-            borderRadius: '16px', overflow: 'hidden',
-          }}>
-            {students.map((s, i) => (
-              <div
-                key={s.id}
-                onClick={() => navigate(`/teacher/student/${s.id}`)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/teacher/student/${s.id}`); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '13px 16px', cursor: 'pointer',
-                  borderBottom: i < students.length - 1 ? '1px solid var(--border)' : 'none',
-                }}
-              >
-                <div style={{
-                  width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
-                  background: 'linear-gradient(135deg, var(--border), var(--accent-soft))',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '16px', fontWeight: 800, color: 'var(--accent)',
-                }}>
-                  {(s.displayName || '?').slice(0, 1).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '15px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {s.displayName || 'Student'}
-                    {Number(s.streak) > 0 && (
-                      <span style={{ fontSize: '12px', color: 'var(--warning)', fontWeight: 800, marginLeft: '6px' }}>
-                        🔥{s.streak}
-                      </span>
-                    )}
-                  </div>
-                  {/* Progress line. It read ONLY completedSessions, which
-                      consumeTrialMinutes writes after a human call of two
-                      minutes or more — so a student who had practised with
-                      AInur and been graded still showed "no calls yet", and the
-                      roster said they had done nothing. scoreCount and
-                      lastAnalysisAt are written by every analysis, AInur
-                      practice included, and were already sitting there unused. */}
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    {rosterLine(s)}
-                  </div>
-                </div>
-                <span style={{
-                  fontSize: '11px', fontWeight: 700, padding: '4px 10px',
-                  borderRadius: '99px', flexShrink: 0,
-                  background: s.status === 'active' ? 'var(--success-bg)' : 'var(--warning-bg)',
-                  color: s.status === 'active' ? 'var(--success-fg)' : 'var(--warning-fg)',
-                }}>
-                  {s.status === 'active' ? 'Active' : 'Inactive'}
-                </span>
-                {/* Chasing a student used to mean leaving the app for WhatsApp.
-                    stopPropagation because the whole row navigates to their
-                    detail page — without it, reminding someone opens their
-                    profile at the same time. */}
-                {(() => {
-                  // The roster row already carries lastNudgedOn (the server
-                  // stamps it), so the button knows its own state after a
-                  // reload instead of offering to send a reminder that the
-                  // server will only refuse.
-                  const state = nudged[s.id]
-                    || (s.lastNudgedOn === bakuDateStr() ? 'already-nudged' : null);
-                  const label = state && NUDGE_RESULT_TEXT[state];
-                  const done = !!state && state !== 'sending';
-                  return (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); sendNudge(s.id); }}
-                      onKeyDown={(e) => e.stopPropagation()}
-                      disabled={done || state === 'sending'}
-                      title={label || state || 'Remind this student to finish today’s practice'}
-                      aria-label={`Remind ${s.displayName || 'this student'} to practise`}
-                      style={{
-                        flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '5px',
-                        padding: '6px 10px', borderRadius: '99px', cursor: done ? 'default' : 'pointer',
-                        border: `1px solid ${done ? 'var(--border)' : 'var(--accent-ring)'}`,
-                        background: done ? 'transparent' : 'var(--accent-soft)',
-                        color: done ? 'var(--text-muted)' : 'var(--accent)',
-                        fontSize: '11px', fontWeight: 700, fontFamily: 'inherit',
-                        maxWidth: '46%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {state === 'sending'
-                        ? '…'
-                        : done
-                          ? <><Check size={12} strokeWidth={3} aria-hidden="true" /> {label || state}</>
-                          : <><BellRing size={12} strokeWidth={2} aria-hidden="true" /> Remind</>}
-                    </button>
-                  );
-                })()}
-                <span style={{ color: 'var(--text-secondary)', fontSize: '18px', flexShrink: 0 }}>›</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <p style={{
-          fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
-          marginTop: '14px', lineHeight: 1.5,
-        }}>
-          {'Tap a student to read their reports.'}
-        </p>
       </div>
     </div>
   );
