@@ -55,7 +55,7 @@ export default function WeekGoalCard({ user }) {
             ? `You planned ${target} ${target === 1 ? 'practice' : 'practices'} this week.`
             : `${left} more to reach your weekly goal.`}
         {!done && (
-          <button type="button" className="wg-link" onClick={() => navigate('/live')}>Find a time</button>
+          <button type="button" className="wg-link" onClick={() => navigate('/plan')}>See my plan</button>
         )}
       </p>
     </section>

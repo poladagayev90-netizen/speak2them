@@ -1,0 +1,84 @@
+/* Scheduled practice: the Today headline card, Get ready, This week, and the
+   Plan page. One surface family — the deep purple (--peer/--accent) because
+   every practice here is with a real person; AInur rows take --ai. */
+
+.pl-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-lift);
+  padding: var(--s-4);
+  margin-bottom: var(--s-3);
+}
+.pl-card--hero { background: var(--accent-soft); border-color: var(--accent-ring); }
+.pl-card--live { border-color: var(--accent); }
+
+.pl-kicker {
+  display: flex; align-items: center; gap: var(--s-2);
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent);
+}
+.pl-kicker-end { margin-left: auto; color: var(--text-secondary); font-weight: 700; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+
+.pl-when { margin: 0; font-size: var(--fs-h1); font-weight: 800; line-height: var(--lh-tight); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.pl-with { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-1) 0 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-secondary); }
+.pl-level {
+  padding: 1px 6px; border-radius: var(--r-sm);
+  background: var(--bg-card); border: 1px solid var(--accent-ring);
+  font-size: var(--fs-xs); font-weight: 800; color: var(--accent);
+}
+.pl-title { margin: 0; font-size: var(--fs-h2); font-weight: 800; line-height: var(--lh-tight); color: var(--text-primary); }
+.pl-text { margin: var(--s-1) 0 0; font-size: var(--fs-sm); font-weight: 600; line-height: var(--lh-body); color: var(--text-secondary); }
+.pl-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
+.pl-actions > .ui-btn--primary { flex: 1 1 160px; }
+.pl-hint { margin: var(--s-3) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+
+/* A plain row that opens something — Get ready, the week list, settings. */
+/* minmax(0, 1fr): a grid column otherwise grows to its longest nowrap line
+   and pushes the row out of the card instead of ellipsing it. */
+.pl-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-1); margin-top: var(--s-2); }
+.pl-row-sub--wrap { white-space: normal; }
+.pl-row {
+  display: flex; align-items: center; gap: var(--s-3);
+  width: 100%; padding: var(--s-2) 0;
+  background: none; border: none; text-align: left; font: inherit; color: inherit;
+  cursor: pointer;
+}
+.pl-row + .pl-row { border-top: 1px solid var(--border); }
+.pl-row:disabled { cursor: default; }
+.pl-row-icon {
+  width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--r-md);
+  display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+.pl-row-icon--ai { background: var(--ai-soft); color: var(--ai); }
+.pl-row-icon--plain { background: var(--bg-secondary); color: var(--text-secondary); }
+.pl-row-main { flex: 1; min-width: 0; }
+.pl-row-title { margin: 0; font-size: var(--fs-body); font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl-row-sub { margin: 2px 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl-row-end { flex-shrink: 0; color: var(--text-muted); }
+
+.pl-dots { display: flex; gap: var(--s-1); margin-top: var(--s-2); }
+.pl-dots span { flex: 1; height: 6px; border-radius: var(--r-pill); background: var(--border); }
+.pl-dots span.is-on { background: var(--accent); }
+
+.pl-section { margin: var(--s-5) 0 var(--s-2); }
+
+/* Plan page booking row: more room than the home list, actions under it. */
+.pl-booking { padding: var(--s-3) 0; }
+.pl-booking + .pl-booking { border-top: 1px solid var(--border); }
+.pl-booking-top { display: flex; align-items: center; gap: var(--s-3); }
+.pl-booking .pl-actions { margin-top: var(--s-3); }
+.pl-slots { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-2); max-height: 180px; overflow-y: auto; }
+.pl-slot {
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+  border: 1px solid var(--border); background: var(--bg-card);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); cursor: pointer;
+}
+.pl-slot:disabled { opacity: .5; cursor: default; }
+.pl-notice { margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.pl-notice--error { color: var(--danger); }
+
+.pl-switch { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-2); }
+.pl-switch input { width: 18px; height: 18px; accent-color: var(--accent); }

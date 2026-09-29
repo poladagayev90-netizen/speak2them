@@ -8,7 +8,9 @@ import { ADMIN_UID } from '../constants';
 // App.js sends anyone below this version back through /onboarding once — that
 // is how the learners who signed up on the old one-page survey get asked for
 // their availability too.
-export const ONBOARDING_VERSION = 1;
+// 2 = the practice charter (scheduled practice): everyone who answered
+// version 1 is brought back once, straight to the charter, answers kept.
+export const ONBOARDING_VERSION = 2;
 
 // Teachers never answer the learner wizard; the admin can open /onboarding to
 // look at it but is not forced through it on every home visit.

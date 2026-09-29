@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import {
-  ArrowLeft, ArrowRight, Check, CalendarDays, Globe2, GraduationCap,
-  MessagesSquare, Target, UserRound, Clock, Pencil,
+  ArrowLeft, ArrowRight, Check, CalendarDays, CalendarCheck, Globe2, GraduationCap,
+  MessagesSquare, Target, UserRound, Clock, Pencil, Handshake, Phone,
 } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { Button } from '../components/ui';
@@ -23,7 +23,13 @@ import './Onboarding.css';
 // questions first (goal, level, age, place) so that by the time the learner
 // reaches the availability grid — the one that takes effort — they are
 // already invested, and the grid can speak in their own clock.
-const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'availability', 'target', 'topics', 'summary'];
+//
+// The charter comes right before the grid: how planned practice works is what
+// gives "when are you free?" and "how many a week?" their weight. Learners who
+// onboarded before it existed (version 1) are brought back straight to it.
+const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'availability', 'target', 'topics', 'summary'];
+// Bump when the charter text changes in substance; accepting it again is then asked.
+const CHARTER_VERSION = 1;
 
 // Grid rows: whole hours 07:00–24:00 in the learner's own time.
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 7);
@@ -72,6 +78,7 @@ export default function Onboarding({ user }) {
   const [cells, setCells] = useState(() => new Set());
   const [weeklyTarget, setWeeklyTarget] = useState(0);
   const [topics, setTopics] = useState([]);
+  const [charterAccepted, setCharterAccepted] = useState(false);
 
   // Load: a draft in this tab wins (the learner may have gone to the placement
   // test and come back); otherwise start from whatever they answered before.
@@ -101,7 +108,14 @@ export default function Onboarding({ user }) {
       setCells(draft ? new Set(draft.cells || []) : rangesToCells(prev?.availability));
       setWeeklyTarget(src.weeklyTarget || 0);
       setTopics(src.topics || (Array.isArray(userDoc.topics) ? userDoc.topics.filter((t) => TOPICS.includes(t)) : []));
-      if (draft && Number.isInteger(draft.step)) setStep(Math.min(draft.step, STEPS.length - 1));
+      // Where to open: a deliberate jump (Plan → "Edit my free times") wins,
+      // then a draft in this tab, then — for someone who onboarded before the
+      // charter existed — the charter itself, with every answer still filled in.
+      const jump = STEPS.indexOf(location.state?.jumpTo);
+      if (jump >= 0) setStep(jump);
+      else if (draft && Number.isInteger(draft.step)) setStep(Math.min(draft.step, STEPS.length - 1));
+      else if (prev && (Number(prev.version) || 0) < ONBOARDING_VERSION) setStep(STEPS.indexOf('charter'));
+      setCharterAccepted(!!prev?.charterAcceptedAt && Number(prev?.charterVersion) >= CHARTER_VERSION);
       setLoading(false);
     })();
     return () => { alive = false; };
@@ -138,6 +152,7 @@ export default function Onboarding({ user }) {
     level: !!level,
     age: !!ageBand,
     place: !!country && !!timeZone,
+    charter: true,
     availability: cells.size > 0,
     target: weeklyTarget > 0,
     topics: topics.length > 0,
@@ -198,6 +213,9 @@ export default function Onboarding({ user }) {
         weeklyTarget,
         topics,
         version: ONBOARDING_VERSION,
+        // Passing the charter screen is the acceptance. Written once per
+        // charter version; the planner can be limited to those who accepted.
+        ...(charterAccepted ? {} : { charterVersion: CHARTER_VERSION, charterAcceptedAt: serverTimestamp() }),
         updatedAt: serverTimestamp(),
         ...(existing.exists() ? {} : { submittedAt: serverTimestamp() }),
       };
@@ -220,7 +238,7 @@ export default function Onboarding({ user }) {
       // full-screen layer, so it reads as the last step, not as an ad. It is
       // not a gate: "Continue to the app" is right there. Learners who are
       // exempt (already practising, have a teacher) go straight home.
-      navigate(needsIntro(user) ? '/intro' : '/', { replace: true });
+      navigate(location.state?.returnTo || (needsIntro(user) ? '/intro' : '/'), { replace: true });
     } catch (e) {
       setError('Your answers were not saved. Check your connection and try again.');
       setSaving(false);
@@ -339,6 +357,17 @@ export default function Onboarding({ user }) {
               </select>
             )}
             <p className="ob-note">If the time above is not your clock right now, tap Change.</p>
+          </Question>
+        )}
+
+        {id === 'charter' && (
+          <Question icon={<Handshake size={20} />} title="How practice works here" sub="Every practice at SpeakLab is planned ahead, with a real partner.">
+            <ul className="ob-points ob-charter">
+              <li><CalendarDays size={18} /> <span>You tell us the hours you can really attend, and how many practices a week you want.</span></li>
+              <li><CalendarCheck size={18} /> <span>Every Sunday evening, next week’s practices arrive. Confirm each with one tap — it is booked when your partner says yes too.</span></li>
+              <li><Clock size={18} /> <span>Your partner keeps that hour for you, and you keep it for them. Plans change? Cancel at least 2 hours ahead, so the time can go to someone else.</span></li>
+              <li><Phone size={18} /> <span>Anyone you have practised with is one message or call away, any time.</span></li>
+            </ul>
           </Question>
         )}
 
@@ -473,11 +502,11 @@ export default function Onboarding({ user }) {
       <footer className="ob-foot">
         {id === 'summary' ? (
           <Button size="lg" full onClick={submit} disabled={saving} icon={<Check size={20} />}>
-            {saving ? 'Saving…' : 'Confirm my profile'}
+            {saving ? 'Saving…' : 'Confirm and plan my week'}
           </Button>
         ) : (
           <Button size="lg" full onClick={() => go(1)} disabled={!canNext} iconRight={<ArrowRight size={20} />}>
-            {id === 'welcome' ? 'Get started' : 'Continue'}
+            {id === 'welcome' ? 'Get started' : id === 'charter' ? 'I’m in' : 'Continue'}
           </Button>
         )}
       </footer>

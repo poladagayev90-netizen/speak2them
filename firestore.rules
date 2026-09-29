@@ -538,7 +538,16 @@ service cloud.firestore {
     function validOnboarding() {
       let d = request.resource.data;
       return d.keys().hasOnly(['uid', 'goal', 'level', 'ageBand', 'country', 'timeZone',
-          'availability', 'weeklyTarget', 'topics', 'version', 'submittedAt', 'updatedAt', 'adminSeenAt'])
+          'availability', 'weeklyTarget', 'topics', 'version', 'submittedAt', 'updatedAt', 'adminSeenAt',
+          'charterVersion', 'charterAcceptedAt', 'planPaused'])
+        // The practice charter: accepted once, stamped with the server clock
+        // (the planner can be limited to learners who accepted it), and left
+        // alone after that. planPaused is the learner's own "leave me out".
+        && (!('charterVersion' in d) || (d.charterVersion is int && d.charterVersion >= 1 && d.charterVersion <= 100))
+        && (!('charterAcceptedAt' in d) || d.charterAcceptedAt == request.time
+          || (resource != null && 'charterAcceptedAt' in resource.data
+            && d.charterAcceptedAt == resource.data.charterAcceptedAt))
+        && (!('planPaused' in d) || d.planPaused is bool)
         && d.uid == request.auth.uid
         && d.ageBand in ['under18', '18-24', '25-34', '35+']
         && d.country is string && d.country.size() > 0 && d.country.size() <= 60

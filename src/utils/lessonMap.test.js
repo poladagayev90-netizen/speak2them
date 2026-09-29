@@ -92,7 +92,7 @@ test('every lesson carries the fields the reader renders', () => {
 });
 
 test('every module points at a practice activity that exists', () => {
-  const routes = ['/practice', '/live', '/ai-chat'];
+  const routes = ['/practice', '/chats', '/ai-chat'];
   lessonModules.forEach((m) => {
     expect(m.lessons.length).toBeGreaterThan(0);
     expect(routes).toContain(m.practice.to);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, BookOpen, ChevronRight, Users } from 'lucide-react';
+import { Shield, BookOpen, CalendarClock, ChevronRight } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -14,50 +14,52 @@ import Logo from '../components/Logo';
 import { ADMIN_UID } from '../constants';
 import GuidedTour from '../components/GuidedTour';
 import CourseProgressCard from '../components/CourseProgressCard';
-import DailyTopicBanner from '../components/DailyTopicBanner';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import SlotNoticeModal from '../components/SlotNoticeModal';
-import UpcomingCallCard from '../components/UpcomingCallCard';
-import MatchOfferCard from '../components/MatchOfferCard';
 import IntroCard from '../components/IntroCard';
-import WeekGoalCard from '../components/WeekGoalCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
-import TodayNudge from '../components/TodayNudge';
-import TodayTaskCard from '../components/ai/TodayTaskCard';
-import LessonsCard from '../components/LessonsCard';
-import useLiveLobby from '../hooks/useLiveLobby';
-import Card from '../components/ui/Card';
+import NextPracticeCard from '../components/plan/NextPracticeCard';
+import GetReadyCard from '../components/plan/GetReadyCard';
+import ThisWeekCard from '../components/plan/ThisWeekCard';
+import useMyPlan from '../hooks/useMyPlan';
+import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
+import { planHeadline, openOffers, upcomingBookings } from '../utils/planState';
 import Button from '../components/ui/Button';
 import '../components/ui/ui.css';
+import '../components/plan/plan.css';
 
 // Today: what to do now.
 //
-// This screen used to BE the live lobby — partner search, the online-user grid,
-// level filters and a practice-slot board, all in one 654-line component. Most
-// of a new account's first screen was a grid of grey "Passed" time blocks, so
-// the app opened by saying "there is nothing here, wait". All of that moved to
-// the Live tab. What is left answers one question, and it always has an answer
-// even when nobody else is around.
+// Practice is planned now (the weekly plan, Phase 3 of the scheduled-practice
+// plan), so this screen no longer sends anyone looking for a partner who
+// happens to be online — that promise ("open the app, talk to someone") was
+// the one it kept breaking. It answers one question, in this order:
+//   1. your next practice — or, honestly, why there is none yet;
+//   2. proposals waiting for your yes (when the card above is a booking);
+//   3. get ready — today's topic, a warm-up with AInur, the next lesson;
+//   4. this week — the goal you set against what was held.
+// Home and the Plan tab never show the same long list: Today is the next step,
+// Plan is the whole week.
 const HOME_TOUR_STEPS = [
   {
-    target: '#tour-today-task',
-    title: 'Start here',
-    text: 'A short speaking session with AInur, ready every day. She listens, asks questions, and writes you a report afterwards.',
+    target: '#tour-next',
+    title: 'Your next practice',
+    text: 'Your practices are planned for you every week. This card always shows the next one, or what is happening with your plan.',
   },
   {
-    target: '#tour-live',
-    title: 'Talk to a real person',
-    text: 'See who is around and start a call, or book a time and we will match you.',
+    target: '#tour-get-ready',
+    title: 'Get ready',
+    text: 'Today’s topic, a warm-up with AInur and short lessons on keeping a conversation going.',
   },
   {
-    target: '#tour-daily-topic',
-    title: 'Today’s topic',
-    text: 'New words, idioms and ready-made questions — worth a look before you speak.',
+    target: '#tour-plan-tab',
+    title: 'Your week',
+    text: 'Confirm proposals, change a time, or edit your free times.',
   },
   {
     target: '#tour-ai-chat',
     title: 'AInur',
-    text: 'Every practice activity lives here.',
+    text: 'Practise speaking any time, with or without a partner.',
   },
 ];
 
@@ -65,11 +67,14 @@ export default function Home({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Shared with the Live tab: one set of subscriptions, two pages.
-  const {
-    onlineUsers, activeSearchers, mine, slotChange, setSlotChange,
-    cancelBusy, cancelUpcoming, joinCallNow,
-  } = useLiveLobby(user);
+  // The week: bookings, proposals, plan status, onboarding answers.
+  const plan = useMyPlan(user.uid);
+  // The polite no-show notice and a partner's "change the time?" request
+  // still live on the old slot documents.
+  const [mine, setMine] = useState(null);
+  const [slotChange, setSlotChange] = useState(null);
+  useEffect(() => subscribeToMySlots(user.uid, setMine), [user.uid]);
+  useEffect(() => subscribeToSlotChange(user.uid, setSlotChange), [user.uid]);
 
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
@@ -125,15 +130,17 @@ export default function Home({ user }) {
     if (pendingTopicIntro) { setShowTopicIntro(true); setPendingTopicIntro(false); }
   };
 
-  const onlineCount = onlineUsers.length;
-  const searchingCount = activeSearchers.length;
+  const headline = planHeadline({ uid: user.uid, ...plan });
+  const open = openOffers(plan.offers, user.uid, plan.now);
+  const booked = upcomingBookings(plan.bookings, plan.now);
+  const target = Number(plan.onboarding?.weeklyTarget) || 0;
 
   return (
     <div className="home-page">
       <GuidedTour
         user={user}
         steps={HOME_TOUR_STEPS}
-        tourKey="tourDone_home"
+        tourKey="tourDone_home_v2"
         disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen}
       />
       {showTopicIntro && todayTopic && (
@@ -181,108 +188,37 @@ export default function Home({ user }) {
 
         {/* An unanswered question belongs at the top of the screen. */}
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
-
-        {/* A confirmed appointment is the whole promise of the product —
-            "someone is waiting for you at six" — so it outranks everything. */}
-        {/* A proposal waiting for this learner's yes sits right above the
-            bookings it turns into. */}
-        <MatchOfferCard uid={user?.uid} />
         <IntroCard user={user} />
-        <UpcomingCallCard
-          call={mine?.upcomingCall}
-          busy={cancelBusy}
-          onJoin={joinCallNow}
-          onCancel={cancelUpcoming}
-        />
 
-        {/* The weekly commitment from onboarding against what happened. */}
-        <WeekGoalCard user={user} />
+        {/* 1. The next practice, or what is happening instead. */}
+        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} />}
 
-        {/* The point of the release: there is always something to practise,
-            whether or not anyone else is online. */}
-        <div id="tour-today-task">
-          <TodayTaskCard topic={todayTopic?.topic} hasTeacher={!!user?.teacherId} />
-        </div>
+        {/* 2. Proposals, when the card above is already a booking. */}
+        {headline.kind === 'next' && open.length > 0 && (
+          <button type="button" className="pl-card pl-row" style={{ padding: 'var(--s-3) var(--s-4)' }} onClick={() => navigate('/plan')}>
+            <span className="pl-row-icon" aria-hidden="true"><CalendarClock size={18} /></span>
+            <span className="pl-row-main">
+              <p className="pl-row-title">{open.length} {open.length === 1 ? 'practice needs' : 'practices need'} your answer</p>
+              <p className="pl-row-sub">Review the plan</p>
+            </span>
+            <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
+          </button>
+        )}
 
-        {/* A quiet contextual prompt, in the flow rather than floating over it,
-            and BELOW the main action -- a nudge must never outrank the thing it
-            is nudging you towards. */}
-        <TodayNudge user={user} mine={mine} />
+        {/* 3. Preparation — below the practice it prepares you for. */}
+        <GetReadyCard user={user} topic={todayTopic} onOpenTopic={() => setDailyTopicOpen(true)} />
 
-        {/* Live is a summary here, not the whole lobby. The deep purple,
-            because the other end is a person; the card above is AInur's. */}
-        {/* When somebody is actually searching this stops being a summary and
-            becomes the thing to do: the card lights up, says so with a live
-            dot, and grows a button. It used to be one grey sentence in the
-            middle of a quiet card -- you had to be reading it to notice that a
-            person was waiting, and they only wait a minute or two. */}
-        <Card
-          tone="peer"
-          padding="md"
-          id="tour-live"
-          // Nobody around? Then the useful thing on the Live tab is the
-          // calendar, not the empty people list — open it on arrival.
-          onClick={() => navigate('/live', {
-            state: (searchingCount + onlineCount) === 0 ? { openBoard: true } : undefined,
-          })}
-          style={{
-            marginBottom: 'var(--s-3)',
-            ...(searchingCount > 0 ? { borderColor: 'var(--accent)' } : null),
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
-            <div style={{
-              position: 'relative',
-              width: 44, height: 44, borderRadius: 'var(--r-md)', flexShrink: 0,
-              background: 'var(--peer-soft)', color: 'var(--peer)',
-              display: 'grid', placeItems: 'center',
-            }}>
-              <Users size={22} strokeWidth={1.75} aria-hidden="true" />
-              {searchingCount > 0 && (
-                <span className="live-dot" aria-hidden="true" />
-              )}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{
-                margin: 0, fontSize: 'var(--fs-h2)', fontWeight: 700,
-                color: 'var(--text-primary)', lineHeight: 'var(--lh-tight)',
-              }}>
-                Talk to someone
-              </p>
-              <p style={{
-                margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600,
-                color: searchingCount > 0 ? 'var(--accent)' : 'var(--text-secondary)',
-                lineHeight: 'var(--lh-body)',
-              }}>
-                {searchingCount > 0
-                  ? `${searchingCount} ${searchingCount === 1 ? 'person is waiting' : 'people are waiting'} right now — join and you connect immediately`
-                  : onlineCount > 0
-                    ? `${onlineCount} ${onlineCount === 1 ? 'person' : 'people'} online`
-                    : 'Book a time and we will match you'}
-              </p>
-            </div>
-            {searchingCount > 0
-              ? (
-                <span style={{
-                  flexShrink: 0, padding: '8px 14px', borderRadius: 'var(--r-pill)',
-                  background: 'var(--accent)', color: 'var(--text-on-accent)',
-                  fontSize: 'var(--fs-sm)', fontWeight: 700, whiteSpace: 'nowrap',
-                }}>
-                  Join
-                </span>
-              )
-              : <ChevronRight size={20} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
-          </div>
-        </Card>
-
-        {/* How to do any of it. It sits under the two "go and speak" cards on
-            purpose: a lesson is preparation, and preparation must never outrank
-            the thing it prepares you for. */}
-        <LessonsCard user={user} />
-
-        <div id="tour-daily-topic">
-          <DailyTopicBanner user={user} onOpenTopic={() => setDailyTopicOpen(true)} />
-        </div>
+        {/* 4. The week in one line. */}
+        {target > 0 && (
+          <ThisWeekCard
+            uid={user.uid}
+            target={target}
+            attended={plan.attended}
+            bookings={booked.filter((b) => b.weekKey === plan.weekKey)}
+            skipFirst={headline.kind === 'next'}
+            now={plan.now}
+          />
+        )}
 
         <NotificationPrompt user={user} />
 

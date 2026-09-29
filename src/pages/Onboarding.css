@@ -167,6 +167,18 @@
   font-weight: 600;
 }
 .ob-points svg { color: var(--accent); flex-shrink: 0; }
+/* The charter: four sentences, each long enough to wrap — icon on the first
+   line, text in its own column, card-like rows so each reads as one promise. */
+.ob-charter { margin-top: 0; }
+.ob-charter li {
+  align-items: flex-start;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+  line-height: var(--lh-body);
+}
+.ob-charter svg { margin-top: 2px; }
 
 /* ------------------------------------------------------------ options -- */
 .ob-options { display: grid; gap: var(--s-2); }

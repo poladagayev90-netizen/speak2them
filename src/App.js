@@ -32,8 +32,8 @@ const importChats = () => import('./pages/Chats');
 const importAIChat = () => import('./pages/AinurHub');
 const importProfile = () => import('./pages/Profile');
 const importRanking = () => import('./pages/Ranking');
-const importLive = () => import('./pages/Live');
-const TAB_PAGE_IMPORTS = [importHome, importChats, importAIChat, importLive, importProfile];
+const importPlan = () => import('./pages/Plan');
+const TAB_PAGE_IMPORTS = [importHome, importPlan, importChats, importAIChat, importProfile];
 
 const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
@@ -52,7 +52,7 @@ const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const Upgrade = React.lazy(() => import('./pages/Upgrade'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(importRanking);
-const Live = React.lazy(importLive);
+const Plan = React.lazy(importPlan);
 const History = React.lazy(() => import('./pages/History'));
 const Progress = React.lazy(() => import('./pages/Progress'));
 const Lessons = React.lazy(() => import('./pages/Lessons'));
@@ -247,7 +247,10 @@ function AppShell({ user }) {
           <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
           <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
-          <Route path="/live" element={user ? <Live user={user} /> : <Navigate to="/login" />} />
+          <Route path="/plan" element={user ? <Plan user={user} /> : <Navigate to="/login" />} />
+          {/* The Live tab (random search, slot board) is gone: practice is
+              planned now. Old links and pushes land on the plan instead. */}
+          <Route path="/live" element={<Navigate to="/plan" replace />} />
           <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
           {/* History = "what happened in that call"; Progress = "am I getting
               better". Separate routes because they answer separate questions. */}

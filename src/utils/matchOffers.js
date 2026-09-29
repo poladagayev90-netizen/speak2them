@@ -65,7 +65,8 @@ export function subscribeToMyOffers(uid, cb) {
     collection(db, 'matchOffers'),
     where('participants', 'array-contains', uid),
     where('status', '==', 'pending'),
-    limit(5),
+    // A weekly plan can put up to four proposals in front of one learner.
+    limit(10),
   );
   return onSnapshot(
     q,

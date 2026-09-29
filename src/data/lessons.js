@@ -202,7 +202,7 @@ export const lessonModules = [
     id: 'talk',
     title: 'Keep a conversation going',
     blurb: 'The moves that stop a call ending in forty seconds.',
-    practice: { label: 'Talk to someone now', to: '/live' },
+    practice: { label: 'Message or call a partner', to: '/chats' },
     lessons: [
       {
         id: 'talk-open',
@@ -353,7 +353,7 @@ export const lessonModules = [
     id: 'taboo',
     title: 'Play Taboo',
     blurb: 'Explain a word without saying it.',
-    practice: { label: 'Start a call and open Taboo', to: '/live' },
+    practice: { label: 'Call a partner and open Taboo', to: '/chats' },
     lessons: [
       {
         id: 'taboo-how',
@@ -437,7 +437,7 @@ export const lessonModules = [
     id: 'debate',
     title: 'Take a side',
     blurb: 'Say what you think, and hold it for two minutes.',
-    practice: { label: 'Start a call and open Debate', to: '/live' },
+    practice: { label: 'Call a partner and open Debate', to: '/chats' },
     lessons: [
       {
         id: 'debate-state',

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { Phone } from 'lucide-react';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { getPresence } from '../utils/presence';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
@@ -65,12 +66,15 @@ export default function Chats({ user }) {
       if (!peerId) return null;
       return { ...c, peerId, peer: isAinurId(peerId) ? AINUR_PEER : (peers[peerId] || {}) };
     })
-    .filter((c) => c && c.lastMessage && !blockedIds.has(c.peerId));
+    .filter((c) => c && c.lastMessage && !blockedIds.has(c.peerId))
+    // AInur is always there, so she stays at the top; people follow by the
+    // latest message (the query order).
+    .sort((a, b) => isAinurId(b.peerId) - isAinurId(a.peerId));
 
   if (chats === null) {
     return (
       <div className="home-page">
-        <div className="home-header"><div className="home-logo">{'Chats'}</div></div>
+        <div className="home-header"><div className="home-logo">Partners</div></div>
         <div className="home-body" style={{ paddingBottom: '90px' }}>
           <div className="empty-state"><p>{'Loading...'}</p></div>
         </div>
@@ -81,15 +85,23 @@ export default function Chats({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">{'Chats'}</div>
+        <div className="home-logo">Partners</div>
       </div>
       <div className="home-body" style={{ paddingBottom: '90px' }}>
+        {/* Partners replaced both Chats and the Live tab's people list: the
+            people you have actually practised with (a chat appears after every
+            real call — functions/postCallChat.js), each one message or one
+            call away. Talking to someone you already know stays free and
+            unplanned; only NEW partners come through the weekly plan. */}
+        <p style={{ margin: '0 0 var(--s-3)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          People you have practised with. Message or call them any time.
+        </p>
         {rows.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon"></div>
-            <p>No conversations yet.</p>
+            <p>No partners yet.</p>
             <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
-              Message your partner here before or after a call.
+              After your first practice, the person you talked with appears here.
             </p>
           </div>
         ) : (
@@ -174,6 +186,21 @@ export default function Chats({ user }) {
                       )}
                     </div>
                   </div>
+                  {!isAinurId(c.peerId) && (
+                    <button
+                      type="button"
+                      aria-label={`Call ${name}`}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/chat/${c.peerId}`, { state: { autoCall: true } }); }}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      style={{
+                        flexShrink: 0, width: '40px', height: '40px', borderRadius: 'var(--r-pill)',
+                        border: '1px solid var(--accent-ring)', background: 'var(--accent-soft)', color: 'var(--accent)',
+                        display: 'grid', placeItems: 'center', cursor: 'pointer',
+                      }}
+                    >
+                      <Phone size={18} strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
               );
             })}
