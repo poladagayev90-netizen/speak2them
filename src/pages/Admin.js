@@ -9,6 +9,7 @@ import AdminCohorts from '../components/AdminCohorts';
 import AdminSlots from '../components/AdminSlots';
 import AdminApplicants from '../components/AdminApplicants';
 import AdminIntros from '../components/AdminIntros';
+import AdminWeekPlan from '../components/AdminWeekPlan';
 import AdminAttendance from '../components/AdminAttendance';
 import { setTutorVerification } from '../utils/teacher';
 
@@ -21,8 +22,8 @@ export default function Admin({ user }) {
   // ?tab= lets a push open the right tab (notifyAdminOnboarding → applicants).
   const [adminTab, setAdminTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get('tab');
-    return ['applicants', 'intros', 'attendance', 'cohorts', 'slots'].includes(t) ? t : 'premium';
-  }); // premium | applicants | intros | attendance | cohorts | slots
+    return ['applicants', 'plan', 'intros', 'attendance', 'cohorts', 'slots'].includes(t) ? t : 'premium';
+  }); // premium | applicants | plan | intros | attendance | cohorts | slots
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -199,6 +200,7 @@ export default function Admin({ user }) {
           {[
             { id: 'premium', label: 'Students' },
             { id: 'applicants', label: 'Applicants' },
+            { id: 'plan', label: 'Week plan' },
             { id: 'intros', label: 'Intros' },
             { id: 'attendance', label: 'Attendance' },
             { id: 'cohorts', label: 'Cohorts' },
@@ -240,7 +242,7 @@ export default function Admin({ user }) {
       </div>
 
       <div style={{ padding: '20px 16px' }}>
-        {adminTab === 'attendance' ? <AdminAttendance users={users} /> : adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts emails={emails} /> : (
+        {adminTab === 'plan' ? <AdminWeekPlan /> : adminTab === 'attendance' ? <AdminAttendance users={users} /> : adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts emails={emails} /> : (
         <>
         {error && (
           <div style={{

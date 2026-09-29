@@ -8,6 +8,8 @@ const admin = require("firebase-admin");
 const userStatsLib = require("./userStats");
 const { ensurePostCallChat } = require("./postCallChat");
 const bookingsLib = require("./bookings");
+const weeklyPlanner = require("./weeklyPlanner");
+const { weekKey: bakuWeekKey } = require("./practiceStats");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -3634,8 +3636,8 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
 //                       work out", and only if they had already said yes.
 //   adminCancelOffer  → the admin withdraws a pending offer.
 //
-// One pending offer per person at a time: two open promises for one evening
-// is the same problem in a new place.
+// One pending offer per person per day: two open promises for one evening is
+// the same problem in a new place. (A weekly plan sends several, on different days.)
 const OFFER_DECLINE_REASONS = {
   "not-free": "not free at that time",
   "other-partner": "prefers another partner",
@@ -3653,7 +3655,8 @@ async function livePendingOffersTx(db, tx, uid, now) {
   const stale = [];
   for (const d of snap.docs) {
     const s = parseSlotId(d.get("slotId"));
-    if (s && s.startMs > now) live.push(d); else stale.push(d);
+    const answerBy = Number(d.get("respondBy")) || Infinity;
+    if (s && s.startMs > now && answerBy > now) live.push(d); else stale.push(d);
   }
   return { live, stale };
 }
@@ -3713,10 +3716,13 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       if (v.avoided) throw slotFail(409, "pair-avoided");
       if (v.ageClash) throw slotFail(409, "pair-age");
 
+      // One open proposal per person PER DAY (a weekly plan sends several):
+      // two open promises for the same evening is the problem this avoids.
       const pa = await livePendingOffersTx(db, tx, uidA, now);
       const pb = await livePendingOffersTx(db, tx, uidB, now);
-      if (pa.live.length) throw slotFail(409, "user-a-has-offer");
-      if (pb.live.length) throw slotFail(409, "user-b-has-offer");
+      const sameDay = (p) => p.live.some((d) => String(d.get("slotId") || "").slice(0, 10) === slot.date);
+      if (sameDay(pa)) throw slotFail(409, "user-a-has-offer");
+      if (sameDay(pb)) throw slotFail(409, "user-b-has-offer");
 
       const ts = admin.firestore.FieldValue.serverTimestamp();
       const staleIds = new Set();
@@ -3790,7 +3796,8 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
       const now = Date.now();
 
       const slot = parseSlotId(offer.slotId);
-      if (!slot || slot.startMs <= now) {
+      // A plan offer also closes when its answer time (respondBy) has passed.
+      if (!slot || slot.startMs <= now || (Number(offer.respondBy) && offer.respondBy <= now)) {
         tx.update(offerRef, { status: "expired", closedAt: ts });
         return { kind: "expired" };
       }
@@ -3917,6 +3924,398 @@ exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (
   } catch (e) {
     const status = e.httpStatus || 500;
     if (status === 500) console.error("[adminCancelOffer]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
+// ─── Weekly plan (scheduled practice, Phase 3) ──────────────────
+// Every Sunday the server drafts next week's pairs from each learner's
+// onboarding availability and weekly target (weeklyPlanner.js decides; this
+// section loads and writes). The admin reviews the draft in Admin → Week plan
+// and sends it; each pair goes out as an ordinary matchOffer, so nothing is
+// booked until both say yes, through the same bookPairTx as every other pair.
+//
+//   Sun 12:00 Baku  draft → weeklyPlans/{monday}, admin is pushed
+//   Sun 20:00 Baku  sent automatically — only if appConfig/planner.autoSend
+//   every hour      refill: people the week let down (a partner who did not
+//                   come or cancelled, a declined offer) get new offers —
+//                   only if appConfig/planner.refill
+//   every minute    offers past their respondBy close; silence is NOT held
+//                   against anyone (nothing was promised until they said yes)
+//
+// autoSend and refill start OFF: they message real learners, and the charter
+// and the Plan tab that explain them ship after this (Phase 4).
+const PLAN_CONFIG_DEFAULTS = { autoSend: false, refill: false, requireCharter: false };
+const PLAN_NOTICE_MS = 14 * 60 * 60 * 1000;   // a planned practice is at least this far after the send
+const REFILL_NOTICE_MS = 4 * 60 * 60 * 1000;  // …and a refill offer this far
+const PLAN_ACTIVE_WINDOW_MS = 21 * DAY_MS;    // only learners seen in the last three weeks are planned
+
+async function plannerConfig(db) {
+  const snap = await db.collection("appConfig").doc("planner").get().catch(() => null);
+  return { ...PLAN_CONFIG_DEFAULTS, ...((snap && snap.exists && snap.data()) || {}) };
+}
+const shiftDate = (date, days) => new Date(Date.parse(`${date}T12:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
+const nextMondayOf = (ms) => shiftDate(bakuWeekKey(ms), 7);
+
+// Everything the planner needs for one week, from Firestore.
+async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CONFIG_DEFAULTS } = {}) {
+  const dates = weeklyPlanner.weekDates(monday);
+  const weekStart = weeklyPlanner.blockStartMs(dates[0], 0);
+  const weekEnd = weekStart + 7 * DAY_MS;
+
+  const obSnap = await db.collection("onboarding").get();
+  const obs = new Map(obSnap.docs.map((d) => [d.id, d.data() || {}]));
+  const uids = [...obs.keys()];
+  const userSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("users").doc(u))) : [];
+  const users = new Map(userSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
+
+  // What each person already has this week, so the plan adds to it.
+  const have = new Map();
+  const noteOf = (uid) => {
+    if (!have.has(uid)) have.set(uid, { count: 0, dates: new Set(), partners: new Set(), letDown: 0 });
+    return have.get(uid);
+  };
+  const [bookingsSnap, pendingSnap, planOffersSnap] = await Promise.all([
+    db.collection("bookings").where("weekKey", "==", monday).get(),
+    db.collection("matchOffers").where("status", "==", "pending").get(),
+    db.collection("matchOffers").where("planWeek", "==", monday).get(),
+  ]);
+  for (const d of bookingsSnap.docs) {
+    const b = d.data() || {};
+    const [x, y] = b.participants || [];
+    if (!x || !y) continue;
+    for (const [me, peer] of [[x, y], [y, x]]) {
+      const n = noteOf(me);
+      n.partners.add(peer);
+      const outcome = (b.outcome || {})[me];
+      if (b.status === "confirmed" || (b.status === "done" && outcome !== "partner_no_show")) {
+        n.count += 1;
+        n.dates.add(b.date);
+      } else if ((b.status === "done" && outcome === "partner_no_show")
+        || (b.status === "cancelled" && b.cancelledBy && b.cancelledBy !== me)) {
+        n.letDown += 1; // the platform owes them one
+      }
+    }
+  }
+  for (const d of pendingSnap.docs) {
+    const o = d.data() || {};
+    if (!(o.startMs >= weekStart && o.startMs < weekEnd)) continue;
+    const [x, y] = o.participants || [];
+    for (const [me, peer] of [[x, y], [y, x]]) {
+      if (!me) continue;
+      const n = noteOf(me);
+      n.count += 1;
+      n.partners.add(peer);
+      n.dates.add(String(o.slotId || "").slice(0, 10));
+    }
+  }
+  // A plan offer that was declined or ran out is not proposed again this week.
+  for (const d of planOffersSnap.docs) {
+    const o = d.data() || {};
+    if (o.status === "pending") continue;
+    const [x, y] = o.participants || [];
+    if (x && y) { noteOf(x).partners.add(y); noteOf(y).partners.add(x); }
+  }
+
+  const learners = [];
+  for (const [uid, ob] of obs) {
+    const u = users.get(uid);
+    if (!u || uid === ADMIN_UID || u.role === "teacher") continue;
+    if (!Array.isArray(ob.availability) || !ob.availability.length) continue;
+    const target = Math.min(4, Math.max(0, Math.floor(Number(ob.weeklyTarget) || 0)));
+    if (!target || ob.planPaused === true) continue;
+    if (cfg.requireCharter && !ob.charterAcceptedAt) continue;
+    const seen = u.lastSeen?.toMillis?.() || 0;
+    if (nowMs - seen > PLAN_ACTIVE_WINDOW_MS) continue;
+    if (isTrialExpired(u, uid)) continue;
+    const h = have.get(uid) || { count: 0, dates: new Set(), partners: new Set(), letDown: 0 };
+    learners.push({
+      uid,
+      name: u.name || "",
+      level: u.level || ob.level || null,
+      minor: ob.ageBand === "under18",
+      partnerLevel: u.partnerLevel || null,
+      availability: ob.availability,
+      timeZone: ob.timeZone || "Asia/Baku",
+      target,
+      need: Math.max(0, target - h.count),
+      busyDates: [...h.dates],
+      pairedWith: [...h.partners],
+      priority: h.letDown ? 1 : 0,
+    });
+  }
+
+  // Blocks and "don't pair me again", either way — the same lists pairVerdict reads.
+  const blocked = new Set();
+  await Promise.all(learners.map(async (l) => {
+    const ref = db.collection("users").doc(l.uid);
+    const [bl, av] = await Promise.all([ref.collection("blocked").get(), ref.collection("avoid").get()]);
+    for (const d of [...bl.docs, ...av.docs]) blocked.add(weeklyPlanner.pairKey(l.uid, d.id));
+  }));
+  // Met in the last 7 days (soft).
+  const recent = new Set();
+  const since = admin.firestore.Timestamp.fromMillis(nowMs - RECENT_PARTNER_MS);
+  const calls = await db.collection("calls").where("endedAt", ">=", since).get().catch(() => ({ docs: [] }));
+  for (const d of calls.docs) {
+    const c = d.data() || {};
+    if (c.userA && c.userB) recent.add(weeklyPlanner.pairKey(c.userA, c.userB));
+  }
+  return { dates, learners, blocked, recent };
+}
+
+// Draft (or redraft) the plan for the week starting `monday`.
+async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule" } = {}) {
+  const ref = db.collection("weeklyPlans").doc(monday);
+  const prev = await ref.get();
+  if (prev.exists && prev.get("status") === "sent") throw slotFail(409, "plan-already-sent");
+  const cfg = await plannerConfig(db);
+  const { dates, learners, blocked, recent } = await loadPlannerInputs(db, monday, { nowMs, cfg });
+  // Monday 10:00 at the earliest — the plan goes out on Sunday evening.
+  const earliestMs = Math.max(nowMs + PLAN_NOTICE_MS, weeklyPlanner.blockStartMs(dates[0], 10));
+  const result = weeklyPlanner.buildWeekPlan({ learners, blocked, recent, dates, earliestMs, seed: monday });
+  const info = new Map(learners.map((l) => [l.uid, l]));
+  const pairs = result.pairs.map((p) => ({
+    ...p,
+    nameA: info.get(p.a)?.name || "", nameB: info.get(p.b)?.name || "",
+    levelA: info.get(p.a)?.level || null, levelB: info.get(p.b)?.level || null,
+    tzA: info.get(p.a)?.timeZone || null, tzB: info.get(p.b)?.timeZone || null,
+    removed: false, offerId: null,
+  }));
+  const unmet = result.unmet.map((u) => ({ ...u, name: info.get(u.uid)?.name || "", level: info.get(u.uid)?.level || null }));
+  await ref.set({
+    weekKey: monday,
+    status: "draft",
+    hold: prev.exists ? prev.get("hold") === true : false,
+    builtAt: admin.firestore.FieldValue.serverTimestamp(),
+    builtBy: by,
+    autoSendAt: weeklyPlanner.blockStartMs(shiftDate(monday, -1), 20),
+    pairs, unmet,
+    stats: result.stats,
+    config: cfg,
+  });
+  return { pairs: pairs.length, unmet: unmet.length, learners: learners.length };
+}
+
+// One offer for one planned pair, re-checked against what happened since the
+// draft: no second practice that day, no second pending offer that day.
+async function createPlanOfferTx(db, { id, pair, planWeek, respondBy, source }) {
+  return db.runTransaction(async (tx) => {
+    const offerRef = db.collection("matchOffers").doc(id);
+    const slot = parseSlotId(pair.slotId);
+    if (!slot) return { skip: "invalid-slot" };
+    const [existing, aDay, bDay, aPend, bPend, aSnap, bSnap] = await Promise.all([
+      tx.get(offerRef),
+      bookingsLib.sameDayBookingsTx(tx, db, pair.a, slot),
+      bookingsLib.sameDayBookingsTx(tx, db, pair.b, slot),
+      livePendingOffersTx(db, tx, pair.a, Date.now()),
+      livePendingOffersTx(db, tx, pair.b, Date.now()),
+      tx.get(db.collection("users").doc(pair.a)),
+      tx.get(db.collection("users").doc(pair.b)),
+    ]);
+    if (existing.exists) return { skip: "exists" };
+    if (!aSnap.exists || !bSnap.exists) return { skip: "user-gone" };
+    if (aDay.length || bDay.length) return { skip: "booked-that-day" };
+    const sameDay = (p) => p.live.some((d) => String(d.get("slotId") || "").slice(0, 10) === slot.date);
+    if (sameDay(aPend) || sameDay(bPend)) return { skip: "offer-that-day" };
+    const a = aSnap.data() || {};
+    const b = bSnap.data() || {};
+    tx.set(offerRef, {
+      participants: [pair.a, pair.b],
+      userA: pair.a, userB: pair.b,
+      nameA: a.name || "", nameB: b.name || "",
+      levelA: a.level || null, levelB: b.level || null,
+      slotId: slot.slotId, startMs: slot.startMs,
+      status: "pending",
+      responses: { [pair.a]: "pending", [pair.b]: "pending" },
+      note: "",
+      source, planWeek, respondBy,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return { offerId: id };
+  });
+}
+
+// What each learner is told about their week (planStatus/{uid}, owner-read).
+// Honest either way: offers made, or no partner found and why.
+function writePlanStatus(db, uid, weekKey, data) {
+  return db.collection("planStatus").doc(uid).set({
+    weekKey, ...data, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true }).catch((e) => console.warn("[plan] planStatus failed:", uid, e.message));
+}
+
+async function sendWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule" } = {}) {
+  const ref = db.collection("weeklyPlans").doc(monday);
+  const snap = await ref.get();
+  if (!snap.exists) throw slotFail(404, "no-plan");
+  const plan = snap.data() || {};
+  if (plan.status === "sent") return { alreadySent: true };
+  const pairs = plan.pairs || [];
+  const offersFor = new Map();
+  for (const p of pairs) {
+    if (p.removed || p.offerId) continue;
+    if (p.startMs < nowMs + REFILL_NOTICE_MS) { p.skip = "too-soon"; continue; }
+    const respondBy = Math.min(nowMs + DAY_MS, p.startMs - 2 * 60 * 60 * 1000);
+    const r = await createPlanOfferTx(db, { id: `wp_${monday}_${p.id}`, pair: p, planWeek: monday, respondBy, source: "weekly_plan" })
+      .catch((e) => ({ skip: e.message }));
+    if (r.offerId) {
+      p.offerId = r.offerId;
+      for (const u of [p.a, p.b]) offersFor.set(u, (offersFor.get(u) || 0) + 1);
+    } else p.skip = r.skip;
+  }
+  await ref.update({
+    status: "sent", pairs,
+    sentAt: admin.firestore.FieldValue.serverTimestamp(), sentBy: by,
+  });
+  // One push per person for the whole week, not one per offer.
+  await Promise.all([...offersFor].map(([uid, count]) => sendPushToUser(db, uid, {
+    key: "week_plan", vars: { count }, type: "match_offer", url: "/",
+  }).catch(() => null)));
+  for (const [uid, count] of offersFor) await writePlanStatus(db, uid, monday, { state: "offered", offered: count, reason: null });
+  for (const u of plan.unmet || []) {
+    if (offersFor.has(u.uid)) continue;
+    await writePlanStatus(db, u.uid, monday, { state: "no_match", offered: 0, reason: u.reason });
+  }
+  return { offers: [...offersFor.values()].reduce((s, n) => s + n, 0) / 2, people: offersFor.size };
+}
+
+// Offers whose answer time has passed are closed. Silence is not a no-show —
+// nothing was promised until both said yes — so nothing is recorded against
+// anyone. Whoever had already said yes is told, plainly.
+async function expireLateOffers(db, nowMs) {
+  const snap = await db.collection("matchOffers")
+    .where("status", "==", "pending")
+    .where("respondBy", "<=", nowMs)
+    .limit(50).get();
+  for (const d of snap.docs) {
+    const done = await db.runTransaction(async (tx) => {
+      const s = await tx.get(d.ref);
+      if (!s.exists || s.get("status") !== "pending") return null;
+      tx.update(d.ref, { status: "expired", closedAt: admin.firestore.FieldValue.serverTimestamp(), closedBy: "respondBy" });
+      return s.data() || {};
+    }).catch(() => null);
+    if (!done) continue;
+    const yes = Object.entries(done.responses || {}).filter(([, v]) => v === "accepted").map(([k]) => k);
+    await Promise.all(yes.map((u) => sendPushToUser(db, u, {
+      key: "plan_offer_expired", vars: { at: done.startMs }, type: "match_offer", url: "/",
+    }).catch(() => null)));
+  }
+}
+
+// Hourly, when enabled: new offers for this week's remaining days, for anyone
+// still short of their target — first the people the week let down.
+async function refillThisWeek(db, nowMs) {
+  const monday = bakuWeekKey(nowMs);
+  const cfg = await plannerConfig(db);
+  const { dates, learners, blocked, recent } = await loadPlannerInputs(db, monday, { nowMs, cfg });
+  const today = bakuDateStr(nowMs);
+  const left = dates.filter((d) => d >= today);
+  const wanting = learners.filter((l) => l.need > 0);
+  if (wanting.length < 2 || !left.length) return { offers: 0 };
+  const result = weeklyPlanner.buildWeekPlan({
+    learners, blocked, recent, dates: left,
+    earliestMs: nowMs + REFILL_NOTICE_MS, seed: `${monday}_${nowMs}`, restarts: 8,
+  });
+  let offers = 0;
+  for (const p of result.pairs) {
+    const respondBy = Math.min(nowMs + 6 * 60 * 60 * 1000, p.startMs - 60 * 60 * 1000);
+    const r = await createPlanOfferTx(db, { id: `rf_${p.slotId}_${p.id}`, pair: p, planWeek: monday, respondBy, source: "refill" })
+      .catch((e) => ({ skip: e.message }));
+    if (!r.offerId) continue;
+    offers += 1;
+    const names = new Map(learners.map((l) => [l.uid, l.name]));
+    await Promise.all([[p.a, p.b], [p.b, p.a]].map(([me, peer]) => sendPushToUser(db, me, {
+      key: "match_offer", vars: { at: p.startMs, peerName: names.get(peer) || "" }, type: "match_offer", url: "/",
+    }).catch(() => null)));
+  }
+  if (offers) {
+    await db.collection("weeklyPlans").doc(monday).set({
+      refillLog: admin.firestore.FieldValue.arrayUnion({ at: nowMs, offers }),
+    }, { merge: true }).catch(() => null);
+  }
+  return { offers };
+}
+
+// Called from practiceSlotTick every minute.
+async function runPlannerTick(db, nowMs) {
+  await expireLateOffers(db, nowMs).catch((e) => console.warn("[plan] expire failed:", e.message));
+  const baku = new Date(nowMs + 4 * 60 * 60 * 1000);
+  const weekday = baku.getUTCDay();
+  const hour = baku.getUTCHours();
+  const monday = nextMondayOf(nowMs);
+
+  if (weekday === 0 && hour >= 12 && await claimSlotRun(db, `plan_build_${monday}`)) {
+    try {
+      const r = await buildWeeklyPlan(db, monday, { nowMs, by: "schedule" });
+      await sendPushToUser(db, ADMIN_UID, {
+        key: "admin_week_plan", vars: { pairs: r.pairs, unmet: r.unmet }, type: "admin_plan", url: "/admin?tab=plan",
+      }).catch(() => null);
+    } catch (e) { console.warn("[plan] build failed:", e.message); }
+  }
+  const cfg = await plannerConfig(db);
+  if (weekday === 0 && hour >= 20 && cfg.autoSend && await claimSlotRun(db, `plan_send_${monday}`)) {
+    const plan = await db.collection("weeklyPlans").doc(monday).get();
+    if (plan.exists && plan.get("status") === "draft" && plan.get("hold") !== true) {
+      await sendWeeklyPlan(db, monday, { nowMs, by: "schedule" }).catch((e) => console.warn("[plan] send failed:", e.message));
+    }
+  }
+  if (cfg.refill && hour >= 8 && hour <= 21
+    && await claimSlotRun(db, `refill_${bakuDateStr(nowMs)}_${hour}`)) {
+    await refillThisWeek(db, nowMs).catch((e) => console.warn("[plan] refill failed:", e.message));
+  }
+}
+
+// Admin → Week plan. One endpoint, one action per call.
+exports.adminWeekPlan = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  const body = req.body || {};
+  const action = String(body.action || "");
+  const week = /^\d{4}-\d{2}-\d{2}$/.test(String(body.weekKey || "")) ? body.weekKey : nextMondayOf(Date.now());
+  if (bakuWeekKey(Date.parse(`${week}T12:00:00+04:00`)) !== week) return res.status(400).json({ error: "not-a-monday" });
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(decoded.uid, "adminWeekPlan", 200, 24 * 60 * 60 * 1000);
+    if (action === "build") return res.status(200).json({ ok: true, ...(await buildWeeklyPlan(db, week, { by: "admin" })) });
+    if (action === "send") return res.status(200).json({ ok: true, ...(await sendWeeklyPlan(db, week, { by: "admin" })) });
+
+    const ref = db.collection("weeklyPlans").doc(week);
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw slotFail(404, "no-plan");
+      const plan = snap.data() || {};
+      if (action === "hold" || action === "resume") {
+        tx.update(ref, { hold: action === "hold" });
+        return;
+      }
+      if (plan.status !== "draft") throw slotFail(409, "plan-already-sent");
+      const pairs = plan.pairs || [];
+      const p = pairs.find((x) => x.id === body.pairId);
+      if (!p) throw slotFail(404, "no-pair");
+      if (action === "remove") p.removed = true;
+      else if (action === "restore") p.removed = false;
+      else if (action === "move") {
+        if (!(p.alternatives || []).includes(body.slotId)) throw slotFail(400, "not-an-alternative");
+        const date = body.slotId.slice(0, 10);
+        const clash = pairs.some((x) => x !== p && !x.removed
+          && [x.a, x.b].some((u) => u === p.a || u === p.b) && x.slotId.slice(0, 10) === date);
+        if (clash) throw slotFail(409, "day-taken");
+        p.alternatives = [p.slotId, ...(p.alternatives || []).filter((s) => s !== body.slotId)];
+        p.slotId = body.slotId;
+        p.startMs = weeklyPlanner.blockStartMs(date, Number(body.slotId.slice(11)));
+      } else throw slotFail(400, "unknown-action");
+      tx.update(ref, { pairs, editedAt: admin.firestore.FieldValue.serverTimestamp() });
+    });
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[adminWeekPlan]", action, e.message);
     return res.status(status).json({ error: e.message });
   }
 });
@@ -4143,6 +4542,9 @@ exports.practiceSlotTick = onSchedule(
     // Intro-call reminders ride on this minute tick instead of a schedule of
     // their own (one small query per minute).
     await sendIntroReminders(db, now).catch((e) => console.warn("[SlotTick] intro reminders failed:", e.message));
+
+    // Weekly plan: Sunday draft/send, offer deadlines, refill (see runPlannerTick).
+    await runPlannerTick(db, now).catch((e) => console.warn("[SlotTick] planner failed:", e.message));
 
     // One-time: copy the last 35 days of held calls (users/*/practiceSessions)
     // into the attendance ledger, so learners who practised before it existed

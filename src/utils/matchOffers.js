@@ -1,4 +1,4 @@
-import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, doc, query, where, orderBy, limit, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
@@ -23,7 +23,13 @@ const ERROR_TEXT = {
   'offer-not-found': 'This proposal no longer exists.',
   'not-your-offer': 'This proposal is not addressed to you.',
   'slot-past': 'That time has already started.',
-  'slot-too-far': 'Proposals can be made up to five days ahead.',
+  'slot-too-far': 'Proposals can be made up to nine days ahead.',
+  // Weekly plan (admin).
+  'plan-already-sent': 'The plan for this week has already been sent.',
+  'no-plan': 'There is no plan for this week yet. Build it first.',
+  'no-pair': 'That pair is no longer in the plan.',
+  'not-an-alternative': 'That time does not fit both of them.',
+  'day-taken': 'One of them already has a practice that day in this plan.',
   'user-not-found': 'One of these learners no longer has an account.',
   // Admin-only reasons (the admin sees them; learners never do).
   'pair-blocked': 'One of them has blocked the other.',
@@ -96,6 +102,38 @@ export function subscribeToOfferNotes(cb) {
     (snap) => cb(Object.fromEntries(snap.docs.map((d) => [d.id, d.data()]))),
     () => cb({}),
   );
+}
+
+// ── admin: weekly plan ───────────────────────────────────────────
+// action: build | send | hold | resume | remove | restore | move
+export function weekPlanAction(action, weekKey, extra = {}) {
+  return call('adminWeekPlan', { action, weekKey, ...extra });
+}
+
+export function subscribeToWeekPlan(weekKey, cb) {
+  return onSnapshot(
+    doc(db, 'weeklyPlans', weekKey),
+    (snap) => cb(snap.exists() ? snap.data() : null),
+    (err) => { console.warn('[weekPlan] subscribe failed', err.code); cb(null); },
+  );
+}
+
+// The offers a plan (and its refills) produced, to show how each one went.
+export function subscribeToPlanOffers(weekKey, cb) {
+  return onSnapshot(
+    query(collection(db, 'matchOffers'), where('planWeek', '==', weekKey)),
+    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    () => cb([]),
+  );
+}
+
+export function subscribeToPlannerConfig(cb) {
+  return onSnapshot(doc(db, 'appConfig', 'planner'), (snap) => cb(snap.exists() ? snap.data() : {}), () => cb({}));
+}
+
+// appConfig is admin-writable (firestore.rules), so the switches are plain writes.
+export function setPlannerConfig(patch) {
+  return setDoc(doc(db, 'appConfig', 'planner'), patch, { merge: true });
 }
 
 // "Today 21:00–23:00" / "Tomorrow …" / "Wed 21:00–23:00" in the VIEWER's own
