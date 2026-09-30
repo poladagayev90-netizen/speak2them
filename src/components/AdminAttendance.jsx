@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, limit, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp } from 'lucide-react';
+import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp, ShieldAlert, RotateCcw } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
 import { subscribeToRecentAttendance, summarize } from '../utils/attendance';
+import { weekPlanAction } from '../utils/matchOffers';
 import './AdminAttendance.css';
 
 // Admin → Attendance: commitment (weeklyTarget from onboarding) against what
@@ -18,6 +19,10 @@ import './AdminAttendance.css';
 
 const DAY = 86400000;
 const TAG_LABEL = { on_time: 'On time', let_me_speak: 'Lets others speak', respectful: 'Respectful', prepared: 'Prepared' };
+// Reliability (Phase 5, functions/reliability.js): only confirmed practices
+// count. "limited" = the weekly plan gives one practice a week and no
+// newcomer partners until two practices are attended in a row.
+const REL_LABEL = { watch: 'Reliability: watch', limited: 'Limited: 1 a week' };
 const toMs = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : Number(t) || 0);
 
 function flagsFor(s, target, joinedMs, now) {
@@ -34,6 +39,8 @@ function flagsFor(s, target, joinedMs, now) {
   return f;
 }
 
+const relRank = (rel) => ({ limited: 2, watch: 1 }[rel?.level] || 0);
+
 export default function AdminAttendance({ users }) {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -42,11 +49,23 @@ export default function AdminAttendance({ users }) {
   const [feedback, setFeedback] = useState([]);
   const [reports, setReports] = useState([]);
   const [now] = useState(Date.now());
+  const [reliability, setReliability] = useState({});
+  const [resetting, setResetting] = useState(null);
 
   useEffect(() => subscribeToRecentAttendance(setEvents, now - 35 * DAY), [now]);
   useEffect(() => onSnapshot(collection(db, 'onboarding'), (snap) => {
     setOnboarding(Object.fromEntries(snap.docs.map((d) => [d.id, d.data()])));
   }, () => {}), []);
+
+  useEffect(() => onSnapshot(collection(db, 'reliability'), (snap) => {
+    setReliability(Object.fromEntries(snap.docs.map((d) => [d.id, d.data()])));
+  }, () => {}), []);
+  const resetReliability = async (uid, name) => {
+    if (!window.confirm(`Forget ${name || 'this learner'}'s missed practices up to now and lift any limit?`)) return;
+    setResetting(uid);
+    await weekPlanAction('resetReliability', undefined, { uid }).catch((e) => window.alert(`Reset failed: ${e.message}`));
+    setResetting(null);
+  };
 
   // What partners said about each learner's behaviour (admin-only data).
   useEffect(() => onSnapshot(
@@ -87,13 +106,14 @@ export default function AdminAttendance({ users }) {
         const ob = onboarding[u.uid] || {};
         const target = Number(ob.weeklyTarget) || 0;
         const joinedMs = toMs(ob.submittedAt) || toMs(u.createdAt);
-        return { u, s, target, flags: flagsFor(s, target, joinedMs, now) };
+        return { u, s, target, rel: reliability[u.uid] || null, flags: flagsFor(s, target, joinedMs, now) };
       })
-      .sort((a, b) => (b.flags.length - a.flags.length) || (b.s.thisWeek - a.s.thisWeek));
-  }, [users, events, onboarding, now]);
+      .sort((a, b) => (relRank(b.rel) - relRank(a.rel)) || (b.flags.length - a.flags.length) || (b.s.thisWeek - a.s.thisWeek));
+  }, [users, events, onboarding, reliability, now]);
 
-  const shown = onlyFlagged ? rows.filter((r) => r.flags.length) : rows;
-  const flagged = rows.filter((r) => r.flags.length).length;
+  const shown = onlyFlagged ? rows.filter((r) => r.flags.length || relRank(r.rel)) : rows;
+  const flagged = rows.filter((r) => r.flags.length || relRank(r.rel)).length;
+  const limitedCount = rows.filter((r) => r.rel?.level === 'limited').length;
   const weekDone = rows.filter((r) => r.target && r.s.thisWeek >= r.target).length;
   const withTarget = rows.filter((r) => r.target).length;
 
@@ -102,6 +122,7 @@ export default function AdminAttendance({ users }) {
       <div className="at-summary">
         <div><b>{weekDone}/{withTarget}</b><span>on target this week</span></div>
         <div><b>{flagged}</b><span>need a conversation</span></div>
+        <div><b>{limitedCount}</b><span>limited to 1 a week</span></div>
       </div>
 
       {openReports.length > 0 && (
@@ -134,7 +155,7 @@ export default function AdminAttendance({ users }) {
       </label>
 
       <ul className="at-list">
-        {shown.map(({ u, s, target, flags }) => {
+        {shown.map(({ u, s, target, rel, flags }) => {
           const maxBar = Math.max(target, ...Object.values(s.attendedByWeek), 1);
           return (
             <li key={u.uid} className={`at-row ${flags.some((f) => f.tone === 'bad') ? 'is-bad' : ''}`}>
@@ -172,6 +193,18 @@ export default function AdminAttendance({ users }) {
                   Last practice {s.lastAttendedMs ? new Date(s.lastAttendedMs).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'}
                 </span>
               </div>
+              {relRank(rel) > 0 && (
+                <div className="at-rel">
+                  <span className={`at-flag is-${rel.level === 'limited' ? 'bad' : 'soft'}`}>
+                    <ShieldAlert size={14} /> {REL_LABEL[rel.level]}
+                    <span className="at-muted"> · {rel.points} pts{rel.level === 'limited' ? ` · ${rel.recoverLeft} to attend` : ''}</span>
+                  </span>
+                  <button type="button" className="at-resolve" disabled={resetting === u.uid}
+                    onClick={() => resetReliability(u.uid, u.name)}>
+                    <RotateCcw size={13} /> {resetting === u.uid ? 'Resetting…' : 'Reset'}
+                  </button>
+                </div>
+              )}
               {flags.length > 0 && (
                 <div className="at-flags">
                   {flags.map((f) => (

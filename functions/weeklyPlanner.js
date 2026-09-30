@@ -69,6 +69,9 @@ function pairAllowed(a, b, blocked) {
   if (a.uid === b.uid) return false;
   if (blocked.has(pairKey(a.uid, b.uid))) return false;
   if (!!a.minor !== !!b.minor) return false;
+  // Reliability (Phase 5): someone who keeps missing confirmed practices is
+  // never a newcomer's first experience of the app.
+  if ((a.limited && b.newcomer) || (b.limited && a.newcomer)) return false;
   if (a.partnerLevel === 'close' || b.partnerLevel === 'close') {
     const ra = levelRank(a.level); const rb = levelRank(b.level);
     if (ra !== null && rb !== null && Math.abs(ra - rb) > 1) return false;
@@ -106,6 +109,8 @@ const harmonic = (n) => { let x = 0; for (let i = 1; i <= n; i++) x += 1 / i; re
 //   busyDates  — days that already hold a booking or a pending offer
 //   pairedWith — partners already booked/offered this week (no repeat)
 //   priority   — > 0 for someone the platform let down this week (refill)
+//   limited    — reliability limit (reliability.js); never paired with…
+//   newcomer   — …someone who has not had a practice call yet
 // blocked: Set of pairKey — block/avoid either way
 // recent:  Set of pairKey — met in the last 7 days (soft)
 function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), dates, earliestMs = 0, seed = 'plan', restarts }) {

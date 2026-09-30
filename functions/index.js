@@ -10,6 +10,7 @@ const { ensurePostCallChat } = require("./postCallChat");
 const bookingsLib = require("./bookings");
 const { truncatedError, badJsonError, classifyLlmError } = require("./llmErrors");
 const weeklyPlanner = require("./weeklyPlanner");
+const reliabilityLib = require("./reliability");
 const { weekKey: bakuWeekKey } = require("./practiceStats");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
@@ -2368,6 +2369,43 @@ async function recordAttendance(db, id, uid, outcome, atMs, extra = {}, { onlyIf
 }
 const callIdForPair = (a, b) => `call_${[a, b].sort().join("_")}`;
 
+// ── Reliability (scheduled practice, Phase 5) ────────────────────
+// Recomputed from the learner's attendance whenever a confirmed practice
+// closes or is cancelled late (reliability.js decides). The score lives in
+// admin-only reliability/{uid}; the learner only sees the consequence and the
+// way back, in planStatus.limit — never the number.
+async function refreshReliability(db, uid, nowMs = Date.now()) {
+  if (!uid || uid === ADMIN_UID) return null;
+  try {
+    const relRef = db.collection("reliability").doc(uid);
+    const [prev, evSnap, ob] = await Promise.all([
+      relRef.get(),
+      db.collection("attendance").where("uid", "==", uid).get(),
+      db.collection("onboarding").doc(uid).get(),
+    ]);
+    const resetAtMs = Number(prev.exists && prev.get("resetAtMs")) || 0;
+    const events = evSnap.docs.map((d) => {
+      const e = d.data() || {};
+      return { outcome: e.outcome, atMs: Number(e.atMs) || 0, slotId: e.slotId || null };
+    });
+    const rel = reliabilityLib.computeReliability(events, { nowMs, resetAtMs });
+    const was = prev.exists ? prev.get("level") : "ok";
+    await relRef.set({
+      uid, ...rel, resetAtMs,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      ...(was !== rel.level ? { levelChangedAt: admin.firestore.FieldValue.serverTimestamp(), previousLevel: was || "ok" } : {}),
+    }, { merge: true });
+    const usual = Number(ob.exists && ob.get("weeklyTarget")) || 0;
+    await db.collection("planStatus").doc(uid).set({
+      limit: reliabilityLib.limitNotice(rel, usual),
+    }, { merge: true });
+    return rel;
+  } catch (e) {
+    console.warn("[reliability] refresh failed:", uid, e.message);
+    return null;
+  }
+}
+
 // ── Who may be paired with whom (Phase 5) ────────────────────────
 // One verdict, used by every path that forms a pair: the slot board
 // (joinSlotTx), the rematch in leavePracticeSlot, teacher and admin pairs
@@ -2935,6 +2973,7 @@ exports.leavePracticeSlot = onRequest({ secrets: [], invoker: "public" }, async 
       await recordAttendance(db, `${slot.slotId}_${uid}_cancel`, uid,
         lead < LATE_CANCEL_MS ? "late_cancel" : "cancelled", slot.startMs,
         { slotId: slot.slotId, leadMinutes: Math.round(lead / 60000), peerUid: released.partnerId || null });
+      if (lead < LATE_CANCEL_MS) await refreshReliability(db, uid);
     }
 
     if (released && released.partnerId) {
@@ -3983,6 +4022,9 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   const uids = [...obs.keys()];
   const userSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("users").doc(u))) : [];
   const users = new Map(userSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
+  // Reliability limits (Phase 5): one practice a week, no newcomer partners.
+  const relSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("reliability").doc(u))) : [];
+  const limitedUids = new Set(relSnaps.filter((s) => s.exists && s.get("level") === "limited").map((s) => s.id));
 
   // What each person already has this week, so the plan adds to it.
   const have = new Map();
@@ -4037,7 +4079,9 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     const u = users.get(uid);
     if (!u || uid === ADMIN_UID || u.role === "teacher") continue;
     if (!Array.isArray(ob.availability) || !ob.availability.length) continue;
-    const target = Math.min(4, Math.max(0, Math.floor(Number(ob.weeklyTarget) || 0)));
+    const limited = limitedUids.has(uid);
+    const asked = Math.min(4, Math.max(0, Math.floor(Number(ob.weeklyTarget) || 0)));
+    const target = limited ? Math.min(asked, reliabilityLib.LIMITED_TARGET) : asked;
     if (!target || ob.planPaused === true) continue;
     if (cfg.requireCharter && !ob.charterAcceptedAt) continue;
     const seen = u.lastSeen?.toMillis?.() || 0;
@@ -4057,6 +4101,8 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       busyDates: [...h.dates],
       pairedWith: [...h.partners],
       priority: h.letDown ? 1 : 0,
+      limited,
+      newcomer: !(Number(u.callCount) > 0),
     });
   }
 
@@ -4231,16 +4277,26 @@ async function refillThisWeek(db, nowMs) {
     earliestMs: nowMs + REFILL_NOTICE_MS, seed: `${monday}_${nowMs}`, restarts: 8,
   });
   let offers = 0;
+  const offered = new Set();
   for (const p of result.pairs) {
     const respondBy = Math.min(nowMs + 6 * 60 * 60 * 1000, p.startMs - 60 * 60 * 1000);
     const r = await createPlanOfferTx(db, { id: `rf_${p.slotId}_${p.id}`, pair: p, planWeek: monday, respondBy, source: "refill" })
       .catch((e) => ({ skip: e.message }));
     if (!r.offerId) continue;
     offers += 1;
+    offered.add(p.a); offered.add(p.b);
     const names = new Map(learners.map((l) => [l.uid, l.name]));
     await Promise.all([[p.a, p.b], [p.b, p.a]].map(([me, peer]) => sendPushToUser(db, me, {
       key: "match_offer", vars: { at: p.startMs, peerName: names.get(peer) || "" }, type: "match_offer", url: "/",
     }).catch(() => null)));
+  }
+  // The people the week let down hear where things stand: a new offer, or —
+  // honestly — that no other time has turned up yet (Phase 5).
+  for (const l of wanting) {
+    if (!l.priority) continue;
+    await writePlanStatus(db, l.uid, monday, offered.has(l.uid)
+      ? { state: "offered", reason: null }
+      : { state: "no_match", offered: 0, reason: "replacement_not_found" });
   }
   if (offers) {
     await db.collection("weeklyPlans").doc(monday).set({
@@ -4299,6 +4355,17 @@ exports.adminWeekPlan = onRequest({ secrets: [], invoker: "public" }, async (req
     await enforceRateLimit(decoded.uid, "adminWeekPlan", 200, 24 * 60 * 60 * 1000);
     if (action === "build") return res.status(200).json({ ok: true, ...(await buildWeeklyPlan(db, week, { by: "admin" })) });
     if (action === "send") return res.status(200).json({ ok: true, ...(await sendWeeklyPlan(db, week, { by: "admin" })) });
+    // Admin → Attendance "Reset": forget this learner's misses up to now
+    // (after a conversation, a phone that broke, …) and lift any limit.
+    if (action === "resetReliability") {
+      const uid = String(body.uid || "");
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(uid)) return res.status(400).json({ error: "bad-uid" });
+      await db.collection("reliability").doc(uid).set({
+        resetAtMs: Date.now(), resetBy: decoded.uid,
+      }, { merge: true });
+      const rel = await refreshReliability(db, uid);
+      return res.status(200).json({ ok: true, level: rel ? rel.level : null });
+    }
 
     const ref = db.collection("weeklyPlans").doc(week);
     await db.runTransaction(async (tx) => {
@@ -4755,6 +4822,13 @@ exports.practiceSlotTick = onSchedule(
                   missedSlots: admin.firestore.FieldValue.increment(1),
                   slotNoticePending: true,
                 }, { merge: true });
+                // The one who came is told the truth right away. "We're
+                // looking for another time" only when the refill is on —
+                // otherwise it would be a promise nobody keeps.
+                const { refill } = await plannerConfig(db);
+                await sendPushToUser(db, peer.id, {
+                  key: "partner_late", vars: { refill: !!refill }, type: "slot_reminder", url: "/",
+                }).catch(() => null);
               }
             }
           }
@@ -4810,6 +4884,8 @@ exports.practiceSlotTick = onSchedule(
                 });
               }).catch((e) => console.warn("[SlotTick] booking close failed:", bookingId, e.message));
             }
+            // Everyone whose confirmed practice just closed.
+            for (const m of members) await refreshReliability(db, m.id);
             // Waited in the block and nobody was matched with them: the
             // platform could not deliver a partner. Never counted against them.
             const waitingSnap = await doc.ref.collection("members")

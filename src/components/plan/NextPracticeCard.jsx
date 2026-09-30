@@ -4,7 +4,7 @@ import {
   CalendarCheck, CalendarClock, CalendarDays, Mic, MessageCircle, PauseCircle, Sparkles, Trophy, UsersRound,
 } from 'lucide-react';
 import { Button } from '../ui';
-import { whenLabel, countdownLabel, joinState } from '../../utils/planState';
+import { whenLabel, countdownLabel, joinState, limitText } from '../../utils/planState';
 import { setPlanPaused } from '../../hooks/useMyPlan';
 import HeroFish, { heroClockStyle } from './HeroFx';
 import './plan.css';
@@ -17,12 +17,15 @@ import './plan.css';
 // on Sunday, why no partner fits yet) and offers the one useful next step.
 // The wording is planHeadline's (utils/planState.js); nothing here promises a
 // partner the platform may not have.
-export default function NextPracticeCard({ uid, headline, now }) {
+export default function NextPracticeCard({ uid, headline, now, limit }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   // Phase from the clock, fixed for this mount (see HeroFx).
   const clock = useMemo(heroClockStyle, []);
   const h = headline || { kind: 'waiting' };
+  // A reliability limit rides along in every state: why, and the way back.
+  const lim = limitText(limit);
+  const limitLine = lim && <p className="pl-hint"><b>{lim.title}.</b> {lim.text}</p>;
 
   if (h.kind === 'next') {
     const b = h.booking;
@@ -52,6 +55,7 @@ export default function NextPracticeCard({ uid, headline, now }) {
           <Button variant="ghost" onClick={() => navigate('/plan')}>My week</Button>
         </div>
         {!h.joinable && <p className="pl-hint">The Join button appears here five minutes before the start.</p>}
+        {limitLine}
       </section>
     );
   }
@@ -122,6 +126,7 @@ export default function NextPracticeCard({ uid, headline, now }) {
           {simple.action.label}
         </Button>
       </div>
+      {limitLine}
     </section>
   );
 }

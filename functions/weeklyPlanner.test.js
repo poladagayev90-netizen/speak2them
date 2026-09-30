@@ -133,3 +133,14 @@ test('30 learners plan quickly', () => {
   assert.ok(Date.now() - t0 < 5000, `took ${Date.now() - t0} ms`);
   assert.ok(plan.stats.planned >= plan.stats.demand * 0.9, `planned ${plan.stats.planned} of ${plan.stats.demand}`);
 });
+
+test('a learner under a reliability limit is never paired with a newcomer', () => {
+  const plan = wp.buildWeekPlan({
+    learners: [L('lim', { limited: true }), L('new', { newcomer: true }), L('old')],
+    dates, earliestMs: 0,
+  });
+  const keys = plan.pairs.map((p) => p.key);
+  assert.ok(!keys.includes(wp.pairKey('lim', 'new')));
+  assert.ok(!wp.pairAllowed({ uid: 'x', newcomer: true }, { uid: 'y', limited: true }, new Set()));
+  assert.ok(wp.pairAllowed({ uid: 'x', limited: true }, { uid: 'y' }, new Set()));
+});

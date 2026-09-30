@@ -36,16 +36,34 @@ const NO_MATCH_TEXT = {
   no_times: 'You have no free times saved for this week. Add a few and the next plan can include you.',
   no_overlap: 'Nobody who fits you is free at the same hours yet. More free times give the plan more to work with.',
   no_partner_left: 'Everyone free at your hours already had a full week. You are first in line for the next plan.',
+  replacement_not_found: 'Your partner could not make it, and no other time has turned up this week yet. Your free times stay open for the next one.',
 };
+
+// A reliability limit (Phase 5, server-decided in functions/reliability.js):
+// the reason and the way back are always shown; the score never is.
+export function limitText(limit) {
+  if (!limit || !limit.active) return null;
+  const missed = Math.max(1, Number(limit.missed) || 1);
+  const left = Math.max(1, Number(limit.recoverLeft) || 1);
+  const usual = Math.max(1, Number(limit.usualTarget) || 1);
+  return {
+    title: 'One practice a week for now',
+    text: `${missed} confirmed ${missed === 1 ? 'practice was' : 'practices were'} missed in the last 4 weeks. `
+      + `Attend your next ${left === 1 ? 'practice' : `${left} practices`} and your plan goes back to ${usual} a week.`,
+  };
+}
 
 // kind: setup | paused | next | answer | done | no_match | waiting
 export function planHeadline({
   uid, bookings, offers, planStatus, onboarding, attended = 0, weekKey, now = Date.now(),
 }) {
   const ob = onboarding || null;
-  const target = Math.max(0, Number(ob?.weeklyTarget) || 0);
+  const asked = Math.max(0, Number(ob?.weeklyTarget) || 0);
+  const limited = !!planStatus?.limit?.active;
+  // Under a limit the week's goal is what the plan can actually give.
+  const target = limited ? Math.min(asked, Number(planStatus.limit.target) || 1) : asked;
   const hasTimes = Array.isArray(ob?.availability) && ob.availability.length > 0;
-  if (!ob || !hasTimes || !target || !ob.charterAcceptedAt) return { kind: 'setup' };
+  if (!ob || !hasTimes || !asked || !ob.charterAcceptedAt) return { kind: 'setup' };
 
   const next = upcomingBookings(bookings, now)[0] || null;
   if (next) return { kind: 'next', booking: next, ...peerOf(next, uid), joinable: canJoin(next, now) };

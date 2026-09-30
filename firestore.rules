@@ -604,6 +604,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Reliability score (Phase 5) — admin only. The learner sees only the
+    // consequence and the way back, in planStatus.limit.
+    match /reliability/{uid} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // Who declined an offer and why. Admin-only ON PURPOSE: the other person
     // must never learn who said no — that is the whole point of proposing to
     // both at once instead of asking one and then the other.

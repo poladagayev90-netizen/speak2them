@@ -1,4 +1,4 @@
-import { planHeadline, openOffers, upcomingBookings, canJoin, peerOf } from './planState';
+import { planHeadline, openOffers, upcomingBookings, canJoin, peerOf, limitText } from './planState';
 
 const now = Date.parse('2026-10-06T10:00:00+04:00');
 const H = 3600000;
@@ -53,4 +53,23 @@ test('paused, goal reached, honest no-match, or waiting for the next plan', () =
 
 test('peerOf names the other person', () => {
   expect(peerOf(booking(now), 'zed')).toEqual({ peerUid: 'me', peerName: 'Me', peerLevel: null });
+});
+
+test('a reliability limit makes one practice the week\'s goal and explains the way back', () => {
+  const limit = { active: true, target: 1, usualTarget: 3, missed: 2, recoverLeft: 2 };
+  const h = planHeadline({ ...base, onboarding: { ...ob, weeklyTarget: 3 }, planStatus: { limit }, attended: 1 });
+  expect(h).toEqual({ kind: 'done', attended: 1, target: 1 });
+  const t = limitText(limit);
+  expect(t.text).toContain('2 confirmed practices were missed');
+  expect(t.text).toContain('next 2 practices');
+  expect(t.text).toContain('back to 3 a week');
+  expect(limitText({ ...limit, recoverLeft: 1, missed: 1 }).text).toContain('next practice and');
+  expect(limitText(null)).toBeNull();
+  expect(limitText({ active: false })).toBeNull();
+});
+
+test('no replacement found is said plainly', () => {
+  const h = planHeadline({ ...base, planStatus: { state: 'no_match', reason: 'replacement_not_found', weekKey: '2026-10-05' } });
+  expect(h.kind).toBe('no_match');
+  expect(h.text).toContain('no other time has turned up');
 });

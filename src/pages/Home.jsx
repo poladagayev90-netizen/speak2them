@@ -192,7 +192,7 @@ export default function Home({ user }) {
         <IntroCard user={user} />
 
         {/* 1. The next practice, or what is happening instead. */}
-        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} />}
+        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} />}
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (

@@ -82,7 +82,7 @@ export default function Plan({ user }) {
         {/* The status card only when there is nothing booked or to answer —
             otherwise the lists below ARE the status. */}
         {!booked.length && !open.length && !plan.loading && (
-          <NextPracticeCard uid={uid} headline={headline} now={plan.now} />
+          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} />
         )}
 
         {open.length > 0 && (
@@ -113,7 +113,7 @@ export default function Plan({ user }) {
         )}
 
         {Number(ob?.weeklyTarget) > 0 && (
-          <ThisWeekCard uid={uid} target={Number(ob.weeklyTarget)} attended={plan.attended} bookings={thisWeek} showList={false} now={plan.now} />
+          <ThisWeekCard uid={uid} target={plan.planStatus?.limit?.active ? Math.min(Number(ob.weeklyTarget), Number(plan.planStatus.limit.target) || 1) : Number(ob.weeklyTarget)} attended={plan.attended} bookings={thisWeek} showList={false} now={plan.now} />
         )}
 
         {ob && (

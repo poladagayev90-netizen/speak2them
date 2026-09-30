@@ -1,7 +1,7 @@
 /* Admin → Attendance. Tokens only. */
 
 .at { display: grid; gap: var(--s-3); }
-.at-summary { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+.at-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
 .at-summary > div {
   display: grid;
   gap: 2px;
@@ -108,3 +108,8 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* Reliability (Phase 5): the level and a reset, on one line. */
+.at-rel { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
+.at-rel .at-flag { flex: 1; min-width: 0; }
+.at-rel .at-resolve { display: inline-flex; align-items: center; gap: 4px; }
