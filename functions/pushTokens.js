@@ -103,8 +103,12 @@ function buildMessage(platform, tokens, data) {
   // the browser is backgrounded and only deliver when it next wakes — i.e. when
   // the user opens the app. Urgency:high delivers promptly even while dozing;
   // TTL caps how long FCM holds an undelivered one so stale reminders expire.
+  // A call is only worth ringing for a minute: after that the caller has
+  // hung up, and a ring arriving 20 minutes later just says "you missed it"
+  // (Rümeysa 2026-09-30: "I see calls later"). Other pushes keep an hour.
+  const isCall = data.type === "incoming_call";
   if (platform !== "android") {
-    return { tokens, data, webpush: { headers: { Urgency: "high", TTL: "3600" } } };
+    return { tokens, data, webpush: { headers: { Urgency: "high", TTL: isCall ? "60" : "3600" } } };
   }
   return {
     tokens,
@@ -115,6 +119,7 @@ function buildMessage(platform, tokens, data) {
     },
     android: {
       priority: "high",
+      ...(isCall ? { ttl: 60 * 1000 } : {}),
       // icon = alpha-only tray silhouette (drawable/ic_stat_speaklab);
       // explicit here as well as in the manifest meta-data so the brand mark
       // shows regardless of which default the device honours.

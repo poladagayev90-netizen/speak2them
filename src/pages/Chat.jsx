@@ -15,6 +15,7 @@ import {
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import useBackButton from '../hooks/useBackButton';
+import useWakeLock from '../hooks/useWakeLock';
 import AnalysisMessage from '../components/AnalysisMessage';
 import MessageTimestamp from '../components/MessageTimestamp';
 import PremiumBadge from '../components/PremiumBadge';
@@ -141,6 +142,10 @@ export default function Chat({ user }) {
     || questionStage?.active || debateStage?.active || guessStage?.active);
   // Any full-screen panel, activities plus the vocabulary sheet.
   const stageOpen = activityOpen || showDaily;
+
+  // A dimmed, locked screen cut the mic mid-call; keep it on while a call
+  // is ringing or live (hooks/useWakeLock.js).
+  useWakeLock(inCall || callStatus === 'calling');
 
   // Android's back button used to close the whole app (see useBackButton).
   // On this screen it also killed live calls: leaving the route unmounts Chat,

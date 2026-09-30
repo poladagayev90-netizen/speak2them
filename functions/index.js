@@ -3380,19 +3380,21 @@ exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (r
 // off these same documents.
 // Runs INSIDE a transaction; the caller has already read users uidA/uidB (a, b)
 // in that transaction and done its own authorisation. `marker` is stamped on
-// every written doc to record who set the pair up. Throws 409 when either
-// person already has a booked call on the same Baku day.
+// every written doc to record who set the pair up. With `oneADay` it throws
+// 409 when either person already has a booked call on the same Baku day.
 const slotFail = (status, message) => Object.assign(new Error(message), { httpStatus: status });
 
-async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source }) {
+async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source, oneADay = true, replaceInBlock = true }) {
   const usersCol = db.collection("users");
   // ── One practice a day ────────────────────────────────────
-  // A learner may hold several booked calls now (bookings/), but not two on
-  // the same Baku day. The error names stay "student-*-busy" — the teacher
-  // and admin screens already explain them.
+  // The weekly plan spreads practice out: never two on the same Baku day.
+  // A teacher or the admin pairing by hand is NOT held to that (Polad
+  // 2026-09-30: Sabina had a call with Nisa and he could not add one with
+  // Rümeysa later that day). Two pairs in the SAME block are still
+  // impossible — the member docs below re-pair within a block.
   const [aDay, bDay, callSnap] = await Promise.all([
-    bookingsLib.sameDayBookingsTx(tx, db, uidA, slot),
-    bookingsLib.sameDayBookingsTx(tx, db, uidB, slot),
+    oneADay ? bookingsLib.sameDayBookingsTx(tx, db, uidA, slot) : [],
+    oneADay ? bookingsLib.sameDayBookingsTx(tx, db, uidB, slot) : [],
     tx.get(db.collection("calls").doc(callIdForPair(uidA, uidB))),
   ]);
   if (aDay.length) throw slotFail(409, "student-a-busy");
@@ -3414,6 +3416,13 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source 
   // notify — a teacher pressing the button twice must not push twice.
   if (memA && memB && memA.pairedWith === uidB && memB.pairedWith === uidA) {
     return { alreadyPaired: true, released: [], callId: callIdForPair(uidA, uidB) };
+  }
+
+  // An accepted proposal must never silently cancel a pair someone already
+  // has in this block; only a teacher re-pairing on purpose replaces one.
+  if (!replaceInBlock) {
+    if (memA && memA.status === "matched" && memA.pairedWith && memA.pairedWith !== uidB) throw slotFail(409, "student-a-busy");
+    if (memB && memB.status === "matched" && memB.pairedWith && memB.pairedWith !== uidA) throw slotFail(409, "student-b-busy");
   }
 
   const now2 = admin.firestore.FieldValue.serverTimestamp();
@@ -3586,6 +3595,7 @@ exports.teacherSetMatch = onRequest({ secrets: [], invoker: "public" }, async (r
         uidA, uidB, a, b, slot, now,
         marker: { setByTeacher: teacherUid },
         source: "teacher_match",
+        oneADay: false,
       });
       return {
         ...booked,
@@ -3703,13 +3713,13 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       const a = aSnap.data() || {};
       const b = bSnap.data() || {};
 
-      // Several booked calls are fine now; two on the same day are not.
-      const [aDay, bDay] = await Promise.all([
-        bookingsLib.sameDayBookingsTx(tx, db, uidA, slot),
-        bookingsLib.sameDayBookingsTx(tx, db, uidB, slot),
-      ]);
-      if (aDay.length) throw slotFail(409, "user-a-busy");
-      if (bDay.length) throw slotFail(409, "user-b-busy");
+      // The admin may book someone twice in a day (bookPairTx oneADay:false
+      // for admin offers); only a partner in the SAME 2-hour block refuses.
+      const membersRef = db.collection("practiceSlots").doc(slot.slotId).collection("members");
+      const [memA, memB] = await Promise.all([tx.get(membersRef.doc(uidA)), tx.get(membersRef.doc(uidB))]);
+      const takenInBlock = (mem, peer) => mem.exists && mem.get("status") === "matched" && mem.get("pairedWith") !== peer;
+      if (takenInBlock(memA, uidB)) throw slotFail(409, "user-a-busy");
+      if (takenInBlock(memB, uidA)) throw slotFail(409, "user-b-busy");
 
       // Only the admin sees this reason — learners are never told.
       const v = await pairVerdict(db, (r) => tx.get(r), uidA, uidB, { known: { [uidA]: a, [uidB]: b }, checkLevel: false });
@@ -3717,13 +3727,14 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       if (v.avoided) throw slotFail(409, "pair-avoided");
       if (v.ageClash) throw slotFail(409, "pair-age");
 
-      // One open proposal per person PER DAY (a weekly plan sends several):
-      // two open promises for the same evening is the problem this avoids.
+      // One open proposal per person per BLOCK: two open promises for the
+      // same hour is the problem this avoids. (It was per day, which stopped
+      // the admin offering a second practice later the same day.)
       const pa = await livePendingOffersTx(db, tx, uidA, now);
       const pb = await livePendingOffersTx(db, tx, uidB, now);
-      const sameDay = (p) => p.live.some((d) => String(d.get("slotId") || "").slice(0, 10) === slot.date);
-      if (sameDay(pa)) throw slotFail(409, "user-a-has-offer");
-      if (sameDay(pb)) throw slotFail(409, "user-b-has-offer");
+      const sameBlock = (p) => p.live.some((d) => d.get("slotId") === slot.slotId);
+      if (sameBlock(pa)) throw slotFail(409, "user-a-has-offer");
+      if (sameBlock(pb)) throw slotFail(409, "user-b-has-offer");
 
       const ts = admin.firestore.FieldValue.serverTimestamp();
       const staleIds = new Set();
@@ -3826,6 +3837,9 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
         slot, now,
         marker: { setByAdmin: true, offerId },
         source: "admin_offer",
+        // Only the weekly plan's own offers keep the one-a-day spread.
+        oneADay: offer.source === "weekly_plan",
+        replaceInBlock: false,
       });
       tx.update(offerRef, {
         [`responses.${uid}`]: "accepted",

@@ -60,8 +60,8 @@ export function ProposePanel({ a, b, overlapWeek }) {
       return;
     }
     const who = { 'user-a-busy': a, 'user-b-busy': b, 'user-a-has-offer': a, 'user-b-has-offer': b }[res.error];
-    const text = res.error?.endsWith('-busy') ? `${firstName(who.name)} already has a booked call.`
-      : res.error?.endsWith('-has-offer') ? `${firstName(who.name)} already has an open proposal. Withdraw it first.`
+    const text = res.error?.endsWith('-busy') ? `${firstName(who.name)} already has a call in this time block. Pick another time.`
+      : res.error?.endsWith('-has-offer') ? `${firstName(who.name)} already has an open proposal at this time. Withdraw it first.`
         : res.errorText;
     setMsg({ ok: false, text });
   };

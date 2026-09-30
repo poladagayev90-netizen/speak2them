@@ -12,12 +12,16 @@ messaging.onBackgroundMessage((payload) => {
   if (payload.notification) return;
   const data = payload.data || {};
   if (!data.title) return;
+  // A call must not slip by as a quiet tray item: it stays up until tapped,
+  // vibrates like a ring, and re-alerts even if an older call used the tag.
+  const isCall = data.type === 'incoming_call';
   self.registration.showNotification(data.title, {
     body: data.body || '',
     icon: '/logo192.png',
     badge: '/logo192.png',
     tag: data.type || 'speaklab',
     data: { url: data.url || '/' },
+    ...(isCall ? { requireInteraction: true, renotify: true, vibrate: [400, 200, 400, 200, 400] } : {}),
   });
 });
 

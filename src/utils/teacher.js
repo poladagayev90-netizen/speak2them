@@ -140,8 +140,8 @@ export const SET_MATCH_ERROR_TEXT = {
   'invalid-slot': 'Pick a time first.',
   'slot-past': 'That time has already passed.',
   'slot-too-far': 'You cannot book that far ahead.',
-  'student-a-busy': 'The first student already has a call at another time. They need to cancel it first.',
-  'student-b-busy': 'The second student already has a call at another time. They need to cancel it first.',
+  'student-a-busy': 'The first student already has a call in this time block. Pick another time.',
+  'student-b-busy': 'The second student already has a call in this time block. Pick another time.',
   unauthorized: 'Your session has expired. Please sign in again.',
 };
 
