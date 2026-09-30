@@ -218,6 +218,23 @@ const OVERRIDES = {
   'bricks': { az: 'kərpiclər', tr: 'tuğlalar' },
   'mortar': { az: 'sement məhlulu', tr: 'harç' },
   'thumbs up': { az: 'baş barmaq yuxarı', tr: 'başparmak yukarı' },
+  // Telegram partiyası 2 (2026-10-01)
+  'delivery rider': { az: 'kuryer', tr: 'kurye' },
+  'fish tank': { az: 'akvarium', tr: 'akvaryum' },
+  'leaning over': { az: 'əyilir', tr: 'eğiliyor' },
+  'soaking wet': { az: 'sırsıklam', tr: 'sırılsıklam' },
+  'ginger cat': { az: 'sarı pişik', tr: 'sarman kedi' },
+  'riding': { az: 'minib gedir', tr: 'biniyor' },
+  'carrying': { az: 'daşıyır', tr: 'taşıyor' },
+  'knocking': { az: 'qapını döyür', tr: 'kapıyı çalıyor' },
+  'slipping': { az: 'sürüşür', tr: 'kayıyor' },
+  'sloth': { az: 'ləngimə (tənbəl heyvan)', tr: 'tembel hayvan' },
+  'pushing': { az: 'itələyir', tr: 'itiyor' },
+  'jumping': { az: 'tullanır', tr: 'zıplıyor' },
+  'floating log': { az: 'suda üzən kötük', tr: 'yüzen kütük' },
+  'balance': { az: 'tarazlıq', tr: 'denge' },
+  'spinning': { az: 'fırlanır', tr: 'dönüyor' },
+  'bushy tail': { az: 'qalın tüklü quyruq', tr: 'gür kuyruk' },
 };
 
 function loadKeywords(file) {

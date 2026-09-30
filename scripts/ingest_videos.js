@@ -153,7 +153,9 @@ ${pr}
   const ends = [...deckSrc.matchAll(/\n\];\r?\n/g)];
   const at = ends.length ? ends[ends.length - 1].index : -1;
   if (at < 0) { console.error('describeVideos.js-in sonu tapılmadı'); process.exit(1); }
-  fs.writeFileSync(DECK, deckSrc.slice(0, at + 1) + entries.join('\n') + deckSrc.slice(at + 1));
+  // The trailing '\n' keeps "];" on its own line — without it the file ended
+  // "},];" and the NEXT run could not find the end of the deck.
+  fs.writeFileSync(DECK, `${deckSrc.slice(0, at + 1)}${entries.join('\n')}\n${deckSrc.slice(at + 1)}`);
   console.log(`\n${entries.length} klip → describeVideos.js  (${skipped} doldurulmamış giriş atlandı)`);
   console.log('İndi: node scripts/build_keyword_glossary.js && node scripts/assign_topic_videos.js');
 }

@@ -614,7 +614,203 @@ export const describeVideos = [
       'What is she building? Tell it step by step.',
       'Why do you think she is doing this job herself?',
     ],
-  },];
+  },
+  {
+    // source: video_2026-09-30_21-09-23.mp4
+    id: 'monkey-house-chase',
+    src: '/videos/monkey-house-chase.mp4',
+    poster: '/videos/monkey-house-chase.jpg',
+    seconds: 7,
+    alt: 'A monkey walks into a living room by the sea, and a woman in a green top chases it out through the balcony door.',
+    keywords: ['monkey', 'living room', 'balcony door', 'sea view', 'glass table'],
+    prompts: [
+      'How do you think the monkey got into the house?',
+      'What would you do if an animal walked into your home?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-28.mp4
+    id: 'cat-under-car',
+    src: '/videos/cat-under-car.mp4',
+    poster: '/videos/cat-under-car.jpg',
+    seconds: 11,
+    alt: 'A delivery rider pulls a cat out from under a parked car, but the cat rolls straight back to its spot on the road.',
+    keywords: ['delivery rider', 'cat', 'parked car', 'number plate', 'rolling'],
+    prompts: [
+      'Why does the rider move the cat?',
+      'What does the cat do after that? Why do you think it goes back?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-30.mp4
+    id: 'fridge-on-back',
+    src: '/videos/fridge-on-back.mp4',
+    poster: '/videos/fridge-on-back.jpg',
+    seconds: 21,
+    alt: 'A man in a red shirt takes a big fridge off a lorry, lifts it onto his back and carries it down the street alone.',
+    keywords: ['fridge', 'lorry', 'red shirt', 'carrying', 'street'],
+    prompts: [
+      'How does he get the fridge off the lorry? Tell it step by step.',
+      'Could you carry something this heavy? What would you use?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-32.mp4
+    id: 'fish-tank-fall',
+    src: '/videos/fish-tank-fall.mp4',
+    poster: '/videos/fish-tank-fall.jpg',
+    seconds: 26,
+    alt: 'A man in a work uniform leans into a big fish tank to catch a fish, loses his balance and falls in head first, then climbs out and waves.',
+    keywords: ['fish tank', 'uniform', 'leaning over', 'splash', 'soaking wet'],
+    prompts: [
+      'What was he trying to do before he fell?',
+      'How do you think he felt after he climbed out?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-34.mp4
+    id: 'cat-dump-truck',
+    src: '/videos/cat-dump-truck.mp4',
+    poster: '/videos/cat-dump-truck.jpg',
+    seconds: 12,
+    alt: 'A ginger cat rides in the back of a toy dump truck across a shiny floor and straight into a cardboard box.',
+    keywords: ['ginger cat', 'toy truck', 'cardboard box', 'shiny floor', 'riding'],
+    prompts: [
+      'Where is the cat going, and how does it get there?',
+      'Why do you think the cat sits so calmly?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-40.mp4
+    id: 'fairy-door-cats',
+    src: '/videos/fairy-door-cats.mp4',
+    poster: '/videos/fairy-door-cats.jpg',
+    seconds: 12,
+    alt: 'Someone knocks on a tiny door in a big tree, and one by one, kittens holding bunches of flowers come out and line up.',
+    keywords: ['tiny door', 'tree trunk', 'knocking', 'kittens', 'bunches of flowers'],
+    prompts: [
+      'What happens after the knock? Tell it in order.',
+      'Who do you think the flowers are for?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-43.mp4
+    id: 'snow-slip',
+    src: '/videos/snow-slip.mp4',
+    poster: '/videos/snow-slip.jpg',
+    seconds: 16,
+    alt: 'On a bright street at night, a woman slips on the icy path and falls into a pile of snow while people walk past.',
+    keywords: ['icy street', 'snow pile', 'slipping', 'lights', 'winter coat'],
+    prompts: [
+      'What happened to her? Describe it step by step.',
+      'Have you ever slipped on ice or snow? What happened?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-45.mp4
+    id: 'sloth-dashboard',
+    src: '/videos/sloth-dashboard.mp4',
+    poster: '/videos/sloth-dashboard.jpg',
+    seconds: 17,
+    alt: 'A sloth lies stretched out on the dashboard of a lorry driving down a motorway on a sunny day.',
+    keywords: ['sloth', 'dashboard', 'motorway', 'steering wheel', 'long claws'],
+    prompts: [
+      'Why do you think the sloth is in the lorry?',
+      'Where could they be going together?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-46.mp4
+    id: 'boulder-push',
+    src: '/videos/boulder-push.mp4',
+    poster: '/videos/boulder-push.jpg',
+    seconds: 10,
+    alt: 'A man sitting on a steep hillside pushes a big rock with his feet, and it crashes down through the bushes towards the camera.',
+    keywords: ['big rock', 'hillside', 'pushing', 'bushes', 'dust'],
+    prompts: [
+      'What does the man do, and what happens next?',
+      'Was this a good idea? Why or why not?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-53.mp4
+    id: 'cat-wall-jump',
+    src: '/videos/cat-wall-jump.mp4',
+    poster: '/videos/cat-wall-jump.jpg',
+    seconds: 9,
+    alt: 'A cat runs across a big empty room, jumps high up the wall and flies back through the air.',
+    keywords: ['cat', 'empty room', 'jumping', 'wall', 'television'],
+    prompts: [
+      'What do you think the cat was trying to catch?',
+      'Describe the jump from start to finish.',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-09-57.mp4
+    id: 'turtles-log',
+    src: '/videos/turtles-log.mp4',
+    poster: '/videos/turtles-log.jpg',
+    seconds: 17,
+    alt: 'A row of turtles climbs onto a floating log in a green pond, and the log tips and rolls as they try to stay on.',
+    keywords: ['turtles', 'floating log', 'pond', 'balance', 'row'],
+    prompts: [
+      'What happens to the log when more turtles climb on?',
+      'Why do you think turtles like to sit on logs?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-10-00.mp4
+    id: 'cat-washing-machine',
+    src: '/videos/cat-washing-machine.mp4',
+    poster: '/videos/cat-washing-machine.jpg',
+    seconds: 7,
+    alt: 'A fluffy ginger cat stands at a washing machine and paws at the glass door while the clothes spin inside.',
+    keywords: ['washing machine', 'ginger cat', 'paws', 'spinning', 'clothes'],
+    prompts: [
+      'What does the cat think it is doing?',
+      'Why do cats love watching things that move?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-10-01.mp4
+    id: 'squirrel-fountain',
+    src: '/videos/squirrel-fountain.mp4',
+    poster: '/videos/squirrel-fountain.jpg',
+    seconds: 14,
+    alt: 'In a park, a squirrel climbs onto a drinking fountain and drinks from the stream of water like a person.',
+    keywords: ['squirrel', 'drinking fountain', 'park', 'stream of water', 'bushy tail'],
+    prompts: [
+      'How does the squirrel drink the water?',
+      'What other clever things have you seen animals do?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-10-06.mp4
+    id: 'runaway-cart',
+    src: '/videos/runaway-cart.mp4',
+    poster: '/videos/runaway-cart.jpg',
+    seconds: 13,
+    alt: 'On a rainy, windy day, an empty shopping trolley rolls across a car park towards the parked cars, filmed from inside a car.',
+    keywords: ['shopping trolley', 'car park', 'rain', 'wind', 'parked cars'],
+    prompts: [
+      'Where is the trolley going? What might happen?',
+      'What would you do if you saw this?',
+    ],
+  },
+  {
+    // source: video_2026-09-30_21-10-08.mp4
+    id: 'cat-steals-fish',
+    src: '/videos/cat-steals-fish.mp4',
+    poster: '/videos/cat-steals-fish.jpg',
+    seconds: 17,
+    alt: 'While a man fishes by the sea, a cat puts its head in his bucket, takes a fish and runs off with it past the people walking by.',
+    keywords: ['fisherman', 'fishing rod', 'bucket', 'cat', 'seafront'],
+    prompts: [
+      'What does the cat do while the man is busy?',
+      'Should the man be angry? Why or why not?',
+    ],
+  },
+];
 
 // Which clips a topic gets lives in topicVideos.js, which
 // scripts/assign_topic_videos.js generates from this deck — see
