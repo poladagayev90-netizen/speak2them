@@ -1,4 +1,4 @@
-import { planHeadline, openOffers, upcomingBookings, canJoin, peerOf, limitText } from './planState';
+import { planHeadline, openOffers, upcomingBookings, canJoin, peerOf, limitText, bookingDays, comingUpLabel } from './planState';
 
 const now = Date.parse('2026-10-06T10:00:00+04:00');
 const H = 3600000;
@@ -72,4 +72,18 @@ test('no replacement found is said plainly', () => {
   const h = planHeadline({ ...base, planStatus: { state: 'no_match', reason: 'replacement_not_found', weekKey: '2026-10-05' } });
   expect(h.kind).toBe('no_match');
   expect(h.text).toContain('no other time has turned up');
+});
+
+test('the timeline groups bookings by calendar day and marks today', () => {
+  const days = bookingDays([booking(now + 2 * H), booking(now + 3 * H), booking(now + 26 * H)], now);
+  expect(days).toHaveLength(2);
+  expect(days[0].items).toHaveLength(2);
+  expect(days[0].isToday).toBe(true);
+  expect(days[1].isToday).toBe(false);
+  expect(bookingDays([], now)).toEqual([]);
+});
+
+test('coming-up label names today and tomorrow', () => {
+  expect(comingUpLabel(now + 2 * H, now)).toMatch(/^Today, /);
+  expect(comingUpLabel(now + 26 * H, now)).toMatch(/^Tomorrow, /);
 });

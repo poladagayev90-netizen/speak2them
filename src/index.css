@@ -234,6 +234,18 @@
   --hero-4: #74388c;
   --hero-5: #43276d;
 
+  /* Ink on the in-call activity card (StageCard), which drifts through the
+     hero purples above: white, a softer white for labels, glassy chips, and
+     the Taboo "forbidden" red lifted to a pale coral that reads on purple. */
+  --stage-ink: #ffffff;
+  --stage-ink-soft: rgba(255, 255, 255, 0.78);
+  --stage-chip: rgba(255, 255, 255, 0.12);
+  --stage-chip-border: rgba(255, 255, 255, 0.22);
+  --stage-edge: rgba(255, 255, 255, 0.16);
+  --stage-no: #ffe4df;
+  --stage-no-chip: rgba(255, 196, 188, 0.12);
+  --stage-no-border: rgba(255, 196, 188, 0.38);
+
   /* The floating nav is real glass in light mode too: see-through enough for
      the page to blur behind it, a lit top edge, a faint violet hairline. */
   --nav-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.70), rgba(247, 245, 255, 0.52));
@@ -263,6 +275,17 @@
   --hero-3: #d6b4f6;
   --hero-4: #e7c2ef;
   --hero-5: #c4b0ff;
+
+  /* On the pastel card the ink is dark and the chips are frosted white;
+     the forbidden words go deep red, the one colour outside the purples. */
+  --stage-ink: #171331;
+  --stage-ink-soft: rgba(23, 19, 49, 0.74);
+  --stage-chip: rgba(255, 255, 255, 0.38);
+  --stage-chip-border: rgba(255, 255, 255, 0.55);
+  --stage-edge: rgba(255, 255, 255, 0.35);
+  --stage-no: #8c1d24;
+  --stage-no-chip: rgba(255, 255, 255, 0.45);
+  --stage-no-border: rgba(140, 29, 36, 0.28);
 
   --nav-fill: var(--glass-fill);
   --nav-border: var(--glass-border);

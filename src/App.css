@@ -2849,3 +2849,52 @@ body {
   /* Quiz and the pictures button do not need 1280px of line length. */
   .dt-section--narrow { max-width: 760px; margin: 0 auto; width: 100%; }
 }
+
+/* ─── In-call activity card (StageCard.jsx) ────────────────────────────
+   The Today hero's drift and wandering light (plan.css, periods from
+   HeroFx.jsx: 18 s and 23 s) on a card that keeps its own entrance
+   animation — so both motions ride on pseudo-elements. */
+.stage-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--stage-ink);
+  border: 1px solid var(--stage-edge);
+  box-shadow: var(--glass-lift);
+}
+.stage-card .taboo-dots span { background: var(--stage-ink); }
+.stage-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(115deg, var(--hero-1), var(--hero-2), var(--hero-3), var(--hero-4), var(--hero-5), var(--hero-1));
+  background-size: 400% 400%;
+  animation: stage-drift 18s ease-in-out var(--hero-drift-delay, 0s) infinite alternate;
+}
+.stage-card::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 80%;
+  aspect-ratio: 1;
+  top: -40%;
+  left: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 65%);
+  animation: stage-light 23s ease-in-out var(--hero-light-delay, 0s) infinite alternate;
+  pointer-events: none;
+}
+@keyframes stage-drift {
+  0% { background-position: 0% 30%; }
+  50% { background-position: 60% 70%; }
+  100% { background-position: 100% 40%; }
+}
+@keyframes stage-light {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(70%, 40%); }
+  100% { transform: translate(110%, 5%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-card::before, .stage-card::after { animation: none; }
+}

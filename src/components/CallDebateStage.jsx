@@ -1,4 +1,5 @@
 import React from 'react';
+import StageCard from './StageCard';
 import { X } from 'lucide-react';
 import { debateTopics } from '../data/debateTopics';
 
@@ -31,10 +32,7 @@ const CARD_BASE = {
   display: 'flex',
   flexDirection: 'column',
   gap: 10,
-  background: 'linear-gradient(160deg, #241e48 0%, #1e1940 55%, #171331 100%)',
-  border: '1px solid rgba(255, 255, 255, 0.10)',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
+  // Background, edge and ink come from StageCard (the hero drift).
 };
 
 const FOOT_BTN = {
@@ -140,15 +138,15 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
         {/* Yalnız arqument kartı sürüşür — mövzu başlıqda, düymələr altda sabit
             qalır, yoxsa uzun siyahıda «Bitir» əlçatmaz olurdu. */}
         <div style={{ padding: '10px 16px 0', overflowY: 'auto', minHeight: 0 }}>
-          <div key={topicIndex} className="debate-card" style={CARD_BASE}>
+          <StageCard key={topicIndex} className="debate-card" style={CARD_BASE}>
             <p style={{
-              color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700, margin: 0,
+              color: 'var(--stage-ink-soft)', fontSize: 10, fontWeight: 700, margin: 0,
               textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center',
             }}>
               Your side
             </p>
             <h3 style={{
-              color: '#fff', fontSize: 24, fontWeight: 800, margin: '0 0 4px', textAlign: 'center',
+              color: 'var(--stage-ink)', fontSize: 24, fontWeight: 800, margin: '0 0 4px', textAlign: 'center',
             }}>
               {mine.label}
             </h3>
@@ -156,17 +154,17 @@ export default function CallDebateStage({ topicIndex, side, onNextTopic, onClose
               {mine.points.map((p) => (
                 <div key={p} style={{
                   display: 'flex', alignItems: 'flex-start', gap: 8,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: 'var(--stage-chip)',
+                  border: '1px solid var(--stage-chip-border)',
                   borderRadius: 10, padding: '8px 12px',
-                  color: '#e7e6fb', fontSize: 13, fontWeight: 600, lineHeight: 1.4,
+                  color: 'var(--stage-ink)', fontSize: 14, fontWeight: 600, lineHeight: 1.4,
                 }}>
-                  <span aria-hidden="true" style={{ color: '#c9b8ff', fontWeight: 800 }}>•</span>
+                  <span aria-hidden="true" style={{ color: 'var(--stage-ink-soft)', fontWeight: 800 }}>•</span>
                   {p}
                 </div>
               ))}
             </div>
-          </div>
+          </StageCard>
         </div>
 
         <p style={{

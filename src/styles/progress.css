@@ -14,6 +14,11 @@
  */
 
 .progress-page {
+  /* Full width even when a session tab is short: inside the app's column
+     flex container the page otherwise shrinks to its content (the word list
+     sat in a 280px strip). */
+  width: 100%;
+  box-sizing: border-box;
   padding: var(--s-5) var(--s-4) 100px;
   min-height: 100vh;
   background: var(--bg-primary);
@@ -693,4 +698,104 @@
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--text-muted);
+}
+
+/* ─── The Lab by session (2026-10-01) ─────────────────────────────── */
+.lab-picker {
+  display: flex; align-items: center; gap: var(--s-3);
+  width: 100%; margin: calc(-1 * var(--s-3)) 0 var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--glass-lift);
+  font: inherit; color: var(--text-primary); text-align: left; cursor: pointer;
+}
+.lab-picker-icon {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--r-md);
+  display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+.lab-picker-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.lab-picker-title {
+  font-size: var(--fs-body); font-weight: 800;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lab-picker-sub { font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+
+.lab-pick-list { display: flex; flex-direction: column; }
+.lab-pick {
+  display: flex; align-items: center; gap: var(--s-3);
+  width: 100%; padding: var(--s-3) var(--s-2);
+  background: none; border: 0; border-radius: var(--r-md);
+  font: inherit; color: var(--text-primary); text-align: left; cursor: pointer;
+}
+.lab-pick + .lab-pick { border-top: 1px solid var(--border); }
+.lab-pick.is-on { background: var(--accent-soft); }
+.lab-pick.is-on + .lab-pick { border-top-color: transparent; }
+.lab-pick--all {
+  justify-content: center; border: 1px solid var(--border);
+  font-weight: 800; padding: var(--s-3);
+}
+
+.lab-tabs {
+  display: flex; gap: var(--s-5);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--s-4);
+  overflow-x: auto;
+}
+.lab-tab {
+  position: relative; display: inline-flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-3) 0; background: none; border: 0;
+  font: inherit; font-size: var(--fs-body); font-weight: 700;
+  color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+}
+.lab-tab.is-on { color: var(--text-primary); }
+.lab-tab.is-on::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 3px; border-radius: 3px; background: var(--accent);
+}
+.lab-tab-count {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--r-pill);
+  display: inline-grid; place-items: center;
+  background: var(--text-primary); color: var(--bg-primary);
+  font-size: var(--fs-xs); font-weight: 800;
+}
+
+.lab-recap {
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.lab-empty { font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); padding: var(--s-4) 0; }
+
+.lab-words-title { font-size: var(--fs-h2); font-weight: 800; margin: 0 0 var(--s-3); color: var(--text-primary); }
+.lab-words-list {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--r-lg); overflow: hidden;
+}
+.lab-word + .lab-word { border-top: 1px solid var(--border); }
+.lab-word-row { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); }
+.lab-word-say {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--r-md);
+  display: grid; place-items: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--accent); cursor: pointer;
+}
+.lab-word-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s-2);
+  background: none; border: 0; padding: 0; font: inherit; text-align: left; cursor: pointer;
+  color: var(--text-primary);
+}
+.lab-word-w { font-size: var(--fs-body); font-weight: 700; overflow-wrap: anywhere; }
+.lab-word-cefr {
+  flex-shrink: 0; padding: 2px 8px; border-radius: var(--r-sm);
+  background: var(--accent-soft); color: var(--accent);
+  font-size: var(--fs-xs); font-weight: 800;
+}
+.lab-word-chev { margin-left: auto; flex-shrink: 0; color: var(--text-muted); transition: transform .2s; }
+.lab-word.is-open .lab-word-chev { transform: rotate(180deg); }
+.lab-word-more { padding: 0 var(--s-4) var(--s-4) calc(var(--s-4) + 44px + var(--s-3)); }
+.lab-word-meaning { margin: 0 0 var(--s-2); font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); }
+.lab-word-example { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); font-style: italic; }
+
+/* Six tiles on a session: three across once there is room. */
+@media (min-width: 700px) {
+  .lab-tabs ~ .progress-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

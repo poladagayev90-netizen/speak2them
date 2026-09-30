@@ -79,6 +79,11 @@ export default function Onboarding({ user }) {
   const [weeklyTarget, setWeeklyTarget] = useState(0);
   const [topics, setTopics] = useState([]);
   const [charterAccepted, setCharterAccepted] = useState(false);
+  // Plan → "Edit my free times" / "weekly target" on a finished onboarding.
+  // Polad (2026-10-01): changing one answer walked the learner through three
+  // more screens before anything saved, which read as "enter it all again".
+  // In edit mode the step you came to edit saves on its own.
+  const [editing, setEditing] = useState(false);
 
   // Load: a draft in this tab wins (the learner may have gone to the placement
   // test and come back); otherwise start from whatever they answered before.
@@ -115,7 +120,9 @@ export default function Onboarding({ user }) {
       if (jump >= 0) setStep(jump);
       else if (draft && Number.isInteger(draft.step)) setStep(Math.min(draft.step, STEPS.length - 1));
       else if (prev && (Number(prev.version) || 0) < ONBOARDING_VERSION) setStep(STEPS.indexOf('charter'));
-      setCharterAccepted(!!prev?.charterAcceptedAt && Number(prev?.charterVersion) >= CHARTER_VERSION);
+      const accepted = !!prev?.charterAcceptedAt && Number(prev?.charterVersion) >= CHARTER_VERSION;
+      setCharterAccepted(accepted);
+      setEditing(jump >= 0 && accepted && (Number(prev?.version) || 0) >= ONBOARDING_VERSION);
       setLoading(false);
     })();
     return () => { alive = false; };
@@ -410,6 +417,11 @@ export default function Onboarding({ user }) {
                 </div>
               ))}
             </div>
+            {editing && (
+              <p className="ob-note">
+                Changes count from your next weekly plan (Sunday). Practices you have already confirmed stay as they are.
+              </p>
+            )}
             <p className="ob-summary-line">
               {cells.size === 0
                 ? 'Choose at least one hour.'
@@ -500,7 +512,24 @@ export default function Onboarding({ user }) {
       </main>
 
       <footer className="ob-foot">
-        {id === 'summary' ? (
+        {editing && (id === 'availability' || id === 'target') ? (
+          // Fewer free days than the old target resets the target (the rule
+          // above), so that one case goes through the target step first.
+          id === 'availability' && weeklyTarget === 0 ? (
+            <Button size="lg" full onClick={() => go(1)} disabled={!canNext} iconRight={<ArrowRight size={20} />}>
+              Continue — pick your weekly target
+            </Button>
+          ) : (
+            <>
+              <Button size="lg" full onClick={submit} disabled={saving || !canNext} icon={<Check size={20} />}>
+                {saving ? 'Saving…' : 'Save'}
+              </Button>
+              <button type="button" className="ob-link ob-link--sm" onClick={() => { setEditing(false); jumpTo('summary'); }}>
+                Review all my answers
+              </button>
+            </>
+          )
+        ) : id === 'summary' ? (
           <Button size="lg" full onClick={submit} disabled={saving} icon={<Check size={20} />}>
             {saving ? 'Saving…' : 'Confirm and plan my week'}
           </Button>

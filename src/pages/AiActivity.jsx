@@ -549,7 +549,7 @@ export default function AiActivity({ user }) {
                 <p className="ai-bubble-text" style={{ color: 'var(--text-secondary)' }}>
                   Your mistakes, corrected, and something to practise.
                 </p>
-                <Button variant="ai" size="lg" full onClick={() => navigate('/history')}>
+                <Button variant="ai" size="lg" full onClick={() => navigate('/lab')}>
                   See my report
                 </Button>
               </>

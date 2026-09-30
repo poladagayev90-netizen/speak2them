@@ -1850,7 +1850,7 @@ export default function Chat({ user }) {
                   <AnalysisMessage
                     message={m}
                     isMine={isMine}
-                    onOpen={() => navigate(isMine ? '/history' : `/teacher/student/${m.senderId}`)}
+                    onOpen={() => navigate(isMine ? '/lab' : `/teacher/student/${m.senderId}`)}
                   />
                 ) : (
                   <p

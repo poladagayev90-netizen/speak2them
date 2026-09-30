@@ -36,6 +36,8 @@ export function toAnalysisView(analysis) {
       reason: f.reason || f.why || f.explanation,
     }));
 
+  // `cefr` and `meaning` exist only on analyses from 2026-10-01 on; older
+  // words render with the word and example alone.
   const vocabulary = analysis.vocabulary
     ? arr(analysis.vocabulary)
     // Old suggestions carried an Azerbaijani meaning where the example now goes.

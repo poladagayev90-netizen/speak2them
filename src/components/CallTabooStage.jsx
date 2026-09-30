@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import StageCard from './StageCard';
 import { X, Check, SkipForward } from 'lucide-react';
 import { tabooWords } from '../data/tabooWords';
 
@@ -33,10 +34,7 @@ const CARD_BASE = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  background: 'linear-gradient(160deg, #241e48 0%, #1e1940 55%, #171331 100%)',
-  border: '1px solid rgba(255, 255, 255, 0.10)',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
+  // Background, edge and ink come from StageCard (the hero drift).
 };
 
 // In-call synchronized Taboo game. Both peers read the same tabooStage doc field,
@@ -159,15 +157,15 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
 
         <div style={{ padding: '0 16px' }}>
           {isExplainer ? (
-            <div key={cardIndex} className="taboo-card" style={CARD_BASE}>
+            <StageCard key={cardIndex} className="taboo-card" style={CARD_BASE}>
               <p style={{
-                color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
+                color: 'var(--stage-ink-soft)', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
                 textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center',
               }}>
                 Explain this word
               </p>
               <h2 style={{
-                color: '#fff', fontSize: 34, fontWeight: 800, letterSpacing: '2px',
+                color: 'var(--stage-ink)', fontSize: 34, fontWeight: 800, letterSpacing: '2px',
                 textAlign: 'center', margin: '0 0 16px',
               }}>
                 {card.word}
@@ -175,16 +173,15 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
 
               <div style={{
                 height: 1, margin: '0 0 14px',
-                background: 'linear-gradient(90deg, transparent, rgba(224,141,134,0.6), transparent)',
+                background: 'linear-gradient(90deg, transparent, var(--stage-no-border), transparent)',
               }} />
 
               <p style={{
-                /* The card underneath is dark in BOTH themes, so the danger
-                   tokens cannot be used here: in light mode --danger-bg is a
-                   pale pink and --danger a deep red, i.e. pink slabs and
-                   invisible ink on a near-black card. These are the dark-theme
-                   red written out. */
-                color: '#e08d86', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
+                /* The card is the drifting hero purple, not a page surface, so
+                   the page's danger tokens do not fit it: --stage-no is a pale
+                   coral on the deep purples (light mode) and a deep red on the
+                   pastels (dark mode). */
+                color: 'var(--stage-no)', fontSize: 10, fontWeight: 700, margin: '0 0 10px',
                 textTransform: 'uppercase', letterSpacing: '1.2px', textAlign: 'center',
               }}>
                 Forbidden words
@@ -193,38 +190,39 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 {card.forbidden.map((w) => (
                   <div key={w} style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: 'rgba(224, 141, 134, 0.12)',
-                    border: '1px solid rgba(224, 141, 134, 0.25)',
+                    background: 'var(--stage-no-chip)',
+                    border: '1px solid var(--stage-no-border)',
                     borderRadius: 10, padding: '7px 12px',
-                    color: '#f0bbb6', fontSize: 14, fontWeight: 600,
+                    color: 'var(--stage-no)', fontSize: 14, fontWeight: 700,
                   }}>
-                    <X size={16} strokeWidth={2.5} aria-hidden="true" style={{ color: '#e08d86' }} />
+                    <X size={16} strokeWidth={2.5} aria-hidden="true" style={{ color: 'var(--stage-no)' }} />
                     {w}
                   </div>
                 ))}
               </div>
-            </div>
+            </StageCard>
           ) : (
-            <div key={cardIndex} className="taboo-card" style={{ ...CARD_BASE, alignItems: 'center' }}>
+            <StageCard key={cardIndex} className="taboo-card" style={{ ...CARD_BASE, alignItems: 'center' }}>
               <div
                 className={reduceMotion ? undefined : 'taboo-orb'}
                 aria-hidden="true"
                 style={{
                   width: 96, height: 96, borderRadius: '50%',
-                  background: '#b6a6ff',
+                  background: 'var(--stage-chip)',
+                  border: '1px solid var(--stage-chip-border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 42, fontWeight: 800, color: '#171331', marginBottom: 18,
+                  fontSize: 42, fontWeight: 800, color: 'var(--stage-ink)', marginBottom: 18,
                 }}
               >
                 ?
               </div>
               <p style={{
-                color: '#fff', fontSize: 16, fontWeight: 700, textAlign: 'center', margin: '0 0 8px',
+                color: 'var(--stage-ink)', fontSize: 16, fontWeight: 700, textAlign: 'center', margin: '0 0 8px',
               }}>
                 Your partner is explaining a word…
               </p>
               <p style={{
-                color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center', margin: 0,
+                color: 'var(--stage-ink-soft)', fontSize: 13, fontWeight: 600, textAlign: 'center', margin: 0,
               }}>
                 Listen closely and guess
               </p>
@@ -233,7 +231,7 @@ export default function CallTabooStage({ cardIndex, score, isExplainer, onCorrec
                 <span style={{ animationDelay: '180ms' }} />
                 <span style={{ animationDelay: '360ms' }} />
               </div>
-            </div>
+            </StageCard>
           )}
         </div>
 

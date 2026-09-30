@@ -1,4 +1,5 @@
 import React from 'react';
+import StageCard from './StageCard';
 
 // In-call synchronized speaking cards. Same channel as the picture and Taboo
 // stages: everything lives in the call doc's questionStage field, so both peers
@@ -28,8 +29,8 @@ const PANEL = {
 // hündürlük, 24px şrift, 26px emoji dairə) — ucuz görünürdü və «qırmızı = səhv»
 // assosiasiyası yaradırdı, halbuki Hard səhv deyil, sadəcə daha ağır seçimdir.
 // Two steps of the one purple: the lighter one for Easy, the deeper for Hard.
-// The chip that repeats the choice inside the question card sits on a fixed
-// dark surface, so these have to keep working against #241e48 as well.
+// The chip that repeats the choice inside the question card sits on the
+// drifting StageCard, so the filled pair below carries its own ink.
 const LEVEL_ACCENT = {
   easy: 'var(--ai)',
   hard: 'var(--accent)',
@@ -183,16 +184,13 @@ export default function CallQuestionStage({
     <Overlay>
       {header('Question card')}
       <div style={{ padding: '0 16px' }}>
-        <div key={safeIndex} className="qstage-card" style={{
+        <StageCard key={safeIndex} className="qstage-card" style={{
           borderRadius: 20, padding: '26px 20px', minHeight: 210,
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 16,
-          background: 'linear-gradient(160deg, #241e48 0%, #1e1940 55%, #171331 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.10)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{
-              color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 800,
+              color: 'var(--stage-ink-soft)', fontSize: 12, fontWeight: 800,
               letterSpacing: '1.5px',
             }}>
               {safeIndex + 1} / {questions.length}
@@ -208,12 +206,12 @@ export default function CallQuestionStage({
             </span>
           </div>
           <p style={{
-            color: '#fff', fontSize: 21, fontWeight: 700, lineHeight: 1.4,
+            color: 'var(--stage-ink)', fontSize: 21, fontWeight: 700, lineHeight: 1.4,
             margin: 0,
           }}>
             {questions[safeIndex]}
           </p>
-        </div>
+        </StageCard>
       </div>
 
       <div style={{ display: 'flex', gap: 10, padding: '16px' }}>

@@ -92,6 +92,43 @@ export function whenLabel(startMs, now = Date.now()) {
   return `${day} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
+// Bookings grouped by the learner's calendar day, for the Plan timeline
+// (a day column and a NOW line, as on a tutor's schedule). Input is already
+// the upcoming, sorted list from upcomingBookings().
+export function bookingDays(bookings, now = Date.now()) {
+  const days = [];
+  for (const b of bookings || []) {
+    const d = new Date(Number(b.startMs));
+    const key = d.toDateString();
+    let day = days[days.length - 1];
+    if (!day || day.key !== key) {
+      day = {
+        key,
+        dow: d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(),
+        date: d.getDate(),
+        month: d.toLocaleDateString('en-GB', { month: 'long' }),
+        isToday: key === new Date(now).toDateString(),
+        items: [],
+      };
+      days.push(day);
+    }
+    day.items.push(b);
+  }
+  return days;
+}
+
+// "Tomorrow, 2 Oct · 21:00" — the short line for the Today "Coming up" list.
+export function comingUpLabel(startMs, now = Date.now()) {
+  const d = new Date(Number(startMs));
+  const same = (a, b) => a.toDateString() === b.toDateString();
+  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const day = same(d, new Date(now)) ? 'Today'
+    : same(d, new Date(now + 86400000)) ? 'Tomorrow'
+      : d.toLocaleDateString('en-GB', { weekday: 'long' });
+  return `${day}, ${date} · ${time}`;
+}
+
 export function countdownLabel(startMs, now = Date.now()) {
   const diff = Number(startMs) - now;
   if (diff <= 0) return 'Now';

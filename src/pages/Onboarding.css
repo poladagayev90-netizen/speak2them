@@ -389,3 +389,6 @@
   background: var(--bg-primary);
   border-top: 1px solid var(--border);
 }
+
+/* Edit mode: "Review all my answers" sits centred under Save. */
+.ob-foot .ob-link { display: block; margin: var(--s-3) auto 0; }

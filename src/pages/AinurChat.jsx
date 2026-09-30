@@ -95,7 +95,7 @@ export default function AinurChat({ user }) {
                   <AnalysisMessage
                     message={m}
                     isMine
-                    onOpen={() => navigate('/history')}
+                    onOpen={() => navigate('/lab')}
                   />
                 ) : (
                   <p className="ai-bubble-text">{m.text}</p>

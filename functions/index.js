@@ -11,6 +11,7 @@ const bookingsLib = require("./bookings");
 const { truncatedError, badJsonError, classifyLlmError } = require("./llmErrors");
 const weeklyPlanner = require("./weeklyPlanner");
 const reliabilityLib = require("./reliability");
+const { normalizeVocabulary, CEFR: CEFR_LEVELS } = require("./analysisVocab");
 const { weekKey: bakuWeekKey } = require("./practiceStats");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
@@ -5404,7 +5405,7 @@ Rules:
 - recap: 1-2 sentences on what the learner talked about.
 - strengths: 1-2 concrete things they genuinely did well in this conversation.
 - tips: 2-3 NAMED practice techniques, each tied to a theme above. Give each one a short memorable name the learner can repeat to themselves, then one sentence on how to do it. Model them on: "Am/Is/Are detoksu — danışarkən cümlədə hərəkət varsa, am/is/are demədən keç." or "Kölgələmə (Shadowing) — videonu dayandır, eyni cümləni eyni ahənglə səsli təkrarla." No generic filler such as "qorxma" or "daha çox danış".
-- vocabulary: 3-5 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words.
+- vocabulary: 3-5 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words. For each also give cefr = its CEFR level (A1, A2, B1, B2, C1 or C2) and meaning = a short gloss in {{LANGUAGE}} (1-6 words, the sense used here).
 - homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
   - multiple_choice: up to 5 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
   - word_order: up to 4 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, naming the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration"). State ONLY rules that are true of English — never invent word-order rules (English is Subject-Verb-Object; the verb does NOT go at the end). If unsure, just name the tense or structure being practised.
@@ -5504,10 +5505,12 @@ const ANALYSIS_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["word", "example"],
+        required: ["word", "example", "cefr", "meaning"],
         properties: {
           word: { type: "string" },
           example: { type: "string" },
+          cefr: { type: "string", enum: CEFR_LEVELS },
+          meaning: { type: "string" },
         },
       },
     },
@@ -5757,9 +5760,7 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
   const grammar = clampScore(scores.grammar);
   const vocabScore = clampScore(scores.vocabulary);
 
-  const vocabulary = (Array.isArray(obj.vocabulary) ? obj.vocabulary : [])
-    .map((v) => ({ word: asStr(v?.word), example: asStr(v?.example) }))
-    .filter((v) => v.word).slice(0, 4);
+  const vocabulary = normalizeVocabulary(obj.vocabulary);
 
   // ── Homework normalizasiyası ──────────────────────────────────
   // Söz sırası tapşırığında scrambled HƏMİŞƏ serverdə yenidən qurulur:

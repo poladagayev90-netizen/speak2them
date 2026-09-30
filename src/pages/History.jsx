@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Clock, ChevronLeft, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -8,6 +6,7 @@ import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
 import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
+import { fetchAnalyses } from '../utils/insights';
 import '../styles/analysisReport.css';
 
 const PROFILE_TOUR_STEPS = [
@@ -31,33 +30,8 @@ export default function History({ user }) {
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
-      const base = [collection(db, 'callAnalysis'), where('userId', '==', user.uid)];
-      const run = async (ordered) => getDocs(
-        ordered
-          ? query(...base, orderBy('timestamp', 'desc'), limit(50))
-          : query(...base, limit(50))
-      );
       try {
-        let snap;
-        try {
-          snap = await run(true);
-        } catch (e) {
-          // The composite index (userId, timestamp desc) may not exist yet —
-          // fall back to an unordered read; the local sort below covers it.
-          if (e.code !== 'failed-precondition') throw e;
-          console.warn('[History] composite index missing, falling back');
-          snap = await run(false);
-        }
-        const results = snap.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          // Tickets still in the queue carry no analysis yet. Failed ones stay:
-          // hiding them left the user waiting for a result that never arrives.
-          .filter(d => d.status !== 'queued' && d.status !== 'processing');
-        results.sort((a, b) => {
-          const tA = a.timestamp?.seconds || 0;
-          const tB = b.timestamp?.seconds || 0;
-          return tB - tA;
-        });
+        const results = await fetchAnalyses(user.uid);
         setHistory(results);
 
         const wanted = state?.analysisId && results.find((d) => d.id === state.analysisId);
@@ -96,7 +70,7 @@ export default function History({ user }) {
     <div className="history-page" style={{ padding: '20px 16px', paddingBottom: '100px', minHeight: '100vh', background: 'var(--bg-primary)', maxWidth: '780px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
+        <button onClick={() => navigate('/lab')} aria-label="Back" style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: 0 }}>
           <ChevronLeft size={24} />
         </button>
         <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0 16px' }}>{'Analysis history'}</h2>
@@ -204,7 +178,10 @@ const mdComponents = {
   strong: ({ children }) => <strong>{children}</strong>,
 };
 
-export function AnalysisDetail({ analysis, onClose, lang }) {
+// `embedded`: rendered inside the Lab's Feedback tab, which already shows the
+// score, the date and the words — so the header, the score line and the word
+// list are left to the Lab and only the corrections and practice render here.
+export function AnalysisDetail({ analysis, onClose, lang, embedded = false }) {
   // The generated content (corrections, reasons, tips) arrives already written
   // in the learner language; the frame around it is English like the rest of
   // the app, so nothing here needs to branch on the language.
@@ -212,13 +189,15 @@ export function AnalysisDetail({ analysis, onClose, lang }) {
   const [showNotes, setShowNotes] = useState(false);
 
   if (analysis.error) return (
-    <div className="analysis-doc">
-      <div className="analysis-doc-header">
-        <button className="analysis-doc-back" onClick={onClose} aria-label="Back">
-          <ChevronLeft size={22} />
-        </button>
-        <div className="analysis-doc-title">Analysis</div>
-      </div>
+    <div className={`analysis-doc ${embedded ? 'analysis-doc--embedded' : ''}`}>
+      {!embedded && (
+        <div className="analysis-doc-header">
+          <button className="analysis-doc-back" onClick={onClose} aria-label="Back">
+            <ChevronLeft size={22} />
+          </button>
+          <div className="analysis-doc-title">Analysis</div>
+        </div>
+      )}
       <div className="analysis-doc-card" style={{ textAlign: 'center' }}>
         <div style={{ marginBottom: 10, color: 'var(--danger)' }}><FileText size={38} strokeWidth={1.5} /></div>
         <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Analysis failed</p>
@@ -249,19 +228,21 @@ export function AnalysisDetail({ analysis, onClose, lang }) {
   });
 
   return (
-    <div className="analysis-doc rep">
-      <div className="analysis-doc-header">
-        <button className="analysis-doc-back" onClick={onClose} aria-label="Back">
-          <ChevronLeft size={22} />
-        </button>
-        <div className="analysis-doc-title">Analysis</div>
-      </div>
+    <div className={`analysis-doc rep ${embedded ? 'analysis-doc--embedded' : ''}`}>
+      {!embedded && (
+        <div className="analysis-doc-header">
+          <button className="analysis-doc-back" onClick={onClose} aria-label="Back">
+            <ChevronLeft size={22} />
+          </button>
+          <div className="analysis-doc-title">Analysis</div>
+        </div>
+      )}
 
       {/* One line of context, then straight into the corrections. The report
           used to open with up to 4000 characters of generated prose, which is
           the part a learner scrolls past to reach what they actually got
           wrong. It is still available, at the bottom, folded away. */}
-      <div className="rep-head">
+      {!embedded && <div className="rep-head">
         <div className="rep-score" style={{ color: scoreHue(view.overallScore) }}>
           {view.overallScore ?? '—'}
         </div>
@@ -274,7 +255,7 @@ export function AnalysisDetail({ analysis, onClose, lang }) {
             {view.speakingPace?.wpm > 0 ? ` · ${view.speakingPace.wpm} wpm` : ''}
           </p>
         </div>
-      </div>
+      </div>}
 
       {fixes.length > 0 ? (
         <>
@@ -319,7 +300,7 @@ export function AnalysisDetail({ analysis, onClose, lang }) {
         </>
       )}
 
-      {view.vocabulary.length > 0 && (
+      {!embedded && view.vocabulary.length > 0 && (
         <>
           <p className="rep-label">Words to reuse</p>
           <div className="rep-words">

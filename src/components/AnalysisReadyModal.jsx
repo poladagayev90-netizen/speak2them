@@ -82,7 +82,7 @@ export default function AnalysisReadyModal({ user, suppressed }) {
   // "Sonra" = bağla, amma BAXILDI sayma — 4 saatdan sonra bir dəfə də
   // xatırladıla bilər (istifadəçinin istədiyi davranış).
   const dismiss = () => setNag(readNag(user.uid));
-  const open = () => { markSeen(); navigate('/history'); };
+  const open = () => { markSeen(); navigate('/lab'); };
 
   return (
     <div className="topic-intro-overlay">

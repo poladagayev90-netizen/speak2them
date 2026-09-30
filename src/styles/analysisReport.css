@@ -511,3 +511,12 @@
 }
 .rep-notes-full { margin: var(--s-2) var(--s-4) var(--s-8); }
 .analysis-doc.rep { padding-bottom: 120px; }
+
+/* Inside the Lab's Feedback tab: the Lab page already gives the frame, the
+   paper background and the bottom clearance for the nav. */
+.analysis-doc.analysis-doc--embedded {
+  min-height: 0;
+  max-width: none;
+  padding: var(--s-2) 0 0;
+  background: transparent;
+}

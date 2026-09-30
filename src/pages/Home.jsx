@@ -24,7 +24,7 @@ import TopicCard from '../components/plan/TopicCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import useMyPlan from '../hooks/useMyPlan';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
-import { planHeadline, openOffers, upcomingBookings } from '../utils/planState';
+import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel } from '../utils/planState';
 import Button from '../components/ui/Button';
 import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
@@ -136,6 +136,8 @@ export default function Home({ user }) {
   const open = openOffers(plan.offers, user.uid, plan.now);
   const booked = upcomingBookings(plan.bookings, plan.now);
   const target = Number(plan.onboarding?.weeklyTarget) || 0;
+  // The hero already names the nearest booking; the list starts after it.
+  const comingUp = booked.slice(headline.kind === 'next' ? 1 : 0, (headline.kind === 'next' ? 1 : 0) + 3);
 
   return (
     <div className="home-page">
@@ -213,6 +215,30 @@ export default function Home({ user }) {
             </span>
             <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
           </button>
+        )}
+
+        {/* 2b. The next few booked practices, as a tutor's "Next lessons" list:
+            who and when at a glance, the whole schedule one tap away. */}
+        {comingUp.length > 0 && (
+          <section className="pl-card pl-coming" aria-label="Coming up">
+            <div className="pl-coming-head">
+              <p className="ui-section-label" style={{ margin: 0 }}>Coming up</p>
+              <button type="button" className="pl-coming-all" onClick={() => navigate('/plan')}>See all</button>
+            </div>
+            {comingUp.map((b) => {
+              const { peerName } = peerOf(b, user.uid);
+              return (
+                <button key={b.id} type="button" className="pl-row" onClick={() => navigate('/plan')}>
+                  <span className="pl-coming-avatar" aria-hidden="true">{peerName.charAt(0).toUpperCase()}</span>
+                  <span className="pl-row-main">
+                    <p className="pl-row-title">{peerName}</p>
+                    <p className="pl-row-sub">{comingUpLabel(b.startMs, plan.now)}</p>
+                  </span>
+                  <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
+                </button>
+              );
+            })}
+          </section>
         )}
 
         {/* 3. Preparation — below the practice it prepares you for. The

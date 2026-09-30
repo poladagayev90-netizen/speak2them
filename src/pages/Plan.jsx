@@ -9,7 +9,7 @@ import ThisWeekCard from '../components/plan/ThisWeekCard';
 import BookingRow from '../components/plan/BookingRow';
 import useMyPlan, { setPlanPaused } from '../hooks/useMyPlan';
 import { subscribeToSlotChange } from '../utils/practiceSlots';
-import { planHeadline, openOffers, upcomingBookings } from '../utils/planState';
+import { planHeadline, openOffers, upcomingBookings, bookingDays } from '../utils/planState';
 import { respondToOffer } from '../utils/matchOffers';
 import { WEEK_DAYS, formatMinutes, cityOf, totalHours } from '../utils/timezone';
 import { labelOf, WEEKLY_TARGETS } from '../utils/onboarding';
@@ -106,8 +106,21 @@ export default function Plan({ user }) {
         {booked.length > 0 && (
           <>
             <p className="ui-section-label pl-section">Booked</p>
-            <section className="pl-card" style={{ paddingTop: 'var(--s-1)', paddingBottom: 'var(--s-1)' }}>
-              {booked.map((b) => <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} />)}
+            {/* A schedule, not a list: a day column on the left and a NOW line
+                on top, so "how far away is it" reads before the details. */}
+            <section className="pl-timeline" aria-label="Booked practices">
+              <div className="pl-now" aria-hidden="true"><span>Now</span></div>
+              {bookingDays(booked, plan.now).map((day) => (
+                <div key={day.key} className={`pl-day ${day.isToday ? 'is-today' : ''}`}>
+                  <div className="pl-day-col">
+                    <span className="pl-day-dow">{day.isToday ? 'TODAY' : day.dow}</span>
+                    <span className="pl-day-num">{day.date}</span>
+                  </div>
+                  <div className="pl-day-items">
+                    {day.items.map((b) => <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} />)}
+                  </div>
+                </div>
+              ))}
             </section>
           </>
         )}

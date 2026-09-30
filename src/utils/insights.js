@@ -12,7 +12,7 @@
 // Everything here tolerates missing documents: a learner with no finished
 // analysis has no insights docs at all, and that is the normal first state.
 
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
   GRAMMAR_CONCEPTS,
@@ -34,6 +34,28 @@ export async function fetchLearnerInsights(uid) {
     grammar: grammarSnap.exists() ? grammarSnap.data() : null,
     progress: progressSnap.exists() ? progressSnap.data() : null,
   };
+}
+
+// Every analysed session, newest first — the Lab's session picker and the
+// printable history both read this. Tickets still queued or processing carry
+// no report yet and are left out; failed ones stay, so a learner waiting for
+// a report sees that it failed instead of waiting for ever.
+export async function fetchAnalyses(uid, max = 50) {
+  if (!uid) return [];
+  const base = [collection(db, 'callAnalysis'), where('userId', '==', uid)];
+  let snap;
+  try {
+    snap = await getDocs(query(...base, orderBy('timestamp', 'desc'), limit(max)));
+  } catch (e) {
+    // The composite index (userId, timestamp desc) may be missing on a fresh
+    // project; an unordered read plus the sort below covers it.
+    if (e.code !== 'failed-precondition') throw e;
+    snap = await getDocs(query(...base, limit(max)));
+  }
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter((d) => d.status !== 'queued' && d.status !== 'processing')
+    .sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 }
 
 // One row per concept the learner has actually attempted. Concepts they have
