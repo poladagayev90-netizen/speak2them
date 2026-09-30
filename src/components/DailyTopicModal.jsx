@@ -209,7 +209,7 @@ export default function DailyTopicModal({ open, onClose, user }) {
         <div className="dt-content">
 
           {activeSection === 'vocabulary' && (
-            <div className="dt-section">
+            <div className="dt-section dt-section--list">
               {content.vocabulary.map((v, i) => (
                 <div
                   key={i}
@@ -231,7 +231,7 @@ export default function DailyTopicModal({ open, onClose, user }) {
           )}
 
           {activeSection === 'idioms' && (
-            <div className="dt-section">
+            <div className="dt-section dt-section--list">
               {content.idioms.map((idm, i) => (
                 <div key={i} className="dt-idiom-card">
                   <p className="dt-idiom-phrase">"{idm.phrase}"</p>
@@ -244,7 +244,7 @@ export default function DailyTopicModal({ open, onClose, user }) {
           )}
 
           {activeSection === 'questions' && (
-            <div className="dt-section">
+            <div className="dt-section dt-section--questions">
               <div className="dt-diff-toggle">
                 <button
                   className={`dt-diff-btn ${difficulty === 'easy' ? 'active' : ''}`}
@@ -264,7 +264,7 @@ export default function DailyTopicModal({ open, onClose, user }) {
           )}
 
           {activeSection === 'quiz' && (
-            <div className="dt-section">
+            <div className="dt-section dt-section--narrow">
               <DailyQuiz content={content} onFinish={() => setActiveSection('vocabulary')} />
             </div>
           )}
@@ -272,7 +272,7 @@ export default function DailyTopicModal({ open, onClose, user }) {
           {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} showLibrary={canBrowseAllVideos(user)} />}
 
           {activeSection === 'pictures' && (
-            <div className="dt-section" style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div className="dt-section dt-section--narrow" style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ marginBottom: 12, color: 'var(--text-muted)' }}><ImageIcon size={40} strokeWidth={1.5} /></div>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
                 Five pictures for this topic, to build your speaking

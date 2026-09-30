@@ -139,8 +139,26 @@ test('a learner under a reliability limit is never paired with a newcomer', () =
     learners: [L('lim', { limited: true }), L('new', { newcomer: true }), L('old')],
     dates, earliestMs: 0,
   });
-  const keys = plan.pairs.map((p) => p.key);
+  const keys = plan.pairs.map((p) => wp.pairKey(p.a, p.b));
   assert.ok(!keys.includes(wp.pairKey('lim', 'new')));
   assert.ok(!wp.pairAllowed({ uid: 'x', newcomer: true }, { uid: 'y', limited: true }, new Set()));
   assert.ok(wp.pairAllowed({ uid: 'x', limited: true }, { uid: 'y' }, new Set()));
+});
+
+test('a starred partner is preferred, a mutual star even more', () => {
+  // ann can meet bea or cal once; both are the same level and free at the same times.
+  const learners = [L('ann'), L('bea'), L('cal')];
+  const plain = wp.buildWeekPlan({ learners, dates, earliestMs: 0, seed: 's1' });
+  assert.equal(plain.pairs.length, 1);
+  for (const seed of ['s1', 's2', 's3', 's4']) {
+    const fav = new Map([[wp.pairKey('ann', 'cal'), 1]]);
+    const plan = wp.buildWeekPlan({ learners, favorites: fav, dates, earliestMs: 0, seed });
+    assert.equal(wp.pairKey(plan.pairs[0].a, plan.pairs[0].b), wp.pairKey('ann', 'cal'), `seed ${seed}`);
+    assert.ok(plan.pairs[0].reasons.includes('asked to practise again'));
+  }
+  // A recent meeting does not push a starred pair back.
+  const recent = new Set([wp.pairKey('ann', 'cal')]);
+  const plan = wp.buildWeekPlan({ learners, recent, favorites: new Map([[wp.pairKey('ann', 'cal'), 2]]), dates, earliestMs: 0, seed: 's5' });
+  assert.equal(wp.pairKey(plan.pairs[0].a, plan.pairs[0].b), wp.pairKey('ann', 'cal'));
+  assert.ok(plan.pairs[0].reasons.includes('both want to practise again'));
 });

@@ -2763,3 +2763,66 @@ body {
   font-weight: 600;
   font-size: 13px;
 }
+
+/* Topic sheet on a computer screen (Polad, 2026-09-30): the sheet is what a
+   teacher SHARES in a lesson, and on a laptop it was a 480px phone column in
+   the middle of the screen — the clip small, the words at the bottom edge, the
+   questions below it, so he zoomed in and lost the words. On a wide screen the
+   sheet takes the width: the clip fills the left, the words and the questions
+   sit beside it at reading size, and nothing needs scrolling or zooming.
+   Phones keep the one-column "one screenful" layout above. */
+@media (min-width: 900px) and (min-aspect-ratio: 5/4) {
+  .dt-modal { max-width: min(1280px, 100vw); }
+  .dt-header { padding: 16px 28px 14px; }
+  .dt-title { font-size: 28px; }
+  .dt-tabs { flex-wrap: nowrap; padding: 0 28px 14px; }
+  .dt-tab { flex: 1 1 0; min-width: 0; padding: 11px 10px; font-size: 16px; }
+  .dt-content { padding: 20px 28px; }
+
+  .dt-section--video {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "clip words"
+      "clip qs"
+      "nav  foot";
+    column-gap: 28px;
+    row-gap: 16px;
+    height: 100%;
+  }
+  /* Its children join the grid directly; on a phone it is the fit block. */
+  .dt-section--video .dt-video-fit { display: contents; }
+  /* The frame fills its cell and the clip is contained inside it, whatever its
+     shape — a portrait clip gets bands at the sides, never a cropped subject. */
+  .dt-section--video .dt-video-frame {
+    grid-area: clip;
+    aspect-ratio: auto !important;
+    height: 100% !important;
+    max-height: none !important;
+    min-height: 0;
+  }
+  .dt-section--video .dt-video-nav { grid-area: nav; }
+  .dt-section--video .dt-video-words { grid-area: words; font-size: 20px; }
+  .dt-section--video .dt-video-words p { font-size: 13px !important; }
+  .dt-section--video .dt-questions-list {
+    grid-area: qs;
+    min-height: 0;
+    overflow-y: auto;
+    align-content: start;
+  }
+  .dt-section--video .dt-q-text { font-size: 19px; }
+  .dt-section--video .dt-q-num { width: 34px; height: 34px; font-size: 16px; }
+  .dt-section--video .dt-video-footer { grid-area: foot; align-self: center; }
+  .dt-section--video .dt-video-footer > * { margin-top: 0 !important; }
+
+  /* Words and idioms: two columns, so twice as many are on the shared screen. */
+  .dt-section--list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 12px;
+  }
+  /* Quiz and the pictures button do not need 1280px of line length. */
+  .dt-section--narrow { max-width: 760px; margin: 0 auto; width: 100%; }
+}

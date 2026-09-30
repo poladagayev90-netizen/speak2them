@@ -15,7 +15,9 @@
 //     (a practice is 20–30 minutes — asking for an hour of shared free time
 //     threw away pairs that fit perfectly well);
 //   • nothing earlier than `earliestMs` (people need notice).
-// SOFT preferences (the score): same level, someone not met this week,
+// SOFT preferences (the score): a partner either of them starred ("practise
+// with them again" — both starring counts double, and a starred pair is not
+// marked down for having met recently), same level, someone not met this week,
 // practices spread out over the week, the evening hours most people use.
 //
 // Fairness beats totals: the objective weights each person's n-th practice
@@ -113,7 +115,9 @@ const harmonic = (n) => { let x = 0; for (let i = 1; i <= n; i++) x += 1 / i; re
 //   newcomer   — …someone who has not had a practice call yet
 // blocked: Set of pairKey — block/avoid either way
 // recent:  Set of pairKey — met in the last 7 days (soft)
-function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), dates, earliestMs = 0, seed = 'plan', restarts }) {
+// favorites: Map of pairKey → how many of the two starred the other (1 or 2)
+const FAVORITE_BONUS = 2;
+function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favorites = new Map(), dates, earliestMs = 0, seed = 'plan', restarts }) {
   const people = learners.map((l) => ({
     ...l,
     need: Math.max(0, Math.floor(Number(l.need) || 0)),
@@ -136,8 +140,9 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), date
       if (!shared.length) continue;
       const sharedDates = shared.map((s) => s.slice(0, 10));
       const lvl = levelScore(a, b);
-      const isRecent = recent.has(pairKey(a.uid, b.uid));
-      pairs.push({ a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, lvl, isRecent });
+      const fav = Math.min(2, Number(favorites.get(pairKey(a.uid, b.uid))) || 0);
+      const isRecent = !fav && recent.has(pairKey(a.uid, b.uid));
+      pairs.push({ a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, lvl, isRecent, fav });
     }
   }
   const pairsOf = new Map();
@@ -151,7 +156,7 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), date
   const scoreOf = (pr, slotId, state) => {
     const date = slotId.slice(0, 10);
     const hour = Number(slotId.slice(11));
-    let s = pr.lvl.score + (pr.isRecent ? -3 : 0) + (HOUR_BONUS[hour] || 0);
+    let s = pr.lvl.score + (pr.isRecent ? -3 : 0) + pr.fav * FAVORITE_BONUS + (HOUR_BONUS[hour] || 0);
     for (const uid of [pr.a, pr.b]) {
       const days = state.days.get(uid);
       if (days.has(dateShift(date, -1)) || days.has(dateShift(date, 1))) s -= 1;
@@ -250,7 +255,10 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), date
         a, b, slotId,
         startMs: blockStartMs(date, Number(slotId.slice(11))),
         score: Math.round(score * 100) / 100,
-        reasons: [pr.lvl.reason, pr.isRecent ? 'met in the last 7 days' : 'not met this week'],
+        reasons: [
+          ...(pr.fav ? [pr.fav === 2 ? 'both want to practise again' : 'asked to practise again'] : []),
+          pr.lvl.reason, pr.isRecent ? 'met in the last 7 days' : 'not met this week',
+        ],
         alternatives,
       };
     });

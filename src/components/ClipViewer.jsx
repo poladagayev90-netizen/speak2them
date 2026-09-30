@@ -47,6 +47,22 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
     if (p && p.catch) p.catch(() => {});
   }, [clip?.id]);
 
+  // Arrow keys step through the clips when the sheet owns the index (the
+  // library has its own keys). A teacher sharing a laptop screen changes clips
+  // without reaching for the mouse — and never while typing somewhere.
+  useEffect(() => {
+    if (controlled || clips.length < 2) return undefined;
+    const onKey = (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const tag = (e.target && e.target.tagName) || '';
+      if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.target?.isContentEditable) return;
+      if (e.key === 'ArrowRight') setLocalIndex((n) => (n + 1) % clips.length);
+      else if (e.key === 'ArrowLeft') setLocalIndex((n) => (n - 1 + clips.length) % clips.length);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [controlled, clips.length]);
+
   if (!clip) return null;
 
   // A controlled index arrives a render later (the library's comes back
@@ -118,7 +134,9 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
           </button>
         </div>
 
-        <KeywordChips words={clip.keywords || []} label="Words to use" />
+        <div className="dt-video-words">
+          <KeywordChips words={clip.keywords || []} label="Words to use" />
+        </div>
       </div>
 
       {/* Rendered as the speaking cards are, so a question looks the same
@@ -133,7 +151,7 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
         ))}
       </div>
 
-      {footer}
+      {footer && <div className="dt-video-footer">{footer}</div>}
     </div>
   );
 }

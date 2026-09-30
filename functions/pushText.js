@@ -90,6 +90,7 @@ const FALLBACK = {
 const STRINGS = {
   az: {
     incoming_call: (v) => ({ title: `📞 ${v.callerName} sizə zəng edir`, body: "Qəbul etmək üçün tətbiqi açın" }),
+    missed_call: (v, f) => ({ title: "📵 Buraxılmış zəng", body: `${v.callerName || f.someone} sizə zəng etdi. Geri zəng etmək üçün toxunun.` }),
     premium_activated: (v, f) => ({ title: "👑 Premium aktivləşdirildi", body: `${v.userName || f.member}, bütün premium xüsusiyyətlər indi sizin üçün açıqdır!` }),
     daily_reminder: (v) => ({ title: `💬 ${v.topic}`, body: v.question ? `${v.question} — Cavabını düşün və daxil ol!` : "Daxil ol və bu mövzuda öyrəndiklərini təcrübədən keçir!" }),
     streak_urgent: (v) => ({ title: "⚠️ Streak-in bu gecə sönəcək!", body: `${v.streak} günlük əziyyətin gecə yarısı sıfırlanır. Qısa bir zəng kifayətdir! 🔥` }),
@@ -142,6 +143,7 @@ const STRINGS = {
 
   tr: {
     incoming_call: (v) => ({ title: `📞 ${v.callerName} sizi arıyor`, body: "Kabul etmek için uygulamayı açın" }),
+    missed_call: (v, f) => ({ title: "📵 Cevapsız arama", body: `${v.callerName || f.someone} sizi aradı. Geri aramak için dokunun.` }),
     premium_activated: (v, f) => ({ title: "👑 Premium etkinleştirildi", body: `${v.userName || f.member}, tüm premium özellikler artık size açık!` }),
     daily_reminder: (v) => ({ title: `💬 ${v.topic}`, body: v.question ? `${v.question} — Cevabını düşün ve giriş yap!` : "Giriş yap ve bu konuda öğrendiklerini pratiğe dök!" }),
     streak_urgent: (v) => ({ title: "⚠️ Serin bu gece sönecek!", body: `${v.streak} günlük emeğin gece yarısı sıfırlanıyor. Kısa bir görüşme yeter! 🔥` }),
@@ -191,6 +193,7 @@ const STRINGS = {
 
   en: {
     incoming_call: (v) => ({ title: `📞 ${v.callerName} is calling you`, body: "Open the app to answer" }),
+    missed_call: (v, f) => ({ title: "📵 Missed call", body: `${v.callerName || f.someone} called you. Tap to call back.` }),
     premium_activated: (v, f) => ({ title: "👑 Premium activated", body: `${v.userName || f.member}, every premium feature is open to you now!` }),
     daily_reminder: (v) => ({ title: `💬 ${v.topic}`, body: v.question ? `${v.question} — think of your answer and jump in!` : "Open the app and practise what you learned on this topic!" }),
     streak_urgent: (v) => ({ title: "⚠️ Your streak ends tonight!", body: `${v.streak} days of work reset at midnight. One short call is enough! 🔥` }),

@@ -31,6 +31,7 @@ import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag, isInCall } from '../utils/presence';
 import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
 import { subscribeToBlocked } from '../utils/blocklist';
+import { setFavorite } from '../utils/favorites';
 import { canPair } from '../utils/matchmaking';
 import { introLocks } from '../utils/intro';
 import TranslateWidget from '../components/TranslateWidget';
@@ -1198,7 +1199,7 @@ export default function Chat({ user }) {
 
   // Star/submit UI state lives in CallInsights (the rating is an inline block
   // there); this just performs the submission and throws on failure.
-  const submitRating = async (stars, { tags = [], avoid = false } = {}) => {
+  const submitRating = async (stars, { tags = [], avoid = false, again = false } = {}) => {
     // First read the peer's document to calculate badge unlocks accurately
     const peerRef = doc(db, 'users', peerId);
     const peerDoc = await getDoc(peerRef);
@@ -1247,6 +1248,8 @@ export default function Chat({ user }) {
         createdAt: serverTimestamp(),
       });
     }
+    // "Practise with them again" — the star on Partners, set from here too.
+    if (again) await setFavorite(user.uid, peerId, true, peer?.name || '').catch(() => {});
     // Behaviour tags for the team. One per call session (the id), never
     // edited afterwards (rules), so a retry after a network error is a no-op.
     if (tags.length > 0) {

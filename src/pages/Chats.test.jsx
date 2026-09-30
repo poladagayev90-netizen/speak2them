@@ -9,6 +9,7 @@ jest.mock('../firebase', () => ({ db: {} }));
 jest.mock('react-router-dom', () => ({ useNavigate: () => mockNavigate }), { virtual: true });
 jest.mock('firebase/firestore', () => ({ doc: (_db, collection, id) => `${collection}/${id}`, getDoc: jest.fn() }));
 jest.mock('../utils/blocklist', () => ({ subscribeToBlocked: () => () => {} }));
+jest.mock('../utils/favorites', () => ({ subscribeToFavorites: () => () => {}, setFavorite: jest.fn() }));
 jest.mock('../utils/presence', () => ({ getPresence: () => 'offline' }));
 jest.mock('../utils/chat', () => ({
   subscribeToChats: (_uid, cb) => { mockChats = cb; return () => {}; },

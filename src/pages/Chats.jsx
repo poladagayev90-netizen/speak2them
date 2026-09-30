@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { Phone } from 'lucide-react';
+import { Phone, Star } from 'lucide-react';
 import { subscribeToBlocked } from '../utils/blocklist';
+import { subscribeToFavorites, setFavorite } from '../utils/favorites';
 import { getPresence } from '../utils/presence';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
 
@@ -16,12 +17,14 @@ import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } fro
 export default function Chats({ user }) {
   const [chats, setChats] = useState(null); // null = yüklənir
   const [blockedIds, setBlockedIds] = useState(() => new Set());
+  const [favIds, setFavIds] = useState(() => new Set());
   const [peers, setPeers] = useState({});
   const navigate = useNavigate();
   const peerCacheRef = useRef({});
 
   useEffect(() => subscribeToBlocked(user.uid, setBlockedIds), [user.uid]);
   useEffect(() => subscribeToChats(user.uid, setChats), [user.uid]);
+  useEffect(() => subscribeToFavorites(user.uid, setFavIds), [user.uid]);
 
   // Qarşı tərəflərin sənədləri — onlayn nişanı və ad üçün. Hər peer üçün canlı
   // dinləyici saxlamırıq (o, hər heartbeat-də bütün siyahını yenidən çəkərdi);
@@ -67,9 +70,9 @@ export default function Chats({ user }) {
       return { ...c, peerId, peer: isAinurId(peerId) ? AINUR_PEER : (peers[peerId] || {}) };
     })
     .filter((c) => c && c.lastMessage && !blockedIds.has(c.peerId))
-    // AInur is always there, so she stays at the top; people follow by the
-    // latest message (the query order).
-    .sort((a, b) => isAinurId(b.peerId) - isAinurId(a.peerId));
+    // AInur is always there, so she stays at the top; starred partners come
+    // next; everyone else follows by the latest message (the query order).
+    .sort((a, b) => (isAinurId(b.peerId) - isAinurId(a.peerId)) || (favIds.has(b.peerId) - favIds.has(a.peerId)));
 
   if (chats === null) {
     return (
@@ -94,7 +97,8 @@ export default function Chats({ user }) {
             call away. Talking to someone you already know stays free and
             unplanned; only NEW partners come through the weekly plan. */}
         <p style={{ margin: '0 0 var(--s-3)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>
-          People you have practised with. Message or call them any time.
+          People you have practised with. Message or call them any time. Star the ones you
+          would like to practise with again — your weekly plan pairs you with them more often.
         </p>
         {rows.length === 0 ? (
           <div className="empty-state">
@@ -186,6 +190,24 @@ export default function Chats({ user }) {
                       )}
                     </div>
                   </div>
+                  {!isAinurId(c.peerId) && (
+                    <button
+                      type="button"
+                      aria-pressed={favIds.has(c.peerId)}
+                      aria-label={favIds.has(c.peerId) ? `Remove ${name} from favourites` : `Practise with ${name} again`}
+                      title={favIds.has(c.peerId) ? 'In your favourites' : 'Practise with them again'}
+                      onClick={(e) => { e.stopPropagation(); setFavorite(user.uid, c.peerId, !favIds.has(c.peerId), name).catch(() => {}); }}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      style={{
+                        flexShrink: 0, width: '40px', height: '40px', borderRadius: 'var(--r-pill)',
+                        border: 'none', background: 'transparent',
+                        color: favIds.has(c.peerId) ? 'var(--accent)' : 'var(--text-muted)',
+                        display: 'grid', placeItems: 'center', cursor: 'pointer',
+                      }}
+                    >
+                      <Star size={20} strokeWidth={2} fill={favIds.has(c.peerId) ? 'currentColor' : 'none'} aria-hidden="true" />
+                    </button>
+                  )}
                   {!isAinurId(c.peerId) && (
                     <button
                       type="button"

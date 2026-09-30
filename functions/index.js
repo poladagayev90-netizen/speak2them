@@ -1090,10 +1090,34 @@ exports.syncUpcomingCall = onDocumentWritten({ document: "bookings/{bookingId}",
   }
 });
 
+// A call that rang and ended without being answered (the caller hung up, or
+// the 30 s ring ran out) leaves the person called with nothing but a stale
+// "is calling you" notification, or none at all if the phone was asleep.
+// "calling" → "ended" with no "accepted" in between is exactly that; a decline
+// goes through "rejected", so the person who pressed it is not told again.
+// The push takes the ringing notification's place (same tag on both platforms)
+// and opens the chat, where one tap calls back.
+async function notifyMissedCall(snap, call) {
+  const callerId = call.callerId;
+  const receiverId = call.receiverId;
+  if (!callerId || !receiverId || callerId === receiverId) return;
+  if (typeof call.authoritativeDurationSec === "number" || call.connectedAt) return;
+  const db = admin.firestore();
+  const createdMs = call.createdAt?.toMillis?.() || 0;
+  if (!await claimSlotRun(db, `missed_${snap.id}_${createdMs}`).catch(() => false)) return;
+  const caller = await db.collection("users").doc(callerId).get().catch(() => null);
+  const callerName = (caller && caller.exists && caller.get("name")) || call.callerName || "";
+  await sendPushToUser(db, receiverId, {
+    key: "missed_call", vars: { callerName }, type: "missed_call", url: `/chat/${callerId}`,
+  }).catch(() => null);
+}
+
 exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4" }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
   const call = after.data() || {};
+  const before = event.data?.before?.exists ? (event.data.before.data() || {}) : {};
+  if (before.status === "calling" && call.status === "ended") await notifyMissedCall(after, call);
   if (call.status !== "ended") return;
   if (typeof call.authoritativeDurationSec !== "number") return;
   if (trustedCallSeconds(call) <= 5) return;
@@ -4108,10 +4132,19 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
 
   // Blocks and "don't pair me again", either way — the same lists pairVerdict reads.
   const blocked = new Set();
+  // "Practise with them again" stars (soft): pairKey → 1, or 2 when mutual.
+  const favorites = new Map();
   await Promise.all(learners.map(async (l) => {
     const ref = db.collection("users").doc(l.uid);
-    const [bl, av] = await Promise.all([ref.collection("blocked").get(), ref.collection("avoid").get()]);
+    const [bl, av, fv] = await Promise.all([
+      ref.collection("blocked").get(), ref.collection("avoid").get(),
+      ref.collection("favorites").get().catch(() => ({ docs: [] })),
+    ]);
     for (const d of [...bl.docs, ...av.docs]) blocked.add(weeklyPlanner.pairKey(l.uid, d.id));
+    for (const d of fv.docs) {
+      const k = weeklyPlanner.pairKey(l.uid, d.id);
+      favorites.set(k, (favorites.get(k) || 0) + 1);
+    }
   }));
   // Met in the last 7 days (soft).
   const recent = new Set();
@@ -4121,7 +4154,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     const c = d.data() || {};
     if (c.userA && c.userB) recent.add(weeklyPlanner.pairKey(c.userA, c.userB));
   }
-  return { dates, learners, blocked, recent };
+  return { dates, learners, blocked, recent, favorites };
 }
 
 // Draft (or redraft) the plan for the week starting `monday`.
@@ -4130,10 +4163,10 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
   const prev = await ref.get();
   if (prev.exists && prev.get("status") === "sent") throw slotFail(409, "plan-already-sent");
   const cfg = await plannerConfig(db);
-  const { dates, learners, blocked, recent } = await loadPlannerInputs(db, monday, { nowMs, cfg });
+  const { dates, learners, blocked, recent, favorites } = await loadPlannerInputs(db, monday, { nowMs, cfg });
   // Monday 10:00 at the earliest — the plan goes out on Sunday evening.
   const earliestMs = Math.max(nowMs + PLAN_NOTICE_MS, weeklyPlanner.blockStartMs(dates[0], 10));
-  const result = weeklyPlanner.buildWeekPlan({ learners, blocked, recent, dates, earliestMs, seed: monday });
+  const result = weeklyPlanner.buildWeekPlan({ learners, blocked, recent, favorites, dates, earliestMs, seed: monday });
   const info = new Map(learners.map((l) => [l.uid, l]));
   const pairs = result.pairs.map((p) => ({
     ...p,
@@ -4267,13 +4300,13 @@ async function expireLateOffers(db, nowMs) {
 async function refillThisWeek(db, nowMs) {
   const monday = bakuWeekKey(nowMs);
   const cfg = await plannerConfig(db);
-  const { dates, learners, blocked, recent } = await loadPlannerInputs(db, monday, { nowMs, cfg });
+  const { dates, learners, blocked, recent, favorites } = await loadPlannerInputs(db, monday, { nowMs, cfg });
   const today = bakuDateStr(nowMs);
   const left = dates.filter((d) => d >= today);
   const wanting = learners.filter((l) => l.need > 0);
   if (wanting.length < 2 || !left.length) return { offers: 0 };
   const result = weeklyPlanner.buildWeekPlan({
-    learners, blocked, recent, dates: left,
+    learners, blocked, recent, favorites, dates: left,
     earliestMs: nowMs + REFILL_NOTICE_MS, seed: `${monday}_${nowMs}`, restarts: 8,
   });
   let offers = 0;

@@ -152,6 +152,17 @@ service cloud.firestore {
         allow read, write: if isOwnDoc(userId);
       }
 
+      // "I'd like to practise with them again" (src/utils/favorites.js) — the
+      // weekly planner prefers these pairs. Owner-only: a star is never shown
+      // to the person starred.
+      match /favorites/{peerId} {
+        allow read, delete: if isOwnDoc(userId);
+        allow create, update: if isOwnDoc(userId) && peerId != userId
+          && request.resource.data.keys().hasOnly(['name', 'at'])
+          && request.resource.data.name is string && request.resource.data.name.size() <= 60
+          && request.resource.data.at == request.time;
+      }
+
       // Şəxsi məlumat (hazırda: yaş təsdiqi + valideyn razılığı). users/{uid}
       // sənədini hər daxil olmuş istifadəçi oxuya bilir (yuxarıdakı read
       // qaydası), ona görə xam doğum tarixi orada YOX, burada saxlanılır.

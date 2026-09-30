@@ -53,6 +53,7 @@ function RatingBlock({ peerName, peerId, onSubmitRating }) {
   const [selectedStar, setSelectedStar] = useState(0);
   const [tags, setTags] = useState([]);
   const [avoid, setAvoid] = useState(false);
+  const [again, setAgain] = useState(false);
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -63,7 +64,7 @@ function RatingBlock({ peerName, peerId, onSubmitRating }) {
     setSubmitting(true);
     setError('');
     try {
-      await onSubmitRating(selectedStar, { tags, avoid });
+      await onSubmitRating(selectedStar, { tags, avoid, again: again && !avoid });
       setDone(true);
     } catch (e) {
       console.error('[CallInsights] Rating error:', e);
@@ -123,8 +124,13 @@ function RatingBlock({ peerName, peerId, onSubmitRating }) {
                   );
                 })}
               </div>
+              {/* The two wishes exclude each other: ticking one clears the other. */}
               <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-2)', marginTop: 'var(--s-3)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}>
-                <input type="checkbox" checked={avoid} disabled={submitting} onChange={(e) => setAvoid(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
+                <input type="checkbox" checked={again} disabled={submitting} onChange={(e) => { setAgain(e.target.checked); if (e.target.checked) setAvoid(false); }} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
+                {`I'd like to practise with ${peerName || 'them'} again`}
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-2)', marginTop: 'var(--s-2)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={avoid} disabled={submitting} onChange={(e) => { setAvoid(e.target.checked); if (e.target.checked) setAgain(false); }} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
                 {`Don't pair me with ${peerName || 'this person'} again`}
               </label>
             </div>

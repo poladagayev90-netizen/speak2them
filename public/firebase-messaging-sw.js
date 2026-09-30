@@ -19,7 +19,8 @@ messaging.onBackgroundMessage((payload) => {
     body: data.body || '',
     icon: '/logo192.png',
     badge: '/logo192.png',
-    tag: data.type || 'speaklab',
+    // A missed call takes the place of the ring it follows.
+    tag: data.type === 'missed_call' ? 'incoming_call' : (data.type || 'speaklab'),
     data: { url: data.url || '/' },
     ...(isCall ? { requireInteraction: true, renotify: true, vibrate: [400, 200, 400, 200, 400] } : {}),
   });
