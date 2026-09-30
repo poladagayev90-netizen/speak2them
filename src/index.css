@@ -234,6 +234,15 @@
   --hero-4: #74388c;
   --hero-5: #43276d;
 
+  /* Coral — the ONE colour outside the purples besides red (Polad,
+     2026-10-01). It means "progress" and nothing else: the Lab's charts, the
+     score ring, a "+29" change. People and buttons stay purple. --coral is a
+     graphic colour (3.2:1 on --bg-secondary, enough for a bar or a line, not
+     for text); text goes --coral-ink on --coral-soft (5.2:1). */
+  --coral: #dc553a;
+  --coral-soft: rgba(220, 85, 58, 0.18);
+  --coral-ink: #8f3219;
+
   /* Ink on the in-call activity card (StageCard), which drifts through the
      hero purples above: white, a softer white for labels, glassy chips, and
      the Taboo "forbidden" red lifted to a pale coral that reads on purple. */
@@ -275,6 +284,11 @@
   --hero-3: #d6b4f6;
   --hero-4: #e7c2ef;
   --hero-5: #c4b0ff;
+
+  /* Coral on plum: lighter, and its ink lighter still (7.0:1 on soft). */
+  --coral: #ff9477;
+  --coral-soft: rgba(255, 148, 119, 0.20);
+  --coral-ink: #ffc4b3;
 
   /* On the pastel card the ink is dark and the chips are frosted white;
      the forbidden words go deep red, the one colour outside the purples. */

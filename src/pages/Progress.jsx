@@ -566,10 +566,10 @@ function Sparkline({ points }) {
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img"
       aria-label={`Scores from ${points[0]} to ${points[points.length - 1]}`}>
-      <path d={area} fill="var(--accent-soft)" />
-      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2.5"
+      <path d={area} fill="var(--coral-soft)" />
+      <path d={line} fill="none" stroke="var(--coral)" strokeWidth="2.5"
         strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      <circle cx={xy[xy.length - 1][0]} cy={xy[xy.length - 1][1]} r="4" fill="var(--accent)"
+      <circle cx={xy[xy.length - 1][0]} cy={xy[xy.length - 1][1]} r="4" fill="var(--coral)"
         vectorEffect="non-scaling-stroke" />
     </svg>
   );

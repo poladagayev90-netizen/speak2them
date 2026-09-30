@@ -208,11 +208,15 @@
 }
 
 .progress-tile-delta {
+  /* A change is progress, so it is the coral chip (text on the soft fill). */
   display: inline-block;
   margin-top: var(--s-2);
+  padding: 2px 8px;
+  border-radius: var(--r-sm);
+  background: var(--coral-soft);
   font-size: var(--fs-xs);
-  font-weight: 700;
-  color: var(--accent);
+  font-weight: 800;
+  color: var(--coral-ink);
 }
 
 .progress-tile-cta {
@@ -751,7 +755,7 @@
 .lab-tab.is-on { color: var(--text-primary); }
 .lab-tab.is-on::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
-  height: 3px; border-radius: 3px; background: var(--accent);
+  height: 3px; border-radius: 3px; background: var(--coral);
 }
 .lab-tab-count {
   min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--r-pill);

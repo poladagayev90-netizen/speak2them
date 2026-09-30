@@ -28,9 +28,10 @@ export function Tile({ icon: Icon, label, value, unit, delta, cta, chart }) {
 }
 
 // ─── Tile charts ────────────────────────────────────────────────────
-// Drawn in a fixed 100×32 box and stretched to the tile width. One colour
-// family: past sessions in the soft step, the latest in the full accent, so
-// "where am I now" reads before "how did I get here".
+// Drawn in a fixed 100×32 box and stretched to the tile width. Progress is
+// coral — the one second colour the palette allows, and only for this — so a
+// chart never reads as a button. Past sessions sit in the soft purple step and
+// the latest in full coral: "where am I now" before "how did I get here".
 const CW = 100;
 const CH = 32;
 
@@ -44,7 +45,7 @@ export function Bars({ values, label }) {
         const h = Math.max(2, (v / max) * CH);
         return (
           <rect key={i} x={i * w + w * 0.15} y={CH - h} width={w * 0.7} height={h} rx="1.5"
-            fill={i === values.length - 1 ? 'var(--accent)' : 'var(--accent-soft)'} />
+            fill={i === values.length - 1 ? 'var(--coral)' : 'var(--accent-soft)'} />
         );
       })}
     </svg>
@@ -63,15 +64,15 @@ export function Line({ values, label }) {
   const [lx, ly] = pts[pts.length - 1];
   return (
     <svg className="progress-chart" viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" role="img" aria-label={label}>
-      <polygon points={`2,${CH} ${line} ${lx.toFixed(1)},${CH}`} fill="var(--accent-soft)" />
-      <polyline points={line} fill="none" stroke="var(--accent)" strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-      <circle cx={lx} cy={ly} r="2.2" fill="var(--bg-secondary)" stroke="var(--accent)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+      <polygon points={`2,${CH} ${line} ${lx.toFixed(1)},${CH}`} fill="var(--coral-soft)" />
+      <polyline points={line} fill="none" stroke="var(--coral)" strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r="2.2" fill="var(--bg-secondary)" stroke="var(--coral)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
 
 // The CEFR ladder: every step up to the learner's level is filled, their own
-// step in the full accent. The level is the placement test's, never inferred.
+// step in coral. The level is the placement test's, never inferred.
 export function Ladder({ index }) {
   if (index < 0) return null;
   const w = CW / CEFR_STEPS.length;
@@ -80,7 +81,7 @@ export function Ladder({ index }) {
       aria-label={`Level ${CEFR_STEPS[index]} of A1 to C2`}>
       {CEFR_STEPS.map((step, i) => {
         const h = ((i + 1) / CEFR_STEPS.length) * CH;
-        const fill = i === index ? 'var(--accent)' : i < index ? 'var(--accent-soft)' : 'var(--border)';
+        const fill = i === index ? 'var(--coral)' : i < index ? 'var(--accent-soft)' : 'var(--border)';
         return <rect key={step} x={i * w + w * 0.18} y={CH - h} width={w * 0.64} height={h} rx="1.5" fill={fill} />;
       })}
     </svg>
@@ -100,11 +101,11 @@ export function ScoreRing({ value }) {
   return (
     <svg className="progress-ring" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img"
       aria-label={Number.isFinite(value) ? `Average score ${value} out of 100` : 'No score yet'}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--accent-soft)" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--coral-soft)" strokeWidth={stroke} />
       {Number.isFinite(value) && (
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="var(--accent)" strokeWidth={stroke} strokeLinecap="round"
+          stroke="var(--coral)" strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={`${(pct / 100) * circumference} ${circumference}`}
           // Start at twelve o'clock instead of three.
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
