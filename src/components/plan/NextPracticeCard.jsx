@@ -99,11 +99,13 @@ export default function NextPracticeCard({ uid, headline, now }) {
   }[h.kind] || null;
   if (!simple) return null;
   const Icon = simple.icon;
-  const hero = h.kind === 'answer' || h.kind === 'setup';
 
   return (
-    <section id="tour-next" className={`pl-card ${hero ? 'pl-card--hero' : ''}`} style={hero ? clock : undefined} aria-label="Your practice">
-      {hero && <HeroFish />}
+    // Every state wears the hero: Polad (2026-09-30) saw the drifting card only
+    // as the admin ("Set up your plan") — learners mostly get "waiting" or
+    // "done", which were plain white cards. The words change, the card doesn't.
+    <section id="tour-next" className="pl-card pl-card--hero" style={clock} aria-label="Your practice">
+      <HeroFish />
       <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
         <span className="pl-row-icon" aria-hidden="true"><Icon size={20} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -113,7 +115,7 @@ export default function NextPracticeCard({ uid, headline, now }) {
       </div>
       <div className="pl-actions">
         <Button
-          variant={h.kind === 'answer' || h.kind === 'setup' || h.kind === 'paused' ? 'primary' : 'secondary'}
+          variant="primary"
           onClick={simple.action.onClick}
           disabled={busy}
         >
