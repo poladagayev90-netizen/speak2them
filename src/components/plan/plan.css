@@ -15,10 +15,46 @@
    eye"). Everything inside switches to --text-on-accent, which is white in
    light mode and dark ink in dark mode, where --accent is a light lavender. */
 .pl-card--hero {
-  background: linear-gradient(160deg, var(--accent-strong), var(--accent));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* A slow drift through five tones of the one purple family (tokens in
+     index.css). 400% wide so only a slice shows at a time; 26 s there and
+     back — slow enough to feel alive, never to pull the eye off the text. */
+  background: linear-gradient(115deg, var(--hero-1), var(--hero-2), var(--hero-3), var(--hero-4), var(--hero-5), var(--hero-1));
+  background-size: 400% 400%;
+  animation: pl-hero-drift 26s ease-in-out infinite alternate;
   border-color: transparent;
   color: var(--text-on-accent);
   padding: var(--s-3) var(--s-4) var(--s-4);
+}
+/* A soft pool of light that wanders inside the card on its own, slower
+   rhythm, so the two motions never line up into a loop you can see. */
+.pl-card--hero::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 70%;
+  aspect-ratio: 1;
+  top: -35%;
+  left: -15%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 65%);
+  animation: pl-hero-light 19s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes pl-hero-drift {
+  0% { background-position: 0% 30%; }
+  50% { background-position: 60% 70%; }
+  100% { background-position: 100% 40%; }
+}
+@keyframes pl-hero-light {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(70%, 40%); }
+  100% { transform: translate(110%, 5%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-card--hero, .pl-card--hero::before { animation: none; }
 }
 .pl-card--hero .pl-kicker,
 .pl-card--hero .pl-kicker-end,

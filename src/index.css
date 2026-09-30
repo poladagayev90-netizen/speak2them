@@ -224,6 +224,20 @@
   --ai-fill: #c9baff;
   --ai-fill-strong: #ded4ff;
   --text-on-ai: #241c52;     /* dark ink on the pale fill = 7.3:1 */
+
+  /* The headline card on Today drifts slowly through these (plan.css). Every
+     stop keeps white text above 7:1 -- midnight indigo, royal violet, a blue
+     leaning indigo, plum, deep grape. Still one purple family. */
+  --hero-1: #2b2764;
+  --hero-2: #5438a6;
+  --hero-3: #3a46a8;
+  --hero-4: #74388c;
+  --hero-5: #43276d;
+
+  /* The floating nav is real glass in light mode too: see-through enough for
+     the page to blur behind it, a lit top edge, a faint violet hairline. */
+  --nav-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.70), rgba(247, 245, 255, 0.52));
+  --nav-border: rgba(64, 58, 126, 0.14);
 }
 [data-theme="dark"] {
   --accent: #b6a6ff;
@@ -241,6 +255,17 @@
   --ai-fill: #c3b1ff;
   --ai-fill-strong: #dbd0ff;
   --text-on-ai: #1a1436;
+
+  /* Dark mode: the card is light with dark ink, so the drift is through
+     pastels -- lavender, periwinkle, orchid, lilac-pink, soft violet. */
+  --hero-1: #b6a6ff;
+  --hero-2: #a9b3ff;
+  --hero-3: #d6b4f6;
+  --hero-4: #e7c2ef;
+  --hero-5: #c4b0ff;
+
+  --nav-fill: var(--glass-fill);
+  --nav-border: var(--glass-border);
 }
 
 
