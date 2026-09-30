@@ -10,7 +10,7 @@ import React from 'react';
 // cycle. Periods here must match plan.css.
 export const HERO_DRIFT_MS = 18000;  // alternate → a full there-and-back is 2×
 export const HERO_LIGHT_MS = 23000;  // alternate
-export const HERO_FISH_MS = 47000;   // swims for ~30% of this, then is gone
+export const HERO_FISH_MS = 24000;   // swims ~14 s of this, then ~10 s of empty water
 
 const phase = (period) => `-${Date.now() % period}ms`;
 
