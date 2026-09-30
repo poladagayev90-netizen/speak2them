@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CalendarCheck, CalendarClock, CalendarDays, Mic, MessageCircle, PauseCircle, Sparkles, Trophy, UsersRound,
@@ -6,6 +6,7 @@ import {
 import { Button } from '../ui';
 import { whenLabel, countdownLabel, joinState } from '../../utils/planState';
 import { setPlanPaused } from '../../hooks/useMyPlan';
+import HeroFish, { heroClockStyle } from './HeroFx';
 import './plan.css';
 
 // The first thing on Today: the answer to "what should I do now?".
@@ -19,13 +20,16 @@ import './plan.css';
 export default function NextPracticeCard({ uid, headline, now }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  // Phase from the clock, fixed for this mount (see HeroFx).
+  const clock = useMemo(heroClockStyle, []);
   const h = headline || { kind: 'waiting' };
 
   if (h.kind === 'next') {
     const b = h.booking;
     const live = now >= b.startMs;
     return (
-      <section id="tour-next" className={`pl-card pl-card--hero ${h.joinable ? 'pl-card--live' : ''}`} aria-label="Your next practice">
+      <section id="tour-next" className={`pl-card pl-card--hero ${h.joinable ? 'pl-card--live' : ''}`} style={clock} aria-label="Your next practice">
+        <HeroFish />
         <p className="pl-kicker">
           <CalendarCheck size={16} aria-hidden="true" />
           {live ? 'Practice time' : 'Your next practice'}
@@ -95,9 +99,11 @@ export default function NextPracticeCard({ uid, headline, now }) {
   }[h.kind] || null;
   if (!simple) return null;
   const Icon = simple.icon;
+  const hero = h.kind === 'answer' || h.kind === 'setup';
 
   return (
-    <section id="tour-next" className={`pl-card ${h.kind === 'answer' || h.kind === 'setup' ? 'pl-card--hero' : ''}`} aria-label="Your practice">
+    <section id="tour-next" className={`pl-card ${hero ? 'pl-card--hero' : ''}`} style={hero ? clock : undefined} aria-label="Your practice">
+      {hero && <HeroFish />}
       <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
         <span className="pl-row-icon" aria-hidden="true"><Icon size={20} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>

@@ -23,7 +23,10 @@
      back — slow enough to feel alive, never to pull the eye off the text. */
   background: linear-gradient(115deg, var(--hero-1), var(--hero-2), var(--hero-3), var(--hero-4), var(--hero-5), var(--hero-1));
   background-size: 400% 400%;
-  animation: pl-hero-drift 26s ease-in-out infinite alternate;
+  /* Period and phase come from HeroFx.jsx: the delay is (now mod period), so
+     the colours carry on across page changes and app restarts. */
+  animation: pl-hero-drift 18s ease-in-out var(--hero-drift-delay, 0s) infinite alternate;
+  --hero-fish-eye: var(--hero-1);
   border-color: transparent;
   color: var(--text-on-accent);
   padding: var(--s-3) var(--s-4) var(--s-4);
@@ -40,7 +43,7 @@
   left: -15%;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 65%);
-  animation: pl-hero-light 19s ease-in-out infinite alternate;
+  animation: pl-hero-light 23s ease-in-out var(--hero-light-delay, 0s) infinite alternate;
   pointer-events: none;
 }
 @keyframes pl-hero-drift {
@@ -53,8 +56,40 @@
   50% { transform: translate(70%, 40%); }
   100% { transform: translate(110%, 5%); }
 }
+/* Now and then a small fish swims through the card, low and faint: one
+   crossing takes ~14 s of a 47 s cycle, then the water is empty again. It
+   sits behind the text (z-index -1 inside the isolated card). */
+.pl-hero-fish {
+  position: absolute; z-index: -1; inset: 0;
+  pointer-events: none;
+  color: var(--text-on-accent);
+  opacity: .24;
+  animation: pl-fish-cross 47s linear var(--hero-fish-delay, 0s) infinite;
+}
+.pl-hero-fish-bob {
+  position: absolute; top: 58%; left: 0;
+  animation: pl-fish-bob 3.4s ease-in-out infinite alternate;
+}
+.pl-hero-fish-tail {
+  transform-box: view-box; transform-origin: 15px 15px;
+  animation: pl-fish-tail .45s ease-in-out infinite alternate;
+}
+@keyframes pl-fish-cross {
+  0%   { transform: translateX(-12%); }
+  30%  { transform: translateX(108%); }
+  100% { transform: translateX(108%); }
+}
+@keyframes pl-fish-bob {
+  from { transform: translateY(-9px) rotate(-3deg); }
+  to   { transform: translateY(9px) rotate(3deg); }
+}
+@keyframes pl-fish-tail {
+  from { transform: rotate(-16deg); }
+  to   { transform: rotate(16deg); }
+}
 @media (prefers-reduced-motion: reduce) {
   .pl-card--hero, .pl-card--hero::before { animation: none; }
+  .pl-hero-fish { display: none; }
 }
 .pl-card--hero .pl-kicker,
 .pl-card--hero .pl-kicker-end,
