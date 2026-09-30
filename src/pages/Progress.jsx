@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
-  ChevronLeft, Clock, BookOpen, GraduationCap, Gauge, LineChart, ChevronDown,
+  Clock, BookOpen, GraduationCap, Gauge, LineChart, ChevronDown,
   Check, TrendingUp, Minus, RotateCcw, CircleDashed, Bot, Users, Target,
 } from 'lucide-react';
 import {
@@ -19,6 +19,7 @@ import {
   currentFocus,
 } from '../utils/insights';
 import { getFeedbackLanguage } from '../utils/feedbackLanguage';
+import { minutesPerSession, wpmPerSession, wordsOverTime, cefrIndex, CEFR_STEPS } from '../utils/labCharts';
 import '../styles/progress.css';
 
 // The progress room.
@@ -117,10 +118,8 @@ export default function Progress({ user }) {
 
   const header = (
     <div className="progress-header">
-      <button className="progress-back" onClick={() => navigate('/profile')} aria-label="Back">
-        <ChevronLeft size={24} />
-      </button>
-      <h2 className="progress-title">Your progress</h2>
+      {/* A tab root now (Lab), so there is no back arrow. */}
+      <h2 className="progress-title">Your lab</h2>
     </div>
   );
 
@@ -176,20 +175,24 @@ export default function Progress({ user }) {
 
       {/* Four measured things. Every one of these is real data, not an estimate. */}
       <div className="progress-tiles">
-        <Tile icon={Clock} label="Speaking time" value={totalMinutes} unit="min" />
+        <Tile icon={Clock} label="Speaking time" value={totalMinutes} unit="min"
+          chart={<Bars values={minutesPerSession(progress)} label="Minutes per session" />} />
         <Tile
           icon={BookOpen}
           label="Words used"
           value={wordCount.toLocaleString()}
           delta={newWords > 0 ? `+${newWords} last session` : null}
+          chart={<Line values={wordsOverTime(progress)} label="Words used over time" />}
         />
         <Tile
           icon={GraduationCap}
           label="Level"
           value={levelShort || '—'}
           cta={levelShort ? null : { text: 'Take the test', onClick: () => navigate('/placement') }}
+          chart={levelShort ? <Ladder index={cefrIndex(levelFull)} /> : null}
         />
-        <Tile icon={Gauge} label="Speaking speed" value={avgWpm ?? '—'} unit={avgWpm ? 'wpm' : ''} />
+        <Tile icon={Gauge} label="Speaking speed" value={avgWpm ?? '—'} unit={avgWpm ? 'wpm' : ''}
+          chart={<Line values={wpmPerSession(progress)} label="Speaking speed per session" />} />
       </div>
 
       {/* The carry-over. This is the only thing on the page that answers "did I
@@ -505,7 +508,7 @@ function Ticket({ ticket, onOpen }) {
   );
 }
 
-function Tile({ icon: Icon, label, value, unit, delta, cta }) {
+function Tile({ icon: Icon, label, value, unit, delta, cta, chart }) {
   return (
     <div className="progress-tile">
       <span className="progress-tile-label">
@@ -522,7 +525,68 @@ function Tile({ icon: Icon, label, value, unit, delta, cta }) {
           {cta.text}
         </button>
       )}
+      {chart}
     </div>
+  );
+}
+
+// ─── Tile charts ────────────────────────────────────────────────────
+// Drawn in a fixed 100×32 box and stretched to the tile width. One colour
+// family: past sessions in the soft step, the latest in the full accent, so
+// "where am I now" reads before "how did I get here".
+const CW = 100;
+const CH = 32;
+
+function Bars({ values, label }) {
+  if (!values || values.length < 2) return null;
+  const max = Math.max(...values, 1);
+  const w = CW / values.length;
+  return (
+    <svg className="progress-chart" viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" role="img" aria-label={label}>
+      {values.map((v, i) => {
+        const h = Math.max(2, (v / max) * CH);
+        return (
+          <rect key={i} x={i * w + w * 0.15} y={CH - h} width={w * 0.7} height={h} rx="1.5"
+            fill={i === values.length - 1 ? 'var(--accent)' : 'var(--accent-soft)'} />
+        );
+      })}
+    </svg>
+  );
+}
+
+function Line({ values, label }) {
+  if (!values || values.length < 2) return null;
+  const min = Math.min(...values);
+  const span = Math.max(...values) - min || 1;
+  const pts = values.map((v, i) => [
+    (i / (values.length - 1)) * (CW - 4) + 2,
+    CH - 3 - ((v - min) / span) * (CH - 6),
+  ]);
+  const line = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const [lx, ly] = pts[pts.length - 1];
+  return (
+    <svg className="progress-chart" viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" role="img" aria-label={label}>
+      <polygon points={`2,${CH} ${line} ${lx.toFixed(1)},${CH}`} fill="var(--accent-soft)" />
+      <polyline points={line} fill="none" stroke="var(--accent)" strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r="2.2" fill="var(--bg-secondary)" stroke="var(--accent)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+// The CEFR ladder: every step up to the learner's level is filled, their own
+// step in the full accent. The level is the placement test's, never inferred.
+function Ladder({ index }) {
+  if (index < 0) return null;
+  const w = CW / CEFR_STEPS.length;
+  return (
+    <svg className="progress-chart" viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" role="img"
+      aria-label={`Level ${CEFR_STEPS[index]} of A1 to C2`}>
+      {CEFR_STEPS.map((step, i) => {
+        const h = ((i + 1) / CEFR_STEPS.length) * CH;
+        const fill = i === index ? 'var(--accent)' : i < index ? 'var(--accent-soft)' : 'var(--border)';
+        return <rect key={step} x={i * w + w * 0.18} y={CH - h} width={w * 0.64} height={h} rx="1.5" fill={fill} />;
+      })}
+    </svg>
   );
 }
 

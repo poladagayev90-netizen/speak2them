@@ -26,6 +26,7 @@ import useMyPlan from '../hooks/useMyPlan';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
 import { planHeadline, openOffers, upcomingBookings } from '../utils/planState';
 import Button from '../components/ui/Button';
+import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
 import '../components/plan/plan.css';
 
@@ -171,11 +172,19 @@ export default function Home({ user }) {
         <div className="home-logo" style={{ display: 'flex', alignItems: 'center' }}>
           <Logo width={120} />
         </div>
-        {user.uid === ADMIN_UID && (
-          <Button variant="secondary" size="sm" onClick={() => navigate('/admin')} icon={<Shield size={14} />}>
-            Admin
-          </Button>
-        )}
+        {/* Profile left the nav for the Lab tab; it opens from here, with the
+            admin shield beside it. */}
+        <div className="home-header-right">
+          {user.uid === ADMIN_UID && (
+            <Button variant="secondary" size="sm" onClick={() => navigate('/admin')} icon={<Shield size={14} />}>
+              Admin
+            </Button>
+          )}
+          <button type="button" className="home-avatar" onClick={() => navigate('/profile')} aria-label="Profile">
+            {(user.name || '?').charAt(0).toUpperCase()}
+            <AvatarImage src={user.photo} />
+          </button>
+        </div>
       </div>
 
       <div className="home-body">

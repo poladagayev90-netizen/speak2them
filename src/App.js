@@ -254,7 +254,9 @@ function AppShell({ user }) {
           <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
           {/* History = "what happened in that call"; Progress = "am I getting
               better". Separate routes because they answer separate questions. */}
-          <Route path="/progress" element={user ? <Progress user={user} /> : <Navigate to="/login" />} />
+          <Route path="/lab" element={user ? <Progress user={user} /> : <Navigate to="/login" />} />
+          {/* The progress room became the Lab tab (2026-10-01); old links land there. */}
+          <Route path="/progress" element={<Navigate to="/lab" replace />} />
           {/* The lessons: how to describe, how to keep a call going, Taboo,
               debate. The map and one lesson are separate routes so a lesson can
               be linked to directly — and so Back from a lesson lands on the

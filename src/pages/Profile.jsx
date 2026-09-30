@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
   GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
-  LineChart, Smartphone,
+  LineChart, Smartphone, ArrowLeft,
 } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -201,6 +201,16 @@ export default function Profile({ user }) {
   if (isEditing) {
     return (
       <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
+      {/* Profile is no longer a tab — it opens from the avatar on Today — so
+          it needs its own way back. */}
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        aria-label="Back to Today"
+        style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', padding: 0, marginBottom: 'var(--s-3)', cursor: 'pointer' }}
+      >
+        <ArrowLeft size={22} />
+      </button>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '16px', cursor: 'pointer' }}>Cancel</button>
           <h2 style={{ fontSize: '18px', margin: 0, color: 'var(--text-primary)' }}>Edit Profile</h2>
@@ -263,6 +273,16 @@ export default function Profile({ user }) {
 
   return (
     <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
+      {/* Profile is no longer a tab — it opens from the avatar on Today — so
+          it needs its own way back. */}
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        aria-label="Back to Today"
+        style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', padding: 0, marginBottom: 'var(--s-3)', cursor: 'pointer' }}
+      >
+        <ArrowLeft size={22} />
+      </button>
 
       {/* Identity. The avatar used to take 250px of a 844px screen before a
           single useful number appeared; it is now a row, not a monument. */}
@@ -453,7 +473,7 @@ export default function Profile({ user }) {
         {/* Above the per-call history on purpose: "how am I doing overall" is
             the question people open this section with, and the list of single
             reports is what they fall back to. */}
-        {row({ icon: LineChart, label: 'My progress', onClick: () => navigate('/progress'), notLast: true })}
+        {row({ icon: LineChart, label: 'My progress', value: 'The Lab tab', onClick: () => navigate('/lab'), notLast: true })}
         {row({ icon: BarChart3, label: 'Analysis history', onClick: () => navigate('/history'), notLast: true })}
         {row({ icon: Trophy, label: 'Leaderboard', onClick: () => navigate('/ranking') })}
       </div>
