@@ -19,6 +19,7 @@ import { mustWriteWhatsApp } from './utils/intro';
 import useBackButton from './hooks/useBackButton';
 import { ADMIN_UID } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
+import { readPeerFromPath, setPendingPeer, getPendingPeer, clearPendingPeer } from './utils/invite';
 import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
 import { resolveAppLanguage, deviceTimeZone } from './utils/appLanguage';
 import Logo from './components/Logo';
@@ -138,6 +139,14 @@ function AppShell({ user }) {
     if (c) setPendingJoinCode(c);
   }, [location.pathname, location.search]);
 
+  // A "practise with me" link (/p/<uid>, utils/invite.js) is held the same
+  // way: a signed-out visitor is sent to register first, and the link would
+  // be lost with the URL.
+  useEffect(() => {
+    const peer = readPeerFromPath(location.pathname);
+    if (peer) setPendingPeer(peer);
+  }, [location.pathname]);
+
   // Müəllim şagird sorğusuna göndərilmir (aşağıda /onboarding route-u onu
   // Dashboard-a yönləndirir), amma Lobby ona açıq qalır — özü də məşq edə
   // bilər. Bu cüt yoxlama auth yarışını da bağlayır: Register-in setDoc-u
@@ -187,7 +196,10 @@ function AppShell({ user }) {
     ? (needsOnboarding(user) ? <Navigate to="/onboarding" replace />
       // A newcomer writes to the team on WhatsApp first (utils/intro.js).
       : mustWriteWhatsApp(user) ? <Navigate to="/intro" replace />
-        : <Home user={user} />)
+        // Joined through a friend's practice link: once the wizard and the
+        // WhatsApp step are done, carry on to that friend's chat.
+        : getPendingPeer() ? <InviteRedirect user={user} uid={getPendingPeer()} />
+          : <Home user={user} />)
     : <Navigate to="/register" />;
 
   if (showTrialGate) {
@@ -218,6 +230,12 @@ function AppShell({ user }) {
           {/* BEFORE the :peerId route, and it has to be. AInur is not a user
               account, so Chat.jsx would load a peer document that does not
               exist and offer to call somebody who is not there. */}
+          {/* "Practise with me" link. A learner who still has the wizard or the
+              WhatsApp step ahead goes home first; the link waits (see the
+              effect above and homeElement). */}
+          <Route path="/p/:uid" element={!user ? <Navigate to="/register" replace />
+            : (needsOnboarding(user) || mustWriteWhatsApp(user)) ? <Navigate to="/" replace />
+              : <InviteRedirect user={user} uid={readPeerFromPath(location.pathname)} />} />
           <Route path="/chat/ainur" element={user ? <AinurChat user={user} /> : <Navigate to="/login" />} />
           <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
           <Route path="/ai-chat" element={user ? <AinurHub user={user} /> : <Navigate to="/login" />} />
@@ -518,3 +536,11 @@ function App() {
 }
 
 export default App;
+
+// Opens the chat a practice link points at, once. Your own link, or a broken
+// one, lands on Partners instead of an empty chat with yourself.
+function InviteRedirect({ user, uid }) {
+  clearPendingPeer();
+  if (!uid || uid === user.uid) return <Navigate to="/chats" replace />;
+  return <Navigate to={`/chat/${uid}`} state={{ invited: true }} replace />;
+}

@@ -1831,7 +1831,13 @@ export default function Chat({ user }) {
       <div className="chat-messages">
         {shownMessages.length === 0 ? (
           <div className="chat-empty-hint">
-            <p>Say hello and start practising.</p>
+            {/* Arrived through their "practise with me" link (utils/invite.js):
+                say why this chat is here, so it does not read as a stranger. */}
+            <p>
+              {location.state?.invited
+                ? `You opened ${peer?.name || 'your partner'}’s practice link. Say hi, or call when you are both ready.`
+                : 'Say hello and start practising.'}
+            </p>
           </div>
         ) : (
           shownMessages.map((m) => {

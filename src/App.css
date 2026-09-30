@@ -2898,3 +2898,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .stage-card::before, .stage-card::after { animation: none; }
 }
+
+/* ─── Partners: "Practise with a friend" (utils/invite.js) ───────────── */
+.partners-invite {
+  margin: 0 0 var(--s-4);
+  padding: var(--s-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--glass-lift);
+}
+.partners-invite-title { margin: 0 0 var(--s-1); font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.partners-invite-text { margin: 0 0 var(--s-3); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.partners-invite-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.partners-invite-actions .ui-btn { text-decoration: none; gap: var(--s-2); }

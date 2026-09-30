@@ -2,7 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import { Phone, Star } from 'lucide-react';
+import { Phone, Star, Link2, Check } from 'lucide-react';
+import { buildPracticeLink, inviteMessage } from '../utils/invite';
+import '../components/ui/ui.css';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { subscribeToFavorites, setFavorite } from '../utils/favorites';
 import { getPresence } from '../utils/presence';
@@ -100,12 +102,14 @@ export default function Chats({ user }) {
           People you have practised with. Message or call them any time. Star the ones you
           would like to practise with again — your weekly plan pairs you with them more often.
         </p>
+        <InviteCard user={user} />
         {rows.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon"></div>
             <p>No partners yet.</p>
             <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
-              After your first practice, the person you talked with appears here.
+              After your first practice, the person you talked with appears here —
+              or send a friend your link above.
             </p>
           </div>
         ) : (
@@ -230,5 +234,39 @@ export default function Chats({ user }) {
         )}
       </div>
     </div>
+  );
+}
+
+// "Practise with a friend": two learners who agreed a time on WhatsApp but
+// have never talked in the app cannot find each other here (Partners lists
+// only people you have practised with, and random search is gone). The link
+// opens a chat with you; everything after that is the ordinary chat and call.
+function InviteCard({ user }) {
+  const [copied, setCopied] = useState(false);
+  const link = buildPracticeLink(user.uid);
+  const text = inviteMessage(user.name, link);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch { /* clipboard blocked — the WhatsApp button still works */ }
+  };
+  return (
+    <section className="partners-invite" aria-label="Practise with a friend">
+      <p className="partners-invite-title">Practise with a friend</p>
+      <p className="partners-invite-text">
+        Arranged a time on WhatsApp? Send your link — it opens a chat with you, and you can call from there.
+      </p>
+      <div className="partners-invite-actions">
+        <a className="ui-btn ui-btn--primary ui-btn--sm" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer">
+          Share on WhatsApp
+        </a>
+        <button type="button" className="ui-btn ui-btn--secondary ui-btn--sm" onClick={copy}>
+          {copied ? <Check size={16} aria-hidden="true" /> : <Link2 size={16} aria-hidden="true" />}
+          {copied ? 'Copied' : 'Copy link'}
+        </button>
+      </div>
+    </section>
   );
 }

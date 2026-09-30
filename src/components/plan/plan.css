@@ -56,30 +56,99 @@
   50% { transform: translate(70%, 40%); }
   100% { transform: translate(110%, 5%); }
 }
-/* Now and then a small fish swims through the card, low and faint: one
-   crossing takes ~14 s of a 24 s cycle, then the water is empty again
-   (was 47 s — Polad wanted it more often). It
-   sits behind the text (z-index -1 inside the isolated card). */
-.pl-hero-fish {
-  position: absolute; z-index: -1; inset: 0;
-  pointer-events: none;
-  color: var(--text-on-accent);
+/* The sea parade (HeroFx.jsx HeroParade). A 120 s cycle of six 20 s slots,
+   one visitor each; the phase is the wall clock (--hero-parade-delay), so the
+   parade carries on across page changes. Every creature runs the whole cycle
+   and waits off the card (left) outside its own slot, crosses, then waits off
+   the right edge. Keep 120s here in step with HERO_PARADE_MS.
+   Slot starts: fish 0%, whale 16.667%, otter 33.333%, manta 50%,
+   octopus 66.667%, school 83.333%. All sit behind the text (z -1). */
+.pl-parade { position: absolute; inset: 0; z-index: -1; pointer-events: none; color: var(--text-on-accent); }
+.pl-sea {
+  position: absolute; inset: 0;
   opacity: .24;
-  animation: pl-fish-cross 24s linear var(--hero-fish-delay, 0s) infinite;
+  animation: 120s linear var(--hero-parade-delay, 0s) infinite;
+  transform: translateX(-40%);
 }
-.pl-hero-fish-bob {
-  position: absolute; top: 58%; left: 0;
-  animation: pl-fish-bob 3.4s ease-in-out infinite alternate;
-}
-.pl-hero-fish-tail {
-  transform-box: view-box; transform-origin: 15px 15px;
-  animation: pl-fish-tail .45s ease-in-out infinite alternate;
-}
-@keyframes pl-fish-cross {
-  0%   { transform: translateX(-12%); }
-  58%  { transform: translateX(108%); }
+.pl-sea > span { position: absolute; left: 0; display: block; }
+.pl-sea svg { display: block; }
+
+/* 0 · fish — as before: ~14 s, tail flick and bob. */
+.pl-sea--fish { animation-name: pl-sea-fish; }
+.pl-sea--fish > span { top: 58%; }
+.pl-hero-fish-bob { animation: pl-fish-bob 3.4s ease-in-out infinite alternate; }
+.pl-hero-fish-tail { transform-box: view-box; transform-origin: 15px 15px; animation: pl-fish-tail .45s ease-in-out infinite alternate; }
+@keyframes pl-sea-fish {
+  0% { transform: translateX(-16%); }
+  11.667% { transform: translateX(108%); }
   100% { transform: translateX(108%); }
 }
+
+/* 1 · whale — big, slow (~18 s), low, a little fainter for its size. */
+.pl-sea--whale { animation-name: pl-sea-whale; opacity: .17; }
+.pl-sea--whale > span { top: 56%; }
+.pl-whale-flukes { transform-box: view-box; transform-origin: 22px 33px; animation: pl-whale-flukes 1.6s ease-in-out infinite alternate; }
+@keyframes pl-sea-whale {
+  0%, 16.667% { transform: translateX(-40%); }
+  31.667% { transform: translateX(108%); }
+  100% { transform: translateX(108%); }
+}
+@keyframes pl-whale-flukes { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
+/* 2 · otter — on its back near the top, drifting (~16 s), rocking gently,
+   the pebble bobbing on its chest. */
+.pl-sea--otter { animation-name: pl-sea-otter; }
+.pl-sea--otter > span { top: 8%; }
+.pl-otter-rock { animation: pl-otter-rock 2.6s ease-in-out infinite alternate; }
+.pl-otter-paws { transform-box: view-box; transform-origin: 44px 15px; animation: pl-otter-paws .9s ease-in-out infinite alternate; }
+@keyframes pl-sea-otter {
+  0%, 33.333% { transform: translateX(-24%); }
+  46.667% { transform: translateX(108%); }
+  100% { transform: translateX(108%); }
+}
+@keyframes pl-otter-rock { from { transform: translateY(-3px) rotate(-4deg); } to { transform: translateY(3px) rotate(4deg); } }
+@keyframes pl-otter-paws { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+
+/* 3 · manta ray — glides mid-card (~13 s), wings beating slowly. */
+.pl-sea--manta { animation-name: pl-sea-manta; }
+.pl-sea--manta > span { top: 36%; }
+.pl-manta-wings { transform-box: view-box; transform-origin: 48px 30px; animation: pl-manta-flap 1.8s ease-in-out infinite alternate; }
+@keyframes pl-sea-manta {
+  0%, 50% { transform: translateX(-30%); }
+  60.833% { transform: translateX(108%); }
+  100% { transform: translateX(108%); }
+}
+@keyframes pl-manta-flap { from { transform: scaleY(1); } to { transform: scaleY(.66); } }
+
+/* 4 · octopus — rises on a slant from bottom-left (~12 s), squeezing its
+   head and trailing its arms in a jet rhythm. */
+.pl-sea--octopus { animation-name: pl-sea-octopus; }
+.pl-sea--octopus > span { top: 62%; }
+.pl-octo-tilt { transform: rotate(38deg); }
+.pl-octo-head { transform-box: view-box; transform-origin: 26px 30px; animation: pl-octo-squeeze 1.3s ease-in-out infinite; }
+.pl-octo-arms { transform-box: view-box; transform-origin: 26px 30px; animation: pl-octo-arms 1.3s ease-in-out infinite; }
+@keyframes pl-sea-octopus {
+  0%, 66.667% { transform: translate(-20%, 30%); }
+  76.667% { transform: translate(108%, -70%); }
+  100% { transform: translate(108%, -70%); }
+}
+@keyframes pl-octo-squeeze { 0%, 100% { transform: scale(1); } 35% { transform: scale(.86, .92); } }
+@keyframes pl-octo-arms { 0%, 100% { transform: scaleY(1); } 35% { transform: scaleY(1.18) scaleX(.8); } }
+
+/* 5 · school — many small fish, FAST (~4 s) and together, one shared wave;
+   each fish bobs a little on its own offset. */
+.pl-sea--school { animation-name: pl-sea-school; opacity: .28; }
+.pl-sea--school > span { top: 30%; }
+.pl-school-wave { animation: pl-school-wave .9s ease-in-out infinite alternate; }
+.pl-minnow { animation: pl-minnow .35s ease-in-out calc(var(--i) * -70ms) infinite alternate; }
+@keyframes pl-sea-school {
+  0%, 83.333% { transform: translateX(-32%); }
+  86.667% { transform: translateX(110%); }
+  100% { transform: translateX(110%); }
+}
+@keyframes pl-school-wave { from { transform: translateY(-10px); } to { transform: translateY(10px); } }
+@keyframes pl-minnow { from { translate: 0 -1.5px; } to { translate: 0 1.5px; } }
+
 @keyframes pl-fish-bob {
   from { transform: translateY(-9px) rotate(-3deg); }
   to   { transform: translateY(9px) rotate(3deg); }
@@ -90,7 +159,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .pl-card--hero, .pl-card--hero::before { animation: none; }
-  .pl-hero-fish { display: none; }
+  .pl-parade { display: none; }
 }
 .pl-card--hero .pl-kicker,
 .pl-card--hero .pl-kicker-end,
