@@ -13,6 +13,7 @@ const weeklyPlanner = require("./weeklyPlanner");
 const reliabilityLib = require("./reliability");
 const { normalizeVocabulary, CEFR: CEFR_LEVELS } = require("./analysisVocab");
 const { weekKey: bakuWeekKey } = require("./practiceStats");
+const homeworkBuilder = require("./homeworkBuilder");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -1398,6 +1399,56 @@ exports.startCohort = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
+// ─── Class homework ─────────────────────────────────────────────
+// Marking a lesson held opens its homework for every active member:
+// homework/{cohortId}_{n}_{uid}. The topic half (words, dictation) is read by
+// the client from the lesson's topic; the personal half is built here from the
+// member's own call analyses since the PREVIOUS held lesson (or the last 14
+// days for lesson 1) — see homeworkBuilder.js. Re-marking rebuilds the personal
+// half and keeps the member's progress; undoing hides the homework instead of
+// deleting it, so a teacher's slip never erases work already done.
+const HOMEWORK_FIRST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
+async function syncClassHomework(db, cohortId, n, held) {
+  const lessonsSnap = await db.collection("cohorts").doc(cohortId).collection("lessons").get();
+  const lessons = lessonsSnap.docs.map((d) => d.data());
+  const lesson = lessons.find((l) => Number(l.n) === n) || {};
+  const members = (await db.collection("users").where("cohortId", "==", cohortId).get())
+    .docs.filter((d) => d.get("cohortStatus") === "active" || d.get("mode") === "course");
+
+  if (!held) {
+    const batch = db.batch();
+    members.forEach((m) => batch.set(db.collection("homework").doc(`${cohortId}_${n}_${m.id}`), { hidden: true }, { merge: true }));
+    await batch.commit();
+    return { hidden: members.length };
+  }
+
+  const prev = lessons
+    .filter((l) => Number(l.n) < n && l.status === "held" && l.heldAt && typeof l.heldAt.toMillis === "function")
+    .sort((a, b) => b.n - a.n)[0];
+  const sinceMs = prev ? prev.heldAt.toMillis() : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
+
+  let built = 0;
+  for (const m of members) {
+    const snap = await db.collection("callAnalysis")
+      .where("userId", "==", m.id).orderBy("timestamp", "desc").limit(10).get()
+      .catch(() => null);
+    const analyses = (snap ? snap.docs.map((d) => d.data()) : [])
+      .filter((a) => a.timestamp && typeof a.timestamp.toMillis === "function" && a.timestamp.toMillis() >= sinceMs);
+    await db.collection("homework").doc(`${cohortId}_${n}_${m.id}`).set({
+      uid: m.id,
+      cohortId,
+      n,
+      topicIndex: lesson.topicIndex,
+      personal: homeworkBuilder.buildPersonal(analyses),
+      hidden: false,
+      openedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    built += 1;
+  }
+  return { built };
+}
+
 // ─── A cohort's lessons (the teacher's class) ──────────────────
 // A cohort with a class schedule (lessonCount, lessonDays, lessonMin,
 // startDate — set by the admin in Admin → Cohorts) has numbered lessons. The
@@ -1465,7 +1516,8 @@ exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
       status: held ? "held" : "planned",
       heldAt: held ? admin.firestore.FieldValue.serverTimestamp() : null,
     }, { merge: true });
-    return res.status(200).json({ ok: true });
+    const homework = await syncClassHomework(db, cohortId, n, held);
+    return res.status(200).json({ ok: true, homework });
   } catch (e) {
     console.error("[teacherLesson]", e);
     return res.status(500).json({ error: "lesson_failed" });

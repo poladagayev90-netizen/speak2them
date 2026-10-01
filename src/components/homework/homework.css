@@ -1,0 +1,96 @@
+/* Class homework page (/homework/:id). */
+
+.hw-page {
+  width: 100%; max-width: 640px; margin: 0 auto; box-sizing: border-box;
+  padding: var(--s-4) var(--s-4) calc(var(--s-10) * 3);
+  display: flex; flex-direction: column; gap: var(--s-4);
+}
+.hw-head { display: flex; align-items: center; gap: var(--s-3); }
+.hw-back {
+  flex-shrink: 0; width: 40px; height: 40px; border-radius: var(--r-pill);
+  display: grid; place-items: center; cursor: pointer;
+  color: var(--text-primary); background: var(--bg-card); border: 1px solid var(--border);
+}
+.hw-titles { min-width: 0; }
+.hw-title { margin: 0; font-size: var(--fs-h1); font-weight: 800; color: var(--text-primary); }
+.hw-topic { margin: 2px 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+
+.hw-steps { display: flex; gap: var(--s-2); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.hw-steps::-webkit-scrollbar { display: none; }
+.hw-step {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: var(--s-1);
+  height: 34px; padding: 0 var(--s-3);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--text-secondary); background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--r-pill); cursor: pointer;
+}
+.hw-step.is-done { color: var(--coral-ink); background: var(--coral-soft); border-color: transparent; }
+.hw-step.is-cur { color: var(--text-on-accent); background: var(--accent); border-color: var(--accent); }
+
+.hw-body { display: flex; flex-direction: column; gap: var(--s-3); }
+.hw-lead { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: 1.5; }
+.hw-sub { margin: var(--s-2) 0 0; font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+
+.hw-words { display: flex; flex-direction: column; gap: var(--s-2); }
+.hw-word { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); }
+.hw-word.is-open { border-color: var(--accent); }
+.hw-word-row { display: flex; align-items: center; gap: var(--s-2); padding-right: var(--s-2); }
+.hw-word-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-3); text-align: left; cursor: pointer;
+  font: inherit; background: none; border: none; color: var(--text-primary);
+}
+.hw-word-text { font-size: var(--fs-body); font-weight: 700; }
+.hw-tag {
+  font-size: var(--fs-xs); font-weight: 700; color: var(--accent);
+  padding: 1px var(--s-2); border: 1px solid var(--accent-ring); border-radius: var(--r-pill);
+}
+.hw-word-more { padding: 0 var(--s-3) var(--s-3); }
+.hw-meaning { margin: 0 0 var(--s-1); font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary); }
+.hw-example { margin: 0; font-size: var(--fs-sm); font-weight: 500; color: var(--text-secondary); font-style: italic; }
+.hw-speak {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: var(--r-pill);
+  display: grid; place-items: center; cursor: pointer;
+  color: var(--accent); background: var(--accent-soft); border: none;
+}
+
+.hw-dict { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); }
+.hw-dict-head { display: flex; align-items: center; gap: var(--s-2); }
+.hw-dict-n {
+  width: 26px; height: 26px; border-radius: var(--r-pill); display: grid; place-items: center;
+  font-size: var(--fs-xs); font-weight: 800; color: var(--text-primary); background: var(--bg-secondary);
+}
+.hw-dict-input {
+  width: 100%; box-sizing: border-box; resize: vertical; padding: var(--s-2) var(--s-3);
+  font: inherit; font-size: var(--fs-body); color: var(--text-primary);
+  background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--r-sm);
+}
+.hw-dict-result { margin: 0; font-size: var(--fs-body); line-height: 1.7; }
+.hw-ok { color: var(--text-primary); font-weight: 600; }
+.hw-miss { color: var(--danger); font-weight: 700; text-decoration: underline; text-decoration-style: wavy; }
+.hw-dict-score { margin-left: var(--s-1); color: var(--coral-ink); background: var(--coral-soft); padding: 1px var(--s-2); border-radius: var(--r-pill); font-size: var(--fs-sm); }
+.hw-total { margin: 0; font-size: var(--fs-body); font-weight: 600; color: var(--text-secondary); }
+
+.hw-mine { display: flex; flex-direction: column; gap: var(--s-3); }
+.hw-theme { padding: var(--s-3); background: var(--accent-soft); border-radius: var(--r-md); }
+.hw-theme-title { margin: 0 0 var(--s-1); font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.hw-theme-rule { margin: 0 0 var(--s-2); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.hw-fix { margin: 0 0 var(--s-1); font-size: var(--fs-sm); color: var(--text-primary); }
+.hw-fix s { color: var(--text-muted); }
+
+.hw-questions { margin: 0; padding-left: var(--s-5); display: flex; flex-direction: column; gap: var(--s-2); font-size: var(--fs-body); font-weight: 600; color: var(--text-primary); }
+.hw-actions { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.hw-foot { position: sticky; bottom: calc(var(--s-10) * 2); padding-top: var(--s-2); }
+
+/* Student: homework rows inside the class card on Today. */
+.cls-hw { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-3); }
+.cls-hw-row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-2);
+  width: 100%; padding: var(--s-2) var(--s-3); cursor: pointer; text-align: left;
+  font: inherit; color: var(--text-primary); background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+}
+.cls-hw-name { font-size: var(--fs-sm); font-weight: 700; }
+.cls-hw-left { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+.cls-hw-row.is-done .cls-hw-left { color: var(--coral-ink); }

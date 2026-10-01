@@ -392,6 +392,23 @@ service cloud.firestore {
       }
     }
 
+    // Class homework, one doc per member per held lesson, built by the server
+    // (teacherLesson). The member reads it and records only their own progress;
+    // nothing is granted by progress, so a client-written value is safe (same
+    // reasoning as lessonProgress). The class's teacher and the admin read it.
+    match /homework/{id} {
+      allow read: if isAdmin() || (isSignedIn() && (
+        resource.data.uid == request.auth.uid
+        || get(/databases/$(database)/documents/cohorts/$(resource.data.cohortId)).data.teacherId == request.auth.uid
+      ));
+      allow update: if isSignedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['doneSteps', 'scores', 'updatedAt'])
+        && (!('doneSteps' in request.resource.data) || (request.resource.data.doneSteps is list && request.resource.data.doneSteps.size() <= 10))
+        && (!('scores' in request.resource.data) || (request.resource.data.scores is map && request.resource.data.scores.size() <= 10));
+      allow create, delete: if false;
+    }
+
     match /waitlist/{docId} {
       allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt'])
         && request.resource.data.email is string

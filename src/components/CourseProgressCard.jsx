@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { subscribeToCycle } from '../utils/cycle';
 import { subscribeToSessionConfig } from '../utils/sessionSchedule';
@@ -8,7 +9,8 @@ import {
   COURSE_TOPIC_COUNT,
   getTopicsCompleted,
 } from '../utils/courseProgress';
-import { isClassCohort, lessonSummary, topicsSinceJoin } from '../utils/cohortLessons';
+import { homeworkStepKeys, isClassCohort, lessonSummary, topicsSinceJoin } from '../utils/cohortLessons';
+import './homework/homework.css';
 import './cohort/cohort.css';
 
 const lessonWhen = (ms) => new Intl.DateTimeFormat('en-GB', {
@@ -18,7 +20,8 @@ const lessonWhen = (ms) => new Intl.DateTimeFormat('en-GB', {
 // A member of a class cohort: lesson X/N as one dot per lesson (coral = held,
 // the progress colour), the next lesson's time and topic once the teacher has
 // picked it. A lesson counts only when the teacher marked it held.
-function ClassCard({ cohort, lessons }) {
+function ClassCard({ cohort, lessons, homework }) {
+  const navigate = useNavigate();
   const s = useMemo(() => lessonSummary(cohort, lessons), [cohort, lessons]);
   if (!s) return null;
   const nextTopic = s.next && Number.isInteger(s.next.topicIndex) ? weeklyContent[s.next.topicIndex]?.topic : null;
@@ -38,6 +41,20 @@ function ClassCard({ cohort, lessons }) {
           ? <>Next: <b>{lessonWhen(s.next.startMs)}</b>{nextTopic && <> · {nextTopic}</>}</>
           : s.ended ? 'Your class has finished.' : 'All lessons are done.'}
       </p>
+      {homework.length > 0 && (
+        <div className="cls-hw">
+          {homework.slice(0, 2).map((h) => {
+            const keys = homeworkStepKeys(h.personal);
+            const left = keys.filter((k) => !(h.doneSteps || []).includes(k)).length;
+            return (
+              <button key={h.id} type="button" className={`cls-hw-row${left === 0 ? ' is-done' : ''}`} onClick={() => navigate(`/homework/${h.id}`)}>
+                <span className="cls-hw-name">Homework · lesson {h.n}</span>
+                <span className="cls-hw-left">{left === 0 ? 'Done' : `${left} of ${keys.length} steps left`}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -79,7 +96,20 @@ export default function CourseProgressCard({ user }) {
     );
   }, [classId]);
 
-  if (classId) return <ClassCard cohort={cohort} lessons={lessons} />;
+  // This member's open homework for the class, newest lesson first.
+  const [homework, setHomework] = useState([]);
+  const uid = user.uid;
+  useEffect(() => {
+    if (!classId || !uid) { setHomework([]); return undefined; }
+    return onSnapshot(
+      query(collection(db, 'homework'), where('uid', '==', uid), where('cohortId', '==', classId)),
+      (snap) => setHomework(snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+        .filter((h) => !h.hidden).sort((a, b) => b.n - a.n)),
+      () => setHomework([])
+    );
+  }, [classId, uid]);
+
+  if (classId) return <ClassCard cohort={cohort} lessons={lessons} homework={homework} />;
 
   const cardStyle = {
     background: 'var(--accent-soft)',
