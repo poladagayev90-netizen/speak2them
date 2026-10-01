@@ -1,11 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import React, { useEffect, useMemo, useState } from 'react';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { subscribeToCycle } from '../utils/cycle';
+import { subscribeToSessionConfig } from '../utils/sessionSchedule';
+import { weeklyContent } from '../data/weeklyContent';
 import {
   COURSE_TOPIC_COUNT,
   getTopicsCompleted,
 } from '../utils/courseProgress';
+import { isClassCohort, lessonSummary, topicsSinceJoin } from '../utils/cohortLessons';
+import './cohort/cohort.css';
+
+const lessonWhen = (ms) => new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Baku', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+}).format(new Date(ms));
+
+// A member of a class cohort: lesson X/N as one dot per lesson (coral = held,
+// the progress colour), the next lesson's time and topic once the teacher has
+// picked it. A lesson counts only when the teacher marked it held.
+function ClassCard({ cohort, lessons }) {
+  const s = useMemo(() => lessonSummary(cohort, lessons), [cohort, lessons]);
+  if (!s) return null;
+  const nextTopic = s.next && Number.isInteger(s.next.topicIndex) ? weeklyContent[s.next.topicIndex]?.topic : null;
+  return (
+    <div className="cls-card">
+      <div className="cls-top">
+        <span className="cls-title">Lesson {s.held}/{s.total}</span>
+        <span className="cls-name">{cohort.name || 'Your class'}</span>
+      </div>
+      <div className="cls-dots" aria-hidden="true">
+        {s.lessons.map((l) => (
+          <span key={l.n} className={`cls-dot${l.status === 'held' ? ' cls-dot--held' : ''}`} />
+        ))}
+      </div>
+      <p className="cls-line">
+        {s.next
+          ? <>Next: <b>{lessonWhen(s.next.startMs)}</b>{nextTopic && <> · {nextTopic}</>}</>
+          : s.ended ? 'Your class has finished.' : 'All lessons are done.'}
+      </p>
+    </div>
+  );
+}
 
 // Kurs vəziyyəti kartı — Home-da əsas aksiyanın ALTINDA dayanır.
 // - Kurs useri: Mövzu X/30 + proqres barı + kohort adı.
@@ -14,20 +49,37 @@ import {
 export default function CourseProgressCard({ user }) {
   const [cycle, setCycle] = useState(null);
   const [cohort, setCohort] = useState(null);
+  const [lessons, setLessons] = useState([]);
+  const [sessionConfig, setSessionConfig] = useState(null);
 
   useEffect(() => subscribeToCycle(setCycle), []);
+  useEffect(() => subscribeToSessionConfig(setSessionConfig), []);
 
   // Kohort otağı hissi: öz kohort sənədindən (rules üzvə GET icazəsi verir)
   // ad + üzv sayı real vaxtda. Kohortsuz userdə heç nə oxunmur.
-  const cohortId = user.mode === 'course' ? user.cohortId : null;
+  const cohortId = (user.mode === 'course' || user.cohortStatus === 'active') ? user.cohortId : null;
   useEffect(() => {
     if (!cohortId) { setCohort(null); return undefined; }
     return onSnapshot(
       doc(db, 'cohorts', cohortId),
-      (snap) => setCohort(snap.exists() ? snap.data() : null),
+      (snap) => setCohort(snap.exists() ? { id: snap.id, ...snap.data() } : null),
       () => setCohort(null)
     );
   }, [cohortId]);
+
+  // A class cohort's lessons (topic + held), read only once the cohort turns
+  // out to be a class.
+  const classId = isClassCohort(cohort) ? cohort.id : null;
+  useEffect(() => {
+    if (!classId) { setLessons([]); return undefined; }
+    return onSnapshot(
+      collection(db, 'cohorts', classId, 'lessons'),
+      (snap) => setLessons(snap.docs.map((d) => d.data())),
+      () => setLessons([])
+    );
+  }, [classId]);
+
+  if (classId) return <ClassCard cohort={cohort} lessons={lessons} />;
 
   const cardStyle = {
     background: 'var(--accent-soft)',
@@ -110,7 +162,26 @@ export default function CourseProgressCard({ user }) {
     );
   }
 
-  // Trial useri burada heç nə görmür — "hər şey açıqdır" prinsipi: sınaq
-  // sayğacı yalnız Profil-də görünür, ana ekran satış/nag mesajı daşımır.
+  // Everyone outside a cohort follows the general course: how far the shared
+  // daily topics have moved since they joined. Progress only — no lessons, no
+  // homework (those belong to a class), and no sales line. The trial counter
+  // still lives only on Profile.
+  const general = cohortId ? null : topicsSinceJoin(user, sessionConfig, COURSE_TOPIC_COUNT);
+  if (general !== null && sessionConfig) {
+    const pct = Math.round((general / COURSE_TOPIC_COUNT) * 100);
+    return (
+      <div style={{ ...cardStyle, padding: '12px 14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '7px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>
+            General course · Topic {general}/{COURSE_TOPIC_COUNT}
+          </span>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>{pct}%</span>
+        </div>
+        <div style={{ height: '6px', borderRadius: '3px', overflow: 'hidden', background: 'var(--bg-secondary)' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: 'var(--coral)', borderRadius: '3px' }} />
+        </div>
+      </div>
+    );
+  }
   return null;
 }

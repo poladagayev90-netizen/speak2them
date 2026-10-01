@@ -1398,6 +1398,80 @@ exports.startCohort = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
+// ─── A cohort's lessons (the teacher's class) ──────────────────
+// A cohort with a class schedule (lessonCount, lessonDays, lessonMin,
+// startDate — set by the admin in Admin → Cohorts) has numbered lessons. The
+// lesson DATES follow from that schedule (src/utils/cohortLessons.js) and are
+// never stored; cohorts/{id}/lessons/{n} holds only what the teacher decided:
+// the topic of the lesson and whether it was held. Written here so a member
+// can never mark a lesson held (the homework hangs off it), and only by the
+// cohort's teacher or the admin.
+//   { cohortId, n, action: "topic", topicIndex }   pick the lesson's topic
+//   { cohortId, n, action: "held", held: bool }     mark held / undo
+exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const body = req.body || {};
+  const cohortId = String(body.cohortId || "").trim();
+  const n = Number(body.n);
+  const action = String(body.action || "");
+  if (!cohortId || !Number.isInteger(n) || n < 1) return res.status(400).json({ error: "bad_request" });
+  if (action !== "topic" && action !== "held") return res.status(400).json({ error: "bad_action" });
+
+  const db = admin.firestore();
+  try {
+    const cohortSnap = await db.collection("cohorts").doc(cohortId).get();
+    if (!cohortSnap.exists) return res.status(404).json({ error: "cohort_not_found" });
+    const cohort = cohortSnap.data() || {};
+    if (decoded.uid !== ADMIN_UID && cohort.teacherId !== decoded.uid) {
+      return res.status(403).json({ error: "forbidden" });
+    }
+    const lessonCount = Number(cohort.lessonCount) || 0;
+    if (n > lessonCount) return res.status(400).json({ error: "no_such_lesson" });
+
+    const ref = db.collection("cohorts").doc(cohortId).collection("lessons").doc(String(n));
+    const stamp = {
+      n,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: decoded.uid,
+    };
+    if (action === "topic") {
+      const topicIndex = Number(body.topicIndex);
+      if (!Number.isInteger(topicIndex) || topicIndex < 0 || topicIndex >= TOPIC_COUNT) {
+        return res.status(400).json({ error: "bad_topic" });
+      }
+      await ref.set({ ...stamp, topicIndex }, { merge: true });
+      return res.status(200).json({ ok: true });
+    }
+
+    const held = body.held === true;
+    if (held) {
+      // Homework is built from the lesson's topic, so a held lesson needs one.
+      const cur = await ref.get();
+      if (!cur.exists || !Number.isInteger(cur.get("topicIndex"))) {
+        return res.status(409).json({ error: "topic_required" });
+      }
+    }
+    await ref.set({
+      ...stamp,
+      status: held ? "held" : "planned",
+      heldAt: held ? admin.firestore.FieldValue.serverTimestamp() : null,
+    }, { merge: true });
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error("[teacherLesson]", e);
+    return res.status(500).json({ error: "lesson_failed" });
+  }
+});
+
 // ─── Kurs tamamlanmasını təsdiqlə (28/28) ──────────────────────
 // Client lokal olaraq topicsCompleted>=28 aşkarlayanda çağırır; server
 // cycleTick - startTick ilə YENİDƏN yoxlayır (client-ə etibar etmir), sonra

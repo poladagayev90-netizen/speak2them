@@ -19,6 +19,7 @@ import { describeVideos } from '../data/describeVideos';
 import { canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
+import TeacherClasses from '../components/cohort/TeacherClasses';
 import { bakuDateStr } from '../utils/sessionSchedule';
 import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
 
@@ -711,6 +712,9 @@ export default function TeacherUnlock({ user }) {
         }}>
           {'Tap a student to read their reports.'}
         </p>
+
+        {/* The classes this teacher runs: pick each lesson's topic, mark it held. */}
+        <TeacherClasses uid={user?.uid} />
 
         {/* Əl ilə zəng təyini — lövhə cütü təsadüfən qurur, müəllim isə
             konkret iki nəfəri seçir. İki şagirddən az olanda özü gizlənir. */}

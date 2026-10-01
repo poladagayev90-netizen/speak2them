@@ -1,0 +1,98 @@
+/* A cohort as a class: the teacher's lesson list and the student's lesson card. */
+
+.cc { display: flex; flex-direction: column; gap: var(--s-3); }
+.cc-empty { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-muted); }
+.cc-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-1) var(--s-3); }
+.cc-count { font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.cc-next { font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.cc-error { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--danger); }
+
+.cc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.cc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "when held" "topic topic";
+  gap: var(--s-2);
+  align-items: center;
+  padding: var(--s-3);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.cc-row--next { border-color: var(--accent); }
+.cc-row--held { background: var(--accent-soft); }
+.cc-when { grid-area: when; display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.cc-n {
+  flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: var(--r-pill);
+  display: grid; place-items: center;
+  font-size: var(--fs-xs); font-weight: 800;
+  background: var(--bg-secondary); color: var(--text-primary);
+}
+.cc-row--held .cc-n { background: var(--accent); color: var(--text-on-accent); }
+.cc-date { font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-topic {
+  grid-area: topic;
+  width: 100%; min-width: 0;
+  height: 38px; padding: 0 var(--s-2);
+  font: inherit; font-size: var(--fs-sm); font-weight: 600;
+  color: var(--text-primary); background: var(--bg-primary);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+}
+.cc-held {
+  grid-area: held;
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  height: 32px; padding: 0 var(--s-3);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--accent); background: transparent;
+  border: 1px solid var(--accent); border-radius: var(--r-pill);
+  cursor: pointer;
+}
+.cc-held--on { background: var(--accent); color: var(--text-on-accent); }
+.cc-held:disabled, .cc-topic:disabled { opacity: .5; cursor: progress; }
+
+/* Student: the class card on Today. */
+.cls-card {
+  margin: var(--s-3) 0;
+  padding: var(--s-3) var(--s-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  border-radius: var(--r-lg);
+}
+.cls-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-2); margin-bottom: var(--s-2); }
+.cls-title { font-size: var(--fs-sm); font-weight: 800; color: var(--text-primary); }
+.cls-name { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cls-dots { display: flex; gap: 4px; margin-bottom: var(--s-2); }
+.cls-dot { flex: 1; height: 6px; border-radius: 3px; background: var(--bg-secondary); }
+.cls-dot--held { background: var(--coral); }
+.cls-line { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.cls-line b { color: var(--text-primary); }
+
+/* Admin: class settings form. */
+.cs { display: flex; flex-direction: column; gap: var(--s-3); }
+.cs-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
+.cs-field { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+.cs-field span { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.cs-field input, .cs-field select {
+  width: 100%; min-width: 0; height: 38px; padding: 0 var(--s-2);
+  font: inherit; font-size: var(--fs-sm); font-weight: 600;
+  color: var(--text-primary); background: var(--bg-primary);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  box-sizing: border-box;
+}
+.cs-days { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.cs-day {
+  flex: 1 0 40px; height: 34px;
+  font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--text-secondary); background: transparent;
+  border: 1px solid var(--border); border-radius: var(--r-pill); cursor: pointer;
+}
+.cs-day--on { color: var(--text-on-accent); background: var(--accent); border-color: var(--accent); }
+.cs-msg { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+@media (max-width: 380px) { .cs-row { grid-template-columns: 1fr 1fr; } }
+
+/* Teacher dashboard: my classes. */
+.tc { margin-top: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); }
+.tc-title { margin: 0; font-size: var(--fs-h2); font-weight: 800; color: var(--text-primary); }
+.tc-class { padding: var(--s-4); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); }
+.tc-name { margin: 0 0 var(--s-3); font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }

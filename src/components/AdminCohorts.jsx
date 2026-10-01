@@ -11,6 +11,8 @@ import {
   subscribeToSessionConfig, getActiveDays, bakuDateStr, bakuWeekday,
 } from '../utils/sessionSchedule';
 import { COURSE_TOPIC_COUNT } from '../utils/courseProgress';
+import ClassSettings from './cohort/ClassSettings';
+import CohortClass from './cohort/CohortClass';
 
 // Son N aktiv (sessiya/bonus) günün Bakı tarixləri, bugündən geriyə.
 function lastActiveDates(config, n, nowMs = Date.now()) {
@@ -315,6 +317,19 @@ export default function AdminCohorts({ emails = {} }) {
               <div style={{ width: '1px', background: 'var(--bg-secondary)' }} />
               {stat('', maxUses > 0 ? 'Limit' : 'Seats', maxUses > 0 ? `${seatsUsed}/${maxUses}` : seatsUsed, 'var(--text-primary)')}
             </div>
+
+            {/* The class: teacher, lessons bought, days, time; then the lessons. */}
+            <p style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 10px' }}>
+              Class
+            </p>
+            <div style={{ marginBottom: '14px' }}>
+              <ClassSettings key={selected.id} cohort={selected} />
+            </div>
+            {selected.lessonCount > 0 && (
+              <div style={{ marginBottom: '18px' }}>
+                <CohortClass cohort={selected} />
+              </div>
+            )}
 
             {/* Başlat düyməsi — hər zaman görünür (nə edəcəyi aydın olsun). */}
             <button

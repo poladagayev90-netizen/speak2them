@@ -368,12 +368,28 @@ service cloud.firestore {
     // the welcome screen and the Home cohort card) — they already know its
     // code, and other cohorts' codes stay unreadable. `get` (not list), so the
     // collection can never be enumerated.
+    // The cohort's TEACHER (cohort.teacherId, set by the admin) may read and
+    // query their own cohorts — the code is theirs to hand out.
     match /cohorts/{cohortId} {
       allow get: if isAdmin() || (
         isSignedIn()
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cohortId == cohortId
-      );
-      allow list, write: if isAdmin();
+      ) || (isSignedIn() && resource.data.teacherId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
+      allow write: if isAdmin();
+
+      // The class's lessons: topic + held. Written only by the teacherLesson
+      // function (teacher of this cohort or admin); read by the members, the
+      // teacher and the admin.
+      match /lessons/{n} {
+        allow read: if isAdmin() || (
+          isSignedIn() && (
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cohortId == cohortId
+            || get(/databases/$(database)/documents/cohorts/$(cohortId)).data.teacherId == request.auth.uid
+          )
+        );
+        allow write: if false;
+      }
     }
 
     match /waitlist/{docId} {
