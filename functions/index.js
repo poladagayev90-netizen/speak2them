@@ -1404,6 +1404,31 @@ exports.startCohort = onRequest({ secrets: [] }, async (req, res) => {
 });
 
 // ─── Individual lessons (Preply / Google Meet) ─────────────────
+// The roster row and the two student counters a new teacher link writes —
+// shared by the teacher code (claimTeacherCode) and the admin adding a student
+// to their own lessons (teacherLesson "start"). users.teacherId itself is
+// written by the caller, which knows what else goes on that doc.
+function addToTeacherRosterTx(tx, db, teacherId, uid, user, now) {
+  const teacherRef = db.collection("teachers").doc(teacherId);
+  tx.set(teacherRef.collection("roster").doc(uid), {
+    displayName: user.name || "",
+    level: user.level || null,
+    joinedAt: now,
+    status: "active",
+    // Sonrakı fazada rollup writer dolduracaq.
+    lastActiveAt: null,
+    streak: 0,
+    sessionsLast7: 0,
+  });
+  tx.set(teacherRef, { studentCount: admin.firestore.FieldValue.increment(1) }, { merge: true });
+  // studentCount teachers/{tid}-dədir, o sənəd isə yalnız sahibinə oxunandır.
+  // Publik tutor profilində şagird sayını göstərmək üçün users/{tid}-ə güzgü
+  // saxlanılır — profil ekranı o sənədi onsuz da yükləyir.
+  tx.set(db.collection("users").doc(teacherId), {
+    tutorStudentCount: admin.firestore.FieldValue.increment(1),
+  }, { merge: true });
+}
+
 // A teacher's student (users.teacherId, linked with the teacher code) gets an
 // enrolment — tutorStudents/{uid}: level, package, platform, link — and their
 // own lessons, one doc each with its own date: tutorLessons/{id}. A lesson can
@@ -1521,10 +1546,27 @@ exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
     }
     if (!uid) return res.status(400).json({ error: "bad_request" });
 
-    const studentSnap = await db.collection("users").doc(uid).get();
+    let studentSnap = await db.collection("users").doc(uid).get();
     if (!studentSnap.exists) return res.status(404).json({ error: "student_not_found" });
     const teacherId = studentSnap.get("teacherId") || (isAdmin ? ADMIN_UID : null);
     if (!isAdmin && teacherId !== decoded.uid) return res.status(403).json({ error: "forbidden" });
+
+    // The admin teaches some learners themselves and adds them here directly,
+    // without the teacher code: starting lessons for a learner who has no
+    // teacher links them to the admin, exactly as a claimed code would (the
+    // roster row, the counters, users.teacherId), so they appear on the
+    // teacher dashboard. Other teachers still need the code or an accepted
+    // invite — that is the learner's consent to a teacher seeing their
+    // analyses; the admin can read those anyway.
+    if (isAdmin && action === "start" && !studentSnap.get("teacherId") && uid !== ADMIN_UID) {
+      await db.runTransaction(async (tx) => {
+        const fresh = await tx.get(studentSnap.ref);
+        if (fresh.get("teacherId")) return;
+        tx.set(studentSnap.ref, { teacherId: ADMIN_UID, teacherLinkedAt: now }, { merge: true });
+        addToTeacherRosterTx(tx, db, ADMIN_UID, uid, fresh.data() || {}, now);
+      });
+      studentSnap = await studentSnap.ref.get();
+    }
 
     const enrolRef = db.collection("tutorStudents").doc(uid);
     const enrolSnap = await enrolRef.get();
@@ -2237,25 +2279,8 @@ exports.claimTeacherCode = onRequest({ secrets: [], invoker: "public" }, async (
         });
       }
 
-      tx.set(teacherRef.collection("roster").doc(uid), {
-        displayName: user.name || "",
-        level: user.level || null,
-        joinedAt: now,
-        status: "active",
-        // Sonrakı fazada rollup writer dolduracaq.
-        lastActiveAt: null,
-        streak: 0,
-        sessionsLast7: 0,
-      });
-
+      addToTeacherRosterTx(tx, db, invite.teacherId, uid, user, now);
       tx.update(codeRef, { uses: admin.firestore.FieldValue.increment(1) });
-      tx.update(teacherRef, { studentCount: admin.firestore.FieldValue.increment(1) });
-      // studentCount teachers/{tid}-dədir, o sənəd isə yalnız sahibinə oxunandır.
-      // Publik tutor profilində şagird sayını göstərmək üçün users/{tid}-ə güzgü
-      // saxlanılır — profil ekranı o sənədi onsuz da yükləyir.
-      tx.set(db.collection("users").doc(invite.teacherId), {
-        tutorStudentCount: admin.firestore.FieldValue.increment(1),
-      }, { merge: true });
 
       return invite.teacherId;
     });

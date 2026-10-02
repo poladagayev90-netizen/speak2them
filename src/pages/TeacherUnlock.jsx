@@ -20,6 +20,8 @@ import { canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
 import TeacherWeek from '../components/tutor/TeacherWeek';
+import AddStudent from '../components/tutor/AddStudent';
+import { ADMIN_UID } from '../constants';
 import { bakuDateStr } from '../utils/sessionSchedule';
 import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
 
@@ -500,6 +502,7 @@ export default function TeacherUnlock({ user }) {
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
 
         {/* Individual lessons from today to a week ahead, every student. */}
+        {user?.uid === ADMIN_UID && <AddStudent />}
         <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />
 
         {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}

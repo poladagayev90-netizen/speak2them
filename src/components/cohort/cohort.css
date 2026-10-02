@@ -174,3 +174,25 @@
 .cb-stu-calls { margin: var(--s-1) 0 0; font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
 .cc-n:empty { display: none; }
 .cls-join--wide { justify-content: center; height: 44px; font-size: var(--fs-body); }
+
+/* Teacher dashboard, admin only: "Add a student" (AddStudent.jsx). */
+.as-search {
+  display: flex; align-items: center; gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r-md);
+  color: var(--text-secondary);
+}
+.as-search input {
+  flex: 1; min-width: 0; border: none; outline: none; background: none;
+  font: inherit; font-size: var(--fs-body); color: var(--text-primary);
+}
+.as-row { position: relative; padding-right: calc(var(--s-3) + 24px); }
+.as-chev { position: absolute; right: var(--s-3); top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.as-open {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: var(--s-2);
+  margin-bottom: var(--s-4); padding: var(--s-3);
+  font: inherit; font-size: var(--fs-body); font-weight: 700; cursor: pointer;
+  color: var(--accent); background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+}
+.as-open:hover { border-color: var(--accent); }

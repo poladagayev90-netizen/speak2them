@@ -33,6 +33,8 @@ import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
 import '../components/plan/plan.css';
 
+const LESSON_CARD_MS = 48 * 60 * 60 * 1000;
+
 // Today: what to do now.
 //
 // Practice is planned now (the weekly plan, Phase 3 of the scheduled-practice
@@ -143,9 +145,16 @@ export default function Home({ user }) {
   const target = Number(plan.onboarding?.weeklyTarget) || 0;
   // The hero already names the nearest booking; the list starts after it.
   // Lessons join it in time order, each going straight to its materials.
+  const lessons = myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [];
+  // The next lesson within two days gets its own picture card above the daily
+  // topic (Sabina, 2026-10-03: she prepared the day before from Today's topic,
+  // and by the lesson Today showed another one). A lesson's topic is fixed when
+  // it is planned; the daily topic keeps moving for practice calls — the two
+  // cards say which is which, and the lesson leaves the list below.
+  const lessonCard = lessons.find((l) => l.startMs - plan.now <= LESSON_CARD_MS) || null;
   const comingUp = mergeSchedule(
     booked.slice(headline.kind === 'next' ? 1 : 0),
-    myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
+    lessons.filter((l) => l !== lessonCard),
   ).slice(0, 3);
 
   return (
@@ -224,6 +233,16 @@ export default function Home({ user }) {
             </span>
             <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
           </button>
+        )}
+
+        {lessonCard && (
+          <TopicCard
+            topic={weeklyContent[lessonCard.topicIndex]}
+            kicker={`Lesson ${lessonCard.number} · ${comingUpLabel(lessonCard.startMs, plan.now)}`}
+            lesson
+            cta="Prepare for the lesson"
+            onOpen={() => navigate(`/class/${lessonCard.id}`)}
+          />
         )}
 
         {/* 2b. The next few booked practices and individual lessons, as a

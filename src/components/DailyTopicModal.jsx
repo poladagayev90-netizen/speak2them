@@ -277,7 +277,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             <div className="dt-section dt-section--narrow" style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ marginBottom: 12, color: 'var(--text-muted)' }}><ImageIcon size={40} strokeWidth={1.5} /></div>
               <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
-                Five pictures for this topic, to build your speaking
+                Pictures for this topic, to build your speaking
               </p>
               <button
                 onClick={() => setShowPictureDescribing(true)}

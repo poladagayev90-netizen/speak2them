@@ -288,6 +288,11 @@
 .pl-topic--plain .pl-topic-body { min-height: 0; background: none; }
 .pl-topic--plain .pl-topic-kicker { background: var(--bg-card); color: var(--ai); }
 
+/* Today's lesson card: the student's OWN lesson topic, fixed when the lesson
+   was planned — a purple frame and kicker so it never reads as the daily one. */
+.pl-topic--lesson { outline: 3px solid var(--accent); outline-offset: -3px; }
+.pl-topic--lesson .pl-topic-kicker { background: var(--accent); color: var(--text-on-accent); backdrop-filter: none; }
+
 /* ─── Plan: booked practices as a schedule ─────────────────────────── */
 .pl-timeline { display: flex; flex-direction: column; gap: var(--s-3); margin-bottom: var(--s-4); }
 .pl-now {

@@ -2787,6 +2787,54 @@ body {
   font-size: 13px;
 }
 
+/* ─── Describe the picture (PictureDescribing.js) ─────────────────────
+   Phone: the picture, dots, then words + sentence starters in a panel that
+   scrolls inside itself. The wide-screen layout is in the block below. */
+.pd {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column;
+  background: var(--bg-primary);
+}
+.pd-header {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 16px 20px; padding-top: calc(16px + var(--safe-area-top, 0px));
+  border-bottom: 1px solid var(--border);
+}
+.pd-heading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pd-badge { display: none; }
+.pd-kicker { margin: 0; color: var(--text-secondary); font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.pd-title { margin: 0; color: var(--text-primary); font-size: 16px; font-weight: 700; }
+.pd-close { background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 4px; }
+.pd-message { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; color: var(--text-secondary); text-align: center; }
+.pd-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.pd-stage {
+  flex: 1; min-height: 0; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  /* The picture is contained, so bands remain around it: the theme surface,
+     never a black box in light mode. */
+  background: var(--bg-secondary);
+}
+.pd-stage img { width: 100%; height: 100%; object-fit: contain; }
+.pd-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5); border: none; color: #fff;
+  font-size: 20px; cursor: pointer;
+}
+.pd-arrow--prev { left: 12px; }
+.pd-arrow--next { right: 12px; }
+.pd-dots { display: flex; justify-content: center; gap: 6px; padding: 12px 0; }
+.pd-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.pd-dots span.is-on { background: var(--accent); }
+.pd-nav { display: none; }
+.pd-nav .dt-video-arrow:disabled { opacity: 0.4; cursor: default; }
+.pd-side {
+  flex-shrink: 0; max-height: 45vh; overflow-y: auto;
+  padding-bottom: calc(16px + var(--safe-area-bottom, 0px));
+  border-top: 1px solid var(--border);
+}
+.pd-words { padding: 12px 20px 8px; }
+
 /* Topic sheet on a computer screen (Polad, 2026-09-30): the sheet is what a
    teacher SHARES in a lesson, and on a laptop it was a 480px phone column in
    the middle of the screen — the clip small, the words at the bottom edge, the
@@ -2848,6 +2896,31 @@ body {
   }
   /* Quiz and the pictures button do not need 1280px of line length. */
   .dt-section--narrow { max-width: 760px; margin: 0 auto; width: 100%; }
+
+  /* Describe the picture, the same way as the videos (Polad, 2026-10-03):
+     picture left, words + starters + questions right, ‹ 1 / 12 › below. */
+  .pd { align-items: center; }
+  .pd-header, .pd-body { width: min(1280px, 100%); }
+  .pd-header { padding: 16px 28px 14px; border-bottom: none; }
+  .pd-badge { display: inline-block; }
+  .pd-title { font-size: 28px; font-weight: 800; }
+  .pd-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "stage side" "nav side";
+    column-gap: 28px; row-gap: 16px;
+    padding: 4px 28px 24px;
+  }
+  .pd-stage { grid-area: stage; border-radius: 20px; border: 1px solid var(--border); }
+  .pd-arrow, .pd-dots { display: none; }
+  .pd-nav { display: flex; grid-area: nav; }
+  .pd-side { grid-area: side; max-height: none; min-height: 0; border-top: none; padding-bottom: 0; }
+  .pd-words { padding: 0 0 12px; font-size: 20px; }
+  .pd-words p { font-size: 13px !important; }
+  /* DescribeFrames sizes itself in px for the phone; on the shared screen the
+     starters and questions are read from across a call, so scale them up. */
+  .pd-side > div:last-child { padding: 0 !important; zoom: 1.35; }
 }
 
 /* ─── In-call activity card (StageCard.jsx) ────────────────────────────
