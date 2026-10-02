@@ -1,4 +1,4 @@
-import { isClassCohort, lessonDates, lessonSummary, topicsSinceJoin } from './cohortLessons';
+import { homeworkStepKeys, isClassCohort, lessonDates, lessonSummary, topicsSinceJoin } from './cohortLessons';
 
 // 2026-10-05 is a Monday. Lessons Tue + Thu at 19:00 Baku.
 const klass = { lessonCount: 4, lessonDays: [2, 4], lessonMin: 19 * 60, startDate: '2026-10-05' };
@@ -54,4 +54,10 @@ test('the general course counts main days since the learner joined', () => {
   expect(topicsSinceJoin(user, cfg, 60, Date.parse('2026-10-12T12:00:00+04:00'))).toBe(4);
   expect(topicsSinceJoin({}, cfg, 60)).toBe(null);
   expect(topicsSinceJoin(user, cfg, 2, Date.parse('2026-10-12T12:00:00+04:00'))).toBe(2);
+});
+
+test('an approved story adds listening first and reading after the words', () => {
+  expect(homeworkStepKeys(null)).toEqual(['words', 'dictation', 'speak']);
+  expect(homeworkStepKeys({ words: [{ word: 'x' }] }, true))
+    .toEqual(['listening', 'words', 'reading', 'dictation', 'mine', 'speak']);
 });

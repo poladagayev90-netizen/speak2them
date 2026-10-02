@@ -14,6 +14,7 @@ const reliabilityLib = require("./reliability");
 const { normalizeVocabulary, CEFR: CEFR_LEVELS } = require("./analysisVocab");
 const { weekKey: bakuWeekKey } = require("./practiceStats");
 const homeworkBuilder = require("./homeworkBuilder");
+const storyChapter = require("./storyChapter");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -1427,6 +1428,8 @@ async function syncClassHomework(db, cohortId, n, held) {
     .filter((l) => Number(l.n) < n && l.status === "held" && l.heldAt && typeof l.heldAt.toMillis === "function")
     .sort((a, b) => b.n - a.n)[0];
   const sinceMs = prev ? prev.heldAt.toMillis() : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
+  const chapterSnap = await db.collection("storyChapters").doc(`${cohortId}_${n}`).get();
+  const storyApproved = chapterSnap.exists && chapterSnap.get("status") === "approved";
 
   let built = 0;
   for (const m of members) {
@@ -1441,6 +1444,7 @@ async function syncClassHomework(db, cohortId, n, held) {
       n,
       topicIndex: lesson.topicIndex,
       personal: homeworkBuilder.buildPersonal(analyses),
+      story: storyApproved,
       hidden: false,
       openedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
@@ -1521,6 +1525,177 @@ exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
   } catch (e) {
     console.error("[teacherLesson]", e);
     return res.status(500).json({ error: "lesson_failed" });
+  }
+});
+
+// ─── The class story (Julian), one episode per lesson ──────────
+// storyChapters/{cohortId}_{n}: episode n of the bible (storyBible.js) written
+// into the lesson's topic for THIS class, agreeing with the episodes the class
+// already read. The teacher (or admin) asks for it, reads the draft and
+// approves it; members see only approved chapters (rules). Audio is made once
+// with Deepgram and kept in Storage, so a learner's play costs nothing.
+//   { cohortId, n, action: "generate", topic: { title, words: [{word, meaning}] } }
+//   { cohortId, n, action: "approve" }
+const STORY_VOICE_NARRATOR = "aura-2-thalia-en";
+const STORY_VOICE_LISTENING = "aura-2-apollo-en";
+
+async function storyTtsPart(text, voice) {
+  return fetchWithTimeout(`https://api.deepgram.com/v1/speak?model=${voice}`, {
+    method: "POST",
+    headers: { "Authorization": `Token ${DEEPGRAM_API_KEY.value()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  }, 60000, "Deepgram TTS");
+}
+
+async function storyTts(text, voice) {
+  const buffers = [];
+  for (const part of storyChapter.splitForTts(text)) {
+    let r = await storyTtsPart(part, voice);
+    // An unknown voice must not lose the chapter: fall back to the narrator.
+    if (!r.ok && voice !== STORY_VOICE_NARRATOR) r = await storyTtsPart(part, STORY_VOICE_NARRATOR);
+    if (!r.ok) throw new Error("tts_failed " + r.status);
+    buffers.push(Buffer.from(await r.arrayBuffer()));
+  }
+  return Buffer.concat(buffers);
+}
+
+async function saveStoryAudio(path, buffer) {
+  const bucket = admin.storage().bucket();
+  const token = require("crypto").randomUUID();
+  await bucket.file(path).save(buffer, {
+    resumable: false,
+    metadata: {
+      contentType: "audio/mpeg",
+      cacheControl: "public, max-age=31536000",
+      metadata: { firebaseStorageDownloadTokens: token },
+    },
+  });
+  // Local verification runs against the Storage emulator, which serves the same path.
+  const origin = process.env.FIREBASE_STORAGE_EMULATOR_HOST
+    ? `http://${process.env.FIREBASE_STORAGE_EMULATOR_HOST}` : "https://firebasestorage.googleapis.com";
+  return `${origin}/v0/b/${bucket.name}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
+}
+
+exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY], timeoutSeconds: 300, memory: "512MiB" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const body = req.body || {};
+  const cohortId = String(body.cohortId || "").trim();
+  const n = Number(body.n);
+  const action = String(body.action || "");
+  if (!cohortId || !Number.isInteger(n) || n < 1 || n > storyChapter.MAX_EPISODES) return res.status(400).json({ error: "bad_request" });
+  if (action !== "generate" && action !== "approve") return res.status(400).json({ error: "bad_action" });
+
+  const db = admin.firestore();
+  const cohortSnap = await db.collection("cohorts").doc(cohortId).get();
+  if (!cohortSnap.exists) return res.status(404).json({ error: "cohort_not_found" });
+  const cohort = cohortSnap.data() || {};
+  if (decoded.uid !== ADMIN_UID && cohort.teacherId !== decoded.uid) return res.status(403).json({ error: "forbidden" });
+  if (n > (Number(cohort.lessonCount) || 0)) return res.status(400).json({ error: "no_such_lesson" });
+
+  const ref = db.collection("storyChapters").doc(`${cohortId}_${n}`);
+
+  if (action === "approve") {
+    const cur = await ref.get();
+    if (!cur.exists || cur.get("status") !== "draft") return res.status(409).json({ error: "nothing_to_approve" });
+    await ref.set({ status: "approved", approvedAt: admin.firestore.FieldValue.serverTimestamp(), approvedBy: decoded.uid }, { merge: true });
+    // Homework already open for this lesson gains the story steps.
+    const open = await db.collection("homework").where("cohortId", "==", cohortId).get();
+    const forLesson = open.docs.filter((d) => d.get("n") === n);
+    if (forLesson.length) {
+      const batch = db.batch();
+      forLesson.forEach((d) => batch.set(d.ref, { story: true }, { merge: true }));
+      await batch.commit();
+    }
+    return res.status(200).json({ ok: true });
+  }
+
+  // generate
+  try {
+    await enforceRateLimit(decoded.uid, "teacherStory", 20, 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(e.httpStatus || 429).json({ error: "rate_limited" });
+  }
+  const lessonSnap = await db.collection("cohorts").doc(cohortId).collection("lessons").doc(String(n)).get();
+  if (!lessonSnap.exists || !Number.isInteger(lessonSnap.get("topicIndex"))) return res.status(409).json({ error: "topic_required" });
+  const topicIn = body.topic || {};
+  const topic = {
+    title: String(topicIn.title || "").slice(0, 80),
+    words: (Array.isArray(topicIn.words) ? topicIn.words : []).slice(0, 14).map((w) => ({
+      word: String((w && w.word) || "").slice(0, 60),
+      meaning: String((w && w.meaning) || "").slice(0, 120),
+    })).filter((w) => w.word),
+  };
+  if (!topic.title) return res.status(400).json({ error: "topic_required" });
+  const level = storyChapter.LEVELS.includes(cohort.level) ? cohort.level : "B1";
+
+  // One writer at a time per chapter; an approved chapter is never rewritten
+  // under the learners' feet.
+  const claimed = await db.runTransaction(async (tx) => {
+    const cur = await tx.get(ref);
+    const st = cur.exists ? cur.get("status") : null;
+    if (st === "approved") return "approved";
+    const started = cur.exists ? cur.get("startedAt") : null;
+    const startedMs = started && typeof started.toMillis === "function" ? started.toMillis() : 0;
+    if (st === "generating" && Date.now() - startedMs < 5 * 60 * 1000) return "busy";
+    tx.set(ref, {
+      cohortId, n, topicIndex: lessonSnap.get("topicIndex"), level, status: "generating",
+      startedAt: admin.firestore.FieldValue.serverTimestamp(), error: null,
+    }, { merge: true });
+    return "ok";
+  });
+  if (claimed !== "ok") return res.status(409).json({ error: claimed === "approved" ? "already_approved" : "busy" });
+
+  try {
+    const prevSnap = await db.collection("storyChapters").where("cohortId", "==", cohortId).get();
+    const previous = prevSnap.docs.map((d) => d.data())
+      .filter((c) => c.n < n && c.summary && (c.status === "approved" || c.status === "draft"))
+      .sort((a, b) => a.n - b.n)
+      .map((c) => ({ n: c.n, title: c.title, summary: c.summary }));
+    const prompt = storyChapter.buildChapterPrompt({ n, level, topic, previous });
+
+    let chapter = null;
+    let lastErr = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const draft = storyChapter.normalizeChapter(await callDeepSeekChat(prompt, 4000), { n, level });
+        if (!chapter || draft.words > chapter.words) chapter = draft;
+        if (storyChapter.longEnough(chapter)) break;
+      } catch (e) { lastErr = e; }
+    }
+    if (!chapter) throw lastErr || new Error("chapter_failed");
+
+    const base = `story/${cohortId}/${n}/${Date.now()}`;
+    const listeningUrl = await saveStoryAudio(`${base}/listening.mp3`, await storyTts(chapter.listening.text, STORY_VOICE_LISTENING));
+    const readingUrl = await saveStoryAudio(`${base}/reading.mp3`, await storyTts(chapter.reading, STORY_VOICE_NARRATOR));
+    const dictation = [];
+    for (let i = 0; i < chapter.dictation.length; i++) {
+      const text = chapter.dictation[i];
+      dictation.push({ text, audioUrl: await saveStoryAudio(`${base}/dictation-${i + 1}.mp3`, await storyTts(text, STORY_VOICE_NARRATOR)) });
+    }
+
+    await ref.set({
+      ...chapter,
+      listening: { ...chapter.listening, audioUrl: listeningUrl },
+      readingAudioUrl: readingUrl,
+      dictation,
+      topicTitle: topic.title,
+      status: "draft",
+      generatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      generatedBy: decoded.uid,
+    }, { merge: true });
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error("[teacherStory]", e.message);
+    await ref.set({ status: "failed", error: String(e.message || "failed").slice(0, 200) }, { merge: true }).catch(() => {});
+    return res.status(502).json({ error: "generation_failed" });
   }
 });
 

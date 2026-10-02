@@ -21,6 +21,7 @@ export default function ClassSettings({ cohort }) {
   const [time, setTime] = useState(Number.isFinite(cohort.lessonMin)
     ? `${pad(Math.floor(cohort.lessonMin / 60))}:${pad(cohort.lessonMin % 60)}` : '19:00');
   const [startDate, setStartDate] = useState(cohort.startDate || '');
+  const [level, setLevel] = useState(cohort.level === 'A2' ? 'A2' : 'B1');
   const [state, setState] = useState('');
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function ClassSettings({ cohort }) {
     setState('saving');
     try {
       await updateDoc(doc(db, 'cohorts', cohort.id), {
-        teacherId, lessonCount, lessonDays: [...days].sort((a, b) => a - b), lessonMin: h * 60 + m, startDate,
+        teacherId, lessonCount, lessonDays: [...days].sort((a, b) => a - b), lessonMin: h * 60 + m, startDate, level,
       });
       setState('saved');
     } catch (err) {
@@ -62,6 +63,13 @@ export default function ClassSettings({ cohort }) {
           {teachers.filter((t) => t.id !== ADMIN_UID).map((t) => (
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
+        </select>
+      </label>
+      <label className="cs-field">
+        <span>Story level</span>
+        <select value={level} onChange={(e) => setLevel(e.target.value)}>
+          <option value="A2">A2+ (shorter, simpler)</option>
+          <option value="B1">B1</option>
         </select>
       </label>
       <div className="cs-row">

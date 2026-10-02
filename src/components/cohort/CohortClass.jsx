@@ -6,6 +6,7 @@ import { authedFetch } from '../../api';
 import { FUNCTIONS_BASE } from '../../constants';
 import { weeklyContent } from '../../data/weeklyContent';
 import { lessonSummary } from '../../utils/cohortLessons';
+import StoryButton from './StoryButton';
 import './cohort.css';
 
 const when = (ms) => new Intl.DateTimeFormat('en-GB', {
@@ -90,6 +91,7 @@ export default function CohortClass({ cohort }) {
                 {held && <Check size={14} strokeWidth={3} aria-hidden="true" />}
                 {held ? 'Held' : 'Mark held'}
               </button>
+              <StoryButton cohortId={cohort.id} lesson={l} />
             </li>
           );
         })}

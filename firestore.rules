@@ -409,6 +409,18 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
+    // The class story, one episode per lesson (teacherStory writes it). The
+    // class's teacher and the admin read drafts; a member reads an episode
+    // only once the teacher approved it.
+    match /storyChapters/{id} {
+      allow read: if isAdmin() || (isSignedIn() && (
+        get(/databases/$(database)/documents/cohorts/$(resource.data.cohortId)).data.teacherId == request.auth.uid
+        || (resource.data.status == 'approved'
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cohortId == resource.data.cohortId)
+      ));
+      allow write: if false;
+    }
+
     match /waitlist/{docId} {
       allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt'])
         && request.resource.data.email is string

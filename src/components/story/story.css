@@ -1,0 +1,65 @@
+/* The Julian story: one episode's listening, reading, questions, dilemma. */
+
+.st-episode { display: flex; flex-direction: column; gap: var(--s-3); }
+.st-block { display: flex; flex-direction: column; gap: var(--s-2); }
+.st-sub { margin: var(--s-2) 0 0; font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.st-kind { margin: 0; font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-secondary); }
+.st-audio { width: 100%; height: 40px; }
+.st-link {
+  align-self: flex-start; padding: 0; font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--accent); background: none; border: none; cursor: pointer;
+}
+.st-script { padding: var(--s-3); background: var(--bg-secondary); border-radius: var(--r-md); }
+.st-script p { margin: 0 0 var(--s-1); font-size: var(--fs-sm); line-height: 1.6; color: var(--text-primary); }
+
+.st-reading { font-family: Georgia, 'Times New Roman', serif; }
+.st-reading p { margin: 0 0 var(--s-3); font-size: 17px; line-height: 1.7; color: var(--text-primary); }
+.st-exp {
+  padding: 0 2px; font: inherit; color: inherit; cursor: pointer;
+  background: var(--accent-soft); border: none; border-bottom: 2px solid var(--accent); border-radius: 3px;
+}
+.st-exp-card {
+  display: block; width: 100%; text-align: left; font: inherit; cursor: pointer;
+  position: sticky; bottom: calc(var(--s-10) * 3);
+  padding: var(--s-3); background: var(--bg-card); border: 1px solid var(--accent); border-radius: var(--r-md);
+  box-shadow: var(--glass-lift);
+}
+.st-exp-phrase { margin: 0; font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.st-exp-meaning { margin: var(--s-1) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary); }
+.st-exp-example { margin: var(--s-1) 0 0; font-size: var(--fs-sm); font-style: italic; color: var(--text-secondary); }
+.st-exps { margin: 0; padding-left: var(--s-5); font-size: var(--fs-sm); color: var(--text-primary); display: flex; flex-direction: column; gap: var(--s-1); }
+
+.st-q { padding: var(--s-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); }
+.st-q-text { margin: 0 0 var(--s-2); font-size: var(--fs-body); font-weight: 700; color: var(--text-primary); }
+.st-q-opts { display: flex; flex-direction: column; gap: var(--s-1); }
+.st-opt {
+  padding: var(--s-2) var(--s-3); text-align: left; font: inherit; font-size: var(--fs-sm); font-weight: 600;
+  color: var(--text-primary); background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--r-sm); cursor: pointer;
+}
+.st-opt:disabled { cursor: default; }
+.st-opt.is-right { border-color: var(--accent); background: var(--accent-soft); font-weight: 800; }
+.st-opt.is-wrong { border-color: var(--danger); color: var(--danger); }
+.st-dict { margin: 0; padding-left: var(--s-5); font-size: var(--fs-sm); color: var(--text-primary); }
+
+.st-dilemma { padding: var(--s-4); background: var(--accent-soft); border: 1px solid var(--accent-ring); border-radius: var(--r-lg); }
+.st-dilemma .st-sub { margin-top: 0; }
+.st-dilemma-q { margin: var(--s-2) 0; font-size: var(--fs-h2); font-weight: 800; color: var(--text-primary); }
+.st-sides p { margin: 0 0 var(--s-1); font-size: var(--fs-sm); color: var(--text-primary); line-height: 1.5; }
+
+/* Teacher: the story chip on a lesson row and its sheet. */
+.cc-story {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  height: 30px; padding: 0 var(--s-3);
+  font: inherit; font-size: var(--fs-xs); font-weight: 700;
+  color: var(--text-secondary); background: var(--bg-secondary);
+  border: none; border-radius: var(--r-pill); cursor: pointer;
+}
+.cc-story--draft { color: var(--text-on-accent); background: var(--accent); }
+.cc-story--approved { color: var(--coral-ink); background: var(--coral-soft); }
+.cc-story--failed { color: var(--danger); }
+.cc-story-topic { margin: 0 0 var(--s-2); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.cc-story-wait, .cc-story-ok { margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.cc-story-foot { display: flex; gap: var(--s-2); width: 100%; }
+.cc-story-foot > * { flex: 1; }

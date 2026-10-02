@@ -44,7 +44,7 @@ function ClassCard({ cohort, lessons, homework }) {
       {homework.length > 0 && (
         <div className="cls-hw">
           {homework.slice(0, 2).map((h) => {
-            const keys = homeworkStepKeys(h.personal);
+            const keys = homeworkStepKeys(h.personal, h.story === true);
             const left = keys.filter((k) => !(h.doneSteps || []).includes(k)).length;
             return (
               <button key={h.id} type="button" className={`cls-hw-row${left === 0 ? ' is-done' : ''}`} onClick={() => navigate(`/homework/${h.id}`)}>

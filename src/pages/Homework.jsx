@@ -8,6 +8,7 @@ import { localMeaning } from '../utils/feedbackLanguage';
 import { markDictation, markOriginal } from '../utils/dictation';
 import { homeworkStepKeys } from '../utils/cohortLessons';
 import AnalysisHomework from '../components/AnalysisHomework';
+import { StoryDilemma, StoryListening, StoryQuestions, StoryReading } from '../components/story/StoryEpisode';
 import Button from '../components/ui/Button';
 import '../components/homework/homework.css';
 
@@ -30,10 +31,21 @@ function say(text, slow) {
 }
 const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-function SpeakButton({ text, slow = false, label }) {
-  if (!canSpeak) return null;
+let clip = null;
+function play(url, slow) {
+  try {
+    if (clip) clip.pause();
+    clip = new Audio(url);
+    clip.playbackRate = slow ? 0.75 : 1;
+    clip.play().catch(() => {});
+  } catch { /* no audio */ }
+}
+
+function SpeakButton({ text, audioUrl = null, slow = false, label }) {
+  if (!audioUrl && !canSpeak) return null;
   return (
-    <button type="button" className="hw-speak" aria-label={label || (slow ? 'Play slowly' : 'Play')} onClick={() => say(text, slow)}>
+    <button type="button" className="hw-speak" aria-label={label || (slow ? 'Play slowly' : 'Play')}
+      onClick={() => (audioUrl ? play(audioUrl, slow) : say(text, slow))}>
       {slow ? <Snail size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
     </button>
   );
@@ -64,7 +76,7 @@ function WordsStep({ items }) {
   );
 }
 
-function DictationLine({ index, sentence, onMarked }) {
+function DictationLine({ index, sentence, audioUrl, onMarked }) {
   const [typed, setTyped] = useState('');
   const [result, setResult] = useState(null);
   const check = () => {
@@ -76,8 +88,8 @@ function DictationLine({ index, sentence, onMarked }) {
     <div className="hw-dict">
       <div className="hw-dict-head">
         <span className="hw-dict-n">{index + 1}</span>
-        <SpeakButton text={sentence} label={`Play sentence ${index + 1}`} />
-        <SpeakButton text={sentence} slow label={`Play sentence ${index + 1} slowly`} />
+        <SpeakButton text={sentence} audioUrl={audioUrl} label={`Play sentence ${index + 1}`} />
+        <SpeakButton text={sentence} audioUrl={audioUrl} slow label={`Play sentence ${index + 1} slowly`} />
       </div>
       <textarea
         className="hw-dict-input" rows={2} value={typed} disabled={!!result}
@@ -133,6 +145,7 @@ export default function Homework({ user }) {
   const [hw, setHw] = useState(undefined);
   const [step, setStep] = useState(0);
   const [dictScores, setDictScores] = useState({});
+  const [chapter, setChapter] = useState(null);
 
   useEffect(() => onSnapshot(
     doc(db, 'homework', id),
@@ -140,17 +153,34 @@ export default function Homework({ user }) {
     () => setHw(null)
   ), [id]);
 
+  // The lesson's Julian episode, once the teacher approved it (rules hide
+  // drafts, so an error just means there is none yet).
+  const chapterId = hw ? `${hw.cohortId}_${hw.n}` : null;
+  useEffect(() => {
+    if (!chapterId) return undefined;
+    return onSnapshot(
+      doc(db, 'storyChapters', chapterId),
+      (snap) => setChapter(snap.exists() && snap.get('status') === 'approved' ? snap.data() : null),
+      () => setChapter(null)
+    );
+  }, [chapterId]);
+
   const topic = hw && Number.isInteger(hw.topicIndex) ? weeklyContent[hw.topicIndex] : null;
 
   const words = useMemo(() => (topic ? [
     ...(topic.vocabulary || []).map((v) => ({ word: v.word, meaning: localMeaning(v), example: v.example, kind: 'word' })),
     ...(topic.idioms || []).map((v) => ({ word: v.phrase, meaning: localMeaning(v), example: v.example, kind: 'idiom' })),
   ] : []), [topic]);
-  const sentences = useMemo(() => (topic ? (topic.vocabulary || []).map((v) => v.example).filter(Boolean).slice(0, DICTATION_COUNT) : []), [topic]);
+  // Dictation comes from the episode when there is one (recorded), otherwise
+  // from the topic's example sentences (device voice).
+  const sentences = useMemo(() => {
+    if (chapter?.dictation?.length) return chapter.dictation.map((d) => ({ text: d.text, audioUrl: d.audioUrl }));
+    return topic ? (topic.vocabulary || []).map((v) => v.example).filter(Boolean).slice(0, DICTATION_COUNT).map((text) => ({ text })) : [];
+  }, [chapter, topic]);
 
   const personal = hw?.personal;
-  const LABELS = { words: 'Words', dictation: 'Dictation', mine: 'Your mistakes', speak: 'Speak' };
-  const steps = homeworkStepKeys(personal).map((key) => ({ key, label: LABELS[key] }));
+  const LABELS = { listening: 'Listening', words: 'Words', reading: 'Reading', dictation: 'Dictation', mine: 'Your mistakes', speak: 'Speak' };
+  const steps = homeworkStepKeys(personal, !!chapter).map((key) => ({ key, label: LABELS[key] }));
 
   if (hw === undefined) return <div className="hw-page"><p className="hw-lead">Loading…</p></div>;
   if (!hw || hw.hidden || hw.uid !== user?.uid || !topic) {
@@ -196,6 +226,21 @@ export default function Homework({ user }) {
       </nav>
 
       <section className="hw-body">
+        {cur.key === 'listening' && chapter && (
+          <>
+            <p className="hw-lead">
+              {hw.n > 1 ? 'Last time Julian had to choose. Listen and find out what happened.' : "Meet Julian. Listen first, then read the script if you need it."}
+            </p>
+            <StoryListening chapter={chapter} />
+          </>
+        )}
+        {cur.key === 'reading' && chapter && (
+          <>
+            <p className="hw-lead">Episode {hw.n}: <b>{chapter.title}</b>. Read it, or listen while you read. Tap a marked phrase for its meaning.</p>
+            <StoryReading chapter={chapter} />
+            <StoryQuestions chapter={chapter} />
+          </>
+        )}
         {cur.key === 'words' && (
           <>
             <p className="hw-lead">Tap a word for its meaning and an example. Say each one out loud.</p>
@@ -206,7 +251,8 @@ export default function Homework({ user }) {
           <>
             <p className="hw-lead">Listen and type each sentence. Play it slowly if you need to.</p>
             {sentences.map((s, i) => (
-              <DictationLine key={i} index={i} sentence={s} onMarked={(n, score) => setDictScores((m) => ({ ...m, [n]: score }))} />
+              <DictationLine key={`${i}-${s.text}`} index={i} sentence={s.text} audioUrl={s.audioUrl}
+                onMarked={(n, score) => setDictScores((m) => ({ ...m, [n]: score }))} />
             ))}
             {dictAvg !== null && <p className="hw-total">Dictation: <b>{dictAvg}%</b></p>}
           </>
@@ -214,7 +260,8 @@ export default function Homework({ user }) {
         {cur.key === 'mine' && <MineStep personal={personal} />}
         {cur.key === 'speak' && (
           <>
-            <p className="hw-lead">Answer these out loud — with AInur, or with a classmate on a call.</p>
+            {chapter && <StoryDilemma chapter={chapter} />}
+            <p className="hw-lead">{chapter ? 'Argue both sides out loud, then answer these' : 'Answer these out loud'} — with AInur, or with a classmate on a call.</p>
             <ol className="hw-questions">
               {(topic.questions?.easy || []).slice(0, 3).concat((topic.questions?.hard || []).slice(0, 2)).map((q, i) => (
                 <li key={i}>{q}</li>

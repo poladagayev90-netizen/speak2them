@@ -87,9 +87,18 @@ export function topicsSinceJoin(user, sessionConfig, total, nowMs = Date.now()) 
 
 // The steps of a class homework, in order. "Your mistakes" exists only when the
 // learner's own reports gave it something (homeworkBuilder.js on the server).
-export function homeworkStepKeys(personal) {
+// With an approved story episode the homework opens on its listening (which
+// reveals what Julian chose last time) and reads the episode after the words.
+export function homeworkStepKeys(personal, story = false) {
   const p = personal || {};
   const mine = ['words', 'themes', 'multipleChoice', 'wordOrder']
     .some((k) => Array.isArray(p[k]) && p[k].length > 0);
-  return ['words', 'dictation', ...(mine ? ['mine'] : []), 'speak'];
+  return [
+    ...(story ? ['listening'] : []),
+    'words',
+    ...(story ? ['reading'] : []),
+    'dictation',
+    ...(mine ? ['mine'] : []),
+    'speak',
+  ];
 }
