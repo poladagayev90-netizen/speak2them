@@ -207,3 +207,51 @@
 .aa-status { margin-left: auto; display: inline-flex; align-items: center; gap: var(--s-1); font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
 .aa-offer.is-confirmed .aa-status, .aa-offer.is-pending .aa-status { color: var(--accent); }
 .aa-offer.is-declined .aa-status, .aa-offer.is-failed .aa-status { color: var(--danger); }
+
+/* Admin → Week → Who practises. One row per person, sorted by name once and
+   never re-sorted while ticking; the save bar sticks to the bottom so it is in
+   reach however long the list is. */
+.aa-search {
+  flex: 1 1 200px;
+  display: flex; align-items: center; gap: var(--s-2);
+  height: 36px; padding: 0 var(--s-3);
+  border-radius: var(--r-md); border: 1px solid var(--border);
+  background: var(--bg-input); color: var(--text-muted);
+}
+.aa-search input { flex: 1; min-width: 0; border: 0; background: none; color: var(--text-primary); font: inherit; font-size: var(--fs-sm); outline: none; }
+.aa-roster-list { list-style: none; margin: var(--s-3) 0 0; padding: 0; display: grid; gap: var(--s-1); max-height: 60vh; overflow-y: auto; }
+.aa-roster-row {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer;
+}
+.aa-roster-row:hover { background: var(--bg-secondary); }
+.aa-roster-row.is-on { background: var(--accent-soft); border-color: var(--accent-ring); }
+.aa-roster-main { display: grid; gap: 2px; min-width: 0; }
+.aa-sticky-bar {
+  /* Above the floating bottom nav (14px gap + 64px bar, App.css .bottom-nav). */
+  position: sticky; bottom: calc(92px + var(--safe-area-bottom, 0px));
+  z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2);
+  margin-top: var(--s-3); padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-lg); border: 1px solid var(--border);
+  background: var(--bg-card); box-shadow: var(--glass-lift);
+}
+.aa-sticky-count { flex: 1; font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); }
+.aa-fold > summary { cursor: pointer; margin: 0; list-style: none; }
+.aa-fold > summary::-webkit-details-marker { display: none; }
+.aa-fold > summary .aa-chev { margin-left: auto; }
+.aa-fold[open] > summary .aa-chev { transform: rotate(180deg); }
+.aa-fold[open] > summary { margin-bottom: var(--s-3); }
+
+/* Applicants: the people ticked for a common time, pinned to the bottom so
+   ticking never pushes the list down. */
+.aa-pick-bar { display: grid; gap: var(--s-2); }
+.aa-pick-head { display: flex; align-items: center; gap: var(--s-2); }
+.aa-icon-btn {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: var(--r-pill);
+  display: grid; place-items: center; cursor: pointer;
+  color: var(--text-secondary); background: var(--bg-secondary); border: 0;
+}
+.aa-pick-body { max-height: 38vh; overflow-y: auto; display: grid; gap: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--border); }
+.aa-pick-body .aa-h { margin: 0; }

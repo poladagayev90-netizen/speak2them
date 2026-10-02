@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { SearchX } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Clock, Gift, Phone, SearchX } from 'lucide-react';
 import { collection, onSnapshot, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,21 @@ import AdminIntros from '../components/AdminIntros';
 import AdminWeekPlan from '../components/AdminWeekPlan';
 import AdminAttendance from '../components/AdminAttendance';
 import { setTutorVerification } from '../utils/teacher';
+import { stableOrder } from '../utils/stableOrder';
+import '../components/AdminApplicants.css';
+import './Admin.css';
+
+// Tabs in the order the admin works through them. `plan` is the old id of
+// Week (pushes still open /admin?tab=plan).
+const TABS = [
+  { id: 'premium', label: 'Students' },
+  { id: 'applicants', label: 'Applicants' },
+  { id: 'week', label: 'Week' },
+  { id: 'slots', label: 'Sessions' },
+  { id: 'attendance', label: 'Attendance' },
+  { id: 'intros', label: 'Intros' },
+  { id: 'cohorts', label: 'Cohorts' },
+];
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
 
@@ -22,8 +37,9 @@ export default function Admin({ user }) {
   // ?tab= lets a push open the right tab (notifyAdminOnboarding → applicants).
   const [adminTab, setAdminTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get('tab');
-    return ['applicants', 'plan', 'intros', 'attendance', 'cohorts', 'slots'].includes(t) ? t : 'premium';
-  }); // premium | applicants | plan | intros | attendance | cohorts | slots
+    if (t === 'plan') return 'week';
+    return TABS.some((x) => x.id === t) ? t : 'premium';
+  });
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -140,326 +156,137 @@ export default function Admin({ user }) {
 
   const filterByTime = (u) => {
     if (timeFilter === 'all') return true;
-    
-    // We use lastSeen if available, otherwise createdAt
+    // lastSeen if available, otherwise createdAt
     const time = u.lastSeen?.toMillis?.() || u.createdAt?.toMillis?.() || 0;
     if (!time) return false;
-
-    const now = Date.now();
-    const diff = now - time;
-    
+    const diff = Date.now() - time;
     if (timeFilter === 'day') return diff <= 24 * 60 * 60 * 1000;
     if (timeFilter === 'week') return diff <= 7 * 24 * 60 * 60 * 1000;
     if (timeFilter === 'month') return diff <= 30 * 24 * 60 * 60 * 1000;
-    
     return true;
   };
 
-  const filteredUsers = users
-    .filter(u => 
-      u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase())
-    )
-    .filter(filterByTime)
-    .sort((a, b) => {
-      // Sort by lastSeen descending
-      const aTime = a.lastSeen?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
-      const bTime = b.lastSeen?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
-      return bTime - aTime;
-    });
+  // Most recently seen first — but only when the list is (re)built. lastSeen
+  // changes live while people use the app, and re-sorting on every tick moved
+  // rows under the admin's finger (stableOrder).
+  const rankRef = useRef({ key: '', rank: new Map() });
+  const orderKey = `${search}|${timeFilter}`;
+  if (rankRef.current.key !== orderKey) rankRef.current = { key: orderKey, rank: new Map() };
+  const seenMs = (u) => u.lastSeen?.toMillis?.() || u.createdAt?.toMillis?.() || 0;
+  const filteredUsers = stableOrder(
+    users
+      .filter((u) => u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
+      .filter(filterByTime),
+    (a, b) => seenMs(b) - seenMs(a),
+    rankRef.current.rank,
+  );
+
+  const tabLabel = (TABS.find((t) => t.id === adminTab) || TABS[0]).label;
 
   return (
-    <div className="profile-page" style={{ background: 'var(--bg-card)', minHeight: '100vh', paddingBottom: 'calc(120px + var(--safe-area-bottom, 0px))' }}>
-      <div style={{ 
-        padding: '20px 16px', 
-        background: 'var(--bg-card)',
-        borderBottom: '1px solid var(--border)',
-        position: 'sticky', top: 0, zIndex: 10,
-        boxShadow: 'var(--glass-lift)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <button onClick={() => navigate('/')} style={{
-            background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: 'none', 
-            padding: '8px 14px', borderRadius: '8px', cursor: 'pointer',
-            fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px'
-          }}>
-            ← Back
-          </button>
-          <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>
-              {{ cohorts: '', slots: '', applicants: '', intros: '', attendance: '' }[adminTab] || ''}
-            </span>
-            {{ cohorts: 'Cohorts', slots: 'Sessions', applicants: 'Applicants', intros: 'Intro calls', attendance: 'Attendance' }[adminTab] || 'Premium management'}
-          </h2>
-          <div style={{ width: '70px' }}></div> {/* Spacer for center alignment */}
+    <div className="adm">
+      <header className="adm-head">
+        <div className="adm-top">
+          <button type="button" className="adm-back" onClick={() => navigate('/')} aria-label="Back"><ArrowLeft size={20} /></button>
+          <h1 className="adm-title">Admin <span className="adm-sub">· {tabLabel}</span></h1>
         </div>
-
-        {/* Bölmə keçidi */}
         {/* The tabs do not fit a phone width, so the row scrolls sideways. */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {[
-            { id: 'premium', label: 'Students' },
-            { id: 'applicants', label: 'Applicants' },
-            { id: 'plan', label: 'Week plan' },
-            { id: 'intros', label: 'Intros' },
-            { id: 'attendance', label: 'Attendance' },
-            { id: 'cohorts', label: 'Cohorts' },
-            { id: 'slots', label: 'Sessions' },
-          ].map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setAdminTab(t.id)}
-              style={{
-                flex: '1 0 auto', padding: '8px 12px', whiteSpace: 'nowrap',
-                background: adminTab === t.id ? 'var(--accent)' : 'var(--bg-secondary)',
-                color: adminTab === t.id ? 'var(--text-on-accent)' : 'var(--text-secondary)',
-                border: `1px solid ${adminTab === t.id ? 'var(--accent)' : 'var(--border)'}`,
-                borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
-              }}
-            >
+        <nav className="adm-tabs" aria-label="Admin sections">
+          {TABS.map((t) => (
+            <button key={t.id} type="button" className={`adm-tab ${adminTab === t.id ? 'is-on' : ''}`}
+              aria-current={adminTab === t.id ? 'page' : undefined} onClick={() => setAdminTab(t.id)}>
               {t.label}
             </button>
           ))}
-        </div>
+        </nav>
+      </header>
 
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <div style={{
-            flex: 1, background: 'var(--bg-secondary)', borderRadius: '12px',
-            padding: '12px', textAlign: 'center', border: '1px solid var(--border)',
-          }}>
-            <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{users.length}</p>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', margin: '4px 0 0' }}>All</p>
-          </div>
-          <div style={{
-            flex: 1, background: 'var(--warning-bg)', borderRadius: '12px',
-            padding: '12px', textAlign: 'center', border: '1px solid var(--warning-bg)',
-          }}>
-            <p style={{ fontSize: '24px', fontWeight: 800, color: 'var(--warning)', margin: 0 }}>{users.filter(u => u.isPremium).length}</p>
-            <p style={{ fontSize: '12px', color: 'var(--warning)', margin: '4px 0 0' }}>Premium</p>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ padding: '20px 16px' }}>
-        {adminTab === 'plan' ? <AdminWeekPlan /> : adminTab === 'attendance' ? <AdminAttendance users={users} /> : adminTab === 'intros' ? <AdminIntros users={users} /> : adminTab === 'applicants' ? <AdminApplicants users={users} /> : adminTab === 'slots' ? <AdminSlots users={users} /> : adminTab === 'cohorts' ? <AdminCohorts emails={emails} /> : (
-        <>
-        {error && (
-          <div style={{
-            background: 'var(--danger-bg)', border: '1px solid var(--danger-bg)', color: 'var(--danger)',
-            borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', fontSize: '13px',
-          }}>
-            {error}
-          </div>
-        )}
-
-
-
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              flex: 1, padding: '12px 16px',
-              background: 'var(--bg-card)', border: '1px solid var(--bg-secondary)',
-              borderRadius: '12px', color: 'var(--text-primary)', fontSize: '14px',
-              outline: 'none', transition: 'border-color 0.3s'
-            }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {[
-            { id: 'all', label: 'All time' },
-            { id: 'day', label: 'Last 24 hours' },
-            { id: 'week', label: 'Last 7 days' },
-            { id: 'month', label: 'Last 30 days' },
-          ].map(f => (
-            <button
-              key={f.id}
-              onClick={() => setTimeFilter(f.id)}
-              style={{
-                padding: '8px 14px', whiteSpace: 'nowrap',
-                background: timeFilter === f.id ? 'var(--accent)' : 'var(--bg-card)',
-                color: timeFilter === f.id ? 'var(--text-on-accent)' : 'var(--text-secondary)',
-                border: `1px solid ${timeFilter === f.id ? 'var(--accent)' : 'var(--border)'}`,
-                borderRadius: '20px', fontWeight: 600, fontSize: '12px', cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {filteredUsers.map(u => {
-            const isAdmin = u.uid === ADMIN_UID || u.id === ADMIN_UID;
-            
-            return (
-              <div key={u.uid || u.id} style={{
-                background: isAdmin ? 'var(--accent-soft)' : 'var(--bg-card)', 
-                borderRadius: '16px',
-                padding: '16px',
-                border: isAdmin ? '2px solid var(--accent)' : `1px solid ${u.isPremium ? 'var(--accent-ring)' : 'var(--border)'}`,
-                boxShadow: 'var(--glass-lift)',
-                display: 'flex', alignItems: 'center', gap: '14px',
-                position: 'relative', overflow: 'hidden'
-              }}>
-                {isAdmin && (
-                  <div style={{
-                    position: 'absolute', top: 0, right: 0,
-                    background: 'var(--accent)', color: 'var(--text-on-accent)',
-                    padding: '2px 10px', fontSize: '10px', fontWeight: 800,
-                    borderBottomLeftRadius: '10px', textTransform: 'uppercase'
-                  }}>
-                    Super Admin
-                  </div>
-                )}
-                
-                <div style={{
-                  width: '46px', height: '46px', borderRadius: '50%', flexShrink: 0,
-                  background: isAdmin ? 'var(--accent)' : (u.isPremium ? 'var(--ai-fill)' : 'var(--bg-secondary)'),
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '18px', fontWeight: 700, color: isAdmin ? 'var(--text-on-accent)' : 'var(--text-primary)',
-                  border: u.isPremium && !isAdmin ? '2px solid var(--accent)' : 'none'
-                }}>
-                  {u.name?.charAt(0) || '?'}
-                </div>
-                
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text-primary)', margin: '0 0 4px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {u.name} {u.isPremium && !isAdmin && ''}
-                  </p>
-                  <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 6px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {u.email}
-                  </p>
-                  <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: isAdmin ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600, flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      📞 {u.callCount || 0}
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      ⏱ {u.totalMinutes || 0} min
-                    </span>
-                    {/* Adminin öz sətrində plan nişanı ÜMUMİYYƏTLƏ gizli idi,
-                        ona görə paneldən "mən Pro-yammı?" sualına cavab yox idi.
-                        Admin daimi Pro-dur (kod səviyyəsində, bax isAdminUser),
-                        ona görə burada sabit nişan göstərilir — düymə yox, çünki
-                        söndürüləsi bir bayraq deyil. */}
-                    {isAdmin ? (
-                      <span style={{ color: 'var(--accent)' }}>🎁 pro · admin</span>
-                    ) : (
-                      <span style={{
-                        color: u.subscriptionPlan === 'trial' ? 'var(--accent)' : (u.isPremium ? 'var(--warning)' : 'var(--text-muted)'),
-                      }}>
-                        🎁 {u.isPremium ? (u.premiumPlan || 'pro') : (u.subscriptionPlan || 'free')}
-                        {u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0} min` : ''}
-                      </span>
-                    )}
-                  </div>
-                  {u.tutorProfile && (
-                    <p style={{ fontSize: '11px', color: 'var(--ai)', margin: '6px 0 0', lineHeight: 1.45 }}>
-                      🎓 {u.tutorProfile.displayName || u.name}
-                      {Array.isArray(u.tutorProfile.specialties) && u.tutorProfile.specialties.length > 0
-                        ? ` · ${u.tutorProfile.specialties.join(', ')}` : ''}
-                      {u.tutorProfile.yearsExperience ? ` · ${u.tutorProfile.yearsExperience} il` : ''}
-                      {u.teacherVerified ? ' · ✅ verified' : ' · ⏳ pending'}
-                    </p>
-                  )}
-                </div>
-                
-                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {/* Tutor təsdiqi. teachers/{tid} adminə də oxunmur, ona görə
-                      qərar üçün lazım olan profil users/{uid}.tutorProfile-dan
-                      göstərilir (server güzgüləyir). */}
-                  {!isAdmin && (u.role === 'teacher' || u.teacherEligible) && (
-                    <button
-                      onClick={() => verifyTutor(u, !u.teacherVerified)}
-                      disabled={loading[u.uid || u.id]}
-                      style={{
-                        padding: '8px 12px', borderRadius: '10px', fontWeight: 700,
-                        fontSize: '12px', cursor: 'pointer', width: '130px',
-                        border: u.teacherVerified ? '1px solid var(--danger-bg)' : 'none',
-                        background: u.teacherVerified
-                          ? 'var(--danger-bg)'
-                          : 'var(--ai-fill)',
-                        color: u.teacherVerified ? 'var(--danger)' : 'var(--text-on-ai)',
-                      }}
-                    >
-                      {loading[u.uid || u.id]
-                        ? '...'
-                        : (u.teacherVerified ? 'Remove badge' : 'Verify tutor')}
-                    </button>
-                  )}
-                  {isAdmin && !u.teacherEligible && (
-                    <button
-                      onClick={async () => {
-                        try {
-                          await updateDoc(doc(db, 'users', u.uid || u.id), {
-                            teacherEligible: true,
-                            role: 'teacher',
-                            completedSessions: 3
-                          });
-                          alert('Teacher access granted.');
-                        } catch (e) {
-                          alert('Error: ' + e.message);
-                        }
-                      }}
-                      style={{
-                        padding: '8px 16px', background: 'var(--accent)',
-                        color: 'var(--text-on-accent)', border: 'none', borderRadius: '10px',
-                        fontWeight: 700, cursor: 'pointer', fontSize: '12px'
-                      }}
-                    >
-                      Make teacher
-                    </button>
-                  )}
-                  {!isAdmin && (
-                    u.isPremium ? (
-                      <button
-                        onClick={() => setPremium(u, false)}
-                        disabled={loading[u.uid || u.id]}
-                        style={{
-                          padding: '8px 16px', background: 'var(--danger-bg)',
-                          color: 'var(--danger)', border: '1px solid var(--danger-bg)',
-                          borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
-                          fontSize: '12px', transition: 'all 0.2s', width: '110px'
-                        }}
-                      >
-                        {loading[u.uid || u.id] ? '...' : 'Cancel'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setPremium(u, true, 'pro')}
-                        disabled={loading[u.uid || u.id]}
-                        style={{
-                          padding: '8px 16px', background: 'var(--warning-solid)',
-                          color: 'var(--ink-on-warning)', border: 'none', borderRadius: '10px',
-                          fontWeight: 700, cursor: 'pointer', fontSize: '12px',
-                          transition: 'all 0.2s', width: '110px'
-                        }}
-                      >
-                        {loading[u.uid || u.id] ? '...' : 'Make Pro'}
-                      </button>
-                    )
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          
-          {filteredUsers.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-              <div style={{ marginBottom: '16px', color: 'var(--text-muted)' }}><SearchX size={36} strokeWidth={1.5} /></div>
-              <p style={{ margin: 0, fontSize: '15px' }}>No users found</p>
+      <main className="adm-body">
+        {adminTab === 'week' ? <AdminWeekPlan users={users} />
+          : adminTab === 'attendance' ? <AdminAttendance users={users} />
+          : adminTab === 'intros' ? <AdminIntros users={users} />
+          : adminTab === 'applicants' ? <AdminApplicants users={users} />
+          : adminTab === 'slots' ? <AdminSlots users={users} />
+          : adminTab === 'cohorts' ? <AdminCohorts emails={emails} />
+          : (
+          <div className="adm-students">
+            {error && <p className="aa-error">{error}</p>}
+            <div className="adm-stats">
+              <span><b>{users.length}</b> accounts</span>
+              <span><b>{users.filter((u) => u.isPremium).length}</b> premium</span>
+              <span><b>{filteredUsers.length}</b> shown</span>
             </div>
-          )}
-        </div>
-        </>
+            <input className="adm-search" type="search" placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className="aa-filters">
+              {[
+                { id: 'all', label: 'All time' },
+                { id: 'day', label: '24 hours' },
+                { id: 'week', label: '7 days' },
+                { id: 'month', label: '30 days' },
+              ].map((f) => (
+                <button key={f.id} type="button" className={`aa-chip ${timeFilter === f.id ? 'is-on' : ''}`} onClick={() => setTimeFilter(f.id)}>{f.label}</button>
+              ))}
+            </div>
+
+            <ul className="adm-list">
+              {filteredUsers.map((u) => {
+                const id = u.uid || u.id;
+                const isAdmin = id === ADMIN_UID;
+                const busy = !!loading[id];
+                const plan = isAdmin ? 'pro · admin' : u.isPremium ? (u.premiumPlan || 'pro') : (u.subscriptionPlan || 'free');
+                return (
+                  <li key={id} className={`adm-user ${isAdmin ? 'is-admin' : ''} ${u.isPremium ? 'is-premium' : ''}`}>
+                    <span className="adm-avatar" aria-hidden="true">{u.name?.charAt(0) || '?'}</span>
+                    <div className="adm-user-main">
+                      <p className="adm-user-name">{u.name || 'No name'}{isAdmin && <span className="aa-badge">admin</span>}</p>
+                      <p className="adm-user-email">{u.email}</p>
+                      <p className="adm-user-meta">
+                        <span><Phone size={12} aria-hidden="true" /> {u.callCount || 0}</span>
+                        <span><Clock size={12} aria-hidden="true" /> {u.totalMinutes || 0} min</span>
+                        <span><Gift size={12} aria-hidden="true" /> {plan}{!isAdmin && u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0} min` : ''}</span>
+                      </p>
+                      {u.tutorProfile && (
+                        <p className="adm-user-meta">
+                          Tutor: {u.tutorProfile.displayName || u.name}
+                          {Array.isArray(u.tutorProfile.specialties) && u.tutorProfile.specialties.length > 0 ? ` · ${u.tutorProfile.specialties.join(', ')}` : ''}
+                          {u.tutorProfile.yearsExperience ? ` · ${u.tutorProfile.yearsExperience} years` : ''}
+                          {u.teacherVerified ? ' · verified' : ' · pending'}
+                        </p>
+                      )}
+                    </div>
+                    <div className="adm-user-actions">
+                      {/* Tutor badge: teachers/{tid} is unreadable even for the
+                          admin, so the profile shown comes from users/{uid}.tutorProfile. */}
+                      {!isAdmin && (u.role === 'teacher' || u.teacherEligible) && (
+                        <button type="button" className={`adm-btn ${u.teacherVerified ? 'adm-btn--danger' : 'adm-btn--soft'}`}
+                          disabled={busy} onClick={() => verifyTutor(u, !u.teacherVerified)}>
+                          {busy ? '…' : (u.teacherVerified ? 'Remove badge' : 'Verify tutor')}
+                        </button>
+                      )}
+                      {isAdmin && !u.teacherEligible && (
+                        <button type="button" className="adm-btn" onClick={async () => {
+                          try {
+                            await updateDoc(doc(db, 'users', id), { teacherEligible: true, role: 'teacher', completedSessions: 3 });
+                            alert('Teacher access granted.');
+                          } catch (e) {
+                            alert('Error: ' + e.message);
+                          }
+                        }}>Make teacher</button>
+                      )}
+                      {!isAdmin && (u.isPremium
+                        ? <button type="button" className="adm-btn adm-btn--danger" disabled={busy} onClick={() => setPremium(u, false)}>{busy ? '…' : 'Remove Pro'}</button>
+                        : <button type="button" className="adm-btn" disabled={busy} onClick={() => setPremium(u, true, 'pro')}>{busy ? '…' : 'Make Pro'}</button>)}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            {filteredUsers.length === 0 && (
+              <div className="adm-empty"><SearchX size={36} strokeWidth={1.5} /><p>No users found</p></div>
+            )}
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

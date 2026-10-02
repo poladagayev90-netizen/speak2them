@@ -1,0 +1,67 @@
+/* Admin panel shell + Students tab. Tokens only (index.css); purple family,
+   red only for destructive buttons. The tab content below uses the aa-*
+   styles from AdminApplicants.css. */
+.adm { min-height: 100vh; background: var(--bg-primary); padding-bottom: calc(120px + var(--safe-area-bottom, 0px)); }
+.adm-head {
+  position: sticky; top: 0; z-index: calc(var(--z-nav) - 1);
+  display: grid; gap: var(--s-2);
+  padding: var(--s-3) var(--s-4) 0;
+  background: var(--bg-card); border-bottom: 1px solid var(--border);
+}
+.adm-top { display: flex; align-items: center; gap: var(--s-3); }
+.adm-back {
+  width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--r-pill);
+  display: grid; place-items: center; cursor: pointer;
+  color: var(--text-primary); background: var(--bg-secondary); border: 0;
+}
+.adm-title { margin: 0; font-size: var(--fs-h2); font-weight: 800; color: var(--text-primary); }
+.adm-sub { color: var(--text-secondary); font-weight: 700; }
+.adm-tabs { display: flex; gap: var(--s-1); overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--s-4) * -1); padding: 0 var(--s-4); }
+.adm-tabs::-webkit-scrollbar { display: none; }
+.adm-tab {
+  flex-shrink: 0; height: 38px; padding: 0 var(--s-3);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--text-secondary); background: transparent;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; cursor: pointer;
+}
+.adm-tab.is-on { color: var(--accent); border-bottom-color: var(--accent); }
+.adm-body { width: 100%; max-width: 820px; margin: 0 auto; padding: var(--s-4); box-sizing: border-box; }
+
+.adm-students { display: grid; gap: var(--s-3); }
+.adm-stats { display: flex; flex-wrap: wrap; gap: var(--s-4); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.adm-stats b { color: var(--text-primary); font-size: var(--fs-body); }
+.adm-search {
+  height: 40px; padding: 0 var(--s-3); box-sizing: border-box; width: 100%;
+  font: inherit; font-size: var(--fs-sm); color: var(--text-primary);
+  background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r-md);
+}
+.adm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+.adm-user {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3); border-radius: var(--r-lg);
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.adm-user.is-premium { border-color: var(--accent-ring); }
+.adm-user.is-admin { background: var(--accent-soft); border-color: var(--accent); }
+.adm-avatar {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--r-pill);
+  display: grid; place-items: center;
+  font-weight: 800; color: var(--accent); background: var(--accent-soft);
+}
+.adm-user.is-admin .adm-avatar { color: var(--text-on-accent); background: var(--accent); }
+.adm-user-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.adm-user-name { margin: 0; display: flex; align-items: center; gap: var(--s-2); font-size: var(--fs-body); font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adm-user-email { margin: 0; font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adm-user-meta { margin: 0; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
+.adm-user-meta span { display: inline-flex; align-items: center; gap: 3px; }
+.adm-user-actions { display: flex; flex-direction: column; gap: var(--s-1); flex-shrink: 0; }
+.adm-btn {
+  height: 32px; padding: 0 var(--s-3); white-space: nowrap;
+  font: inherit; font-size: var(--fs-xs); font-weight: 700; cursor: pointer;
+  color: var(--text-on-accent); background: var(--accent); border: 0; border-radius: var(--r-md);
+}
+.adm-btn--soft { color: var(--accent); background: var(--accent-soft); }
+.adm-btn--danger { color: var(--ink-on-danger); background: var(--danger-solid); }
+.adm-btn:disabled { opacity: .5; cursor: progress; }
+.adm-empty { display: grid; place-items: center; gap: var(--s-2); padding: var(--s-8) 0; color: var(--text-muted); }
+.adm-empty p { margin: 0; }

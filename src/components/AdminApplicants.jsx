@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { ChevronDown, Clock, Users, CalendarClock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Users, CalendarClock, X } from 'lucide-react';
 import { db } from '../firebase';
 import {
   WEEK_DAYS, toBakuIntervals, overlapAll, intervalsByDay, formatMinutes,
   formatLocalNow, formatOffsetVsBaku, offsetVsBaku, cityOf, totalHours,
 } from '../utils/timezone';
 import { AGE_BANDS, GOALS, LEVELS, labelOf } from '../utils/onboarding';
-import { ProposePanel, ProposalsPanel } from './AdminOffers';
+import { ProposePanel } from './AdminOffers';
+import { stableOrder } from '../utils/stableOrder';
 import './AdminApplicants.css';
 
 // Admin "Applicants": every learner's onboarding answers in one place, with
@@ -17,6 +18,13 @@ import './AdminApplicants.css';
 // they are free, promising them a partner, then asking the other and hearing
 // "no" — the first one was left waiting on a promise. Here the admin sees both
 // people's availability BEFORE saying anything to anyone, on one common clock.
+//
+// The list never moves under the admin's finger (Polad, 2026-10-02: "you tap
+// a learner and suddenly they jump somewhere else"). Opening a new learner
+// marks them seen, which used to drop them out of the "new first" order at
+// once; now each row keeps its place until the filters change (stableOrder),
+// and the common-time panel opens in a bar pinned to the bottom instead of
+// being inserted above the list. Proposals in flight live on the Week tab.
 
 const HEAT_HOURS = Array.from({ length: 17 }, (_, i) => i + 7); // 07–24 Baku
 const toMs = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : 0);
@@ -36,6 +44,8 @@ export default function AdminApplicants({ users }) {
   const [selected, setSelected] = useState([]);
   const [levelFilter, setLevelFilter] = useState('All');
   const [ageFilter, setAgeFilter] = useState('All');
+  const [panelOpen, setPanelOpen] = useState(true);
+  const rankRef = useRef({ key: '', rank: new Map() });
   // Re-render every minute so "their time now" stays true while the tab is open.
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -55,7 +65,7 @@ export default function AdminApplicants({ users }) {
     return m;
   }, [users]);
 
-  const people = useMemo(() => rows
+  const all = useMemo(() => rows
     .map((r) => {
       const u = byUid.get(r.id) || {};
       const availability = Array.isArray(r.availability) ? r.availability : [];
@@ -70,8 +80,11 @@ export default function AdminApplicants({ users }) {
       };
     })
     .filter((p) => levelFilter === 'All' || levelShort(p.level) === levelFilter)
-    .filter((p) => ageFilter === 'All' || p.ageBand === ageFilter)
-    .sort((a, b) => (b.isNew - a.isNew) || (toMs(b.submittedAt) - toMs(a.submittedAt))), [rows, byUid, levelFilter, ageFilter]);
+    .filter((p) => ageFilter === 'All' || p.ageBand === ageFilter), [rows, byUid, levelFilter, ageFilter]);
+  // New first, then newest — decided when a row first appears, kept after.
+  const orderKey = `${levelFilter}|${ageFilter}`;
+  if (rankRef.current.key !== orderKey) rankRef.current = { key: orderKey, rank: new Map() };
+  const people = stableOrder(all, (a, b) => (b.isNew - a.isNew) || (toMs(b.submittedAt) - toMs(a.submittedAt)), rankRef.current.rank);
 
   const chosen = people.filter((p) => selected.includes(p.id));
   const overlapWeek = useMemo(
@@ -135,39 +148,11 @@ export default function AdminApplicants({ users }) {
       <p className="aa-meta">
         {people.length} {people.length === 1 ? 'learner' : 'learners'}
         {newCount > 0 && <> · <b>{newCount} new</b></>}
-        {' '}· tick two or more to see their common time
+        {' '}· tick two people to see their common time and propose a practice
       </p>
 
-      {chosen.length >= 2 && (
-        <section className="aa-panel">
-          <h3 className="aa-h"><Users size={16} /> Common free time — {chosen.map((p) => p.name.split(' ')[0]).join(' + ')}</h3>
-          {overlap.length === 0 ? (
-            <p className="aa-empty">No shared hour this week. Pick someone else, or ask one of them to widen their hours.</p>
-          ) : (
-            <ul className="aa-overlap">
-              {overlap.map((r) => (
-                <li key={`${r.day}-${r.startMin}`}>
-                  <span className="aa-day">{WEEK_DAYS.find((d) => d.day === r.day)?.short}</span>
-                  <b>{fmtRange(r)}</b> <span className="aa-muted">Baku</span>
-                  <span className="aa-locals">
-                    {chosen.filter((p) => offsetVsBaku(p.timeZone) !== 0).map((p) => (
-                      <span key={p.id}>{p.name.split(' ')[0]} {formatMinutes(r.startMin + offsetVsBaku(p.timeZone))}</span>
-                    ))}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {chosen.length === 2
-            ? <ProposePanel a={chosen[0]} b={chosen[1]} overlapWeek={overlapWeek} />
-            : <p className="aa-empty">Keep exactly two people ticked to send them a proposal.</p>}
-        </section>
-      )}
-
-      <ProposalsPanel />
-
-      <section className="aa-panel">
-        <h3 className="aa-h"><CalendarClock size={16} /> Who is free when (Baku time)</h3>
+      <details className="aa-panel aa-fold">
+        <summary className="aa-h"><CalendarClock size={16} /> Who is free when (Baku time) <ChevronDown size={18} className="aa-chev" aria-hidden="true" /></summary>
         <div className="aa-heat" role="table" aria-label="Free learners per hour">
           <div className="aa-heat-row aa-heat-head" role="row">
             <span />
@@ -193,7 +178,7 @@ export default function AdminApplicants({ users }) {
             </div>
           ))}
         </div>
-      </section>
+      </details>
 
       <ul className="aa-list">
         {people.map((p) => {
@@ -256,6 +241,48 @@ export default function AdminApplicants({ users }) {
         })}
         {people.length === 0 && !error && <li className="aa-empty">No onboarding answers yet.</li>}
       </ul>
+
+      {chosen.length > 0 && (
+        <div className="aa-sticky-bar aa-pick-bar">
+          <div className="aa-pick-head">
+            <span className="aa-sticky-count">
+              {chosen.length} selected: {chosen.map((p) => p.name.split(' ')[0]).join(' + ')}
+            </span>
+            {chosen.length >= 2 && (
+              <button type="button" className="aa-icon-btn" aria-label={panelOpen ? 'Hide common time' : 'Show common time'} onClick={() => setPanelOpen(!panelOpen)}>
+                {panelOpen ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+              </button>
+            )}
+            <button type="button" className="aa-icon-btn" aria-label="Clear selection" onClick={() => setSelected([])}><X size={18} /></button>
+          </div>
+          {chosen.length === 1 && <p className="aa-empty">Tick one more person to see their common free time.</p>}
+          {chosen.length >= 2 && panelOpen && (
+            <div className="aa-pick-body">
+              <h3 className="aa-h"><Users size={16} /> Common free time — {chosen.map((p) => p.name.split(' ')[0]).join(' + ')}</h3>
+          {overlap.length === 0 ? (
+            <p className="aa-empty">No shared hour this week. Pick someone else, or ask one of them to widen their hours.</p>
+          ) : (
+            <ul className="aa-overlap">
+              {overlap.map((r) => (
+                <li key={`${r.day}-${r.startMin}`}>
+                  <span className="aa-day">{WEEK_DAYS.find((d) => d.day === r.day)?.short}</span>
+                  <b>{fmtRange(r)}</b> <span className="aa-muted">Baku</span>
+                  <span className="aa-locals">
+                    {chosen.filter((p) => offsetVsBaku(p.timeZone) !== 0).map((p) => (
+                      <span key={p.id}>{p.name.split(' ')[0]} {formatMinutes(r.startMin + offsetVsBaku(p.timeZone))}</span>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {chosen.length === 2
+            ? <ProposePanel a={chosen[0]} b={chosen[1]} overlapWeek={overlapWeek} />
+            : <p className="aa-empty">Keep exactly two people ticked to send them a proposal.</p>}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
