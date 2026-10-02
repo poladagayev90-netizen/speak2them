@@ -5,7 +5,6 @@ import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
-import AdminCohorts from '../components/AdminCohorts';
 import AdminSlots from '../components/AdminSlots';
 import AdminApplicants from '../components/AdminApplicants';
 import AdminIntros from '../components/AdminIntros';
@@ -25,7 +24,9 @@ const TABS = [
   { id: 'slots', label: 'Sessions' },
   { id: 'attendance', label: 'Attendance' },
   { id: 'intros', label: 'Intros' },
-  { id: 'cohorts', label: 'Cohorts' },
+  // Cohorts (the old paid group course, AdminCohorts.jsx) is hidden since
+  // 2026-10-03: individual lessons replaced it and the tab read as the place
+  // to schedule them. The component and its data stay; re-add the row to bring it back.
 ];
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
@@ -207,7 +208,6 @@ export default function Admin({ user }) {
           : adminTab === 'intros' ? <AdminIntros users={users} />
           : adminTab === 'applicants' ? <AdminApplicants users={users} />
           : adminTab === 'slots' ? <AdminSlots users={users} />
-          : adminTab === 'cohorts' ? <AdminCohorts emails={emails} />
           : (
           <div className="adm-students">
             {error && <p className="aa-error">{error}</p>}
