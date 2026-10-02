@@ -37,7 +37,7 @@ import { introLocks } from '../utils/intro';
 import TranslateWidget from '../components/TranslateWidget';
 import CallImageStage from '../components/CallImageStage';
 import CallVideoStage from '../components/CallVideoStage';
-import { VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
+import { CALL_VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
 import CallTabooStage from '../components/CallTabooStage';
 import CallQuestionStage from '../components/CallQuestionStage';
 import CallDebateStage from '../components/CallDebateStage';
@@ -129,7 +129,8 @@ export default function Chat({ user }) {
   const [showDaily, setShowDaily] = useState(false);
   const [imageStage, setImageStage] = useState(null);
   const [videoStage, setVideoStage] = useState(null);
-  // The partner is in the Android app, which has no clips (VIDEOS_ENABLED),
+  // The partner is in the Android app, whose clips are a different, licensed
+  // set (CALL_VIDEOS_ENABLED),
   // so a web user must not open a stage the other phone cannot show.
   const [peerNative, setPeerNative] = useState(false);
   const [tabooStage, setTabooStage] = useState(null);
@@ -462,7 +463,7 @@ export default function Chat({ user }) {
       // Each side records its own platform on every join, so a value left by
       // an earlier call on this per-pair doc is overwritten, never trusted.
       updateDoc(doc(db, 'calls', callIdAtJoin), {
-        [`clientPlatform.${user.uid}`]: VIDEOS_ENABLED ? 'web' : 'native',
+        [`clientPlatform.${user.uid}`]: CALL_VIDEOS_ENABLED ? 'web' : 'native',
       }).catch((e) => console.warn('[Chat] clientPlatform not written:', e.message));
 
       // Randevu ilə gəlmişiksə, gəlişimizi slot üzvlüyünə yazırıq. Bu, no-show
@@ -717,7 +718,7 @@ export default function Chat({ user }) {
         .some(([uid, p]) => uid !== user.uid && p === 'native'));
       // A web partner opened the clip stage before our platform reached the
       // doc: the Android app has nothing to play, so it closes it for both.
-      if (!VIDEOS_ENABLED && data.videoStage?.active) {
+      if (!CALL_VIDEOS_ENABLED && data.videoStage?.active) {
         updateDoc(snap.ref, { 'videoStage.active': false })
           .catch((e) => console.warn('[Chat] videoStage close failed:', e.message));
       }
@@ -1470,7 +1471,7 @@ export default function Chat({ user }) {
                       <ImageIcon size={26} strokeWidth={2.25} aria-hidden="true" /><span>Picture</span>
                     </button>
                   )}
-                  {!activityOpen && VIDEOS_ENABLED && !peerNative && (
+                  {!activityOpen && CALL_VIDEOS_ENABLED && !peerNative && (
                     <button
                       className="call-btn-big act-video"
                       onClick={() => {
@@ -1609,7 +1610,7 @@ export default function Chat({ user }) {
         />
       )}
 
-      {VIDEOS_ENABLED && inCall && videoStage?.active && content && (
+      {CALL_VIDEOS_ENABLED && inCall && videoStage?.active && content && (
         <CallVideoStage
           content={videoStage.contentIndex != null
             ? getContentByIndex(videoStage.contentIndex)

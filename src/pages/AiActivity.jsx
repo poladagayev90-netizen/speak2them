@@ -112,8 +112,8 @@ export default function AiActivity({ user }) {
   // mode rather than a second page because everything around the item — the
   // turn loop, the keyword scoring, the report — is identical; only what is on
   // screen and the noun in her questions change.
-  // Web-only (see VIDEOS_ENABLED): an old link to ?mode=video in the Android
-  // app runs the picture session instead.
+  // In the Android app the clips are the licensed ones only, three a topic
+  // (videosForTopic); VIDEOS_ENABLED is the one switch if that ever changes.
   const isVideo = VIDEOS_ENABLED && params.get('mode') === 'video';
 
   const [images, setImages] = useState([]);

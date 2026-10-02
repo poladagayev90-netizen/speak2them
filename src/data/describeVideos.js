@@ -28,10 +28,17 @@
 //
 // IDS ARE STORAGE KEYS (aiSessions itemId, lesson-style rule): add, never
 // rename.
+//
+// LICENSE: `licensed: true` marks the clips whose licence allows them in the
+// Play Store build (Pexels / CC0, commercial use). Only those ship in the
+// Android app (scripts/strip-native-videos.js keeps their files, deletes the
+// rest) and only those are shown there (videosForTopic). A clip from any other
+// source stays web-only until its licence is clear.
 export const describeVideos = [
   {
     // source: pexels_4253330.mp4 (CC0 Free Commercial License)
     id: 'chef-stir-fry',
+    licensed: true,
     src: '/videos/chef-stir-fry.mp4',
     poster: '/videos/chef-stir-fry.jpg',
     seconds: 16,
@@ -45,6 +52,7 @@ export const describeVideos = [
   {
     // source: pexels_35282483.mp4 (CC0 Free Commercial License)
     id: 'dog-park-chase',
+    licensed: true,
     src: '/videos/dog-park-chase.mp4',
     poster: '/videos/dog-park-chase.jpg',
     seconds: 15,
@@ -215,6 +223,7 @@ export const describeVideos = [
   {
     // source: pexels_18925870.mp4 (Pexels License)
     id: 'coaster-climb',
+    licensed: true,
     src: '/videos/coaster-climb.mp4',
     poster: '/videos/coaster-climb.jpg',
     seconds: 16,
@@ -228,6 +237,7 @@ export const describeVideos = [
   {
     // source: pexels_19901707.mp4 (Pexels License)
     id: 'coffee-cup-pour',
+    licensed: true,
     src: '/videos/coffee-cup-pour.mp4',
     poster: '/videos/coffee-cup-pour.jpg',
     seconds: 14,
@@ -241,6 +251,7 @@ export const describeVideos = [
   {
     // source: pexels_26761228.mp4 (Pexels License)
     id: 'wedding-dance-slip',
+    licensed: true,
     src: '/videos/wedding-dance-slip.mp4',
     poster: '/videos/wedding-dance-slip.jpg',
     seconds: 16,
@@ -254,6 +265,7 @@ export const describeVideos = [
   {
     // source: pexels_33251033.mp4 (Pexels License)
     id: 'waves-rocks-splash',
+    licensed: true,
     src: '/videos/waves-rocks-splash.mp4',
     poster: '/videos/waves-rocks-splash.jpg',
     seconds: 26,
@@ -267,6 +279,7 @@ export const describeVideos = [
   {
     // source: pexels_34466882.mp4 (Pexels License)
     id: 'stadium-goal-celebration',
+    licensed: true,
     src: '/videos/stadium-goal-celebration.mp4',
     poster: '/videos/stadium-goal-celebration.jpg',
     seconds: 11,
@@ -280,6 +293,7 @@ export const describeVideos = [
   {
     // source: pexels_34805837.mp4 (Pexels License)
     id: 'dice-knock',
+    licensed: true,
     src: '/videos/dice-knock.mp4',
     poster: '/videos/dice-knock.jpg',
     seconds: 14,
@@ -293,6 +307,7 @@ export const describeVideos = [
   {
     // source: pexels_35124869.mp4 (Pexels License)
     id: 'kitten-under-sofa',
+    licensed: true,
     src: '/videos/kitten-under-sofa.mp4',
     poster: '/videos/kitten-under-sofa.jpg',
     seconds: 20,
@@ -306,6 +321,7 @@ export const describeVideos = [
   {
     // source: pexels_38187890.mp4 (Pexels License)
     id: 'sizzling-pan-waiter',
+    licensed: true,
     src: '/videos/sizzling-pan-waiter.mp4',
     poster: '/videos/sizzling-pan-waiter.jpg',
     seconds: 26,
@@ -319,6 +335,7 @@ export const describeVideos = [
   {
     // source: pexels_4781511.mp4 (Pexels License)
     id: 'kitchen-pan-toss',
+    licensed: true,
     src: '/videos/kitchen-pan-toss.mp4',
     poster: '/videos/kitchen-pan-toss.jpg',
     seconds: 13,
@@ -332,6 +349,7 @@ export const describeVideos = [
   {
     // source: pexels_6864989.mp4 (Pexels License)
     id: 'cat-wand-toy',
+    licensed: true,
     src: '/videos/cat-wand-toy.mp4',
     poster: '/videos/cat-wand-toy.jpg',
     seconds: 7,
@@ -345,6 +363,7 @@ export const describeVideos = [
   {
     // source: pexels_7419682.mp4 (Pexels License)
     id: 'birthday-candles-kids',
+    licensed: true,
     src: '/videos/birthday-candles-kids.mp4',
     poster: '/videos/birthday-candles-kids.jpg',
     seconds: 12,
@@ -358,6 +377,7 @@ export const describeVideos = [
   {
     // source: pexels_8500933.mp4 (Pexels License)
     id: 'penguin-drawing',
+    licensed: true,
     src: '/videos/penguin-drawing.mp4',
     poster: '/videos/penguin-drawing.jpg',
     seconds: 10,
@@ -371,6 +391,7 @@ export const describeVideos = [
   {
     // source: pexels_9502511.mp4 (Pexels License)
     id: 'penalty-dive',
+    licensed: true,
     src: '/videos/penalty-dive.mp4',
     poster: '/videos/penalty-dive.jpg',
     seconds: 9,
@@ -384,6 +405,7 @@ export const describeVideos = [
   {
     // source: pexels_9787350.mp4 (Pexels License)
     id: 'friends-reunion-hug',
+    licensed: true,
     src: '/videos/friends-reunion-hug.mp4',
     poster: '/videos/friends-reunion-hug.jpg',
     seconds: 15,
