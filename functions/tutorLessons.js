@@ -76,4 +76,24 @@ function numberHeld(lessons) {
   return new Map(held.map((l, i) => [l.id, i + 1]));
 }
 
-module.exports = { DAY_MS, MAX_PLAN, parseTime, bakuMs, weeklyDates, suggestTopics, numberHeld, atMs };
+// Two pushes before each planned lesson: "prepare" about three hours ahead
+// (the topic sheet and the Julian episode are waiting on /class/:id) and
+// "soon" fifteen minutes ahead. Each is remembered on the lesson as the start
+// time it was sent for (`reminded.prepare` / `reminded.soon`), so a moved
+// lesson is reminded again for its new time and a tick that runs twice never
+// sends twice. A lesson created or moved inside the window gets the reminder
+// it is due right away — never one whose time has passed.
+const PREPARE_MS = 3 * 60 * 60 * 1000;
+const SOON_MS = 15 * 60 * 1000;
+
+function reminderDue(lesson, nowMs) {
+  if (!lesson || lesson.status !== "planned") return null;
+  const at = atMs(lesson);
+  const left = at - nowMs;
+  if (left <= 0 || left > PREPARE_MS) return null;
+  const sent = lesson.reminded || {};
+  if (left <= SOON_MS) return sent.soon === at ? null : "soon";
+  return sent.prepare === at ? null : "prepare";
+}
+
+module.exports = { DAY_MS, MAX_PLAN, PREPARE_MS, SOON_MS, parseTime, bakuMs, weeklyDates, suggestTopics, numberHeld, atMs, reminderDue };

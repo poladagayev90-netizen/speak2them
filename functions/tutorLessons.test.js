@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const { bakuMs, parseTime, weeklyDates, suggestTopics, numberHeld } = require("./tutorLessons");
+const { bakuMs, parseTime, weeklyDates, suggestTopics, numberHeld, reminderDue } = require("./tutorLessons");
 
 const iso = (ms) => new Date(ms).toISOString();
 
@@ -51,4 +51,20 @@ test("held lessons are numbered by date; cancelled and planned ones are not", ()
     { id: "d", at: 400, status: "planned" },
   ]);
   assert.deepStrictEqual([...n.entries()], [["a", 1], ["c", 2]]);
+});
+
+test("reminders: prepare three hours ahead, soon at fifteen minutes, each once per start time", () => {
+  const at = 10 * 3600e3;
+  const l = (extra = {}) => ({ status: "planned", at, ...extra });
+  assert.strictEqual(reminderDue(l(), at - 4 * 3600e3), null); // too early
+  assert.strictEqual(reminderDue(l(), at - 3 * 3600e3), "prepare");
+  assert.strictEqual(reminderDue(l({ reminded: { prepare: at } }), at - 2 * 3600e3), null); // already sent
+  assert.strictEqual(reminderDue(l({ reminded: { prepare: at } }), at - 15 * 60e3), "soon");
+  assert.strictEqual(reminderDue(l({ reminded: { prepare: at, soon: at } }), at - 5 * 60e3), null);
+  assert.strictEqual(reminderDue(l(), at + 1000), null); // started
+  // Moved: the old start's reminders do not count for the new one.
+  assert.strictEqual(reminderDue(l({ reminded: { prepare: at - 86400e3 } }), at - 2 * 3600e3), "prepare");
+  // Created inside the last fifteen minutes: only "soon".
+  assert.strictEqual(reminderDue(l(), at - 10 * 60e3), "soon");
+  assert.strictEqual(reminderDue(l({ status: "cancelled" }), at - 10 * 60e3), null);
 });

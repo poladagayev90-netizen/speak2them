@@ -5112,6 +5112,49 @@ async function sendIntroReminders(db, now) {
   }
 }
 
+// Individual lessons: "prepare" ~3 hours before (the topic sheet and the
+// Julian episode wait on /class/:id) and "soon" 15 minutes before. Which one
+// is due is decided by tutorLessons.reminderDue; the lesson doc remembers the
+// start time each was sent for, claimed in a transaction so an overlapping
+// tick never sends twice and a moved lesson is reminded again. Learners whose
+// lessons are paused get nothing.
+const LESSON_TOPICS = require("./dailyQuestions.json").map((q) =>
+  String(q.topic || "").replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2B00}-\u{2BFF}]/gu, "").trim());
+const LESSON_PLATFORMS = { preply: "Preply", meet: "Google Meet" };
+
+async function sendLessonReminders(db, now) {
+  const snap = await db.collection("tutorLessons")
+    .where("status", "==", "planned")
+    .where("at", ">", admin.firestore.Timestamp.fromMillis(now))
+    .where("at", "<=", admin.firestore.Timestamp.fromMillis(now + tutorLessons.PREPARE_MS))
+    .limit(50)
+    .get();
+  for (const d of snap.docs) {
+    const kind = tutorLessons.reminderDue(d.data(), now);
+    if (!kind) continue;
+    const claimed = await db.runTransaction(async (tx) => {
+      const cur = await tx.get(d.ref);
+      const lesson = cur.exists ? cur.data() : null;
+      if (tutorLessons.reminderDue(lesson, Date.now()) !== kind) return null;
+      tx.set(d.ref, { reminded: { [kind]: tutorLessons.atMs(lesson) } }, { merge: true });
+      return lesson;
+    });
+    if (!claimed) continue;
+    const enrol = await db.collection("tutorStudents").doc(claimed.uid).get();
+    if (!enrol.exists || enrol.get("active") === false) continue;
+    await sendPushToUser(db, claimed.uid, {
+      key: kind === "soon" ? "lesson_soon" : "lesson_prepare",
+      vars: {
+        at: tutorLessons.atMs(claimed),
+        topic: LESSON_TOPICS[claimed.topicIndex] || "",
+        platform: LESSON_PLATFORMS[claimed.platform] || "",
+      },
+      type: "lesson",
+      url: `/class/${d.id}`,
+    }).catch((e) => console.warn("[LessonReminder] push failed:", d.id, e.message));
+  }
+}
+
 // Bir dəfə iddia edilən marker — eyni push hər dəqiqə təkrarlanmasın deyə.
 // matchSessionQueue-dakı sessionRuns pattern-inin eynisi.
 async function claimSlotRun(db, id) {
@@ -5136,6 +5179,7 @@ exports.practiceSlotTick = onSchedule(
     // Intro-call reminders ride on this minute tick instead of a schedule of
     // their own (one small query per minute).
     await sendIntroReminders(db, now).catch((e) => console.warn("[SlotTick] intro reminders failed:", e.message));
+    await sendLessonReminders(db, now).catch((e) => console.warn("[SlotTick] lesson reminders failed:", e.message));
 
     // Weekly plan: Sunday draft/send, offer deadlines, refill (see runPlannerTick).
     await runPlannerTick(db, now).catch((e) => console.warn("[SlotTick] planner failed:", e.message));
