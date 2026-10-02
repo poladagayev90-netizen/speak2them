@@ -1,18 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Send, PauseCircle, PlayCircle, Trash2, Undo2 } from 'lucide-react';
+import { ChevronDown, RefreshCw, Send, PauseCircle, PlayCircle, Trash2, Undo2 } from 'lucide-react';
 import { Button } from './ui';
 import { offsetVsBaku, formatMinutes, cityOf } from '../utils/timezone';
 import {
   weekPlanAction, subscribeToWeekPlan, subscribeToPlanOffers, subscribeToPlannerConfig, setPlannerConfig,
 } from '../utils/matchOffers';
+import AdminWeekRoster from './AdminWeekRoster';
+import { ProposalsPanel } from './AdminOffers';
 import './AdminApplicants.css';
 
-// Admin → Week plan. The server drafts next week's pairs every Sunday at
-// 12:00 Baku (functions/weeklyPlanner.js); this screen is where the draft is
-// checked before anyone is asked anything: drop a pair, move it to another
-// time that fits both, hold the automatic send, or send now. Once sent, each
-// pair is an ordinary proposal — booked only when both say yes — and its
-// status shows here.
+// Admin → Week, top to bottom in the order the work happens: who practises
+// this week (AdminWeekRoster — nobody else is planned or matched), the plan
+// the server drafts every Sunday at 12:00 Baku (functions/weeklyPlanner.js) —
+// drop a pair, move it to another time that fits both, hold the automatic
+// send, or send now — then the proposals in flight, and the automatic
+// switches folded away at the bottom. Once sent, each pair is an ordinary
+// proposal, booked only when both say yes.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 // Monday (Baku date) of the week `ms` falls in.
@@ -47,7 +50,7 @@ const OFFER_STATE = {
   failed: 'could not be booked',
 };
 
-export default function AdminWeekPlan() {
+export default function AdminWeekPlan({ users = [] }) {
   const now = Date.now();
   const weeks = useMemo(() => [
     { key: bakuMonday(now + 7 * DAY_MS), label: 'Next week' },
@@ -104,20 +107,7 @@ export default function AdminWeekPlan() {
         ))}
       </div>
 
-      <section className="aa-panel">
-        <h3 className="aa-h">Automatic steps</h3>
-        {[
-          ['autoSend', 'Send the draft automatically on Sunday at 20:00 (unless held)'],
-          ['refill', 'Refill during the week: new proposals for people still short of their target'],
-          ['requireCharter', 'Plan only learners who accepted the practice charter'],
-        ].map(([key, label]) => (
-          <label key={key} className="aa-meta" style={{ display: 'flex', gap: 'var(--s-2)', alignItems: 'center' }}>
-            <input type="checkbox" className="aa-check" checked={!!cfg[key]} onChange={() => toggle(key)} />
-            {label}
-          </label>
-        ))}
-        <p className="aa-empty">Both send switches message real learners. The draft itself is built every Sunday at 12:00 either way.</p>
-      </section>
+      <AdminWeekRoster week={week} users={users} />
 
       <section className="aa-panel">
         <h3 className="aa-h">
@@ -126,6 +116,8 @@ export default function AdminWeekPlan() {
         </h3>
         {plan === undefined ? <p className="aa-empty">Loading…</p> : !plan ? (
           <p className="aa-empty">No draft yet. It is built on Sunday at 12:00 — or build it now.</p>
+        ) : plan.noRoster ? (
+          <p className="aa-error">Nobody was planned: this week has no list. Tick who practises above, save, then rebuild.</p>
         ) : (
           <p className="aa-meta">
             {live.length} pairs · {plan.stats?.learners ?? '—'} learners planned · {(plan.unmet || []).length} short of their target
@@ -223,6 +215,23 @@ export default function AdminWeekPlan() {
           </ul>
         </section>
       )}
+      <ProposalsPanel />
+
+      <details className="aa-panel aa-fold">
+        <summary className="aa-h">Automatic steps <ChevronDown size={18} className="aa-chev" aria-hidden="true" /></summary>
+        {[
+          ['autoSend', 'Send the draft automatically on Sunday at 20:00 (unless held)'],
+          ['refill', 'Refill during the week: new proposals for people still short of their target'],
+          ['requireCharter', 'Plan only learners who accepted the practice charter'],
+        ].map(([key, label]) => (
+          <label key={key} className="aa-meta" style={{ display: 'flex', gap: 'var(--s-2)', alignItems: 'center' }}>
+            <input type="checkbox" className="aa-check" checked={!!cfg[key]} onChange={() => toggle(key)} />
+            {label}
+          </label>
+        ))}
+        <p className="aa-empty">Both send switches message real learners. The draft itself is built every Sunday at 12:00 either way.</p>
+      </details>
+
     </div>
   );
 }

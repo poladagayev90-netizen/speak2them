@@ -653,6 +653,17 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Who may join practice sessions that week (functions/weekRoster.js),
+    // picked by the admin in Admin → Week. Admin-only both ways; the server
+    // reads it with the Admin SDK.
+    match /weekRoster/{weekKey} {
+      allow read: if isAdmin();
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['uids', 'updatedAt', 'updatedBy'])
+        && request.resource.data.uids is list
+        && request.resource.data.uids.size() <= 500;
+    }
+
     // What one learner is told about their week ("offers sent" / "no partner
     // for these hours"). Only that learner and the admin.
     match /planStatus/{uid} {

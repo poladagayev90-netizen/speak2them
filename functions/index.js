@@ -17,6 +17,7 @@ const homeworkBuilder = require("./homeworkBuilder");
 const storyChapter = require("./storyChapter");
 const classBrief = require("./classBrief");
 const tutorLessons = require("./tutorLessons");
+const weekRoster = require("./weekRoster");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -3040,6 +3041,14 @@ exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res)
     const me = (meDoc && meDoc.exists ? meDoc.data() : null) || {};
     const peer = (peerDoc && peerDoc.exists ? peerDoc.data() : null) || {};
     const supervised = isSupervisedPair(decoded.uid, peerUid, me, peer);
+    // Random matching (old APKs) is a session: both must be on this week's
+    // list. A direct call to someone you know is not gated.
+    if (!direct) {
+      const roster = await rosterOf(db, bakuWeekKey(Date.now()));
+      if (!weekRoster.inRoster(roster, decoded.uid) || !weekRoster.inRoster(roster, peerUid)) {
+        return res.status(200).json({ ok: false, recent: false });
+      }
+    }
 
     const v = await pairVerdict(db, (r) => r.get(), decoded.uid, peerUid, {
       checkLevel: !direct,
@@ -3068,6 +3077,10 @@ exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res)
 // planlaşdırıcı da eyni məntiqi işlədir — iki fərqli qoşulma yolu olmasın deyə.
 // Tranzaksiya daxilində çağırılır; push commit-dən SONRA göndərilir.
 async function joinSlotTx(db, tx, slot, uid, user) {
+  // Only the admin's list for the block's week may join (weekRoster.js).
+  if (!weekRoster.inRoster(await rosterOf(db, bakuWeekKey(slot.startMs), tx), uid)) {
+    throw Object.assign(new Error("not-in-roster"), { httpStatus: 403 });
+  }
   const slotRef = db.collection("practiceSlots").doc(slot.slotId);
   const membersRef = slotRef.collection("members");
 
@@ -4520,8 +4533,11 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   const weekStart = weeklyPlanner.blockStartMs(dates[0], 0);
   const weekEnd = weekStart + 7 * DAY_MS;
 
+  // Only the people the admin picked for this week (weekRoster.js); no list
+  // means nobody is planned.
+  const roster = await rosterOf(db, monday);
   const obSnap = await db.collection("onboarding").get();
-  const obs = new Map(obSnap.docs.map((d) => [d.id, d.data() || {}]));
+  const obs = new Map(obSnap.docs.filter((d) => weekRoster.inRoster(roster, d.id)).map((d) => [d.id, d.data() || {}]));
   const uids = [...obs.keys()];
   const userSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("users").doc(u))) : [];
   const users = new Map(userSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
@@ -4633,7 +4649,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     const c = d.data() || {};
     if (c.userA && c.userB) recent.add(weeklyPlanner.pairKey(c.userA, c.userB));
   }
-  return { dates, learners, blocked, recent, favorites };
+  return { dates, learners, blocked, recent, favorites, noRoster: !roster };
 }
 
 // Draft (or redraft) the plan for the week starting `monday`.
@@ -4642,7 +4658,7 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
   const prev = await ref.get();
   if (prev.exists && prev.get("status") === "sent") throw slotFail(409, "plan-already-sent");
   const cfg = await plannerConfig(db);
-  const { dates, learners, blocked, recent, favorites } = await loadPlannerInputs(db, monday, { nowMs, cfg });
+  const { dates, learners, blocked, recent, favorites, noRoster } = await loadPlannerInputs(db, monday, { nowMs, cfg });
   // Monday 10:00 at the earliest — the plan goes out on Sunday evening.
   const earliestMs = Math.max(nowMs + PLAN_NOTICE_MS, weeklyPlanner.blockStartMs(dates[0], 10));
   const result = weeklyPlanner.buildWeekPlan({ learners, blocked, recent, favorites, dates, earliestMs, seed: monday });
@@ -4665,8 +4681,9 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
     pairs, unmet,
     stats: result.stats,
     config: cfg,
+    noRoster,
   });
-  return { pairs: pairs.length, unmet: unmet.length, learners: learners.length };
+  return { pairs: pairs.length, unmet: unmet.length, learners: learners.length, noRoster };
 }
 
 // One offer for one planned pair, re-checked against what happened since the
@@ -4829,9 +4846,10 @@ async function runPlannerTick(db, nowMs) {
   if (weekday === 0 && hour >= 12 && await claimSlotRun(db, `plan_build_${monday}`)) {
     try {
       const r = await buildWeeklyPlan(db, monday, { nowMs, by: "schedule" });
-      await sendPushToUser(db, ADMIN_UID, {
-        key: "admin_week_plan", vars: { pairs: r.pairs, unmet: r.unmet }, type: "admin_plan", url: "/admin?tab=plan",
-      }).catch(() => null);
+      await sendPushToUser(db, ADMIN_UID, r.noRoster
+        ? { key: "admin_roster_missing", type: "admin_plan", url: "/admin?tab=week" }
+        : { key: "admin_week_plan", vars: { pairs: r.pairs, unmet: r.unmet }, type: "admin_plan", url: "/admin?tab=week" },
+      ).catch(() => null);
     } catch (e) { console.warn("[plan] build failed:", e.message); }
   }
   const cfg = await plannerConfig(db);
@@ -5153,6 +5171,13 @@ async function sendLessonReminders(db, now) {
       url: `/class/${d.id}`,
     }).catch((e) => console.warn("[LessonReminder] push failed:", d.id, e.message));
   }
+}
+
+// The admin's list of who practises in a week (weekRoster.js). null = none.
+async function rosterOf(db, monday, tx = null) {
+  const ref = db.collection("weekRoster").doc(monday);
+  const snap = await (tx ? tx.get(ref) : ref.get()).catch(() => null);
+  return snap && snap.exists ? snap.data() : null;
 }
 
 // Bir dəfə iddia edilən marker — eyni push hər dəqiqə təkrarlanmasın deyə.
