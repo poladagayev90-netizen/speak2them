@@ -11,6 +11,7 @@ import Sheet from '../ui/Sheet';
 import Button from '../ui/Button';
 import '../cohort/cohort.css';
 import StoryButton from '../cohort/StoryButton';
+import StudentBrief from './StudentBrief';
 
 // Monday first, as a teacher reads a week; values are Baku weekdays (0 = Sun).
 const DAYS = [[1, 'Mon'], [2, 'Tue'], [3, 'Wed'], [4, 'Thu'], [5, 'Fri'], [6, 'Sat'], [0, 'Sun']];
@@ -225,7 +226,7 @@ function LessonRow({ lesson, isNext, onError, onMove, story }) {
 // package, where), the timetable with move / cancel / held per lesson, and
 // planning new lessons from a weekly pattern. Every write goes through the
 // teacherLesson function.
-export default function StudentLessons({ uid, viewerUid, canWriteStory = false }) {
+export default function StudentLessons({ uid, name = '', viewerUid, canWriteStory = false }) {
   const [enrolment, setEnrolment] = useState(undefined);
   const [lessons, setLessons] = useState([]);
   const [sheet, setSheet] = useState(null); // 'edit' | 'plan' | 'add' | {move: lesson}
@@ -282,6 +283,7 @@ export default function StudentLessons({ uid, viewerUid, canWriteStory = false }
             <span className="cc-next">{next ? `Next: ${lessonWhen(atMs(next), BAKU)}` : 'Nothing planned'}</span>
           </div>
           {enrolment.active === false && <p className="cc-hint">Lessons are paused. Open the settings above to start again.</p>}
+          <StudentBrief uid={uid} name={name} />
           <div className="tl-btns">
             <Button size="sm" variant="secondary" onClick={() => setSheet('plan')}><CalendarPlus size={16} aria-hidden="true" /> Plan lessons</Button>
             <Button size="sm" variant="secondary" onClick={() => setSheet('add')}><Plus size={16} aria-hidden="true" /> Add one</Button>

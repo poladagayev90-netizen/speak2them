@@ -1,9 +1,12 @@
-// The teacher's class brief before a lesson: what the CLASS keeps getting
-// wrong, the words the class kept reaching for, and who did the last homework.
-// Built from the members' own call analyses since the last held lesson — the
-// same window the personal homework uses (homeworkBuilder.js) — so the brief
-// and the homework talk about the same calls. Pure; teacherClassBrief in
-// index.js loads the data. No AI: every line is counted, nothing is guessed.
+// The teacher's brief before a lesson: what the learner(s) keep getting wrong,
+// the words they kept reaching for, and how far the last homework got. Built
+// from their own call analyses since the last held lesson — the same window
+// the personal homework uses (homeworkBuilder.js) — so the brief and the
+// homework talk about the same calls. Pure; teacherStudentBrief in index.js
+// loads the data. No AI: every line is counted, nothing is guessed.
+// buildClassBrief counts across several learners (patterns shared by more
+// people first); buildStudentBrief is the one-student view individual
+// lessons use.
 
 const { GRAMMAR_CONCEPTS } = require("./grammarConcepts");
 
@@ -112,4 +115,23 @@ function buildClassBrief(members) {
   };
 }
 
-module.exports = { buildClassBrief, homeworkStepKeys };
+// One learner before their next lesson.
+function buildStudentBrief({ uid, name, analyses, homework }) {
+  const b = buildClassBrief([{ uid, name, analyses, homework }]);
+  const who = name || "They";
+  const top = b.themes[0];
+  const focus = top
+    ? `Since the last lesson ${who} mixed up ${top.label.toLowerCase()} ${top.mistakes === 1 ? "once" : `${top.mistakes} times`} — worth a few minutes in this lesson.`
+    : b.withCalls
+      ? "No repeated mistakes in their calls since the last lesson."
+      : "No analysed calls since the last lesson yet.";
+  return {
+    calls: b.students[0].calls,
+    focus,
+    themes: b.themes.map(({ concept, label, mistakes, examples }) => ({ concept, label, mistakes, examples: examples.map(({ original, corrected }) => ({ original, corrected })) })),
+    words: b.words.map((w) => w.word),
+    homework: b.students[0].homework,
+  };
+}
+
+module.exports = { buildClassBrief, buildStudentBrief, homeworkStepKeys };

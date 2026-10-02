@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const { buildClassBrief, homeworkStepKeys } = require("./classBrief");
+const { buildClassBrief, buildStudentBrief, homeworkStepKeys } = require("./classBrief");
 const { GRAMMAR_CONCEPTS } = require("./grammarConcepts");
 
 const [A, B] = GRAMMAR_CONCEPTS.map((c) => c.id);
@@ -61,4 +61,17 @@ test("examples come from different learners first", () => {
     { uid: "2", name: "Sabina", analyses: [call([err(A, "a3", "b3")])] },
   ]);
   assert.deepStrictEqual(brief.themes[0].examples.map((e) => e.name), ["Yunus", "Sabina"]);
+});
+
+test("one student's brief: their pattern, words and last homework", () => {
+  const b = buildStudentBrief({ uid: "1", name: "Yunus",
+    analyses: [call([err(A, "I go yesterday", "I went yesterday"), err(A)], [{ word: "figure out" }])],
+    homework: { n: 3, doneSteps: ["words"], scores: {} } });
+  assert.match(b.focus, /^Since the last lesson Yunus mixed up .+ 2 times/);
+  assert.deepStrictEqual(b.themes[0].examples[0], { original: "I go yesterday", corrected: "I went yesterday" });
+  assert.deepStrictEqual(b.words, ["figure out"]);
+  assert.deepStrictEqual(b.homework, { n: 3, done: 1, total: 3, dictation: null });
+  assert.strictEqual(b.calls, 1);
+  assert.match(buildStudentBrief({ uid: "2", name: "S", analyses: [] }).focus, /No analysed calls/);
+  assert.match(buildStudentBrief({ uid: "2", name: "S", analyses: [call()] }).focus, /No repeated mistakes/);
 });

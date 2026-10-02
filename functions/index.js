@@ -1423,11 +1423,6 @@ const TUTOR_PLATFORMS = ["preply", "meet"];
 // by the user at sign-up, so it alone must not hand out free access.
 const TUTOR_ACCESS_DAYS = 90;
 
-async function activeClassMembers(db, cohortId) {
-  return (await db.collection("users").where("cohortId", "==", cohortId).get())
-    .docs.filter((d) => d.get("cohortStatus") === "active" || d.get("mode") === "course");
-}
-
 // A learner's analyses since `sinceMs`, newest first (at most 10 — the same
 // window and cap the homework uses, so brief and homework agree).
 async function recentAnalyses(db, uid, sinceMs) {
@@ -1676,14 +1671,13 @@ exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
-// ─── The class brief (teacher, before a lesson) ────────────────
-// What the class got wrong in its own calls since the last held lesson, the
-// words it kept reaching for, and who did that lesson's homework. Counted on
-// the server (classBrief.js) because the teacher of a cohort may not be each
-// member's linked teacher, so the rules would not let the client read their
-// analyses — and the brief never exposes more than counts, short examples and
-// homework progress.
-exports.teacherClassBrief = onRequest({ secrets: [] }, async (req, res) => {
+// ─── The student brief (teacher, before a lesson) ─────────────
+// What this learner got wrong in their own calls since their last held
+// lesson, the words they kept reaching for, and how far that lesson's homework
+// got. Counted on the server (classBrief.js) so the brief reads exactly the
+// window the homework used, and never exposes more than counts, short
+// examples and homework progress.
+exports.teacherStudentBrief = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
 
@@ -1693,48 +1687,40 @@ exports.teacherClassBrief = onRequest({ secrets: [] }, async (req, res) => {
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  const cohortId = String((req.body && req.body.cohortId) || "").trim();
-  if (!cohortId) return res.status(400).json({ error: "bad_request" });
+  const uid = String((req.body && req.body.uid) || "").trim();
+  if (!uid) return res.status(400).json({ error: "bad_request" });
   try {
-    await enforceRateLimit(decoded.uid, "teacherClassBrief", 60, 60 * 60 * 1000);
+    await enforceRateLimit(decoded.uid, "teacherStudentBrief", 60, 60 * 60 * 1000);
   } catch (e) {
     return res.status(e.httpStatus || 429).json({ error: "rate_limited" });
   }
 
   const db = admin.firestore();
   try {
-    const cohortSnap = await db.collection("cohorts").doc(cohortId).get();
-    if (!cohortSnap.exists) return res.status(404).json({ error: "cohort_not_found" });
-    if (decoded.uid !== ADMIN_UID && cohortSnap.get("teacherId") !== decoded.uid) return res.status(403).json({ error: "forbidden" });
+    const studentSnap = await db.collection("users").doc(uid).get();
+    if (!studentSnap.exists) return res.status(404).json({ error: "student_not_found" });
+    if (decoded.uid !== ADMIN_UID && studentSnap.get("teacherId") !== decoded.uid) return res.status(403).json({ error: "forbidden" });
 
-    const lessons = (await db.collection("cohorts").doc(cohortId).collection("lessons").get()).docs.map((d) => d.data());
-    const last = lessons
-      .filter((l) => l.status === "held" && l.heldAt && typeof l.heldAt.toMillis === "function")
-      .sort((a, b) => b.n - a.n)[0] || null;
-    const sinceMs = last ? last.heldAt.toMillis() : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
-
-    const members = await activeClassMembers(db, cohortId);
-    const rows = await Promise.all(members.map(async (m) => {
-      const [analyses, hwSnap] = await Promise.all([
-        recentAnalyses(db, m.id, sinceMs),
-        last ? db.collection("homework").doc(`${cohortId}_${last.n}_${m.id}`).get() : Promise.resolve(null),
-      ]);
-      return {
-        uid: m.id,
-        name: m.get("name") || m.get("displayName") || "Student",
-        analyses,
-        homework: hwSnap && hwSnap.exists ? hwSnap.data() : null,
-      };
-    }));
-
+    const lessons = await studentLessons(db, uid);
+    const last = lessons.filter((l) => l.status === "held").pop() || null;
+    const sinceMs = last ? tutorLessons.atMs(last) : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
+    const [analyses, hwSnap] = await Promise.all([
+      recentAnalyses(db, uid, sinceMs),
+      last ? db.collection("homework").doc(last.id).get() : Promise.resolve(null),
+    ]);
     return res.status(200).json({
       ok: true,
       sinceMs,
       lastLesson: last ? { n: last.n, topicIndex: last.topicIndex } : null,
-      ...classBrief.buildClassBrief(rows),
+      ...classBrief.buildStudentBrief({
+        uid,
+        name: studentSnap.get("name") || studentSnap.get("displayName") || "",
+        analyses,
+        homework: hwSnap && hwSnap.exists ? hwSnap.data() : null,
+      }),
     });
   } catch (e) {
-    console.error("[teacherClassBrief]", e);
+    console.error("[teacherStudentBrief]", e);
     return res.status(500).json({ error: "brief_failed" });
   }
 });

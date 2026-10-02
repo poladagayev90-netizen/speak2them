@@ -106,7 +106,7 @@ export default function TeacherStudent({ user }) {
         )}
 
         {/* Individual lessons: package, timetable, held → homework. */}
-        {(student?.teacherId === user.uid || user.uid === ADMIN_UID) && <StudentLessons uid={studentId} viewerUid={user.uid} canWriteStory={user.uid === ADMIN_UID || user.teacherVerified === true} />}
+        {(student?.teacherId === user.uid || user.uid === ADMIN_UID) && <StudentLessons uid={studentId} name={student?.name || ''} viewerUid={user.uid} canWriteStory={user.uid === ADMIN_UID || user.teacherVerified === true} />}
 
         {/* Stat kartları */}
         <div style={{
