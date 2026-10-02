@@ -1,8 +1,8 @@
 import { totalPracticeMinutes } from '../utils/practiceStats';
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { updateProfile, signOut } from 'firebase/auth';
-import { db, auth, enableNotifications } from '../firebase';
+import { updateProfile } from 'firebase/auth';
+import { db, auth, enableNotifications, signOutEverywhere } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
@@ -125,7 +125,7 @@ export default function Profile({ user }) {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await signOutEverywhere();
     navigate('/login');
   };
 
@@ -153,7 +153,7 @@ export default function Profile({ user }) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || 'Deletion failed');
       }
-      await signOut(auth).catch(() => {});
+      await signOutEverywhere().catch(() => {});
       alert('Your account has been deleted.');
       navigate('/login');
     } catch (e) {

@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, connectAuthEmulator } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithCredential, signOut, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, doc, setDoc, serverTimestamp, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { Capacitor } from "@capacitor/core";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
@@ -206,7 +207,41 @@ const POPUP_UNAVAILABLE = new Set([
   'auth/web-storage-unsupported',
 ]);
 
+// Inside the Android app Google refuses the web popup/redirect
+// (disallowed_useragent), so there the system account picker (Credential
+// Manager, @capacitor-firebase/authentication) returns an ID token and the JS
+// SDK signs in with it. `skipNativeAuth` (capacitor.config.ts) keeps the one
+// session in the JS SDK, as on the web. The result has the same shape as the
+// popup's; null means "nothing happened" (picker cancelled, or the redirect
+// fallback is navigating away).
+async function signInWithGoogleNative() {
+  const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+  let result;
+  try {
+    result = await FirebaseAuthentication.signInWithGoogle({ skipNativeAuth: true });
+  } catch (error) {
+    if (/cancel/i.test(String(error?.message || error?.code || ''))) return null;
+    throw error;
+  }
+  const idToken = result?.credential?.idToken;
+  if (!idToken) throw new Error('Google did not return a sign-in token.');
+  return signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+}
+
+// Signing out also clears the native Google session, so the next sign-in
+// shows the account picker instead of reusing the last account.
+export async function signOutEverywhere() {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      await FirebaseAuthentication.signOut();
+    } catch { /* no native session — nothing to clear */ }
+  }
+  return signOut(auth);
+}
+
 export async function signInWithGoogle() {
+  if (Capacitor.isNativePlatform()) return signInWithGoogleNative();
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   try {

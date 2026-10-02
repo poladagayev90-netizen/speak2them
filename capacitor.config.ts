@@ -29,6 +29,13 @@ const config: CapacitorConfig = {
       resize: 'none',
       style: 'dark',
     },
+    // Native Google sign-in (src/firebase.js signInWithGoogle): the plugin only
+    // returns Google's ID token; the Firebase JS SDK signs in with it, so the
+    // app keeps one session, the same as on the web.
+    FirebaseAuthentication: {
+      skipNativeAuth: true,
+      providers: ['google.com'],
+    },
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: true,

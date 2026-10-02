@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "8439038995-q9bk7el1svpc6neul42upipjdvgjo4o1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.speaklab.app",
+            "certificate_hash": "511f180a8886880aa67d2344266f7c7326a2b610"
+          }
+        },
+        {
           "client_id": "8439038995-kkn9qdfgveeeb3tp74cr4l6ob66etb8m.apps.googleusercontent.com",
           "client_type": 3
         }
