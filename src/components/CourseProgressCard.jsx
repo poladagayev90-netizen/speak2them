@@ -8,7 +8,7 @@ import {
   getTopicsCompleted,
 } from '../utils/courseProgress';
 import { topicsSinceJoin } from '../utils/cohortLessons';
-import { byDate } from '../utils/tutorLessons';
+import useMyLessons from '../hooks/useMyLessons';
 import LessonsCard from './tutor/LessonsCard';
 import './homework/homework.css';
 import './cohort/cohort.css';
@@ -37,36 +37,19 @@ export default function CourseProgressCard({ user }) {
     );
   }, [cohortId]);
 
-  // Individual lessons: the enrolment (tutorStudents/{uid}), this learner's
-  // lessons and their homework. Read for everyone — a missing enrolment is
-  // just "no lessons", and the rules let each learner read only their own.
+  // Individual lessons: the enrolment, this learner's lessons (useMyLessons)
+  // and their homework. The rules let each learner read only their own.
   const uid = user.uid;
-  const [enrolment, setEnrolment] = useState(null);
-  const [lessons, setLessons] = useState([]);
+  const { enrolment, lessons, active: tutored } = useMyLessons(uid);
   const [homework, setHomework] = useState([]);
   useEffect(() => {
-    if (!uid) return undefined;
+    if (!tutored) { setHomework([]); return undefined; }
     return onSnapshot(
-      doc(db, 'tutorStudents', uid),
-      (snap) => setEnrolment(snap.exists() ? snap.data() : null),
-      () => setEnrolment(null)
-    );
-  }, [uid]);
-  const tutored = !!enrolment && enrolment.active !== false;
-  useEffect(() => {
-    if (!tutored) { setLessons([]); setHomework([]); return undefined; }
-    const stopLessons = onSnapshot(
-      query(collection(db, 'tutorLessons'), where('uid', '==', uid)),
-      (snap) => setLessons(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(byDate)),
-      () => setLessons([])
-    );
-    const stopHomework = onSnapshot(
       query(collection(db, 'homework'), where('uid', '==', uid)),
       (snap) => setHomework(snap.docs.map((d) => ({ id: d.id, ...d.data() }))
         .filter((h) => !h.hidden && h.lessonId).sort((a, b) => b.n - a.n)),
       () => setHomework([])
     );
-    return () => { stopLessons(); stopHomework(); };
   }, [tutored, uid]);
 
   if (tutored) return <LessonsCard enrolment={enrolment} lessons={lessons} homework={homework} />;

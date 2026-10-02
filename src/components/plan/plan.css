@@ -341,3 +341,9 @@
   background: var(--accent-soft); color: var(--accent);
   font-weight: 800; font-size: var(--fs-body);
 }
+
+/* Individual lessons in the schedule: a book instead of a partner's initial
+   and a thin purple bar, so a lesson reads differently from a practice at a
+   glance (same family of colour — people and lessons are both purple). */
+.pl-coming-avatar--lesson { background: var(--accent); color: var(--text-on-accent); }
+.pl-row--lesson, .pl-booking--lesson { box-shadow: inset 3px 0 0 var(--accent); padding-left: var(--s-3); }

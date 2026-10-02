@@ -7,6 +7,9 @@ import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import BookingRow from '../components/plan/BookingRow';
+import LessonRow from '../components/plan/LessonRow';
+import useMyLessons from '../hooks/useMyLessons';
+import { lessonItems, mergeSchedule } from '../utils/tutorLessons';
 import useMyPlan, { setPlanPaused } from '../hooks/useMyPlan';
 import { subscribeToSlotChange } from '../utils/practiceSlots';
 import { planHeadline, openOffers, upcomingBookings, bookingDays } from '../utils/planState';
@@ -37,6 +40,9 @@ export default function Plan({ user }) {
   const open = openOffers(plan.offers, uid, plan.now);
   const booked = upcomingBookings(plan.bookings, plan.now);
   const thisWeek = booked.filter((b) => b.weekKey === plan.weekKey);
+  // Individual lessons share the schedule with the booked practices.
+  const myLessons = useMyLessons(uid);
+  const schedule = mergeSchedule(booked, myLessons.active ? lessonItems(myLessons.lessons, plan.now) : []);
   const ob = plan.onboarding;
 
   // "Mon–Fri 18:00–22:00 · Sat 11:00–14:00": days with the same hours are
@@ -103,21 +109,23 @@ export default function Plan({ user }) {
         {msg && <p className="pl-notice" role="status">{msg}</p>}
         <MatchOfferCard uid={uid} />
 
-        {booked.length > 0 && (
+        {schedule.length > 0 && (
           <>
             <p className="ui-section-label pl-section">Booked</p>
             {/* A schedule, not a list: a day column on the left and a NOW line
                 on top, so "how far away is it" reads before the details. */}
             <section className="pl-timeline" aria-label="Booked practices">
               <div className="pl-now" aria-hidden="true"><span>Now</span></div>
-              {bookingDays(booked, plan.now).map((day) => (
+              {bookingDays(schedule, plan.now).map((day) => (
                 <div key={day.key} className={`pl-day ${day.isToday ? 'is-today' : ''}`}>
                   <div className="pl-day-col">
                     <span className="pl-day-dow">{day.isToday ? 'TODAY' : day.dow}</span>
                     <span className="pl-day-num">{day.date}</span>
                   </div>
                   <div className="pl-day-items">
-                    {day.items.map((b) => <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} />)}
+                    {day.items.map((b) => (b.kind === 'lesson'
+                      ? <LessonRow key={b.id} lesson={b} now={plan.now} />
+                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} />))}
                   </div>
                 </div>
               ))}

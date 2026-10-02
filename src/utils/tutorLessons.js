@@ -56,3 +56,18 @@ export function lessonWhen(ms, timeZone) {
 }
 
 export const PLATFORM_LABEL = { preply: 'Preply', meet: 'Google Meet' };
+
+// The planned lessons still ahead (or in progress), as schedule items next to
+// practice bookings: `startMs` like a booking, `kind: 'lesson'` to tell them
+// apart, and the lesson's number (= the story episode read before it).
+export function lessonItems(lessons = [], nowMs = Date.now()) {
+  const sorted = [...lessons].sort(byDate);
+  return sorted
+    .filter((l) => l.status === 'planned' && atMs(l) > nowMs - 2 * HOUR_MS)
+    .map((l) => ({ ...l, kind: 'lesson', startMs: atMs(l), number: episodeFor(l, sorted) }));
+}
+
+// Bookings and lessons in one time line, nearest first.
+export function mergeSchedule(bookings = [], items = []) {
+  return [...bookings, ...items].sort((a, b) => Number(a.startMs) - Number(b.startMs));
+}

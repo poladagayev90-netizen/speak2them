@@ -1,4 +1,4 @@
-import { episodeFor, homeworkStepKeys, nextLesson, packageSummary } from './tutorLessons';
+import { episodeFor, homeworkStepKeys, lessonItems, mergeSchedule, nextLesson, packageSummary } from './tutorLessons';
 
 const t = (iso) => Date.parse(iso);
 const lessons = [
@@ -31,4 +31,12 @@ test("a lesson's number counts the lessons before it that were not cancelled", (
 test('homework steps: "your mistakes" only with something in it', () => {
   expect(homeworkStepKeys(null)).toEqual(['words', 'dictation', 'speak']);
   expect(homeworkStepKeys({ words: [{ word: 'x' }] })).toEqual(['words', 'dictation', 'mine', 'speak']);
+});
+
+test('lessons join the schedule next to bookings, in time order', () => {
+  const now = t('2026-10-12T10:00:00+04:00');
+  const items = lessonItems(lessons, now);
+  expect(items.map((l) => [l.id, l.number, l.kind])).toEqual([['c', 2, 'lesson'], ['d', 3, 'lesson']]);
+  const booking = { id: 'b1', startMs: t('2026-10-14T21:00:00+04:00') };
+  expect(mergeSchedule([booking], items).map((x) => x.id)).toEqual(['c', 'b1', 'd']);
 });

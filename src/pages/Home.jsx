@@ -7,7 +7,7 @@ import NotificationPrompt from '../components/NotificationPrompt';
 import StreakModal from '../components/StreakModal';
 import StreakJourney from '../components/StreakJourney';
 import { getStreakInfo } from '../utils/streak';
-import { getTodayContent } from '../data/weeklyContent';
+import { getTodayContent, weeklyContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import AnalysisReadyModal from '../components/AnalysisReadyModal';
 import Logo from '../components/Logo';
@@ -23,6 +23,9 @@ import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import useMyPlan from '../hooks/useMyPlan';
+import useMyLessons from '../hooks/useMyLessons';
+import { lessonItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
+import { plainTopic } from '../utils/topicLabel';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
 import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel } from '../utils/planState';
 import Button from '../components/ui/Button';
@@ -71,6 +74,8 @@ export default function Home({ user }) {
 
   // The week: bookings, proposals, plan status, onboarding answers.
   const plan = useMyPlan(user.uid);
+  // Individual lessons (Preply / Meet) sit in the same "Coming up" list.
+  const myLessons = useMyLessons(user.uid);
   // The polite no-show notice and a partner's "change the time?" request
   // still live on the old slot documents.
   const [mine, setMine] = useState(null);
@@ -137,7 +142,11 @@ export default function Home({ user }) {
   const booked = upcomingBookings(plan.bookings, plan.now);
   const target = Number(plan.onboarding?.weeklyTarget) || 0;
   // The hero already names the nearest booking; the list starts after it.
-  const comingUp = booked.slice(headline.kind === 'next' ? 1 : 0, (headline.kind === 'next' ? 1 : 0) + 3);
+  // Lessons join it in time order, each going straight to its materials.
+  const comingUp = mergeSchedule(
+    booked.slice(headline.kind === 'next' ? 1 : 0),
+    myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
+  ).slice(0, 3);
 
   return (
     <div className="home-page">
@@ -217,8 +226,9 @@ export default function Home({ user }) {
           </button>
         )}
 
-        {/* 2b. The next few booked practices, as a tutor's "Next lessons" list:
-            who and when at a glance, the whole schedule one tap away. */}
+        {/* 2b. The next few booked practices and individual lessons, as a
+            tutor's "Next lessons" list: who and when at a glance, a lesson one
+            tap from its materials, the whole schedule one tap away. */}
         {comingUp.length > 0 && (
           <section className="pl-card pl-coming" aria-label="Coming up">
             <div className="pl-coming-head">
@@ -226,6 +236,19 @@ export default function Home({ user }) {
               <button type="button" className="pl-coming-all" onClick={() => navigate('/plan')}>See all</button>
             </div>
             {comingUp.map((b) => {
+              if (b.kind === 'lesson') {
+                const topic = weeklyContent[b.topicIndex];
+                return (
+                  <button key={b.id} type="button" className="pl-row pl-row--lesson" onClick={() => navigate(`/class/${b.id}`)}>
+                    <span className="pl-coming-avatar pl-coming-avatar--lesson" aria-hidden="true"><BookOpen size={18} /></span>
+                    <span className="pl-row-main">
+                      <p className="pl-row-title">Lesson {b.number}{topic ? ` · ${plainTopic(topic.topic)}` : ''}</p>
+                      <p className="pl-row-sub">{comingUpLabel(b.startMs, plan.now)} · {PLATFORM_LABEL[b.platform] || 'Preply'}</p>
+                    </span>
+                    <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
+                  </button>
+                );
+              }
               const { peerName } = peerOf(b, user.uid);
               return (
                 <button key={b.id} type="button" className="pl-row" onClick={() => navigate('/plan')}>

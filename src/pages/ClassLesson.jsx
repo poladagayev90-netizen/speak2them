@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { db } from '../firebase';
 import { weeklyContent } from '../data/weeklyContent';
 import { plainTopic } from '../utils/topicLabel';
-import { atMs, byDate, episodeFor, lessonWhen, PLATFORM_LABEL } from '../utils/tutorLessons';
+import { atMs, episodeFor, lessonWhen, PLATFORM_LABEL } from '../utils/tutorLessons';
+import useMyLessons from '../hooks/useMyLessons';
 // ui.css (Button) before plan.css (TopicCard), the order the rest of the app
 // imports them in — CSS chunks must agree on it or the build refuses.
 import Button from '../components/ui/Button';
@@ -26,9 +27,7 @@ export default function ClassLesson({ user }) {
   const { lessonId } = useParams();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState(undefined);
-  const [lessons, setLessons] = useState([]);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [level, setLevel] = useState(null);
   const [chapter, setChapter] = useState(null);
   const uid = user?.uid;
 
@@ -37,19 +36,9 @@ export default function ClassLesson({ user }) {
     (snap) => setLesson(snap.exists() ? { id: snap.id, ...snap.data() } : null),
     () => setLesson(null)
   ), [lessonId]);
-  // All of this learner's lessons, to know which episode/lesson number this is.
-  useEffect(() => {
-    if (!uid) return undefined;
-    return onSnapshot(
-      query(collection(db, 'tutorLessons'), where('uid', '==', uid)),
-      (snap) => setLessons(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(byDate)),
-      () => setLessons([])
-    );
-  }, [uid]);
-  useEffect(() => {
-    if (!uid) return undefined;
-    return onSnapshot(doc(db, 'tutorStudents', uid), (snap) => setLevel(snap.exists() ? snap.get('level') : null), () => setLevel(null));
-  }, [uid]);
+  // All of this learner's lessons (for this one's number) and their level.
+  const { enrolment, lessons } = useMyLessons(uid);
+  const level = enrolment?.level || null;
 
   // The episode for this lesson's number at the learner's level. The rules
   // hide drafts, so an error just means it is not ready yet.
