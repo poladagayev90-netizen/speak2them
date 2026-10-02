@@ -409,14 +409,14 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
-    // The class story, one episode per lesson (teacherStory writes it). The
-    // class's teacher and the admin read drafts; a member reads an episode
-    // only once the teacher approved it.
+    // The Julian story, one shared episode per level (storyChapters/{level}_{n},
+    // written by teacherStory). The admin and verified teachers read drafts; a
+    // learner with individual lessons reads an episode once it is approved.
     match /storyChapters/{id} {
       allow read: if isAdmin() || (isSignedIn() && (
-        get(/databases/$(database)/documents/cohorts/$(resource.data.cohortId)).data.teacherId == request.auth.uid
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('teacherVerified', false) == true
         || (resource.data.status == 'approved'
-            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cohortId == resource.data.cohortId)
+            && exists(/databases/$(database)/documents/tutorStudents/$(request.auth.uid)))
       ));
       allow write: if false;
     }

@@ -25,13 +25,14 @@ export function packageSummary(enrolment, lessons = []) {
   return { held, size, planned, left: Math.max(0, size - held) };
 }
 
-// The story episode a lesson goes with: a held lesson keeps its number (the
-// server numbers held lessons by date); a planned one is the next after the
-// lessons held before it.
+// The lesson's number — also the story episode read before it. A held lesson
+// keeps the number the server gave it (held lessons numbered by date); a
+// planned one counts every lesson before it that was not cancelled, so the
+// lessons planned ahead get 3, 4, 5 … rather than all "the next one".
 export function episodeFor(lesson, lessons = []) {
   if (!lesson) return null;
   if (lesson.status === 'held' && Number.isInteger(lesson.n)) return lesson.n;
-  return lessons.filter((l) => l.status === 'held' && atMs(l) < atMs(lesson)).length + 1;
+  return lessons.filter((l) => l.id !== lesson.id && l.status !== 'cancelled' && atMs(l) < atMs(lesson)).length + 1;
 }
 
 // The steps of a lesson's homework, in order. "Your mistakes" exists only when

@@ -13,18 +13,23 @@ import TopicCard from '../components/plan/TopicCard';
 import DailyTopicModal from '../components/DailyTopicModal';
 import '../components/homework/homework.css';
 import '../components/cohort/cohort.css';
+import { StoryDilemma, StoryListening, StoryQuestions, StoryReading } from '../components/story/StoryEpisode';
 
 // One individual lesson, for the learner (/class/:lessonId). Before the lesson
 // it is the preparation: the topic sheet — the same one the teacher shares in
-// the lesson — so the learner arrives knowing the words and the questions. The
-// topic stays the same until the lesson is held; then the page points to the
-// homework, and the Today card moves on to the next lesson.
+// the lesson — and the lesson's Julian episode (shared by the learner's level,
+// once approved): the listening reveals what Julian chose last time, the
+// reading ends on a new dilemma, and the lesson debates it. The topic stays
+// the same until the lesson is held; then the page points to the homework, and
+// the Today card moves on to the next lesson.
 export default function ClassLesson({ user }) {
   const { lessonId } = useParams();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState(undefined);
   const [lessons, setLessons] = useState([]);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [level, setLevel] = useState(null);
+  const [chapter, setChapter] = useState(null);
   const uid = user?.uid;
 
   useEffect(() => onSnapshot(
@@ -41,6 +46,23 @@ export default function ClassLesson({ user }) {
       () => setLessons([])
     );
   }, [uid]);
+  useEffect(() => {
+    if (!uid) return undefined;
+    return onSnapshot(doc(db, 'tutorStudents', uid), (snap) => setLevel(snap.exists() ? snap.get('level') : null), () => setLevel(null));
+  }, [uid]);
+
+  // The episode for this lesson's number at the learner's level. The rules
+  // hide drafts, so an error just means it is not ready yet.
+  const number = lesson ? episodeFor(lesson, lessons) : null;
+  const chapterId = level && number ? `${level}_${number}` : null;
+  useEffect(() => {
+    if (!chapterId) { setChapter(null); return undefined; }
+    return onSnapshot(
+      doc(db, 'storyChapters', chapterId),
+      (snap) => setChapter(snap.exists() && snap.get('status') === 'approved' ? snap.data() : null),
+      () => setChapter(null)
+    );
+  }, [chapterId]);
 
   const back = <button type="button" className="hw-back" onClick={() => navigate('/')} aria-label="Back"><ArrowLeft size={20} /></button>;
   if (lesson === undefined) return <div className="hw-page"><p className="hw-lead">Loading…</p></div>;
@@ -49,7 +71,6 @@ export default function ClassLesson({ user }) {
   }
 
   const topic = Number.isInteger(lesson.topicIndex) ? weeklyContent[lesson.topicIndex] : null;
-  const number = episodeFor(lesson, lessons);
   const { status } = lesson;
   const link = lesson.link || '';
 
@@ -88,6 +109,21 @@ export default function ClassLesson({ user }) {
               : <>Before the lesson: learn the words, say them out loud, and think about the questions. Your teacher will use this sheet in the lesson.</>}
           </p>
           <TopicCard topic={topic} kicker="Your lesson’s topic" onOpen={() => setSheetOpen(true)} />
+        </section>
+      )}
+
+      {chapter && status !== 'cancelled' && (
+        <section className="hw-body" aria-label="Julian's story">
+          <h2 className="hw-sub">Julian’s story · Episode {number}</h2>
+          <p className="hw-lead">
+            {number > 1 ? 'Last time Julian had to choose. Listen first and find out what happened.' : 'Meet Julian. Listen first, then read the episode.'}
+          </p>
+          <StoryListening chapter={chapter} />
+          <p className="hw-lead"><b>{chapter.title}</b>. Read it, or listen while you read. Tap a marked phrase for its meaning.</p>
+          <StoryReading chapter={chapter} />
+          <StoryQuestions chapter={chapter} />
+          <StoryDilemma chapter={chapter} />
+          {status === 'planned' && <p className="hw-lead">Think about both sides. You will talk about this in the lesson.</p>}
         </section>
       )}
 

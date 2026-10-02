@@ -15,7 +15,8 @@ import '../components/homework/homework.css';
 // the teacher marked the lesson held). Words, dictation and speaking come from
 // the lesson's topic; "Your mistakes" comes from this learner's own reports
 // since the previous lesson and is left out when there is nothing in it. The
-// story was read before the lesson, on /class/:lessonId. Progress is the
+// story was read before the lesson, on /class/:lessonId; its recorded
+// sentences become the dictation. Progress is the
 // learner's own (doneSteps) and unlocks nothing.
 
 const DICTATION_COUNT = 5;
@@ -152,16 +153,31 @@ export default function Homework({ user }) {
     () => setHw(null)
   ), [id]);
 
+  // The lesson's Julian episode (read before the lesson): its recorded
+  // sentences make the dictation. Rules hide drafts, so an error = none.
+  const [chapter, setChapter] = useState(null);
+  const chapterId = hw?.level && hw?.n ? `${hw.level}_${hw.n}` : null;
+  useEffect(() => {
+    if (!chapterId) { setChapter(null); return undefined; }
+    return onSnapshot(
+      doc(db, 'storyChapters', chapterId),
+      (snap) => setChapter(snap.exists() && snap.get('status') === 'approved' ? snap.data() : null),
+      () => setChapter(null)
+    );
+  }, [chapterId]);
+
   const topic = hw && Number.isInteger(hw.topicIndex) ? weeklyContent[hw.topicIndex] : null;
 
   const words = useMemo(() => (topic ? [
     ...(topic.vocabulary || []).map((v) => ({ word: v.word, meaning: localMeaning(v), example: v.example, kind: 'word' })),
     ...(topic.idioms || []).map((v) => ({ word: v.phrase, meaning: localMeaning(v), example: v.example, kind: 'idiom' })),
   ] : []), [topic]);
-  // Dictation: the topic's example sentences (device voice).
-  const sentences = useMemo(() => (topic
-    ? (topic.vocabulary || []).map((v) => v.example).filter(Boolean).slice(0, DICTATION_COUNT).map((text) => ({ text }))
-    : []), [topic]);
+  // Dictation: the episode's recorded sentences when there is one, otherwise
+  // the topic's example sentences (device voice).
+  const sentences = useMemo(() => {
+    if (chapter?.dictation?.length) return chapter.dictation.map((d) => ({ text: d.text, audioUrl: d.audioUrl }));
+    return topic ? (topic.vocabulary || []).map((v) => v.example).filter(Boolean).slice(0, DICTATION_COUNT).map((text) => ({ text })) : [];
+  }, [chapter, topic]);
 
   const personal = hw?.personal;
   const LABELS = { words: 'Words', dictation: 'Dictation', mine: 'Your mistakes', speak: 'Speak' };

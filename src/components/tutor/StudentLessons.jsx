@@ -5,11 +5,12 @@ import { db } from '../../firebase';
 import { authedFetch } from '../../api';
 import { ADMIN_UID, FUNCTIONS_BASE } from '../../constants';
 import { weeklyContent } from '../../data/weeklyContent';
-import { atMs, byDate, lessonWhen, nextLesson, packageSummary, PLATFORM_LABEL } from '../../utils/tutorLessons';
+import { atMs, byDate, episodeFor, lessonWhen, nextLesson, packageSummary, PLATFORM_LABEL } from '../../utils/tutorLessons';
 import { bakuDateStr } from '../../utils/sessionSchedule';
 import Sheet from '../ui/Sheet';
 import Button from '../ui/Button';
 import '../cohort/cohort.css';
+import StoryButton from '../cohort/StoryButton';
 
 // Monday first, as a teacher reads a week; values are Baku weekdays (0 = Sun).
 const DAYS = [[1, 'Mon'], [2, 'Tue'], [3, 'Wed'], [4, 'Thu'], [5, 'Fri'], [6, 'Sat'], [0, 'Sun']];
@@ -153,7 +154,7 @@ function WhenForm({ submitLabel, initialMs, onSubmit }) {
   );
 }
 
-function LessonRow({ lesson, isNext, onError, onMove }) {
+function LessonRow({ lesson, isNext, onError, onMove, story }) {
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const run = async (payload) => {
@@ -214,6 +215,7 @@ function LessonRow({ lesson, isNext, onError, onMove }) {
         {status === 'cancelled' && (
           <button type="button" className="cc-act" disabled={busy} onClick={() => run({ action: 'restore' })}>Restore</button>
         )}
+        {story && status !== 'cancelled' && <StoryButton level={story.level} n={story.n} />}
       </div>
     </li>
   );
@@ -223,7 +225,7 @@ function LessonRow({ lesson, isNext, onError, onMove }) {
 // package, where), the timetable with move / cancel / held per lesson, and
 // planning new lessons from a weekly pattern. Every write goes through the
 // teacherLesson function.
-export default function StudentLessons({ uid, viewerUid }) {
+export default function StudentLessons({ uid, viewerUid, canWriteStory = false }) {
   const [enrolment, setEnrolment] = useState(undefined);
   const [lessons, setLessons] = useState([]);
   const [sheet, setSheet] = useState(null); // 'edit' | 'plan' | 'add' | {move: lesson}
@@ -250,6 +252,9 @@ export default function StudentLessons({ uid, viewerUid }) {
   if (enrolment === undefined) return null;
 
   const close = () => setSheet(null);
+  // The Julian episode each lesson goes with (shared per level, read before
+  // the lesson) — only for those who may write and approve it.
+  const storyOf = (l) => (canWriteStory && enrolment?.level ? { level: enrolment.level, n: episodeFor(l, lessons) } : null);
   // Lessons still ahead (or not yet marked) first; the rest fold away.
   const open = lessons.filter((l) => l.status === 'planned');
   const done = lessons.filter((l) => l.status !== 'planned').reverse();
@@ -285,7 +290,7 @@ export default function StudentLessons({ uid, viewerUid }) {
           {open.length > 0 && (
             <ol className="cc-list">
               {open.map((l) => (
-                <LessonRow key={l.id} lesson={l} isNext={next?.id === l.id} onError={setError} onMove={(m) => setSheet({ move: m })} />
+                <LessonRow key={l.id} lesson={l} isNext={next?.id === l.id} onError={setError} onMove={(m) => setSheet({ move: m })} story={storyOf(l)} />
               ))}
             </ol>
           )}
@@ -296,7 +301,7 @@ export default function StudentLessons({ uid, viewerUid }) {
               </button>
               {showPast && (
                 <ol className="cc-list">
-                  {done.map((l) => <LessonRow key={l.id} lesson={l} isNext={false} onError={setError} onMove={() => {}} />)}
+                  {done.map((l) => <LessonRow key={l.id} lesson={l} isNext={false} onError={setError} onMove={() => {}} story={storyOf(l)} />)}
                 </ol>
               )}
             </>

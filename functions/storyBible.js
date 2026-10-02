@@ -2,14 +2,12 @@
 // Julian, set in Baku, told across 60 lessons. DRAFT — Polad approves this
 // before any chapter is generated (scheduled-practice plan, Faza C).
 //
-// WHY THE BEATS FOLLOW THE LESSON, NOT THE TOPIC. A teacher picks each
-// lesson's topic freely (lesson 2 may be "Job Interviews", lesson 3 "Travel"),
-// but a story only works in order. So episode n always tells beat n, and the
-// lesson's topic becomes the SCENE of that beat — where it happens, what people
-// talk about, the words it uses. Every beat is written so that any of the 60
-// topics can be its setting ("Julian has to tell Leo the truth" can happen at a
-// market, in a hospital, at a wedding). The generator gets the bible, the
-// summaries of the episodes this class already read, beat n and the topic.
+// ONE STORY PER LEVEL, IN LESSON ORDER. Every student of a level (A2, B1)
+// reads the same episodes (storyChapters/{level}_{n}), written and approved
+// once. Episode n goes with a student's n-th lesson and is read BEFORE it, so
+// it does not depend on that lesson's topic — the beat chooses its own scene
+// in Baku. The generator gets the bible, the summaries of the earlier episodes
+// of that level and beat n.
 //
 // WHAT MAKES IT DEEP (the old 14-chapter draft did not have these):
 //   - Julian WANTS one thing and NEEDS another, and the two collide at the end.
@@ -190,8 +188,8 @@ const WRITING_RULES = {
   },
   rules: [
     "Tell exactly this beat — no other big events. Keep every fact the earlier episodes established.",
-    "The lesson topic is the SCENE: set the beat where the topic lives and let people talk about it naturally. Never lecture about the topic.",
-    "Use at most 5 target expressions, chosen from the topic's words and idioms where they fit; the rest of the words come naturally.",
+    "Choose the scene the beat suggests — a real place in Baku or wherever the beat goes — and let people talk naturally there.",
+    "Use at most 5 target expressions: useful chunks and phrasal verbs at the level that the scene needs; the rest of the words come naturally.",
     "End at the moment of the dilemma. If the beat already contains the choice, the dilemma asks whether it was right. Either way the character must have a real reason for each side.",
     "Write the LISTENING separately: 100–140 words, a voicemail, phone call, radio clip or conversation that opens the episode and reveals what happened after the PREVIOUS episode's dilemma.",
     "Baku is real: real streets and places (Old City, Fountains Square, Mardakan, the Boulevard, Goygol), tea, real food. No stereotypes.",

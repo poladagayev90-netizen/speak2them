@@ -22,10 +22,10 @@ test('only held lessons use the package', () => {
   expect(packageSummary({ packageSize: 8 }, lessons)).toEqual({ held: 1, size: 8, planned: 2, left: 7 });
 });
 
-test('a planned lesson goes with the episode after the held ones before it', () => {
+test("a lesson's number counts the lessons before it that were not cancelled", () => {
   expect(episodeFor(lessons[0], lessons)).toBe(1);
   expect(episodeFor(lessons[2], lessons)).toBe(2);
-  expect(episodeFor(lessons[3], lessons)).toBe(2);
+  expect(episodeFor(lessons[3], lessons)).toBe(3);
 });
 
 test('homework steps: "your mistakes" only with something in it', () => {

@@ -1,12 +1,11 @@
-// One episode of the Julian story for one class lesson: the prompt that asks
+// One episode of the Julian story for one level: the prompt that asks
 // the model for it, the check that turns the model's JSON into a safe chapter,
 // and the text splitting the TTS needs. Pure — the I/O lives in index.js
 // (teacherStory). The bible itself is storyBible.js.
 //
-// Episode n tells beat n (lesson order); the lesson's topic is the scene. The
-// model sees the bible, the summaries of the episodes THIS class has already
-// read (so a class whose lesson 3 was "Travel" and another whose lesson 3 was
-// "Cooking" each get a story that agrees with itself), the beat and the topic.
+// Episode n tells beat n (lesson order) and is shared by every student of the
+// level, read before their n-th lesson. The model sees the bible, the
+// summaries of that level's earlier episodes and the beat.
 
 const { CHARACTERS, SEASONS, BEATS, WRITING_RULES } = require("./storyBible");
 
@@ -19,7 +18,7 @@ function seasonOf(n) {
   return SEASONS.find((s) => n >= s.lessons[0] && n <= s.lessons[1]) || SEASONS[SEASONS.length - 1];
 }
 
-function buildChapterPrompt({ n, level, topic, previous = [] }) {
+function buildChapterPrompt({ n, level, previous = [] }) {
   const beat = BEATS[n - 1];
   if (!beat) throw new Error("no_such_beat");
   const lvl = WRITING_RULES.levels[level] || WRITING_RULES.levels.B1;
@@ -28,8 +27,7 @@ function buildChapterPrompt({ n, level, topic, previous = [] }) {
   const cast = CHARACTERS.map((c) => `- ${c.name}: ${c.role} WANTS: ${c.want} NEEDS: ${c.need} SECRET (reveal only when a beat says so): ${c.secret} VOICE: ${c.voice}`).join("\n");
   const story = previous.length
     ? previous.map((p) => `Episode ${p.n} — ${p.title}: ${p.summary}`).join("\n")
-    : "(This is the first episode the class reads.)";
-  const words = (topic.words || []).slice(0, 14).map((w) => `${w.word}${w.meaning ? ` (${w.meaning})` : ""}`).join("; ");
+    : "(This is the first episode.)";
 
   return `You are writing one episode of a graded-reader novel for adult English learners in Azerbaijan and Turkey. Output ONLY a JSON object.
 
@@ -39,16 +37,13 @@ Season arc: ${season.arc}
 CHARACTERS:
 ${cast}
 
-WHAT THIS CLASS HAS ALREADY READ:
+WHAT THE READERS HAVE ALREADY READ:
 ${story}
 
 THIS EPISODE IS EPISODE ${n}: "${beat.title}"
 Beat (tell exactly this): ${beat.beat}
 It ends on this dilemma, unanswered: ${beat.dilemma}
 ${prevBeat ? `The previous episode ended on: "${prevBeat.dilemma}". The LISTENING reveals what happened after it.` : "The LISTENING is a short opening scene (a voicemail or phone call) that introduces Julian."}
-
-LESSON TOPIC (the scene of this episode): ${topic.title}
-Topic words and idioms you may use: ${words}
 
 LEVEL ${level}: reading ${lvl.words[0]}-${lvl.words[1]} words. ${lvl.note}
 

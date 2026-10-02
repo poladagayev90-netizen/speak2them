@@ -1739,14 +1739,15 @@ exports.teacherClassBrief = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
-// ─── The class story (Julian), one episode per lesson ──────────
-// storyChapters/{cohortId}_{n}: episode n of the bible (storyBible.js) written
-// into the lesson's topic for THIS class, agreeing with the episodes the class
-// already read. The teacher (or admin) asks for it, reads the draft and
-// approves it; members see only approved chapters (rules). Audio is made once
-// with Deepgram and kept in Storage, so a learner's play costs nothing.
-//   { cohortId, n, action: "generate", topic: { title, words: [{word, meaning}] } }
-//   { cohortId, n, action: "approve" }
+// ─── The Julian story, one shared episode per level ────────────
+// storyChapters/{level}_{n}: episode n of the bible (storyBible.js) for every
+// student of that level (A2, B1), read BEFORE their n-th lesson. Written once
+// (DeepSeek, agreeing with the level's earlier episodes) and approved once;
+// learners with individual lessons see only approved episodes (rules). Audio is
+// made once with Deepgram and kept in Storage, so a learner's play costs
+// nothing. Only the admin or a verified teacher writes and approves — what is
+// approved here is read by every student of the level.
+//   { level, n, action: "generate" | "approve" }
 const STORY_VOICE_NARRATOR = "aura-2-thalia-en";
 const STORY_VOICE_LISTENING = "aura-2-apollo-en";
 
@@ -1798,33 +1799,25 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
     return res.status(401).json({ error: "Unauthorized" });
   }
   const body = req.body || {};
-  const cohortId = String(body.cohortId || "").trim();
+  const level = String(body.level || "");
   const n = Number(body.n);
   const action = String(body.action || "");
-  if (!cohortId || !Number.isInteger(n) || n < 1 || n > storyChapter.MAX_EPISODES) return res.status(400).json({ error: "bad_request" });
+  if (!storyChapter.LEVELS.includes(level) || !Number.isInteger(n) || n < 1 || n > storyChapter.MAX_EPISODES) {
+    return res.status(400).json({ error: "bad_request" });
+  }
   if (action !== "generate" && action !== "approve") return res.status(400).json({ error: "bad_action" });
 
   const db = admin.firestore();
-  const cohortSnap = await db.collection("cohorts").doc(cohortId).get();
-  if (!cohortSnap.exists) return res.status(404).json({ error: "cohort_not_found" });
-  const cohort = cohortSnap.data() || {};
-  if (decoded.uid !== ADMIN_UID && cohort.teacherId !== decoded.uid) return res.status(403).json({ error: "forbidden" });
-  if (n > (Number(cohort.lessonCount) || 0)) return res.status(400).json({ error: "no_such_lesson" });
-
-  const ref = db.collection("storyChapters").doc(`${cohortId}_${n}`);
+  if (decoded.uid !== ADMIN_UID) {
+    const me = await db.collection("users").doc(decoded.uid).get();
+    if (me.get("teacherVerified") !== true) return res.status(403).json({ error: "forbidden" });
+  }
+  const ref = db.collection("storyChapters").doc(`${level}_${n}`);
 
   if (action === "approve") {
     const cur = await ref.get();
     if (!cur.exists || cur.get("status") !== "draft") return res.status(409).json({ error: "nothing_to_approve" });
     await ref.set({ status: "approved", approvedAt: admin.firestore.FieldValue.serverTimestamp(), approvedBy: decoded.uid }, { merge: true });
-    // Homework already open for this lesson gains the story steps.
-    const open = await db.collection("homework").where("cohortId", "==", cohortId).get();
-    const forLesson = open.docs.filter((d) => d.get("n") === n);
-    if (forLesson.length) {
-      const batch = db.batch();
-      forLesson.forEach((d) => batch.set(d.ref, { story: true }, { merge: true }));
-      await batch.commit();
-    }
     return res.status(200).json({ ok: true });
   }
 
@@ -1834,20 +1827,8 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
   } catch (e) {
     return res.status(e.httpStatus || 429).json({ error: "rate_limited" });
   }
-  const lessonSnap = await db.collection("cohorts").doc(cohortId).collection("lessons").doc(String(n)).get();
-  if (!lessonSnap.exists || !Number.isInteger(lessonSnap.get("topicIndex"))) return res.status(409).json({ error: "topic_required" });
-  const topicIn = body.topic || {};
-  const topic = {
-    title: String(topicIn.title || "").slice(0, 80),
-    words: (Array.isArray(topicIn.words) ? topicIn.words : []).slice(0, 14).map((w) => ({
-      word: String((w && w.word) || "").slice(0, 60),
-      meaning: String((w && w.meaning) || "").slice(0, 120),
-    })).filter((w) => w.word),
-  };
-  if (!topic.title) return res.status(400).json({ error: "topic_required" });
-  const level = storyChapter.LEVELS.includes(cohort.level) ? cohort.level : "B1";
 
-  // One writer at a time per chapter; an approved chapter is never rewritten
+  // One writer at a time per episode; an approved episode is never rewritten
   // under the learners' feet.
   const claimed = await db.runTransaction(async (tx) => {
     const cur = await tx.get(ref);
@@ -1857,7 +1838,7 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
     const startedMs = started && typeof started.toMillis === "function" ? started.toMillis() : 0;
     if (st === "generating" && Date.now() - startedMs < 5 * 60 * 1000) return "busy";
     tx.set(ref, {
-      cohortId, n, topicIndex: lessonSnap.get("topicIndex"), level, status: "generating",
+      level, n, status: "generating",
       startedAt: admin.firestore.FieldValue.serverTimestamp(), error: null,
     }, { merge: true });
     return "ok";
@@ -1865,12 +1846,12 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
   if (claimed !== "ok") return res.status(409).json({ error: claimed === "approved" ? "already_approved" : "busy" });
 
   try {
-    const prevSnap = await db.collection("storyChapters").where("cohortId", "==", cohortId).get();
+    const prevSnap = await db.collection("storyChapters").where("level", "==", level).get();
     const previous = prevSnap.docs.map((d) => d.data())
       .filter((c) => c.n < n && c.summary && (c.status === "approved" || c.status === "draft"))
       .sort((a, b) => a.n - b.n)
       .map((c) => ({ n: c.n, title: c.title, summary: c.summary }));
-    const prompt = storyChapter.buildChapterPrompt({ n, level, topic, previous });
+    const prompt = storyChapter.buildChapterPrompt({ n, level, previous });
 
     let chapter = null;
     let lastErr = null;
@@ -1883,7 +1864,7 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
     }
     if (!chapter) throw lastErr || new Error("chapter_failed");
 
-    const base = `story/${cohortId}/${n}/${Date.now()}`;
+    const base = `story/${level}/${n}/${Date.now()}`;
     const listeningUrl = await saveStoryAudio(`${base}/listening.mp3`, await storyTts(chapter.listening.text, STORY_VOICE_LISTENING));
     const readingUrl = await saveStoryAudio(`${base}/reading.mp3`, await storyTts(chapter.reading, STORY_VOICE_NARRATOR));
     const dictation = [];
@@ -1897,7 +1878,6 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
       listening: { ...chapter.listening, audioUrl: listeningUrl },
       readingAudioUrl: readingUrl,
       dictation,
-      topicTitle: topic.title,
       status: "draft",
       generatedAt: admin.firestore.FieldValue.serverTimestamp(),
       generatedBy: decoded.uid,

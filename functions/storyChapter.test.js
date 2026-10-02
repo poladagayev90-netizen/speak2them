@@ -21,18 +21,18 @@ const good = () => ({
   dilemma: { question: "Should Julian blame the storm?", sideA: "No one would know.", sideB: "Lies grow." },
 });
 
-test("the prompt carries the beat, the topic and what the class already read", () => {
-  const p = buildChapterPrompt({ n: 2, level: "A2", topic: { title: "Travel", words: [{ word: "layover", meaning: "aralıq dayanacaq" }] },
+test("the prompt carries the beat and what the readers already read, not a lesson topic", () => {
+  const p = buildChapterPrompt({ n: 2, level: "A2",
     previous: [{ n: 1, title: "The window", summary: "Julian broke the window." }] });
   assert.match(p, /EPISODE 2: "The envelope"/);
-  assert.match(p, /LESSON TOPIC \(the scene of this episode\): Travel/);
+  assert.doesNotMatch(p, /TOPIC/);
   assert.match(p, /Episode 1 — The window: Julian broke the window\./);
   assert.match(p, /Should Julian blame the storm\?/); // the previous dilemma, revealed in the listening
   assert.match(p, /LEVEL A2: reading 240-300 words/);
 });
 
 test("the first episode has no previous dilemma to reveal", () => {
-  const p = buildChapterPrompt({ n: 1, level: "B1", topic: { title: "Music", words: [] } });
+  const p = buildChapterPrompt({ n: 1, level: "B1" });
   assert.match(p, /introduces Julian/);
 });
 

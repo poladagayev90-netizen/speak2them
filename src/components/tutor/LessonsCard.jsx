@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { weeklyContent } from '../../data/weeklyContent';
 import { plainTopic } from '../../utils/topicLabel';
-import { atMs, homeworkStepKeys, lessonWhen, nextLesson, packageSummary, PLATFORM_LABEL } from '../../utils/tutorLessons';
+import { atMs, episodeFor, homeworkStepKeys, lessonWhen, nextLesson, packageSummary, PLATFORM_LABEL } from '../../utils/tutorLessons';
 import Button from '../ui/Button';
 import '../homework/homework.css';
 import '../cohort/cohort.css';
@@ -26,7 +26,7 @@ export default function LessonsCard({ enrolment, lessons, homework }) {
     <div className="cls-card">
       <div className="cls-top">
         <span className="cls-title">
-          {next ? `Lesson ${sum.held + 1} of ${sum.size}` : `${sum.held} of ${sum.size} lessons done`}
+          {next ? `Lesson ${episodeFor(next, lessons)} of ${sum.size}` : `${sum.held} of ${sum.size} lessons done`}
         </span>
         <span className="cls-name">{PLATFORM_LABEL[next?.platform || enrolment.platform] || 'Your lessons'}</span>
       </div>
