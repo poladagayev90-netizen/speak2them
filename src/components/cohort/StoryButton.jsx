@@ -8,8 +8,10 @@ import { weeklyContent } from '../../data/weeklyContent';
 import { localMeaning } from '../../utils/feedbackLanguage';
 import Sheet from '../ui/Sheet';
 import Button from '../ui/Button';
-import StoryEpisode from '../story/StoryEpisode';
+// cohort.css before the story styles, the same order every other importer has
+// (CSS chunks must agree on it or the build refuses).
 import './cohort.css';
+import StoryEpisode from '../story/StoryEpisode';
 
 const STATUS_LABEL = { generating: 'Writing…', draft: 'To review', approved: 'Story ready', failed: 'Failed' };
 

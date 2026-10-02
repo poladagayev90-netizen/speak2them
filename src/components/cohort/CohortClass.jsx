@@ -7,6 +7,7 @@ import { FUNCTIONS_BASE } from '../../constants';
 import { weeklyContent } from '../../data/weeklyContent';
 import { lessonSummary } from '../../utils/cohortLessons';
 import StoryButton from './StoryButton';
+import ClassBrief from './ClassBrief';
 import './cohort.css';
 
 const when = (ms) => new Intl.DateTimeFormat('en-GB', {
@@ -58,6 +59,7 @@ export default function CohortClass({ cohort }) {
         {summary.next && <span className="cc-next">Next: lesson {summary.next.n} · {when(summary.next.startMs)}</span>}
         {summary.ended && <span className="cc-next">The class has ended</span>}
       </div>
+      <ClassBrief cohortId={cohort.id} />
       {error && <p className="cc-error" role="alert">{error}</p>}
       <ol className="cc-list">
         {summary.lessons.map((l) => {
