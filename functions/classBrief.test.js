@@ -41,18 +41,18 @@ test("words count learners, not mentions", () => {
 
 test("homework progress uses the same steps as the app; least done first", () => {
   const brief = buildClassBrief([
-    { uid: "1", name: "Done", analyses: [], homework: { n: 2, story: true, doneSteps: ["listening", "words", "reading", "dictation", "speak"], scores: { dictation: 80 } } },
+    { uid: "1", name: "Done", analyses: [], homework: { n: 2, doneSteps: ["words", "dictation", "speak"], scores: { dictation: 80 } } },
     { uid: "2", name: "None", analyses: [], homework: null },
     { uid: "3", name: "Half", analyses: [], homework: { n: 2, doneSteps: ["words"] } },
   ]);
   assert.deepStrictEqual(brief.students.map((s) => s.name), ["None", "Half", "Done"]);
-  assert.deepStrictEqual(brief.students[2].homework, { n: 2, done: 5, total: 5, dictation: 80 });
+  assert.deepStrictEqual(brief.students[2].homework, { n: 2, done: 3, total: 3, dictation: 80 });
   assert.deepStrictEqual(brief.students[1].homework, { n: 2, done: 1, total: 3, dictation: null });
 });
 
 test("step keys match the client", () => {
-  assert.deepStrictEqual(homeworkStepKeys(null, false), ["words", "dictation", "speak"]);
-  assert.deepStrictEqual(homeworkStepKeys({ words: [1] }, true), ["listening", "words", "reading", "dictation", "mine", "speak"]);
+  assert.deepStrictEqual(homeworkStepKeys(null), ["words", "dictation", "speak"]);
+  assert.deepStrictEqual(homeworkStepKeys({ words: [1] }), ["words", "dictation", "mine", "speak"]);
 });
 
 test("examples come from different learners first", () => {

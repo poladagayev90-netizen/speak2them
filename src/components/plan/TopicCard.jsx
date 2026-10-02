@@ -10,7 +10,9 @@ import './plan.css';
 // the 60-day image table stays out of the main bundle.
 const cardUrl = (url) => String(url || '').replace('h=650&w=940', 'h=420&w=760');
 
-export default function TopicCard({ topic, onOpen }) {
+// `kicker` replaces "Today's topic" where the card shows another day's topic
+// (a lesson's, on /class/:id).
+export default function TopicCard({ topic, onOpen, kicker = null }) {
   const [photo, setPhoto] = useState(null);
   const [failed, setFailed] = useState(false);
   const day = topic?.day;
@@ -31,10 +33,10 @@ export default function TopicCard({ topic, onOpen }) {
   return (
     <button
       type="button"
-      id="tour-topic"
+      id={kicker ? undefined : 'tour-topic'}
       className={`pl-topic ${showPhoto ? '' : 'pl-topic--plain'}`}
       onClick={onOpen}
-      aria-label={`Today's topic: ${plainTopic(topic?.topic) || 'open'}`}
+      aria-label={`${kicker || "Today's topic"}: ${plainTopic(topic?.topic) || 'open'}`}
     >
       {showPhoto && (
         <img
@@ -52,7 +54,7 @@ export default function TopicCard({ topic, onOpen }) {
       <span className="pl-topic-body">
         <span className="pl-topic-kicker">
           {!showPhoto && <BookOpen size={14} aria-hidden="true" />}
-          Today’s topic{day ? ` · Day ${day}` : ''}
+          {kicker || <>Today’s topic{day ? ` · Day ${day}` : ''}</>}
         </span>
         <span className="pl-topic-title">{plainTopic(topic?.topic) || 'Today’s topic'}</span>
         {question && <span className="pl-topic-q">{question}</span>}

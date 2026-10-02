@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon } from 'lucide-react';
-import { getTodayContent } from '../data/weeklyContent';
+import { getContentByIndex, getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
@@ -131,7 +131,9 @@ function DailyQuiz({ content, onFinish }) {
   );
 }
 
-export default function DailyTopicModal({ open, onClose, user }) {
+// `topicIndex` shows that topic instead of today's (a lesson's topic sheet on
+// /class/:id — the same sheet the teacher shares in the lesson).
+export default function DailyTopicModal({ open, onClose, user, topicIndex = null }) {
   const [content, setContent] = useState(null);
   const [activeSection, setActiveSection] = useState('vocabulary');
   const [difficulty, setDifficulty] = useState('easy');
@@ -140,11 +142,11 @@ export default function DailyTopicModal({ open, onClose, user }) {
 
   useEffect(() => {
     if (open) {
-      setContent(getTodayContent());
+      setContent(Number.isInteger(topicIndex) ? getContentByIndex(topicIndex) : getTodayContent());
       setActiveSection('vocabulary');
       setExpandedVocab(null);
     }
-  }, [open]);
+  }, [open, topicIndex]);
 
   if (!open || !content) return null;
 

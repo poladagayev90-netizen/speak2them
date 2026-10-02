@@ -6,17 +6,17 @@ import { db } from '../firebase';
 import { weeklyContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import { markDictation, markOriginal } from '../utils/dictation';
-import { homeworkStepKeys } from '../utils/cohortLessons';
+import { homeworkStepKeys } from '../utils/tutorLessons';
 import AnalysisHomework from '../components/AnalysisHomework';
-import { StoryDilemma, StoryListening, StoryQuestions, StoryReading } from '../components/story/StoryEpisode';
 import Button from '../components/ui/Button';
 import '../components/homework/homework.css';
 
-// Class homework for one held lesson (homework/{cohortId}_{n}_{uid}, built by
-// the server when the teacher marked the lesson held). The topic steps are the
-// same for the whole class; "Your mistakes" comes from this learner's own
-// reports since the previous lesson and is left out when there is nothing in
-// it. Progress is the learner's own (doneSteps) and unlocks nothing.
+// Homework for one held lesson (homework/{lessonId}, built by the server when
+// the teacher marked the lesson held). Words, dictation and speaking come from
+// the lesson's topic; "Your mistakes" comes from this learner's own reports
+// since the previous lesson and is left out when there is nothing in it. The
+// story was read before the lesson, on /class/:lessonId. Progress is the
+// learner's own (doneSteps) and unlocks nothing.
 
 const DICTATION_COUNT = 5;
 
@@ -145,7 +145,6 @@ export default function Homework({ user }) {
   const [hw, setHw] = useState(undefined);
   const [step, setStep] = useState(0);
   const [dictScores, setDictScores] = useState({});
-  const [chapter, setChapter] = useState(null);
 
   useEffect(() => onSnapshot(
     doc(db, 'homework', id),
@@ -153,34 +152,20 @@ export default function Homework({ user }) {
     () => setHw(null)
   ), [id]);
 
-  // The lesson's Julian episode, once the teacher approved it (rules hide
-  // drafts, so an error just means there is none yet).
-  const chapterId = hw ? `${hw.cohortId}_${hw.n}` : null;
-  useEffect(() => {
-    if (!chapterId) return undefined;
-    return onSnapshot(
-      doc(db, 'storyChapters', chapterId),
-      (snap) => setChapter(snap.exists() && snap.get('status') === 'approved' ? snap.data() : null),
-      () => setChapter(null)
-    );
-  }, [chapterId]);
-
   const topic = hw && Number.isInteger(hw.topicIndex) ? weeklyContent[hw.topicIndex] : null;
 
   const words = useMemo(() => (topic ? [
     ...(topic.vocabulary || []).map((v) => ({ word: v.word, meaning: localMeaning(v), example: v.example, kind: 'word' })),
     ...(topic.idioms || []).map((v) => ({ word: v.phrase, meaning: localMeaning(v), example: v.example, kind: 'idiom' })),
   ] : []), [topic]);
-  // Dictation comes from the episode when there is one (recorded), otherwise
-  // from the topic's example sentences (device voice).
-  const sentences = useMemo(() => {
-    if (chapter?.dictation?.length) return chapter.dictation.map((d) => ({ text: d.text, audioUrl: d.audioUrl }));
-    return topic ? (topic.vocabulary || []).map((v) => v.example).filter(Boolean).slice(0, DICTATION_COUNT).map((text) => ({ text })) : [];
-  }, [chapter, topic]);
+  // Dictation: the topic's example sentences (device voice).
+  const sentences = useMemo(() => (topic
+    ? (topic.vocabulary || []).map((v) => v.example).filter(Boolean).slice(0, DICTATION_COUNT).map((text) => ({ text }))
+    : []), [topic]);
 
   const personal = hw?.personal;
-  const LABELS = { listening: 'Listening', words: 'Words', reading: 'Reading', dictation: 'Dictation', mine: 'Your mistakes', speak: 'Speak' };
-  const steps = homeworkStepKeys(personal, !!chapter).map((key) => ({ key, label: LABELS[key] }));
+  const LABELS = { words: 'Words', dictation: 'Dictation', mine: 'Your mistakes', speak: 'Speak' };
+  const steps = homeworkStepKeys(personal).map((key) => ({ key, label: LABELS[key] }));
 
   if (hw === undefined) return <div className="hw-page"><p className="hw-lead">Loading…</p></div>;
   if (!hw || hw.hidden || hw.uid !== user?.uid || !topic) {
@@ -226,21 +211,6 @@ export default function Homework({ user }) {
       </nav>
 
       <section className="hw-body">
-        {cur.key === 'listening' && chapter && (
-          <>
-            <p className="hw-lead">
-              {hw.n > 1 ? 'Last time Julian had to choose. Listen and find out what happened.' : "Meet Julian. Listen first, then read the script if you need it."}
-            </p>
-            <StoryListening chapter={chapter} />
-          </>
-        )}
-        {cur.key === 'reading' && chapter && (
-          <>
-            <p className="hw-lead">Episode {hw.n}: <b>{chapter.title}</b>. Read it, or listen while you read. Tap a marked phrase for its meaning.</p>
-            <StoryReading chapter={chapter} />
-            <StoryQuestions chapter={chapter} />
-          </>
-        )}
         {cur.key === 'words' && (
           <>
             <p className="hw-lead">Tap a word for its meaning and an example. Say each one out loud.</p>
@@ -260,8 +230,7 @@ export default function Homework({ user }) {
         {cur.key === 'mine' && <MineStep personal={personal} />}
         {cur.key === 'speak' && (
           <>
-            {chapter && <StoryDilemma chapter={chapter} />}
-            <p className="hw-lead">{chapter ? 'Argue both sides out loud, then answer these' : 'Answer these out loud'} — with AInur, or with a classmate on a call.</p>
+            <p className="hw-lead">Answer these out loud — with AInur, or with a partner on a call.</p>
             <ol className="hw-questions">
               {(topic.questions?.easy || []).slice(0, 3).concat((topic.questions?.hard || []).slice(0, 2)).map((q, i) => (
                 <li key={i}>{q}</li>
@@ -269,7 +238,7 @@ export default function Homework({ user }) {
             </ol>
             <div className="hw-actions">
               <Button variant="ai" full onClick={() => navigate('/practice')}>Practise with AInur</Button>
-              <Button variant="secondary" full onClick={() => navigate('/chats')}>Call a classmate</Button>
+              <Button variant="secondary" full onClick={() => navigate('/chats')}>Call a partner</Button>
             </div>
           </>
         )}

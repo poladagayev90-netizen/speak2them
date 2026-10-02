@@ -12,11 +12,12 @@ const MAX_THEMES = 3;
 const MAX_WORDS = 10;
 const MAX_EXAMPLES = 2;
 
-// Same rule as src/utils/cohortLessons.js homeworkStepKeys — keep in step.
-function homeworkStepKeys(personal, story) {
+// Same rule as src/utils/tutorLessons.js homeworkStepKeys — keep in step.
+// The story is read before the lesson, so it is not a homework step.
+function homeworkStepKeys(personal) {
   const p = personal || {};
   const mine = ["words", "themes", "multipleChoice", "wordOrder"].some((k) => Array.isArray(p[k]) && p[k].length > 0);
-  return [...(story ? ["listening"] : []), "words", ...(story ? ["reading"] : []), "dictation", ...(mine ? ["mine"] : []), "speak"];
+  return ["words", "dictation", ...(mine ? ["mine"] : []), "speak"];
 }
 
 // A shared pattern is shown through DIFFERENT learners first — two lines
@@ -63,7 +64,7 @@ function buildClassBrief(members) {
     const hw = m.homework;
     let homework = null;
     if (hw && !hw.hidden) {
-      const keys = homeworkStepKeys(hw.personal, hw.story === true);
+      const keys = homeworkStepKeys(hw.personal);
       const doneSteps = (hw.doneSteps || []).filter((k) => keys.includes(k));
       homework = {
         n: hw.n,

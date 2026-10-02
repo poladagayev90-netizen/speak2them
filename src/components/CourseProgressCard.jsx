@@ -1,63 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { subscribeToCycle } from '../utils/cycle';
 import { subscribeToSessionConfig } from '../utils/sessionSchedule';
-import { weeklyContent } from '../data/weeklyContent';
 import {
   COURSE_TOPIC_COUNT,
   getTopicsCompleted,
 } from '../utils/courseProgress';
-import { homeworkStepKeys, isClassCohort, lessonSummary, topicsSinceJoin } from '../utils/cohortLessons';
+import { topicsSinceJoin } from '../utils/cohortLessons';
+import { byDate } from '../utils/tutorLessons';
+import LessonsCard from './tutor/LessonsCard';
 import './homework/homework.css';
 import './cohort/cohort.css';
-
-const lessonWhen = (ms) => new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Asia/Baku', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-}).format(new Date(ms));
-
-// A member of a class cohort: lesson X/N as one dot per lesson (coral = held,
-// the progress colour), the next lesson's time and topic once the teacher has
-// picked it. A lesson counts only when the teacher marked it held.
-function ClassCard({ cohort, lessons, homework }) {
-  const navigate = useNavigate();
-  const s = useMemo(() => lessonSummary(cohort, lessons), [cohort, lessons]);
-  if (!s) return null;
-  const nextTopic = s.next && Number.isInteger(s.next.topicIndex) ? weeklyContent[s.next.topicIndex]?.topic : null;
-  return (
-    <div className="cls-card">
-      <div className="cls-top">
-        <span className="cls-title">Lesson {s.held}/{s.total}</span>
-        <span className="cls-name">{cohort.name || 'Your class'}</span>
-      </div>
-      <div className="cls-dots" aria-hidden="true">
-        {s.lessons.map((l) => (
-          <span key={l.n} className={`cls-dot${l.status === 'held' ? ' cls-dot--held' : ''}`} />
-        ))}
-      </div>
-      <p className="cls-line">
-        {s.next
-          ? <>Next: <b>{lessonWhen(s.next.startMs)}</b>{nextTopic && <> · {nextTopic}</>}</>
-          : s.ended ? 'Your class has finished.' : 'All lessons are done.'}
-      </p>
-      {homework.length > 0 && (
-        <div className="cls-hw">
-          {homework.slice(0, 2).map((h) => {
-            const keys = homeworkStepKeys(h.personal, h.story === true);
-            const left = keys.filter((k) => !(h.doneSteps || []).includes(k)).length;
-            return (
-              <button key={h.id} type="button" className={`cls-hw-row${left === 0 ? ' is-done' : ''}`} onClick={() => navigate(`/homework/${h.id}`)}>
-                <span className="cls-hw-name">Homework · lesson {h.n}</span>
-                <span className="cls-hw-left">{left === 0 ? 'Done' : `${left} of ${keys.length} steps left`}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // Kurs vəziyyəti kartı — Home-da əsas aksiyanın ALTINDA dayanır.
 // - Kurs useri: Mövzu X/30 + proqres barı + kohort adı.
@@ -66,7 +20,6 @@ function ClassCard({ cohort, lessons, homework }) {
 export default function CourseProgressCard({ user }) {
   const [cycle, setCycle] = useState(null);
   const [cohort, setCohort] = useState(null);
-  const [lessons, setLessons] = useState([]);
   const [sessionConfig, setSessionConfig] = useState(null);
 
   useEffect(() => subscribeToCycle(setCycle), []);
@@ -84,32 +37,39 @@ export default function CourseProgressCard({ user }) {
     );
   }, [cohortId]);
 
-  // A class cohort's lessons (topic + held), read only once the cohort turns
-  // out to be a class.
-  const classId = isClassCohort(cohort) ? cohort.id : null;
+  // Individual lessons: the enrolment (tutorStudents/{uid}), this learner's
+  // lessons and their homework. Read for everyone — a missing enrolment is
+  // just "no lessons", and the rules let each learner read only their own.
+  const uid = user.uid;
+  const [enrolment, setEnrolment] = useState(null);
+  const [lessons, setLessons] = useState([]);
+  const [homework, setHomework] = useState([]);
   useEffect(() => {
-    if (!classId) { setLessons([]); return undefined; }
+    if (!uid) return undefined;
     return onSnapshot(
-      collection(db, 'cohorts', classId, 'lessons'),
-      (snap) => setLessons(snap.docs.map((d) => d.data())),
+      doc(db, 'tutorStudents', uid),
+      (snap) => setEnrolment(snap.exists() ? snap.data() : null),
+      () => setEnrolment(null)
+    );
+  }, [uid]);
+  const tutored = !!enrolment && enrolment.active !== false;
+  useEffect(() => {
+    if (!tutored) { setLessons([]); setHomework([]); return undefined; }
+    const stopLessons = onSnapshot(
+      query(collection(db, 'tutorLessons'), where('uid', '==', uid)),
+      (snap) => setLessons(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(byDate)),
       () => setLessons([])
     );
-  }, [classId]);
-
-  // This member's open homework for the class, newest lesson first.
-  const [homework, setHomework] = useState([]);
-  const uid = user.uid;
-  useEffect(() => {
-    if (!classId || !uid) { setHomework([]); return undefined; }
-    return onSnapshot(
-      query(collection(db, 'homework'), where('uid', '==', uid), where('cohortId', '==', classId)),
+    const stopHomework = onSnapshot(
+      query(collection(db, 'homework'), where('uid', '==', uid)),
       (snap) => setHomework(snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        .filter((h) => !h.hidden).sort((a, b) => b.n - a.n)),
+        .filter((h) => !h.hidden && h.lessonId).sort((a, b) => b.n - a.n)),
       () => setHomework([])
     );
-  }, [classId, uid]);
+    return () => { stopLessons(); stopHomework(); };
+  }, [tutored, uid]);
 
-  if (classId) return <ClassCard cohort={cohort} lessons={lessons} homework={homework} />;
+  if (tutored) return <LessonsCard enrolment={enrolment} lessons={lessons} homework={homework} />;
 
   const cardStyle = {
     background: 'var(--accent-soft)',

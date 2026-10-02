@@ -16,6 +16,7 @@ const { weekKey: bakuWeekKey } = require("./practiceStats");
 const homeworkBuilder = require("./homeworkBuilder");
 const storyChapter = require("./storyChapter");
 const classBrief = require("./classBrief");
+const tutorLessons = require("./tutorLessons");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -1401,22 +1402,33 @@ exports.startCohort = onRequest({ secrets: [] }, async (req, res) => {
   }
 });
 
-// ─── Class homework ─────────────────────────────────────────────
-// Marking a lesson held opens its homework for every active member:
-// homework/{cohortId}_{n}_{uid}. The topic half (words, dictation) is read by
-// the client from the lesson's topic; the personal half is built here from the
-// member's own call analyses since the PREVIOUS held lesson (or the last 14
-// days for lesson 1) — see homeworkBuilder.js. Re-marking rebuilds the personal
-// half and keeps the member's progress; undoing hides the homework instead of
-// deleting it, so a teacher's slip never erases work already done.
+// ─── Individual lessons (Preply / Google Meet) ─────────────────
+// A teacher's student (users.teacherId, linked with the teacher code) gets an
+// enrolment — tutorStudents/{uid}: level, package, platform, link — and their
+// own lessons, one doc each with its own date: tutorLessons/{id}. A lesson can
+// be moved or cancelled on its own; only held lessons use the package. Every
+// write comes through teacherLesson (the student's teacher or the admin), so a
+// learner can never mark a lesson held — the homework hangs off it.
+//
+// Marking a lesson held numbers the held lessons by date (tutorLessons.js) and
+// builds homework/{lessonId}: the topic steps (client) + a personal half from
+// the learner's own call analyses since the previous held lesson (or the last
+// 14 days for the first), see homeworkBuilder.js. Undo hides the homework, never
+// deletes it, so a slip never erases work the learner already did.
 const HOMEWORK_FIRST_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+const TUTOR_LEVELS = ["A2", "B1"];
+const TUTOR_PLATFORMS = ["preply", "meet"];
+// Starting lessons (or a bigger package) keeps the app open past the trial.
+// Only the admin or a verified teacher grants it — `role: teacher` is chosen
+// by the user at sign-up, so it alone must not hand out free access.
+const TUTOR_ACCESS_DAYS = 90;
 
 async function activeClassMembers(db, cohortId) {
   return (await db.collection("users").where("cohortId", "==", cohortId).get())
     .docs.filter((d) => d.get("cohortStatus") === "active" || d.get("mode") === "course");
 }
 
-// A member's analyses since `sinceMs`, newest first (at most 10 — the same
+// A learner's analyses since `sinceMs`, newest first (at most 10 — the same
 // window and cap the homework uses, so brief and homework agree).
 async function recentAnalyses(db, uid, sinceMs) {
   const snap = await db.collection("callAnalysis")
@@ -1426,54 +1438,63 @@ async function recentAnalyses(db, uid, sinceMs) {
     .filter((a) => a.timestamp && typeof a.timestamp.toMillis === "function" && a.timestamp.toMillis() >= sinceMs);
 }
 
-async function syncClassHomework(db, cohortId, n, held) {
-  const lessonsSnap = await db.collection("cohorts").doc(cohortId).collection("lessons").get();
-  const lessons = lessonsSnap.docs.map((d) => d.data());
-  const lesson = lessons.find((l) => Number(l.n) === n) || {};
-  const members = await activeClassMembers(db, cohortId);
-
-  if (!held) {
-    const batch = db.batch();
-    members.forEach((m) => batch.set(db.collection("homework").doc(`${cohortId}_${n}_${m.id}`), { hidden: true }, { merge: true }));
-    await batch.commit();
-    return { hidden: members.length };
-  }
-
-  const prev = lessons
-    .filter((l) => Number(l.n) < n && l.status === "held" && l.heldAt && typeof l.heldAt.toMillis === "function")
-    .sort((a, b) => b.n - a.n)[0];
-  const sinceMs = prev ? prev.heldAt.toMillis() : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
-  const chapterSnap = await db.collection("storyChapters").doc(`${cohortId}_${n}`).get();
-  const storyApproved = chapterSnap.exists && chapterSnap.get("status") === "approved";
-
-  let built = 0;
-  for (const m of members) {
-    const analyses = await recentAnalyses(db, m.id, sinceMs);
-    await db.collection("homework").doc(`${cohortId}_${n}_${m.id}`).set({
-      uid: m.id,
-      cohortId,
-      n,
-      topicIndex: lesson.topicIndex,
-      personal: homeworkBuilder.buildPersonal(analyses),
-      story: storyApproved,
-      hidden: false,
-      openedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    built += 1;
-  }
-  return { built };
+async function studentLessons(db, uid) {
+  return (await db.collection("tutorLessons").where("uid", "==", uid).get())
+    .docs.map((d) => ({ id: d.id, ref: d.ref, ...d.data() }))
+    .sort((a, b) => tutorLessons.atMs(a) - tutorLessons.atMs(b));
 }
 
-// ─── A cohort's lessons (the teacher's class) ──────────────────
-// A cohort with a class schedule (lessonCount, lessonDays, lessonMin,
-// startDate — set by the admin in Admin → Cohorts) has numbered lessons. The
-// lesson DATES follow from that schedule (src/utils/cohortLessons.js) and are
-// never stored; cohorts/{id}/lessons/{n} holds only what the teacher decided:
-// the topic of the lesson and whether it was held. Written here so a member
-// can never mark a lesson held (the homework hangs off it), and only by the
-// cohort's teacher or the admin.
-//   { cohortId, n, action: "topic", topicIndex }   pick the lesson's topic
-//   { cohortId, n, action: "held", held: bool }     mark held / undo
+// Renumber the held lessons and build or hide the homework of `lessonId`.
+async function syncLessonHomework(db, uid, lessonId, held, level) {
+  const lessons = await studentLessons(db, uid);
+  const numbers = tutorLessons.numberHeld(lessons);
+  const batch = db.batch();
+  for (const l of lessons) {
+    const n = numbers.get(l.id) || null;
+    if ((l.n || null) !== n) batch.set(l.ref, { n }, { merge: true });
+    if (n && l.id !== lessonId) batch.set(db.collection("homework").doc(l.id), { n }, { merge: true });
+  }
+  const hwRef = db.collection("homework").doc(lessonId);
+  if (!held) {
+    batch.set(hwRef, { hidden: true }, { merge: true });
+    await batch.commit();
+    return { hidden: true };
+  }
+  const lesson = lessons.find((l) => l.id === lessonId);
+  const n = numbers.get(lessonId);
+  const prev = lessons.filter((l) => numbers.get(l.id) === n - 1)[0];
+  const sinceMs = prev ? tutorLessons.atMs(prev) : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
+  const analyses = await recentAnalyses(db, uid, sinceMs);
+  batch.set(hwRef, {
+    uid,
+    teacherId: lesson.teacherId,
+    lessonId,
+    n,
+    topicIndex: lesson.topicIndex,
+    level: level || null,
+    personal: homeworkBuilder.buildPersonal(analyses),
+    hidden: false,
+    openedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  await batch.commit();
+  return { built: true, n };
+}
+
+function cleanLink(v) {
+  const s = String(v || "").trim();
+  return /^https:\/\/[^\s"<>]{3,200}$/.test(s) ? s : "";
+}
+
+//   { action: "start",  uid, level, packageSize, platform, link }
+//   { action: "update", uid, level?, packageSize?, platform?, link?, active? }
+//   { action: "plan",   uid, days: [0-6], time: "HH:MM", from: "YYYY-MM-DD", count }
+//   { action: "add",    uid, date, time, topicIndex? }
+//   { action: "move",   lessonId, date, time }
+//   { action: "cancel", lessonId, by: "student" | "teacher" }
+//   { action: "restore" | "remove", lessonId }      (planned/cancelled only)
+//   { action: "topic",  lessonId, topicIndex }
+//   { action: "held",   lessonId, held: bool }
+// Dates and times are Baku wall clock.
 exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -1486,52 +1507,168 @@ exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
   }
 
   const body = req.body || {};
-  const cohortId = String(body.cohortId || "").trim();
-  const n = Number(body.n);
   const action = String(body.action || "");
-  if (!cohortId || !Number.isInteger(n) || n < 1) return res.status(400).json({ error: "bad_request" });
-  if (action !== "topic" && action !== "held") return res.status(400).json({ error: "bad_action" });
-
+  const ACTIONS = ["start", "update", "plan", "add", "move", "cancel", "restore", "remove", "topic", "held"];
+  if (!ACTIONS.includes(action)) return res.status(400).json({ error: "bad_action" });
   const db = admin.firestore();
-  try {
-    const cohortSnap = await db.collection("cohorts").doc(cohortId).get();
-    if (!cohortSnap.exists) return res.status(404).json({ error: "cohort_not_found" });
-    const cohort = cohortSnap.data() || {};
-    if (decoded.uid !== ADMIN_UID && cohort.teacherId !== decoded.uid) {
-      return res.status(403).json({ error: "forbidden" });
-    }
-    const lessonCount = Number(cohort.lessonCount) || 0;
-    if (n > lessonCount) return res.status(400).json({ error: "no_such_lesson" });
+  const isAdmin = decoded.uid === ADMIN_UID;
+  const now = admin.firestore.FieldValue.serverTimestamp();
 
-    const ref = db.collection("cohorts").doc(cohortId).collection("lessons").doc(String(n));
-    const stamp = {
-      n,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedBy: decoded.uid,
+  try {
+    // Who the lesson is for: named directly, or through the lesson.
+    let lessonSnap = null;
+    let uid = String(body.uid || "").trim();
+    if (body.lessonId) {
+      lessonSnap = await db.collection("tutorLessons").doc(String(body.lessonId)).get();
+      if (!lessonSnap.exists) return res.status(404).json({ error: "lesson_not_found" });
+      uid = lessonSnap.get("uid");
+    }
+    if (!uid) return res.status(400).json({ error: "bad_request" });
+
+    const studentSnap = await db.collection("users").doc(uid).get();
+    if (!studentSnap.exists) return res.status(404).json({ error: "student_not_found" });
+    const teacherId = studentSnap.get("teacherId") || (isAdmin ? ADMIN_UID : null);
+    if (!isAdmin && teacherId !== decoded.uid) return res.status(403).json({ error: "forbidden" });
+
+    const enrolRef = db.collection("tutorStudents").doc(uid);
+    const enrolSnap = await enrolRef.get();
+    const enrol = enrolSnap.exists ? enrolSnap.data() : null;
+
+    const canGrant = isAdmin || (await db.collection("users").doc(decoded.uid).get()).get("teacherVerified") === true;
+    const grantAccess = async () => {
+      if (!canGrant) return;
+      const until = Date.now() + TUTOR_ACCESS_DAYS * 24 * 60 * 60 * 1000;
+      const cur = studentSnap.get("freeAccessUntil");
+      const curMs = cur && typeof cur.toMillis === "function" ? cur.toMillis() : 0;
+      if (curMs < until) {
+        await studentSnap.ref.set({ freeAccessUntil: admin.firestore.Timestamp.fromMillis(until) }, { merge: true });
+      }
     };
+
+    if (action === "start" || action === "update") {
+      const patch = {};
+      if (action === "start" || body.level !== undefined) {
+        if (!TUTOR_LEVELS.includes(body.level)) return res.status(400).json({ error: "bad_level" });
+        patch.level = body.level;
+      }
+      if (action === "start" || body.packageSize !== undefined) {
+        const size = Math.round(Number(body.packageSize));
+        if (!(size >= 1 && size <= 200)) return res.status(400).json({ error: "bad_package" });
+        patch.packageSize = size;
+      }
+      if (action === "start" || body.platform !== undefined) {
+        if (!TUTOR_PLATFORMS.includes(body.platform)) return res.status(400).json({ error: "bad_platform" });
+        patch.platform = body.platform;
+      }
+      if (action === "start" || body.link !== undefined) patch.link = cleanLink(body.link);
+      if (action === "start") {
+        Object.assign(patch, { uid, teacherId, active: true });
+        if (!enrol) patch.startedAt = now;
+      } else {
+        if (!enrol) return res.status(409).json({ error: "not_started" });
+        if (body.active !== undefined) patch.active = body.active === true;
+      }
+      await enrolRef.set({ ...patch, updatedAt: now, updatedBy: decoded.uid }, { merge: true });
+      if (action === "start" || (patch.packageSize && patch.packageSize > (enrol?.packageSize || 0)) || patch.active === true) {
+        await grantAccess();
+      }
+      return res.status(200).json({ ok: true });
+    }
+
+    if (!enrol || enrol.active === false) return res.status(409).json({ error: "not_started" });
+    const lessonBase = (atMs, topicIndex) => ({
+      uid,
+      teacherId,
+      at: admin.firestore.Timestamp.fromMillis(atMs),
+      status: "planned",
+      topicIndex,
+      platform: enrol.platform || "preply",
+      link: enrol.link || "",
+      n: null,
+      movedCount: 0,
+      createdAt: now,
+      updatedAt: now,
+      updatedBy: decoded.uid,
+    });
+    const validTopic = (t) => Number.isInteger(t) && t >= 0 && t < TOPIC_COUNT;
+
+    if (action === "plan" || action === "add") {
+      const existing = await studentLessons(db, uid);
+      const live = existing.filter((l) => l.status !== "cancelled");
+      const taken = new Set(live.map((l) => tutorLessons.atMs(l)));
+      let dates;
+      if (action === "plan") {
+        dates = tutorLessons.weeklyDates({
+          days: body.days, time: body.time, from: body.from, count: body.count, notBeforeMs: Date.now(),
+        });
+      } else {
+        const at = tutorLessons.bakuMs(body.date, body.time);
+        dates = at && at > Date.now() - 24 * 60 * 60 * 1000 ? [at] : [];
+      }
+      dates = dates.filter((ms) => !taken.has(ms));
+      if (dates.length === 0) return res.status(400).json({ error: "no_dates" });
+      if (live.filter((l) => l.status === "planned").length + dates.length > 60) {
+        return res.status(400).json({ error: "too_many" });
+      }
+      const topics = tutorLessons.suggestTopics(live.map((l) => l.topicIndex), dates.length, TOPIC_COUNT);
+      if (action === "add" && validTopic(body.topicIndex)) topics[0] = body.topicIndex;
+      const batch = db.batch();
+      dates.forEach((ms, i) => batch.set(db.collection("tutorLessons").doc(), lessonBase(ms, topics[i])));
+      await batch.commit();
+      return res.status(200).json({ ok: true, created: dates.length });
+    }
+
+    // Everything below acts on one lesson.
+    if (!lessonSnap) return res.status(400).json({ error: "bad_request" });
+    const lesson = lessonSnap.data();
+    const ref = lessonSnap.ref;
+    const stamp = { updatedAt: now, updatedBy: decoded.uid };
+
+    if (action === "move") {
+      if (lesson.status !== "planned") return res.status(409).json({ error: "not_planned" });
+      const at = tutorLessons.bakuMs(body.date, body.time);
+      if (!at) return res.status(400).json({ error: "bad_time" });
+      await ref.set({
+        ...stamp,
+        at: admin.firestore.Timestamp.fromMillis(at),
+        movedFrom: lesson.at || null,
+        movedCount: (Number(lesson.movedCount) || 0) + 1,
+      }, { merge: true });
+      return res.status(200).json({ ok: true });
+    }
+    if (action === "cancel") {
+      if (lesson.status !== "planned") return res.status(409).json({ error: "not_planned" });
+      const by = body.by === "teacher" ? "teacher" : "student";
+      await ref.set({ ...stamp, status: "cancelled", cancelledBy: by, cancelledAt: now }, { merge: true });
+      return res.status(200).json({ ok: true });
+    }
+    if (action === "restore") {
+      if (lesson.status !== "cancelled") return res.status(409).json({ error: "not_cancelled" });
+      await ref.set({ ...stamp, status: "planned", cancelledBy: null, cancelledAt: null }, { merge: true });
+      return res.status(200).json({ ok: true });
+    }
+    if (action === "remove") {
+      // Only a lesson that never happened: planned by mistake, or cancelled.
+      if (lesson.status === "held") return res.status(409).json({ error: "held" });
+      await ref.delete();
+      return res.status(200).json({ ok: true });
+    }
     if (action === "topic") {
       const topicIndex = Number(body.topicIndex);
-      if (!Number.isInteger(topicIndex) || topicIndex < 0 || topicIndex >= TOPIC_COUNT) {
-        return res.status(400).json({ error: "bad_topic" });
-      }
+      if (!validTopic(topicIndex)) return res.status(400).json({ error: "bad_topic" });
+      if (lesson.status !== "planned") return res.status(409).json({ error: "not_planned" });
       await ref.set({ ...stamp, topicIndex }, { merge: true });
       return res.status(200).json({ ok: true });
     }
 
+    // held
     const held = body.held === true;
-    if (held) {
-      // Homework is built from the lesson's topic, so a held lesson needs one.
-      const cur = await ref.get();
-      if (!cur.exists || !Number.isInteger(cur.get("topicIndex"))) {
-        return res.status(409).json({ error: "topic_required" });
-      }
-    }
-    await ref.set({
-      ...stamp,
-      status: held ? "held" : "planned",
-      heldAt: held ? admin.firestore.FieldValue.serverTimestamp() : null,
-    }, { merge: true });
-    const homework = await syncClassHomework(db, cohortId, n, held);
+    if (held && lesson.status !== "planned") return res.status(409).json({ error: "not_planned" });
+    if (!held && lesson.status !== "held") return res.status(409).json({ error: "not_held" });
+    if (held && !validTopic(lesson.topicIndex)) return res.status(409).json({ error: "topic_required" });
+    if (held && tutorLessons.atMs(lesson) > Date.now() + 60 * 60 * 1000) return res.status(409).json({ error: "not_yet" });
+    await ref.set({ ...stamp, status: held ? "held" : "planned", heldAt: held ? now : null }, { merge: true });
+    const homework = await syncLessonHomework(db, uid, ref.id, held, enrol.level);
     return res.status(200).json({ ok: true, homework });
   } catch (e) {
     console.error("[teacherLesson]", e);

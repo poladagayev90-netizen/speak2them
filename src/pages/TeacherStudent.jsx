@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { doc, collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
+import { ADMIN_UID } from '../constants';
 import { totalPracticeMinutes } from '../utils/practiceStats';
 import { Clock, ChevronLeft, BellRing, Check, User } from 'lucide-react';
 import { nudgeStudent, NUDGE_RESULT_TEXT, removeStudent } from '../utils/teacher';
 import { AnalysisDetail } from './History';
+import StudentLessons from '../components/tutor/StudentLessons';
 
 // Müəllimin şagird səhifəsi — funnel-in ƏSAS dəyəri: şagirdin hər zənginin
 // AI analizinə müəllim birə-bir baxa bilir (rules: callAnalysis oxunuşu
@@ -102,6 +104,9 @@ export default function TeacherStudent({ user }) {
             </> : <button type="button" onClick={() => setConfirmRemove(true)} style={{ background: 'none', border: 0, color: 'var(--danger)', fontWeight: 700, cursor: 'pointer' }}>Remove from class</button>}
           </section>
         )}
+
+        {/* Individual lessons: package, timetable, held → homework. */}
+        {(student?.teacherId === user.uid || user.uid === ADMIN_UID) && <StudentLessons uid={studentId} viewerUid={user.uid} />}
 
         {/* Stat kartları */}
         <div style={{

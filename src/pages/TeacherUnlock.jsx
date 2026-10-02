@@ -19,7 +19,7 @@ import { describeVideos } from '../data/describeVideos';
 import { canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
-import TeacherClasses from '../components/cohort/TeacherClasses';
+import TeacherWeek from '../components/tutor/TeacherWeek';
 import { bakuDateStr } from '../utils/sessionSchedule';
 import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
 
@@ -499,6 +499,9 @@ export default function TeacherUnlock({ user }) {
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
 
+        {/* Individual lessons from today to a week ahead, every student. */}
+        <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />
+
         {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
         {rosterError && <p role="alert">{rosterError}</p>}
         {students.length > 0 && (
@@ -712,9 +715,6 @@ export default function TeacherUnlock({ user }) {
         }}>
           {'Tap a student to read their reports.'}
         </p>
-
-        {/* The classes this teacher runs: pick each lesson's topic, mark it held. */}
-        <TeacherClasses uid={user?.uid} />
 
         {/* Əl ilə zəng təyini — lövhə cütü təsadüfən qurur, müəllim isə
             konkret iki nəfəri seçir. İki şagirddən az olanda özü gizlənir. */}

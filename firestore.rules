@@ -377,29 +377,29 @@ service cloud.firestore {
       ) || (isSignedIn() && resource.data.teacherId == request.auth.uid);
       allow list: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
       allow write: if isAdmin();
-
-      // The class's lessons: topic + held. Written only by the teacherLesson
-      // function (teacher of this cohort or admin); read by the members, the
-      // teacher and the admin.
-      match /lessons/{n} {
-        allow read: if isAdmin() || (
-          isSignedIn() && (
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.cohortId == cohortId
-            || get(/databases/$(database)/documents/cohorts/$(cohortId)).data.teacherId == request.auth.uid
-          )
-        );
-        allow write: if false;
-      }
     }
 
-    // Class homework, one doc per member per held lesson, built by the server
-    // (teacherLesson). The member reads it and records only their own progress;
-    // nothing is granted by progress, so a client-written value is safe (same
-    // reasoning as lessonProgress). The class's teacher and the admin read it.
+    // Individual lessons. tutorStudents/{uid} is a learner's enrolment (level,
+    // package, platform) and tutorLessons/{id} one lesson with its own date —
+    // both written only by the teacherLesson function (the learner's teacher or
+    // the admin), read by the learner, that teacher and the admin.
+    match /tutorStudents/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && (uid == request.auth.uid || resource.data.teacherId == request.auth.uid));
+      allow write: if false;
+    }
+    match /tutorLessons/{id} {
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.uid == request.auth.uid || resource.data.teacherId == request.auth.uid));
+      allow write: if false;
+    }
+
+    // Homework, one doc per held lesson (homework/{lessonId}), built by the
+    // server (teacherLesson). The learner reads it and records only their own
+    // progress; nothing is granted by it, so that write is safe. The teacher
+    // reads it to see who did the work.
     match /homework/{id} {
       allow read: if isAdmin() || (isSignedIn() && (
         resource.data.uid == request.auth.uid
-        || get(/databases/$(database)/documents/cohorts/$(resource.data.cohortId)).data.teacherId == request.auth.uid
+        || resource.data.teacherId == request.auth.uid
       ));
       allow update: if isSignedIn()
         && resource.data.uid == request.auth.uid

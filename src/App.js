@@ -45,6 +45,7 @@ const AinurChat = React.lazy(() => import('./pages/AinurChat'));
 const AinurHub = React.lazy(importAIChat);
 const AiActivity = React.lazy(() => import('./pages/AiActivity'));
 const Homework = React.lazy(() => import('./pages/Homework'));
+const ClassLesson = React.lazy(() => import('./pages/ClassLesson'));
 const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
@@ -244,6 +245,7 @@ function AppShell({ user }) {
               outside the tab set rather than inside it. */}
           <Route path="/practice" element={user ? <AiActivity user={user} /> : <Navigate to="/login" />} />
           <Route path="/homework/:id" element={user ? <Homework user={user} /> : <Navigate to="/login" />} />
+          <Route path="/class/:lessonId" element={user ? <ClassLesson user={user} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
           <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
           <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
