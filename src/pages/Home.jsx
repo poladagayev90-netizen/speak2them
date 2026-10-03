@@ -23,6 +23,8 @@ import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import useMyPlan from '../hooks/useMyPlan';
+import { useBillingConfig } from '../hooks/usePackages';
+import { outOfPractices, packageView } from '../utils/packages';
 import useMyLessons from '../hooks/useMyLessons';
 import { lessonItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
 import { plainTopic } from '../utils/topicLabel';
@@ -76,6 +78,9 @@ export default function Home({ user }) {
 
   // The week: bookings, proposals, plan status, onboarding answers.
   const plan = useMyPlan(user.uid);
+  // Packages: a quiet line on the card, only when the switch is on and nothing is left.
+  const { config: billing } = useBillingConfig();
+  const noPractices = outOfPractices(packageView({ user, summary: plan.planStatus?.access, config: billing }), billing);
   // Individual lessons (Preply / Meet) sit in the same "Coming up" list.
   const myLessons = useMyLessons(user.uid);
   // The polite no-show notice and a partner's "change the time?" request
@@ -221,7 +226,7 @@ export default function Home({ user }) {
         <IntroCard user={user} />
 
         {/* 1. The next practice, or what is happening instead. */}
-        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} />}
+        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} />}
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (

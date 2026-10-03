@@ -11,6 +11,7 @@ const bookingsLib = require("./bookings");
 const { truncatedError, badJsonError, classifyLlmError } = require("./llmErrors");
 const weeklyPlanner = require("./weeklyPlanner");
 const reliabilityLib = require("./reliability");
+const packagesLib = require("./packages");
 const { normalizeVocabulary, CEFR: CEFR_LEVELS } = require("./analysisVocab");
 const { weekKey: bakuWeekKey } = require("./practiceStats");
 const homeworkBuilder = require("./homeworkBuilder");
@@ -159,7 +160,7 @@ async function enforceRateLimit(uid, key, maxCalls, windowMs) {
 // topicIndex = cycleTick % TOPIC_COUNT. Proqres per-user YAZILMIR — client
 // currentCycleTick - startTick ilə hesablayır.
 const TOPIC_COUNT = require("./dailyQuestions.json").length; // src/data/weeklyContent.js ilə eyni
-const TRIAL_DAYS = 60;             // kodsuz trial: ilk girişdən 2 ay
+// The free weeks and packages live in packages.js (appConfig/billing).
 const COURSE_FREE_MONTHS = 6;      // kurs bitəndən sonra pulsuz dövr
 // Həftə günü konvensiyası: 0=Bazar … 6=Şənbə. Mövzuların hər gün irəliləməsi üçün bütün günlər aktivdir.
 const DEFAULT_SESSION_DAYS = [0, 1, 2, 3, 4, 5, 6];   // Hər gün (Bazar - Şənbə)
@@ -194,33 +195,148 @@ async function readCycleIndex(db) {
   return seedTickForDate(bakuDateStr());
 }
 
-// Kodsuz trial ilk girişdən TRIAL_DAYS gün sonra bitir. Premium / pullu plan
-// heç vaxt bloklanmır. Müstəsna yalnız rules-qorunan sahələrə (isPremium,
-// subscriptionPlan) əsaslanır — client-yazıla bilən `mode` sahəsinə GÜVƏNMİRİK,
-// yoxsa dəyişdirilmiş client mode:'course' qoyub TRIAL_DAYS limitini keçərdi.
-// (Kurs istifadəçiləri redeemCode-da isPremium:true alır, ona görə müstəsnadır.)
-// trialStartedAt olmayan köhnə userlər də bloklanmır.
-function isTrialExpired(u, uid) {
-  if (!u) return false;
-  // Sahibin hesabı heç vaxt bloklanmır — users sənədindəki isPremium
-  // bayrağından asılı olmadan. Client tərəfdəki getTrialDaysLeft eyni
-  // istisnanı daşıyır; ikisi birlikdə dəyişməlidir.
-  if (uid === ADMIN_UID) return false;
-  // Kohorta müraciəti gözlənilən user bloklanmır. Təhlükəsizdir, çünki
-  // firestore.rules cohortStatus-u client yazısından qoruyur — bu vəziyyətə
-  // yalnız redeemCode (etibarlı kodla) və admin sala bilər.
-  if (u.cohortStatus === "pending" || u.cohortStatus === "accepted") return false;
-  if (u.isPremium) return false;
-  if (u.freeAccessUntil && typeof u.freeAccessUntil.toMillis === "function"
-    && u.freeAccessUntil.toMillis() > Date.now()) return false;
-  if (u.subscriptionPlan && u.subscriptionPlan !== "trial" && u.subscriptionPlan !== "free") return false;
-  const s = u.trialStartedAt;
-  const startedMs = s && typeof s.toMillis === "function"
-    ? s.toMillis()
-    : (typeof s === "number" ? s : null);
-  if (!startedMs) return false;
-  return Date.now() - startedMs > TRIAL_DAYS * 24 * 60 * 60 * 1000;
+// ── Practice packages (functions/packages.js) ─────────────────────
+// The old rule — 60 days after sign-up EVERY call was refused, even with a
+// friend — is gone (2026-10-04). What is limited now is only PLANNED practice
+// (weekly plan, practice blocks, proposals): a free month of two a week, then
+// a package of 8 / 12 / 16 / 20 a month. Calls with a friend and AInur stay
+// free. Everything below is counted always, but refused only while
+// appConfig/billing.enforce is on — the admin's switch, off by default.
+async function billingConfigOf(db, tx = null) {
+  const ref = db.collection("appConfig").doc("billing");
+  const snap = await (tx ? tx.get(ref) : ref.get()).catch(() => null);
+  return packagesLib.billingConfig(snap && snap.exists ? snap.data() : {});
 }
+
+// Where one learner stands, with the bookings it was worked out from (this
+// week's Monday onwards, and back to the package start).
+async function accessOf(db, uid, { tx = null, user = null, config = null, nowMs = Date.now() } = {}) {
+  const get = (r) => (tx ? tx.get(r) : r.get());
+  const [uSnap, aSnap, cfg] = await Promise.all([
+    user ? null : get(db.collection("users").doc(uid)),
+    get(db.collection("access").doc(uid)),
+    config || billingConfigOf(db, tx),
+  ]);
+  const u = user || (uSnap && uSnap.exists ? uSnap.data() || {} : {});
+  const accessDoc = aSnap.exists ? aSnap.data() || {} : null;
+  const pkg = packagesLib.activePackage(accessDoc, nowMs);
+  const fromMs = Math.min(packagesLib.weekStartMs(nowMs), pkg ? pkg.startsMs : Infinity);
+  const bSnap = await get(db.collection("bookings")
+    .where("participants", "array-contains", uid)
+    .where("startMs", ">=", fromMs)
+    .orderBy("startMs")
+    .limit(300));
+  const bookings = bSnap.docs.map((d) => d.data() || {});
+  const state = packagesLib.accessState({ uid, user: u, accessDoc, config: cfg, bookings, nowMs, adminUid: ADMIN_UID });
+  return { state, bookings, config: cfg, accessDoc };
+}
+
+// Inside a transaction (reads only): may this person take one more planned
+// practice in this block? Always yes while the switch is off, and yes when
+// they already hold this very block (pressing a button twice).
+async function practiceAllowedTx(db, tx, uid, user, slot, config = null) {
+  const cfg = config || await billingConfigOf(db, tx);
+  if (!cfg.enforce) return true;
+  const { state, bookings } = await accessOf(db, uid, { tx, user, config: cfg });
+  if (bookings.some((b) => b.slotId === slot.slotId && b.status === "confirmed")) return true;
+  return packagesLib.canBookAt(state, slot.startMs, bookings, uid);
+}
+
+// The learner's app reads its balance from planStatus/{uid}.access. Written
+// whenever one of their bookings changes (syncUpcomingCall) and when the
+// admin gives or takes a package.
+async function refreshAccessSummary(db, uid) {
+  const { state } = await accessOf(db, uid);
+  await db.collection("planStatus").doc(uid).set({
+    access: { ...packagesLib.accessSummary(state), at: Date.now() },
+  }, { merge: true });
+  return state;
+}
+
+// Admin → packages. grant: a package of 8/12/16/20 practices starting now
+// (what is left moves over — packagesLib.grantPackage); revoke: take it
+// away; setEnforce: the switch that makes the limits real; summary: where one
+// learner stands. Payments through Google Play will call the same grant core
+// (packagesLib.grantPackage) from a receipt check — not written yet.
+exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  const body = req.body || {};
+  const action = String(body.action || "");
+  const uid = String(body.uid || "");
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(decoded.uid, "adminAccess", 300, 24 * 60 * 60 * 1000);
+    if (action === "setEnforce") {
+      const on = body.on === true;
+      const ref = db.collection("appConfig").doc("billing");
+      const snap = await ref.get();
+      await ref.set({
+        enforce: on,
+        // The free weeks of everyone who joined earlier start from the first
+        // switch-on (packages.trialWindow), so it is written once.
+        ...(on && !(snap.exists && snap.get("enabledAt")) ? { enabledAt: admin.firestore.FieldValue.serverTimestamp() } : {}),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: decoded.uid,
+      }, { merge: true });
+      // Everyone's balance line depends on the switch-on day: refresh them.
+      const users = await db.collection("users").select().limit(3000).get();
+      let refreshed = 0;
+      for (const d of users.docs) {
+        await refreshAccessSummary(db, d.id).then(() => { refreshed += 1; }).catch(() => null);
+      }
+      return res.status(200).json({ ok: true, enforce: on, refreshed });
+    }
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(uid)) return res.status(400).json({ error: "bad-uid" });
+    const userSnap = await db.collection("users").doc(uid).get();
+    if (!userSnap.exists) return res.status(404).json({ error: "no-user" });
+    if (action === "grant") {
+      const { state, config } = await accessOf(db, uid, { user: userSnap.data() || {} });
+      let pkg;
+      try {
+        pkg = packagesLib.grantPackage({ size: Number(body.size), config, previous: state, source: "admin", ref: decoded.uid });
+      } catch {
+        return res.status(400).json({ error: "unknown-package" });
+      }
+      const record = {
+        size: pkg.size, carriedIn: pkg.carriedIn,
+        startsAt: admin.firestore.Timestamp.fromMillis(pkg.startsMs),
+        endsAt: admin.firestore.Timestamp.fromMillis(pkg.endsMs),
+        source: pkg.source, ref: pkg.ref,
+      };
+      await db.collection("access").doc(uid).set({
+        package: record,
+        history: admin.firestore.FieldValue.arrayUnion({ ...record, action: "grant", atMs: Date.now() }),
+      }, { merge: true });
+      const next = await refreshAccessSummary(db, uid);
+      return res.status(200).json({ ok: true, access: packagesLib.accessSummary(next) });
+    }
+    if (action === "revoke") {
+      await db.collection("access").doc(uid).set({
+        package: admin.firestore.FieldValue.delete(),
+        history: admin.firestore.FieldValue.arrayUnion({ action: "revoke", atMs: Date.now(), by: decoded.uid }),
+      }, { merge: true });
+      const next = await refreshAccessSummary(db, uid);
+      return res.status(200).json({ ok: true, access: packagesLib.accessSummary(next) });
+    }
+    if (action === "summary") {
+      const next = await refreshAccessSummary(db, uid);
+      return res.status(200).json({ ok: true, access: packagesLib.accessSummary(next) });
+    }
+    return res.status(400).json({ error: "unknown-action" });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[adminAccess]", action, e);
+    return res.status(status).json({ error: status === 500 ? "internal" : e.message });
+  }
+});
 
 // ─── Agora Token ───────────────────────────────────────────────
 exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (req, res) => {
@@ -248,13 +364,9 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
     return;
   }
 
-  // Kodsuz trial TRIAL_DAYS gündən sonra zəngi serverdə bloklayır — token verilmir.
+  // No trial lock here any more (2026-10-04): a call with a friend is free
+  // for everyone. Only planned practice is limited — by packages, at booking.
   const db = admin.firestore();
-  const uDoc = await db.collection("users").doc(decoded.uid).get().catch(() => null);
-  if (isTrialExpired(uDoc && uDoc.exists ? uDoc.data() : null, decoded.uid)) {
-    res.status(403).json({ error: "trial_expired" });
-    return;
-  }
 
   // Cütləşmə qaydası BİRBAŞA zəngə də aiddir.
   //
@@ -809,7 +921,7 @@ exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) 
   // Keep the client's trialStartedAt only when it is a real Timestamp from the
   // last few minutes (Register writes serverTimestamp(), the same moment). The
   // rules pin it too; this is the second lock, because a future date or a
-  // non-Timestamp here means isTrialExpired never fires.
+  // non-Timestamp here would stretch the free weeks (packages.trialWindow).
   const clientStart = data.trialStartedAt;
   const clientStartMs = clientStart && typeof clientStart.toMillis === "function" ? clientStart.toMillis() : null;
   const trustClientStart = clientStartMs !== null
@@ -822,7 +934,7 @@ exports.initTrialForNewUser = onDocumentCreated("users/{userId}", async (event) 
     // trialStartedAt burada — HƏR yeni userin keçdiyi yeganə nöqtə. Əvvəllər
     // yalnız Register client-ində yazılırdı; Login-dən Google ilə girən (və ya
     // App.js user sənədini əvvəl yaradan) yeni userdə boş qalırdı və
-    // isTrialExpired heç vaxt işə düşmürdü → sonsuz pulsuz giriş. Client onu
+    // pulsuz həftələr heç vaxt bitmirdi (packages.trialWindow). Client onu
     // yazmasa da (yaza da bilər — eyni an), gate indi mütləq işləyir.
     trialStartedAt: trustClientStart ? clientStart : admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
@@ -1093,6 +1205,8 @@ exports.syncUpcomingCall = onDocumentWritten({ document: "bookings/{bookingId}",
   const db = admin.firestore();
   for (const uid of people) {
     await bookingsLib.refreshUpcomingCall(db, uid);
+    // The package balance is derived from bookings, so it moves with them.
+    await refreshAccessSummary(db, uid).catch((e) => console.warn("[access] summary failed:", uid, e.message));
   }
 });
 
@@ -3113,6 +3227,11 @@ async function joinSlotTx(db, tx, slot, uid, user) {
   const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
 
   if (members.some((m) => m.id === uid)) return { already: true };
+  // Planned practice needs the free weeks or a package (only while the
+  // admin's switch is on).
+  if (!await practiceAllowedTx(db, tx, uid, user, slot)) {
+    throw Object.assign(new Error("no-practices-left"), { httpStatus: 403 });
+  }
 
   // Not simply the first one waiting: someone this learner may be paired
   // with (pairVerdict), preferring a partner they have not met this week.
@@ -3979,6 +4098,13 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source,
   ]);
   if (aDay.length) throw slotFail(409, "student-a-busy");
   if (bDay.length) throw slotFail(409, "student-b-busy");
+  // A proposal (weekly plan or the admin's) uses up a practice; a teacher
+  // pairing their own student by hand does not.
+  if (source === "admin_offer") {
+    const cfg = await billingConfigOf(db, tx);
+    if (!await practiceAllowedTx(db, tx, uidA, a, slot, cfg)) throw slotFail(409, "student-a-no-practices");
+    if (!await practiceAllowedTx(db, tx, uidB, b, slot, cfg)) throw slotFail(409, "student-b-no-practices");
+  }
 
   const slotRef = db.collection("practiceSlots").doc(slot.slotId);
   const membersRef = slotRef.collection("members");
@@ -4465,10 +4591,11 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
     const status = e.httpStatus || 500;
     // A second yes that cannot be booked (one of them was booked elsewhere in
     // the meantime) must not leave the offer hanging as "pending".
-    if (e.message === "student-a-busy" || e.message === "student-b-busy" || e.message === "pair-not-allowed") {
+    const noPractices = e.message === "student-a-no-practices" || e.message === "student-b-no-practices";
+    if (e.message === "student-a-busy" || e.message === "student-b-busy" || e.message === "pair-not-allowed" || noPractices) {
       await offerRef.update({
         status: "failed",
-        failReason: e.message === "pair-not-allowed" ? "not-allowed" : "busy",
+        failReason: e.message === "pair-not-allowed" ? "not-allowed" : noPractices ? "no-practices" : "busy",
         closedAt: admin.firestore.FieldValue.serverTimestamp(),
       }).catch(() => null);
       const failedSnap = await offerRef.get().catch(() => null);
@@ -4478,7 +4605,11 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
         vars: { nameA: o.nameA || "", nameB: o.nameB || "" },
         type: "admin_offer", url: "/admin?tab=applicants",
       }).catch(() => null);
-      return res.status(409).json({ error: "offer-failed" });
+      // Out of practices: the one who ran out is told so (it is their own
+      // balance); the other only hears that this time did not work out.
+      const mine = (e.message === "student-a-no-practices" && uid === o.userA)
+        || (e.message === "student-b-no-practices" && uid === o.userB);
+      return res.status(409).json({ error: mine ? "no-practices-left" : "offer-failed" });
     }
     if (status === 500) console.error("[respondMatchOffer]", e.message);
     return res.status(status).json({ error: e.message });
@@ -4606,6 +4737,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       if (!me) continue;
       const n = noteOf(me);
       n.count += 1;
+      n.pending = (n.pending || 0) + 1;
       n.partners.add(peer);
       n.dates.add(String(o.slotId || "").slice(0, 10));
     }
@@ -4618,6 +4750,9 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     if (x && y) { noteOf(x).partners.add(y); noteOf(y).partners.add(x); }
   }
 
+  // Packages: while the admin's switch is on, nobody is planned past what
+  // their free weeks or package still allow (pending offers included).
+  const billing = await billingConfigOf(db);
   const learners = [];
   for (const [uid, ob] of obs) {
     const u = users.get(uid);
@@ -4630,8 +4765,14 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     if (cfg.requireCharter && !ob.charterAcceptedAt) continue;
     const seen = u.lastSeen?.toMillis?.() || 0;
     if (nowMs - seen > PLAN_ACTIVE_WINDOW_MS) continue;
-    if (isTrialExpired(u, uid)) continue;
     const h = have.get(uid) || { count: 0, dates: new Set(), partners: new Set(), letDown: 0 };
+    let need = Math.max(0, target - h.count);
+    if (billing.enforce) {
+      const { state, bookings } = await accessOf(db, uid, { user: u, config: billing, nowMs });
+      const allowance = packagesLib.allowanceForWeek(state, weekStart, bookings, uid) - (h.pending || 0);
+      need = Math.max(0, Math.min(need, allowance));
+      if (!need) continue;
+    }
     learners.push({
       uid,
       name: u.name || "",
@@ -4641,7 +4782,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       availability: ob.availability,
       timeZone: ob.timeZone || "Asia/Baku",
       target,
-      need: Math.max(0, target - h.count),
+      need,
       busyDates: [...h.dates],
       pairedWith: [...h.partners],
       priority: h.letDown ? 1 : 0,
@@ -4734,6 +4875,9 @@ async function createPlanOfferTx(db, { id, pair, planWeek, respondBy, source }) 
     if (sameDay(aPend) || sameDay(bPend)) return { skip: "offer-that-day" };
     const a = aSnap.data() || {};
     const b = bSnap.data() || {};
+    const billing = await billingConfigOf(db, tx);
+    if (!await practiceAllowedTx(db, tx, pair.a, a, slot, billing)
+      || !await practiceAllowedTx(db, tx, pair.b, b, slot, billing)) return { skip: "no-practices-left" };
     tx.set(offerRef, {
       participants: [pair.a, pair.b],
       userA: pair.a, userB: pair.b,
@@ -8011,6 +8155,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     await db.collection("userStats").doc(uid).delete().catch(() => null); // server copy of the stats
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
     await db.collection("premiumRequests").doc(uid).delete().catch(() => null);
+    await db.collection("access").doc(uid).delete().catch(() => null); // package + its history
     // Onboarding answers hold age band, country and weekly availability —
     // personal data that must go with the account.
     await db.collection("onboarding").doc(uid).delete().catch(() => null);

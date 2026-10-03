@@ -12,8 +12,6 @@ import { subscribeToCycle } from './utils/cycle';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
 import GlobalCallListener from './components/GlobalCallListener';
-import TrialExpiredGate from './components/TrialExpiredGate';
-import { isTrialExpiredClient } from './utils/courseProgress';
 import { needsOnboarding } from './utils/onboarding';
 import { mustWriteWhatsApp } from './utils/intro';
 import useBackButton from './hooks/useBackButton';
@@ -52,7 +50,7 @@ const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const IntroBooking = React.lazy(() => import('./pages/IntroBooking'));
 const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
-const Upgrade = React.lazy(() => import('./pages/Upgrade'));
+const Packages = React.lazy(() => import('./pages/Packages'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(importRanking);
 const Plan = React.lazy(importPlan);
@@ -109,12 +107,8 @@ const PageFallback = () => (
 // only the Routes: while a lazy chunk downloads, the nav and layout stay put
 // (the old placement unmounted the entire shell into a full-screen loader on
 // every first visit to a tab — the "tab switch flash").
-// Trial-ı bitmiş user bu yollarda SƏRBƏST qalır: kodu daxil edə bilsin
-// (/redeem), hesabını idarə edə/silə bilsin (/profile — Play Store tələbi),
-// auth axını pozulmasın.
-// /join burada olmalıdır ki, müəllimin göndərdiyi dəvət linki trial divarına
-// dəyib ölü-son olmasın; /teacher isə müəllimin öz kodunu itirməməsi üçün.
-const TRIAL_GATE_EXEMPT = ['/redeem', '/profile', '/login', '/register', '/join', '/teacher'];
+// No app-wide trial wall any more (2026-10-04): when the free weeks end only
+// planned practice needs a package (functions/packages.js); /packages shows it.
 
 function AppShell({ user }) {
   const location = useLocation();
@@ -123,13 +117,6 @@ function AppShell({ user }) {
   // letting Android close the app. Screens that need their own behaviour —
   // Chat during a call — register on top of this one.
   useBackButton(() => false);
-  // Dəqiqəlik tick: app açıq qalarkən trial tam bu anda bitərsə, gate növbəti
-  // yoxlamada (naviqasiyasız da) görünsün.
-  const [, setGateTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setGateTick((t) => t + 1), 60000);
-    return () => clearInterval(id);
-  }, []);
 
   // Dəvət linkini AŞAĞIDAKI route-lardan ƏVVƏL tut: hesabı olmayan biri
   // /join?c=KOD açanda route dərhal /register-ə yönləndirir və kod URL-dən
@@ -168,8 +155,6 @@ function AppShell({ user }) {
     }
   }, [isTeacherUser, postRegRole]);
 
-  const gateExempt = TRIAL_GATE_EXEMPT.some((p) => location.pathname.startsWith(p));
-  const showTrialGate = !!user && !gateExempt && isTrialExpiredClient(user);
 
   // Qeydiyyatdan sonra axını davam etdir: gözləyən kod var, istifadəçi hələ
   // heç bir müəllimə bağlı deyil → dəvət ekranına qaytar. JoinTeacher həm
@@ -203,14 +188,6 @@ function AppShell({ user }) {
         : getPendingPeer() ? <InviteRedirect user={user} uid={getPendingPeer()} />
           : <Home user={user} />)
     : <Navigate to="/register" />;
-
-  if (showTrialGate) {
-    return (
-      <AppLayout user={user}>
-        <TrialExpiredGate />
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout user={user}>
@@ -266,8 +243,9 @@ function AppShell({ user }) {
               web only — the page checks canBrowseAllVideos itself, so the deck
               data stays out of the main bundle. */}
           <Route path="/teacher/videos" element={user ? <VideoLibrary user={user} /> : <Navigate to="/login" />} />
-          <Route path="/premium" element={<Navigate to="/upgrade" replace />} />
-          <Route path="/upgrade" element={user ? <Upgrade user={user} /> : <Navigate to="/login" />} />
+          <Route path="/premium" element={<Navigate to="/packages" replace />} />
+          <Route path="/upgrade" element={<Navigate to="/packages" replace />} />
+          <Route path="/packages" element={user ? <Packages user={user} /> : <Navigate to="/login" />} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
           <Route path="/plan" element={user ? <Plan user={user} /> : <Navigate to="/login" />} />
           {/* The Live tab (random search, slot board) is gone: practice is

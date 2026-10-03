@@ -21,6 +21,7 @@ const ERROR_TEXT = {
   'offer-closed': 'This proposal has already closed.',
   'offer-failed': 'One of you was booked for another call in the meantime, so this time could not be booked. The team will suggest a new one.',
   'offer-not-found': 'This proposal no longer exists.',
+  'no-practices-left': 'You have no planned practices left. Profile → Your plan shows the packages.',
   'not-your-offer': 'This proposal is not addressed to you.',
   'slot-past': 'That time has already started.',
   'slot-too-far': 'Proposals can be made up to nine days ahead.',

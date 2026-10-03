@@ -10,6 +10,7 @@ import AdminApplicants from '../components/AdminApplicants';
 import AdminIntros from '../components/AdminIntros';
 import AdminWeekPlan from '../components/AdminWeekPlan';
 import AdminAttendance from '../components/AdminAttendance';
+import { BillingSwitch, PackageMenu, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
 import { stableOrder } from '../utils/stableOrder';
 import '../components/AdminApplicants.css';
@@ -46,6 +47,7 @@ export default function Admin({ user }) {
   const navigate = useNavigate();
 
   const [rawUsers, setRawUsers] = useState([]);
+  const packageSummaries = usePackageSummaries();
   const [emails, setEmails] = useState({});
 
   useEffect(() => {
@@ -211,6 +213,7 @@ export default function Admin({ user }) {
           : (
           <div className="adm-students">
             {error && <p className="aa-error">{error}</p>}
+            <BillingSwitch />
             <div className="adm-stats">
               <span><b>{users.length}</b> accounts</span>
               <span><b>{users.filter((u) => u.isPremium).length}</b> premium</span>
@@ -243,7 +246,7 @@ export default function Admin({ user }) {
                       <p className="adm-user-meta">
                         <span><Phone size={12} aria-hidden="true" /> {u.callCount || 0}</span>
                         <span><Clock size={12} aria-hidden="true" /> {u.totalMinutes || 0} min</span>
-                        <span><Gift size={12} aria-hidden="true" /> {plan}{!isAdmin && u.subscriptionPlan === 'trial' && !u.isPremium ? ` · ${u.availableTrialMinutes ?? 0} min` : ''}</span>
+                        <span><Gift size={12} aria-hidden="true" /> {u.isPremium || isAdmin ? plan : (packageLabel(packageSummaries[id]) || plan)}</span>
                       </p>
                       {u.tutorProfile && (
                         <p className="adm-user-meta">
@@ -273,6 +276,7 @@ export default function Admin({ user }) {
                           }
                         }}>Make teacher</button>
                       )}
+                      {!isAdmin && !u.isPremium && <PackageMenu uid={id} summary={packageSummaries[id]} />}
                       {!isAdmin && (u.isPremium
                         ? <button type="button" className="adm-btn adm-btn--danger" disabled={busy} onClick={() => setPremium(u, false)}>{busy ? '…' : 'Remove Pro'}</button>
                         : <button type="button" className="adm-btn" disabled={busy} onClick={() => setPremium(u, true, 'pro')}>{busy ? '…' : 'Make Pro'}</button>)}

@@ -65,3 +65,16 @@
 .adm-btn:disabled { opacity: .5; cursor: progress; }
 .adm-empty { display: grid; place-items: center; gap: var(--s-2); padding: var(--s-8) 0; color: var(--text-muted); }
 .adm-empty p { margin: 0; }
+
+/* Packages (AdminPackages.jsx): the on/off switch above the student list and
+   the per-row package menu. */
+.adm-billing {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4); margin-bottom: var(--s-3);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+.adm-billing.is-on { border-color: var(--accent); background: var(--accent-soft); }
+.adm-billing-title { margin: 0; font-weight: 800; font-size: var(--fs-sm); color: var(--text-primary); }
+.adm-billing-sub { margin: 2px 0 0; font-weight: 600; font-size: var(--fs-xs); color: var(--text-secondary); }
+.adm-select { appearance: auto; padding-right: var(--s-2); }

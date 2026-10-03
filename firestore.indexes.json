@@ -50,6 +50,14 @@
       ]
     },
     {
+      "collectionGroup": "bookings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participants", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "startMs", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "introBookings",
       "queryScope": "COLLECTION",
       "fields": [

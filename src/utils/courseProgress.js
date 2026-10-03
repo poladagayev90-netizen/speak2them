@@ -6,14 +6,6 @@ import { ADMIN_UID } from '../constants';
 // fərqindən hesablanır (K2 backend konvensiyası). Bu modul həmin hesabları
 // bir yerə yığır: Home proqres kartı, trial sayğacı, tamamlanma aşkarı.
 export const COURSE_TOPIC_COUNT = weeklyContent.length; // 60 since the deck doubled
-export const TRIAL_DAYS = 60; // functions/index.js TRIAL_DAYS ilə eyni
-
-function toMillis(v) {
-  if (!v) return null;
-  if (typeof v.toMillis === 'function') return v.toMillis();
-  if (typeof v === 'number') return v;
-  return null;
-}
 
 // Kurs userinin tamamladığı mövzu sayı [0..COURSE_TOPIC_COUNT]; kurs userində deyilsə və ya
 // cycle hələ oxunmayıbsa null.
@@ -42,36 +34,6 @@ export function getFinishDateStr(topicsCompleted, sessionConfig, nowMs = Date.no
     }
   }
   return null;
-}
-
-// Trial-ın bitməsinə qalan TAM günlər (bugün daxil yuvarlaqlaşdırılıb):
-// 0 = bitib. null = bu user trial ilə məhdudlaşmır (premium / kurs / pulsuz
-// giriş dövrü / köhnə trialStartedAt-sız user) — server isTrialExpired ilə
-// eyni qaydalar, ekran heç vaxt serverin buraxdığı useri bloklamasın deyə.
-export function getTrialDaysLeft(user, nowMs = Date.now()) {
-  if (!user) return null;
-  // Admin hesabı heç vaxt trial ilə məhdudlaşmır. Bu, users sənədindəki
-  // isPremium bayrağından ASILI DEYİL: bayraq bir dəfə söndürülsə (və ya
-  // sənəd sıfırlansa) sahib öz tətbiqindən kilidlənərdi. Server tərəfdəki
-  // isTrialExpired eyni istisnaya malikdir — ikisi birlikdə dəyişməlidir.
-  if (isAdminUser(user)) return null;
-  // Kohorta müraciət edib admin təsdiqini/başlanğıcını gözləyən user trial
-  // müddəti bitsə də bloklanmasın — gözləmə onun günahı deyil.
-  if (user.cohortStatus === 'pending' || user.cohortStatus === 'accepted') return null;
-  if (user.isPremium) return null;
-  const freeUntil = toMillis(user.freeAccessUntil);
-  if (freeUntil && freeUntil > nowMs) return null;
-  if (user.subscriptionPlan && user.subscriptionPlan !== 'trial' && user.subscriptionPlan !== 'free') return null;
-  const startedMs = toMillis(user.trialStartedAt);
-  if (!startedMs) return null;
-  const msLeft = startedMs + TRIAL_DAYS * 24 * 60 * 60 * 1000 - nowMs;
-  return Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
-}
-
-// Client-side güzgüsü: server getAgoraToken-da onsuz da bloklayır; bu, həmin
-// vəziyyəti ekranda göstərmək üçündür (ADDIM 5 tam-ekran görünüşü).
-export function isTrialExpiredClient(user, nowMs = Date.now()) {
-  return getTrialDaysLeft(user, nowMs) === 0;
 }
 
 // Admin hesabı = daimi Pro. Tək mənbə: hər iki sahə yoxlanılır, çünki bəzi

@@ -352,3 +352,7 @@
    glance (same family of colour — people and lessons are both purple). */
 .pl-coming-avatar--lesson { background: var(--accent); color: var(--text-on-accent); }
 .pl-row--lesson, .pl-booking--lesson { box-shadow: inset 3px 0 0 var(--accent); padding-left: var(--s-3); }
+.pl-hint-link {
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; font-weight: 800; color: inherit; text-decoration: underline; text-underline-offset: 2px;
+}

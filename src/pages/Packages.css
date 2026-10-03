@@ -1,0 +1,193 @@
+/* /packages — the hero is Today's moving sea card (plan.css .pl-card--hero +
+   HeroParade); every package has its own creature, growing with the size:
+   fish · octopus · manta · whale. One purple family; coral only for the
+   progress ring (what was used), as everywhere else. */
+
+.pk-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--s-4) var(--s-4) calc(120px + var(--safe-area-bottom, 0px));
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+}
+
+.pk-top { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); }
+.pk-back {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; margin-left: -8px;
+  border: none; background: none; color: var(--text-primary);
+  border-radius: var(--r-pill); cursor: pointer;
+}
+.pk-back:focus-visible { outline: 2px solid var(--accent-ring); }
+.pk-top-title { margin: 0; font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; letter-spacing: -0.01em; }
+
+.pk-skeleton { height: 180px; border-radius: var(--r-xl); background: var(--accent-soft); margin-bottom: var(--s-3); }
+
+/* ── Hero ─────────────────────────────────────────────── */
+.pk-hero { padding: var(--s-5) var(--s-5) var(--s-5); min-height: 180px; display: flex; flex-direction: column; justify-content: flex-end; }
+.pk-hero-kicker {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  opacity: .85;
+}
+.pk-hero-big { margin: 0; display: flex; align-items: baseline; gap: var(--s-2); flex-wrap: wrap; }
+.pk-hero-num {
+  font-family: var(--font-display); font-size: 64px; line-height: .95; font-weight: 700; letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.pk-hero-unit { font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 600; }
+.pk-hero-title { margin: 0; font-family: var(--font-display); font-size: var(--fs-display); line-height: var(--lh-tight); font-weight: 700; letter-spacing: -0.02em; }
+.pk-hero-line { margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; line-height: var(--lh-body); opacity: .92; max-width: 42ch; }
+.pk-hero-bar {
+  margin-top: var(--s-4); height: 6px; border-radius: var(--r-pill);
+  background: color-mix(in srgb, currentColor 22%, transparent); overflow: hidden;
+}
+.pk-hero-bar > span { display: block; height: 100%; border-radius: inherit; background: currentColor; }
+
+/* ── This period ──────────────────────────────────────── */
+.pk-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-lift);
+  padding: var(--s-4);
+  margin-bottom: var(--s-3);
+}
+.pk-period { display: grid; grid-template-columns: auto 1fr; gap: var(--s-4); align-items: center; }
+.pk-ring { display: block; }
+.pk-ring circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+.pk-ring-track { stroke: var(--accent-soft); }
+.pk-ring-booked { stroke: var(--coral-soft); }
+.pk-ring-used { stroke: var(--coral); }
+.pk-period-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: 0; }
+.pk-period-stats div { min-width: 0; }
+.pk-period-stats dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
+.pk-period-stats dd { margin: 2px 0 0; font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 700; font-variant-numeric: tabular-nums; }
+.pk-period-back dd { color: var(--accent); }
+.pk-period-note {
+  grid-column: 1 / -1; margin: 0; display: flex; gap: var(--s-2); align-items: flex-start;
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: var(--lh-body);
+}
+.pk-period-note svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
+
+/* ── Packages ─────────────────────────────────────────── */
+.pk-section-head { margin: var(--s-5) 2px var(--s-3); }
+.pk-section-head h3 { margin: 0; font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; }
+.pk-section-head p { margin: 4px 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+
+.pk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+@media (min-width: 900px) { .pk-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.pk-pack {
+  --pk-sea: var(--bg-card);
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start;
+  text-align: left;
+  padding: var(--s-3) var(--s-3) var(--s-4);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-xl);
+  color: var(--text-primary);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.pk-pack:hover { border-color: var(--accent-ring); }
+.pk-pack:active { transform: scale(.985); }
+.pk-pack:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 2px; }
+.pk-pack.is-on { border-color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent) inset, var(--glass-lift); }
+
+/* The creature's pool: a soft tile of the one purple, the animal in --accent. */
+.pk-creature {
+  position: relative;
+  width: 100%; height: 76px; margin-bottom: var(--s-3);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, .35), transparent 60%),
+    var(--accent-soft);
+  color: var(--accent);
+  overflow: hidden;
+}
+.pk-creature::after {
+  /* the surface line, a small wave */
+  content: ''; position: absolute; left: 0; right: 0; bottom: 10px; height: 8px;
+  background: radial-gradient(8px 4px at 8px 0, transparent 6px, var(--accent-soft) 6.5px) repeat-x;
+  background-size: 16px 8px; opacity: .9;
+}
+.pk-pack.is-on .pk-creature { background: radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, .25), transparent 60%), var(--accent); color: var(--text-on-accent); }
+.pk-pack.is-on { --pk-sea: var(--accent); }
+.pk-creature-bob { display: block; animation: pk-bob 3.2s ease-in-out infinite alternate; }
+.pk-creature--octopus .pk-creature-bob { animation-duration: 2.4s; }
+.pk-creature--whale .pk-creature-bob { animation-duration: 4.2s; }
+.pk-creature svg { display: block; }
+/* Only the chosen one moves its fins: the others rest. */
+.pk-pack:not(.is-on) .pl-hero-fish-tail,
+.pk-pack:not(.is-on) .pl-whale-flukes,
+.pk-pack:not(.is-on) .pl-manta-wings,
+.pk-pack:not(.is-on) .pl-octo-head,
+.pk-pack:not(.is-on) .pl-octo-arms { animation-play-state: paused; }
+.pk-pack .pl-hero-fish-tail { transform-box: view-box; transform-origin: 15px 15px; animation: pl-fish-tail .45s ease-in-out infinite alternate; }
+.pk-pack .pl-whale-flukes { transform-box: view-box; transform-origin: 22px 33px; animation: pl-whale-flukes 1.6s ease-in-out infinite alternate; }
+.pk-pack .pl-manta-wings { transform-box: view-box; transform-origin: 48px 30px; animation: pl-manta-flap 1.8s ease-in-out infinite alternate; }
+.pk-pack .pl-octo-head { transform-box: view-box; transform-origin: 26px 30px; animation: pl-octo-squeeze 1.3s ease-in-out infinite; }
+.pk-pack .pl-octo-arms { transform-box: view-box; transform-origin: 26px 30px; animation: pl-octo-arms 1.3s ease-in-out infinite; }
+@keyframes pk-bob { from { transform: translate(-3px, -3px) rotate(-2deg); } to { transform: translate(3px, 3px) rotate(2deg); } }
+
+.pk-fits {
+  position: absolute; top: -9px; right: 10px; z-index: 1;
+  padding: 3px 8px; border-radius: var(--r-pill);
+  background: var(--accent); color: var(--text-on-accent);
+  font-size: var(--fs-xs); font-weight: 800; letter-spacing: .02em;
+}
+.pk-pack-size { font-family: var(--font-display); font-size: 34px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.pk-pack-unit { margin-top: 4px; font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.pk-pack-price { margin-top: var(--s-3); font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; }
+.pk-pack-price small { font-size: var(--fs-sm); font-weight: 700; color: var(--text-secondary); }
+.pk-pack-per { font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
+.pk-pack-check {
+  position: absolute; top: var(--s-3); right: var(--s-3);
+  width: 22px; height: 22px; border-radius: var(--r-pill);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--text-on-accent);
+  opacity: 0; transform: scale(.6); transition: opacity .18s ease, transform .18s ease;
+}
+.pk-pack.is-on .pk-pack-check { opacity: 1; transform: scale(1); }
+
+.pk-cta {
+  margin-top: var(--s-4);
+  display: flex; align-items: center; justify-content: center; gap: var(--s-2);
+  width: 100%; min-height: 52px;
+  border-radius: var(--r-pill);
+  background: var(--accent); color: var(--text-on-accent);
+  font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--glass-lift);
+}
+.pk-cta:active { transform: scale(.99); }
+.pk-cta:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 2px; }
+.pk-cta-note { margin: var(--s-2) 0 0; text-align: center; font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
+
+/* ── Rules ────────────────────────────────────────────── */
+.pk-rules { margin-top: var(--s-5); }
+.pk-rules h3 { margin: 0 0 var(--s-3); font-family: var(--font-display); font-size: var(--fs-body); font-weight: 700; }
+.pk-rules ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+.pk-rules li { display: grid; grid-template-columns: 34px 1fr; gap: var(--s-3); align-items: start; font-size: var(--fs-sm); font-weight: 500; line-height: var(--lh-body); color: var(--text-secondary); }
+.pk-rules b { color: var(--text-primary); font-weight: 700; }
+.pk-rule-icon {
+  width: 34px; height: 34px; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-creature-bob, .pk-pack .pl-hero-fish-tail, .pk-pack .pl-whale-flukes,
+  .pk-pack .pl-manta-wings, .pk-pack .pl-octo-head, .pk-pack .pl-octo-arms { animation: none; }
+  .pk-pack, .pk-pack-check { transition: none; }
+}
+.pk-ring text { text-anchor: middle; fill: var(--text-primary); font-family: var(--font-display); }
+.pk-ring .pk-ring-num { font-size: 22px; font-weight: 700; dominant-baseline: middle; }
+.pk-ring .pk-ring-of { font-size: 10px; font-weight: 700; fill: var(--text-secondary); }

@@ -11,6 +11,8 @@ import LessonRow from '../components/plan/LessonRow';
 import useMyLessons from '../hooks/useMyLessons';
 import { lessonItems, mergeSchedule } from '../utils/tutorLessons';
 import useMyPlan, { setPlanPaused } from '../hooks/useMyPlan';
+import { useBillingConfig } from '../hooks/usePackages';
+import { outOfPractices, packageView } from '../utils/packages';
 import { subscribeToSlotChange } from '../utils/practiceSlots';
 import { planHeadline, openOffers, upcomingBookings, bookingDays } from '../utils/planState';
 import { respondToOffer } from '../utils/matchOffers';
@@ -30,6 +32,9 @@ export default function Plan({ user }) {
   const navigate = useNavigate();
   const uid = user?.uid;
   const plan = useMyPlan(uid);
+  // Packages: a quiet line on the card, only when the switch is on and nothing is left.
+  const { config: billing } = useBillingConfig();
+  const noPractices = outOfPractices(packageView({ user, summary: plan.planStatus?.access, config: billing }), billing);
   // A partner's pending "change the time?" request.
   const [slotChange, setSlotChange] = useState(null);
   useEffect(() => subscribeToSlotChange(uid, setSlotChange), [uid]);
@@ -88,7 +93,7 @@ export default function Plan({ user }) {
         {/* The status card only when there is nothing booked or to answer —
             otherwise the lists below ARE the status. */}
         {!booked.length && !open.length && !plan.loading && (
-          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} />
+          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} />
         )}
 
         {open.length > 0 && (

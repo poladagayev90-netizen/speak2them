@@ -671,6 +671,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Practice packages (functions/packages.js): the package a learner holds
+    // and its history. Written only by adminAccess (later the Play receipt
+    // check); the balance itself is derived from bookings, never stored here.
+    match /access/{uid} {
+      allow read: if isAdmin() || isOwnDoc(uid);
+      allow write: if false;
+    }
+
     // Reliability score (Phase 5) — admin only. The learner sees only the
     // consequence and the way back, in planStatus.limit.
     match /reliability/{uid} {

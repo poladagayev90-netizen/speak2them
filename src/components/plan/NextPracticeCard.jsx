@@ -17,7 +17,7 @@ import './plan.css';
 // on Sunday, why no partner fits yet) and offers the one useful next step.
 // The wording is planHeadline's (utils/planState.js); nothing here promises a
 // partner the platform may not have.
-export default function NextPracticeCard({ uid, headline, now, limit }) {
+export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   // Phase from the clock, fixed for this mount (see HeroFx).
@@ -25,7 +25,19 @@ export default function NextPracticeCard({ uid, headline, now, limit }) {
   const h = headline || { kind: 'waiting' };
   // A reliability limit rides along in every state: why, and the way back.
   const lim = limitText(limit);
-  const limitLine = lim && <p className="pl-hint"><b>{lim.title}.</b> {lim.text}</p>;
+  const limitLine = (
+    <>
+      {lim && <p className="pl-hint"><b>{lim.title}.</b> {lim.text}</p>}
+      {/* Packages (utils/packages.js): one quiet line, only while the admin's
+          switch is on and nothing is left — never a popup. */}
+      {noPractices && (
+        <p className="pl-hint">
+          <b>No planned practices left.</b>{' '}
+          <button type="button" className="pl-hint-link" onClick={() => navigate('/packages')}>See packages</button>
+        </p>
+      )}
+    </>
+  );
 
   if (h.kind === 'next') {
     const b = h.booking;

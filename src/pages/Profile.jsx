@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
   GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
-  LineChart, Smartphone, ArrowLeft,
+  LineChart, Smartphone, ArrowLeft, Fish,
 } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -23,6 +23,8 @@ import { FUNCTIONS_BASE } from '../constants';
 import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
 import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '../utils/feedbackLanguage';
 import { isAdminUser } from '../utils/courseProgress';
+import usePackages from '../hooks/usePackages';
+import { showPlanEntry } from '../utils/packages';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -31,6 +33,7 @@ const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
 export default function Profile({ user }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
+  const packages = usePackages(user);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [level, setLevel] = useState('B1 – Intermediate');
@@ -322,7 +325,9 @@ export default function Profile({ user }) {
                 : isPremium ? 'Pro'
                 : user.cohortStatus === 'accepted' ? 'Cohort accepted'
                 : user.cohortStatus === 'pending' ? 'Cohort pending'
-                : 'Trial'}
+                : packages.view.kind === 'package' ? `${packages.view.remaining} practices left`
+                : packages.view.kind === 'none' ? 'Free month over'
+                : 'Free month'}
             </span>
           </div>
         </div>
@@ -468,6 +473,18 @@ export default function Profile({ user }) {
       {/* ÖYRƏNMƏ */}
       {sectionLabel('Learning')}
       <div style={listCard}>
+        {/* Packages (utils/packages.js): shown once there is something to
+            show — never during the free month, and never as a popup. */}
+        {showPlanEntry(packages.view, packages.config, isAdminUser(user)) && row({
+          icon: Fish,
+          label: 'Your plan',
+          value: packages.view.kind === 'package' ? `${packages.view.remaining} of ${packages.view.total} practices left`
+            : packages.view.kind === 'none' ? 'Choose a package'
+            : packages.view.kind === 'trial' ? 'Free month'
+            : 'Unlimited',
+          onClick: () => navigate('/packages'),
+          notLast: true,
+        })}
         {row({ icon: BookMarked, label: 'My words', onClick: () => setShowWordHistory(true), notLast: true })}
         {row({ icon: Flame, label: 'Streak journey', onClick: () => setJourneyOpen(true), right: <span style={{ color: 'var(--warning)', fontWeight: 800, fontSize: '15px', flexShrink: 0 }}>{streakInfo.count}</span>, notLast: true })}
         {/* Above the per-call history on purpose: "how am I doing overall" is
