@@ -3,6 +3,7 @@ import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 
 import { Capacitor } from '@capacitor/core';
 import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Keyboard } from '@capacitor/keyboard';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, watchFcmToken } from './firebase';
@@ -304,6 +305,23 @@ function App() {
         document.documentElement.style.setProperty('--safe-area-top', `${data.insets.top}px`);
         document.documentElement.style.setProperty('--safe-area-bottom', `${data.insets.bottom}px`);
       });
+
+      // The safe-area plugin shrinks the webview by the keyboard height, but
+      // the field being typed in is not scrolled up with it: on Login the email
+      // box sat under the keyboard and you typed blind (Polad, 2026-10-04).
+      // Once the keyboard is up (and the view has shrunk), bring the focused
+      // field into the middle of what is left.
+      const revealFocused = () => {
+        const el = document.activeElement;
+        if (!el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+        // Leave fields that are already in sight alone (the chat composer).
+        const r = el.getBoundingClientRect();
+        if (r.top >= 0 && r.bottom <= window.innerHeight - 8) return;
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      };
+      Keyboard.addListener('keyboardDidShow', () => setTimeout(revealFocused, 60)).catch(() => {});
+      // Moving to the next field while the keyboard stays up fires no event.
+      document.addEventListener('focusin', () => setTimeout(revealFocused, 350));
     }
   }, []);
 

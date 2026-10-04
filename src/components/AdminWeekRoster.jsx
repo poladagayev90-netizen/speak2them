@@ -86,10 +86,17 @@ export default function AdminWeekRoster({ week, users }) {
   const dirty = (saved || []).length !== draft.size || (saved || []).some((u) => !draft.has(u));
   const save = async () => {
     setState('saving');
+    // setDoc resolves only when the server confirms. On a weak phone
+    // connection that can take minutes, and the button sat on "Saving…" as if
+    // frozen (Polad, 2026-10-04). The write is already queued on the phone,
+    // so after a few seconds say so instead of waiting in silence.
+    const slow = setTimeout(() => setState((s) => (s === 'saving' ? 'sending' : s)), 5000);
     try {
       await setDoc(doc(db, 'weekRoster', week), { uids: [...draft], updatedAt: serverTimestamp(), updatedBy: ADMIN_UID });
+      clearTimeout(slow);
       setState('saved');
     } catch (e) {
+      clearTimeout(slow);
       console.error('[AdminWeekRoster]', e);
       setState('Not saved.');
     }
@@ -134,9 +141,10 @@ export default function AdminWeekRoster({ week, users }) {
           <Button size="sm" variant="ghost" icon={<Copy size={16} aria-hidden="true" />} onClick={() => setDraft(new Set(prev))}>Last week</Button>
         )}
         {draft.size > 0 && <Button size="sm" variant="ghost" onClick={() => setDraft(new Set())}>Clear</Button>}
-        <Button size="sm" disabled={!dirty || state === 'saving'} onClick={save}>{state === 'saving' ? 'Saving…' : 'Save'}</Button>
+        <Button size="sm" disabled={!dirty || state === 'saving' || state === 'sending'} onClick={save}>{state === 'saving' || state === 'sending' ? 'Saving…' : 'Save'}</Button>
       </div>
-      {state && state !== 'saving' && <p className={state === 'saved' ? 'aa-ok' : 'aa-error'} role="status">{state === 'saved' ? 'Saved. Rebuild the plan to use it.' : state}</p>}
+      {state === 'sending' && <p className="aa-meta" role="status">Saved on this phone — still reaching the server. Keep the page open.</p>}
+      {state && state !== 'saving' && state !== 'sending' && <p className={state === 'saved' ? 'aa-ok' : 'aa-error'} role="status">{state === 'saved' ? 'Saved. Rebuild the plan to use it.' : state}</p>}
     </section>
   );
 }

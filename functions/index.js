@@ -4491,7 +4491,9 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
   const uid = decoded.uid;
   const body = req.body || {};
   const offerId = String(body.offerId || "").trim();
-  if (!offerId || offerId.length > 64) return res.status(400).json({ error: "invalid-offer" });
+  // Weekly-plan ids are wp_<monday>_<uidA>_<uidB> (~71 chars): the old 64 cap
+  // refused every one of them, for the learners AND the admin.
+  if (!offerId || offerId.length > 160 || offerId.includes("/")) return res.status(400).json({ error: "invalid-offer" });
   const accept = body.accept === true;
   const reason = Object.prototype.hasOwnProperty.call(OFFER_DECLINE_REASONS, body.reason) ? body.reason : "other";
 
@@ -4628,7 +4630,9 @@ exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (
   }
   if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
   const offerId = String((req.body || {}).offerId || "").trim();
-  if (!offerId || offerId.length > 64) return res.status(400).json({ error: "invalid-offer" });
+  // Weekly-plan ids are wp_<monday>_<uidA>_<uidB> (~71 chars): the old 64 cap
+  // refused every one of them, for the learners AND the admin.
+  if (!offerId || offerId.length > 160 || offerId.includes("/")) return res.status(400).json({ error: "invalid-offer" });
 
   const db = admin.firestore();
   try {
