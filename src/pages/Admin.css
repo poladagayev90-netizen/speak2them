@@ -25,7 +25,10 @@
   border: 0; border-bottom: 2px solid transparent; border-radius: 0; cursor: pointer;
 }
 .adm-tab.is-on { color: var(--accent); border-bottom-color: var(--accent); }
-.adm-body { width: 100%; max-width: 820px; margin: 0 auto; padding: var(--s-4); box-sizing: border-box; }
+.adm-body { width: 100%; max-width: 960px; margin: 0 auto; padding: var(--s-4); box-sizing: border-box; }
+/* Matching puts people and pairs side by side on a computer (Polad: "the admin
+   panel is too narrow"). */
+.adm-body--wide { max-width: 1440px; }
 
 .adm-students { display: grid; gap: var(--s-3); }
 .adm-stats { display: flex; flex-wrap: wrap; gap: var(--s-4); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }

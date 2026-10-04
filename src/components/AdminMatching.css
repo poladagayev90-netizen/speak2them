@@ -1,0 +1,82 @@
+/* Admin → Matching. Tokens only (index.css); the aa-* pieces come from
+   AdminApplicants.css, which is imported first. */
+
+.mt { display: grid; gap: var(--s-4); }
+.mt-top { display: grid; gap: var(--s-2); }
+.mt-note {
+  margin: 0; padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md); background: var(--accent-soft);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary);
+}
+
+/* Phone: one column at a time, switched by Pairs / People. */
+.mt-switch { display: flex; gap: var(--s-2); }
+.mt-grid { display: grid; gap: var(--s-4); align-items: start; }
+.mt-grid.is-pairs .mt-people { display: none; }
+.mt-grid.is-people .mt-pairs { display: none; }
+
+/* A computer: both side by side, each scrolling on its own. */
+@media (min-width: 900px) {
+  .mt-switch { display: none; }
+  .mt-grid { grid-template-columns: minmax(320px, 400px) 1fr; }
+  .mt-grid.is-pairs .mt-people,
+  .mt-grid.is-people .mt-pairs { display: grid; }
+  .mt-people {
+    position: sticky; top: 120px;
+    max-height: calc(100vh - 240px); /* clear of the floating bottom nav */ overflow-y: auto;
+  }
+  .mt-pairs { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+}
+
+.mt-people { display: grid; gap: var(--s-3); align-content: start; }
+.mt-people-list, .mt-pair-list, .mt-cand-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+
+.mt-person {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--s-1) var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md); border: 1px solid var(--border);
+}
+.mt-person.is-on { background: var(--accent-soft); border-color: var(--accent-ring); }
+.mt-person-main { display: flex; align-items: center; gap: var(--s-3); min-width: 0; cursor: pointer; }
+.mt-person-text { display: grid; gap: 2px; min-width: 0; }
+.mt-short { color: var(--text-primary); }
+.mt-add { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: var(--s-1); }
+
+/* Free time: 7 rows (Mon→Sun) × 8 Baku blocks. */
+.mt-free {
+  display: grid; grid-template-columns: repeat(8, 7px); grid-auto-rows: 7px; gap: 2px;
+}
+.mt-cell { border-radius: 2px; background: var(--bg-secondary); }
+.mt-cell.is-free { background: var(--accent-ring); }
+.mt-cell.is-pair { background: var(--accent); }
+
+.mt-pairs { display: grid; gap: var(--s-3); align-content: start; }
+.mt-day { display: grid; gap: var(--s-2); align-content: start; }
+.mt-pair {
+  display: grid; gap: var(--s-2);
+  padding: var(--s-3); border-radius: var(--r-md); border: 1px solid var(--border);
+}
+.mt-pair.is-pending { border-style: dashed; }
+.mt-pair.is-held { opacity: .7; }
+.mt-pair-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--fs-sm); }
+.mt-pair-sides { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: var(--s-2); }
+.mt-side { display: grid; gap: 2px; min-width: 0; }
+.mt-side .aa-name { flex-wrap: wrap; gap: var(--s-1); }
+.mt-side .aa-linkbtn, .mt-remove { display: inline-flex; align-items: center; gap: var(--s-1); }
+.mt-plus { font-weight: 700; color: var(--text-muted); padding-top: 2px; }
+
+.mt-cand {
+  width: 100%; display: grid; gap: 2px; text-align: left;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md); border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-primary); cursor: pointer;
+  font: inherit;
+}
+.mt-cand:hover { border-color: var(--accent-ring); background: var(--accent-soft); }
+
+.mt-bar { display: grid; gap: var(--s-2); }
+.mt-bar:not(.mt-bar--open) { display: flex; }
+.mt-bar--open { max-height: 60vh; overflow-y: auto; }
+.mt-bar-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.mt-bar-head b { display: inline-flex; align-items: center; gap: var(--s-1); }
+.mt-blocks { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }

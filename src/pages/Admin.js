@@ -9,6 +9,7 @@ import AdminSlots from '../components/AdminSlots';
 import AdminApplicants from '../components/AdminApplicants';
 import AdminIntros from '../components/AdminIntros';
 import AdminWeekPlan from '../components/AdminWeekPlan';
+import AdminMatching from '../components/AdminMatching';
 import AdminAttendance from '../components/AdminAttendance';
 import { BillingSwitch, PackageMenu, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
@@ -21,6 +22,7 @@ import './Admin.css';
 const TABS = [
   { id: 'premium', label: 'Students' },
   { id: 'applicants', label: 'Applicants' },
+  { id: 'matching', label: 'Matching' },
   { id: 'week', label: 'Week' },
   { id: 'slots', label: 'Sessions' },
   { id: 'attendance', label: 'Attendance' },
@@ -204,8 +206,9 @@ export default function Admin({ user }) {
         </nav>
       </header>
 
-      <main className="adm-body">
-        {adminTab === 'week' ? <AdminWeekPlan users={users} />
+      <main className={`adm-body ${adminTab === 'matching' ? 'adm-body--wide' : ''}`}>
+        {adminTab === 'matching' ? <AdminMatching users={users} />
+          : adminTab === 'week' ? <AdminWeekPlan users={users} />
           : adminTab === 'attendance' ? <AdminAttendance users={users} />
           : adminTab === 'intros' ? <AdminIntros users={users} />
           : adminTab === 'applicants' ? <AdminApplicants users={users} />
