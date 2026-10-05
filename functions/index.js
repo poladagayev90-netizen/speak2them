@@ -19,6 +19,7 @@ const storyChapter = require("./storyChapter");
 const classBrief = require("./classBrief");
 const tutorLessons = require("./tutorLessons");
 const weekRoster = require("./weekRoster");
+const offerReminders = require("./offerReminders");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -3148,6 +3149,73 @@ async function choosePartnerTx(db, tx, uid, candidates, known) {
 
 // Random search: the initiating client asks before it commits a match. Only
 // a yes/no (plus the soft "recent" hint) comes back — never the reason.
+// ─── Online now (temporary, appConfig/features.onlineNow) ─────────
+// Polad 2026-10-06: until the weekly plan carries everyone, people who are in
+// the app at the same moment should see each other and call straight away.
+// It is a stop-gap, so it sits behind a switch (Admin → Matching) and can go.
+//
+// Who is shown is decided HERE, not in the client, because the rules that
+// matter are private: the age band lives in onboarding/{uid} and the block /
+// "don't pair me again" lists are owner-only. Same hard rules as pairVerdict
+// (block either way, avoid either way, minor↔adult), read in bulk — about
+// three reads per person online instead of pairVerdict's nine. Placing the
+// call still goes through canPair({direct:true}).
+const ONLINE_NOW_WINDOW_MS = 150000; // src/utils/presence.js ONLINE_WINDOW_MS
+const ONLINE_NOW_MAX = 12;
+exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const me = decoded.uid;
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(me, "onlineNow", 120, 60 * 60 * 1000);
+    const features = await db.collection("appConfig").doc("features").get().catch(() => null);
+    if (features && features.exists && features.get("onlineNow") === false) return res.status(200).json({ on: false, people: [] });
+
+    const since = admin.firestore.Timestamp.fromMillis(Date.now() - ONLINE_NOW_WINDOW_MS);
+    const snap = await db.collection("users").where("lastSeen", ">=", since).limit(60).get();
+    const fresh = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((u) => u.id !== me && u.id !== ADMIN_UID && u.role !== "teacher"
+        && u.status !== "offline" && u.showOnline !== false && !u.deleted);
+    if (!fresh.length) return res.status(200).json({ on: true, people: [] });
+
+    const users = db.collection("users");
+    const [myOb, myBlocked, myAvoid, theirOb, theirBlocked, theirAvoid] = await Promise.all([
+      db.collection("onboarding").doc(me).get(),
+      users.doc(me).collection("blocked").get(),
+      users.doc(me).collection("avoid").get(),
+      db.getAll(...fresh.map((u) => db.collection("onboarding").doc(u.id))),
+      db.getAll(...fresh.map((u) => users.doc(u.id).collection("blocked").doc(me))),
+      db.getAll(...fresh.map((u) => users.doc(u.id).collection("avoid").doc(me))),
+    ]);
+    const minor = (snap) => !!(snap && snap.exists && snap.get("ageBand") === "under18");
+    const iAmMinor = minor(myOb);
+    const blockedByMe = new Set(myBlocked.docs.map((d) => d.id));
+    const avoidedByMe = new Set(myAvoid.docs.map((d) => d.id));
+    const people = fresh
+      .filter((u, i) => !blockedByMe.has(u.id) && !avoidedByMe.has(u.id)
+        && !theirBlocked[i].exists && !theirAvoid[i].exists
+        && minor(theirOb[i]) === iAmMinor)
+      // Free before busy, then whoever was seen most recently.
+      .sort((a, b) => (a.status === "busy") - (b.status === "busy")
+        || (b.lastSeen?.toMillis?.() || 0) - (a.lastSeen?.toMillis?.() || 0))
+      .slice(0, ONLINE_NOW_MAX)
+      .map((u) => ({ uid: u.id, name: u.name || "", level: u.level || null, photo: u.photo || null, busy: u.status === "busy" }));
+    return res.status(200).json({ on: true, people });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[onlineNow]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
+
 exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -4917,7 +4985,9 @@ async function sendWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule" 
   for (const p of pairs) {
     if (p.removed || p.offerId) continue;
     if (p.startMs < nowMs + REFILL_NOTICE_MS) { p.skip = "too-soon"; continue; }
-    const respondBy = Math.min(nowMs + DAY_MS, p.startMs - 2 * 60 * 60 * 1000);
+    // 48 h, not 24: in the week of 2026-10-05 every plan offer ran out before
+    // the learners opened the app. One reminder goes halfway (offerReminders.js).
+    const respondBy = Math.min(nowMs + 2 * DAY_MS, p.startMs - 2 * 60 * 60 * 1000);
     const r = await createPlanOfferTx(db, { id: `wp_${monday}_${p.id}`, pair: p, planWeek: monday, respondBy, source: "weekly_plan" })
       .catch((e) => ({ skip: e.message }));
     if (r.offerId) {
@@ -5018,6 +5088,7 @@ async function runPlannerTick(db, nowMs) {
 
   if (weekday === 0 && hour >= 12 && await claimSlotRun(db, `plan_build_${monday}`)) {
     try {
+      await persistCarriedRoster(db, monday);
       const r = await buildWeeklyPlan(db, monday, { nowMs, by: "schedule" });
       await sendPushToUser(db, ADMIN_UID, r.noRoster
         ? { key: "admin_roster_missing", type: "admin_plan", url: "/admin?tab=week" }
@@ -5029,9 +5100,15 @@ async function runPlannerTick(db, nowMs) {
   if (weekday === 0 && hour >= 20 && cfg.autoSend && await claimSlotRun(db, `plan_send_${monday}`)) {
     const plan = await db.collection("weeklyPlans").doc(monday).get();
     if (plan.exists && plan.get("status") === "draft" && plan.get("hold") !== true) {
-      await sendWeeklyPlan(db, monday, { nowMs, by: "schedule" }).catch((e) => console.warn("[plan] send failed:", e.message));
+      const sent = await sendWeeklyPlan(db, monday, { nowMs, by: "schedule" }).catch((e) => { console.warn("[plan] send failed:", e.message); return null; });
+      if (sent && !sent.alreadySent) {
+        await sendPushToUser(db, ADMIN_UID, {
+          key: "admin_plan_sent", vars: { offers: sent.offers, people: sent.people }, type: "admin_plan", url: "/admin?tab=matching",
+        }).catch(() => null);
+      }
     }
   }
+  await sendOfferReminders(db, nowMs).catch((e) => console.warn("[plan] reminders failed:", e.message));
   if (cfg.refill && hour >= 8 && hour <= 21
     && await claimSlotRun(db, `refill_${bakuDateStr(nowMs)}_${hour}`)) {
     await refillThisWeek(db, nowMs).catch((e) => console.warn("[plan] refill failed:", e.message));
@@ -5347,10 +5424,63 @@ async function sendLessonReminders(db, now) {
 }
 
 // The admin's list of who practises in a week (weekRoster.js). null = none.
+// No list saved for this week → the most recent of the last four weeks
+// carries over (Polad 2026-10-06: "if the admin is not active, no call gets
+// set up at all"). Picking WHO practises stays the admin's — there are many
+// dead and fake accounts — but a missed Sunday no longer stops everyone. The
+// planner's 21-day activity filter still leaves out whoever has gone quiet.
+const ROSTER_CARRY_WEEKS = 4;
 async function rosterOf(db, monday, tx = null) {
-  const ref = db.collection("weekRoster").doc(monday);
-  const snap = await (tx ? tx.get(ref) : ref.get()).catch(() => null);
-  return snap && snap.exists ? snap.data() : null;
+  for (let back = 0; back <= ROSTER_CARRY_WEEKS; back += 1) {
+    const key = back ? shiftDate(monday, -7 * back) : monday;
+    const ref = db.collection("weekRoster").doc(key);
+    const snap = await (tx ? tx.get(ref) : ref.get()).catch(() => null);
+    if (snap && snap.exists) return back ? { ...snap.data(), carriedFrom: key } : snap.data();
+  }
+  return null;
+}
+
+// The Sunday draft writes a carried list down, so the admin sees (and can
+// edit) the list that was actually used.
+async function persistCarriedRoster(db, monday) {
+  const roster = await rosterOf(db, monday);
+  if (!roster || !roster.carriedFrom) return roster;
+  await db.collection("weekRoster").doc(monday).set({
+    uids: roster.uids || [], carriedFrom: roster.carriedFrom,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(), updatedBy: "carry-over",
+  }).catch((e) => console.warn("[plan] roster carry failed:", e.message));
+  return roster;
+}
+
+// One reminder for an unanswered proposal (offerReminders.js), claimed on the
+// offer in a transaction so it is never sent twice.
+async function sendOfferReminders(db, nowMs) {
+  const snap = await db.collection("matchOffers")
+    .where("status", "==", "pending")
+    .where("respondBy", ">", nowMs)
+    .limit(100).get();
+  let sent = 0;
+  for (const d of snap.docs) {
+    if (!offerReminders.offerReminderTargets(d.data() || {}, nowMs).length) continue;
+    const targets = await db.runTransaction(async (tx) => {
+      const s = await tx.get(d.ref);
+      const o = s.exists ? (s.data() || {}) : null;
+      const who = o ? offerReminders.offerReminderTargets(o, nowMs) : [];
+      if (!who.length) return null;
+      tx.update(d.ref, Object.fromEntries(who.map((u) => [`reminded.${u}`, nowMs])));
+      return { who, o };
+    }).catch(() => null);
+    if (!targets) continue;
+    const { who, o } = targets;
+    for (const u of who) {
+      const peerName = u === o.userA ? o.nameB : o.nameA;
+      await sendPushToUser(db, u, {
+        key: "match_offer_reminder", vars: { at: o.startMs, peerName: peerName || "" }, type: "match_offer", url: "/plan",
+      }).catch(() => null);
+      sent += 1;
+    }
+  }
+  return sent;
 }
 
 // Bir dəfə iddia edilən marker — eyni push hər dəqiqə təkrarlanmasın deyə.
@@ -9159,3 +9289,9 @@ exports.speakLine = onRequest(
     }
   },
 );
+
+// Local simulation only (scratchpad sim20.js through the emulator functions
+// server): drive the planner with a made-up clock. Never set in production.
+if (process.env.FUNCTIONS_EMULATOR === "true") {
+  exports._sim = { runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs };
+}

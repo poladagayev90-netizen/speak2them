@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { CalendarClock, Check, Clock } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Check } from 'lucide-react';
 import { Button } from './ui';
 import {
   subscribeToMyOffers, respondToOffer, localBlockLabel, DECLINE_REASONS,
 } from '../utils/matchOffers';
+import HeroParade, { heroClockStyle } from './plan/HeroFx';
+import './plan/plan.css';
 import './MatchOfferCard.css';
 
 // A practice the SpeakLab team proposed. It is a QUESTION, not a booking: the
@@ -27,12 +29,15 @@ function OfferItem({ offer, uid }) {
   const [error, setError] = useState('');
   const [declining, setDeclining] = useState(false);
   const [reason, setReason] = useState('not-free');
+  const clock = useMemo(heroClockStyle, []);
 
   const mine = (offer.responses || {})[uid];
   const isA = offer.userA === uid;
   const peerName = (isA ? offer.nameB : offer.nameA) || 'your partner';
   const peerLevel = isA ? offer.levelB : offer.levelA;
   const { day, time } = localBlockLabel(Number(offer.startMs));
+  const [start, end] = time.split('–');
+  const initial = String(peerName).charAt(0).toUpperCase();
 
   const respond = async (accept) => {
     setBusy(accept ? 'yes' : 'no');
@@ -44,52 +49,60 @@ function OfferItem({ offer, uid }) {
     // a confirmed one reappears as the upcoming-call card.
   };
 
+  // Said yes, the partner has not yet: a quiet card — nothing to do but wait.
   if (mine === 'accepted') {
     return (
-      <section className="mo mo--waiting" aria-live="polite">
-        <span className="mo-icon" aria-hidden="true"><Check size={18} /></span>
+      <section className="mo mo--waiting" aria-live="polite" aria-label={`Waiting for ${peerName}`}>
+        <span className="mo-avatar" aria-hidden="true">
+          {initial}
+          <span className="mo-avatar-check"><Check size={11} strokeWidth={3} /></span>
+        </span>
         <div className="mo-body">
-          <p className="mo-title">You confirmed {day.toLowerCase() === 'today' ? 'today' : day} {time}</p>
-          <p className="mo-text">Waiting for {peerName}. You will get a notification the moment it is booked.</p>
+          <p className="mo-wait-when">{day} · {start}</p>
+          <p className="mo-wait-text">
+            <span className="mo-pulse" aria-hidden="true" />
+            <span>You said yes · waiting for <b>{peerName}</b></span>
+          </p>
         </div>
       </section>
     );
   }
 
+  // Needs an answer: the same living card as Today's next practice, because
+  // it is the one thing on the page that asks something of you.
   return (
-    <section className="mo" aria-label="Practice proposal">
-      <div className="mo-head">
-        <span className="mo-icon" aria-hidden="true"><CalendarClock size={18} /></span>
-        <span className="mo-kicker">Practice proposal from the SpeakLab team</span>
-      </div>
+    <section className="pl-card pl-card--hero mo-ask" style={clock} aria-label={`Practice proposal with ${peerName}`}>
+      <HeroParade />
+      <p className="pl-when mo-ask-when">
+        {day}
+        <span className="mo-ask-time">{start}</span>
+      </p>
+      <p className="mo-ask-range">Until {end} · your time</p>
 
-      <p className="mo-when">
-        <span className="mo-day">{day}</span>
-        <span className="mo-time">{time}</span>
-      </p>
-      <p className="mo-with">
-        with <b>{peerName}</b>
-        {peerLevel && <span className="mo-level">{String(peerLevel).slice(0, 2)}</span>}
-      </p>
+      <div className="mo-person">
+        <span className="mo-avatar mo-avatar--hero" aria-hidden="true">{initial}</span>
+        <span className="mo-person-name">{peerName}</span>
+        {peerLevel && <span className="pl-level">{String(peerLevel).slice(0, 2)}</span>}
+      </div>
       {offer.note && <p className="mo-note">{offer.note}</p>}
-      <p className="mo-text">
-        <Clock size={14} aria-hidden="true" /> Booked only when you both confirm.
-      </p>
 
       {error && <p className="mo-error" role="alert">{error}</p>}
 
       {!declining ? (
-        <div className="mo-actions">
-          <Button full onClick={() => respond(true)} disabled={!!busy}>
-            {busy === 'yes' ? 'Confirming…' : 'Confirm'}
-          </Button>
-          <Button variant="secondary" onClick={() => setDeclining(true)} disabled={!!busy}>
-            I can’t make it
-          </Button>
-        </div>
+        <>
+          <div className="pl-actions">
+            <Button onClick={() => respond(true)} disabled={!!busy}>
+              {busy === 'yes' ? 'Saving…' : 'Yes, I’ll be there'}
+            </Button>
+            <Button variant="ghost" onClick={() => setDeclining(true)} disabled={!!busy}>
+              Can’t make it
+            </Button>
+          </div>
+          <p className="mo-fine">Booked once you both say yes.</p>
+        </>
       ) : (
         <div className="mo-decline">
-          <p className="mo-text">What is the reason? Only the SpeakLab team sees this.</p>
+          <p className="mo-fine">What gets in the way? Only the SpeakLab team sees this.</p>
           <div className="mo-reasons" role="radiogroup" aria-label="Reason">
             {DECLINE_REASONS.map((r) => (
               <button
@@ -104,8 +117,8 @@ function OfferItem({ offer, uid }) {
               </button>
             ))}
           </div>
-          <div className="mo-actions">
-            <Button variant="secondary" full onClick={() => respond(false)} disabled={!!busy}>
+          <div className="pl-actions">
+            <Button onClick={() => respond(false)} disabled={!!busy}>
               {busy === 'no' ? 'Sending…' : 'Send'}
             </Button>
             <Button variant="ghost" onClick={() => setDeclining(false)} disabled={!!busy}>Back</Button>

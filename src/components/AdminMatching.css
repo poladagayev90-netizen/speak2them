@@ -57,6 +57,7 @@
   padding: var(--s-3); border-radius: var(--r-md); border: 1px solid var(--border);
 }
 .mt-pair.is-pending { border-style: dashed; }
+.mt-pair.is-draft { border-style: dashed; background: var(--bg-secondary); }
 .mt-pair.is-held { opacity: .7; }
 .mt-pair.is-expired, .mt-pair.is-declined, .mt-pair.is-failed { opacity: .6; border-style: dotted; }
 .mt-pair-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--fs-sm); }
@@ -81,3 +82,8 @@
 .mt-bar-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .mt-bar-head b { display: inline-flex; align-items: center; gap: var(--s-1); }
 .mt-blocks { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+
+.mt-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.mt-online { display: inline-flex; align-items: center; gap: var(--s-2); margin-left: auto; }
+.mt-pair-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.mt-pair-actions .aa-linkbtn { display: inline-flex; align-items: center; gap: var(--s-1); }

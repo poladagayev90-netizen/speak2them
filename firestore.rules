@@ -659,7 +659,8 @@ service cloud.firestore {
     match /weekRoster/{weekKey} {
       allow read: if isAdmin();
       allow write: if isAdmin()
-        && request.resource.data.keys().hasOnly(['uids', 'updatedAt', 'updatedBy'])
+        // carriedFrom: the server copied last week's list forward (rosterOf).
+        && request.resource.data.keys().hasOnly(['uids', 'updatedAt', 'updatedBy', 'carriedFrom'])
         && request.resource.data.uids is list
         && request.resource.data.uids.size() <= 500;
     }

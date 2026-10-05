@@ -1,106 +1,97 @@
-/* Practice proposal card (admin match offer). Tokens only. */
+/* Practice proposals on the Plan tab. Tokens only.
+   Asking (needs an answer) = the living hero card from Today (plan.css
+   .pl-card--hero), so the one thing that asks something of the learner looks
+   like the one thing Today points at. Waiting (I said yes) = a quiet card. */
 
-.mo {
-  display: grid;
-  gap: var(--s-2);
-  padding: var(--s-4);
-  margin-bottom: var(--s-3);
-  border-radius: var(--r-xl);
-  border: 1px solid rgb(var(--accent-rgb) / 0.36);
-  background: var(--tint-accent);
-  box-shadow: var(--glass-edge), var(--glass-lift);
+/* ── Asking ─────────────────────────────────────────────────────── */
+.mo-ask { display: grid; gap: var(--s-2); padding: var(--s-4); }
+.mo-ask-when {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s-2);
+  font-size: var(--fs-h2); font-weight: 700;
 }
-.mo--waiting {
-  grid-template-columns: auto 1fr;
-  align-items: start;
-  gap: var(--s-3);
-  border-color: var(--border);
-  background: var(--bg-card);
-}
-.mo-head { display: flex; align-items: center; gap: var(--s-2); }
-.mo-icon {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: var(--r-md);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-.mo-kicker {
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-.mo-when {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--s-2);
-  margin: var(--s-2) 0 0;
-}
-.mo-day { font-size: var(--fs-body); font-weight: 700; color: var(--text-secondary); }
-.mo-time {
+.mo-ask-time {
   font-family: var(--font-display);
-  font-size: var(--fs-h1);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
+  font-size: var(--fs-display); font-weight: 800;
+  letter-spacing: -0.02em; line-height: 1;
+}
+.mo-ask-range {
+  margin: 0; font-size: var(--fs-sm); font-weight: 600;
+  color: var(--text-on-accent); opacity: .82;
   font-variant-numeric: tabular-nums;
 }
-.mo-with {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  margin: 0;
-  font-size: var(--fs-body);
-  color: var(--text-secondary);
-}
-.mo-with b { color: var(--text-primary); }
-.mo-level {
-  padding: 1px var(--s-2);
-  border-radius: var(--r-sm);
-  background: var(--bg-secondary);
-  font-size: var(--fs-xs);
-  font-weight: 800;
-  color: var(--text-secondary);
-}
+.mo-person { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
+.mo-person-name { font-size: var(--fs-body); font-weight: 800; color: var(--text-on-accent); }
 .mo-note {
-  margin: 0;
-  padding: var(--s-2) var(--s-3);
+  margin: 0; padding: var(--s-2) var(--s-3);
   border-radius: var(--r-md);
-  background: var(--bg-card);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-on-accent) 14%, transparent);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text-on-accent);
 }
-.mo-title { margin: 0; font-size: var(--fs-body); font-weight: 700; }
-.mo-text {
-  display: flex;
-  align-items: center;
-  gap: var(--s-1);
-  margin: 0;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--text-secondary);
+.mo-fine { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-on-accent); opacity: .82; }
+.mo-error {
+  margin: 0; padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+  background: var(--bg-card); color: var(--danger);
+  font-size: var(--fs-sm); font-weight: 700;
 }
-.mo-error { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--danger); }
-.mo-actions { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
-.mo-decline { display: grid; gap: var(--s-2); margin-top: var(--s-1); }
+.mo-ask .pl-actions { margin-top: var(--s-2); }
+/* On a computer the answer button keeps a hand-sized width. */
+.mo-ask .pl-actions > .ui-btn--primary { flex: 1 1 160px; max-width: 320px; }
+.mo-decline { display: grid; gap: var(--s-2); }
 .mo-reasons { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .mo-reason {
-  min-height: 36px;
-  padding: 0 var(--s-3);
+  min-height: 36px; padding: 0 var(--s-3);
   border-radius: var(--r-pill);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--text-on-accent) 55%, transparent);
+  background: transparent; color: var(--text-on-accent);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700; cursor: pointer;
 }
-.mo-reason.is-on { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }
+.mo-reason.is-on { background: var(--text-on-accent); border-color: var(--text-on-accent); color: var(--accent-strong); }
+.mo-reason:focus-visible { outline: 2px solid var(--text-on-accent); outline-offset: 2px; }
+
+/* ── The person ────────────────────────────────────────────────── */
+.mo-avatar {
+  position: relative; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: var(--fs-body); font-weight: 800;
+}
+.mo-avatar--hero {
+  width: 36px; height: 36px;
+  background: color-mix(in srgb, var(--text-on-accent) 20%, transparent);
+  color: var(--text-on-accent);
+}
+.mo-avatar-check {
+  position: absolute; right: -2px; bottom: -2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--text-on-accent);
+  border: 2px solid var(--bg-card);
+}
+
+/* ── Waiting (I said yes) ──────────────────────────────────────── */
+.mo--waiting {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-3);
+  border-radius: var(--r-xl);
+  background: var(--bg-card);
+  box-shadow: var(--glass-lift);
+}
+.mo-body { min-width: 0; }
+.mo-wait-when {
+  margin: 0; font-size: var(--fs-body); font-weight: 800; color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.mo-wait-text {
+  display: flex; align-items: center; gap: var(--s-2);
+  margin: 2px 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary);
+}
+.mo-wait-text b { color: var(--text-primary); }
+.mo-pulse {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent);
+  animation: mo-pulse 1.8s ease-in-out infinite;
+}
+@keyframes mo-pulse { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .mo-pulse { animation: none; } }

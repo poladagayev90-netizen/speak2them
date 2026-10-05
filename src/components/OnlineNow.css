@@ -1,0 +1,70 @@
+/* "Online now" strip (OnlineNow.jsx). Tokens only. People are purple
+   (--accent = a real person); the "online" dot is the same purple, not green —
+   the palette has no green. */
+
+.on-now {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-lift);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  margin-bottom: var(--s-3);
+}
+.on-now-head {
+  display: flex; align-items: center; gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+  font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary);
+}
+.on-now-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  animation: on-now-pulse 2s ease-in-out infinite;
+}
+@keyframes on-now-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .on-now-dot { animation: none; } }
+.on-now-count {
+  min-width: 20px; padding: 0 var(--s-2);
+  border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent);
+  font-size: var(--fs-xs); font-weight: 800; text-align: center;
+}
+
+/* One row of people, scrolled sideways on a phone. */
+.on-now-list {
+  list-style: none; margin: 0; padding: 0 0 var(--s-1);
+  display: flex; gap: var(--s-3); overflow-x: auto; scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.on-now-list::-webkit-scrollbar { display: none; }
+.on-now-item {
+  flex: 0 0 auto; width: 84px;
+  display: grid; justify-items: center; gap: 2px;
+  scroll-snap-align: start;
+}
+.on-now-avatar {
+  position: relative;
+  width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: var(--fs-h2); font-weight: 800;
+}
+.on-now-photo { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.on-now-badge {
+  position: absolute; right: 1px; bottom: 1px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--bg-card);
+}
+.on-now-badge.is-busy { background: var(--text-muted); }
+.on-now-name {
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary);
+}
+.on-now-level { font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
+.on-now-call {
+  margin-top: var(--s-1);
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 30px; padding: 0 var(--s-3);
+  border: 0; border-radius: var(--r-pill);
+  background: var(--accent); color: var(--text-on-accent);
+  font: inherit; font-size: var(--fs-xs); font-weight: 800; cursor: pointer;
+}
+.on-now-call:disabled { background: var(--bg-secondary); color: var(--text-muted); cursor: default; }

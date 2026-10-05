@@ -5,7 +5,7 @@ import { updateProfile } from 'firebase/auth';
 import { db, auth, enableNotifications, signOutEverywhere } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import {
-  Moon, Sun, Bell, Volume2, VolumeX, BookMarked, Flame, BarChart3,
+  Moon, Sun, Bell, Volume2, VolumeX, Radio, BookMarked, Flame, BarChart3,
   GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
   LineChart, Smartphone, ArrowLeft, Fish,
 } from 'lucide-react';
@@ -45,6 +45,9 @@ export default function Profile({ user }) {
   const [journeyOpen, setJourneyOpen] = useState(false);
   const [streakInfo, setStreakInfo] = useState({ count: 0, alive: false, doneToday: false });
   const [docId, setDocId] = useState(null);
+  // "Online now" (temporary): whether others see me in their list. Owner-written
+  // users.showOnline; the server (functions onlineNow) leaves out anyone at false.
+  const [showOnline, setShowOnline] = useState(user?.showOnline !== false);
   const [feedbackLang, setFeedbackLang] = useState(getFeedbackLanguage);
   const navigate = useNavigate();
 
@@ -571,6 +574,26 @@ export default function Profile({ user }) {
           right: (
             <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: sfx ? 'var(--success)' : 'var(--text-muted)' }}>
               {sfx ? 'On' : 'Off'}
+            </span>
+          ),
+          notLast: true,
+        })}
+        {row({
+          icon: <Radio size={17} />,
+          label: 'Show me in Online now',
+          onClick: async () => {
+            const next = !showOnline;
+            setShowOnline(next);
+            try {
+              await updateDoc(doc(db, 'users', docId || user.uid), { showOnline: next });
+            } catch (e) {
+              setShowOnline(!next);
+              console.error(e);
+            }
+          },
+          right: (
+            <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: showOnline ? 'var(--accent)' : 'var(--text-muted)' }}>
+              {showOnline ? 'On' : 'Off'}
             </span>
           ),
           notLast: true,

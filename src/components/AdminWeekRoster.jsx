@@ -34,11 +34,12 @@ export default function AdminWeekRoster({ week, users }) {
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('All');
   const [state, setState] = useState('');
+  const [carriedFrom, setCarriedFrom] = useState(null);
 
   useEffect(() => {
     setSaved(undefined); setDraft(null); setState('');
     return onSnapshot(doc(db, 'weekRoster', week),
-      (snap) => setSaved(snap.exists() ? (snap.get('uids') || []) : null),
+      (snap) => { setSaved(snap.exists() ? (snap.get('uids') || []) : null); setCarriedFrom(snap.exists() ? snap.get('carriedFrom') || null : null); },
       () => setSaved(null));
   }, [week]);
   useEffect(() => onSnapshot(doc(db, 'weekRoster', prevMonday(week)),
@@ -107,7 +108,12 @@ export default function AdminWeekRoster({ week, users }) {
       <h3 className="aa-h"><UsersRound size={16} /> Who practises · week of {dayMonth(week)}</h3>
       <p className="aa-meta">
         Only the people ticked here are planned, can join a practice block and can be matched at random.
-        {saved === null && <b> No list yet — nobody is planned for that week.</b>}
+        {/* No saved list: the server uses the most recent list of the last four
+            weeks (functions rosterOf), so a missed Sunday stops nobody. */}
+        {saved === null && (prev && prev.length
+          ? <b> No list saved — last week's list ({prev.length} people) is used automatically.</b>
+          : <b> No list yet — nobody is planned for that week.</b>)}
+        {carriedFrom && <b> Carried over from the week of {dayMonth(carriedFrom)} — edit if needed.</b>}
       </p>
 
       <div className="aa-filters">

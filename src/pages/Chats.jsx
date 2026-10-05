@@ -8,6 +8,7 @@ import '../components/ui/ui.css';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { subscribeToFavorites, setFavorite } from '../utils/favorites';
 import { getPresence } from '../utils/presence';
+import OnlineNow from '../components/OnlineNow';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
 
 // Söhbətlər siyahısı.
@@ -102,6 +103,7 @@ export default function Chats({ user }) {
           People you have practised with. Message or call them any time. Star the ones you
           would like to practise with again — your weekly plan pairs you with them more often.
         </p>
+        <OnlineNow />
         <InviteCard user={user} />
         {rows.length === 0 ? (
           <div className="empty-state">

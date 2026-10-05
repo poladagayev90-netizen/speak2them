@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mic, MessageCircle, X, Clock } from 'lucide-react';
+import { Mic, MessageCircle, X, Clock, MoreHorizontal } from 'lucide-react';
 import { Button } from '../ui';
-import { whenLabel, countdownLabel, canJoin, peerOf, joinState } from '../../utils/planState';
+import { countdownLabel, canJoin, peerOf, joinState } from '../../utils/planState';
 import { leavePracticeSlot, proposeSlotChange, upcomingBlocks, dayLabel, blockLabel } from '../../utils/practiceSlots';
 import './plan.css';
 
@@ -19,6 +19,7 @@ export default function BookingRow({ booking, uid, now }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState('');
   const [picking, setPicking] = useState(false);
+  const [more, setMore] = useState(false);
   const [notice, setNotice] = useState(null);
   const { peerUid, peerName, peerLevel } = peerOf(booking, uid);
   const joinable = canJoin(booking, now);
@@ -45,16 +46,24 @@ export default function BookingRow({ booking, uid, now }) {
       : { ok: false, text: res.errorText });
   };
 
+  const time = new Date(Number(booking.startMs)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  const countdown = countdownLabel(booking.startMs, now);
+
+  // A ticket: the time is the headline (the day is already in the column on
+  // the left), then the person, then what you can do. Join is the one filled
+  // button and only appears when it works; changing the time and cancelling
+  // are one tap further, behind "More", because they are the rare actions.
   return (
-    <div className="pl-booking">
-      <div className="pl-booking-top">
-        <span className="pl-row-main">
-          <p className="pl-row-title">{whenLabel(booking.startMs, now)}</p>
-          <p className="pl-row-sub">
-            with {peerName}{peerLevel ? ` · ${String(peerLevel).slice(0, 2)}` : ''} · {countdownLabel(booking.startMs, now)}
-          </p>
-        </span>
+    <div className={`pl-booking pl-ticket ${joinable ? 'is-live' : ''}`}>
+      <div className="pl-ticket-top">
+        <p className="pl-ticket-time">{time}</p>
+        <span className="pl-ticket-count">{joinable ? 'Now' : countdown}</span>
       </div>
+      <p className="pl-ticket-person">
+        <span className="pl-ticket-avatar" aria-hidden="true">{String(peerName || '?').charAt(0).toUpperCase()}</span>
+        <b>{peerName}</b>
+        {peerLevel && <span className="pl-level">{String(peerLevel).slice(0, 2)}</span>}
+      </p>
       <div className="pl-actions">
         {joinable && (
           <Button size="sm" icon={<Mic size={16} aria-hidden="true" />} onClick={() => navigate(`/chat/${peerUid}`, { state: joinState(booking) })}>
@@ -64,15 +73,23 @@ export default function BookingRow({ booking, uid, now }) {
         <Button size="sm" variant="secondary" icon={<MessageCircle size={16} aria-hidden="true" />} onClick={() => navigate(`/chat/${peerUid}`)}>
           Message
         </Button>
-        {!joinable && (
-          <Button size="sm" variant="ghost" icon={<Clock size={16} aria-hidden="true" />} onClick={() => { setPicking((p) => !p); setNotice(null); }}>
-            Change time
-          </Button>
-        )}
-        <Button size="sm" variant="ghost" icon={<X size={16} aria-hidden="true" />} onClick={cancel} disabled={!!busy}>
-          {busy === 'cancel' ? 'Cancelling…' : 'Cancel'}
+        <Button size="sm" variant="ghost" icon={<MoreHorizontal size={16} aria-hidden="true" />}
+          aria-expanded={more} onClick={() => { setMore((v) => !v); setPicking(false); setNotice(null); }}>
+          More
         </Button>
       </div>
+      {more && (
+        <div className="pl-ticket-more">
+          {!joinable && (
+            <button type="button" className="pl-ticket-link" onClick={() => { setPicking((p) => !p); setNotice(null); }}>
+              <Clock size={15} aria-hidden="true" /> Change the time
+            </button>
+          )}
+          <button type="button" className="pl-ticket-link pl-ticket-link--danger" onClick={cancel} disabled={!!busy}>
+            <X size={15} aria-hidden="true" /> {busy === 'cancel' ? 'Cancelling…' : 'Cancel this practice'}
+          </button>
+        </div>
+      )}
       {picking && (
         <>
           <p className="pl-notice">Pick a new time — {peerName} gets the request.</p>
