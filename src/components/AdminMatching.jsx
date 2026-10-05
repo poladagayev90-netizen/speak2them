@@ -10,7 +10,7 @@ import { toBakuIntervals, overlapAll, offsetVsBaku, formatMinutes, cityOf } from
 import { proposeMatch, cancelOffer, subscribeToWeekPlan } from '../utils/matchOffers';
 import { cancelSlotMatch } from '../utils/teacher';
 import {
-  weekBlocks, blockFitMin, fitsBlock, weekPairs, plannedCount, candidatesFor, levelGap, addDays, FIT_MIN,
+  PROPOSE_HORIZON_DAYS, closedOffers, weekBlocks, blockFitMin, fitsBlock, weekPairs, plannedCount, candidatesFor, levelGap, addDays, FIT_MIN,
 } from '../utils/matching';
 import { stableOrder } from '../utils/stableOrder';
 import { Button, Sheet } from './ui';
@@ -55,7 +55,11 @@ const KIND = {
   pending: 'waiting for answers',
   booked: 'booked',
   held: 'held',
+  expired: 'not answered in time',
+  declined: 'declined',
+  failed: 'could not be booked',
 };
+const isClosed = (kind) => kind === 'expired' || kind === 'declined' || kind === 'failed';
 
 export default function AdminMatching({ users = [] }) {
   // A clock that moves once a minute, so what can still be proposed stays true.
@@ -103,6 +107,9 @@ export default function AdminMatching({ users = [] }) {
 
   const blocks = useMemo(() => weekBlocks(week, now), [week, now]);
   const pairs = useMemo(() => weekPairs(offers, bookings), [offers, bookings]);
+  // Weekly-plan offers close after 24 h without an answer (respondBy); they
+  // stay on the desk, faded, with "Send again" while the time is still ahead.
+  const closed = useMemo(() => closedOffers(offers, pairs), [offers, pairs]);
   const inList = useMemo(() => new Set(roster || []), [roster]);
 
   const people = useMemo(() => {
@@ -164,6 +171,14 @@ export default function AdminMatching({ users = [] }) {
     if (res.error?.endsWith('-has-offer')) return { ok: false, text: `${name} already has an open proposal in this block.` };
     return { ok: false, text: res.errorText };
   };
+  // A proposal nobody answered in time: the same pair, the same block, again.
+  const resend = async (pair) => {
+    setBusy(pair.key);
+    const res = await propose(pair.a, pair.b, pair.slotId);
+    setBusy('');
+    if (res.ok) say(true, `Sent again: ${firstName(pair.nameA)} + ${firstName(pair.nameB)}, ${blockLabel(pair.slotId)}.`);
+    else say(false, res.text);
+  };
   // Swap one side of a pair: close the old pair, then propose the new one.
   const swap = async (pair, keepId, newId) => {
     setBusy(pair.key);
@@ -185,9 +200,10 @@ export default function AdminMatching({ users = [] }) {
   const byDay = useMemo(() => {
     const m = new Map();
     for (let i = 0; i < 7; i += 1) m.set(addDays(week, i), []);
-    for (const p of pairs) m.get(p.slotId.slice(0, 10))?.push(p);
+    for (const p of [...pairs, ...closed]) m.get(p.slotId.slice(0, 10))?.push(p);
+    for (const list of m.values()) list.sort((x, y) => x.startMs - y.startMs);
     return [...m.entries()];
-  }, [pairs, week]);
+  }, [pairs, closed, week]);
 
   const draftCount = plan && plan.status === 'draft' ? (plan.pairs || []).filter((p) => !p.removed).length : 0;
   const listCount = people.filter((p) => p.inList).length;
@@ -200,7 +216,7 @@ export default function AdminMatching({ users = [] }) {
           {weeks.map((w) => (
             <button key={w.key} type="button" role="tab" aria-selected={week === w.key}
               className={`aa-chip ${week === w.key ? 'is-on' : ''}`} onClick={() => setWeek(w.key)}>
-              {w.label} · {dayMonth(w.key)}
+              {w.label} · {dayMonth(w.key)}–{dayMonth(addDays(w.key, 6))}
             </button>
           ))}
         </div>
@@ -228,7 +244,7 @@ export default function AdminMatching({ users = [] }) {
           onToggle={toggleSelect} onAdd={addToList} busy={busy}
         />
         <section className="mt-pairs" aria-label="Pairs">
-          {pairs.length === 0 && <p className="aa-panel aa-empty">No pairs this week yet. Tick two people to propose one.</p>}
+          {pairs.length + closed.length === 0 && <p className="aa-panel aa-empty">No pairs this week yet. Tick two people to propose one.</p>}
           {byDay.filter(([, list]) => list.length > 0).map(([date, list]) => (
             <div key={date} className="aa-panel mt-day">
               <h3 className="aa-h">{weekdayShort(date)} {dayMonth(date)}</h3>
@@ -236,7 +252,9 @@ export default function AdminMatching({ users = [] }) {
                 <ul className="mt-pair-list">
                   {list.map((p) => (
                     <PairRow key={p.key} pair={p} personById={personById} busy={busy === p.key}
-                      canEdit={p.kind !== 'held' && p.startMs > now}
+                      canEdit={p.kind !== 'held' && !isClosed(p.kind) && p.startMs > now}
+                      onResend={isClosed(p.kind) && p.startMs > now + 30 * 60 * 1000 ? () => resend(p) : null}
+                      resendFrom={p.startMs - PROPOSE_HORIZON_DAYS * DAY_MS}
                       onChange={(keepId) => setChange({ pair: p, keepId })}
                       onRemove={() => removePair(p)} />
                   ))}
@@ -359,7 +377,7 @@ function FreeGrid({ person, pairs, blocks }) {
 }
 
 // ── Pairs ────────────────────────────────────────────────────────
-function PairRow({ pair, personById, busy, canEdit, onChange, onRemove }) {
+function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend, resendFrom }) {
   const hour = Number(pair.slotId.slice(11));
   const side = (uid, name, level) => {
     const p = personById.get(uid);
@@ -395,6 +413,15 @@ function PairRow({ pair, personById, busy, canEdit, onChange, onRemove }) {
         <span className="mt-plus" aria-hidden="true">+</span>
         {side(pair.b, pair.nameB, pair.levelB)}
       </div>
+      {/* adminProposeMatch refuses blocks more than nine days ahead. */}
+      {onResend && resendFrom > Date.now() && (
+        <span className="aa-meta">Can be sent again from {new Date(resendFrom).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+      )}
+      {onResend && resendFrom <= Date.now() && (
+        <button type="button" className="aa-linkbtn mt-remove" disabled={busy} onClick={onResend}>
+          <Send size={14} aria-hidden="true" /> {busy ? 'Sending…' : 'Send again'}
+        </button>
+      )}
       {canEdit && (
         <button type="button" className="aa-linkbtn mt-remove" disabled={busy} onClick={onRemove}>
           <X size={14} aria-hidden="true" /> {busy ? 'Working…' : pair.kind === 'pending' ? 'Withdraw' : 'Cancel booking'}

@@ -77,6 +77,28 @@ export function weekPairs(offers = [], bookings = []) {
   return pairs.sort((x, y) => x.startMs - y.startMs);
 }
 
+// Proposals that closed without a booking (no answer in time, declined, could
+// not be booked) and are still worth sending again: neither person has
+// anything else in that block now. One row per pair and block — the newest.
+export function closedOffers(offers = [], pairs = []) {
+  const busy = new Set();
+  for (const p of pairs) { busy.add(`${p.slotId}|${p.a}`); busy.add(`${p.slotId}|${p.b}`); }
+  const seen = new Map();
+  for (const o of offers) {
+    if (!['expired', 'declined', 'failed'].includes(o.status)) continue;
+    if (busy.has(`${o.slotId}|${o.userA}`) || busy.has(`${o.slotId}|${o.userB}`)) continue;
+    const key = `${o.slotId}|${[o.userA, o.userB].sort().join('|')}`;
+    const prev = seen.get(key);
+    const t = (x) => (x?.closedAt?.toMillis ? x.closedAt.toMillis() : Number(x?.closedAtMs) || 0);
+    if (!prev || t(o) >= t(prev)) seen.set(key, o);
+  }
+  return [...seen.values()].map((o) => ({
+    key: `c:${o.id}`, kind: o.status, slotId: o.slotId, startMs: o.startMs, a: o.userA, b: o.userB,
+    nameA: o.nameA || '', nameB: o.nameB || '', levelA: o.levelA || null, levelB: o.levelB || null,
+    offerId: o.id, source: o.source || 'admin', accepted: {},
+  })).sort((x, y) => x.startMs - y.startMs);
+}
+
 // How many of the week's pairs someone is in (open + booked + held).
 export function plannedCount(pairs, uid) {
   return pairs.filter((p) => p.a === uid || p.b === uid).length;

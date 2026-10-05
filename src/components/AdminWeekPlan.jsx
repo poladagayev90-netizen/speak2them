@@ -26,6 +26,7 @@ function bakuMonday(ms) {
 }
 const weekday = (date) => new Date(`${date}T12:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
 const dayMonth = (date) => new Date(`${date}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+const addDaysTo = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);
 const slotLabel = (slotId) => `${weekday(slotId.slice(0, 10))} ${slotId.slice(11)}:00`;
 const firstName = (n) => String(n || '').split(' ')[0] || '—';
 // The learner's own clock, only when it differs from Baku.
@@ -52,11 +53,15 @@ const OFFER_STATE = {
 
 export default function AdminWeekPlan({ users = [] }) {
   const now = Date.now();
+  // This week first. Until 2026-10-05 "Next week" came first and was the
+  // default every day, so on a Monday the admin rebuilt and sent the plan for
+  // the FOLLOWING week while meaning the current one. Only on Sunday — the day
+  // the draft is built — is next week the one being worked on.
   const weeks = useMemo(() => [
-    { key: bakuMonday(now + 7 * DAY_MS), label: 'Next week' },
     { key: bakuMonday(now), label: 'This week' },
+    { key: bakuMonday(now + 7 * DAY_MS), label: 'Next week' },
   ], [now]);
-  const [week, setWeek] = useState(weeks[0].key);
+  const [week, setWeek] = useState(() => (new Date(now + 4 * 60 * 60 * 1000).getUTCDay() === 0 ? weeks[1].key : weeks[0].key));
   const [plan, setPlan] = useState(undefined);
   const [offers, setOffers] = useState([]);
   const [cfg, setCfg] = useState({});
@@ -71,6 +76,8 @@ export default function AdminWeekPlan({ users = [] }) {
   const refills = offers.filter((o) => o.source === 'refill');
 
   const act = async (action, extra = {}) => {
+    // Sending messages real learners: name the week in words before it goes.
+    if (action === 'send' && !window.confirm(`Send ${live.length} proposals for the week of ${dayMonth(week)}–${dayMonth(addDaysTo(week, 6))}?`)) return;
     setBusy(action + (extra.pairId || ''));
     setMsg(null);
     const res = await weekPlanAction(action, week, extra);
@@ -102,7 +109,7 @@ export default function AdminWeekPlan({ users = [] }) {
         {weeks.map((w) => (
           <button key={w.key} type="button" role="tab" aria-selected={week === w.key}
             className={`aa-chip ${week === w.key ? 'is-on' : ''}`} onClick={() => setWeek(w.key)}>
-            {w.label} · {dayMonth(w.key)}
+            {w.label} · {dayMonth(w.key)}–{dayMonth(addDaysTo(w.key, 6))}
           </button>
         ))}
       </div>

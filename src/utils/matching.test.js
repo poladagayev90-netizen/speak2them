@@ -1,5 +1,5 @@
 import {
-  weekBlocks, blockFitMin, weekPairs, plannedCount, busyInBlock, levelGap, candidatesFor, FIT_MIN,
+  closedOffers, weekBlocks, blockFitMin, weekPairs, plannedCount, busyInBlock, levelGap, candidatesFor, FIT_MIN,
 } from './matching';
 
 const MON = '2026-10-05';
@@ -68,4 +68,17 @@ test('candidatesFor: free that hour first, not busy, close level, in the list', 
   const all = candidatesFor({ keepId: 'sabina', block: wed22, people, pairs, all: true });
   expect(all.map((p) => p.id)).toContain('morning');
   expect(all[all.length - 1].id).toBe('morning');
+});
+
+test('closedOffers: unanswered proposals that can be sent again, not ones already replaced', () => {
+  const offers = [
+    { id: 'x1', status: 'expired', slotId: '2026-10-07-22', startMs: 2, userA: 'aziz', userB: 'sabina' },
+    { id: 'x2', status: 'expired', slotId: '2026-10-08-22', startMs: 3, userA: 'nisa', userB: 'yunus' },
+    { id: 'x3', status: 'cancelled', slotId: '2026-10-09-20', startMs: 4, userA: 'a', userB: 'b' },
+    { id: 'p1', status: 'pending', slotId: '2026-10-07-22', startMs: 2, userA: 'yunus', userB: 'sabina' },
+  ];
+  const pairs = weekPairs(offers, []);
+  const closed = closedOffers(offers, pairs);
+  expect(closed.map((c) => c.offerId)).toEqual(['x2']);
+  expect(closed[0].kind).toBe('expired');
 });

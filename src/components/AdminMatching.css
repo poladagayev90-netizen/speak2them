@@ -58,6 +58,7 @@
 }
 .mt-pair.is-pending { border-style: dashed; }
 .mt-pair.is-held { opacity: .7; }
+.mt-pair.is-expired, .mt-pair.is-declined, .mt-pair.is-failed { opacity: .6; border-style: dotted; }
 .mt-pair-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--fs-sm); }
 .mt-pair-sides { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: var(--s-2); }
 .mt-side { display: grid; gap: 2px; min-width: 0; }
