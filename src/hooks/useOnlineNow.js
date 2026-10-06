@@ -10,6 +10,7 @@ const REFRESH_MS = 60000;
 
 export default function useOnlineNow(enabled = true) {
   const [people, setPeople] = useState([]);
+  const [on, setOn] = useState(true);
   useEffect(() => {
     if (!enabled) { setPeople([]); return undefined; }
     let alive = true;
@@ -19,7 +20,9 @@ export default function useOnlineNow(enabled = true) {
       try {
         const res = await authedFetch(`${FUNCTIONS_BASE}/onlineNow`, { method: 'POST', body: '{}' });
         const data = res.ok ? await res.json() : null;
-        if (alive) setPeople(Array.isArray(data?.people) ? data.people : []);
+        if (!alive) return;
+        setPeople(Array.isArray(data?.people) ? data.people : []);
+        setOn(!(data && data.on === false));
       } catch {
         if (alive) setPeople([]);
       }
@@ -34,5 +37,5 @@ export default function useOnlineNow(enabled = true) {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [enabled]);
-  return people;
+  return { people, on };
 }

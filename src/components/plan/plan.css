@@ -430,7 +430,6 @@
 }
 .wk-seg-btn.is-on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--glass-lift); }
 .wk-seg-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.wk-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s-1); }
 .wk-day {
   display: grid; justify-items: center; align-content: start; gap: 2px;
   min-height: 74px; padding: var(--s-2) 2px;
@@ -452,6 +451,23 @@
 .wk-day.is-none, .wk-day.is-past { border-color: transparent; background: var(--bg-secondary); color: var(--text-muted); cursor: default; }
 .wk-day.is-none .wk-dow, .wk-day.is-past .wk-dow { color: var(--text-muted); }
 .wk-day:disabled { opacity: 1; }
+.wk-day.is-none.is-tappable { background: var(--bg-card); border: 1.5px dashed var(--border); cursor: pointer; }
+.wk-grid { display: grid; gap: var(--s-2); }
+/* The days are the grid's column heads (TimeGrid head=…): one aligned column
+   per day. TimeGrid.css styles head spans as small labels — undo that here. */
+.wk .ob-week-head--custom { align-items: stretch; }
+.wk .ob-week-head--custom .wk-day { min-height: 62px; padding: var(--s-1) 0; margin-bottom: var(--s-1); border-radius: var(--r-sm); }
+.wk .ob-week-head--custom span { padding: 0; text-align: center; }
+.wk .ob-week-head--custom .wk-dow { font-size: var(--fs-xs); font-weight: 700; }
+.wk .ob-week-head--custom .wk-num { font-size: var(--fs-body); font-weight: 800; color: inherit; }
+.wk .ob-week-head--custom .wk-mark { font-size: var(--fs-xs); letter-spacing: -0.02em; font-weight: 800; color: inherit; }
+.wk .ob-week-head--custom .wk-day.is-picked .wk-mark, .wk .ob-week-head--custom .wk-day.is-offered .wk-mark { color: var(--accent); }
+.wk-more {
+  justify-self: center; min-height: 32px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-pill);
+  background: none; font: inherit; font-size: var(--fs-sm); font-weight: 700; color: var(--accent); cursor: pointer;
+}
+.wk-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.wk-every { margin: 0; }
 .wk-status { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
 .wk-actions { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .wk-actions:empty { display: none; }

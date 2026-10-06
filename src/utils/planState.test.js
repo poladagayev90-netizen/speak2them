@@ -1,4 +1,4 @@
-import { planHeadline, openOffers, upcomingBookings, canJoin, peerOf, limitText, bookingDays, comingUpLabel } from './planState';
+import { planHeadline, openOffers, upcomingBookings, canJoin, peerOf, limitText, bookingDays, comingUpLabel, weekGoal } from './planState';
 
 const now = Date.parse('2026-10-06T10:00:00+04:00');
 const H = 3600000;
@@ -97,4 +97,21 @@ test('autopilot: a learner who has not said «in» is asked, others are not', ()
   expect(planHeadline({ ...base, autoMode: false }).kind).toBe('waiting');
   const answered = { ...ob, weeks: { '2026-10-19': { days: [1] } } };
   expect(planHeadline({ ...base, onboarding: answered, autoMode: true }).kind).toBe('waiting');
+});
+
+test('in for this week on the autopilot: «looking», never «Sunday»; the goal follows the picked days', () => {
+  const ob = { availability: [{ day: 3, startMin: 1200, endMin: 1320 }], weeklyTarget: 2,
+    charterAcceptedAt: { seconds: Date.parse('2026-09-01T12:00:00+04:00') / 1000 },
+    weeks: { '2026-10-12': { days: [3, 4, 5], hours: { 3: [20], 4: [20], 5: [19, 20] } } } };
+  const wed = Date.parse('2026-10-14T09:00:00+04:00');
+  const base = { uid: 'me', bookings: [], offers: [], planStatus: null, onboarding: ob, attended: 0, weekKey: '2026-10-12', now: wed };
+  expect(planHeadline({ ...base, autoMode: true })).toMatchObject({ kind: 'looking', days: 'Wed, Thu, Fri' });
+  expect(planHeadline({ ...base, autoMode: false }).kind).toBe('waiting');
+  expect(planHeadline({ ...base, attended: 3, autoMode: true }).kind).toBe('done');
+  expect(planHeadline({ ...base, attended: 2, autoMode: true }).kind).toBe('looking');
+  expect(weekGoal({ onboarding: ob, weekKey: '2026-10-12' })).toBe(3);
+  expect(weekGoal({ onboarding: ob, weekKey: '2026-10-19' })).toBe(2);
+  expect(weekGoal({ onboarding: ob, weekKey: '2026-10-12', limitTarget: 1 })).toBe(1);
+  const many = { ...ob, weeks: { '2026-10-12': { days: [1, 2, 3, 4, 5, 6] } } };
+  expect(weekGoal({ onboarding: many, weekKey: '2026-10-12' })).toBe(4);
 });

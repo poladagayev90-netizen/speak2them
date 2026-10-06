@@ -19,6 +19,7 @@ import {
   ONBOARDING_VERSION, GOALS, LEVELS, AGE_BANDS, COUNTRIES, TOPICS, WEEKLY_TARGETS, labelOf,
 } from '../utils/onboarding';
 import { needsIntro } from '../utils/intro';
+import TimeGrid from '../components/plan/TimeGrid';
 import './Onboarding.css';
 
 // One question per screen. The order is deliberate: the easy, identity
@@ -405,32 +406,17 @@ export default function Onboarding({ user }) {
                 <button type="button" className="ob-chip ob-chip--sm ob-chip--ghost" onClick={() => setCells(new Set())}>Clear</button>
               )}
             </div>
-            <div className="ob-week" role="group" aria-label="Weekly availability">
-              <div className="ob-week-row ob-week-head" aria-hidden="true">
-                <span />
-                {WEEK_DAYS.map((d) => <span key={d.day}>{d.short}</span>)}
-              </div>
-              {HOURS.map((h) => (
-                <div key={h} className="ob-week-row">
-                  <span className="ob-week-hour" aria-hidden="true">{String(h).padStart(2, '0')}</span>
-                  {WEEK_DAYS.map((d) => {
-                    const key = `${d.day}-${h}`;
-                    const on = cells.has(key);
-                    const popular = popularCells.has(key);
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        className={`ob-cell ${on ? 'is-on' : ''} ${popular ? 'is-popular' : ''}`}
-                        aria-pressed={on}
-                        aria-label={`${d.short} ${formatMinutes(h * 60)}${popular ? ', popular' : ''}`}
-                        onClick={() => toggleCell(key)}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+            <TimeGrid
+              ariaLabel="Weekly availability"
+              columns={WEEK_DAYS.map((d) => ({ key: d.day, label: d.short }))}
+              hours={HOURS}
+              cell={(day, h) => {
+                const key = `${day}-${h}`;
+                const popular = popularCells.has(key);
+                return { on: cells.has(key), popular, label: `${WEEK_DAYS.find((d) => d.day === day).short} ${formatMinutes(h * 60)}${popular ? ', popular' : ''}` };
+              }}
+              onToggle={(day, h) => toggleCell(`${day}-${h}`)}
+            />
             {popularCells.size > 0 && (
               <p className="ob-legend"><span className="ob-legend-dot" aria-hidden="true" /> Popular — more people are free then</p>
             )}

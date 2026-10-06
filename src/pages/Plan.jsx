@@ -16,11 +16,16 @@ import WeekCalendar from '../components/plan/WeekCalendar';
 import { useBillingConfig } from '../hooks/usePackages';
 import { outOfPractices, packageView } from '../utils/packages';
 import { subscribeToSlotChange } from '../utils/practiceSlots';
-import { planHeadline, openOffers, upcomingBookings, bookingDays } from '../utils/planState';
+import { planHeadline, openOffers, upcomingBookings, bookingDays, weekGoal } from '../utils/planState';
 import { respondToOffer } from '../utils/matchOffers';
 import { WEEK_DAYS, formatMinutes, cityOf, totalHours } from '../utils/timezone';
 import { labelOf, WEEKLY_TARGETS } from '../utils/onboarding';
 import '../components/plan/plan.css';
+
+// Kinds of Today's card worth repeating here: the ones the week calendar does
+// not already say (Polad 2026-10-07: «Your next plan arrives on Sunday» under
+// «You're in · Wed, Thu, Fri» was both extra and wrong).
+const PLAN_CARD_KINDS = new Set(['setup', 'paused', 'no_match']);
 
 // The Plan tab: the whole week, and the only place it is managed.
 //
@@ -105,7 +110,7 @@ export default function Plan({ user }) {
 
         {/* The status card only when there is nothing booked or to answer —
             otherwise the lists below ARE the status. */}
-        {!booked.length && !open.length && !plan.loading && (
+        {!booked.length && !open.length && !plan.loading && (PLAN_CARD_KINDS.has(headline.kind) || plan.planStatus?.limit?.active || noPractices) && (
           <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} />
         )}
 
@@ -152,7 +157,7 @@ export default function Plan({ user }) {
         )}
 
         {Number(ob?.weeklyTarget) > 0 && (
-          <ThisWeekCard uid={uid} target={plan.planStatus?.limit?.active ? Math.min(Number(ob.weeklyTarget), Number(plan.planStatus.limit.target) || 1) : Number(ob.weeklyTarget)} attended={plan.attended} bookings={thisWeek} showList={false} now={plan.now} />
+          <ThisWeekCard uid={uid} target={weekGoal({ onboarding: ob, weekKey: plan.weekKey, limitTarget: plan.planStatus?.limit?.active ? plan.planStatus.limit.target : null })} attended={plan.attended} bookings={thisWeek} showList={false} now={plan.now} />
         )}
 
         {ob && (

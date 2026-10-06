@@ -314,48 +314,7 @@
   font: inherit;
 }
 
-/* ---------------------------------------------------------- week grid -- */
-.ob-week {
-  display: grid;
-  gap: 3px;
-  user-select: none;
-}
-.ob-week-row {
-  display: grid;
-  grid-template-columns: 30px repeat(7, 1fr);
-  gap: 3px;
-}
-.ob-week-head span {
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-align: center;
-  padding-bottom: var(--s-1);
-}
-.ob-week-hour {
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--text-muted);
-  align-self: center;
-  font-variant-numeric: tabular-nums;
-}
-.ob-cell {
-  height: 28px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  padding: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background-color 100ms ease, border-color 100ms ease;
-}
-.ob-cell.is-on { background: var(--accent); border-color: var(--accent); }
-.ob-cell { position: relative; }
-/* A small dot on the busiest blocks (appConfig/popularTimes). */
-.ob-cell.is-popular:not(.is-on)::after {
-  content: ''; position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
-  border-radius: 50%; background: var(--accent); opacity: .55;
-}
+/* The week grid itself lives in components/plan/TimeGrid.css. */
 .ob-legend { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-2) 0 0; font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
 .ob-legend-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .55; }
 

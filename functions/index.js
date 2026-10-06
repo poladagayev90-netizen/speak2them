@@ -520,6 +520,8 @@ exports.sendCallNotification = onRequest({ secrets: [] }, async (req, res) => {
     vars: { callerName },
     type: "incoming_call",
     url: "/",
+    // For the Android app's own ringing screen (CallMessagingService).
+    extra: { callerId: String(callerId), callerName },
   });
   res.status(200).json({ ok: true });
 });
@@ -7402,7 +7404,8 @@ async function sendPushToUser(db, uid, opts) {
   }
 
   try {
-    await sendPush(entries, { title, body, type: opts.type, url: opts.url });
+    // `extra`: more string fields for the device (the incoming call's caller).
+    await sendPush(entries, { ...(opts.extra || {}), title, body, type: opts.type, url: opts.url });
   } catch (error) {
     console.warn("[Push] send failed:", uid, error.message);
   }

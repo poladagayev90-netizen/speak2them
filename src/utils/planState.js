@@ -10,7 +10,7 @@
 //   • an unanswered proposal is not held against anyone, so it is phrased as
 //     a question, not a debt.
 
-import { checkinFor } from './myWeek';
+import { autoIn, checkinFor, dayNames, MAX_A_WEEK, weekAnswer } from './myWeek';
 
 export const BLOCK_MS = 2 * 60 * 60 * 1000;
 export const JOIN_OPENS_MS = 5 * 60 * 1000;
@@ -58,14 +58,23 @@ export function limitText(limit) {
 // kind: setup | paused | next | answer | checkin | done | no_match | waiting
 // `autoMode`: the autopilot is on (appConfig/planner.rosterMode "auto"), so
 // a learner who has not said «in» for the week is asked (myWeek.checkinFor).
+// This week's goal: the days they picked for it (one practice a day, at most
+// four), else the usual weekly number; under a reliability limit, never more
+// than the limit allows.
+export function weekGoal({ onboarding, weekKey, limitTarget = null }) {
+  const usual = Math.max(0, Number(onboarding?.weeklyTarget) || 0);
+  const answer = weekAnswer(onboarding, weekKey);
+  const asked = answer && answer.in && answer.days.length ? Math.min(MAX_A_WEEK, answer.days.length) : usual;
+  return limitTarget != null ? Math.min(asked, Number(limitTarget) || 1) : asked;
+}
+
 export function planHeadline({
   uid, bookings, offers, planStatus, onboarding, attended = 0, weekKey, now = Date.now(), autoMode = false,
 }) {
   const ob = onboarding || null;
   const asked = Math.max(0, Number(ob?.weeklyTarget) || 0);
-  const limited = !!planStatus?.limit?.active;
   // Under a limit the week's goal is what the plan can actually give.
-  const target = limited ? Math.min(asked, Number(planStatus.limit.target) || 1) : asked;
+  const limited = !!planStatus?.limit?.active;
   const hasTimes = Array.isArray(ob?.availability) && ob.availability.length > 0;
   if (!ob || !hasTimes || !asked || !ob.charterAcceptedAt) return { kind: 'setup' };
 
@@ -80,11 +89,20 @@ export function planHeadline({
     const c = checkinFor({ onboarding: ob, access: planStatus?.access, auto: planStatus?.auto, now });
     if (c) return { kind: 'checkin', ...c };
   }
-  if (attended >= target) return { kind: 'done', attended, target };
+  const goal = weekGoal({ onboarding: ob, weekKey, limitTarget: limited ? planStatus.limit.target : null });
+  if (attended >= goal) return { kind: 'done', attended, target: goal };
 
   // planStatus is written when a plan goes out, for the week it covers.
   if (planStatus && planStatus.state === 'no_match' && planStatus.weekKey >= weekKey) {
     return { kind: 'no_match', text: NO_MATCH_TEXT[planStatus.reason] || NO_MATCH_TEXT.no_overlap, reason: planStatus.reason };
+  }
+  // In for this week on the autopilot: the hourly refill is searching now,
+  // not on Sunday (Polad 2026-10-07: the card said «Sunday» under «You're in»).
+  const answer = weekAnswer(ob, weekKey);
+  const inNow = (answer && answer.in) || (planStatus?.auto && planStatus.auto.week === weekKey && planStatus.auto.in)
+    || autoIn({ onboarding: ob, access: planStatus?.access, monday: weekKey });
+  if (autoMode && inNow && !(answer && !answer.in)) {
+    return { kind: 'looking', days: answer && answer.in ? dayNames(answer.days) : '' };
   }
   return { kind: 'waiting' };
 }

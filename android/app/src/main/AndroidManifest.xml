@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- allowBackup=false: the app's data is account-bound and re-derived on
          sign-in, so a device backup would only put a copy of someone's profile
@@ -40,6 +41,18 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/notification_accent" />
 
+        <!-- Incoming calls ring like a call (CallMessagingService). It extends
+             the push plugin's own service, which is removed so FCM has
+             exactly one receiver. -->
+        <service android:name=".CallMessagingService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.capacitorjs.plugins.pushnotifications.MessagingService"
+            tools:node="remove" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -60,4 +73,9 @@
     <!-- Android 13+ (API 33) will not show a notification without this, and it
          must be requested at runtime — see src/nativePush.js. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- The ringing call: full screen on a locked phone (Play Console:
+         App content, Full-screen intent = calling app) and vibration. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

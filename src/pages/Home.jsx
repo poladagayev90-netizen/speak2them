@@ -30,7 +30,7 @@ import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
 import { lessonItems, teachingItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
 import { plainTopic } from '../utils/topicLabel';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
-import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel } from '../utils/planState';
+import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel, weekGoal } from '../utils/planState';
 import Button from '../components/ui/Button';
 import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
@@ -153,7 +153,11 @@ export default function Home({ user }) {
   const headline = planHeadline({ uid: user.uid, ...plan, autoMode });
   const open = openOffers(plan.offers, user.uid, plan.now);
   const booked = upcomingBookings(plan.bookings, plan.now);
-  const target = Number(plan.onboarding?.weeklyTarget) || 0;
+  // This week's goal: the days picked for it, else the usual number.
+  const target = weekGoal({
+    onboarding: plan.onboarding, weekKey: plan.weekKey,
+    limitTarget: plan.planStatus?.limit?.active ? plan.planStatus.limit.target : null,
+  });
   // The hero already names the nearest booking; the list starts after it.
   // Lessons join it in time order, each going straight to its materials.
   const lessons = mergeSchedule(

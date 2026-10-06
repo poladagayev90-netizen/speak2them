@@ -7,6 +7,8 @@
 // Days are weekdays in the learner's OWN clock (0 = Sunday), the same as
 // their saved free times.
 
+import { rangesToCells } from './timezone';
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BAKU_MS = 4 * 60 * 60 * 1000;
 export const NEW_GRACE_MS = 2 * DAY_MS;
@@ -34,12 +36,59 @@ export function weekDays(monday) {
 
 export const freeWeekdays = (availability) => new Set((availability || []).map((r) => r.day));
 
+// The hours picked for one week (Plan tab grid, 2026-10-07):
+// { "3": [20, 21], "5": [19] } — weekday → whole hours in the learner's own
+// clock. Anything malformed is dropped; null when nothing is left.
+export function parseHours(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const out = {};
+  for (const [k, list] of Object.entries(raw)) {
+    const wd = Number(k);
+    if (!Number.isInteger(wd) || wd < 0 || wd > 6 || !Array.isArray(list)) continue;
+    const hs = [...new Set(list.filter((h) => Number.isInteger(h) && h >= 0 && h <= 23))].sort((a, b) => a - b);
+    if (hs.length) out[wd] = hs;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 export function weekAnswer(onboarding, monday) {
   const w = onboarding && onboarding.weeks && onboarding.weeks[monday];
   if (!w || typeof w !== 'object') return null;
   if (w.skip === true) return { in: false };
+  const hours = parseHours(w.hours);
+  if (hours) return { in: true, days: Object.keys(hours).map(Number), hours };
   return { in: true, days: Array.isArray(w.days) ? w.days.filter((x) => Number.isInteger(x)) : [] };
 }
+
+// Grid cells ("wd-h") <-> the stored { wd: [h] } map.
+export function cellsToHours(cells) {
+  const out = {};
+  for (const key of cells || []) {
+    const [wd, h] = key.split('-').map(Number);
+    (out[wd] = out[wd] || []).push(h);
+  }
+  for (const k of Object.keys(out)) out[k].sort((a, b) => a - b);
+  return out;
+}
+const hoursToCells = (hours) => new Set(Object.entries(hours || {}).flatMap(([wd, hs]) => hs.map((h) => `${wd}-${h}`)));
+
+// The hours shown for a week: what they picked, else their usual hours on
+// the days they picked (an answer from before the grid), else their usual
+// hours on the suggested days.
+export function weekCells({ monday, onboarding, now = Date.now() }) {
+  const answer = weekAnswer(onboarding, monday);
+  if (answer && answer.in && answer.hours) return hoursToCells(answer.hours);
+  const usual = rangesToCells((onboarding && onboarding.availability) || []);
+  const days = answer ? (answer.in ? answer.days : []) : suggestDays({ monday, onboarding, now });
+  if (answer && answer.in && !days.length) return usual;
+  return new Set([...usual].filter((k) => days.includes(Number(k.split('-')[0]))));
+}
+
+// Can a practice still start at this hour of that date (30 min ahead)?
+export const hourAhead = (date, h, now = Date.now()) => new Date(`${date}T${String(h).padStart(2, '0')}:00:00`).getTime() >= now + 30 * 60000;
+
+// Planned practices: one a day, at most this many a week (the planner's cap).
+export const MAX_A_WEEK = 4;
 
 // Local "YYYY-MM-DD" of a moment, on this device.
 const localKey = (ms) => {
@@ -49,10 +98,14 @@ const localKey = (ms) => {
 
 // What the calendar shows for each day of the week.
 //   state: past | booked | offered | picked | free | none
-export function calendarDays({ monday, onboarding, bookings = [], offers = [], picked = null, now = Date.now() }) {
+//   `cells` (grid hours, "wd-h") — a day counts as picked when one of its
+//   hours is still ahead; without cells, `picked` days are used as before.
+export function calendarDays({ monday, onboarding, bookings = [], offers = [], picked = null, cells = null, now = Date.now() }) {
   const today = localKey(now);
   const free = freeWeekdays(onboarding && onboarding.availability);
+  const usual = rangesToCells((onboarding && onboarding.availability) || []);
   const chosen = new Set(picked || []);
+  const hoursOf = (set, wd) => [...set].filter((k) => Number(k.split('-')[0]) === wd).map((k) => Number(k.split('-')[1]));
   return weekDays(monday).map((d) => {
     const booking = bookings.find((b) => b.status === 'confirmed' && localKey(Number(b.startMs)) === d.date);
     const offer = offers.find((o) => localKey(Number(o.startMs)) === d.date && Number(o.startMs) > now);
@@ -60,7 +113,12 @@ export function calendarDays({ monday, onboarding, bookings = [], offers = [], p
     if (booking) state = 'booked';
     else if (offer) state = 'offered';
     else if (d.date < today) state = 'past';
-    else if (!free.has(d.wd)) state = 'none';
+    else if (cells) {
+      const mine = hoursOf(cells, d.wd).filter((h) => hourAhead(d.date, h, now)).sort((x, y) => x - y);
+      const left = hoursOf(usual, d.wd).some((h) => hourAhead(d.date, h, now));
+      state = mine.length ? 'picked' : left ? 'free' : 'none';
+      return { ...d, state, hours: mine, booking: null, offer: null, isToday: d.date === today };
+    } else if (!free.has(d.wd)) state = 'none';
     else state = chosen.has(d.wd) ? 'picked' : 'free';
     return { ...d, state, booking: booking || null, offer: offer || null, isToday: d.date === today };
   });

@@ -5,6 +5,7 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import { useNavigate, useLocation } from 'react-router-dom';
 import IncomingCallModal from './IncomingCallModal';
 import { subscribeToBlocked } from '../utils/blocklist';
+import { onCallIntent, takeCallIntent } from '../utils/callIntent';
 
 export default function GlobalCallListener({ user }) {
   const [incomingCall, setIncomingCall] = useState(null);
@@ -87,6 +88,17 @@ export default function GlobalCallListener({ user }) {
     await deleteDoc(doc(db, 'calls', incomingCall.callDocId));
     setIncomingCall(null);
   }, [incomingCall]);
+
+  // Answer / Decline tapped on the Android ringing screen: act on the call as
+  // soon as it is here (the tap often opens the app before the snapshot).
+  const [intentTick, setIntentTick] = useState(0);
+  useEffect(() => onCallIntent(() => setIntentTick((n) => n + 1)), []);
+  useEffect(() => {
+    if (!incomingCall?.callDocId) return;
+    const action = takeCallIntent(incomingCall.callerId);
+    if (action === 'answer') acceptCall();
+    else if (action === 'decline') rejectCall();
+  }, [incomingCall, intentTick, acceptCall, rejectCall]);
 
   // Don't show modal if we are already in the chat with that person
   if (incomingCall && location.pathname === `/chat/${incomingCall.callerId}`) {

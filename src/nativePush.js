@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { saveFcmToken } from './firebase';
+import { setCallIntent } from './utils/callIntent';
 
 // Native (APK) push. The web path in firebase.js cannot serve this build at
 // all: the Android WebView has no Notification API and no Web Push, so
@@ -60,7 +61,10 @@ export function watchNativePush(uid) {
     try {
       handles.push(await PushNotifications.addListener('registration', (token) => {
         if (!token?.value || stopped) return;
-        saveFcmToken(uid, token.value, 'android')
+        // caps: this build rings an incoming call itself (CallMessagingService),
+        // so the server may send it the call as data only. Older APKs never
+        // write it and keep the ordinary notification.
+        saveFcmToken(uid, token.value, 'android', { caps: ['ring'] })
           .catch((e) => console.warn('[NativePush] token save failed:', e.message));
       }));
 
@@ -71,7 +75,14 @@ export function watchNativePush(uid) {
       // Tapping a notification opens the app; honour the deep link the sender
       // put in the payload (e.g. "/?daily=1" for the daily-question push).
       handles.push(await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-        const url = action?.notification?.data?.url;
+        const data = action?.notification?.data || {};
+        // Answer / Decline / the ringing screen itself: stay where the app is;
+        // GlobalCallListener acts on the call as soon as it arrives.
+        if (data.type === 'incoming_call') {
+          setCallIntent(data.call, data.callerId);
+          return;
+        }
+        const url = data.url;
         if (typeof url === 'string' && url.startsWith('/')) {
           window.location.href = url;
         }

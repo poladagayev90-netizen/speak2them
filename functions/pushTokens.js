@@ -27,6 +27,16 @@ const FAILURE_LIMIT = 3;
 //   platform  — 'web' | 'android'; decides the payload shape (see buildMessage).
 //               Tokens written before this field existed are web tokens.
 
+// An Android app from v29 (1.19) on rings an incoming call itself
+// (CallMessagingService: full-screen, looping ringtone, Answer / Decline). It
+// says so with caps: ['ring'] on its token. Older APKs have no such service,
+// so they keep the ordinary notification block — a data-only call push would
+// show them nothing at all.
+function ringsNatively(tokenDoc) {
+  return !!(tokenDoc && tokenDoc.platform === "android"
+    && Array.isArray(tokenDoc.caps) && tokenDoc.caps.includes("ring"));
+}
+
 function isDeadTokenError(error) {
   const code = error && error.code;
   return code === "messaging/invalid-registration-token" ||
@@ -45,6 +55,7 @@ async function getTokensForUser(db, uid, legacyToken, legacyFailCount) {
         token: t, uid, tokenRef: d.ref, userRef,
         failCount: d.data().failCount || 0,
         platform: d.data().platform || "web",
+        ring: ringsNatively(d.data()),
       });
     }
   });
@@ -72,6 +83,7 @@ async function getAllTokens(db, usersWithLegacy) {
       token: t, uid: userRef.id, tokenRef: d.ref, userRef,
       failCount: d.data().failCount || 0,
       platform: d.data().platform || "web",
+      ring: ringsNatively(d.data()),
     });
   });
   for (const u of usersWithLegacy) {
@@ -107,8 +119,14 @@ function buildMessage(platform, tokens, data) {
   // hung up, and a ring arriving 20 minutes later just says "you missed it"
   // (Rümeysa 2026-09-30: "I see calls later"). Other pushes keep an hour.
   const isCall = data.type === "incoming_call";
-  if (platform !== "android") {
+  if (platform !== "android" && platform !== "android-ring") {
     return { tokens, data, webpush: { headers: { Urgency: "high", TTL: isCall ? "60" : "3600" } } };
+  }
+  // The app draws the call itself: data only, so Android shows nothing on
+  // its own and hands the message to CallMessagingService even when the app
+  // is closed. Every other type stays as below.
+  if (platform === "android-ring" && isCall) {
+    return { tokens, data, android: { priority: "high", ttl: 60 * 1000 } };
   }
   return {
     tokens,
@@ -145,7 +163,7 @@ async function multicastOnce(entries, data) {
 
   const byPlatform = new Map();
   for (const e of entries) {
-    const platform = e.platform === "android" ? "android" : "web";
+    const platform = e.platform !== "android" ? "web" : e.ring ? "android-ring" : "android";
     if (!byPlatform.has(platform)) byPlatform.set(platform, []);
     byPlatform.get(platform).push(e);
   }
@@ -230,6 +248,8 @@ async function sendPush(entries, data) {
 }
 
 module.exports = {
+  buildMessage,
+  ringsNatively,
   getTokensForUser,
   getAllTokens,
   sendPush,

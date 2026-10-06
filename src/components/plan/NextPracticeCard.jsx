@@ -113,6 +113,12 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
       text: h.text,
       action: { label: 'Edit my free times', onClick: () => navigate('/onboarding', { state: { jumpTo: 'availability', returnTo: '/' } }) },
     },
+    looking: {
+      icon: Sparkles,
+      title: h.days ? `Looking for partners · ${h.days}` : 'Looking for partners this week',
+      text: 'When someone fits your times, a practice comes here to confirm. Want to talk sooner? Message someone you have practised with.',
+      action: { label: 'Partners', onClick: () => navigate('/chats') },
+    },
     waiting: {
       icon: Sparkles,
       title: 'Your next plan arrives on Sunday evening',

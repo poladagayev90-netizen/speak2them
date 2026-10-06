@@ -76,11 +76,12 @@ export async function tokenDocId(token) {
 // on native Android it would arrive silently — those tokens need an FCM
 // `notification` block instead (see functions/pushTokens.js). Tokens written
 // before this field existed are treated as 'web', which is what they were.
-export async function saveFcmToken(uid, token, platform = 'web') {
+export async function saveFcmToken(uid, token, platform = 'web', extra = {}) {
   const id = await tokenDocId(token);
   await setDoc(
     doc(db, 'users', uid, 'fcmTokens', id),
     {
+      ...extra,
       token,
       platform,
       userAgent: (navigator.userAgent || '').slice(0, 300),

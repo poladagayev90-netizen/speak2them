@@ -68,3 +68,8 @@
   font: inherit; font-size: var(--fs-xs); font-weight: 800; cursor: pointer;
 }
 .on-now-call:disabled { background: var(--bg-secondary); color: var(--text-muted); cursor: default; }
+
+/* Nobody online: one line, no list. */
+.on-now--empty { padding: var(--s-3) var(--s-4); }
+.on-now--empty .on-now-head { margin: 0; }
+.on-now-empty { margin-left: auto; font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }

@@ -41,8 +41,26 @@ function weekAnswer(onboarding, monday) {
   const w = onboarding && onboarding.weeks && onboarding.weeks[monday];
   if (!w || typeof w !== 'object') return null;
   if (w.skip === true) return { in: false, atMs: msOf(w.at) };
+  const hours = parseHours(w.hours);
+  if (hours) return { in: true, days: Object.keys(hours).map(Number), hours, atMs: msOf(w.at) };
   const days = Array.isArray(w.days) ? [...new Set(w.days.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6))] : [];
   return { in: true, days, atMs: msOf(w.at) };
+}
+
+// The hours picked for that week in the Plan tab grid (2026-10-07):
+// { "3": [20, 21] } = weekday → whole hours, the learner's own clock. The
+// rules cannot check the shape (no loops), so anything odd is dropped here.
+// Mirrored in src/utils/myWeek.js parseHours.
+function parseHours(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const out = {};
+  for (const [k, list] of Object.entries(raw)) {
+    const wd = Number(k);
+    if (!Number.isInteger(wd) || wd < 0 || wd > 6 || !Array.isArray(list)) continue;
+    const hs = [...new Set(list.filter((h) => Number.isInteger(h) && h >= 0 && h <= 23))].sort((a, b) => a - b);
+    if (hs.length) out[wd] = hs.slice(0, 24);
+  }
+  return Object.keys(out).length ? out : null;
 }
 
 // Proposals the person left to run out, newest last. `offers`: their plan /
@@ -92,6 +110,20 @@ function eligible(person, { weekStartMs, nowMs }) {
 // narrowed to the days they picked for that week (own-clock weekdays).
 function weekAvailability(availability, answer) {
   const list = Array.isArray(availability) ? availability : [];
+  // Picked hours replace that week's times (a day with no usual free time
+  // can be added, a usual one left out); consecutive hours become one range.
+  if (answer && answer.in && answer.hours) {
+    const out = [];
+    for (const [wd, hs] of Object.entries(answer.hours)) {
+      let start = hs[0];
+      for (let i = 1; i <= hs.length; i += 1) {
+        if (hs[i] === hs[i - 1] + 1) continue;
+        out.push({ day: Number(wd), startMin: start * 60, endMin: (hs[i - 1] + 1) * 60 });
+        start = hs[i];
+      }
+    }
+    return out.sort((a, b) => a.day - b.day || a.startMin - b.startMin);
+  }
   if (!answer || !answer.in || !answer.days || !answer.days.length) return list;
   const days = new Set(answer.days);
   return list.filter((r) => days.has(r.day));
@@ -117,5 +149,5 @@ function summarize(verdicts) {
 
 module.exports = {
   ASLEEP_AFTER_MS, NEW_GRACE_MS, SNOOZE_AFTER_UNANSWERED, FAIR_WINDOW_MS, PROVEN_WINDOW_MS,
-  weekAnswer, unansweredStreak, provenRecently, eligible, weekAvailability, weekTarget, summarize,
+  weekAnswer, parseHours, unansweredStreak, provenRecently, eligible, weekAvailability, weekTarget, summarize,
 };

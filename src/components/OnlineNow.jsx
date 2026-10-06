@@ -12,10 +12,27 @@ import './OnlineNow.css';
 // draws the list; the call itself is checked again by canPair.
 const firstName = (n) => String(n || '').split(' ')[0] || 'Someone';
 
-export default function OnlineNow({ enabled = true }) {
-  const people = useOnlineNow(enabled);
+// Partners lifts the list (one request feeds this strip AND the "Online" mark
+// on partner rows) and passes `people` with the partners already taken out,
+// so nobody appears twice. `on: false` = the admin switched the list off.
+export default function OnlineNow({ people: given = null, on = true }) {
+  const own = useOnlineNow(given === null);
+  const people = given === null ? own.people : given;
   const navigate = useNavigate();
-  if (!people.length) return null;
+  if (!on || (given === null && !own.on)) return null;
+  // Nobody: one quiet line that stays, so people learn where to look
+  // (Polad 2026-10-07: the strip used to vanish and nobody knew it existed).
+  if (!people.length) {
+    return (
+      <section className="on-now on-now--empty" aria-label="Online now">
+        <p className="on-now-head">
+          <span className="on-now-dot" aria-hidden="true" />
+          Online now
+          <span className="on-now-empty">Nobody else is online right now</span>
+        </p>
+      </section>
+    );
+  }
   return (
     <section className="on-now" aria-label="Online now">
       <p className="on-now-head">

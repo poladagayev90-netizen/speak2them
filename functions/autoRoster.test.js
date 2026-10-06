@@ -82,3 +82,18 @@ test('week answer: picked days narrow the times and set the number', () => {
   assert.deepStrictEqual(A.summarize([{ in: true, why: 'package' }, { in: false, why: 'asleep' }, { in: false, why: 'asleep' }]),
     { in: 1, out: 2, why: { package: 1, asleep: 2 } });
 });
+
+test('picked hours replace that week times, odd values dropped', () => {
+  const ob = { weeks: { '2026-10-12': { days: [3], hours: { 3: [20, 21], 6: [11], 9: [1], 2: ['x', 25] }, at: { _seconds: 5 } } } };
+  const a = A.weekAnswer(ob, '2026-10-12');
+  assert.deepStrictEqual(a.days, [3, 6]);
+  assert.deepStrictEqual(A.weekAvailability([{ day: 1, startMin: 1200, endMin: 1320 }], a), [
+    { day: 3, startMin: 1200, endMin: 1320 },
+    { day: 6, startMin: 660, endMin: 720 },
+  ]);
+  assert.strictEqual(A.weekTarget(1, a), 2);
+  assert.strictEqual(A.weekTarget(1, { in: true, days: [0, 1, 2, 3, 4, 5] }), 4); // never more than 4
+  assert.deepStrictEqual(A.weekAvailability([], { in: true, days: [2], hours: { 2: [19, 21] } }), [
+    { day: 2, startMin: 1140, endMin: 1200 }, { day: 2, startMin: 1260, endMin: 1320 },
+  ]);
+});

@@ -48,16 +48,20 @@ export function useTeachingLessons(uid, enabled) {
     if (!uid || !enabled) { setLessons([]); return undefined; }
     const names = {};
     let alive = true;
+    // The names are fetched after each snapshot; a slower fetch for an OLDER
+    // snapshot must not overwrite a newer list.
+    let seq = 0;
     const unsub = onSnapshot(
       query(collection(db, 'tutorLessons'), where('teacherId', '==', uid)),
       async (snap) => {
+        const mine = ++seq;
         const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const missing = [...new Set(all.map((l) => l.uid))].filter((u) => u && !(u in names));
         await Promise.all(missing.map(async (u) => {
           const s = await getDoc(doc(db, 'users', u)).catch(() => null);
           names[u] = s && s.exists() ? (s.get('name') || '') : '';
         }));
-        if (alive) setLessons(all.map((l) => ({ ...l, studentName: names[l.uid] || 'Student' })).sort(byDate));
+        if (alive && mine === seq) setLessons(all.map((l) => ({ ...l, studentName: names[l.uid] || 'Student' })).sort(byDate));
       },
       () => setLessons([]),
     );

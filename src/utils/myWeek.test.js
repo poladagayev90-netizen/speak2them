@@ -1,6 +1,6 @@
 import {
   weekDays, weekAnswer, calendarDays, suggestDays, autoIn, checkinFor, dayNames, bakuWeekKey, addDaysKey,
-  popularBlocks, popularSuggestion,
+  popularBlocks, popularSuggestion, parseHours, cellsToHours, weekCells, hourAhead,
 } from './myWeek';
 
 const at = (s) => Date.parse(s);
@@ -69,4 +69,24 @@ test('popular times in the learner\'s own clock', () => {
   const avail = [{ day: 1, startMin: 540, endMin: 720 }];
   expect(popularSuggestion(cells, avail, 0)).toMatchObject({ day: 2, startMin: 1200, endMin: 1320, label: 'Tue 20:00' });
   expect(popularSuggestion({}, avail, 0)).toBeNull();
+});
+
+test('picked hours: parsed, shown on the grid, and a day counts only while an hour is ahead', () => {
+  expect(parseHours({ 3: [21, 20, 20], 9: [1], 2: ['x'] })).toEqual({ 3: [20, 21] });
+  expect(parseHours(null)).toBeNull();
+  const o = { ...ob, weeks: { '2026-10-12': { days: [3, 6], hours: { 3: [20], 6: [11, 12] } } } };
+  expect(weekAnswer(o, '2026-10-12')).toEqual({ in: true, days: [3, 6], hours: { 3: [20], 6: [11, 12] } });
+  const cells = weekCells({ monday: '2026-10-12', onboarding: o, now: at('2026-10-12T09:00:00') });
+  expect([...cells].sort()).toEqual(['3-20', '6-11', '6-12']);
+  expect(cellsToHours(cells)).toEqual({ 3: [20], 6: [11, 12] });
+  // An answer from before the grid: their usual hours on those days.
+  const old = { ...ob, weeks: { '2026-10-12': { days: [2] } } };
+  expect([...weekCells({ monday: '2026-10-12', onboarding: old })].sort()).toEqual(['2-20', '2-21']);
+  // Wednesday 20:20: 20:00 has gone (a start needs 30 min ahead), 21:00 is still open.
+  const late = at('2026-10-14T20:20:00');
+  expect(hourAhead('2026-10-14', 21, late)).toBe(true);
+  expect(hourAhead('2026-10-14', 20, late)).toBe(false);
+  const days = calendarDays({ monday: '2026-10-12', onboarding: o, cells, now: late });
+  expect(days.map((d) => d.state)).toEqual(['past', 'past', 'free', 'free', 'free', 'picked', 'none']);
+  expect(days[5].hours).toEqual([11, 12]);
 });

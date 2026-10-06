@@ -9,6 +9,7 @@ import { subscribeToBlocked } from '../utils/blocklist';
 import { subscribeToFavorites, setFavorite } from '../utils/favorites';
 import { getPresence } from '../utils/presence';
 import OnlineNow from '../components/OnlineNow';
+import useOnlineNow from '../hooks/useOnlineNow';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
 
 // Söhbətlər siyahısı.
@@ -28,6 +29,10 @@ export default function Chats({ user }) {
   useEffect(() => subscribeToBlocked(user.uid, setBlockedIds), [user.uid]);
   useEffect(() => subscribeToChats(user.uid, setChats), [user.uid]);
   useEffect(() => subscribeToFavorites(user.uid, setFavIds), [user.uid]);
+  // Who is in the app now (every 60 s). The cached partner docs below are read
+  // once, so their lastSeen goes stale; this list is what says «Online».
+  const online = useOnlineNow();
+  const onlineById = new Map(online.people.map((p) => [p.uid, p]));
 
   // Qarşı tərəflərin sənədləri — onlayn nişanı və ad üçün. Hər peer üçün canlı
   // dinləyici saxlamırıq (o, hər heartbeat-də bütün siyahını yenidən çəkərdi);
@@ -75,7 +80,13 @@ export default function Chats({ user }) {
     .filter((c) => c && c.lastMessage && !blockedIds.has(c.peerId))
     // AInur is always there, so she stays at the top; starred partners come
     // next; everyone else follows by the latest message (the query order).
-    .sort((a, b) => (isAinurId(b.peerId) - isAinurId(a.peerId)) || (favIds.has(b.peerId) - favIds.has(a.peerId)));
+    // AInur first, then partners who are online right now, then starred ones.
+    .sort((a, b) => (isAinurId(b.peerId) - isAinurId(a.peerId))
+      || (onlineById.has(b.peerId) - onlineById.has(a.peerId))
+      || (favIds.has(b.peerId) - favIds.has(a.peerId)));
+  // The strip shows only people who are not already in the list below.
+  const partnerIds = new Set(rows.map((c) => c.peerId));
+  const strangers = online.people.filter((p) => !partnerIds.has(p.uid));
 
   if (chats === null) {
     return (
@@ -103,7 +114,7 @@ export default function Chats({ user }) {
           People you have practised with. Message or call them any time. Star the ones you
           would like to practise with again — your weekly plan pairs you with them more often.
         </p>
-        <OnlineNow />
+        <OnlineNow people={strangers} on={online.on} />
         <InviteCard user={user} />
         {rows.length === 0 ? (
           <div className="empty-state">
@@ -121,7 +132,10 @@ export default function Chats({ user }) {
               const name = c.peer.name || c.peer.displayName || (peers[c.peerId] ? 'Unnamed account' : 'Loading...');
               // She has no presence and never will; a dot on her row would be
               // claiming something about a person who is not there.
-              const presence = (!isAinurId(c.peerId) && c.peer.lastSeen) ? getPresence(c.peer) : 'offline';
+              const live = onlineById.get(c.peerId);
+              const presence = isAinurId(c.peerId) ? 'offline'
+                : live ? (live.busy ? 'busy' : 'online')
+                  : c.peer.lastSeen ? getPresence(c.peer) : 'offline';
               // A report card is written BY THE SERVER with the student as
               // sender, so the plain check called it the student's own message
               // and prefixed their row with "You:" — a report that had just
@@ -151,7 +165,7 @@ export default function Chats({ user }) {
                       <span style={{
                         position: 'absolute', right: 0, bottom: 0,
                         width: '13px', height: '13px', borderRadius: '50%',
-                        background: presence === 'busy' ? 'var(--warning)' : 'var(--success)',
+                        background: presence === 'busy' ? 'var(--text-muted)' : 'var(--accent)',
                         border: '2px solid var(--bg-primary)',
                       }} />
                     )}
@@ -166,6 +180,11 @@ export default function Chats({ user }) {
                       }}>
                         {name}
                       </p>
+                      {presence !== 'offline' && (
+                        <span style={{ flexShrink: 0, fontSize: 'var(--fs-xs)', fontWeight: 700, color: presence === 'busy' ? 'var(--text-muted)' : 'var(--accent)' }}>
+                          {presence === 'busy' ? 'In a call' : 'Online'}
+                        </span>
+                      )}
                       <span style={{
                         marginLeft: 'auto', flexShrink: 0, fontSize: '11px',
                         color: unread > 0 ? 'var(--accent)' : 'var(--text-muted)',

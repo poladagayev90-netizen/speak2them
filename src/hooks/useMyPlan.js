@@ -39,14 +39,31 @@ export function setPlanPaused(uid, paused) {
 // the days they want to practise, or «not this week» (days = null). It only
 // asks to be planned — the server still applies every rule and limit
 // (functions/autoRoster.js). Answers older than four weeks are dropped.
-export function saveWeek(uid, onboarding, monday, days) {
-  const value = days ? { days: [...new Set(days)].sort(), at: serverTimestamp() } : { skip: true, at: serverTimestamp() };
+// `pick`: null = «not this week»; an array = whole days (Today's check-in);
+// { hours: { wd: [h] } } = the Plan tab grid. `days` is written with the
+// hours too, so an older reader still knows which days.
+export function saveWeek(uid, onboarding, monday, pick) {
+  let value;
+  if (!pick) value = { skip: true, at: serverTimestamp() };
+  else if (Array.isArray(pick)) value = { days: [...new Set(pick)].sort(), at: serverTimestamp() };
+  else {
+    const hours = {};
+    for (const [wd, hs] of Object.entries(pick.hours || {})) if (hs.length) hours[wd] = hs;
+    value = { days: Object.keys(hours).map(Number).sort(), hours, at: serverTimestamp() };
+  }
   const cutoff = new Date(Date.parse(`${monday}T12:00:00Z`) - 28 * 86400000).toISOString().slice(0, 10);
   const args = [new FieldPath('weeks', monday), value];
   for (const k of Object.keys((onboarding && onboarding.weeks) || {})) {
     if (k < cutoff) args.push(new FieldPath('weeks', k), deleteField());
   }
   return updateDoc(doc(db, 'onboarding', uid), ...args);
+}
+
+// «Use these times every week» on the Plan grid: the usual free times become
+// this week's hours, as if edited in the wizard.
+export function saveUsualTimes(uid, ranges) {
+  if (!ranges.length) return Promise.resolve();
+  return setDoc(doc(db, 'onboarding', uid), { availability: ranges }, { merge: true });
 }
 
 // One more free block (the «popular time» a learner adds in one tap).
