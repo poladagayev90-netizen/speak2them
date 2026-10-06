@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { db } from '../firebase';
+import { ADMIN_UID } from '../constants';
 import { weeklyContent } from '../data/weeklyContent';
 import { plainTopic } from '../utils/topicLabel';
 import { atMs, episodeFor, lessonWhen, PLATFORM_LABEL } from '../utils/tutorLessons';
@@ -37,7 +38,9 @@ export default function ClassLesson({ user }) {
     () => setLesson(null)
   ), [lessonId]);
   // All of this learner's lessons (for this one's number) and their level.
-  const { enrolment, lessons } = useMyLessons(uid);
+  // (For a teacher or the admin viewing: the learner's, not their own.)
+  const subject = lesson?.uid || uid;
+  const { enrolment, lessons } = useMyLessons(subject, subject !== uid && uid !== ADMIN_UID ? uid : undefined);
   const level = enrolment?.level || null;
 
   // The episode for this lesson's number at the learner's level. The rules
@@ -55,12 +58,16 @@ export default function ClassLesson({ user }) {
 
   const back = <button type="button" className="hw-back" onClick={() => navigate('/')} aria-label="Back"><ArrowLeft size={20} /></button>;
   if (lesson === undefined) return <div className="hw-page"><p className="hw-lead">Loading…</p></div>;
-  if (!lesson || lesson.uid !== uid) {
+  // The learner, their teacher and the admin may open it — the teacher shares
+  // this same topic sheet in the lesson (the rules already let them read it).
+  const isTeacher = !!lesson && (lesson.teacherId === uid || uid === ADMIN_UID);
+  if (!lesson || (lesson.uid !== uid && !isTeacher)) {
     return <div className="hw-page">{back}<p className="hw-lead">This lesson is not available.</p></div>;
   }
 
   const topic = Number.isInteger(lesson.topicIndex) ? weeklyContent[lesson.topicIndex] : null;
   const { status } = lesson;
+  const viewingAsTeacher = lesson.uid !== uid;
   const link = lesson.link || '';
 
   return (
@@ -86,7 +93,7 @@ export default function ClassLesson({ user }) {
         </a>
       )}
 
-      {status === 'held' && (
+      {status === 'held' && !viewingAsTeacher && (
         <Button full onClick={() => navigate(`/homework/${lesson.id}`)}>Open the homework</Button>
       )}
 
@@ -95,7 +102,9 @@ export default function ClassLesson({ user }) {
           <p className="hw-lead">
             {status === 'held'
               ? <>This lesson was about <b>{plainTopic(topic.topic)}</b>.</>
-              : <>Before the lesson: learn the words, say them out loud, and think about the questions. Your teacher will use this sheet in the lesson.</>}
+              : viewingAsTeacher
+                ? <>The topic sheet for this lesson — open it to share in the lesson.</>
+                : <>Before the lesson: learn the words, say them out loud, and think about the questions. Your teacher will use this sheet in the lesson.</>}
           </p>
           <TopicCard topic={topic} kicker="Your lesson’s topic" onOpen={() => setSheetOpen(true)} />
         </section>

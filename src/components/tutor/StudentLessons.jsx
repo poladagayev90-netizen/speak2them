@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
-import { CalendarPlus, Check, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BookOpen, CalendarPlus, Check, Plus } from 'lucide-react';
 import { db } from '../../firebase';
 import { authedFetch } from '../../api';
 import { ADMIN_UID, FUNCTIONS_BASE } from '../../constants';
@@ -158,6 +159,7 @@ function WhenForm({ submitLabel, initialMs, onSubmit }) {
 function LessonRow({ lesson, isNext, onError, onMove, story }) {
   const [busy, setBusy] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const navigate = useNavigate();
   const run = async (payload) => {
     setBusy(true);
     const r = await tutorCall({ lessonId: lesson.id, ...payload });
@@ -193,6 +195,11 @@ function LessonRow({ lesson, isNext, onError, onMove, story }) {
           <>
             {past && (
               <button type="button" className="cc-held" disabled={busy} onClick={() => run({ action: 'held', held: true })}>Mark held</button>
+            )}
+            {Number.isInteger(lesson.topicIndex) && (
+              <button type="button" className="cc-act" onClick={() => navigate(`/class/${lesson.id}`)}>
+                <BookOpen size={14} aria-hidden="true" /> Open
+              </button>
             )}
             <button type="button" className="cc-act" disabled={busy} onClick={() => onMove(lesson)}>Move</button>
             <button type="button" className="cc-act" disabled={busy} onClick={() => setCancelling(true)}>Cancel</button>
