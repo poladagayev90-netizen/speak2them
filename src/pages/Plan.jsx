@@ -8,8 +8,9 @@ import NextPracticeCard from '../components/plan/NextPracticeCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import BookingRow from '../components/plan/BookingRow';
 import LessonRow from '../components/plan/LessonRow';
-import useMyLessons from '../hooks/useMyLessons';
-import { lessonItems, mergeSchedule } from '../utils/tutorLessons';
+import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
+import { ADMIN_UID } from '../constants';
+import { lessonItems, teachingItems, mergeSchedule } from '../utils/tutorLessons';
 import useMyPlan, { setPlanPaused, useAutoMode } from '../hooks/useMyPlan';
 import WeekCalendar from '../components/plan/WeekCalendar';
 import { useBillingConfig } from '../hooks/usePackages';
@@ -49,7 +50,11 @@ export default function Plan({ user }) {
   const thisWeek = booked.filter((b) => b.weekKey === plan.weekKey);
   // Individual lessons share the schedule with the booked practices.
   const myLessons = useMyLessons(uid);
-  const schedule = mergeSchedule(booked, myLessons.active ? lessonItems(myLessons.lessons, plan.now) : []);
+  const teaching = useTeachingLessons(uid, user?.role === 'teacher' || uid === ADMIN_UID);
+  const schedule = mergeSchedule(booked, mergeSchedule(
+    myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
+    teachingItems(teaching, plan.now),
+  ));
   const ob = plan.onboarding;
 
   // "Mon–Fri 18:00–22:00 · Sat 11:00–14:00": days with the same hours are

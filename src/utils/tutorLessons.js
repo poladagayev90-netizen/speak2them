@@ -67,6 +67,17 @@ export function lessonItems(lessons = [], nowMs = Date.now()) {
     .map((l) => ({ ...l, kind: 'lesson', startMs: atMs(l), number: episodeFor(l, sorted) }));
 }
 
+// The lessons a teacher teaches, for their own schedule: the planned ones
+// still ahead (or in progress), numbered per student like the student sees it.
+export function teachingItems(lessons = [], nowMs = Date.now()) {
+  return [...lessons].sort(byDate)
+    .filter((l) => l.status === 'planned' && atMs(l) > nowMs - 2 * HOUR_MS)
+    .map((l) => ({
+      ...l, kind: 'lesson', teaching: true, startMs: atMs(l),
+      number: episodeFor(l, lessons.filter((x) => x.uid === l.uid)),
+    }));
+}
+
 // Bookings and lessons in one time line, nearest first.
 export function mergeSchedule(bookings = [], items = []) {
   return [...bookings, ...items].sort((a, b) => Number(a.startMs) - Number(b.startMs));

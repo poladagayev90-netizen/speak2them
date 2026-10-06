@@ -26,8 +26,8 @@ import ThisWeekCard from '../components/plan/ThisWeekCard';
 import useMyPlan, { useAutoMode } from '../hooks/useMyPlan';
 import { useBillingConfig } from '../hooks/usePackages';
 import { outOfPractices, packageView } from '../utils/packages';
-import useMyLessons from '../hooks/useMyLessons';
-import { lessonItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
+import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
+import { lessonItems, teachingItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
 import { plainTopic } from '../utils/topicLabel';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
 import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel } from '../utils/planState';
@@ -84,6 +84,8 @@ export default function Home({ user }) {
   const noPractices = outOfPractices(packageView({ user, summary: plan.planStatus?.access, config: billing }), billing);
   // Individual lessons (Preply / Meet) sit in the same "Coming up" list.
   const myLessons = useMyLessons(user.uid);
+  // A teacher (or the admin) also sees the lessons they teach.
+  const teaching = useTeachingLessons(user.uid, user.role === 'teacher' || user.uid === ADMIN_UID);
   // The polite no-show notice and a partner's "change the time?" request
   // still live on the old slot documents.
   const [mine, setMine] = useState(null);
@@ -154,7 +156,10 @@ export default function Home({ user }) {
   const target = Number(plan.onboarding?.weeklyTarget) || 0;
   // The hero already names the nearest booking; the list starts after it.
   // Lessons join it in time order, each going straight to its materials.
-  const lessons = myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [];
+  const lessons = mergeSchedule(
+    myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
+    teachingItems(teaching, plan.now),
+  );
   // The next lesson within two days gets its own picture card above the daily
   // topic (Sabina, 2026-10-03: she prepared the day before from Today's topic,
   // and by the lesson Today showed another one). A lesson's topic is fixed when
@@ -230,7 +235,8 @@ export default function Home({ user }) {
         <IntroCard user={user} />
 
         {/* 1. The next practice, or what is happening instead. */}
-        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
+        {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
+        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || user.uid === ADMIN_UID)) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (
@@ -249,9 +255,9 @@ export default function Home({ user }) {
         {lessonCard && (
           <TopicCard
             topic={weeklyContent[lessonCard.topicIndex]}
-            kicker={`Lesson ${lessonCard.number} · ${comingUpLabel(lessonCard.startMs, plan.now)}`}
+            kicker={`Lesson ${lessonCard.number}${lessonCard.teaching ? ` · ${lessonCard.studentName}` : ''} · ${comingUpLabel(lessonCard.startMs, plan.now)}`}
             lesson
-            cta="Prepare for the lesson"
+            cta={lessonCard.teaching ? 'Open the lesson sheet' : 'Prepare for the lesson'}
             onOpen={() => navigate(`/class/${lessonCard.id}`)}
           />
         )}
@@ -283,7 +289,7 @@ export default function Home({ user }) {
                     <span className="pl-coming-avatar pl-coming-avatar--lesson" aria-hidden="true"><BookOpen size={18} /></span>
                     <span className="pl-row-main">
                       <p className="pl-row-title">Lesson {b.number}{topic ? ` · ${plainTopic(topic.topic)}` : ''}</p>
-                      <p className="pl-row-sub">{comingUpLabel(b.startMs, plan.now)} · {PLATFORM_LABEL[b.platform] || 'Preply'}</p>
+                      <p className="pl-row-sub">{b.teaching ? `${b.studentName} · ` : ''}{comingUpLabel(b.startMs, plan.now)} · {PLATFORM_LABEL[b.platform] || 'Preply'}</p>
                     </span>
                     <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
                   </button>

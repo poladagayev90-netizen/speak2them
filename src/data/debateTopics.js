@@ -2426,11 +2426,659 @@ const normalTopics = [
   },
 ];
 
+// Added 2026-10-06 (Polad: "more Debate material"). Appended AFTER the first
+// 75 + 75 so every existing topicIndex keeps pointing at the same topic.
+const simpleMore = [
+  {
+    topic: "Summer holiday or winter holiday?",
+    sideA: { label: "Summer ☀️", points: [
+      "The days are long and warm.",
+      "You can swim in the sea.",
+      "There is no school for months.",
+      "You can eat ice cream every day.",
+    ]},
+    sideB: { label: "Winter ❄️", points: [
+      "You can play in the snow.",
+      "New Year is a big party.",
+      "Hot tea at home is cosy.",
+      "It is not too hot to go out.",
+    ]},
+  },
+  {
+    topic: "Cartoons or real films?",
+    sideA: { label: "Cartoons 🎨", points: [
+      "Cartoons are funny and bright.",
+      "Anything can happen in a cartoon.",
+      "Children and adults like them.",
+      "They are short and easy to follow.",
+    ]},
+    sideB: { label: "Real films 🎬", points: [
+      "Real actors show real feelings.",
+      "The stories feel true.",
+      "You see real places.",
+      "You can learn about life.",
+    ]},
+  },
+  {
+    topic: "Tea or hot chocolate?",
+    sideA: { label: "Tea 🍵", points: [
+      "Tea is good after every meal.",
+      "There are many kinds of tea.",
+      "Tea has no sugar if you want.",
+      "Everyone drinks tea with guests.",
+    ]},
+    sideB: { label: "Hot chocolate 🍫", points: [
+      "It is sweet and creamy.",
+      "It makes cold days happy.",
+      "Children love it.",
+      "It feels like a small dessert.",
+    ]},
+  },
+  {
+    topic: "Playing football or watching football?",
+    sideA: { label: "Playing ⚽", points: [
+      "You move and stay healthy.",
+      "You play with your friends.",
+      "Scoring a goal feels great.",
+      "It is free in the park.",
+    ]},
+    sideB: { label: "Watching 📺", points: [
+      "You see the best players.",
+      "You can watch with family.",
+      "You do not get tired.",
+      "Big matches are exciting.",
+    ]},
+  },
+  {
+    topic: "A dog or a fish as a pet?",
+    sideA: { label: "Dog 🐶", points: [
+      "A dog plays with you.",
+      "A dog is a good friend.",
+      "You walk outside every day.",
+      "A dog protects the house.",
+    ]},
+    sideB: { label: "Fish 🐟", points: [
+      "A fish is quiet.",
+      "It needs very little space.",
+      "Watching fish is relaxing.",
+      "It is easy for small children.",
+    ]},
+  },
+  {
+    topic: "The lift or the stairs?",
+    sideA: { label: "Lift 🛗", points: [
+      "The lift is fast.",
+      "You do not get tired.",
+      "It is good with heavy bags.",
+      "Old people need the lift.",
+    ]},
+    sideB: { label: "Stairs 🪜", points: [
+      "Stairs are good exercise.",
+      "You never wait for them.",
+      "You cannot get stuck.",
+      "It is free sport every day.",
+    ]},
+  },
+  {
+    topic: "Shopping with friends or shopping alone?",
+    sideA: { label: "With friends 👯", points: [
+      "Friends help you choose.",
+      "It is more fun.",
+      "You can eat together after.",
+      "Friends tell you the truth.",
+    ]},
+    sideB: { label: "Alone 🛍️", points: [
+      "You can go at your speed.",
+      "You buy what you really want.",
+      "You finish faster.",
+      "Nobody waits for you.",
+    ]},
+  },
+  {
+    topic: "A sandwich or a hot meal for lunch?",
+    sideA: { label: "Sandwich 🥪", points: [
+      "A sandwich is quick to make.",
+      "You can eat it anywhere.",
+      "It is cheap.",
+      "You can take it to work.",
+    ]},
+    sideB: { label: "Hot meal 🍲", points: [
+      "Hot food keeps you full longer.",
+      "It is better in cold weather.",
+      "You sit down and rest.",
+      "It feels like real food.",
+    ]},
+  },
+  {
+    topic: "Strawberries or watermelon?",
+    sideA: { label: "Strawberries 🍓", points: [
+      "They are small and sweet.",
+      "They are great with cream.",
+      "They have a lovely smell.",
+      "They are easy to carry.",
+    ]},
+    sideB: { label: "Watermelon 🍉", points: [
+      "It is full of cold water.",
+      "It is perfect on a hot day.",
+      "One watermelon is for everyone.",
+      "It is cheap in summer.",
+    ]},
+  },
+  {
+    topic: "Taking photos or making videos?",
+    sideA: { label: "Photos 📷", points: [
+      "A photo is quick to take.",
+      "You can print and keep it.",
+      "Photos use less space.",
+      "One good photo says a lot.",
+    ]},
+    sideB: { label: "Videos 🎥", points: [
+      "Videos show sound and movement.",
+      "You remember the moment better.",
+      "Videos are fun to share.",
+      "You can see people laugh.",
+    ]},
+  },
+  {
+    topic: "Doing homework at home or at the library?",
+    sideA: { label: "At home 🏠", points: [
+      "You do not need to travel.",
+      "You can eat and drink.",
+      "Your things are all there.",
+      "You can wear what you like.",
+    ]},
+    sideB: { label: "At the library 📚", points: [
+      "It is very quiet.",
+      "There is no TV to watch.",
+      "You can find books there.",
+      "You work better there.",
+    ]},
+  },
+  {
+    topic: "Going to bed early or late?",
+    sideA: { label: "Early 😴", points: [
+      "You wake up full of energy.",
+      "Sleep is good for your body.",
+      "You are not late in the morning.",
+      "Your mind works better.",
+    ]},
+    sideB: { label: "Late 🦉", points: [
+      "Evenings are long and free.",
+      "You can finish your film.",
+      "The house is quiet at night.",
+      "Some people work better at night.",
+    ]},
+  },
+  {
+    topic: "A birthday party at home or at a café?",
+    sideA: { label: "At home 🎈", points: [
+      "It is cheaper.",
+      "You can make your own cake.",
+      "Guests can stay longer.",
+      "It feels warm and personal.",
+    ]},
+    sideB: { label: "At a café 🧁", points: [
+      "Nobody has to clean after.",
+      "The food is ready.",
+      "There is more space.",
+      "It feels special.",
+    ]},
+  },
+  {
+    topic: "Green tea or black tea?",
+    sideA: { label: "Green tea 🍃", points: [
+      "Green tea is light.",
+      "Many people say it is healthy.",
+      "It is nice without sugar.",
+      "It is good in the afternoon.",
+    ]},
+    sideB: { label: "Black tea ☕", points: [
+      "Black tea is strong.",
+      "It is great with lemon.",
+      "It wakes you up.",
+      "It is the tea of our home.",
+    ]},
+  },
+  {
+    topic: "Learning to swim or learning to ride a bike?",
+    sideA: { label: "Swimming 🏊", points: [
+      "Swimming can save your life.",
+      "It is good for the whole body.",
+      "Summer is more fun.",
+      "You can swim at any age.",
+    ]},
+    sideB: { label: "Bike 🚲", points: [
+      "A bike takes you places.",
+      "It is cheap to use.",
+      "You are outside in fresh air.",
+      "It is good for your legs.",
+    ]},
+  },
+  {
+    topic: "Puzzles or card games?",
+    sideA: { label: "Puzzles 🧩", points: [
+      "Puzzles make you think.",
+      "You can do them alone.",
+      "Finishing one feels good.",
+      "They are calm and quiet.",
+    ]},
+    sideB: { label: "Card games 🃏", points: [
+      "You play with other people.",
+      "Every game is different.",
+      "Cards are easy to carry.",
+      "You laugh a lot.",
+    ]},
+  },
+  {
+    topic: "Wearing a hat or not wearing a hat?",
+    sideA: { label: "Hat 🧢", points: [
+      "A hat keeps the sun off.",
+      "It keeps your head warm.",
+      "It can look stylish.",
+      "Bad hair days are no problem.",
+    ]},
+    sideB: { label: "No hat 💇", points: [
+      "Your hair looks nice.",
+      "A hat can feel hot.",
+      "You do not lose it.",
+      "You feel the wind.",
+    ]},
+  },
+  {
+    topic: "A garden or a balcony?",
+    sideA: { label: "Garden 🌷", points: [
+      "You can grow vegetables.",
+      "Children can play outside.",
+      "There is space for a table.",
+      "Birds come to visit.",
+    ]},
+    sideB: { label: "Balcony 🪴", points: [
+      "It is easy to clean.",
+      "You see the city from above.",
+      "A few plants are enough.",
+      "You can have coffee there.",
+    ]},
+  },
+  {
+    topic: "Texting with emojis or with words only?",
+    sideA: { label: "Emojis 😀", points: [
+      "Emojis show your feelings.",
+      "They are fast to send.",
+      "They make messages friendly.",
+      "Everyone understands a smile.",
+    ]},
+    sideB: { label: "Words ✍️", points: [
+      "Words are clearer.",
+      "Emojis can confuse people.",
+      "Words look more serious.",
+      "You practise your writing.",
+    ]},
+  },
+  {
+    topic: "Rainy day at home or sunny day at the park?",
+    sideA: { label: "Rainy day 🌧️", points: [
+      "You can read a good book.",
+      "The sound of rain is relaxing.",
+      "You can cook something warm.",
+      "Nobody expects you to go out.",
+    ]},
+    sideB: { label: "Sunny park 🌳", points: [
+      "Sun makes you happy.",
+      "You can play games outside.",
+      "You can have a picnic.",
+      "You meet other people.",
+    ]},
+  },
+];
+
+const normalMore = [
+  {
+    topic: "Learning online or in a classroom — which works better?",
+    sideA: { label: "Online 💻", points: [
+      "You can study from anywhere, at any time.",
+      "You can replay a lesson as many times as you need.",
+      "It saves the time and money you spend on travel.",
+      "There are courses on almost every subject.",
+      "Shy students often speak up more in a chat.",
+    ]},
+    sideB: { label: "Classroom 🏫", points: [
+      "A teacher can see when you are lost.",
+      "You make real friends in class.",
+      "It is harder to get distracted.",
+      "Group work feels more natural face to face.",
+      "A fixed time keeps you disciplined.",
+    ]},
+  },
+  {
+    topic: "Should children have smartphones before age 12?",
+    sideA: { label: "Yes 📱", points: [
+      "Parents can always reach their child.",
+      "Children learn useful digital skills early.",
+      "Many school tasks are online now.",
+      "It helps them keep in touch with friends.",
+      "With good rules, a phone can be safe.",
+    ]},
+    sideB: { label: "Not yet 🙅", points: [
+      "Screens can hurt sleep and attention.",
+      "Children need to play outside more.",
+      "Social media can make them anxious.",
+      "A simple phone is enough for calls.",
+      "Childhood is short — phones can wait.",
+    ]},
+  },
+  {
+    topic: "Is it better to rent a car or use taxis on holiday?",
+    sideA: { label: "Rent a car 🚗", points: [
+      "You can go wherever you want, whenever you want.",
+      "It is cheaper for a family or a group.",
+      "You can visit small villages and beaches.",
+      "You don't have to wait for anyone.",
+      "You can carry all your bags easily.",
+    ]},
+    sideB: { label: "Taxis 🚕", points: [
+      "You don't need to know the roads.",
+      "No stress about parking or rules.",
+      "You can relax and look out of the window.",
+      "You don't pay for days you don't drive.",
+      "The driver often gives good local tips.",
+    ]},
+  },
+  {
+    topic: "Should everyone learn to cook at school?",
+    sideA: { label: "Yes 🍳", points: [
+      "Cooking is a skill for the whole of life.",
+      "People who cook eat more healthily.",
+      "It saves money when you live alone.",
+      "It teaches maths, planning and teamwork.",
+      "Sharing food brings people together.",
+    ]},
+    sideB: { label: "No 📚", points: [
+      "Families can teach cooking at home.",
+      "School time is short for main subjects.",
+      "Kitchens in schools are expensive.",
+      "Not everyone is interested in it.",
+      "There are free videos for anyone who wants to learn.",
+    ]},
+  },
+  {
+    topic: "Is it better to have one close friend or a big group of friends?",
+    sideA: { label: "One close friend 🤝", points: [
+      "A close friend really knows you.",
+      "You can share your secrets safely.",
+      "It is easier to keep one friendship strong.",
+      "Quality matters more than numbers.",
+      "You never feel judged.",
+    ]},
+    sideB: { label: "Big group 🎉", points: [
+      "There is always someone free to meet.",
+      "You hear many different ideas.",
+      "Parties and trips are more fun.",
+      "If one friend is busy, you are not alone.",
+      "You learn to get on with different people.",
+    ]},
+  },
+  {
+    topic: "Should shops be open on Sundays?",
+    sideA: { label: "Yes 🛒", points: [
+      "Many people can only shop at the weekend.",
+      "Shops make more money and create jobs.",
+      "Tourists expect shops to be open.",
+      "It makes the city feel alive.",
+      "Workers can choose other days off.",
+    ]},
+    sideB: { label: "No 😌", points: [
+      "Everyone needs one quiet day.",
+      "Shop workers deserve time with family.",
+      "Six days are enough for shopping.",
+      "People spend the day outside instead.",
+      "Small family shops can't compete every day.",
+    ]},
+  },
+  {
+    topic: "Is it better to live in a new building or an old one?",
+    sideA: { label: "New 🏢", points: [
+      "New buildings are warmer and use less energy.",
+      "Everything works — lifts, pipes, heating.",
+      "They are built to be safer.",
+      "There is often parking and a playground.",
+      "You don't pay for many repairs.",
+    ]},
+    sideB: { label: "Old 🏛️", points: [
+      "Old buildings have character and history.",
+      "The walls are often thicker and quieter.",
+      "They are usually in the city centre.",
+      "The ceilings are higher and rooms bigger.",
+      "Neighbours often know each other well.",
+    ]},
+  },
+  {
+    topic: "Should people work four days a week instead of five?",
+    sideA: { label: "Four days 🗓️", points: [
+      "People come back rested and do better work.",
+      "There is more time for family and health.",
+      "Fewer people commute, so less traffic.",
+      "Some companies found it saves money.",
+      "Happy workers stay longer in a job.",
+    ]},
+    sideB: { label: "Five days 💼", points: [
+      "Some jobs need people every day.",
+      "Four long days can be very tiring.",
+      "Small businesses may lose money.",
+      "Customers expect fast answers.",
+      "Pay might go down for some workers.",
+    ]},
+  },
+  {
+    topic: "Is it better to travel with a plan or without one?",
+    sideA: { label: "With a plan 🗺️", points: [
+      "You don't waste time deciding.",
+      "Booking early is cheaper.",
+      "You see the most important places.",
+      "You feel safe and calm.",
+      "You can share the plan with your family.",
+    ]},
+    sideB: { label: "Without a plan 🎒", points: [
+      "You can follow what you like on the day.",
+      "The best stories come from surprises.",
+      "You can stay longer where you are happy.",
+      "You meet people who show you hidden places.",
+      "Holidays should feel free, not like work.",
+    ]},
+  },
+  {
+    topic: "Should homework be done on paper or on a computer?",
+    sideA: { label: "Paper ✏️", points: [
+      "Writing by hand helps you remember.",
+      "There are no games or messages to distract you.",
+      "It is better for your eyes.",
+      "Teachers can see how you think.",
+      "You don't need electricity or internet.",
+    ]},
+    sideB: { label: "Computer 💻", points: [
+      "Typing is faster.",
+      "You can correct mistakes easily.",
+      "Nothing gets lost — it is saved.",
+      "You can add pictures and links.",
+      "These are the skills you need for work.",
+    ]},
+  },
+  {
+    topic: "Should phones be allowed in the classroom?",
+    sideA: { label: "Allowed 📱", points: [
+      "Students can look up words and facts quickly.",
+      "Parents can reach their children in an emergency.",
+      "Phones have useful learning apps.",
+      "Students must learn to use them responsibly.",
+      "Banning phones is hard to control.",
+    ]},
+    sideB: { label: "Not allowed 🚫", points: [
+      "Phones distract students from the lesson.",
+      "Students talk to each other more without them.",
+      "Cheating in tests becomes easier.",
+      "Some children feel bad about not having a new phone.",
+      "School is a good break from screens.",
+    ]},
+  },
+  {
+    topic: "Should tourists learn some of the local language?",
+    sideA: { label: "Yes 🗣️", points: [
+      "Local people are friendlier when you try.",
+      "You can read signs and menus.",
+      "It shows respect for the culture.",
+      "You understand the country better.",
+      "It is a great reason to practise a language.",
+    ]},
+    sideB: { label: "Not needed 📲", points: [
+      "Translation apps work very well now.",
+      "Many people speak English in tourist areas.",
+      "A short trip is not enough time to learn.",
+      "Smiles and gestures work everywhere.",
+      "Holidays are for resting, not studying.",
+    ]},
+  },
+  {
+    topic: "Is it better to buy a new phone or repair the old one?",
+    sideA: { label: "New phone 📱", points: [
+      "New phones are faster and safer.",
+      "The camera and battery are better.",
+      "Old phones stop getting updates.",
+      "Repairs can cost almost as much.",
+      "You get a warranty.",
+    ]},
+    sideB: { label: "Repair 🔧", points: [
+      "It is usually much cheaper.",
+      "It is better for the planet.",
+      "You keep your photos and settings.",
+      "Most people don't need the newest model.",
+      "It supports small local repair shops.",
+    ]},
+  },
+  {
+    topic: "Should people have to vote?",
+    sideA: { label: "Yes 🗳️", points: [
+      "Everyone's voice is heard.",
+      "The result shows what the whole country wants.",
+      "Politicians must listen to all groups.",
+      "It teaches people about their responsibility.",
+      "Some countries do it and it works.",
+    ]},
+    sideB: { label: "No 🙋", points: [
+      "Freedom includes the freedom not to vote.",
+      "People who don't care may vote randomly.",
+      "Making it a rule does not make people interested.",
+      "It is hard to punish people fairly.",
+      "Better education is the real answer.",
+    ]},
+  },
+  {
+    topic: "Is breakfast the most important meal of the day?",
+    sideA: { label: "Yes 🥞", points: [
+      "It gives you energy for the morning.",
+      "Children learn better after breakfast.",
+      "You eat less junk food later.",
+      "It is a calm start to the day.",
+      "Families can eat together before work.",
+    ]},
+    sideB: { label: "Not really 🕐", points: [
+      "Some people are not hungry in the morning.",
+      "What you eat matters more than when.",
+      "A good lunch can be just as important.",
+      "Skipping breakfast suits some people.",
+      "Rushed breakfasts are often unhealthy.",
+    ]},
+  },
+  {
+    topic: "Should young people take a gap year before university?",
+    sideA: { label: "Yes 🌍", points: [
+      "They can work and save some money.",
+      "Travelling teaches things books cannot.",
+      "They decide what to study with a clear head.",
+      "They come back more mature and motivated.",
+      "It is a chance to volunteer and help others.",
+    ]},
+    sideB: { label: "No 🎓", points: [
+      "It is easy to lose the habit of studying.",
+      "Friends move on without you.",
+      "A year of travel can be very expensive.",
+      "You start your career one year later.",
+      "Some people never go back to study.",
+    ]},
+  },
+  {
+    topic: "Is it better to have a pet or no pet?",
+    sideA: { label: "A pet 🐾", points: [
+      "Pets make people less lonely.",
+      "They teach children responsibility.",
+      "Walking a dog keeps you active.",
+      "Coming home to a pet makes you happy.",
+      "Pets can lower stress.",
+    ]},
+    sideB: { label: "No pet 🚫", points: [
+      "Pets cost money for food and the vet.",
+      "Travelling is harder with a pet.",
+      "Small flats are not good for animals.",
+      "Some people are allergic.",
+      "You have more free time.",
+    ]},
+  },
+  {
+    topic: "Should advertising for unhealthy food be banned?",
+    sideA: { label: "Ban it 🚫", points: [
+      "Children believe what adverts tell them.",
+      "Too much sugar causes health problems.",
+      "Countries spend a lot on treating them.",
+      "Healthy choices would look more normal.",
+      "Some countries already do it.",
+    ]},
+    sideB: { label: "Don't ban it 📺", points: [
+      "Adults can make their own choices.",
+      "Parents should guide their children.",
+      "It is hard to decide what is 'unhealthy'.",
+      "TV channels need the money from adverts.",
+      "Education works better than bans.",
+    ]},
+  },
+  {
+    topic: "Is it better to read the book first or watch the film first?",
+    sideA: { label: "Book first 📖", points: [
+      "You imagine the characters your own way.",
+      "Books have more details and feelings.",
+      "The film's surprises don't spoil the book.",
+      "You notice what the film changed.",
+      "Reading is the original story.",
+    ]},
+    sideB: { label: "Film first 🎬", points: [
+      "A good film makes you want to read the book.",
+      "The book then feels like extra scenes.",
+      "Films are shorter — you know if you like it.",
+      "Hard stories are easier after the film.",
+      "You enjoy the film without comparing.",
+    ]},
+  },
+  {
+    topic: "Should students choose their own subjects at school?",
+    sideA: { label: "Yes 🎯", points: [
+      "Students work harder on what they love.",
+      "They can prepare for the job they want.",
+      "It treats teenagers like adults.",
+      "Fewer students get bored and leave.",
+      "Talents grow when they have time.",
+    ]},
+    sideB: { label: "No 📚", points: [
+      "Young people change their minds often.",
+      "Everyone needs basic maths and language.",
+      "Some subjects become useful only later.",
+      "A wide education opens more doors.",
+      "Schools can't offer every subject.",
+    ]},
+  },
+];
+
 // Deterministic interleave: simple, normal, simple, normal, ...
 // A pure function of the two arrays, so every device builds the identical
 // order — that is what keeps the two peers in sync as topicIndex advances.
 // Never replace this with a runtime shuffle.
-// `level` is attached here rather than written on each of the 150 entries, so
+// `level` is attached here rather than written on each entry, so
 // it can never disagree with which array the topic actually came from.
 function interleave(a, b) {
   const out = [];
@@ -2441,4 +3089,6 @@ function interleave(a, b) {
   return out;
 }
 
-export const debateTopics = interleave(simpleTopics, normalTopics);
+// The first 75 + 75 interleave exactly as before, so old indexes still land
+// on the same topics; the added ones follow.
+export const debateTopics = interleave([...simpleTopics, ...simpleMore], [...normalTopics, ...normalMore]);

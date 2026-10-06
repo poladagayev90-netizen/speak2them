@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { byDate } from '../utils/tutorLessons';
 
@@ -36,4 +36,32 @@ export default function useMyLessons(uid, asTeacher) {
   }, [uid, enrolled, asTeacher]);
 
   return { enrolment, lessons, active, loading: enrolment === undefined };
+}
+
+// The lessons a teacher (or the admin) TEACHES, with each student's name, for
+// their own Today / Plan "Coming up" (Polad 2026-10-06: the teacher should see
+// the next lesson and get into its topic in one tap). The rules let a teacher
+// read lessons only with `teacherId == me`, which is exactly this query.
+export function useTeachingLessons(uid, enabled) {
+  const [lessons, setLessons] = useState([]);
+  useEffect(() => {
+    if (!uid || !enabled) { setLessons([]); return undefined; }
+    const names = {};
+    let alive = true;
+    const unsub = onSnapshot(
+      query(collection(db, 'tutorLessons'), where('teacherId', '==', uid)),
+      async (snap) => {
+        const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const missing = [...new Set(all.map((l) => l.uid))].filter((u) => u && !(u in names));
+        await Promise.all(missing.map(async (u) => {
+          const s = await getDoc(doc(db, 'users', u)).catch(() => null);
+          names[u] = s && s.exists() ? (s.get('name') || '') : '';
+        }));
+        if (alive) setLessons(all.map((l) => ({ ...l, studentName: names[l.uid] || 'Student' })).sort(byDate));
+      },
+      () => setLessons([]),
+    );
+    return () => { alive = false; unsub(); };
+  }, [uid, enabled]);
+  return lessons;
 }

@@ -23,6 +23,7 @@ export default function LessonRow({ lesson, now }) {
         <span className="pl-coming-avatar pl-coming-avatar--lesson" aria-hidden="true"><BookOpen size={18} /></span>
         <span className="pl-row-main">
           <p className="pl-row-title">Lesson {lesson.number}{topic ? ` · ${plainTopic(topic.topic)}` : ''}</p>
+          {lesson.teaching && <p className="pl-row-sub">with {lesson.studentName}</p>}
           <p className="pl-row-sub">
             {whenLabel(lesson.startMs, now)} · {PLATFORM_LABEL[lesson.platform] || 'Preply'} · {countdownLabel(lesson.startMs, now)}
           </p>
@@ -30,7 +31,7 @@ export default function LessonRow({ lesson, now }) {
       </div>
       <div className="pl-actions">
         <Button size="sm" icon={<BookOpen size={16} aria-hidden="true" />} onClick={() => navigate(`/class/${lesson.id}`)}>
-          Prepare
+          {lesson.teaching ? 'Open' : 'Prepare'}
         </Button>
         {lesson.link && (
           <Button size="sm" variant="secondary" icon={<ExternalLink size={16} aria-hidden="true" />}
