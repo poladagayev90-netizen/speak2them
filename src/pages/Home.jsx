@@ -21,6 +21,7 @@ import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
+import NextTopics from '../components/plan/NextTopics';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import useMyPlan from '../hooks/useMyPlan';
 import { useBillingConfig } from '../hooks/usePackages';
@@ -91,6 +92,8 @@ export default function Home({ user }) {
   useEffect(() => subscribeToSlotChange(user.uid, setSlotChange), [user.uid]);
 
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
+  // null = today's topic; a number = one of the next topics, opened ahead.
+  const [dailyTopicIndex, setDailyTopicIndex] = useState(null);
   const [showTopicIntro, setShowTopicIntro] = useState(false);
   const [todayTopic, setTodayTopic] = useState(null);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
@@ -231,7 +234,13 @@ export default function Home({ user }) {
         {/* Today's materials, always right under the plan card (Polad
             2026-10-06: "they look good and they ARE the class"). Online now
             lives on Partners only. */}
-        <TopicCard topic={todayTopic} onOpen={() => setDailyTopicOpen(true)} />
+        <TopicCard topic={todayTopic} onOpen={() => { setDailyTopicIndex(null); setDailyTopicOpen(true); }} />
+        {todayTopic && (
+          <NextTopics
+            todayIndex={weeklyContent.indexOf(todayTopic)}
+            onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }}
+          />
+        )}
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (
@@ -316,7 +325,7 @@ export default function Home({ user }) {
         <CourseProgressCard user={user} />
       </div>
 
-      <DailyTopicModal open={dailyTopicOpen} onClose={() => setDailyTopicOpen(false)} user={user} />
+      <DailyTopicModal open={dailyTopicOpen} onClose={() => { setDailyTopicOpen(false); setDailyTopicIndex(null); }} user={user} topicIndex={dailyTopicIndex} />
       <AnalysisReadyModal
         user={user}
         suppressed={streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen}

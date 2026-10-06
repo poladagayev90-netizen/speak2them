@@ -12,7 +12,7 @@ import {
   Mic, MicOff, PhoneOff, Clock, X, Check, Phone, ArrowLeft,
   BookMarked, Lightbulb,
 } from 'lucide-react';
-import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
+import { getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import useBackButton from '../hooks/useBackButton';
 import useWakeLock from '../hooks/useWakeLock';
@@ -43,6 +43,8 @@ import CallTabooStage from '../components/CallTabooStage';
 import CallQuestionStage from '../components/CallQuestionStage';
 import CallDebateStage from '../components/CallDebateStage';
 import CallGuessStage from '../components/CallGuessStage';
+import CallTopicPicker from '../components/CallTopicPicker';
+import { plainTopic } from '../utils/topicLabel';
 import AvatarImage from '../components/ui/AvatarImage';
 import { tabooWords } from '../data/tabooWords';
 import { debateTopics } from '../data/debateTopics';
@@ -137,6 +139,12 @@ export default function Chat({ user }) {
   const [questionStage, setQuestionStage] = useState(null);
   const [debateStage, setDebateStage] = useState(null);
   const [guessStage, setGuessStage] = useState(null);
+  // The call's topic, shared through the call doc (`callTopic`): either
+  // partner can switch it, and both screens follow. Missing = today's.
+  const [callTopic, setCallTopic] = useState(null);
+  const [topicPickerOpen, setTopicPickerOpen] = useState(false);
+  const [topicNote, setTopicNote] = useState(null);
+  const topicSeenRef = useRef(null);
   // One activity at a time owns the call screen. Every launcher button used to
   // repeat this list inline, which meant adding a game meant editing five
   // conditions and forgetting one.
@@ -144,6 +152,17 @@ export default function Chat({ user }) {
     || questionStage?.active || debateStage?.active || guessStage?.active);
   // Any full-screen panel, activities plus the vocabulary sheet.
   const stageOpen = activityOpen || showDaily;
+
+  useEffect(() => {
+    if (!topicNote) return undefined;
+    const t = setTimeout(() => setTopicNote(null), 3500);
+    return () => clearTimeout(t);
+  }, [topicNote]);
+  const pickTopic = (index) => {
+    updateDoc(doc(db, 'calls', callDocId), {
+      callTopic: { contentIndex: index, by: user.uid, at: Date.now() },
+    }).catch((e) => console.error('[Chat] callTopic change failed:', e));
+  };
 
   // A dimmed, locked screen cut the mic mid-call; keep it on while a call
   // is ringing or live (hooks/useWakeLock.js).
@@ -157,6 +176,7 @@ export default function Chat({ user }) {
   // from here on purpose; each one is synced through the `calls` doc, so
   // closing one side only would leave the peers looking at different screens.
   useBackButton(() => {
+    if (topicPickerOpen) { setTopicPickerOpen(false); return true; }
     if (showDaily) { setShowDaily(false); return true; }
     if (inCall) return true;
     return false;
@@ -253,7 +273,9 @@ export default function Chat({ user }) {
   const isMatchedCall = location.state?.matchedCall === true;
   const chatId = [user.uid, peerId].sort().join('_');
   const callDocId = stateCallId || `call_${chatId}`;
-  const content = getTodayContent();
+  const todayIndex = getTodayIndex();
+  const topicIndex = Number.isFinite(callTopic?.contentIndex) ? callTopic.contentIndex : todayIndex;
+  const content = getContentByIndex(topicIndex);
   
   // Hard cap on call length. Agora bills per participant-minute, so this is
   // the single biggest lever on running cost. 1 saatlıq yazı üçün MediaRecorder
@@ -746,6 +768,15 @@ export default function Chat({ user }) {
       // Synced Guess It: both peers see the same card and the same deadline,
       // and each writes only their own guess into `answers`.
       setGuessStage(data.guessStage || null);
+
+      // The shared topic. When the PARTNER changes it, say so once — the
+      // vocabulary and the next activity quietly moving would be confusing.
+      const ct = data.callTopic || null;
+      setCallTopic(ct);
+      if (ct?.at && topicSeenRef.current !== null && topicSeenRef.current !== ct.at && ct.by !== user.uid) {
+        setTopicNote(`Topic changed to ${plainTopic(getContentByIndex(ct.contentIndex)?.topic)}`);
+      }
+      topicSeenRef.current = ct?.at || 0;
 
       // Incoming call for receiver
       if (data.callerId === peerId && data.status === 'calling') {
@@ -1440,6 +1471,13 @@ export default function Chat({ user }) {
               )}
             </>
           )}
+          {inCall && !activityOpen && (
+            <button type="button" className="call-topic-chip" onClick={() => setTopicPickerOpen(true)}>
+              <span className="call-topic-chip-k">Topic</span>
+              <span className="call-topic-chip-t">{plainTopic(content?.topic)}</span>
+              <span className="call-topic-chip-c">Change</span>
+            </button>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
             <div className="fullscreen-call-buttons">
               {inCall && (
@@ -1456,7 +1494,7 @@ export default function Chat({ user }) {
                         updateDoc(doc(db, 'calls', callDocId), {
                           ...closeActivitiesExcept('questionStage'),
                           questionStage: {
-                            active: true, contentIndex: getTodayIndex(),
+                            active: true, contentIndex: topicIndex,
                             difficulty: null, cardIndex: 0,
                           },
                         }).catch((e) => console.error('[Chat] questionStage start failed:', e));
@@ -1477,7 +1515,7 @@ export default function Chat({ user }) {
                           ...closeActivitiesExcept('imageStage'),
                           imageStage: {
                             active: true, imageIndex: 0, startedAtMs: Date.now(),
-                            contentIndex: getTodayIndex(),
+                            contentIndex: topicIndex,
                           },
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
@@ -1496,7 +1534,7 @@ export default function Chat({ user }) {
                           ...closeActivitiesExcept('videoStage'),
                           videoStage: {
                             active: true, videoIndex: 0, startedAtMs: Date.now(),
-                            contentIndex: getTodayIndex(),
+                            contentIndex: topicIndex,
                           },
                         }).catch((e) => console.error('[Chat] videoStage start failed:', e));
                       }}
@@ -1576,6 +1614,16 @@ export default function Chat({ user }) {
           </div>
         </div>
       )}
+      {/* After the call screen in the DOM: both sit at z 1000, so the later
+          one is on top. */}
+      <CallTopicPicker
+        open={inCall && topicPickerOpen}
+        onClose={() => setTopicPickerOpen(false)}
+        currentIndex={topicIndex}
+        todayIndex={todayIndex}
+        onPick={pickTopic}
+      />
+      {inCall && topicNote && <div className="call-topic-note" role="status">{topicNote}</div>}
       {/* The translate ball is position:fixed at z-index 10005, which put it on
           top of EVERYTHING -- including the "Next picture" / "Next topic"
           button at the bottom of every in-call activity panel. Tapping the

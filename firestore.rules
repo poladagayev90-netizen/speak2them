@@ -331,11 +331,21 @@ service cloud.firestore {
       // FirebaseError [code=permission-denied]" that appeared every time a
       // call ended — nothing was actually forbidden, the rule just could not
       // survive the document going away.
+      //
+      // A MISSING doc may be read by the two people its id names (2026-10-06):
+      // the call screen listens before the first call between a pair exists,
+      // and a denied listener is dead for good — so the caller never saw
+      // "accepted" and the first call to a new partner (Online now) hung on
+      // "Calling…". Reading nothing reveals nothing.
       allow read: if isSignedIn() && resource != null && (
         request.auth.uid == resource.data.callerId ||
         request.auth.uid == resource.data.receiverId ||
         request.auth.uid == resource.data.userA ||
         request.auth.uid == resource.data.userB
+      ) || (
+        isSignedIn() && resource == null
+        && callId.split('_').size() == 3 && callId.split('_')[0] == 'call'
+        && request.auth.uid in [callId.split('_')[1], callId.split('_')[2]]
       );
       allow create: if (request.auth.uid == request.resource.data.callerId ||
                        request.auth.uid == request.resource.data.userA ||
