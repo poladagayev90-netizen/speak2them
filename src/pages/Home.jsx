@@ -232,17 +232,6 @@ export default function Home({ user }) {
         {/* 1. The next practice, or what is happening instead. */}
         {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
 
-        {/* Today's materials, always right under the plan card (Polad
-            2026-10-06: "they look good and they ARE the class"). Online now
-            lives on Partners only. */}
-        <TopicCard topic={todayTopic} onOpen={() => { setDailyTopicIndex(null); setDailyTopicOpen(true); }} />
-        {todayTopic && (
-          <NextTopics
-            todayIndex={weeklyContent.indexOf(todayTopic)}
-            onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }}
-          />
-        )}
-
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (
           <button type="button" className="pl-card pl-row" style={{ padding: 'var(--s-3) var(--s-4)' }} onClick={() => navigate('/plan')}>
@@ -255,6 +244,8 @@ export default function Home({ user }) {
           </button>
         )}
 
+        {/* A lesson within 48 h is an appointment: it comes before the daily
+            materials, which then sit together (topic + the next topics). */}
         {lessonCard && (
           <TopicCard
             topic={weeklyContent[lessonCard.topicIndex]}
@@ -262,6 +253,16 @@ export default function Home({ user }) {
             lesson
             cta="Prepare for the lesson"
             onOpen={() => navigate(`/class/${lessonCard.id}`)}
+          />
+        )}
+
+        {/* Today's materials, right under the plan (Polad 2026-10-06: "they
+            look good and they ARE the class"). Online now is on Partners only. */}
+        <TopicCard topic={todayTopic} onOpen={() => { setDailyTopicIndex(null); setDailyTopicOpen(true); }} />
+        {todayTopic && (
+          <NextTopics
+            todayIndex={weeklyContent.indexOf(todayTopic)}
+            onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }}
           />
         )}
 
