@@ -314,6 +314,8 @@ function App() {
       const revealFocused = () => {
         const el = document.activeElement;
         if (!el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+        // The chat composer is pinned to the bottom of a fixed page already.
+        if (el.dataset.noReveal) return;
         // Leave fields that are already in sight alone (the chat composer).
         const r = el.getBoundingClientRect();
         if (r.top >= 0 && r.bottom <= window.innerHeight - 8) return;

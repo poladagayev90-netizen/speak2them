@@ -19,7 +19,6 @@ import SlotNoticeModal from '../components/SlotNoticeModal';
 import IntroCard from '../components/IntroCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
-import OnlineNow from '../components/OnlineNow';
 import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
@@ -229,8 +228,10 @@ export default function Home({ user }) {
         {/* 1. The next practice, or what is happening instead. */}
         {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} />}
 
-        {/* Who is in the app right now, one tap from a call (temporary). */}
-        <OnlineNow />
+        {/* Today's materials, always right under the plan card (Polad
+            2026-10-06: "they look good and they ARE the class"). Online now
+            lives on Partners only. */}
+        <TopicCard topic={todayTopic} onOpen={() => setDailyTopicOpen(true)} />
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (
@@ -294,7 +295,6 @@ export default function Home({ user }) {
 
         {/* 3. Preparation — below the practice it prepares you for. The
             topic is a picture card so Today is not only text. */}
-        <TopicCard topic={todayTopic} onOpen={() => setDailyTopicOpen(true)} />
         <GetReadyCard user={user} />
 
         {/* 4. The week in one line. */}

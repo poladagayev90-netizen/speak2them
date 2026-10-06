@@ -478,12 +478,22 @@ body {
 .btn-random:active { transform: scale(.98); }
 
 .chat-page {
+  /* A conversation is a fixed full-screen column, like every messenger:
+     header, the thread (the only part that scrolls, components/chat) and the
+     composer. It used to sit in the document flow above the floating nav, so
+     scrolling and the keyboard moved the whole page and the message bar
+     floated up and down (Polad 2026-10-06). The bottom nav is hidden here
+     (BottomNav.jsx). No transform on this element: the call overlays inside
+     it are position:fixed and must stay relative to the window. */
+  position: fixed;
+  top: 0; bottom: 0; left: 0; right: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 860px;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  /* Clears the floating nav: its top edge is 64px bar + 14px gap off the
-     bottom, so 70px put the composer underneath it. */
-  padding-bottom: 86px;
+  padding-top: var(--safe-area-top, 0px);
+  background: var(--bg-primary);
 }
 
 .chat-header {

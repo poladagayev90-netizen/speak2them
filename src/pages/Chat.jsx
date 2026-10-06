@@ -9,15 +9,16 @@ import { db } from '../firebase';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import {
   BookOpen, MessageCircleQuestion, Image as ImageIcon, Video as VideoIcon, Drama, MessagesSquare, Target,
-  Mic, MicOff, PhoneOff, Clock, X, Check, Trash2, Send, Phone, ArrowLeft,
+  Mic, MicOff, PhoneOff, Clock, X, Check, Phone, ArrowLeft,
   BookMarked, Lightbulb,
 } from 'lucide-react';
 import { getTodayContent, getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
 import useBackButton from '../hooks/useBackButton';
 import useWakeLock from '../hooks/useWakeLock';
-import AnalysisMessage from '../components/AnalysisMessage';
-import MessageTimestamp from '../components/MessageTimestamp';
+import ChatThread from '../components/chat/ChatThread';
+import ChatComposer from '../components/chat/ChatComposer';
+import '../components/chat/chat.css';
 import PremiumBadge from '../components/PremiumBadge';
 import TutorBadge from '../components/TutorBadge';
 import { BadgeUnlockModal } from '../components/BadgeSystem';
@@ -29,7 +30,7 @@ import { startLocalRecording, addRemoteStream, stopLocalRecording } from '../uti
 import { uploadCallRecording } from '../utils/recordingUpload';
 import { enqueueCallAnalysis } from '../utils/analysisQueue';
 import { setInCallFlag, isInCall } from '../utils/presence';
-import { markChatRead, deleteMessage, touchChat } from '../utils/chat';
+import { markChatRead, deleteMessage, editMessage, touchChat } from '../utils/chat';
 import { subscribeToBlocked } from '../utils/blocklist';
 import { setFavorite } from '../utils/favorites';
 import { canPair } from '../utils/matchmaking';
@@ -109,7 +110,6 @@ export default function Chat({ user }) {
   const [peerBlocked, setPeerBlocked] = useState(false);
   useEffect(() => subscribeToBlocked(user.uid, (ids) => setPeerBlocked(ids.has(peerId))), [user.uid, peerId]);
   const shownMessages = peerBlocked ? messages.filter((m) => m.senderId !== peerId) : messages;
-  const [text, setText] = useState('');
   const [peer, setPeer] = useState(null);
   const [inCall, setInCall] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -121,8 +121,8 @@ export default function Chat({ user }) {
   // Qarşı tərəf mikrofonu bağlayıb. Agora bunu ayrılma kimi deyil, ayrıca
   // vəziyyət kimi göstərməlidir — aşağıdakı `user-unpublished`-ə bax.
   const [peerMuted, setPeerMuted] = useState(false);
-  // Toxunulmuş öz mesajım — silmə düyməsi yalnız onun altında görünür.
-  const [selectedMsg, setSelectedMsg] = useState(null);
+  // The message being edited in the composer (ChatComposer), if any.
+  const [editing, setEditing] = useState(null);
   const [callSeconds, setCallSeconds] = useState(0);
   // Limitə 1 dəq qalmış görünən keçici xəbərdarlıq banneri.
   const [timeWarning, setTimeWarning] = useState(false);
@@ -224,7 +224,6 @@ export default function Chat({ user }) {
   const declineHandledRef = useRef(false);
   const clientRef = useRef(null);
   const localTrackRef = useRef(null);  // mic track — created on user gesture
-  const bottomRef = useRef(null);
   const joinedRef = useRef(false);
   // Birbaşa zəngin bir dəfə işə düşməsi üçün. `location.key` dəyişdikcə effekt
   // təkrar qiymətləndirilir, bu ref isə eyni naviqasiyada ikinci zəngi saxlayır.
@@ -338,11 +337,21 @@ export default function Chat({ user }) {
       orderBy('createdAt', 'asc'),
       limitToLast(200)
     );
+    // Unchanged messages keep their object, so the memoised bubbles in
+    // ChatThread re-render only for what actually changed.
+    const prevById = new Map();
     const unsub = onSnapshot(q, (snap) => {
       const msgs = snap.docs
         .map((d) => {
           const data = d.data();
-          return { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || null, pending: d.metadata.hasPendingWrites };
+          const next = { id: d.id, ...data, createdAt: data.createdAt?.toDate?.() || null, pending: d.metadata.hasPendingWrites };
+          const prev = prevById.get(d.id);
+          const same = prev && prev.text === next.text && prev.deleted === next.deleted && prev.pending === next.pending
+            && (prev.editedAt?.toMillis?.() || 0) === (next.editedAt?.toMillis?.() || 0)
+            && (prev.createdAt?.getTime?.() || 0) === (next.createdAt?.getTime?.() || 0);
+          const out = same ? prev : next;
+          prevById.set(d.id, out);
+          return out;
         })
         .sort((a, b) => {
           if (a.createdAt && b.createdAt) return a.createdAt - b.createdAt;
@@ -351,7 +360,6 @@ export default function Chat({ user }) {
           return 0;
         });
       setMessages(msgs);
-      setTimeout(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 50);
     }, console.error);
     return unsub;
   }, [chatId, user.uid, peerId]);
@@ -1271,12 +1279,9 @@ export default function Chat({ user }) {
     }
   };
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!text.trim() || !user.uid || !chatId || !peerId) return;
-    const messageText = text.trim();
+  const sendMessage = async (messageText) => {
+    if (!messageText || !user.uid || !chatId || !peerId) return;
     const senderName = user.displayName || user.name || 'User';
-    setText('');
     try {
       // Sənəd əvvəl yazılır: notifyChatMessage trigger-i mesaj yarananda çat
       // sənədindən participants oxuyur, ona görə o, mesajdan ƏVVƏL mövcud olmalıdır.
@@ -1289,7 +1294,16 @@ export default function Chat({ user }) {
       });
     } catch (error) {
       console.error('[Chat] sendMessage error:', error);
-      setText(messageText);
+      alert('The message was not sent. Check your connection and try again.');
+    }
+  };
+  const saveEdit = async (m, value) => {
+    setEditing(null);
+    try {
+      await editMessage(chatId, m.id, value);
+    } catch (error) {
+      console.error('[Chat] edit error:', error);
+      alert('This message can no longer be edited (15 minutes have passed).');
     }
   };
 
@@ -1829,83 +1843,30 @@ export default function Chat({ user }) {
         </div>
       </div>
 
-      <div className="chat-messages">
-        {shownMessages.length === 0 ? (
-          <div className="chat-empty-hint">
-            {/* Arrived through their "practise with me" link (utils/invite.js):
-                say why this chat is here, so it does not read as a stranger. */}
-            <p>
-              {location.state?.invited
-                ? `You opened ${peer?.name || 'your partner'}’s practice link. Say hi, or call when you are both ready.`
-                : 'Say hello and start practising.'}
-            </p>
-          </div>
-        ) : (
-          shownMessages.map((m) => {
-            const isMine = m.senderId === user.uid;
-            const selected = selectedMsg === m.id;
-            return (
-              <div key={m.id} className={`message ${isMine ? 'mine' : 'theirs'}${m.kind === 'analysis' ? ' message--card' : ''}`}>
-                {!isMine && <span className="message-sender">{m.senderName}</span>}
-                {m.deleted ? (
-                  <p style={{ fontStyle: 'italic', opacity: 0.6 }}>This message was deleted</p>
-                ) : m.kind === 'analysis' ? (
-                  /* Serverin yazdığı hesabat kartı (postAnalysisToTeacherChat).
-                     senderId şagirddir, ona görə `isMine` elə buradaca kimin
-                     baxdığını deyir: öz hesabatımdırsa History-ə, şagirdinkidirsə
-                     müəllim səhifəsinə aparır — əlavə rol sorğusu olmadan. */
-                  <AnalysisMessage
-                    message={m}
-                    isMine={isMine}
-                    onOpen={() => navigate(isMine ? '/lab' : `/teacher/student/${m.senderId}`)}
-                  />
-                ) : (
-                  <p
-                    onClick={() => isMine && setSelectedMsg(selected ? null : m.id)}
-                    style={{ cursor: isMine ? 'pointer' : 'default' }}
-                  >
-                    {m.text}
-                  </p>
-                )}
-                <MessageTimestamp createdAt={m.createdAt} pending={m.pending} />
-                {/* Silmə yalnız öz mesajında və toxunuşdan sonra görünür —
-                    hər baloncuğun yanında daimi zibil qutusu söhbəti qarışdırır. */}
-                {isMine && selected && !m.deleted && (
-                  <button
-                    type="button"
-                    onClick={() => { setSelectedMsg(null); deleteMessage(chatId, m.id); }}
-                    style={{
-                      marginTop: '6px', padding: '5px 10px', borderRadius: '8px',
-                      border: '1px solid var(--danger)', background: 'var(--danger-bg)',
-                      color: 'var(--danger)', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                    }}
-                  >
-                    <Trash2 size={15} strokeWidth={1.75} aria-hidden="true" /> Delete for everyone
-                  </button>
-                )}
-              </div>
-            );
-          })
-        )}
-        <div ref={bottomRef} />
-      </div>
+      <ChatThread
+        messages={shownMessages}
+        uid={user.uid}
+        chatId={chatId}
+        emptyText={location.state?.invited
+          // Arrived through their "practise with me" link (utils/invite.js):
+          // say why this chat is here, so it does not read as a stranger.
+          ? `You opened ${peer?.name || 'your partner'}’s practice link. Say hi, or call when you are both ready.`
+          : 'Say hello and start practising.'}
+        // A report card (kind 'analysis', written by the server with the
+        // student as sender): my own opens the Lab, a student's opens their page.
+        onOpenAnalysis={(m, mine) => navigate(mine ? '/lab' : `/teacher/student/${m.senderId}`)}
+        onEdit={setEditing}
+        onDelete={(m) => deleteMessage(chatId, m.id)}
+      />
 
-      <form className="chat-input" onSubmit={sendMessage}>
-        {/* Today's topic lives beside the composer, not in the header: as an
-            unlabeled calendar icon up there it read as a stray button and,
-            with a long name, was pushed off the screen. */}
-        <button type="button" className="chat-topic-btn" aria-label="Today's topic" title="Today's topic" onClick={() => setShowDaily(!showDaily)}>
-          <BookOpen size={20} strokeWidth={1.9} aria-hidden="true" />
-        </button>
-        <input
-          type="text"
-          placeholder="Write a message..."
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <button type="submit" aria-label="Send"><Send size={18} strokeWidth={1.75} aria-hidden="true" /></button>
-      </form>
-      
+      <ChatComposer
+        onSend={sendMessage}
+        editing={editing}
+        onSaveEdit={saveEdit}
+        onCancelEdit={() => setEditing(null)}
+        onTopic={() => setShowDaily((v) => !v)}
+      />
+
       {postCallStage === 'quiz' && (
         <PostCallQuizModal
           words={callTranslations}

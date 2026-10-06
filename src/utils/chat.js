@@ -78,6 +78,16 @@ export function deleteMessage(chatId, messageId) {
   });
 }
 
+// Editing your own message within 15 minutes, as in WhatsApp (firestore.rules
+// checks the window and that only text + editedAt change). The bubble then
+// says "edited", so the conversation is never silently rewritten.
+export function editMessage(chatId, messageId, text) {
+  return updateDoc(doc(db, 'chats', chatId, 'messages', messageId), {
+    text,
+    editedAt: serverTimestamp(),
+  });
+}
+
 // Çat sənədi yalnız İLK MESAJLA yaranır. Əvvəl istifadəçinin profilinə girmək
 // kifayət edirdi və siyahı "Hələ mesaj yoxdur" kabus sətirləri ilə dolurdu.
 export function touchChat({ chatId, myUid, peerId, lastMessage }) {

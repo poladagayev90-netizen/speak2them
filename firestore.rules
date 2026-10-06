@@ -293,10 +293,27 @@ service cloud.firestore {
         // dəyərə dəyişdirilə bilirdi, yəni göndərən köhnə mesajın mətnini
         // sonradan tamamilə dəyişib söhbətin gedişini saxtalaşdıra bilərdi.
         allow update: if request.auth.uid == resource.data.senderId
-          && request.resource.data.diff(resource.data).affectedKeys()
+          && ((
+            request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['deleted', 'text'])
-          && request.resource.data.deleted == true
-          && request.resource.data.text == '';
+            && request.resource.data.deleted == true
+            && request.resource.data.text == ''
+          ) || (
+            // Edit (2026-10-06, WhatsApp-style): own plain message, within 15
+            // minutes of sending, text + editedAt only, and editedAt is the
+            // server's clock — the bubble then shows "edited", so a change
+            // never passes as the original. Report cards (kind) and deleted
+            // messages cannot be edited.
+            request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['text', 'editedAt'])
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 4000
+            && request.resource.data.editedAt == request.time
+            && !('kind' in resource.data)
+            && resource.data.get('deleted', false) != true
+            && request.time < resource.data.createdAt + duration.value(15, 'm')
+          ));
         allow delete: if request.auth.uid == resource.data.senderId;
       }
     }

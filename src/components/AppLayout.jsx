@@ -34,7 +34,10 @@ export default function AppLayout({ children, user }) {
       meta.name = 'viewport';
       document.head.appendChild(meta);
     }
-    meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover');
+    // interactive-widget=resizes-content: in a mobile browser the keyboard
+    // shrinks the layout, so the chat composer (fixed to the bottom) rides
+    // above it instead of hiding under it.
+    meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content');
     
     // Explicitly lock body styles to prevent horizontal bleeding
     document.body.style.width = '100%';
