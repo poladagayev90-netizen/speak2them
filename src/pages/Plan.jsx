@@ -10,7 +10,8 @@ import BookingRow from '../components/plan/BookingRow';
 import LessonRow from '../components/plan/LessonRow';
 import useMyLessons from '../hooks/useMyLessons';
 import { lessonItems, mergeSchedule } from '../utils/tutorLessons';
-import useMyPlan, { setPlanPaused } from '../hooks/useMyPlan';
+import useMyPlan, { setPlanPaused, useAutoMode } from '../hooks/useMyPlan';
+import WeekCalendar from '../components/plan/WeekCalendar';
 import { useBillingConfig } from '../hooks/usePackages';
 import { outOfPractices, packageView } from '../utils/packages';
 import { subscribeToSlotChange } from '../utils/practiceSlots';
@@ -41,7 +42,8 @@ export default function Plan({ user }) {
   const [confirming, setConfirming] = useState(false);
   const [msg, setMsg] = useState('');
 
-  const headline = planHeadline({ uid, ...plan });
+  const autoMode = useAutoMode();
+  const headline = planHeadline({ uid, ...plan, autoMode });
   const open = openOffers(plan.offers, uid, plan.now);
   const booked = upcomingBookings(plan.bookings, plan.now);
   const thisWeek = booked.filter((b) => b.weekKey === plan.weekKey);
@@ -90,10 +92,16 @@ export default function Plan({ user }) {
       <div className="home-body" style={{ paddingBottom: '100px' }}>
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
 
+        {/* The week as a calendar: what is booked, and the days you want. */}
+        {ob && ob.charterAcceptedAt && (ob.availability || []).length > 0 && (
+          <WeekCalendar uid={uid} onboarding={ob} bookings={plan.bookings} offers={plan.offers}
+            access={plan.planStatus?.access} verdict={plan.planStatus?.auto} weekKey={plan.weekKey} now={plan.now} />
+        )}
+
         {/* The status card only when there is nothing booked or to answer —
             otherwise the lists below ARE the status. */}
         {!booked.length && !open.length && !plan.loading && (
-          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} />
+          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} />
         )}
 
         {open.length > 0 && (

@@ -10,6 +10,8 @@
 //   • an unanswered proposal is not held against anyone, so it is phrased as
 //     a question, not a debt.
 
+import { checkinFor } from './myWeek';
+
 export const BLOCK_MS = 2 * 60 * 60 * 1000;
 export const JOIN_OPENS_MS = 5 * 60 * 1000;
 
@@ -53,9 +55,11 @@ export function limitText(limit) {
   };
 }
 
-// kind: setup | paused | next | answer | done | no_match | waiting
+// kind: setup | paused | next | answer | checkin | done | no_match | waiting
+// `autoMode`: the autopilot is on (appConfig/planner.rosterMode "auto"), so
+// a learner who has not said «in» for the week is asked (myWeek.checkinFor).
 export function planHeadline({
-  uid, bookings, offers, planStatus, onboarding, attended = 0, weekKey, now = Date.now(),
+  uid, bookings, offers, planStatus, onboarding, attended = 0, weekKey, now = Date.now(), autoMode = false,
 }) {
   const ob = onboarding || null;
   const asked = Math.max(0, Number(ob?.weeklyTarget) || 0);
@@ -72,6 +76,10 @@ export function planHeadline({
   if (open.length) return { kind: 'answer', count: open.length };
 
   if (ob.planPaused === true) return { kind: 'paused' };
+  if (autoMode) {
+    const c = checkinFor({ onboarding: ob, access: planStatus?.access, auto: planStatus?.auto, now });
+    if (c) return { kind: 'checkin', ...c };
+  }
   if (attended >= target) return { kind: 'done', attended, target };
 
   // planStatus is written when a plan goes out, for the week it covers.

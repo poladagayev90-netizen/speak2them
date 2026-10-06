@@ -11,8 +11,10 @@ import Logo from '../components/Logo';
 import { deviceTimeZone } from '../utils/appLanguage';
 import {
   WEEK_DAYS, cellsToRanges, rangesToCells, formatLocalNow, formatOffsetVsBaku,
-  cityOf, totalHours, formatMinutes,
+  cityOf, totalHours, formatMinutes, offsetVsBaku,
 } from '../utils/timezone';
+import { usePopularTimes } from '../hooks/useMyPlan';
+import { popularBlocks } from '../utils/myWeek';
 import {
   ONBOARDING_VERSION, GOALS, LEVELS, AGE_BANDS, COUNTRIES, TOPICS, WEEKLY_TARGETS, labelOf,
 } from '../utils/onboarding';
@@ -75,6 +77,17 @@ export default function Onboarding({ user }) {
   const [ageBand, setAgeBand] = useState('');
   const [country, setCountry] = useState('');
   const [timeZone, setTimeZone] = useState(deviceTimeZone() || 'Asia/Baku');
+  // The six busiest 2-hour blocks (appConfig/popularTimes), in this learner's
+  // own clock: marked on the grid so a newcomer picks times others share.
+  const popularTimes = usePopularTimes();
+  const popularCells = useMemo(() => {
+    const out = new Set();
+    for (const b of popularBlocks(popularTimes, offsetVsBaku(timeZone)).slice(0, 6)) {
+      const h = Math.floor(b.startMin / 60);
+      out.add(`${b.day}-${h}`); out.add(`${b.day}-${h + 1}`);
+    }
+    return out;
+  }, [popularTimes, timeZone]);
   const [cells, setCells] = useState(() => new Set());
   const [weeklyTarget, setWeeklyTarget] = useState(0);
   const [topics, setTopics] = useState([]);
@@ -403,13 +416,14 @@ export default function Onboarding({ user }) {
                   {WEEK_DAYS.map((d) => {
                     const key = `${d.day}-${h}`;
                     const on = cells.has(key);
+                    const popular = popularCells.has(key);
                     return (
                       <button
                         key={key}
                         type="button"
-                        className={`ob-cell ${on ? 'is-on' : ''}`}
+                        className={`ob-cell ${on ? 'is-on' : ''} ${popular ? 'is-popular' : ''}`}
                         aria-pressed={on}
-                        aria-label={`${d.short} ${formatMinutes(h * 60)}`}
+                        aria-label={`${d.short} ${formatMinutes(h * 60)}${popular ? ', popular' : ''}`}
                         onClick={() => toggleCell(key)}
                       />
                     );
@@ -417,6 +431,9 @@ export default function Onboarding({ user }) {
                 </div>
               ))}
             </div>
+            {popularCells.size > 0 && (
+              <p className="ob-legend"><span className="ob-legend-dot" aria-hidden="true" /> Popular — more people are free then</p>
+            )}
             {editing && (
               <p className="ob-note">
                 Changes count from your next weekly plan (Sunday). Practices you have already confirmed stay as they are.

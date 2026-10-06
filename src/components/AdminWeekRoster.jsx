@@ -27,6 +27,134 @@ function seenLabel(ms, now) {
 // ticking someone only changes their box. Nothing is saved until "Save", so a
 // slip costs nothing; the planner reads the saved list on its next build.
 export default function AdminWeekRoster({ week, users }) {
+  const [mode, setMode] = useState(null);
+  useEffect(() => onSnapshot(doc(db, 'appConfig', 'planner'),
+    (s) => setMode(s.exists() && s.get('rosterMode') === 'auto' ? 'auto' : 'manual'), () => setMode('manual')), []);
+  if (mode === null) return <section className="aa-panel"><p className="aa-empty">Loading…</p></section>;
+  return mode === 'auto'
+    ? <AutoRoster week={week} users={users} />
+    : <ManualRoster week={week} users={users} />;
+}
+
+// The switch between the admin's list and the autopilot. Turning the
+// autopilot on changes who gets planned from the next planner run.
+function ModeSwitch({ auto }) {
+  const [busy, setBusy] = useState(false);
+  const flip = async () => {
+    const msg = auto
+      ? 'Back to the manual list? Only the people you tick will be planned again.'
+      : 'Turn the autopilot on? Everyone who says "I\'m in" for the week (or has a package) and opened the app in the last 7 days is planned. Your list becomes an Always / Never override.';
+    if (!window.confirm(msg)) return;
+    setBusy(true);
+    await setDoc(doc(db, 'appConfig', 'planner'), { rosterMode: auto ? 'manual' : 'auto' }, { merge: true }).catch((e) => window.alert(e.message));
+    setBusy(false);
+  };
+  return (
+    <div className="aa-mode" role="group" aria-label="Who decides">
+      <button type="button" className={`aa-chip ${!auto ? 'is-on' : ''}`} disabled={busy || !auto} onClick={flip}>Manual list</button>
+      <button type="button" className={`aa-chip ${auto ? 'is-on' : ''}`} disabled={busy || auto} onClick={flip}>Autopilot</button>
+    </div>
+  );
+}
+
+const WHY = {
+  said_in: 'said "in"', package: 'package', new: 'new this week', included: 'always (you)',
+  excluded: 'never (you)', asleep: 'not seen 7+ days', not_confirmed: 'did not say "in"', skipped: 'week off',
+  snoozed: '2 proposals ignored', no_practices_left: 'no practices left', not_set_up: 'not set up', paused: 'paused',
+};
+
+// Autopilot: the server decides (functions/autoRoster.js) and writes its
+// verdicts to weekRoster/{monday}.autoWhy on every plan/refill run. The admin
+// only overrides: Always (include) or Never (exclude). Nothing moves while
+// you work — sorted by name once.
+function AutoRoster({ week, users }) {
+  const [docData, setDocData] = useState(undefined);
+  const [onboarding, setOnboarding] = useState([]);
+  const [draft, setDraft] = useState(null); // Map uid → 'in' | 'out' (absent = auto)
+  const [filter, setFilter] = useState('All');
+  const [state, setState] = useState('');
+  useEffect(() => {
+    setDocData(undefined); setDraft(null);
+    return onSnapshot(doc(db, 'weekRoster', week), (s) => setDocData(s.exists() ? s.data() : {}), () => setDocData({}));
+  }, [week]);
+  useEffect(() => onSnapshot(collection(db, 'onboarding'),
+    (snap) => setOnboarding(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), () => setOnboarding([])), []);
+  useEffect(() => {
+    if (docData === undefined || draft !== null) return;
+    const m = new Map();
+    for (const u of docData.include || []) m.set(u, 'in');
+    for (const u of docData.exclude || []) m.set(u, 'out');
+    setDraft(m);
+  }, [docData, draft]);
+  const now = Date.now();
+  const people = useMemo(() => {
+    const byUid = new Map((users || []).map((u) => [u.uid || u.id, u]));
+    return onboarding
+      .map((o) => { const u = byUid.get(o.id) || {}; return { id: o.id, name: u.name || o.id.slice(0, 6), level: u.level || o.level, seen: toMs(u.lastSeen), role: u.role }; })
+      .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher')
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [users, onboarding]);
+  if (docData === undefined || draft === null) return <section className="aa-panel"><p className="aa-empty">Loading…</p></section>;
+  const why = docData.autoWhy || {};
+  const sum = docData.autoSummary || null;
+  const inSet = new Set(docData.autoIn || []);
+  const shown = people.filter((p) => filter === 'All' || (filter === 'In' ? inSet.has(p.id) : !inSet.has(p.id)));
+  const savedKey = JSON.stringify([...(docData.include || [])].sort()) + JSON.stringify([...(docData.exclude || [])].sort());
+  const draftIn = [...draft].filter(([, v]) => v === 'in').map(([u]) => u).sort();
+  const draftOut = [...draft].filter(([, v]) => v === 'out').map(([u]) => u).sort();
+  const dirty = savedKey !== JSON.stringify(draftIn) + JSON.stringify(draftOut);
+  const set = (id, v) => setDraft((cur) => { const n = new Map(cur); if (v === 'auto') n.delete(id); else n.set(id, v); return n; });
+  const save = async () => {
+    setState('saving');
+    try {
+      await setDoc(doc(db, 'weekRoster', week), { include: draftIn, exclude: draftOut, updatedAt: serverTimestamp(), updatedBy: ADMIN_UID }, { merge: true });
+      setState('saved');
+    } catch (e) { setState(`Not saved: ${e.code || e.message}`); }
+  };
+  const reasons = sum ? Object.entries(sum.why || {}).filter(([k]) => !['said_in', 'package', 'new', 'included'].includes(k)) : [];
+  return (
+    <section className="aa-panel aa-roster">
+      <h3 className="aa-h"><UsersRound size={16} /> Who practises · week of {dayMonth(week)}</h3>
+      <ModeSwitch auto />
+      <p className="aa-meta">
+        {sum
+          ? <><b>Autopilot · {sum.in} in</b>{reasons.length ? ` · out: ${reasons.map(([k, n]) => `${n} ${WHY[k] || k}`).join(', ')}` : ''}{docData.autoAt ? ` · checked ${new Date(docData.autoAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}</>
+          : 'Autopilot · this week has not been checked yet — the next plan or refill run decides.'}
+      </p>
+      <div className="aa-filters">
+        {['All', 'In', 'Out'].map((f) => (
+          <button key={f} type="button" className={`aa-chip ${filter === f ? 'is-on' : ''}`} onClick={() => setFilter(f)}>{f}</button>
+        ))}
+      </div>
+      <ul className="aa-roster-list">
+        {shown.map((p) => {
+          const v = draft.get(p.id) || 'auto';
+          return (
+            <li key={p.id} className={`aa-roster-row ${inSet.has(p.id) ? 'is-on' : ''}`}>
+              <span className="aa-roster-main">
+                <span className="aa-name">{p.name} <span className="aa-level">{levelShort(p.level)}</span></span>
+                <span className="aa-meta">{WHY[why[p.id]] || '—'} · {seenLabel(p.seen, now)}</span>
+              </span>
+              <span className="aa-tri" role="group" aria-label={`${p.name}: override`}>
+                {[['auto', 'Auto'], ['in', 'Always'], ['out', 'Never']].map(([k, label]) => (
+                  <button key={k} type="button" className={`aa-chip aa-chip--sm ${v === k ? 'is-on' : ''}`} onClick={() => set(p.id, k)}>{label}</button>
+                ))}
+              </span>
+            </li>
+          );
+        })}
+        {shown.length === 0 && <li className="aa-empty">Nobody here.</li>}
+      </ul>
+      <div className="aa-sticky-bar">
+        <span className="aa-sticky-count">{draftIn.length} always · {draftOut.length} never{dirty ? ' · not saved' : ''}</span>
+        <Button size="sm" disabled={!dirty || state === 'saving'} onClick={save}>{state === 'saving' ? 'Saving…' : 'Save'}</Button>
+      </div>
+      {state && state !== 'saving' && <p className={state === 'saved' ? 'aa-ok' : 'aa-error'} role="status">{state === 'saved' ? 'Saved. The next planner run uses it.' : state}</p>}
+    </section>
+  );
+}
+
+function ManualRoster({ week, users }) {
   const [saved, setSaved] = useState(undefined);
   const [prev, setPrev] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -106,6 +234,7 @@ export default function AdminWeekRoster({ week, users }) {
   return (
     <section className="aa-panel aa-roster">
       <h3 className="aa-h"><UsersRound size={16} /> Who practises · week of {dayMonth(week)}</h3>
+      <ModeSwitch auto={false} />
       <p className="aa-meta">
         Only the people ticked here are planned, can join a practice block and can be matched at random.
         {/* No saved list: the server uses the most recent list of the last four

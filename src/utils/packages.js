@@ -5,8 +5,6 @@ import { ADMIN_UID } from '../constants';
 // short summary to planStatus/{uid}.access; this file only reads that, and
 // falls back to the user doc when no summary has been written yet.
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const WEEK_MS = 7 * DAY_MS;
 
 export const DEFAULT_PACKAGES = [
   { size: 8, price: 6, productId: 'practice_8' },
@@ -33,8 +31,7 @@ export function billingConfig(raw = {}) {
   return {
     enforce: r.enforce === true,
     enabledAtMs: msOf(r.enabledAt) || null,
-    trialWeeks: Number(r.trialWeeks) > 0 ? Number(r.trialWeeks) : 4,
-    trialPerWeek: Number(r.trialPerWeek) > 0 ? Number(r.trialPerWeek) : 2,
+    trialPractices: Number(r.trialPractices) > 0 ? Number(r.trialPractices) : 3,
     carryMax: r.carryMax != null && Number.isFinite(Number(r.carryMax)) ? Math.max(0, Number(r.carryMax)) : 4,
     currency: r.currency || 'AZN',
     packages,
@@ -52,12 +49,6 @@ export function isUnlimited(user, nowMs = Date.now()) {
   return false;
 }
 
-export function trialEndsMs(user, config) {
-  const u = user || {};
-  const signup = msOf(u.trialStartedAt) || msOf(u.createdAt) || 0;
-  return Math.max(signup, config.enabledAtMs || 0) + config.trialWeeks * WEEK_MS;
-}
-
 // Where the learner stands, for the screen.
 export function packageView({ user, summary, config, nowMs = Date.now() }) {
   const cfg = config || billingConfig();
@@ -66,18 +57,18 @@ export function packageView({ user, summary, config, nowMs = Date.now() }) {
   if (s && s.kind === 'package' && s.periodEndMs > nowMs) {
     return { ...s, kind: 'package' };
   }
-  const ends = trialEndsMs(user, cfg);
-  if (nowMs < ends) {
-    const fresh = s && s.kind === 'trial';
-    return {
-      kind: 'trial', perWeek: cfg.trialPerWeek, trialEndsMs: ends,
-      used: fresh ? s.used || 0 : 0,
-      reserved: fresh ? s.reserved || 0 : 0,
-      returned: fresh ? s.returned || 0 : 0,
-      remaining: fresh ? s.remaining : cfg.trialPerWeek,
-    };
-  }
-  return { kind: 'none', remaining: 0, trialEndsMs: ends };
+  // Free practices: the server's summary is the truth (it counts bookings);
+  // before one exists the learner has all of them.
+  if (s && s.kind === 'none') return { kind: 'none', remaining: 0, freeTotal: cfg.trialPractices };
+  if (s && s.kind === 'package') return { kind: 'none', remaining: 0, freeTotal: cfg.trialPractices }; // expired
+  const fresh = s && s.kind === 'trial';
+  return {
+    kind: 'trial', freeTotal: cfg.trialPractices,
+    used: fresh ? s.used || 0 : 0,
+    reserved: fresh ? s.reserved || 0 : 0,
+    returned: fresh ? s.returned || 0 : 0,
+    remaining: fresh ? s.remaining : cfg.trialPractices,
+  };
 }
 
 // Profile shows "Your plan" once there is something to show: a package, or

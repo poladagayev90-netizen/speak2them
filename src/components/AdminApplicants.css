@@ -255,3 +255,9 @@
 }
 .aa-pick-body { max-height: 38vh; overflow-y: auto; display: grid; gap: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--border); }
 .aa-pick-body .aa-h { margin: 0; }
+
+/* Who practises: Manual list / Autopilot switch, and the per-person
+   Auto / Always / Never override in autopilot mode. */
+.aa-mode { display: flex; gap: var(--s-1); margin: var(--s-2) 0; }
+.aa-tri { display: inline-flex; gap: 2px; flex-shrink: 0; margin-left: auto; }
+.aa-chip--sm { padding: 2px var(--s-2); font-size: var(--fs-xs); }

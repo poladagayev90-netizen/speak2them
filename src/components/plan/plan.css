@@ -416,3 +416,42 @@
 .pl-next-topic:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .pl-next-topic-when { font-size: var(--fs-xs); font-weight: 700; color: var(--accent); }
 .pl-next-topic-t { font-size: var(--fs-sm); font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* «Your week» (WeekCalendar): seven days, one tap each. Booked = filled,
+   picked = outlined with a check, a proposal = soft with «Reply», no free
+   time / past = quiet and not tappable. */
+.wk { display: grid; gap: var(--s-3); }
+.wk-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; }
+.wk-title { margin: 0; font-size: var(--fs-h2); font-weight: 800; color: var(--text-primary); }
+.wk-seg { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: var(--bg-secondary); }
+.wk-seg-btn {
+  min-height: 32px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-pill); background: none; cursor: pointer;
+  font: inherit; font-size: var(--fs-sm); font-weight: 700; color: var(--text-secondary);
+}
+.wk-seg-btn.is-on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--glass-lift); }
+.wk-seg-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.wk-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--s-1); }
+.wk-day {
+  display: grid; justify-items: center; align-content: start; gap: 2px;
+  min-height: 74px; padding: var(--s-2) 2px;
+  border: 1.5px solid var(--border); border-radius: var(--r-md);
+  background: var(--bg-card); color: var(--text-primary); cursor: pointer; font: inherit;
+  transition: background .15s ease-out, border-color .15s ease-out;
+}
+.wk-day:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wk-dow { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.wk-num { font-size: var(--fs-body); font-weight: 800; font-variant-numeric: tabular-nums; }
+.wk-mark { min-height: 16px; display: grid; place-items: center; font-size: var(--fs-xs); font-weight: 800; font-variant-numeric: tabular-nums; }
+.wk-day.is-today .wk-dow { color: var(--accent); }
+.wk-day.is-picked { border-color: var(--accent); background: var(--accent-soft); }
+.wk-day.is-picked .wk-mark { color: var(--accent); }
+.wk-day.is-booked { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); cursor: default; }
+.wk-day.is-booked .wk-dow { color: var(--text-on-accent); opacity: .85; }
+.wk-day.is-offered { border-style: dashed; border-color: var(--accent); background: var(--accent-soft); cursor: default; }
+.wk-day.is-offered .wk-mark { color: var(--accent); }
+.wk-day.is-none, .wk-day.is-past { border-color: transparent; background: var(--bg-secondary); color: var(--text-muted); cursor: default; }
+.wk-day.is-none .wk-dow, .wk-day.is-past .wk-dow { color: var(--text-muted); }
+.wk-day:disabled { opacity: 1; }
+.wk-status { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.wk-actions { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.wk-actions:empty { display: none; }

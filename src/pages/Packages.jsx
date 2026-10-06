@@ -32,7 +32,7 @@ const dateLabel = (ms) => new Date(ms).toLocaleDateString('en-GB', { day: 'numer
 
 // The admin sees every state of the page with ?preview=trial|none|package.
 const PREVIEWS = {
-  trial: { kind: 'trial', perWeek: 2, remaining: 1, used: 1, reserved: 0, returned: 0, trialEndsMs: Date.now() + 17 * 864e5 },
+  trial: { kind: 'trial', freeTotal: 3, remaining: 1, used: 1, reserved: 1, returned: 0 },
   none: { kind: 'none', remaining: 0 },
   package: {
     kind: 'package', size: 12, carriedIn: 2, total: 14, used: 5, reserved: 2, returned: 1, remaining: 7,
@@ -66,17 +66,17 @@ function Hero({ view }) {
     unit = view.remaining === 1 ? 'practice left' : 'practices left';
     line = `Until ${dateLabel(view.periodEndMs)}. Every practice is with a real partner, planned into your week.`;
   } else if (view.kind === 'trial') {
-    kicker = 'Your free month';
+    kicker = 'Your free practices';
     big = view.remaining;
-    unit = 'left this week';
-    line = `${view.perWeek} planned practices a week until ${dateLabel(view.trialEndsMs)}.`;
+    unit = view.remaining === 1 ? 'free practice left' : 'free practices left';
+    line = `${view.freeTotal || 3} planned practices with a real partner, on us.`;
   } else if (view.kind === 'unlimited') {
     kicker = 'Your plan';
     big = '∞';
     unit = 'unlimited practice';
     line = 'Planned practices are not counted for you.';
   } else {
-    kicker = 'Your free month is over';
+    kicker = 'Your free practices are used';
     big = null;
     unit = null;
     line = 'Pick a package and your planned practices carry on, with a partner at your level every week.';

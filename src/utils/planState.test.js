@@ -87,3 +87,14 @@ test('coming-up label names today and tomorrow', () => {
   expect(comingUpLabel(now + 2 * H, now)).toMatch(/^Today, /);
   expect(comingUpLabel(now + 26 * H, now)).toMatch(/^Tomorrow, /);
 });
+
+test('autopilot: a learner who has not said «in» is asked, others are not', () => {
+  const ob = { availability: [{ day: 1, startMin: 1200, endMin: 1320 }, { day: 3, startMin: 1200, endMin: 1320 }],
+    weeklyTarget: 2, charterAcceptedAt: { seconds: Date.parse('2026-09-01T12:00:00+04:00') / 1000 } };
+  const sat = Date.parse('2026-10-17T12:00:00+04:00');
+  const base = { uid: 'me', bookings: [], offers: [], planStatus: null, onboarding: ob, weekKey: '2026-10-12', now: sat };
+  expect(planHeadline({ ...base, autoMode: true })).toMatchObject({ kind: 'checkin', monday: '2026-10-19', next: true, days: [1, 3] });
+  expect(planHeadline({ ...base, autoMode: false }).kind).toBe('waiting');
+  const answered = { ...ob, weeks: { '2026-10-19': { days: [1] } } };
+  expect(planHeadline({ ...base, onboarding: answered, autoMode: true }).kind).toBe('waiting');
+});

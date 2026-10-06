@@ -5,7 +5,9 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui';
 import { whenLabel, countdownLabel, joinState, limitText } from '../../utils/planState';
-import { setPlanPaused } from '../../hooks/useMyPlan';
+import { setPlanPaused, saveWeek, addFreeBlock, usePopularTimes } from '../../hooks/useMyPlan';
+import { dayNames, popularSuggestion } from '../../utils/myWeek';
+import { offsetVsBaku } from '../../utils/timezone';
 import HeroParade, { heroClockStyle } from './HeroFx';
 import './plan.css';
 
@@ -17,7 +19,7 @@ import './plan.css';
 // on Sunday, why no partner fits yet) and offers the one useful next step.
 // The wording is planHeadline's (utils/planState.js); nothing here promises a
 // partner the platform may not have.
-export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false }) {
+export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false, onboarding = null }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   // Phase from the clock, fixed for this mount (see HeroFx).
@@ -70,6 +72,11 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
         {limitLine}
       </section>
     );
+  }
+
+  if (h.kind === 'checkin') return <CheckinCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} />;
+  if (h.kind === 'no_match' && (h.reason === 'no_overlap' || h.reason === 'no_partner_left') && onboarding) {
+    return <NoMatchCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} />;
   }
 
   const simple = {
@@ -136,6 +143,74 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
           disabled={busy}
         >
           {simple.action.label}
+        </Button>
+      </div>
+      {limitLine}
+    </section>
+  );
+}
+
+// Autopilot check-in (utils/myWeek.checkinFor): «practising next week?» at
+// the weekend, «practise this week?» on a weekday for someone not in yet —
+// the days are already suggested, so «yes» is one tap.
+function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const n = h.days.length;
+  const yes = async () => {
+    setBusy(true); setErr('');
+    try { await saveWeek(uid, onboarding, h.monday, h.days); } catch { setErr('Could not save. Check your connection.'); }
+    setBusy(false);
+  };
+  return (
+    <section id="tour-next" className="pl-card pl-card--hero" style={clock} aria-label="Your practice">
+      <HeroParade />
+      <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
+        <span className="pl-row-icon" aria-hidden="true"><CalendarDays size={20} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p className="pl-title">{h.next ? 'Practising next week?' : 'Practise this week?'}</p>
+          <p className="pl-text">{dayNames(h.days)} · {n} {n === 1 ? 'practice' : 'practices'} at your free times, each with a real partner.</p>
+        </div>
+      </div>
+      <div className="pl-actions">
+        <Button onClick={yes} disabled={busy}>{busy ? 'Saving…' : "Yes, I'm in"}</Button>
+        <Button variant="ghost" onClick={() => navigate('/plan')}>Choose days</Button>
+      </div>
+      {err && <p className="pl-hint">{err}</p>}
+      {limitLine}
+    </section>
+  );
+}
+
+// Nobody fits: offer the busiest time they are not free at yet, in their own
+// clock, as one tap (appConfig/popularTimes — counts only, no names).
+function NoMatchCard({ uid, h, onboarding, clock, navigate, limitLine }) {
+  const cells = usePopularTimes();
+  const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
+  const tip = cells ? popularSuggestion(cells, onboarding.availability, offsetVsBaku(onboarding.timeZone || 'Asia/Baku')) : null;
+  const add = async () => {
+    setBusy(true);
+    try { await addFreeBlock(uid, onboarding, tip); setAdded(true); } catch { /* the button stays */ }
+    setBusy(false);
+  };
+  return (
+    <section id="tour-next" className="pl-card pl-card--hero" style={clock} aria-label="Your practice">
+      <HeroParade />
+      <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
+        <span className="pl-row-icon" aria-hidden="true"><UsersRound size={20} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p className="pl-title">{added ? 'Added — we are looking again' : 'No partner at your times yet'}</p>
+          <p className="pl-text">
+            {added ? `${tip.label} is now one of your free times.`
+              : tip ? `Many people practise ${tip.label}. Add it and the plan has more to work with.` : h.text}
+          </p>
+        </div>
+      </div>
+      <div className="pl-actions">
+        {tip && !added && <Button onClick={add} disabled={busy}>{busy ? 'Adding…' : `Add ${tip.label}`}</Button>}
+        <Button variant={tip && !added ? 'ghost' : 'primary'} onClick={() => navigate('/onboarding', { state: { jumpTo: 'availability', returnTo: '/' } })}>
+          Edit my free times
         </Button>
       </div>
       {limitLine}

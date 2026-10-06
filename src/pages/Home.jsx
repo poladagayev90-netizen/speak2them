@@ -23,7 +23,7 @@ import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import NextTopics from '../components/plan/NextTopics';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
-import useMyPlan from '../hooks/useMyPlan';
+import useMyPlan, { useAutoMode } from '../hooks/useMyPlan';
 import { useBillingConfig } from '../hooks/usePackages';
 import { outOfPractices, packageView } from '../utils/packages';
 import useMyLessons from '../hooks/useMyLessons';
@@ -147,7 +147,8 @@ export default function Home({ user }) {
     if (pendingTopicIntro) { setShowTopicIntro(true); setPendingTopicIntro(false); }
   };
 
-  const headline = planHeadline({ uid: user.uid, ...plan });
+  const autoMode = useAutoMode();
+  const headline = planHeadline({ uid: user.uid, ...plan, autoMode });
   const open = openOffers(plan.offers, user.uid, plan.now);
   const booked = upcomingBookings(plan.bookings, plan.now);
   const target = Number(plan.onboarding?.weeklyTarget) || 0;
@@ -229,7 +230,7 @@ export default function Home({ user }) {
         <IntroCard user={user} />
 
         {/* 1. The next practice, or what is happening instead. */}
-        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} />}
+        {!plan.loading && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
 
         {/* Today's materials, always right under the plan card (Polad
             2026-10-06: "they look good and they ARE the class"). Online now

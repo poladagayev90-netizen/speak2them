@@ -622,7 +622,7 @@ service cloud.firestore {
       let d = request.resource.data;
       return d.keys().hasOnly(['uid', 'goal', 'level', 'ageBand', 'country', 'timeZone',
           'availability', 'weeklyTarget', 'topics', 'version', 'submittedAt', 'updatedAt', 'adminSeenAt',
-          'charterVersion', 'charterAcceptedAt', 'planPaused'])
+          'charterVersion', 'charterAcceptedAt', 'planPaused', 'weeks'])
         // The practice charter: accepted once, stamped with the server clock
         // (the planner can be limited to learners who accepted it), and left
         // alone after that. planPaused is the learner's own "leave me out".
@@ -631,6 +631,11 @@ service cloud.firestore {
           || (resource != null && 'charterAcceptedAt' in resource.data
             && d.charterAcceptedAt == resource.data.charterAcceptedAt))
         && (!('planPaused' in d) || d.planPaused is bool)
+        // weeks.{monday} = { days, at } | { skip, at }: the learner's own
+        // «I'm in this week» (Plan tab calendar). It grants nothing — the
+        // server applies every rule and limit (functions/autoRoster.js) — so
+        // only its size is bounded here.
+        && (!('weeks' in d) || (d.weeks is map && d.weeks.size() <= 12))
         && d.uid == request.auth.uid
         && d.ageBand in ['under18', '18-24', '25-34', '35+']
         && d.country is string && d.country.size() > 0 && d.country.size() <= 60
@@ -687,9 +692,13 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if isAdmin()
         // carriedFrom: the server copied last week's list forward (rosterOf).
-        && request.resource.data.keys().hasOnly(['uids', 'updatedAt', 'updatedBy', 'carriedFrom'])
-        && request.resource.data.uids is list
-        && request.resource.data.uids.size() <= 500;
+        // Autopilot (functions/autoRoster.js): the server writes auto* (its
+        // verdicts); the admin writes include/exclude — the override.
+        && request.resource.data.keys().hasOnly(['uids', 'updatedAt', 'updatedBy', 'carriedFrom',
+          'include', 'exclude', 'auto', 'autoIn', 'autoWhy', 'autoSummary', 'autoAt'])
+        && (!('uids' in request.resource.data) || (request.resource.data.uids is list && request.resource.data.uids.size() <= 500))
+        && (!('include' in request.resource.data) || (request.resource.data.include is list && request.resource.data.include.size() <= 500))
+        && (!('exclude' in request.resource.data) || (request.resource.data.exclude is list && request.resource.data.exclude.size() <= 500));
     }
 
     // What one learner is told about their week ("offers sent" / "no partner

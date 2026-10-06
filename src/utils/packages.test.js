@@ -19,14 +19,12 @@ test('unlimited mirrors the server', () => {
   expect(isUnlimited({ subscriptionPlan: 'trial' }, NOW)).toBe(false);
 });
 
-test('free weeks, then none; a live package wins', () => {
+test('three free practices, then none; a live package wins', () => {
   const fresh = { trialStartedAt: NOW - 3 * DAY };
-  expect(packageView({ user: fresh, config: cfg, nowMs: NOW })).toMatchObject({ kind: 'trial', remaining: 2 });
+  expect(packageView({ user: fresh, config: cfg, nowMs: NOW })).toMatchObject({ kind: 'trial', remaining: 3 });
+  expect(packageView({ user: fresh, summary: { kind: 'trial', remaining: 1, used: 2 }, config: cfg, nowMs: NOW })).toMatchObject({ kind: 'trial', remaining: 1 });
   const old = { trialStartedAt: NOW - 90 * DAY };
-  expect(packageView({ user: old, config: cfg, nowMs: NOW }).kind).toBe('none');
-  // Switched on two days ago: the old learner gets their four weeks from then.
-  const on = billingConfig({ enforce: true, enabledAt: NOW - 2 * DAY });
-  expect(packageView({ user: old, config: on, nowMs: NOW }).kind).toBe('trial');
+  expect(packageView({ user: old, summary: { kind: 'none', remaining: 0 }, config: cfg, nowMs: NOW }).kind).toBe('none');
   const summary = { kind: 'package', remaining: 5, total: 8, periodEndMs: NOW + DAY };
   expect(packageView({ user: old, summary, config: cfg, nowMs: NOW })).toMatchObject({ kind: 'package', remaining: 5 });
   expect(packageView({ user: old, summary: { ...summary, periodEndMs: NOW - 1 }, config: cfg, nowMs: NOW }).kind).toBe('none');

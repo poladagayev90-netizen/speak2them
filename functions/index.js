@@ -20,6 +20,8 @@ const classBrief = require("./classBrief");
 const tutorLessons = require("./tutorLessons");
 const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
+const autoRoster = require("./autoRoster");
+const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const {
   getTokensForUser,
@@ -4743,9 +4745,15 @@ exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (
 //
 // autoSend and refill start OFF: they message real learners, and the charter
 // and the Plan tab that explain them ship after this (Phase 4).
-const PLAN_CONFIG_DEFAULTS = { autoSend: false, refill: false, requireCharter: false };
+// rosterMode: "manual" = the admin's weekly list (weekRoster.js); "auto" =
+// the autopilot (autoRoster.js) decides, the list is only an override.
+const PLAN_CONFIG_DEFAULTS = { autoSend: false, refill: false, requireCharter: false, rosterMode: "manual" };
 const PLAN_NOTICE_MS = 14 * 60 * 60 * 1000;   // a planned practice is at least this far after the send
-const REFILL_NOTICE_MS = 4 * 60 * 60 * 1000;  // …and a refill offer this far
+// …and a refill offer this far. Was 4 h with a 6 h answer window: the
+// real-life simulation (2026-10-06) showed most mid-week offers running out
+// before people who open the app once a day saw them — 173 of 197.
+const REFILL_NOTICE_MS = 10 * 60 * 60 * 1000;
+const REFILL_ANSWER_MS = 20 * 60 * 60 * 1000;
 const PLAN_ACTIVE_WINDOW_MS = 21 * DAY_MS;    // only learners seen in the last three weeks are planned
 
 async function plannerConfig(db) {
@@ -4761,14 +4769,42 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   const weekStart = weeklyPlanner.blockStartMs(dates[0], 0);
   const weekEnd = weekStart + 7 * DAY_MS;
 
-  // Only the people the admin picked for this week (weekRoster.js); no list
-  // means nobody is planned.
-  const roster = await rosterOf(db, monday);
+  // Manual: only the people the admin picked for this week (weekRoster.js);
+  // no list means nobody is planned. Auto: everyone set up is looked at and
+  // autoRoster.eligible decides; the week's list doc holds only the admin's
+  // exclude/include override (and the verdicts, written below).
+  const auto = cfg.rosterMode === "auto";
+  const rosterRef = db.collection("weekRoster").doc(monday);
+  const override = auto ? ((await rosterRef.get().catch(() => null))?.data() || {}) : null;
+  const roster = auto ? null : await rosterOf(db, monday);
   const obSnap = await db.collection("onboarding").get();
-  const obs = new Map(obSnap.docs.filter((d) => weekRoster.inRoster(roster, d.id)).map((d) => [d.id, d.data() || {}]));
+  const obs = new Map(obSnap.docs.filter((d) => auto || weekRoster.inRoster(roster, d.id)).map((d) => [d.id, d.data() || {}]));
   const uids = [...obs.keys()];
   const userSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("users").doc(u))) : [];
   const users = new Map(userSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
+  // Auto only: packages (paid = in without being asked) and the proposals of
+  // the last four weeks (two left unanswered in a row = snoozed).
+  const paidUids = new Set();
+  const offersOf = new Map();
+  if (auto && uids.length) {
+    const accSnaps = await db.getAll(...uids.map((u) => db.collection("access").doc(u)));
+    for (const a of accSnaps) {
+      if (a.exists && packagesLib.activePackage(a.data() || {}, nowMs)) paidUids.add(a.id);
+    }
+    const recentOffers = await db.collection("matchOffers").where("startMs", ">=", nowMs - 28 * DAY_MS).get().catch(() => ({ docs: [] }));
+    for (const d of recentOffers.docs) {
+      const o = d.data() || {};
+      if (!["weekly_plan", "refill"].includes(o.source)) continue;
+      for (const u of o.participants || []) {
+        if (!offersOf.has(u)) offersOf.set(u, []);
+        offersOf.get(u).push({
+          startMs: o.startMs, status: o.status, source: o.source, response: (o.responses || {})[u] || null,
+          closedAtMs: o.respondBy || o.startMs, windowMs: o.sentAtMs ? (o.respondBy || 0) - o.sentAtMs : null,
+        });
+      }
+    }
+  }
+  const verdicts = new Map();
   // Reliability limits (Phase 5): one practice a week, no newcomer partners.
   const relSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("reliability").doc(u))) : [];
   const limitedUids = new Set(relSnaps.filter((s) => s.exists && s.get("level") === "limited").map((s) => s.id));
@@ -4829,21 +4865,45 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   for (const [uid, ob] of obs) {
     const u = users.get(uid);
     if (!u || uid === ADMIN_UID || u.role === "teacher") continue;
-    if (!Array.isArray(ob.availability) || !ob.availability.length) continue;
+    // The learner's own answer for this week (Plan tab calendar / check-in):
+    // the days they picked narrow their times and set the number.
+    const answer = autoRoster.weekAnswer(ob, monday);
+    const availability = autoRoster.weekAvailability(ob.availability, answer);
+    const seen = u.lastSeen?.toMillis?.() || 0;
+    if (auto) {
+      const v = autoRoster.eligible({
+        hasTimes: Array.isArray(ob.availability) && ob.availability.length > 0 && Number(ob.weeklyTarget) > 0,
+        charter: !!ob.charterAcceptedAt,
+        paused: ob.planPaused === true,
+        lastSeenMs: seen,
+        joinedAtMs: ob.charterAcceptedAt?.toMillis?.() || 0,
+        paid: paidUids.has(uid) || packagesLib.isUnlimited(u, uid, ADMIN_UID, nowMs),
+        proven: autoRoster.provenRecently(offersOf.get(uid), nowMs),
+        answer,
+        unanswered: autoRoster.unansweredStreak(offersOf.get(uid), answer ? answer.atMs : 0),
+        excluded: (override.exclude || []).includes(uid),
+        included: (override.include || []).includes(uid),
+      }, { weekStartMs: weekStart, nowMs });
+      verdicts.set(uid, v);
+      if (!v.in) continue;
+    }
+    if (!availability.length) continue;
     const limited = limitedUids.has(uid);
-    const asked = Math.min(4, Math.max(0, Math.floor(Number(ob.weeklyTarget) || 0)));
+    const asked = autoRoster.weekTarget(ob.weeklyTarget, answer);
     const target = limited ? Math.min(asked, reliabilityLib.LIMITED_TARGET) : asked;
     if (!target || ob.planPaused === true) continue;
     if (cfg.requireCharter && !ob.charterAcceptedAt) continue;
-    const seen = u.lastSeen?.toMillis?.() || 0;
-    if (nowMs - seen > PLAN_ACTIVE_WINDOW_MS) continue;
+    if (!auto && nowMs - seen > PLAN_ACTIVE_WINDOW_MS) continue;
     const h = have.get(uid) || { count: 0, dates: new Set(), partners: new Set(), letDown: 0 };
     let need = Math.max(0, target - h.count);
     if (billing.enforce) {
       const { state, bookings } = await accessOf(db, uid, { user: u, config: billing, nowMs });
       const allowance = packagesLib.allowanceForWeek(state, weekStart, bookings, uid) - (h.pending || 0);
       need = Math.max(0, Math.min(need, allowance));
-      if (!need) continue;
+      if (!need) {
+        if (auto && state && state.kind === "none") verdicts.set(uid, { in: false, why: "no_practices_left" });
+        continue;
+      }
     }
     learners.push({
       uid,
@@ -4851,7 +4911,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       level: u.level || ob.level || null,
       minor: ob.ageBand === "under18",
       partnerLevel: u.partnerLevel || null,
-      availability: ob.availability,
+      availability,
       timeZone: ob.timeZone || "Asia/Baku",
       target,
       need,
@@ -4887,7 +4947,27 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     const c = d.data() || {};
     if (c.userA && c.userB) recent.add(weeklyPlanner.pairKey(c.userA, c.userB));
   }
-  return { dates, learners, blocked, recent, favorites, noRoster: !roster };
+  // Auto: the week's verdicts, for the admin (Week/Matching) and for the
+  // slot board / old-APK random search, which read the same list.
+  if (auto) {
+    const autoWhy = Object.fromEntries([...verdicts].map(([u, v]) => [u, v.why]));
+    await rosterRef.set({
+      auto: true,
+      autoIn: [...verdicts].filter(([, v]) => v.in).map(([u]) => u).slice(0, weekRoster.MAX_UIDS),
+      autoWhy, autoSummary: autoRoster.summarize([...verdicts.values()]), autoAt: nowMs,
+    }, { merge: true }).catch((e) => console.warn("[plan] auto roster write failed:", e.message));
+    // Each learner's own verdict (planStatus.auto), so the app does not ask
+    // someone who is already in — written only when it changes.
+    const vu = [...verdicts.keys()];
+    const psSnaps = vu.length ? await db.getAll(...vu.map((u) => db.collection("planStatus").doc(u))) : [];
+    await Promise.all(psSnaps.map((ps, i) => {
+      const v = verdicts.get(vu[i]);
+      const cur = ps.exists ? ps.get("auto") : null;
+      if (cur && cur.week === monday && cur.in === v.in && cur.why === v.why) return null;
+      return ps.ref.set({ auto: { week: monday, in: v.in, why: v.why } }, { merge: true }).catch(() => null);
+    }));
+  }
+  return { dates, learners, blocked, recent, favorites, noRoster: !auto && !roster };
 }
 
 // Draft (or redraft) the plan for the week starting `monday`.
@@ -4960,6 +5040,9 @@ async function createPlanOfferTx(db, { id, pair, planWeek, respondBy, source }) 
       responses: { [pair.a]: "pending", [pair.b]: "pending" },
       note: "",
       source, planWeek, respondBy,
+      // The answer window, for autoRoster's «silence» count (createdAt is a
+      // server timestamp the planner cannot compare in the same run).
+      sentAtMs: Date.now(),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     return { offerId: id };
@@ -5051,7 +5134,7 @@ async function refillThisWeek(db, nowMs) {
   let offers = 0;
   const offered = new Set();
   for (const p of result.pairs) {
-    const respondBy = Math.min(nowMs + 6 * 60 * 60 * 1000, p.startMs - 60 * 60 * 1000);
+    const respondBy = Math.min(nowMs + REFILL_ANSWER_MS, p.startMs - 2 * 60 * 60 * 1000);
     const r = await createPlanOfferTx(db, { id: `rf_${p.slotId}_${p.id}`, pair: p, planWeek: monday, respondBy, source: "refill" })
       .catch((e) => ({ skip: e.message }));
     if (!r.offerId) continue;
@@ -5079,6 +5162,67 @@ async function refillThisWeek(db, nowMs) {
 }
 
 // Called from practiceSlotTick every minute.
+// Autopilot weekend check-in (autoRoster.js): Saturday 12:00 everyone set
+// up, seen in the last three weeks, with no package and no answer for next
+// week is asked «practising next week?»; Sunday 10:00 one reminder to whoever
+// has still not answered, and package learners hear their plan comes tonight.
+async function sendWeekCheckins(db, nowMs, monday, round) {
+  const obSnap = await db.collection("onboarding").get();
+  const set = obSnap.docs.filter((d) => {
+    const ob = d.data() || {};
+    return Array.isArray(ob.availability) && ob.availability.length && ob.charterAcceptedAt && ob.planPaused !== true
+      && !autoRoster.weekAnswer(ob, monday);
+  });
+  if (!set.length) return 0;
+  const [uSnaps, aSnaps] = await Promise.all([
+    db.getAll(...set.map((d) => db.collection("users").doc(d.id))),
+    db.getAll(...set.map((d) => db.collection("access").doc(d.id))),
+  ]);
+  let sent = 0;
+  for (let i = 0; i < set.length; i += 1) {
+    const uid = set[i].id;
+    const u = uSnaps[i].exists ? (uSnaps[i].data() || {}) : null;
+    if (!u || uid === ADMIN_UID || u.role === "teacher") continue;
+    if (nowMs - (u.lastSeen?.toMillis?.() || 0) > PLAN_ACTIVE_WINDOW_MS) continue;
+    const paid = (aSnaps[i].exists && packagesLib.activePackage(aSnaps[i].data() || {}, nowMs))
+      || packagesLib.isUnlimited(u, uid, ADMIN_UID, nowMs);
+    const key = paid ? (round === 2 ? "plan_tonight" : null) : (round === 1 ? "week_checkin" : "week_checkin_reminder");
+    if (!key) continue;
+    await sendPushToUser(db, uid, { key, type: "week_checkin", url: "/plan" }).catch(() => null);
+    sent += 1;
+  }
+  return sent;
+}
+
+// Where people are free, per Baku block (weekday × 2-hour block), counted
+// over everyone set up and seen in the last three weeks. Aggregate only — no
+// names, and a block with fewer than 3 people is left out — so it can sit in
+// world-readable appConfig. Onboarding marks the busiest blocks «Popular».
+async function writePopularTimes(db, nowMs) {
+  const obSnap = await db.collection("onboarding").get();
+  const docs = obSnap.docs.filter((d) => Array.isArray(d.get("availability")) && d.get("availability").length);
+  if (!docs.length) return null;
+  const uSnaps = await db.getAll(...docs.map((d) => db.collection("users").doc(d.id)));
+  const counts = {};
+  const mid = new Date(nowMs);
+  docs.forEach((d, i) => {
+    const u = uSnaps[i].exists ? (uSnaps[i].data() || {}) : null;
+    if (!u || u.role === "teacher" || d.id === ADMIN_UID) return;
+    if (nowMs - (u.lastSeen?.toMillis?.() || 0) > PLAN_ACTIVE_WINDOW_MS) return;
+    const ob = d.data() || {};
+    const iv = availToBaku(ob.availability, ob.timeZone || "Asia/Baku", mid);
+    for (let wd = 0; wd < 7; wd += 1) {
+      for (const hour of weeklyPlanner.BLOCK_HOURS) {
+        const a = wd * 1440 + hour * 60;
+        if (availCovers(iv, a, a + 30)) counts[`${wd}-${hour}`] = (counts[`${wd}-${hour}`] || 0) + 1;
+      }
+    }
+  });
+  const cells = Object.fromEntries(Object.entries(counts).filter(([, n]) => n >= 3));
+  await db.collection("appConfig").doc("popularTimes").set({ cells, atMs: nowMs });
+  return cells;
+}
+
 async function runPlannerTick(db, nowMs) {
   await expireLateOffers(db, nowMs).catch((e) => console.warn("[plan] expire failed:", e.message));
   const baku = new Date(nowMs + 4 * 60 * 60 * 1000);
@@ -5086,8 +5230,18 @@ async function runPlannerTick(db, nowMs) {
   const hour = baku.getUTCHours();
   const monday = nextMondayOf(nowMs);
 
+  const cfg0 = await plannerConfig(db);
+  if (cfg0.rosterMode === "auto") {
+    if (weekday === 6 && hour >= 12 && await claimSlotRun(db, `checkin1_${monday}`)) {
+      await sendWeekCheckins(db, nowMs, monday, 1).catch((e) => console.warn("[plan] checkin failed:", e.message));
+    }
+    if (weekday === 0 && hour >= 10 && await claimSlotRun(db, `checkin2_${monday}`)) {
+      await sendWeekCheckins(db, nowMs, monday, 2).catch((e) => console.warn("[plan] checkin 2 failed:", e.message));
+    }
+  }
   if (weekday === 0 && hour >= 12 && await claimSlotRun(db, `plan_build_${monday}`)) {
     try {
+      await writePopularTimes(db, nowMs).catch((e) => console.warn("[plan] popular times failed:", e.message));
       await persistCarriedRoster(db, monday);
       const r = await buildWeeklyPlan(db, monday, { nowMs, by: "schedule" });
       await sendPushToUser(db, ADMIN_UID, r.noRoster
@@ -5098,7 +5252,14 @@ async function runPlannerTick(db, nowMs) {
   }
   const cfg = await plannerConfig(db);
   if (weekday === 0 && hour >= 20 && cfg.autoSend && await claimSlotRun(db, `plan_send_${monday}`)) {
-    const plan = await db.collection("weeklyPlans").doc(monday).get();
+    let plan = await db.collection("weeklyPlans").doc(monday).get();
+    // Autopilot: «in» answers keep arriving all Sunday, so the noon draft is
+    // made again now — unless the admin has touched it (then theirs stands).
+    if (cfg.rosterMode === "auto" && plan.exists && plan.get("status") === "draft"
+      && plan.get("hold") !== true && !plan.get("editedAt")) {
+      await buildWeeklyPlan(db, monday, { nowMs, by: "schedule" }).catch((e) => console.warn("[plan] rebuild failed:", e.message));
+      plan = await db.collection("weeklyPlans").doc(monday).get();
+    }
     if (plan.exists && plan.get("status") === "draft" && plan.get("hold") !== true) {
       const sent = await sendWeeklyPlan(db, monday, { nowMs, by: "schedule" }).catch((e) => { console.warn("[plan] send failed:", e.message); return null; });
       if (sent && !sent.alreadySent) {
@@ -5431,6 +5592,12 @@ async function sendLessonReminders(db, now) {
 // planner's 21-day activity filter still leaves out whoever has gone quiet.
 const ROSTER_CARRY_WEEKS = 4;
 async function rosterOf(db, monday, tx = null) {
+  // Autopilot: this week's doc only (verdicts + override), never carried.
+  if ((await plannerConfig(db)).rosterMode === "auto") {
+    const ref = db.collection("weekRoster").doc(monday);
+    const snap = await (tx ? tx.get(ref) : ref.get()).catch(() => null);
+    return { ...((snap && snap.exists && snap.data()) || {}), auto: true };
+  }
   for (let back = 0; back <= ROSTER_CARRY_WEEKS; back += 1) {
     const key = back ? shiftDate(monday, -7 * back) : monday;
     const ref = db.collection("weekRoster").doc(key);
@@ -5444,6 +5611,7 @@ async function rosterOf(db, monday, tx = null) {
 // edit) the list that was actually used.
 async function persistCarriedRoster(db, monday) {
   const roster = await rosterOf(db, monday);
+  if (roster && roster.auto) return roster;
   if (!roster || !roster.carriedFrom) return roster;
   await db.collection("weekRoster").doc(monday).set({
     uids: roster.uids || [], carriedFrom: roster.carriedFrom,
@@ -5626,7 +5794,11 @@ exports.practiceSlotTick = onSchedule(
     }
 
     // ② Xatırlatma / başlanğıc / no-show — bu gün və sabahın blokları bəsdir.
-    const window = [...new Set([dates[0], dates[1]].filter(Boolean))];
+    // Yesterday too: the 22:00 block ends at 00:00, when "today" is already
+    // the next date — without it that block never closed (booking stuck
+    // "confirmed", no attendance, a package practice held forever). Found by
+    // the real-life simulation 2026-10-06; one such booking was in prod.
+    const window = [...new Set([bakuDateStr(now - DAY_MS), dates[0], dates[1]].filter(Boolean))];
     const slotsSnap = await db.collection("practiceSlots").where("date", "in", window).get();
 
     for (const doc of slotsSnap.docs) {

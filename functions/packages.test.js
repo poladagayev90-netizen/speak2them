@@ -39,33 +39,39 @@ test('unlimited: admin, Pro, course, teacher free access, paid plan', () => {
   assert.ok(!P.isUnlimited({ subscriptionPlan: 'trial', freeAccessUntil: NOW - DAY }, 'me', 'adm', NOW));
 });
 
-test('trial: two a week, refunds do not count', () => {
-  const user = { trialStartedAt: NOW - 3 * DAY };
+test('trial: three free practices in total, refunds do not count', () => {
+  const user = { trialStartedAt: NOW - 30 * DAY };
   const bookings = [
+    b(NOW - 20 * DAY, 'done', { outcome: { me: 'attended' } }),
     b(MONDAY + DAY, 'done', { outcome: { me: 'partner_no_show' } }),
     b(NOW + DAY, 'confirmed'),
   ];
   const s = P.accessState({ uid: 'me', user, config: cfg, bookings, nowMs: NOW });
   assert.strictEqual(s.kind, 'trial');
-  assert.strictEqual(s.remaining, 1);
-  assert.strictEqual(s.returned, 1);
+  assert.deepStrictEqual([s.used, s.reserved, s.returned, s.remaining], [1, 1, 1, 1]);
   assert.ok(P.canBookAt(s, NOW + 2 * DAY, bookings, 'me'));
+  // No weekly reset and no end date: the third one is the last.
   const full = [...bookings, b(NOW + 2 * DAY, 'confirmed')];
   const s2 = P.accessState({ uid: 'me', user, config: cfg, bookings: full, nowMs: NOW });
-  assert.ok(!P.canBookAt(s2, NOW + 3 * DAY, full, 'me'));
-  // Next week starts fresh.
-  assert.ok(P.canBookAt(s2, MONDAY + 8 * DAY, full, 'me'));
+  assert.strictEqual(s2.kind, 'trial');
+  assert.ok(!P.canBookAt(s2, MONDAY + 30 * DAY, full, 'me'));
+  // Once those two have happened, it is over.
+  const done = full.map((x) => (x.status === 'confirmed' ? { ...x, status: 'done', outcome: { me: 'attended' } } : x));
+  const s3 = P.accessState({ uid: 'me', user, config: cfg, bookings: done, nowMs: NOW + 5 * DAY });
+  assert.strictEqual(s3.kind, 'none');
+  assert.strictEqual(P.allowanceForWeek(s3, MONDAY + 7 * DAY), 0);
 });
 
-test('trial ends four weeks after sign-up — or after the switch-on, if later', () => {
+test('free practices count from the switch-on when that is later', () => {
   const old = { trialStartedAt: NOW - 200 * DAY };
-  assert.strictEqual(P.accessState({ uid: 'me', user: old, config: cfg, bookings: [], nowMs: NOW }).kind, 'none');
+  const before = [b(NOW - 100 * DAY, 'done', { outcome: { me: 'attended' } }),
+    b(NOW - 90 * DAY, 'done', { outcome: { me: 'attended' } }), b(NOW - 80 * DAY, 'done', { outcome: { me: 'attended' } })];
+  assert.strictEqual(P.accessState({ uid: 'me', user: old, config: cfg, bookings: before, nowMs: NOW }).kind, 'none');
   const on = P.billingConfig({ enforce: true, enabledAt: NOW - 2 * DAY });
-  const s = P.accessState({ uid: 'me', user: old, config: on, bookings: [], nowMs: NOW });
+  const s = P.accessState({ uid: 'me', user: old, config: on, bookings: before, nowMs: NOW });
   assert.strictEqual(s.kind, 'trial');
-  assert.strictEqual(s.trialEndsMs, NOW - 2 * DAY + 28 * DAY);
-  // The planner may not book past the trial.
-  assert.strictEqual(P.allowanceForWeek(s, P.weekStartMs(s.trialEndsMs + 7 * DAY), [], 'me'), 0);
+  assert.strictEqual(s.remaining, 3);
+  assert.strictEqual(P.billingConfig({ trialPractices: 5 }).trialPractices, 5);
 });
 
 test('package: size + carried − used − reserved', () => {

@@ -35,14 +35,14 @@ export function usePackageSummaries() {
 export function packageLabel(a) {
   if (!a) return null;
   if (a.kind === 'package') return `${a.remaining}/${a.total} left · ${new Date(a.periodEndMs).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
-  if (a.kind === 'trial') return `free month · ${a.remaining} left this week`;
+  if (a.kind === 'trial') return `free · ${a.remaining} of ${a.freeTotal || 3} left`;
   if (a.kind === 'none') return 'no package';
   return null;
 }
 
 // The switch that makes the limits real. Off: everything is counted and shown,
-// nobody is refused. Turning it on starts everyone's free month from today if
-// theirs already ran out (packages.trialWindow), so nobody is cut off at once.
+// nobody is refused. Turning it on counts everyone's 3 free practices from
+// today (packages.trialWindow), so nobody is cut off at once.
 export function BillingSwitch() {
   const { config, loaded } = useBillingConfig();
   const [busy, setBusy] = useState(false);
@@ -50,7 +50,7 @@ export function BillingSwitch() {
   const flip = async () => {
     const on = !config.enforce;
     const msg = on
-      ? 'Turn packages ON? Planned practice will need the free month or a package. Learners whose free month already ended get four free weeks from today.'
+      ? 'Turn packages ON? Planned practice will need a free practice or a package. Everyone gets 3 free planned practices counted from today.'
       : 'Turn packages OFF? Nobody will be refused; balances keep being counted.';
     if (!window.confirm(msg)) return;
     setBusy(true);
@@ -69,7 +69,7 @@ export function BillingSwitch() {
         <p className="adm-billing-title">Packages {config.enforce ? 'ON' : 'OFF'}</p>
         <p className="adm-billing-sub">
           {config.enforce
-            ? 'Planned practice needs the free month or a package.'
+            ? 'Planned practice needs a free practice (3) or a package.'
             : 'Counted and shown only — nobody is refused.'}
           {' '}{config.packages.map((p) => `${p.size}=${p.price}`).join(' · ')} {config.currency}
         </p>

@@ -329,8 +329,8 @@ export default function Profile({ user }) {
                 : user.cohortStatus === 'accepted' ? 'Cohort accepted'
                 : user.cohortStatus === 'pending' ? 'Cohort pending'
                 : packages.view.kind === 'package' ? `${packages.view.remaining} practices left`
-                : packages.view.kind === 'none' ? 'Free month over'
-                : 'Free month'}
+                : packages.view.kind === 'none' ? 'Free practices used'
+                : 'Free practices'}
             </span>
           </div>
         </div>
@@ -477,13 +477,13 @@ export default function Profile({ user }) {
       {sectionLabel('Learning')}
       <div style={listCard}>
         {/* Packages (utils/packages.js): shown once there is something to
-            show — never during the free month, and never as a popup. */}
+            show — never during the free practices, and never as a popup. */}
         {showPlanEntry(packages.view, packages.config, isAdminUser(user)) && row({
           icon: Fish,
           label: 'Your plan',
           value: packages.view.kind === 'package' ? `${packages.view.remaining} of ${packages.view.total} practices left`
             : packages.view.kind === 'none' ? 'Choose a package'
-            : packages.view.kind === 'trial' ? 'Free month'
+            : packages.view.kind === 'trial' ? `${packages.view.remaining} free left`
             : 'Unlimited',
           onClick: () => navigate('/packages'),
           notLast: true,

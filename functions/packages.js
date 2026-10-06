@@ -44,8 +44,9 @@ function billingConfig(raw = {}) {
   return {
     enforce: r.enforce === true,
     enabledAtMs: msOf(r.enabledAt) || null,
-    trialWeeks: Number(r.trialWeeks) > 0 ? Number(r.trialWeeks) : 4,
-    trialPerWeek: Number(r.trialPerWeek) > 0 ? Number(r.trialPerWeek) : 2,
+    // Free trial = this many planned practices in total (Polad 2026-10-06:
+    // "3 practices free"), no end date. Replaced "2 a week for 4 weeks".
+    trialPractices: Number(r.trialPractices) > 0 ? Number(r.trialPractices) : 3,
     periodDays: Number(r.periodDays) > 0 ? Number(r.periodDays) : 30,
     carryMax: r.carryMax != null && Number.isFinite(Number(r.carryMax)) ? Math.max(0, Number(r.carryMax)) : 4,
     currency: r.currency || 'AZN',
@@ -100,13 +101,13 @@ function isUnlimited(user, uid, adminUid, nowMs = Date.now()) {
   return false;
 }
 
-// The free weeks start at sign-up — or at the day the rules were switched
-// on, whichever is later, so nobody who joined months ago wakes up blocked.
+// The free practices count from sign-up — or from the day the rules were
+// switched on, whichever is later, so nobody who joined months ago wakes up
+// with their free practices already spent.
 function trialWindow(user, config) {
   const u = user || {};
   const signup = msOf(u.trialStartedAt) || msOf(u.createdAt) || 0;
-  const startMs = Math.max(signup, config.enabledAtMs || 0);
-  return { startMs, endMs: startMs + config.trialWeeks * WEEK_MS };
+  return { startMs: Math.max(signup, config.enabledAtMs || 0) };
 }
 
 function activePackage(accessDoc, nowMs) {
@@ -121,8 +122,8 @@ function activePackage(accessDoc, nowMs) {
 // Where one person stands now.
 //   unlimited — nothing is counted
 //   package   — size + carriedIn − used − reserved left until endsMs
-//   trial     — trialPerWeek a week until trialEndsMs
-//   none      — trial over, no package
+//   trial     — trialPractices in total, counted from the trial start
+//   none      — the free practices are used up, no package
 function accessState({ uid, user, accessDoc, config, bookings, nowMs = Date.now(), adminUid = null }) {
   const cfg = config || billingConfig();
   if (isUnlimited(user, uid, adminUid, nowMs)) return { kind: 'unlimited', remaining: null };
@@ -136,36 +137,32 @@ function accessState({ uid, user, accessDoc, config, bookings, nowMs = Date.now(
       periodStartMs: pkg.startsMs, periodEndMs: pkg.endsMs,
     };
   }
+  // Someone who has had a package is past the free practices for good.
+  if (accessDoc && accessDoc.package) return { kind: 'none', remaining: 0, freeTotal: cfg.trialPractices };
   const trial = trialWindow(user, cfg);
-  if (nowMs < trial.endMs) {
-    const wk = weekStartMs(nowMs);
-    const use = practiceUse(bookings, uid, wk, wk + WEEK_MS);
-    return {
-      kind: 'trial', perWeek: cfg.trialPerWeek, trialEndsMs: trial.endMs,
-      ...use, remaining: Math.max(0, cfg.trialPerWeek - use.used - use.reserved),
-    };
+  const use = practiceUse(bookings, uid, trial.startMs);
+  const remaining = Math.max(0, cfg.trialPractices - use.used - use.reserved);
+  // Still "trial" while one is booked ahead: it has not been used yet.
+  if (remaining > 0 || use.reserved > 0) {
+    return { kind: 'trial', freeTotal: cfg.trialPractices, ...use, remaining };
   }
-  return { kind: 'none', remaining: 0, trialEndsMs: trial.endMs };
+  return { kind: 'none', remaining: 0, freeTotal: cfg.trialPractices, ...use };
 }
 
 // How many more practices may be booked in the week starting `weekMs`
 // (the weekly planner drafts NEXT week, so "now" is not enough).
-function allowanceForWeek(state, weekMs, bookings, uid) {
+function allowanceForWeek(state, weekMs) {
   if (!state) return 0;
   if (state.kind === 'unlimited') return Infinity;
   if (state.kind === 'package') return weekMs >= state.periodEndMs ? 0 : state.remaining;
-  if (state.kind === 'trial') {
-    if (weekMs >= state.trialEndsMs) return 0;
-    const use = practiceUse(bookings, uid, weekMs, weekMs + WEEK_MS);
-    return Math.max(0, state.perWeek - use.used - use.reserved);
-  }
+  if (state.kind === 'trial') return state.remaining;
   return 0;
 }
 
 // May this person take one more planned practice that starts at `startMs`?
-function canBookAt(state, startMs, bookings, uid) {
+function canBookAt(state, startMs) {
   if (state && state.kind === 'package' && startMs >= state.periodEndMs) return false;
-  return allowanceForWeek(state, weekStartMs(startMs), bookings, uid) > 0;
+  return allowanceForWeek(state, weekStartMs(startMs)) > 0;
 }
 
 // A new package. Bought while the old one runs: everything left moves over
@@ -193,7 +190,7 @@ function grantPackage({ size, nowMs = Date.now(), config, previous = null, sourc
 function accessSummary(state) {
   if (!state) return null;
   const keep = ['kind', 'remaining', 'size', 'carriedIn', 'total', 'used', 'reserved', 'returned',
-    'periodStartMs', 'periodEndMs', 'perWeek', 'trialEndsMs'];
+    'periodStartMs', 'periodEndMs', 'freeTotal'];
   const out = {};
   for (const k of keep) {
     if (state[k] === undefined) continue;

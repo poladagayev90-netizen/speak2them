@@ -350,6 +350,14 @@
   transition: background-color 100ms ease, border-color 100ms ease;
 }
 .ob-cell.is-on { background: var(--accent); border-color: var(--accent); }
+.ob-cell { position: relative; }
+/* A small dot on the busiest blocks (appConfig/popularTimes). */
+.ob-cell.is-popular:not(.is-on)::after {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
+  border-radius: 50%; background: var(--accent); opacity: .55;
+}
+.ob-legend { display: flex; align-items: center; gap: var(--s-2); margin: var(--s-2) 0 0; font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
+.ob-legend-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .55; }
 
 /* ------------------------------------------------------------- review -- */
 .ob-review { margin: 0; display: grid; gap: var(--s-2); }

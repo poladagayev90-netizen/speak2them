@@ -18,8 +18,18 @@ function rosterSet(data) {
 }
 
 // `data` is the roster doc's data, or null when the week has none.
+// Autopilot (rosterMode "auto", autoRoster.js): the doc carries the planner's
+// verdicts (`autoIn`) plus the admin's override (`include` / `exclude`).
+// Before the planner has looked at the week at all, nobody is turned away.
 function inRoster(data, uid) {
-  return !!uid && rosterSet(data).has(uid);
+  if (!uid) return false;
+  if (data && data.auto) {
+    const list = (k) => (Array.isArray(data[k]) ? data[k] : []);
+    if (list("exclude").includes(uid)) return false;
+    if (list("include").includes(uid)) return true;
+    return !data.autoAt || list("autoIn").includes(uid);
+  }
+  return rosterSet(data).has(uid);
 }
 
 module.exports = { MAX_UIDS, rosterSet, inRoster };
