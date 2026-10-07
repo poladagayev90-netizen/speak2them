@@ -359,3 +359,12 @@
 
 /* Edit mode: "Review all my answers" sits centred under Save. */
 .ob-foot .ob-link { display: block; margin: var(--s-3) auto 0; }
+
+/* ------------------------------------------------------------ whatsapp -- */
+.ob-phone { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: var(--s-2); }
+.ob-phone .ob-select { margin-top: 0; }
+.ob-phone-num { font-variant-numeric: tabular-nums; }
+.ob-phone-num[aria-invalid="true"] { border-color: var(--danger); }
+/* The note right under the Free / Maybe / Never switch. */
+.ob-note--tight { margin: 0 0 var(--s-3); }
+.ob-review-extra { color: var(--text-secondary); }

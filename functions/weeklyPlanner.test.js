@@ -172,3 +172,74 @@ test('any whole hour: someone free only 11:00-12:00 is planned at 11:00', () => 
   assert.equal(plan.pairs.length, 1);
   assert.equal(plan.pairs[0].slotId, `${dates[2]}-11`);
 });
+
+// ── General week profile: Free / Maybe / Never (Faza 3, 2026-10-07) ──
+test('availability: subtractRanges cuts Never hours out of free ones; touches sees a window that only grazes', () => {
+  const free = [{ day: 2, startMin: 18 * 60, endMin: 22 * 60 }, { day: 3, startMin: 19 * 60, endMin: 20 * 60 }];
+  assert.deepEqual(av.subtractRanges(free, [{ day: 2, startMin: 19 * 60, endMin: 20 * 60 }]), [
+    { day: 2, startMin: 18 * 60, endMin: 19 * 60 }, { day: 2, startMin: 20 * 60, endMin: 22 * 60 },
+    { day: 3, startMin: 19 * 60, endMin: 20 * 60 },
+  ]);
+  assert.deepEqual(av.subtractRanges(free, []), free);
+  assert.deepEqual(av.subtractRanges([{ day: 3, startMin: 19 * 60, endMin: 20 * 60 }], [{ day: 3, startMin: 18 * 60, endMin: 21 * 60 }]), []);
+  assert.ok(av.touches([[100, 160]], 150, 180));
+  assert.ok(!av.touches([[100, 160]], 160, 190));
+});
+
+test('Never hours are refused even inside free time; Maybe hours are candidates, marked', () => {
+  const l = {
+    availability: [{ day: 1, startMin: 19 * 60, endMin: 22 * 60 }],
+    maybeAvailability: [{ day: 1, startMin: 22 * 60, endMin: 23 * 60 }],
+    busyAvailability: [{ day: 1, startMin: 20 * 60, endMin: 21 * 60 }],
+    timeZone: 'Asia/Baku',
+  };
+  const opt = wp.slotOptions(l, dates, 0);
+  // 19:00 (its 30 minutes end before 20:00), 21:00, and the maybe 22:00; never 20:00.
+  assert.deepEqual(opt.slots, [`${MON}-19`, `${MON}-21`, `${MON}-22`]);
+  assert.deepEqual([...opt.maybe], [`${MON}-22`]);
+  assert.deepEqual(wp.freeSlots(l, dates, 0), opt.slots);
+  // Old docs without the new fields plan exactly as before.
+  assert.deepEqual(wp.freeSlots({ availability: l.availability, timeZone: 'Asia/Baku' }, dates, 0), [`${MON}-19`, `${MON}-20`, `${MON}-21`]);
+});
+
+test('a Never hour is converted with the learner\'s zone like the free ones', () => {
+  const ist = {
+    availability: [{ day: 1, startMin: 17 * 60, endMin: 19 * 60 }],
+    busyAvailability: [{ day: 1, startMin: 17 * 60, endMin: 18 * 60 }],
+    timeZone: 'Europe/Istanbul',
+  };
+  assert.deepEqual(wp.freeSlots(ist, dates, 0), [`${MON}-19`]); // 18:00 Istanbul = 19:00 Baku
+});
+
+test('a Maybe hour is used only when it wins someone a practice', () => {
+  // Both free Tuesday 20:00 and «maybe» Monday 20:00: Tuesday wins.
+  const tue = [{ day: 2, startMin: 20 * 60, endMin: 21 * 60 }];
+  const monMaybe = [{ day: 1, startMin: 20 * 60, endMin: 21 * 60 }];
+  const a = L('a', { availability: tue, maybeAvailability: monMaybe });
+  const b = L('b', { availability: tue, maybeAvailability: monMaybe });
+  const plan = wp.buildWeekPlan({ learners: [a, b], dates, seed: 'm' });
+  assert.equal(plan.pairs.length, 1);
+  assert.equal(plan.pairs[0].slotId, `${dates[1]}-20`);
+  // The only shared time is one person's maybe: it is still planned, and said.
+  const c = L('c', { availability: [{ day: 4, startMin: 20 * 60, endMin: 21 * 60 }] });
+  const d = L('d', { availability: [{ day: 5, startMin: 20 * 60, endMin: 21 * 60 }], maybeAvailability: [{ day: 4, startMin: 20 * 60, endMin: 21 * 60 }] });
+  const p2 = wp.buildWeekPlan({ learners: [c, d], dates, seed: 'm2' });
+  assert.equal(p2.pairs.length, 1);
+  assert.equal(p2.pairs[0].slotId, `${dates[3]}-20`);
+  assert.ok(p2.pairs[0].reasons.includes('a «maybe» time'));
+});
+
+test('an hour called «the wrong time» goes after the others, but is not forbidden', () => {
+  const two = [{ day: 1, startMin: 20 * 60, endMin: 21 * 60 }, { day: 3, startMin: 20 * 60, endMin: 21 * 60 }];
+  const base = wp.buildWeekPlan({ learners: [L('a', { availability: two }), L('b', { availability: two })], dates, seed: 'w' });
+  const firstSlot = base.pairs[0].slotId;
+  const wd = wp.weekdayOf(firstSlot.slice(0, 10));
+  const plan = wp.buildWeekPlan({
+    learners: [L('a', { availability: two, wrongTimes: [`${wd}-20`] }), L('b', { availability: two })], dates, seed: 'w',
+  });
+  assert.equal(plan.pairs.length, 1);
+  assert.notEqual(plan.pairs[0].slotId, firstSlot);
+  const only = [{ day: 1, startMin: 20 * 60, endMin: 21 * 60 }];
+  const forced = wp.buildWeekPlan({ learners: [L('a', { availability: only, wrongTimes: ['1-20'] }), L('b', { availability: only })], dates, seed: 'w' });
+  assert.equal(forced.pairs.length, 1);
+});

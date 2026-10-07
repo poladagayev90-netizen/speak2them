@@ -20,10 +20,17 @@
 // marked down for having met recently), same level, someone not met this week,
 // practices spread out over the week, the evening hours most people use.
 //
+// The general week profile (2026-10-07): besides «Free», a learner may mark
+// hours «Maybe» and «Never». Maybe hours are candidates with a penalty per
+// side, so they are used only when they win someone a practice; Never hours
+// are refused outright, even inside the week's picked hours. An hour the
+// learner later called «the wrong time for me» (missReasons) is marked down
+// the same way.
+//
 // Fairness beats totals: the objective weights each person's n-th practice
 // by 1/n, so everyone gets one before anyone gets a third.
 
-const { toBakuIntervals, covers } = require('./availability');
+const { toBakuIntervals, covers, touches, mergeIntervals } = require('./availability');
 
 // A practice may start at any whole hour 07:00–23:00 (2026-10-07 — someone
 // free only 11:00–12:00 could never be planned on the old 2-hour grid). One a
@@ -63,23 +70,43 @@ const dateShift = (date, days) => {
   return v;
 };
 
-// The blocks of `dates` a learner is free for, as slot ids.
-function freeSlots({ availability, timeZone }, dates, earliestMs, minOverlap = PLAN_MIN_OVERLAP_MIN) {
-  if (!dates.length) return [];
+const MAYBE_PENALTY = 1;
+const WRONG_TIME_PENALTY = 1.5;
+
+// The starts of `dates` a learner could take, as slot ids: free (or maybe)
+// from the start for `minOverlap` minutes, touching no «Never» hour.
+//   maybe — the ones that need a «Maybe» hour (a penalty in the score)
+//   avoid — the ones at a weekday + Baku hour they called the wrong time
+// wrongTimes: ["<weekday>-<baku hour>"] (functions/index.js reads missReasons).
+function slotOptions({ availability, maybeAvailability, busyAvailability, wrongTimes, timeZone }, dates, earliestMs, minOverlap = PLAN_MIN_OVERLAP_MIN) {
+  const res = { slots: [], maybe: new Set(), avoid: new Set() };
+  if (!dates.length) return res;
   // The offset of the planned week (mid-week), so a DST change is respected.
   const mid = new Date(blockStartMs(dates[Math.min(3, dates.length - 1)], 12));
-  const intervals = toBakuIntervals(availability || [], timeZone, mid);
-  const out = [];
+  const free = toBakuIntervals(availability || [], timeZone, mid);
+  const maybe = toBakuIntervals(maybeAvailability || [], timeZone, mid);
+  const either = maybe.length ? mergeIntervals([...free, ...maybe]) : free;
+  const never = toBakuIntervals(busyAvailability || [], timeZone, mid);
+  const wrong = new Set(wrongTimes || []);
   for (const date of dates) {
     const wd = weekdayOf(date);
     for (const hour of BLOCK_HOURS) {
       if (blockStartMs(date, hour) < earliestMs) continue;
       const a = wd * 1440 + hour * 60;
-      if (covers(intervals, a, a + minOverlap)) out.push(slotIdOf(date, hour));
+      if (!covers(either, a, a + minOverlap)) continue;
+      if (never.length && touches(never, a, a + minOverlap)) continue;
+      const slotId = slotIdOf(date, hour);
+      res.slots.push(slotId);
+      if (!covers(free, a, a + minOverlap)) res.maybe.add(slotId);
+      if (wrong.has(`${wd}-${hour}`)) res.avoid.add(slotId);
     }
   }
-  return out;
+  return res;
 }
+
+// The blocks of `dates` a learner is free for, as slot ids.
+const freeSlots = (learner, dates, earliestMs, minOverlap = PLAN_MIN_OVERLAP_MIN) =>
+  slotOptions(learner, dates, earliestMs, minOverlap).slots;
 
 // May these two be paired at all? (pairVerdict's hard rules, as data.)
 function pairAllowed(a, b, blocked) {
@@ -134,14 +161,19 @@ const harmonic = (n) => { let x = 0; for (let i = 1; i <= n; i++) x += 1 / i; re
 // favorites: Map of pairKey → how many of the two starred the other (1 or 2)
 const FAVORITE_BONUS = 2;
 function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favorites = new Map(), dates, earliestMs = 0, seed = 'plan', restarts }) {
-  const people = learners.map((l) => ({
-    ...l,
-    need: Math.max(0, Math.floor(Number(l.need) || 0)),
-    free: new Set(freeSlots(l, dates, earliestMs)),
-    busy: new Set(l.busyDates || []),
-    paired: new Set(l.pairedWith || []),
-    priority: Number(l.priority) || 0,
-  }));
+  const people = learners.map((l) => {
+    const opt = slotOptions(l, dates, earliestMs);
+    return {
+      ...l,
+      need: Math.max(0, Math.floor(Number(l.need) || 0)),
+      free: new Set(opt.slots),
+      maybe: opt.maybe,
+      avoid: opt.avoid,
+      busy: new Set(l.busyDates || []),
+      paired: new Set(l.pairedWith || []),
+      priority: Number(l.priority) || 0,
+    };
+  });
   const byUid = new Map(people.map((p) => [p.uid, p]));
 
   // Every allowed pair and the blocks both are free for — computed once.
@@ -180,6 +212,9 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
     for (const uid of [pr.a, pr.b]) {
       const days = state.days.get(uid);
       if (days.has(dateShift(date, -1)) || days.has(dateShift(date, 1))) s -= 1;
+      const p = byUid.get(uid);
+      if (p.maybe.size && p.maybe.has(slotId)) s -= MAYBE_PENALTY;
+      if (p.avoid.size && p.avoid.has(slotId)) s -= WRONG_TIME_PENALTY;
     }
     return s;
   };
@@ -278,6 +313,7 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
         reasons: [
           ...(pr.fav ? [pr.fav === 2 ? 'both want to practise again' : 'asked to practise again'] : []),
           pr.lvl.reason, pr.isRecent ? 'met in the last 7 days' : 'not met this week',
+          ...[a, b].filter((u) => byUid.get(u).maybe.has(slotId)).map(() => 'a «maybe» time'),
         ],
         alternatives,
       };
@@ -302,6 +338,6 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
 }
 
 module.exports = {
-  BLOCK_HOURS, GRID_HOURS, PLAN_MIN_OVERLAP_MIN,
-  weekDates, weekdayOf, freeSlots, pairAllowed, pairKey, blockStartMs, slotIdOf, buildWeekPlan,
+  BLOCK_HOURS, GRID_HOURS, PLAN_MIN_OVERLAP_MIN, MAYBE_PENALTY, WRONG_TIME_PENALTY,
+  weekDates, weekdayOf, freeSlots, slotOptions, pairAllowed, pairKey, blockStartMs, slotIdOf, buildWeekPlan,
 };

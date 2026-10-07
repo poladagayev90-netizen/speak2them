@@ -84,3 +84,5 @@
 .adm-billing-title { margin: 0; font-weight: 800; font-size: var(--fs-sm); color: var(--text-primary); }
 .adm-billing-sub { margin: 2px 0 0; font-weight: 600; font-size: var(--fs-xs); color: var(--text-secondary); }
 .adm-select { appearance: auto; padding-right: var(--s-2); }
+/* A link styled as a small button (WhatsApp on Students / Applicants). */
+.adm-btn--link { display: inline-flex; align-items: center; gap: var(--s-1); line-height: 32px; text-decoration: none; }

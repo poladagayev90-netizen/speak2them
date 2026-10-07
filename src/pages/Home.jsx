@@ -24,6 +24,8 @@ import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import NextTopics from '../components/plan/NextTopics';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
+import MissReasonCard from '../components/plan/MissReason';
+import WeekProfileCard from '../components/plan/WeekProfileCard';
 import useMyPlan, { useAutoMode } from '../hooks/useMyPlan';
 import { useBillingConfig } from '../hooks/usePackages';
 import { outOfPractices, packageView } from '../utils/packages';
@@ -238,6 +240,11 @@ export default function Home({ user }) {
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
         {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
+
+        {/* «What happened?» after the learner's own miss or cancel, and —
+            once — the general week profile for those already practising. */}
+        <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
+        {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} />}
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (

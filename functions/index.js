@@ -4899,6 +4899,19 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     }
   }
   const verdicts = new Map();
+  // Hours a learner said were «the wrong time for me» after a miss, a late
+  // cancel or a time change (missReasons, Faza 3): a soft penalty on that
+  // weekday + Baku hour, so the planner tries another time first. Only the
+  // last eight weeks count — a timetable changes.
+  const wrongTimes = new Map();
+  const wrongSnap = await db.collection("missReasons").where("reason", "==", "wrong_time").get().catch(() => ({ docs: [] }));
+  for (const d of wrongSnap.docs) {
+    const r = d.data() || {};
+    const m = /^(\d{4}-\d{2}-\d{2})-(\d{2})$/.exec(String(r.slotId || ""));
+    if (!m || !r.uid || (r.at?.toMillis?.() || 0) < nowMs - 56 * DAY_MS) continue;
+    if (!wrongTimes.has(r.uid)) wrongTimes.set(r.uid, new Set());
+    wrongTimes.get(r.uid).add(`${weeklyPlanner.weekdayOf(m[1])}-${Number(m[2])}`);
+  }
   // Reliability limits (Phase 5): one practice a week, no newcomer partners.
   const relSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("reliability").doc(u))) : [];
   const limitedUids = new Set(relSnaps.filter((s) => s.exists && s.get("level") === "limited").map((s) => s.id));
@@ -4962,7 +4975,11 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     // The learner's own answer for this week (Plan tab calendar / check-in):
     // the days they picked narrow their times and set the number.
     const answer = autoRoster.weekAnswer(ob, monday);
-    const availability = autoRoster.weekAvailability(ob.availability, answer);
+    // «Never» hours of the general week profile are taken out even of hours
+    // picked for this week; «Maybe» hours are a fallback the score marks down.
+    const never = Array.isArray(ob.busyAvailability) ? ob.busyAvailability : [];
+    const availability = autoRoster.weekAvailability(ob.availability, answer, never);
+    const maybeAvailability = autoRoster.weekMaybe(ob.maybeAvailability, answer);
     const seen = u.lastSeen?.toMillis?.() || 0;
     if (auto) {
       const v = autoRoster.eligible({
@@ -5006,6 +5023,9 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       minor: ob.ageBand === "under18",
       partnerLevel: u.partnerLevel || null,
       availability,
+      maybeAvailability,
+      busyAvailability: never,
+      wrongTimes: [...(wrongTimes.get(uid) || [])],
       timeZone: ob.timeZone || "Asia/Baku",
       target,
       need,

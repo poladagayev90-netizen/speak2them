@@ -97,3 +97,17 @@ test('picked hours replace that week times, odd values dropped', () => {
     { day: 2, startMin: 1140, endMin: 1200 }, { day: 2, startMin: 1260, endMin: 1320 },
   ]);
 });
+
+test('week profile: Never hours leave even this week\'s picked hours; Maybe follows the answer', () => {
+  const never = [{ day: 2, startMin: 20 * 60, endMin: 21 * 60 }];
+  assert.deepStrictEqual(A.weekAvailability([], { in: true, days: [2], hours: { 2: [19, 20, 21] } }, never), [
+    { day: 2, startMin: 19 * 60, endMin: 20 * 60 }, { day: 2, startMin: 21 * 60, endMin: 22 * 60 },
+  ]);
+  assert.deepStrictEqual(A.weekAvailability([{ day: 2, startMin: 20 * 60, endMin: 21 * 60 }], null, never), []);
+  assert.deepStrictEqual(A.weekAvailability([{ day: 1, startMin: 1200, endMin: 1320 }], null), [{ day: 1, startMin: 1200, endMin: 1320 }]);
+  const maybe = [{ day: 1, startMin: 600, endMin: 720 }, { day: 6, startMin: 600, endMin: 720 }];
+  assert.deepStrictEqual(A.weekMaybe(maybe, null), maybe);
+  assert.deepStrictEqual(A.weekMaybe(maybe, { in: true, days: [6] }), [maybe[1]]);
+  assert.deepStrictEqual(A.weekMaybe(maybe, { in: true, days: [6], hours: { 6: [12] } }), []);
+  assert.deepStrictEqual(A.weekMaybe(undefined, null), []);
+});

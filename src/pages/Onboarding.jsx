@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import {
   ArrowLeft, ArrowRight, Check, CalendarDays, CalendarCheck, Globe2, GraduationCap,
-  MessagesSquare, Target, UserRound, Clock, Pencil, Handshake, Phone,
+  MessagesSquare, Target, UserRound, Clock, Pencil, Handshake, Phone, MessageCircle,
 } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { Button } from '../components/ui';
@@ -17,9 +17,11 @@ import { usePopularTimes } from '../hooks/useMyPlan';
 import { popularBlocks } from '../utils/myWeek';
 import {
   ONBOARDING_VERSION, GOALS, LEVELS, AGE_BANDS, COUNTRIES, TOPICS, WEEKLY_TARGETS, labelOf,
+  PHONE_CODES, dialCodeFor, normalizeWhatsApp,
 } from '../utils/onboarding';
+import { PROFILE_MODES, paintCell } from '../utils/weekProfile';
 import { needsIntro } from '../utils/intro';
-import TimeGrid from '../components/plan/TimeGrid';
+import TimeGrid, { PaintModes } from '../components/plan/TimeGrid';
 import './Onboarding.css';
 
 // One question per screen. The order is deliberate: the easy, identity
@@ -30,7 +32,9 @@ import './Onboarding.css';
 // The charter comes right before the grid: how planned practice works is what
 // gives "when are you free?" and "how many a week?" their weight. Learners who
 // onboarded before it existed (version 1) are brought back straight to it.
-const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'availability', 'target', 'topics', 'summary'];
+// The WhatsApp number follows the charter (version 3): the team writes when a
+// practice needs sorting out. Version-2 learners are asked only that step.
+const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'phone', 'availability', 'target', 'topics', 'summary'];
 // Bump when the charter text changes in substance; accepting it again is then asked.
 const CHARTER_VERSION = 1;
 
@@ -44,6 +48,13 @@ const PRESETS = [
 ];
 
 const draftKey = (uid) => `slk_onboarding_draft_${uid}`;
+
+// A stored "+905321234567" → the code in the list and the rest to show.
+function splitWhatsApp(number) {
+  const n = String(number || '');
+  const hit = [...PHONE_CODES].sort((a, b) => b.code.length - a.code.length).find((c) => n.startsWith(`+${c.code}`));
+  return hit ? { code: hit.code, rest: n.slice(hit.code.length + 1) } : { code: null, rest: n };
+}
 
 function readDraft(uid) {
   try {
@@ -90,6 +101,16 @@ export default function Onboarding({ user }) {
     return out;
   }, [popularTimes, timeZone]);
   const [cells, setCells] = useState(() => new Set());
+  // The general week profile: «Maybe» and «Never» hours beside the free ones,
+  // one state per cell (utils/weekProfile.js). `mode` = what a tap paints.
+  const [maybeCells, setMaybeCells] = useState(() => new Set());
+  const [neverCells, setNeverCells] = useState(() => new Set());
+  const [mode, setMode] = useState('free');
+  // Set once the three-kind grid has been on screen: saving then stamps
+  // weekProfileAt, which retires Today's «Tell us your usual week» card.
+  const [profileSeen, setProfileSeen] = useState(false);
+  const [phoneCode, setPhoneCode] = useState('994');
+  const [phoneRaw, setPhoneRaw] = useState('');
   const [weeklyTarget, setWeeklyTarget] = useState(0);
   const [topics, setTopics] = useState([]);
   const [charterAccepted, setCharterAccepted] = useState(false);
@@ -125,18 +146,38 @@ export default function Onboarding({ user }) {
       setCountry(src.country || '');
       if (src.timeZone) setTimeZone(src.timeZone);
       setCells(draft ? new Set(draft.cells || []) : rangesToCells(prev?.availability));
+      setMaybeCells(draft ? new Set(draft.maybeCells || []) : rangesToCells(prev?.maybeAvailability));
+      setNeverCells(draft ? new Set(draft.neverCells || []) : rangesToCells(prev?.busyAvailability));
+      if (draft && draft.phoneRaw != null) {
+        setPhoneCode(draft.phoneCode || '994');
+        setPhoneRaw(draft.phoneRaw);
+      } else if (prev?.whatsapp) {
+        const { code, rest } = splitWhatsApp(prev.whatsapp);
+        setPhoneCode(code || dialCodeFor(src.country));
+        setPhoneRaw(rest);
+      } else {
+        setPhoneCode(dialCodeFor(src.country));
+      }
       setWeeklyTarget(src.weeklyTarget || 0);
       setTopics(src.topics || (Array.isArray(userDoc.topics) ? userDoc.topics.filter((t) => TOPICS.includes(t)) : []));
       // Where to open: a deliberate jump (Plan → "Edit my free times") wins,
       // then a draft in this tab, then — for someone who onboarded before the
-      // charter existed — the charter itself, with every answer still filled in.
+      // charter existed — the charter itself, with every answer still filled
+      // in; someone who only lacks the WhatsApp number gets just that step.
       const jump = STEPS.indexOf(location.state?.jumpTo);
+      const prevVersion = Number(prev?.version) || 0;
+      const accepted = !!prev?.charterAcceptedAt && Number(prev?.charterVersion) >= CHARTER_VERSION;
+      // A finished profile (version 2+) edits one step and saves; a missing
+      // number is caught at saving (submit sends them to the phone step).
+      let edit = jump >= 0 && accepted && prevVersion >= 2;
       if (jump >= 0) setStep(jump);
       else if (draft && Number.isInteger(draft.step)) setStep(Math.min(draft.step, STEPS.length - 1));
-      else if (prev && (Number(prev.version) || 0) < ONBOARDING_VERSION) setStep(STEPS.indexOf('charter'));
-      const accepted = !!prev?.charterAcceptedAt && Number(prev?.charterVersion) >= CHARTER_VERSION;
+      else if (prev && prevVersion < ONBOARDING_VERSION) {
+        if (accepted && prevVersion >= 2) { setStep(STEPS.indexOf('phone')); edit = true; }
+        else setStep(STEPS.indexOf('charter'));
+      }
       setCharterAccepted(accepted);
-      setEditing(jump >= 0 && accepted && (Number(prev?.version) || 0) >= ONBOARDING_VERSION);
+      setEditing(edit);
       setLoading(false);
     })();
     return () => { alive = false; };
@@ -152,12 +193,16 @@ export default function Onboarding({ user }) {
     try {
       sessionStorage.setItem(draftKey(uid), JSON.stringify({
         step, goal, level, ageBand, country, timeZone, cells: [...cells], weeklyTarget, topics,
+        maybeCells: [...maybeCells], neverCells: [...neverCells], phoneCode, phoneRaw,
       }));
     } catch { /* private mode */ }
-  }, [loading, uid, step, goal, level, ageBand, country, timeZone, cells, weeklyTarget, topics]);
+  }, [loading, uid, step, goal, level, ageBand, country, timeZone, cells, weeklyTarget, topics, maybeCells, neverCells, phoneCode, phoneRaw]);
 
   const ranges = useMemo(() => cellsToRanges(cells), [cells]);
+  const maybeRanges = useMemo(() => cellsToRanges(maybeCells), [maybeCells]);
+  const neverRanges = useMemo(() => cellsToRanges(neverCells), [neverCells]);
   const dayCount = useMemo(() => new Set(ranges.map((r) => r.day)).size, [ranges]);
+  const whatsapp = normalizeWhatsApp(phoneRaw, phoneCode);
 
   // A target larger than the number of days you are free cannot be kept, so
   // it cannot be chosen. This is the "picked five days, came on none" problem
@@ -167,6 +212,7 @@ export default function Onboarding({ user }) {
   }, [dayCount, weeklyTarget]);
 
   const id = STEPS[step];
+  useEffect(() => { if (id === 'availability') setProfileSeen(true); }, [id]);
   const canNext = {
     welcome: true,
     goal: !!goal,
@@ -174,6 +220,7 @@ export default function Onboarding({ user }) {
     age: !!ageBand,
     place: !!country && !!timeZone,
     charter: true,
+    phone: !!whatsapp,
     availability: cells.size > 0,
     target: weeklyTarget > 0,
     topics: topics.length > 0,
@@ -189,22 +236,23 @@ export default function Onboarding({ user }) {
   };
   const jumpTo = (name) => { setDir(-1); setStep(STEPS.indexOf(name)); window.scrollTo(0, 0); };
 
+  // A tap paints the chosen kind (or clears a cell already of that kind).
   const toggleCell = (key) => {
-    setCells((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
+    const next = paintCell({ free: cells, maybe: maybeCells, never: neverCells }, key, mode);
+    setCells(next.free); setMaybeCells(next.maybe); setNeverCells(next.never);
   };
 
+  // Presets are free times; a preset hour stops being maybe/never.
   const applyPreset = (p) => {
-    setCells((prev) => {
-      const next = new Set(prev);
-      const keys = p.days.flatMap((d) => p.hours.map((h) => `${d}-${h}`));
-      const allOn = keys.every((k) => next.has(k));
-      keys.forEach((k) => (allOn ? next.delete(k) : next.add(k)));
-      return next;
-    });
+    const keys = p.days.flatMap((d) => p.hours.map((h) => `${d}-${h}`));
+    const allOn = keys.every((k) => cells.has(k));
+    const next = new Set(cells);
+    keys.forEach((k) => (allOn ? next.delete(k) : next.add(k)));
+    setCells(next);
+    if (!allOn) {
+      setMaybeCells((prev) => new Set([...prev].filter((k) => !keys.includes(k))));
+      setNeverCells((prev) => new Set([...prev].filter((k) => !keys.includes(k))));
+    }
   };
 
   const toggleTopic = (t) => {
@@ -214,10 +262,15 @@ export default function Onboarding({ user }) {
   const pickCountry = (c) => {
     setCountry(c.value);
     if (c.tz) setTimeZone(c.tz);
+    // The WhatsApp code follows the country until a number has been typed.
+    if (!phoneRaw.trim()) setPhoneCode(dialCodeFor(c.value));
   };
 
   const submit = async () => {
     if (!uid) { navigate('/login'); return; }
+    // The number is required (version 3). Someone who came in through
+    // another step's edit link and has none yet is sent to that step.
+    if (!whatsapp) { jumpTo('phone'); setError('Add your WhatsApp number to save.'); return; }
     setSaving(true);
     setError('');
     try {
@@ -231,6 +284,10 @@ export default function Onboarding({ user }) {
         country,
         timeZone,
         availability: ranges,
+        maybeAvailability: maybeRanges,
+        busyAvailability: neverRanges,
+        ...(profileSeen ? { weekProfileAt: serverTimestamp() } : {}),
+        whatsapp,
         weeklyTarget,
         topics,
         version: ONBOARDING_VERSION,
@@ -392,18 +449,50 @@ export default function Onboarding({ user }) {
           </Question>
         )}
 
+        {id === 'phone' && (
+          <Question
+            icon={<MessageCircle size={20} />}
+            title="Your WhatsApp number"
+            sub="Only the SpeakLab team sees it — we write when a practice needs sorting out. Partners talk in the app chat."
+          >
+            <div className="ob-phone">
+              <select className="ob-select ob-phone-code" value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} aria-label="Country code">
+                {PHONE_CODES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
+              </select>
+              <input
+                className="ob-select ob-phone-num"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="50 123 45 67"
+                value={phoneRaw}
+                onChange={(e) => { setPhoneRaw(e.target.value); setError(''); }}
+                aria-label="WhatsApp number"
+                aria-invalid={phoneRaw.trim() !== '' && !whatsapp}
+              />
+            </div>
+            <p className="ob-summary-line">
+              {whatsapp ? `We will write to ${whatsapp}` : phoneRaw.trim() ? 'This does not look like a full number yet.' : 'The number you use on WhatsApp.'}
+            </p>
+            {error && <p className="ob-error" role="alert">{error}</p>}
+          </Question>
+        )}
+
         {id === 'availability' && (
           <Question
             icon={<CalendarDays size={20} />}
             title="When are you usually free?"
             sub={`Tap the hours you could speak for 20–30 minutes. Times are in your time (${cityOf(timeZone)}).`}
           >
+            <PaintModes modes={PROFILE_MODES} value={mode} onChange={setMode} />
+            <p className="ob-note ob-note--tight">General info so we can plan better. We never book a call without your yes.</p>
             <div className="ob-presets">
               {PRESETS.map((p) => (
                 <button key={p.id} type="button" className="ob-chip ob-chip--sm" onClick={() => applyPreset(p)}>{p.label}</button>
               ))}
-              {cells.size > 0 && (
-                <button type="button" className="ob-chip ob-chip--sm ob-chip--ghost" onClick={() => setCells(new Set())}>Clear</button>
+              {(cells.size > 0 || maybeCells.size > 0 || neverCells.size > 0) && (
+                <button type="button" className="ob-chip ob-chip--sm ob-chip--ghost"
+                  onClick={() => { setCells(new Set()); setMaybeCells(new Set()); setNeverCells(new Set()); }}>Clear</button>
               )}
             </div>
             <TimeGrid
@@ -413,7 +502,11 @@ export default function Onboarding({ user }) {
               cell={(day, h) => {
                 const key = `${day}-${h}`;
                 const popular = popularCells.has(key);
-                return { on: cells.has(key), popular, label: `${WEEK_DAYS.find((d) => d.day === day).short} ${formatMinutes(h * 60)}${popular ? ', popular' : ''}` };
+                const kind = cells.has(key) ? 'free' : maybeCells.has(key) ? 'maybe' : neverCells.has(key) ? 'never' : null;
+                return {
+                  on: kind === 'free', maybe: kind === 'maybe', never: kind === 'never', popular,
+                  label: `${WEEK_DAYS.find((d) => d.day === day).short} ${formatMinutes(h * 60)}${kind ? `, ${kind}` : ''}${popular ? ', popular' : ''}`,
+                };
               }}
               onToggle={(day, h) => toggleCell(`${day}-${h}`)}
             />
@@ -427,8 +520,10 @@ export default function Onboarding({ user }) {
             )}
             <p className="ob-summary-line">
               {cells.size === 0
-                ? 'Choose at least one hour.'
-                : `${totalHours(ranges)} h a week across ${dayCount} ${dayCount === 1 ? 'day' : 'days'}`}
+                ? 'Choose at least one free hour.'
+                : `${totalHours(ranges)} h free across ${dayCount} ${dayCount === 1 ? 'day' : 'days'}`
+                  + (maybeCells.size ? ` · ${maybeCells.size} h maybe` : '')
+                  + (neverCells.size ? ` · ${neverCells.size} h never` : '')}
             </p>
           </Question>
         )}
@@ -489,6 +584,7 @@ export default function Onboarding({ user }) {
               <Row label="Level" value={level} onEdit={() => jumpTo('level')} />
               <Row label="Age" value={labelOf(AGE_BANDS, ageBand)} onEdit={() => jumpTo('age')} />
               <Row label="Location" value={`${country} · ${cityOf(timeZone)}`} onEdit={() => jumpTo('place')} />
+              <Row label="WhatsApp" value={whatsapp || '—'} onEdit={() => jumpTo('phone')} />
               <Row
                 label="Free time"
                 value={(
@@ -502,6 +598,8 @@ export default function Onboarding({ user }) {
                         </span>
                       );
                     })}
+                    {maybeCells.size > 0 && <span className="ob-review-extra">Maybe: {maybeCells.size} h</span>}
+                    {neverCells.size > 0 && <span className="ob-review-extra">Never: {neverCells.size} h</span>}
                   </span>
                 )}
                 onEdit={() => jumpTo('availability')}
@@ -515,7 +613,7 @@ export default function Onboarding({ user }) {
       </main>
 
       <footer className="ob-foot">
-        {editing && (id === 'availability' || id === 'target') ? (
+        {editing && (id === 'availability' || id === 'target' || id === 'phone') ? (
           // Fewer free days than the old target resets the target (the rule
           // above), so that one case goes through the target step first.
           id === 'availability' && weeklyTarget === 0 ? (

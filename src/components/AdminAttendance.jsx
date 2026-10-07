@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, limit, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp, ShieldAlert, RotateCcw } from 'lucide-react';
+import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp, ShieldAlert, RotateCcw, MessageSquareText } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
 import { subscribeToRecentAttendance, summarize } from '../utils/attendance';
 import { weekPlanAction } from '../utils/matchOffers';
+import { REASON_LABEL } from '../utils/missReasons';
 import './AdminAttendance.css';
 
 // Admin → Attendance: commitment (weeklyTarget from onboarding) against what
@@ -40,6 +41,15 @@ function flagsFor(s, target, joinedMs, now) {
 }
 
 const relRank = (rel) => ({ limited: 2, watch: 1 }[rel?.level] || 0);
+// «What happened?» answers (missReasons): what the learner said about their
+// own miss, cancel or time change.
+const KIND_LABEL = { no_show: 'No-show', late_cancel: 'Late cancel', cancelled: 'Cancelled', time_change: 'Time change' };
+const slotLabel = (slotId) => {
+  const m = /^(\d{4}-\d{2}-\d{2})-(\d{2})$/.exec(String(slotId || ''));
+  if (!m) return '';
+  const d = new Date(`${m[1]}T12:00:00Z`);
+  return `${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })} ${m[2]}:00`;
+};
 
 export default function AdminAttendance({ users }) {
   const navigate = useNavigate();
@@ -51,6 +61,21 @@ export default function AdminAttendance({ users }) {
   const [now] = useState(Date.now());
   const [reliability, setReliability] = useState({});
   const [resetting, setResetting] = useState(null);
+  const [reasons, setReasons] = useState([]);
+  useEffect(() => onSnapshot(
+    query(collection(db, 'missReasons'), orderBy('at', 'desc'), limit(300)),
+    (snap) => setReasons(snap.docs.map((d) => d.data())),
+    () => {},
+  ), []);
+  const reasonsByUid = useMemo(() => {
+    const m = new Map();
+    for (const r of reasons) {
+      if (now - toMs(r.at) > 35 * DAY) continue;
+      if (!m.has(r.uid)) m.set(r.uid, []);
+      m.get(r.uid).push(r);
+    }
+    return m;
+  }, [reasons, now]);
 
   useEffect(() => subscribeToRecentAttendance(setEvents, now - 35 * DAY), [now]);
   useEffect(() => onSnapshot(collection(db, 'onboarding'), (snap) => {
@@ -193,6 +218,16 @@ export default function AdminAttendance({ users }) {
                   Last practice {s.lastAttendedMs ? new Date(s.lastAttendedMs).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'}
                 </span>
               </div>
+              {(reasonsByUid.get(u.uid) || []).length > 0 && (
+                <ul className="at-reasons" aria-label="What they said">
+                  {reasonsByUid.get(u.uid).slice(0, 4).map((r) => (
+                    <li key={`${r.eventId}`}>
+                      <MessageSquareText size={13} aria-hidden="true" />
+                      <span><b>{KIND_LABEL[r.kind] || r.kind}</b> {slotLabel(r.slotId)} · {REASON_LABEL[r.reason] || r.reason}{r.note ? ` — “${r.note}”` : ''}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
               {relRank(rel) > 0 && (
                 <div className="at-rel">
                   <span className={`at-flag is-${rel.level === 'limited' ? 'bad' : 'soft'}`}>

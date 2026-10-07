@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Clock, Gift, Phone, SearchX } from 'lucide-react';
+import { Clock, Gift, MessageCircle, Phone, SearchX } from 'lucide-react';
 import { collection, onSnapshot, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useSearchParams } from 'react-router-dom';
@@ -17,6 +17,7 @@ import { BillingSwitch, PackageMenu, packageLabel, usePackageSummaries } from '.
 import { setTutorVerification } from '../utils/teacher';
 import { stableOrder } from '../utils/stableOrder';
 import { TABS, adminTabOf } from '../utils/adminNav';
+import { whatsAppLink } from '../utils/onboarding';
 import '../components/AdminApplicants.css';
 import './Admin.css';
 
@@ -35,6 +36,15 @@ export default function Admin({ user }) {
   const [error, setError] = useState('');
 
   const [rawUsers, setRawUsers] = useState([]);
+  // WhatsApp numbers (onboarding/{uid}.whatsapp, team-only) for the Students
+  // list — listened to only while that tab is open.
+  const [phones, setPhones] = useState({});
+  useEffect(() => {
+    if (adminTab !== 'premium') return undefined;
+    return onSnapshot(collection(db, 'onboarding'), (snap) => {
+      setPhones(Object.fromEntries(snap.docs.filter((d) => d.get('whatsapp')).map((d) => [d.id, d.get('whatsapp')])));
+    }, () => {});
+  }, [adminTab]);
   const packageSummaries = usePackageSummaries();
   const [emails, setEmails] = useState({});
 
@@ -249,6 +259,12 @@ export default function Admin({ user }) {
                       )}
                     </div>
                     <div className="adm-user-actions">
+                      {phones[id] && (
+                        <a className="adm-btn adm-btn--soft adm-btn--link" href={whatsAppLink(phones[id], u.name)}
+                          target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${u.name || ''}`} title={phones[id]}>
+                          <MessageCircle size={14} aria-hidden="true" /> WhatsApp
+                        </a>
+                      )}
                       {/* Tutor badge: teachers/{tid} is unreadable even for the
                           admin, so the profile shown comes from users/{uid}.tutorProfile. */}
                       {!isAdmin && (u.role === 'teacher' || u.teacherEligible) && (

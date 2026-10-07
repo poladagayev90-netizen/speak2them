@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CalendarDays, CheckCheck, Pencil, UsersRound, ChevronRight } from 'lucide-react';
+import { CalendarDays, CheckCheck, Pencil, UsersRound, ChevronRight, MessageCircle } from 'lucide-react';
 import { Button } from '../components/ui';
 import MatchOfferCard from '../components/MatchOfferCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import BookingRow from '../components/plan/BookingRow';
+import MissReasonCard from '../components/plan/MissReason';
 import LessonRow from '../components/plan/LessonRow';
 import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
 import { isAdminUser } from '../constants';
@@ -102,6 +103,7 @@ export default function Plan({ user }) {
       </div>
       <div className="home-body" style={{ paddingBottom: '100px' }}>
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
+        <MissReasonCard uid={uid} onboarding={ob} now={plan.now} />
 
         {/* The week as a calendar: what is booked, and the days you want. */}
         {ob && ob.charterAcceptedAt && (ob.availability || []).length > 0 && (
@@ -149,7 +151,7 @@ export default function Plan({ user }) {
                   <div className="pl-day-items">
                     {day.items.map((b) => (b.kind === 'lesson'
                       ? <LessonRow key={b.id} lesson={b} now={plan.now} />
-                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} autoOpen={navState?.openBooking === b.id ? (navState.openTime ? 'time' : 'more') : null} />))}
+                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} onboarding={ob} autoOpen={navState?.openBooking === b.id ? (navState.openTime ? 'time' : 'more') : null} />))}
                   </div>
                 </div>
               ))}
@@ -170,6 +172,12 @@ export default function Plan({ user }) {
                 <span className="pl-row-main">
                   <p className="pl-row-title">Free times · {totalHours(ob.availability || [])} h a week</p>
                   <p className="pl-row-sub pl-row-sub--wrap">{freeDays.join(' · ') || 'None yet'} {ob.timeZone ? `(${cityOf(ob.timeZone)} time)` : ''}</p>
+                  {((ob.maybeAvailability || []).length > 0 || (ob.busyAvailability || []).length > 0) && (
+                    <p className="pl-row-sub pl-row-sub--wrap">
+                      {[(ob.maybeAvailability || []).length && `${totalHours(ob.maybeAvailability)} h maybe`,
+                        (ob.busyAvailability || []).length && `${totalHours(ob.busyAvailability)} h never`].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                 </span>
                 <Pencil size={16} className="pl-row-end" aria-hidden="true" />
               </button>
@@ -178,6 +186,14 @@ export default function Plan({ user }) {
                 <span className="pl-row-main">
                   <p className="pl-row-title">{labelOf(WEEKLY_TARGETS, ob.weeklyTarget)} {Number(ob.weeklyTarget) === 1 ? 'practice' : 'practices'} a week</p>
                   <p className="pl-row-sub">The number you said you can keep</p>
+                </span>
+                <Pencil size={16} className="pl-row-end" aria-hidden="true" />
+              </button>
+              <button type="button" className="pl-row" onClick={() => navigate('/onboarding', { state: { jumpTo: 'phone', returnTo: '/plan' } })}>
+                <span className="pl-row-icon pl-row-icon--plain" aria-hidden="true"><MessageCircle size={18} /></span>
+                <span className="pl-row-main">
+                  <p className="pl-row-title">WhatsApp · {ob.whatsapp || 'not added'}</p>
+                  <p className="pl-row-sub">Only the SpeakLab team sees it</p>
                 </span>
                 <Pencil size={16} className="pl-row-end" aria-hidden="true" />
               </button>

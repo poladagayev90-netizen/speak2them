@@ -11,6 +11,8 @@
 //
 // Pure: index.js reads the docs and passes plain values.
 
+const { subtractRanges } = require('./availability');
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ASLEEP_AFTER_MS = 7 * DAY_MS;
 // Signing up (finishing the wizard) late in a week, or at the weekend for the
@@ -107,8 +109,14 @@ function eligible(person, { weekStartMs, nowMs }) {
 }
 
 // The availability the planner uses for a week: the learner's free times,
-// narrowed to the days they picked for that week (own-clock weekdays).
-function weekAvailability(availability, answer) {
+// narrowed to the days they picked for that week (own-clock weekdays), never
+// inside an hour marked «Never» in the general week profile — not even one
+// picked for this week (the Plan grid warns on such a cell).
+function weekAvailability(availability, answer, never = []) {
+  return subtractRanges(weekFree(availability, answer), Array.isArray(never) ? never : []);
+}
+
+function weekFree(availability, answer) {
   const list = Array.isArray(availability) ? availability : [];
   // Picked hours replace that week's times (a day with no usual free time
   // can be added, a usual one left out); consecutive hours become one range.
@@ -125,6 +133,18 @@ function weekAvailability(availability, answer) {
     return out.sort((a, b) => a.day - b.day || a.startMin - b.startMin);
   }
   if (!answer || !answer.in || !answer.days || !answer.days.length) return list;
+  const days = new Set(answer.days);
+  return list.filter((r) => days.has(r.day));
+}
+
+// The «Maybe» hours the planner may fall back on that week. Hours picked
+// for the week are the learner's exact answer, so none are added to them;
+// days picked in the check-in keep the maybe hours of those days only.
+function weekMaybe(maybe, answer) {
+  const list = Array.isArray(maybe) ? maybe : [];
+  if (!answer || !answer.in) return list;
+  if (answer.hours) return [];
+  if (!answer.days || !answer.days.length) return list;
   const days = new Set(answer.days);
   return list.filter((r) => days.has(r.day));
 }
@@ -149,5 +169,5 @@ function summarize(verdicts) {
 
 module.exports = {
   ASLEEP_AFTER_MS, NEW_GRACE_MS, SNOOZE_AFTER_UNANSWERED, FAIR_WINDOW_MS, PROVEN_WINDOW_MS,
-  weekAnswer, parseHours, unansweredStreak, provenRecently, eligible, weekAvailability, weekTarget, summarize,
+  weekAnswer, parseHours, unansweredStreak, provenRecently, eligible, weekAvailability, weekMaybe, weekTarget, summarize,
 };

@@ -38,6 +38,9 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   const auto = autoIn({ onboarding, access, monday }) || !!(verdict && verdict.week === monday && verdict.in);
   const saved = answer && answer.in;
   const base = useMemo(() => weekCells({ monday, onboarding, now }), [monday, onboarding, now]);
+  // «Never» hours of the general week profile (own clock, "wd-h"): shown with
+  // an X; picking one for this week is allowed but the planner leaves it out.
+  const never = useMemo(() => rangesToCells(onboarding.busyAvailability || []), [onboarding]);
   const [cells, setCells] = useState(null); // null = untouched
   const [allHours, setAllHours] = useState(false);
   const [everyWeek, setEveryWeek] = useState(false);
@@ -106,7 +109,10 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
           const usual = rangesToCells(onboarding.availability || []);
           const keepDays = new Set(fixed.map((d) => d.wd));
           const every = new Set([...shown, ...[...usual].filter((k) => keepDays.has(Number(k.split('-')[0])))]);
-          await saveUsualTimes(uid, cellsToRanges(every));
+          // A Never hour chosen for every week is not Never any more.
+          const stillNever = [...never].filter((k) => !every.has(k));
+          await saveUsualTimes(uid, cellsToRanges(every),
+            stillNever.length !== never.size ? { busyAvailability: cellsToRanges(new Set(stillNever)) } : {});
         }
       }
       setCells(null);
@@ -125,6 +131,9 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   else if ((saved || auto) && !dirty) status = `You're in · ${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
   else status = `${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
   const capped = total > MAX_A_WEEK;
+  // Picked hours that are Never in the usual week: said plainly, not refused.
+  const neverPicked = [...shown].filter((k) => never.has(k) && byWd.get(Number(k.split('-')[0]))?.state === 'picked')
+    .map((k) => { const [wd, h] = k.split('-').map(Number); return `${byWd.get(wd).dow} ${hh(h)}`; });
 
   const columns = days.map((d) => ({
     key: d.wd,
@@ -140,7 +149,8 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
       return { mark: at === h, label: at === h ? `${label}, ${d.state === 'booked' ? 'booked' : 'proposal'}` : label };
     }
     const on = shown.has(`${wd}-${h}`);
-    return { on, disabled: !hourAhead(d.date, h, now), label };
+    const isNever = never.has(`${wd}-${h}`);
+    return { on, never: isNever, disabled: !hourAhead(d.date, h, now), label: isNever ? `${label}, never in your usual week` : label };
   };
 
   // The day buttons sit on top of their own hour column: a tap on the day
@@ -204,6 +214,9 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
 
       <p className="wk-status" role="status">{status}</p>
       {capped && <p className="pl-hint">Up to {MAX_A_WEEK} practices a week — one a day.</p>}
+      {neverPicked.length > 0 && (
+        <p className="pl-hint">{neverPicked.join(', ')} {neverPicked.length === 1 ? 'is' : 'are'} Never in your usual week, so no practice is planned then. Change it in Free times below.</p>
+      )}
       {msg && <p className="pl-hint">{msg}</p>}
 
       {dirty && shown.size > 0 && (

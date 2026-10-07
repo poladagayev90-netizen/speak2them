@@ -75,4 +75,34 @@ function covers(intervals, a, b) {
   return covers(intervals, a, WEEK_MIN) && covers(intervals, 0, b - WEEK_MIN);
 }
 
-module.exports = { BAKU_TZ, WEEK_MIN, tzOffsetMinutes, offsetVsBaku, mergeIntervals, toWeekIntervals, toBakuIntervals, intersectIntervals, covers };
+// Does any part of [a, b] fall inside the intervals? (A «Never» hour refuses
+// a practice window that only touches it.)
+function touches(intervals, a, b) {
+  if (b > WEEK_MIN) return touches(intervals, a, WEEK_MIN) || touches(intervals, 0, b - WEEK_MIN);
+  return intervals.some(([lo, hi]) => lo < b && hi > a);
+}
+
+// Own-clock ranges minus other own-clock ranges of the same person (same
+// zone, so no shift): the week's free hours without the «Never» ones.
+function subtractRanges(ranges, minus) {
+  const cut = (minus || []).filter((m) => m && Number.isFinite(m.day));
+  if (!cut.length) return ranges || [];
+  const out = [];
+  for (const r of ranges || []) {
+    let parts = [[r.startMin, r.endMin]];
+    for (const m of cut) {
+      if (m.day !== r.day) continue;
+      parts = parts.flatMap(([a, b]) => {
+        if (m.endMin <= a || m.startMin >= b) return [[a, b]];
+        return [[a, Math.max(a, m.startMin)], [Math.min(b, m.endMin), b]].filter(([x, y]) => y > x);
+      });
+    }
+    for (const [a, b] of parts) out.push({ day: r.day, startMin: a, endMin: b });
+  }
+  return out;
+}
+
+module.exports = {
+  BAKU_TZ, WEEK_MIN, tzOffsetMinutes, offsetVsBaku, mergeIntervals, toWeekIntervals, toBakuIntervals,
+  intersectIntervals, covers, touches, subtractRanges,
+};

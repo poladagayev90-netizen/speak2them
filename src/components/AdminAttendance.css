@@ -113,3 +113,10 @@
 .at-rel { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
 .at-rel .at-flag { flex: 1; min-width: 0; }
 .at-rel .at-resolve { display: inline-flex; align-items: center; gap: 4px; }
+
+/* What the learner said about a miss / cancel / time change (missReasons). */
+.at-reasons { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: grid; gap: var(--s-1); }
+.at-reasons li { display: flex; align-items: flex-start; gap: var(--s-2); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); min-width: 0; }
+.at-reasons li svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
+.at-reasons li span { min-width: 0; overflow-wrap: anywhere; }
+.at-reasons b { color: var(--text-primary); }

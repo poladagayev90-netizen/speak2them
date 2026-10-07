@@ -660,7 +660,8 @@ service cloud.firestore {
       let d = request.resource.data;
       return d.keys().hasOnly(['uid', 'goal', 'level', 'ageBand', 'country', 'timeZone',
           'availability', 'weeklyTarget', 'topics', 'version', 'submittedAt', 'updatedAt', 'adminSeenAt',
-          'charterVersion', 'charterAcceptedAt', 'planPaused', 'weeks'])
+          'charterVersion', 'charterAcceptedAt', 'planPaused', 'weeks',
+          'whatsapp', 'maybeAvailability', 'busyAvailability', 'weekProfileAt'])
         // The practice charter: accepted once, stamped with the server clock
         // (the planner can be limited to learners who accepted it), and left
         // alone after that. planPaused is the learner's own "leave me out".
@@ -674,6 +675,17 @@ service cloud.firestore {
         // server applies every rule and limit (functions/autoRoster.js) — so
         // only its size is bounded here.
         && (!('weeks' in d) || (d.weeks is map && d.weeks.size() <= 12))
+        // The WhatsApp number (version 3): E.164, read only by the learner and
+        // the team — this doc, never users/{uid}, which every account can read.
+        && (!('whatsapp' in d) || (d.whatsapp is string && d.whatsapp.matches('^[+][1-9][0-9]{7,14}$')))
+        // The general week profile: «Maybe» and «Never» hours, the same
+        // {day, startMin, endMin} ranges as availability (shape unchecked, as
+        // above), and the server time the learner last saved the three kinds.
+        && (!('maybeAvailability' in d) || (d.maybeAvailability is list && d.maybeAvailability.size() <= 70))
+        && (!('busyAvailability' in d) || (d.busyAvailability is list && d.busyAvailability.size() <= 70))
+        && (!('weekProfileAt' in d) || d.weekProfileAt == request.time
+          || (resource != null && 'weekProfileAt' in resource.data
+            && d.weekProfileAt == resource.data.weekProfileAt))
         && d.uid == request.auth.uid
         && d.ageBand in ['under18', '18-24', '25-34', '35+']
         && d.country is string && d.country.size() > 0 && d.country.size() <= 60
@@ -794,6 +806,30 @@ service cloud.firestore {
     match /attendance/{eventId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
       allow write: if false;
+    }
+
+    // «What happened?» after the learner's own miss, cancel or time change
+    // (Faza 3). One answer per event, written once by the learner, never
+    // changed; read by the learner (so the question is not asked twice) and
+    // the team. «The time was wrong for me» only marks that hour down in the
+    // learner's OWN planning, so nothing here can affect anyone else.
+    match /missReasons/{reasonId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'eventId', 'kind', 'reason', 'note', 'slotId', 'at'])
+        && request.resource.data.keys().hasAll(['uid', 'eventId', 'kind', 'reason', 'slotId', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.eventId is string
+        && request.resource.data.eventId.size() > 0 && request.resource.data.eventId.size() <= 120
+        && reasonId == request.resource.data.eventId + '_' + request.auth.uid
+        && request.resource.data.kind in ['no_show', 'late_cancel', 'cancelled', 'time_change']
+        && request.resource.data.reason in ['wrong_time', 'came_up', 'forgot', 'other']
+        && (!('note' in request.resource.data)
+          || (request.resource.data.note is string && request.resource.data.note.size() <= 200))
+        && request.resource.data.slotId is string
+        && request.resource.data.slotId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.at == request.time;
+      allow update, delete: if false;
     }
 
     // Post-call feedback about the PARTNER's behaviour (on time, let me

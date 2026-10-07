@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { ChevronDown, ChevronUp, Clock, Users, CalendarClock, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Users, CalendarClock, X, MessageCircle } from 'lucide-react';
 import { db } from '../firebase';
 import {
   WEEK_DAYS, toBakuIntervals, overlapAll, intervalsByDay, formatMinutes,
   formatLocalNow, formatOffsetVsBaku, offsetVsBaku, cityOf, totalHours,
 } from '../utils/timezone';
-import { AGE_BANDS, GOALS, LEVELS, labelOf } from '../utils/onboarding';
+import { AGE_BANDS, GOALS, LEVELS, labelOf, whatsAppLink } from '../utils/onboarding';
 import { ProposePanel } from './AdminOffers';
 import { stableOrder } from '../utils/stableOrder';
 import './AdminApplicants.css';
@@ -216,6 +216,14 @@ export default function AdminApplicants({ users }) {
                   <p className="aa-line"><span className="aa-muted">Topics</span> {(p.topics || []).join(', ') || '—'}</p>
                   {p.email && <p className="aa-line"><span className="aa-muted">Email</span> {p.email}</p>}
                   <p className="aa-line">
+                    <span className="aa-muted">WhatsApp</span>{' '}
+                    {p.whatsapp ? (
+                      <a className="adm-btn adm-btn--soft adm-btn--link" href={whatsAppLink(p.whatsapp, p.name)} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle size={14} aria-hidden="true" /> {p.whatsapp}
+                      </a>
+                    ) : 'not added yet'}
+                  </p>
+                  <p className="aa-line">
                     <span className="aa-muted">Free</span> {totalHours(p.availability)} h/week, wants {p.weeklyTarget || '?'} practices
                   </p>
                   <div className="aa-cols">
@@ -224,6 +232,15 @@ export default function AdminApplicants({ users }) {
                       {daysOf(p.availability).map((d) => (
                         <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
                       ))}
+                      {/* The general week profile: maybe = only if nothing else works, never = never planned. */}
+                      {[['Maybe', p.maybeAvailability], ['Never', p.busyAvailability]].map(([label, list]) => (Array.isArray(list) && list.length > 0 ? (
+                        <React.Fragment key={label}>
+                          <h4 className="aa-sub">{label}</h4>
+                          {daysOf(list).map((d) => (
+                            <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
+                          ))}
+                        </React.Fragment>
+                      ) : null))}
                     </div>
                     {offsetVsBaku(p.timeZone) !== 0 && (
                       <div>

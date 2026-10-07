@@ -5,6 +5,7 @@ import { Button } from '../ui';
 import { countdownLabel, canJoin, peerOf, joinState } from '../../utils/planState';
 import { leavePracticeSlot, proposeSlotChange } from '../../utils/practiceSlots';
 import SlotPicker from './SlotPicker';
+import { ReasonPicker } from './MissReason';
 import './plan.css';
 
 const LATE_CANCEL_MS = 2 * 60 * 60 * 1000;
@@ -19,13 +20,15 @@ const LATE_CANCEL_MS = 2 * 60 * 60 * 1000;
 // `autoOpen`: another screen sent the learner to THIS practice — 'more' (Today's
 // Coming up) opens its actions, 'time' (Partners → change the time) its time
 // picker as well.
-export default function BookingRow({ booking, uid, now, autoOpen = null }) {
+// After a change-of-time request: «What happened?» once, optional (Faza 3).
+export default function BookingRow({ booking, uid, now, autoOpen = null, onboarding = null }) {
   const navigate = useNavigate();
   const joinable = canJoin(booking, now);
   const [busy, setBusy] = useState('');
   const [picking, setPicking] = useState(autoOpen === 'time' && !joinable);
   const [more, setMore] = useState(!!autoOpen);
   const [notice, setNotice] = useState(null);
+  const [askWhy, setAskWhy] = useState(null);
   const { peerUid, peerName, peerLevel } = peerOf(booking, uid);
   const ref = useRef(null);
   useEffect(() => {
@@ -52,6 +55,7 @@ export default function BookingRow({ booking, uid, now, autoOpen = null }) {
     setNotice(res.ok
       ? { ok: true, text: `Request sent. The time changes once ${peerName} accepts.` }
       : { ok: false, text: res.errorText });
+    if (res.ok) setAskWhy(`change_${booking.slotId}_${toSlotId}`);
   };
 
   const time = new Date(Number(booking.startMs)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -105,6 +109,13 @@ export default function BookingRow({ booking, uid, now, autoOpen = null }) {
         </>
       )}
       {notice && <p className={`pl-notice ${notice.ok ? '' : 'pl-notice--error'}`} role="status">{notice.text}</p>}
+      {askWhy && (
+        <div className="mr-inline">
+          <p className="mr-sub">What made the old time not work? Only the SpeakLab team sees it.</p>
+          <ReasonPicker compact uid={uid} kind="time_change" eventId={askWhy} slotId={booking.slotId}
+            onboarding={onboarding} onDone={() => setAskWhy(null)} onSkip={() => setAskWhy(null)} />
+        </div>
+      )}
     </div>
   );
 }

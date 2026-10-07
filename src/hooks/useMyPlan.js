@@ -60,10 +60,11 @@ export function saveWeek(uid, onboarding, monday, pick) {
 }
 
 // «Use these times every week» on the Plan grid: the usual free times become
-// this week's hours, as if edited in the wizard.
-export function saveUsualTimes(uid, ranges) {
+// this week's hours, as if edited in the wizard. `extra` carries the Never
+// hours when one of them was chosen for every week.
+export function saveUsualTimes(uid, ranges, extra = {}) {
   if (!ranges.length) return Promise.resolve();
-  return setDoc(doc(db, 'onboarding', uid), { availability: ranges }, { merge: true });
+  return setDoc(doc(db, 'onboarding', uid), { availability: ranges, ...extra }, { merge: true });
 }
 
 // One more free block (the «popular time» a learner adds in one tap).
