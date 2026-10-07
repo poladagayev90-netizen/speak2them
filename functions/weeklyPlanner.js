@@ -194,7 +194,7 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
       const lvl = levelScore(a, b);
       const fav = Math.min(2, Number(favorites.get(pairKey(a.uid, b.uid))) || 0);
       const isRecent = !fav && recent.has(pairKey(a.uid, b.uid));
-      pairs.push({ a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, days, lvl, isRecent, fav });
+      pairs.push({ i: pairs.length, a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, days, lvl, isRecent, fav });
     }
   }
   const pairsOf = new Map();
@@ -205,13 +205,17 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
     }
   }
 
+  // Each planned day's neighbours, looked up once: the score asks for them
+  // for every option of every step of every restart.
+  const nearDays = new Map(dates.map((d) => [d, [dateShift(d, -1), dateShift(d, 1)]]));
   const scoreOf = (pr, slotId, state) => {
     const date = slotId.slice(0, 10);
     const hour = Number(slotId.slice(11));
     let s = pr.lvl.score + (pr.isRecent ? -3 : 0) + pr.fav * FAVORITE_BONUS + (HOUR_BONUS[hour] || 0);
+    const [before, after] = nearDays.get(date);
     for (const uid of [pr.a, pr.b]) {
       const days = state.days.get(uid);
-      if (days.has(dateShift(date, -1)) || days.has(dateShift(date, 1))) s -= 1;
+      if (days.has(before) || days.has(after)) s -= 1;
       const p = byUid.get(uid);
       if (p.maybe.size && p.maybe.has(slotId)) s -= MAYBE_PENALTY;
       if (p.avoid.size && p.avoid.has(slotId)) s -= WRONG_TIME_PENALTY;
@@ -232,24 +236,47 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
       const da = state.days.get(pr.a); const db = state.days.get(pr.b);
       return pr.shared.filter((s, i) => !da.has(pr.sharedDates[i]) && !db.has(pr.sharedDates[i]));
     };
+    // How many open DAYS each pair still has (0 once it is used, either side
+    // is full, or every shared day is taken) and each person's total.
+    // Kept up to date instead of recounted every step: a step only changes
+    // the two people it books, so only their pairs are looked at again. The
+    // full recount made the planner grow with the CUBE of the crowd — 600
+    // learners took 50 s, past a scheduled function's 60 s limit with the
+    // refill's restarts (load test 2026-10-08). The result is the same plan:
+    // a pair's count only ever goes down, and people are visited in the
+    // order the old recount met them (the first pair still open, `a` before
+    // `b`), so `rand()` is drawn in the same order too.
+    const openDays = (pr) => {
+      if (!live(pr)) return 0;
+      const da = state.days.get(pr.a); const db = state.days.get(pr.b);
+      let n = 0;
+      for (const d of pr.days) if (!da.has(d) && !db.has(d)) n += 1;
+      return n;
+    };
+    const open = new Array(pairs.length);
+    const total = new Map(people.map((p) => [p.uid, 0]));
+    for (const pr of pairs) {
+      const n = openDays(pr);
+      open[pr.i] = n;
+      if (n) { total.set(pr.a, total.get(pr.a) + n); total.set(pr.b, total.get(pr.b) + n); }
+    }
+    const firstAt = new Map(); // uid → index into pairsOf(uid) of the first open pair
+    const orderKey = (uid) => {
+      const list = pairsOf.get(uid);
+      let j = firstAt.get(uid) || 0;
+      while (!open[list[j].i]) j += 1;
+      firstAt.set(uid, j);
+      return list[j].i * 2 + (list[j].a === uid ? 0 : 1);
+    };
     for (;;) {
-      // How many options each person still has — counted, not collected: this
-      // loop runs for every step of every restart.
-      const count = new Map();
-      for (const pr of pairs) {
-        if (!live(pr)) continue;
-        const da = state.days.get(pr.a); const db = state.days.get(pr.b);
-        let n = 0;
-        for (const d of pr.days) if (!da.has(d) && !db.has(d)) n += 1;
-        if (!n) continue;
-        count.set(pr.a, (count.get(pr.a) || 0) + n);
-        count.set(pr.b, (count.get(pr.b) || 0) + n);
-      }
-      if (!count.size) break;
+      const waiting = [];
+      for (const [uid, n] of total) if (n > 0) waiting.push([orderKey(uid), uid, n]);
+      if (!waiting.length) break;
+      waiting.sort((x, y) => x[0] - y[0]);
       // The most constrained person goes first; ties: who the platform owes,
       // then chance (varies between restarts).
       let pick = null;
-      for (const [uid, n] of count) {
+      for (const [, uid, n] of waiting) {
         const p = byUid.get(uid);
         const rank = [n, -p.priority, rand()];
         if (!pick || rank[0] < pick.rank[0] || (rank[0] === pick.rank[0] && (rank[1] < pick.rank[1]
@@ -277,6 +304,15 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
       }
       state.used.add(pr.key);
       state.plan.push({ a: pr.a, b: pr.b, slotId, score, pr });
+      for (const q of [...pairsOf.get(pr.a), ...pairsOf.get(pr.b)]) {
+        if (!open[q.i]) continue; // closed for good (also skips the shared pair's second visit)
+        const n = openDays(q);
+        const d = n - open[q.i];
+        if (!d) continue;
+        open[q.i] = n;
+        total.set(q.a, total.get(q.a) + d);
+        total.set(q.b, total.get(q.b) + d);
+      }
     }
     let value = 0;
     for (const p of people) value += (1 + p.priority) * harmonic(state.got.get(p.uid));

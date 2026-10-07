@@ -11,13 +11,25 @@
 const BAKU_TZ = 'Asia/Baku';
 const WEEK_MIN = 7 * 24 * 60;
 
-function tzOffsetMinutes(tz, date = new Date()) {
-  try {
-    const parts = new Intl.DateTimeFormat('en-US', {
+// One formatter per zone: building an Intl.DateTimeFormat is the slow part,
+// and the planner converts every learner's free / maybe / never hours.
+const formatters = new Map();
+const formatterOf = (tz) => {
+  let f = formatters.get(tz);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', {
       timeZone: tz, hourCycle: 'h23',
       year: 'numeric', month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit',
-    }).formatToParts(date);
+    });
+    formatters.set(tz, f);
+  }
+  return f;
+};
+
+function tzOffsetMinutes(tz, date = new Date()) {
+  try {
+    const parts = formatterOf(tz).formatToParts(date);
     const get = (t) => Number(parts.find((p) => p.type === t)?.value);
     const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'));
     return Math.round((asUtc - Math.floor(date.getTime() / 60000) * 60000) / 60000);

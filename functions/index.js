@@ -3244,6 +3244,48 @@ async function choosePartnerTx(db, tx, uid, candidates, known) {
 // call still goes through canPair({direct:true}).
 const ONLINE_NOW_WINDOW_MS = 150000; // src/utils/presence.js ONLINE_WINDOW_MS
 const ONLINE_NOW_MAX = 12;
+// Everyone who is in the app polls this every minute. Built per caller, one
+// call read ~245 documents with 100 people online — 24,000 reads a minute
+// (load test 2026-10-08). The roster — who is online, whether each is a
+// minor, whom each has blocked or asked to avoid — is the same for every
+// caller, so each instance builds it once per 30 s and every caller only
+// adds the switch and their own three lookups. A list up to 30 s old is fine: «online»
+// already means «seen in the last 150 s», and Call still goes through
+// canPair({direct:true}), which reads the blocks live.
+const ONLINE_NOW_CACHE_MS = 30000;
+let onlineRosterCache = { at: 0, promise: null };
+function onlineRoster(db) {
+  const now = Date.now();
+  if (onlineRosterCache.promise && now - onlineRosterCache.at < ONLINE_NOW_CACHE_MS) return onlineRosterCache.promise;
+  const promise = (async () => {
+    const since = admin.firestore.Timestamp.fromMillis(now - ONLINE_NOW_WINDOW_MS);
+    const snap = await db.collection("users").where("lastSeen", ">=", since).limit(60).get();
+    const fresh = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+      .filter((u) => u.id !== ADMIN_UID && u.role !== "teacher"
+        && u.status !== "offline" && u.showOnline !== false && !u.deleted);
+    if (!fresh.length) return { people: [] };
+    const users = db.collection("users");
+    const [obs, blocked, avoid] = await Promise.all([
+      db.getAll(...fresh.map((u) => db.collection("onboarding").doc(u.id))),
+      Promise.all(fresh.map((u) => users.doc(u.id).collection("blocked").get())),
+      Promise.all(fresh.map((u) => users.doc(u.id).collection("avoid").get())),
+    ]);
+    return {
+      people: fresh.map((u, i) => ({
+        ...u,
+        minor: !!(obs[i].exists && obs[i].get("ageBand") === "under18"),
+        blocks: new Set(blocked[i].docs.map((d) => d.id)),
+        avoids: new Set(avoid[i].docs.map((d) => d.id)),
+      })),
+    };
+  })();
+  onlineRosterCache = { at: now, promise };
+  // A failed build is not kept: the next caller tries again.
+  promise.catch(() => { if (onlineRosterCache.promise === promise) onlineRosterCache = { at: 0, promise: null }; });
+  return promise;
+}
+
 exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -3257,34 +3299,25 @@ exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, re
   const db = admin.firestore();
   try {
     await enforceRateLimit(me, "onlineNow", 120, 60 * 60 * 1000);
+    // The admin's switch is read live, so turning it off takes effect at once.
     const features = await db.collection("appConfig").doc("features").get().catch(() => null);
     if (features && features.exists && features.get("onlineNow") === false) return res.status(200).json({ on: false, people: [] });
-
-    const since = admin.firestore.Timestamp.fromMillis(Date.now() - ONLINE_NOW_WINDOW_MS);
-    const snap = await db.collection("users").where("lastSeen", ">=", since).limit(60).get();
-    const fresh = snap.docs
-      .map((d) => ({ id: d.id, ...(d.data() || {}) }))
-      .filter((u) => u.id !== me && u.id !== ADMIN_UID && u.role !== "teacher"
-        && u.status !== "offline" && u.showOnline !== false && !u.deleted);
-    if (!fresh.length) return res.status(200).json({ on: true, people: [] });
+    const roster = await onlineRoster(db);
+    const others = roster.people.filter((u) => u.id !== me);
+    if (!others.length) return res.status(200).json({ on: true, people: [] });
 
     const users = db.collection("users");
-    const [myOb, myBlocked, myAvoid, theirOb, theirBlocked, theirAvoid] = await Promise.all([
+    const [myOb, myBlocked, myAvoid] = await Promise.all([
       db.collection("onboarding").doc(me).get(),
       users.doc(me).collection("blocked").get(),
       users.doc(me).collection("avoid").get(),
-      db.getAll(...fresh.map((u) => db.collection("onboarding").doc(u.id))),
-      db.getAll(...fresh.map((u) => users.doc(u.id).collection("blocked").doc(me))),
-      db.getAll(...fresh.map((u) => users.doc(u.id).collection("avoid").doc(me))),
     ]);
-    const minor = (snap) => !!(snap && snap.exists && snap.get("ageBand") === "under18");
-    const iAmMinor = minor(myOb);
+    const iAmMinor = !!(myOb.exists && myOb.get("ageBand") === "under18");
     const blockedByMe = new Set(myBlocked.docs.map((d) => d.id));
     const avoidedByMe = new Set(myAvoid.docs.map((d) => d.id));
-    const people = fresh
-      .filter((u, i) => !blockedByMe.has(u.id) && !avoidedByMe.has(u.id)
-        && !theirBlocked[i].exists && !theirAvoid[i].exists
-        && minor(theirOb[i]) === iAmMinor)
+    const people = others
+      .filter((u) => !blockedByMe.has(u.id) && !avoidedByMe.has(u.id)
+        && !u.blocks.has(me) && !u.avoids.has(me) && u.minor === iAmMinor)
       // Free before busy, then whoever was seen most recently.
       .sort((a, b) => (a.status === "busy") - (b.status === "busy")
         || (b.lastSeen?.toMillis?.() || 0) - (a.lastSeen?.toMillis?.() || 0))
@@ -5778,7 +5811,13 @@ async function claimSlotRun(db, id) {
 }
 
 exports.practiceSlotTick = onSchedule(
-  { schedule: "every 1 minutes", timeZone: "Asia/Baku" },
+  // 300 s, not the default 60: the hourly refill and the Sunday draft run
+  // inside this tick and are claimed before they start, so one killed by the
+  // limit is simply lost for that hour (load test 2026-10-08 — a crowd of
+  // ~1000 learners brings the refill near a minute). Everything else here is
+  // claimed in slotRuns or idempotent (the call-doc prep), so a long tick
+  // overlapping the next one does nothing twice.
+  { schedule: "every 1 minutes", timeZone: "Asia/Baku", timeoutSeconds: 300 },
   async () => {
     const db = admin.firestore();
     const now = Date.now();

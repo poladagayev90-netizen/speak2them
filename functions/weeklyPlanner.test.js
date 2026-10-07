@@ -243,3 +243,16 @@ test('an hour called «the wrong time» goes after the others, but is not forbid
   const forced = wp.buildWeekPlan({ learners: [L('a', { availability: only, wrongTimes: ['1-20'] }), L('b', { availability: only })], dates, seed: 'w' });
   assert.equal(forced.pairs.length, 1);
 });
+
+// Load test 2026-10-08: the step loop recounted every pair, so 600 learners
+// took 50 s — past the minute tick's 60 s with the refill's 8 restarts.
+test('600 learners plan in seconds, not minutes', () => {
+  const ls = Array.from({ length: 600 }, (_, i) => L(`u${i}`, {
+    need: 2, level: ['A2', 'B1', 'B2'][i % 3],
+    availability: [1, 2, 3, 4, 5].filter((d) => (i + d) % 3 !== 0).map((day) => ({ day, startMin: (18 + (i % 3)) * 60, endMin: 22 * 60 })),
+  }));
+  const t0 = Date.now();
+  const plan = wp.buildWeekPlan({ learners: ls, dates, seed: 'load' });
+  assert.ok(Date.now() - t0 < 20000, `took ${Date.now() - t0} ms`);
+  assert.equal(plan.pairs.length, 600);
+});
