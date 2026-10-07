@@ -23,6 +23,7 @@ const offerReminders = require("./offerReminders");
 const autoRoster = require("./autoRoster");
 const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
+const callLogLib = require("./callLog");
 const {
   getTokensForUser,
   getAllTokens,
@@ -98,6 +99,18 @@ const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
 // Ops xəbərdarlıqlarının getdiyi əsas qutu (ADMIN_UID sənədindəki e-poçt
 // başqa hesaba aiddir, ona görə açıq yazılır).
 const OPS_ALERT_EMAIL = "poladagayev90@gmail.com";
+// A second admin account (Polad 2026-10-07): recognised by a VERIFIED e-mail
+// on the ID token, so no uid has to be looked up. Keep in step with
+// firestore.rules isAdmin() and src/constants.js ADMIN_EMAILS. ADMIN_UID stays
+// the one admin IDENTITY — admin pushes, the admin's own students, unlimited
+// practice — this only decides who may use the admin tools.
+const ADMIN_EMAILS = ["poladagayev90@gmail.com", "agayevpoli7@gmail.com"];
+function isAdminToken(decoded) {
+  if (!decoded) return false;
+  if (decoded.uid === ADMIN_UID) return true;
+  return decoded.email_verified === true
+    && ADMIN_EMAILS.includes(String(decoded.email || "").toLowerCase());
+}
 
 function setCors(res, methods = "POST") {
   res.set("Access-Control-Allow-Origin", "*");
@@ -270,7 +283,7 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "admin-only" });
   const body = req.body || {};
   const action = String(body.action || "");
   const uid = String(body.uid || "");
@@ -538,7 +551,7 @@ exports.notifyPremiumActivated = onRequest({ secrets: [] }, async (req, res) => 
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "Forbidden" });
 
   const { userId, userName } = req.body;
   if (!userId) return res.status(400).json({ error: "userId required" });
@@ -565,7 +578,7 @@ exports.adminUserEmails = onRequest({ invoker: "public" }, async (req, res) => {
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
   try {
     const emails = {};
     let pageToken;
@@ -577,6 +590,59 @@ exports.adminUserEmails = onRequest({ invoker: "public" }, async (req, res) => {
     return res.status(200).json({ emails });
   } catch (e) {
     console.error("[adminUserEmails]", e.message);
+    return res.status(500).json({ error: "failed" });
+  }
+});
+
+// Admin → Activity, once: fills callLog for the last 30 days from each
+// person's practiceSessions (the call log started 2026-10-07). Two people's
+// sessions of the same call share callId + start, which is what pairs them.
+// Small user base — a read per user; at a few thousand users this would want
+// a collection-group index instead.
+exports.adminCallLogBackfill = onRequest({ invoker: "public", timeoutSeconds: 300 }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try { decoded = await verifyAuth(req); } catch { return res.status(401).json({ error: "unauthorized" }); }
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
+  const db = admin.firestore();
+  const since = admin.firestore.Timestamp.fromMillis(Date.now() - 30 * DAY_MS);
+  try {
+    const users = await db.collection("users").get();
+    const names = new Map(users.docs.map((d) => [d.id, d.get("name") || ""]));
+    const calls = new Map();
+    for (const u of users.docs) {
+      const snap = await u.ref.collection("practiceSessions").where("startedAt", ">=", since).get();
+      for (const s of snap.docs) {
+        const x = s.data() || {};
+        if (x.source !== "call" || !x.callId) continue;
+        const key = `${x.callId}_${x.startedAt.toMillis()}`;
+        const c = calls.get(key) || { callId: x.callId, startedAt: x.startedAt, endedAt: x.endedAt, seconds: Number(x.durationSeconds) || 0, uids: [] };
+        c.uids.push(u.id);
+        calls.set(key, c);
+      }
+    }
+    let written = 0;
+    for (const [id, c] of calls) {
+      const uids = [...new Set(c.uids)].sort();
+      // One side only (the other account deleted, or never credited): the
+      // partner comes from the pair call id call_<a>_<b>.
+      if (uids.length === 1) {
+        const m = /^call_([^_]+)_([^_]+)$/.exec(c.callId);
+        if (m) uids.splice(0, 1, m[1], m[2]);
+      }
+      if (uids.length !== 2) continue;
+      const ok = await db.doc(`callLog/${id}`).create({
+        callId: c.callId, participants: uids,
+        names: Object.fromEntries(uids.map((x) => [x, names.get(x) || ""])),
+        startedAt: c.startedAt, endedAt: c.endedAt, seconds: c.seconds,
+        kind: "earlier", joined: true, backfilled: true,
+      }).then(() => true).catch(() => false);
+      if (ok) written += 1;
+    }
+    return res.status(200).json({ ok: true, found: calls.size, written });
+  } catch (e) {
+    console.error("[adminCallLogBackfill]", e.message);
     return res.status(500).json({ error: "failed" });
   }
 });
@@ -704,7 +770,7 @@ exports.advanceTopicNow = onRequest(async (req, res) => {
   if (req.method === "OPTIONS") { res.status(204).send(""); return; }
   try {
     const decoded = await verifyAuth(req);
-    if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+    if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
@@ -849,7 +915,7 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
 
   try {
     const decoded = await verifyAuth(req);
-    if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+    if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
@@ -1268,6 +1334,10 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
       failures.push(e);
     }
   }
+  // One line for the admin's activity view. Its failure never retries the
+  // crediting above (the line is a view, the credit is the record).
+  try { await callLogLib.writeCallLog(db, { callId: after.id, call, participants, joined }); }
+  catch (e) { console.error("[reconcileCallStats] call log failed:", after.id, e.message); }
   // Two people who really talked can find each other again: the chat thread
   // appears on both sides without either of them typing first.
   if (joined && trustedCallSeconds(call) >= ATTENDED_MIN_SECONDS) {
@@ -1290,7 +1360,7 @@ exports.backfillMissingCallStats = onRequest({ secrets: [] }, async (req, res) =
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "Forbidden" });
 
   const db = admin.firestore();
   const snap = await db.collection("calls").where("status", "==", "ended").get();
@@ -1337,7 +1407,7 @@ exports.backfillTrials = onRequest({ secrets: [] }, async (req, res) => {
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "Forbidden" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "Forbidden" });
 
   const db = admin.firestore();
   const snap = await db.collection("users").get();
@@ -1458,7 +1528,7 @@ exports.startCohort = onRequest({ secrets: [] }, async (req, res) => {
   } catch {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
 
   const cohortId = String((req.body && req.body.cohortId) || "").trim();
   if (!cohortId) return res.status(400).json({ error: "cohortId_required" });
@@ -1651,7 +1721,7 @@ exports.teacherLesson = onRequest({ secrets: [] }, async (req, res) => {
   const ACTIONS = ["start", "update", "plan", "add", "move", "cancel", "restore", "remove", "topic", "held"];
   if (!ACTIONS.includes(action)) return res.status(400).json({ error: "bad_action" });
   const db = admin.firestore();
-  const isAdmin = decoded.uid === ADMIN_UID;
+  const isAdmin = isAdminToken(decoded);
   const now = admin.firestore.FieldValue.serverTimestamp();
 
   try {
@@ -1861,7 +1931,7 @@ exports.teacherStudentBrief = onRequest({ secrets: [] }, async (req, res) => {
   try {
     const studentSnap = await db.collection("users").doc(uid).get();
     if (!studentSnap.exists) return res.status(404).json({ error: "student_not_found" });
-    if (decoded.uid !== ADMIN_UID && studentSnap.get("teacherId") !== decoded.uid) return res.status(403).json({ error: "forbidden" });
+    if (!isAdminToken(decoded) && studentSnap.get("teacherId") !== decoded.uid) return res.status(403).json({ error: "forbidden" });
 
     const lessons = await studentLessons(db, uid);
     const last = lessons.filter((l) => l.status === "held").pop() || null;
@@ -1956,7 +2026,7 @@ exports.teacherStory = onRequest({ secrets: [DEEPSEEK_API_KEY, DEEPGRAM_API_KEY]
   if (action !== "generate" && action !== "approve") return res.status(400).json({ error: "bad_action" });
 
   const db = admin.firestore();
-  if (decoded.uid !== ADMIN_UID) {
+  if (!isAdminToken(decoded)) {
     const me = await db.collection("users").doc(decoded.uid).get();
     if (me.get("teacherVerified") !== true) return res.status(403).json({ error: "forbidden" });
   }
@@ -2915,7 +2985,7 @@ exports.setTutorVerification = onRequest({ secrets: [], invoker: "public" }, asy
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "forbidden" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
 
   const { teacherId, verified } = req.body || {};
   if (!teacherId || typeof teacherId !== "string") {
@@ -4080,7 +4150,7 @@ exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (r
 
       // İcazə yoxlaması oxu mərhələsindədir — tranzaksiyada bütün oxular
       // yazılardan ƏVVƏL olmalıdır.
-      const isAdminCaller = callerUid === ADMIN_UID;
+      const isAdminCaller = isAdminToken(decoded);
       let allowed = isAdminCaller;
       let byName = "";
       const [aSnap, bSnap, callerSnap] = await Promise.all([
@@ -4460,7 +4530,7 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "admin-only" });
 
   const body = req.body || {};
   const uidA = String(body.userA || "").trim();
@@ -4700,7 +4770,7 @@ exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "admin-only" });
   const offerId = String((req.body || {}).offerId || "").trim();
   // Weekly-plan ids are wp_<monday>_<uidA>_<uidB> (~71 chars): the old 64 cap
   // refused every one of them, for the learners AND the admin.
@@ -5288,7 +5358,7 @@ exports.adminWeekPlan = onRequest({ secrets: [], invoker: "public" }, async (req
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "admin-only" });
   const body = req.body || {};
   const action = String(body.action || "");
   const week = /^\d{4}-\d{2}-\d{2}$/.test(String(body.weekKey || "")) ? body.weekKey : nextMondayOf(Date.now());
@@ -5485,7 +5555,7 @@ exports.adminMarkIntro = onRequest({ secrets: [], invoker: "public" }, async (re
   } catch {
     return res.status(401).json({ error: "unauthorized" });
   }
-  if (decoded.uid !== ADMIN_UID) return res.status(403).json({ error: "admin-only" });
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "admin-only" });
   const body = req.body || {};
   const uid = String(body.uid || "").trim();
   const outcome = body.outcome;

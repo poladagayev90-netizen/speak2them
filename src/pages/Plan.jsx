@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CalendarDays, CheckCheck, Pencil, UsersRound, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui';
 import MatchOfferCard from '../components/MatchOfferCard';
@@ -9,7 +9,7 @@ import ThisWeekCard from '../components/plan/ThisWeekCard';
 import BookingRow from '../components/plan/BookingRow';
 import LessonRow from '../components/plan/LessonRow';
 import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
-import { ADMIN_UID } from '../constants';
+import { isAdminUser } from '../constants';
 import { lessonItems, teachingItems, mergeSchedule } from '../utils/tutorLessons';
 import useMyPlan, { setPlanPaused, useAutoMode } from '../hooks/useMyPlan';
 import WeekCalendar from '../components/plan/WeekCalendar';
@@ -37,6 +37,7 @@ const PLAN_CARD_KINDS = new Set(['setup', 'paused', 'no_match']);
 // product no longer asks people to find a partner who happens to be online.
 export default function Plan({ user }) {
   const navigate = useNavigate();
+  const { state: navState } = useLocation();
   const uid = user?.uid;
   const plan = useMyPlan(uid);
   // Packages: a quiet line on the card, only when the switch is on and nothing is left.
@@ -55,7 +56,7 @@ export default function Plan({ user }) {
   const thisWeek = booked.filter((b) => b.weekKey === plan.weekKey);
   // Individual lessons share the schedule with the booked practices.
   const myLessons = useMyLessons(uid);
-  const teaching = useTeachingLessons(uid, user?.role === 'teacher' || uid === ADMIN_UID);
+  const teaching = useTeachingLessons(uid, user?.role === 'teacher' || isAdminUser(user));
   const schedule = mergeSchedule(booked, mergeSchedule(
     myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
     teachingItems(teaching, plan.now),
@@ -148,7 +149,7 @@ export default function Plan({ user }) {
                   <div className="pl-day-items">
                     {day.items.map((b) => (b.kind === 'lesson'
                       ? <LessonRow key={b.id} lesson={b} now={plan.now} />
-                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} />))}
+                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} autoOpen={navState?.openBooking === b.id ? (navState.openTime ? 'time' : 'more') : null} />))}
                   </div>
                 </div>
               ))}

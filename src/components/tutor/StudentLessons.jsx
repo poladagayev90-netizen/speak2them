@@ -233,7 +233,7 @@ function LessonRow({ lesson, isNext, onError, onMove, story }) {
 // package, where), the timetable with move / cancel / held per lesson, and
 // planning new lessons from a weekly pattern. Every write goes through the
 // teacherLesson function.
-export default function StudentLessons({ uid, name = '', viewerUid, canWriteStory = false }) {
+export default function StudentLessons({ uid, name = '', viewerUid, viewerIsAdmin = viewerUid === ADMIN_UID, canWriteStory = false }) {
   const [enrolment, setEnrolment] = useState(undefined);
   const [lessons, setLessons] = useState([]);
   const [sheet, setSheet] = useState(null); // 'edit' | 'plan' | 'add' | {move: lesson}
@@ -248,12 +248,12 @@ export default function StudentLessons({ uid, name = '', viewerUid, canWriteStor
   // A teacher's query must name them as the teacher, or the rules (which read
   // each lesson's teacherId) cannot prove it and refuse the whole list.
   useEffect(() => onSnapshot(
-    viewerUid === ADMIN_UID
+    viewerIsAdmin
       ? query(collection(db, 'tutorLessons'), where('uid', '==', uid))
       : query(collection(db, 'tutorLessons'), where('uid', '==', uid), where('teacherId', '==', viewerUid || '')),
     (snap) => setLessons(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(byDate)),
     (e) => { console.error('[StudentLessons]', e); setLessons([]); }
-  ), [uid, viewerUid]);
+  ), [uid, viewerUid, viewerIsAdmin]);
 
   const sum = useMemo(() => packageSummary(enrolment, lessons), [enrolment, lessons]);
   const next = useMemo(() => nextLesson(lessons), [lessons]);

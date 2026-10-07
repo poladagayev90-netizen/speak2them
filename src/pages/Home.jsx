@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, BookOpen, CalendarClock, ChevronRight } from 'lucide-react';
+import { BookOpen, CalendarClock, ChevronRight, MessageCircle, FlaskConical } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -11,7 +11,8 @@ import { getTodayContent, weeklyContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import AnalysisReadyModal from '../components/AnalysisReadyModal';
 import Logo from '../components/Logo';
-import { ADMIN_UID } from '../constants';
+import { isAdminUser } from '../constants';
+import { subscribeToUnreadTotal } from '../utils/chat';
 import GuidedTour from '../components/GuidedTour';
 import CourseProgressCard from '../components/CourseProgressCard';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
@@ -31,7 +32,6 @@ import { lessonItems, teachingItems, mergeSchedule, PLATFORM_LABEL } from '../ut
 import { plainTopic } from '../utils/topicLabel';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
 import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel, weekGoal } from '../utils/planState';
-import Button from '../components/ui/Button';
 import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
 import '../components/plan/plan.css';
@@ -85,7 +85,7 @@ export default function Home({ user }) {
   // Individual lessons (Preply / Meet) sit in the same "Coming up" list.
   const myLessons = useMyLessons(user.uid);
   // A teacher (or the admin) also sees the lessons they teach.
-  const teaching = useTeachingLessons(user.uid, user.role === 'teacher' || user.uid === ADMIN_UID);
+  const teaching = useTeachingLessons(user.uid, user.role === 'teacher' || isAdminUser(user));
   // The polite no-show notice and a partner's "change the time?" request
   // still live on the old slot documents.
   const [mine, setMine] = useState(null);
@@ -213,11 +213,8 @@ export default function Home({ user }) {
         {/* Profile left the nav for the Lab tab; it opens from here, with the
             admin shield beside it. */}
         <div className="home-header-right">
-          {user.uid === ADMIN_UID && (
-            <Button variant="secondary" size="sm" onClick={() => navigate('/admin')} icon={<Shield size={14} />}>
-              Admin
-            </Button>
-          )}
+          {/* The admin's nav holds the panel; Partners and Lab live here. */}
+          {isAdminUser(user) && <AdminHeaderLinks uid={user.uid} />}
           <button type="button" className="home-avatar" onClick={() => navigate('/profile')} aria-label="Profile">
             {(user.name || '?').charAt(0).toUpperCase()}
             <AvatarImage src={user.photo} />
@@ -240,7 +237,7 @@ export default function Home({ user }) {
 
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
-        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || user.uid === ADMIN_UID)) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
+        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (
@@ -301,7 +298,7 @@ export default function Home({ user }) {
               }
               const { peerName } = peerOf(b, user.uid);
               return (
-                <button key={b.id} type="button" className="pl-row" onClick={() => navigate('/plan')}>
+                <button key={b.id} type="button" className="pl-row" onClick={() => navigate('/plan', { state: { openBooking: b.id } })}>
                   <span className="pl-coming-avatar" aria-hidden="true">{peerName.charAt(0).toUpperCase()}</span>
                   <span className="pl-row-main">
                     <p className="pl-row-title">{peerName}</p>
@@ -350,5 +347,24 @@ export default function Home({ user }) {
       />
       <StreakJourney open={journeyOpen} streakInfo={streakInfo} onClose={closeJourney} />
     </div>
+  );
+}
+
+// Partners (with the unread count the nav button used to carry) and Lab, for
+// the admin, whose bottom nav is the admin's work instead.
+function AdminHeaderLinks({ uid }) {
+  const navigate = useNavigate();
+  const [unread, setUnread] = useState(0);
+  useEffect(() => subscribeToUnreadTotal(uid, setUnread), [uid]);
+  return (
+    <>
+      <button type="button" className="home-icon-btn" onClick={() => navigate('/chats')} aria-label={unread ? `Partners, ${unread} unread` : 'Partners'}>
+        <MessageCircle size={20} aria-hidden="true" />
+        {unread > 0 && <span className="home-icon-badge">{unread > 9 ? '9+' : unread}</span>}
+      </button>
+      <button type="button" className="home-icon-btn" onClick={() => navigate('/lab')} aria-label="Lab">
+        <FlaskConical size={20} aria-hidden="true" />
+      </button>
+    </>
   );
 }

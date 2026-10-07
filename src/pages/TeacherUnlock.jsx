@@ -21,9 +21,10 @@ import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
 import TeacherWeek from '../components/tutor/TeacherWeek';
 import AddStudent from '../components/tutor/AddStudent';
-import { ADMIN_UID } from '../constants';
+import { isAdminUser } from '../constants';
 import { bakuDateStr } from '../utils/sessionSchedule';
 import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
+import { getPresence, lastSeenLabel } from '../utils/presence';
 
 // Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
 // müsbətdir: müdafiə cümləsi ("şagirdinizi almırıq") qorxunu adlandırıb yaradır.
@@ -408,14 +409,25 @@ export default function TeacherUnlock({ user }) {
   // ─── 4. Dashboard: dəvət + roster ──────────────────────────────
   const link = buildJoinLink(myCode);
   const shareText = `My SpeakLab student code for English speaking practice: ${myCode}\n${link}`;
+  const nowMs = Date.now();
   const students = (roster || []).map(s => {
     const p = studentProfiles[s.id] || {};
-    return { ...p, ...s, lastActiveAt: Math.max(timestampMs(s.lastActiveAt), timestampMs(p.lastPracticeAt), timestampMs(p.lastCallDate)) };
+    // Presence is read from the PROFILE: the roster row has its own `status`
+    // (active / inactive) and would hide the profile's online / busy.
+    return {
+      ...p, ...s,
+      presence: getPresence(p, nowMs),
+      seenMs: timestampMs(p.lastSeen),
+      lastActiveAt: Math.max(timestampMs(s.lastActiveAt), timestampMs(p.lastPracticeAt), timestampMs(p.lastCallDate)),
+    };
   })
-    // Whoever practised most recently first; those who never did, newest
-    // joiner first, at the bottom. Firestore returned uid order — random to a
-    // teacher.
-    .sort((a, b) => (latestPracticeMs(b) - latestPracticeMs(a))
+    // Who is in the app right now first (Polad 2026-10-07: "online ones on the
+    // first lines — the list doesn't move"), then whoever was seen most
+    // recently, then by practice; never seen = newest joiner first. The
+    // profiles are live, so a student who opens the app rises on their own.
+    .sort((a, b) => ((b.presence !== 'offline') - (a.presence !== 'offline'))
+      || (b.seenMs - a.seenMs)
+      || (latestPracticeMs(b) - latestPracticeMs(a))
       || (timestampMs(b.joinedAt) - timestampMs(a.joinedAt)));
   // toLocaleDateString bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
@@ -502,7 +514,7 @@ export default function TeacherUnlock({ user }) {
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
 
         {/* Individual lessons from today to a week ahead, every student. */}
-        {user?.uid === ADMIN_UID && <AddStudent />}
+        {isAdminUser(user) && <AddStudent />}
         <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />
 
         {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
@@ -614,12 +626,19 @@ export default function TeacherUnlock({ user }) {
                 }}
               >
                 <div style={{
+                  position: 'relative',
                   width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
                   background: 'linear-gradient(135deg, var(--border), var(--accent-soft))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '16px', fontWeight: 800, color: 'var(--accent)',
                 }}>
                   {(s.displayName || '?').slice(0, 1).toUpperCase()}
+                  {s.presence !== 'offline' && (
+                    <span aria-hidden="true" style={{
+                      position: 'absolute', right: '-1px', bottom: '-1px', width: '12px', height: '12px',
+                      borderRadius: '50%', background: 'var(--accent)', border: '2px solid var(--bg-card)',
+                    }} />
+                  )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {/* Name and status on one line, the numbers under it, the
@@ -675,7 +694,10 @@ export default function TeacherUnlock({ user }) {
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                           <span style={{ flex: 1, minWidth: 0, fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
-                            {r.when}
+                            <b style={{ fontWeight: 800, color: s.presence !== 'offline' ? 'var(--accent)' : 'var(--text-secondary)' }}>
+                              {s.presence === 'busy' ? 'In a call' : s.presence === 'online' ? 'Online' : `Seen ${lastSeenLabel(s.seenMs, nowMs)}`}
+                            </b>
+                            {' · '}{r.when}
                           </span>
                           {/* stopPropagation: the whole row opens the student. */}
                           <button

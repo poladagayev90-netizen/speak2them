@@ -10,6 +10,7 @@ jest.mock('react-router-dom', () => ({ useNavigate: () => mockNavigate }), { vir
 jest.mock('firebase/firestore', () => ({ doc: (_db, collection, id) => `${collection}/${id}`, getDoc: jest.fn() }));
 jest.mock('../utils/blocklist', () => ({ subscribeToBlocked: () => () => {} }));
 jest.mock('../utils/favorites', () => ({ subscribeToFavorites: () => () => {}, setFavorite: jest.fn() }));
+jest.mock('../components/plan/ComingUpPartners', () => () => null);
 jest.mock('../utils/presence', () => ({ getPresence: () => 'offline' }));
 jest.mock('../utils/chat', () => ({
   subscribeToChats: (_uid, cb) => { mockChats = cb; return () => {}; },

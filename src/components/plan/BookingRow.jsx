@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mic, MessageCircle, X, Clock, MoreHorizontal } from 'lucide-react';
 import { Button } from '../ui';
@@ -15,14 +15,21 @@ const LATE_CANCEL_MS = 2 * 60 * 60 * 1000;
 // makes people stop booking at all. It does say what a late cancel means,
 // because the partner has kept that hour free; the partner's message carries
 // no name and no blame (leavePracticeSlot).
-export default function BookingRow({ booking, uid, now }) {
+// `autoOpen`: another screen sent the learner to THIS practice — 'more' (Today's
+// Coming up) opens its actions, 'time' (Partners → change the time) its time
+// picker as well.
+export default function BookingRow({ booking, uid, now, autoOpen = null }) {
   const navigate = useNavigate();
+  const joinable = canJoin(booking, now);
   const [busy, setBusy] = useState('');
-  const [picking, setPicking] = useState(false);
-  const [more, setMore] = useState(false);
+  const [picking, setPicking] = useState(autoOpen === 'time' && !joinable);
+  const [more, setMore] = useState(!!autoOpen);
   const [notice, setNotice] = useState(null);
   const { peerUid, peerName, peerLevel } = peerOf(booking, uid);
-  const joinable = canJoin(booking, now);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (autoOpen && ref.current?.scrollIntoView) ref.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [autoOpen]);
   const late = Number(booking.startMs) - now < LATE_CANCEL_MS;
 
   const cancel = async () => {
@@ -54,7 +61,7 @@ export default function BookingRow({ booking, uid, now }) {
   // button and only appears when it works; changing the time and cancelling
   // are one tap further, behind "More", because they are the rare actions.
   return (
-    <div className={`pl-booking pl-ticket ${joinable ? 'is-live' : ''}`}>
+    <div ref={ref} className={`pl-booking pl-ticket ${joinable ? 'is-live' : ''}`}>
       <div className="pl-ticket-top">
         <p className="pl-ticket-time">{time}</p>
         <span className="pl-ticket-count">{joinable ? 'Now' : countdown}</span>

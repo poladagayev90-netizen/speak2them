@@ -22,3 +22,16 @@ export function getPresence(userDoc, now = Date.now()) {
   if (now - lastSeen >= ONLINE_WINDOW_MS) return 'offline';
   return userDoc.status === 'busy' ? 'busy' : 'online';
 }
+
+// "Seen 5 min ago" / "2 h ago" / "yesterday" / "6 days ago" — the admin's and
+// a teacher's view of someone who is not online right now.
+export function lastSeenLabel(ms, now = Date.now()) {
+  if (!ms) return 'never seen';
+  const min = Math.max(0, Math.floor((now - ms) / 60000));
+  if (min < 3) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} h ago`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'yesterday' : `${d} days ago`;
+}

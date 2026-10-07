@@ -43,8 +43,15 @@ import '../styles/progress.css';
 //   - "Words used" counts distinct word FORMS, and says so. Calling it
 //     vocabulary size would imply lemmas we do not compute.
 
-export default function Progress({ user }) {
+// `learnerUid` opens someone else's Lab read-only — a teacher or the admin on
+// a student's page (TeacherStudent.jsx, Polad 2026-10-07: the student page
+// still showed the old report list). The rules already let them read the
+// learner's insights and analyses.
+export default function Progress({ user, learnerUid }) {
   const navigate = useNavigate();
+  const uid = learnerUid || user?.uid;
+  const viewing = !!learnerUid && learnerUid !== user?.uid;
+  const pageClass = viewing ? 'progress-page progress-page--embedded' : 'progress-page';
   const lang = getFeedbackLanguage();
   const [loading, setLoading] = useState(true);
   const [grammar, setGrammar] = useState(null);
@@ -62,13 +69,13 @@ export default function Progress({ user }) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      if (!user?.uid) return;
+      if (!uid) return;
       try {
         const [insights, userSnap, list] = await Promise.all([
-          fetchLearnerInsights(user.uid),
-          getDoc(doc(db, 'users', user.uid)),
+          fetchLearnerInsights(uid),
+          getDoc(doc(db, 'users', uid)),
           // A failed list read must not take the totals down with it.
-          fetchAnalyses(user.uid, 30).catch(() => []),
+          fetchAnalyses(uid, 30).catch(() => []),
         ]);
         if (!alive) return;
         setGrammar(insights.grammar);
@@ -81,9 +88,9 @@ export default function Progress({ user }) {
         setSelected(wanted ? wanted.id : defaultSession(list));
         // Opening the Lab counts as seeing the newest report — the Today
         // "your analysis is ready" card reads this key (as History does).
-        const newestDone = list.find((a) => a.status === 'done');
+        const newestDone = !viewing && list.find((a) => a.status === 'done');
         if (newestDone?.timestamp?.seconds) {
-          try { localStorage.setItem(`analysisSeen_v1_${user.uid}`, String(newestDone.timestamp.seconds * 1000)); } catch { /* private mode */ }
+          try { localStorage.setItem(`analysisSeen_v1_${uid}`, String(newestDone.timestamp.seconds * 1000)); } catch { /* private mode */ }
         }
       } catch (e) {
         console.warn('[Progress] load failed:', e.message);
@@ -94,7 +101,7 @@ export default function Progress({ user }) {
     return () => { alive = false; };
     // state.analysisId is read once per visit on purpose.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
+  }, [uid]);
 
   const rows = buildTrackerRows(grammar, lang);
   const series = progressSeries(progress);
@@ -132,7 +139,7 @@ export default function Progress({ user }) {
 
   if (loading) {
     return (
-      <div className="progress-page">
+      <div className={pageClass}>
         <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '40px' }}>
           Loading…
         </div>
@@ -142,10 +149,13 @@ export default function Progress({ user }) {
 
   const header = (
     <>
-      <div className="progress-header">
-        {/* A tab root now (Lab), so there is no back arrow. */}
-        <h2 className="progress-title">Your lab</h2>
-      </div>
+      {/* A tab root now (Lab), so there is no back arrow. On a student's
+          page the page itself carries the name. */}
+      {!viewing && (
+        <div className="progress-header">
+          <h2 className="progress-title">Your lab</h2>
+        </div>
+      )}
       {analyses.length > 0 && <LabPicker analyses={analyses} selected={selected} onSelect={setSelected} />}
     </>
   );
@@ -153,7 +163,7 @@ export default function Progress({ user }) {
   const session = selected !== 'all' && analyses.find((a) => a.id === selected);
   if (session) {
     return (
-      <div className="progress-page">
+      <div className={pageClass}>
         {header}
         <LabSession key={session.id} analysis={session} analyses={analyses} level={levelFull} />
       </div>
@@ -165,7 +175,7 @@ export default function Progress({ user }) {
   // broken feature.
   if (!grammar && !progress) {
     return (
-      <div className="progress-page">
+      <div className={pageClass}>
         {header}
         <div className="progress-empty">
           <div className="progress-empty-icon"><LineChart size={40} strokeWidth={1.5} /></div>
@@ -181,7 +191,7 @@ export default function Progress({ user }) {
   }
 
   return (
-    <div className="progress-page">
+    <div className={pageClass}>
       {header}
 
       {/* Hero — one number and one instruction. */}
@@ -225,7 +235,7 @@ export default function Progress({ user }) {
           icon={GraduationCap}
           label="Level"
           value={levelShort || '—'}
-          cta={levelShort ? null : { text: 'Take the test', onClick: () => navigate('/placement') }}
+          cta={levelShort || viewing ? null : { text: 'Take the test', onClick: () => navigate('/placement') }}
           chart={levelShort ? <Ladder index={cefrIndex(levelFull)} /> : null}
         />
         <Tile icon={Gauge} label="Speaking speed" value={avgWpm ?? '—'} unit={avgWpm ? 'wpm' : ''}

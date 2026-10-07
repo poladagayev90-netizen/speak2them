@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bot, Home, LayoutDashboard, MessageCircle, FlaskConical, CalendarDays } from 'lucide-react';
+import { Activity, Bot, Home, LayoutDashboard, MessageCircle, FlaskConical, CalendarDays, Shield, GraduationCap } from 'lucide-react';
 import { subscribeToUnreadTotal } from '../utils/chat';
 import { subscribeToMyOffers } from '../utils/matchOffers';
 import { openOffers } from '../utils/planState';
+import { isAdminUser } from '../constants';
+import { adminGroupOf } from '../utils/adminNav';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
@@ -34,7 +36,19 @@ export default function BottomNav({ user }) {
   // in, and its tab slot was worth more to the progress room that nobody found
   // under Profile → My progress. Tabs are one list here, so the order can
   // change cheaply.
-  const tabs = [
+  // The admin runs the platform from the phone (Polad 2026-10-07): their nav
+  // is the admin's work — who is in the app and in calls, the week's pairs,
+  // the students they teach, the rest of the panel. Partners and Lab open from
+  // Today's header instead.
+  const admin = isAdminUser(user);
+  const adminGroup = path === '/admin' ? adminGroupOf(new URLSearchParams(location.search).get('tab')) : null;
+  const tabs = admin ? [
+    { icon: Home,           label: 'Today',    route: '/' },
+    { icon: Activity,       label: 'Activity', route: '/admin?tab=activity', active: adminGroup === 'activity' },
+    { icon: CalendarDays,   label: 'Week',     route: '/admin?tab=matching', active: adminGroup === 'week' },
+    { icon: GraduationCap,  label: 'Students', route: '/teacher', active: path === '/teacher' || path.startsWith('/teacher/student/') },
+    { icon: Shield,         label: 'Admin',    route: '/admin?tab=premium', active: adminGroup === 'admin' },
+  ] : [
     { icon: Home,          label: 'Today',    route: '/' },
     { icon: CalendarDays,  label: 'Plan',     route: '/plan', badge: toAnswer, invite: true, tourId: 'tour-plan-tab' },
     { icon: MessageCircle, label: 'Partners', route: '/chats', badge: unread },
@@ -58,7 +72,7 @@ export default function BottomNav({ user }) {
     <div className="bottom-nav">
       {tabs.map((tab) => {
         const Icon = tab.icon;
-        const isActive = path === tab.route;
+        const isActive = tab.active ?? path === tab.route;
         return (
           <button
             key={tab.route}

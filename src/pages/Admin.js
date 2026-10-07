@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Clock, Gift, Phone, SearchX } from 'lucide-react';
+import { Clock, Gift, Phone, SearchX } from 'lucide-react';
 import { collection, onSnapshot, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
 import AdminSlots from '../components/AdminSlots';
@@ -11,26 +11,13 @@ import AdminIntros from '../components/AdminIntros';
 import AdminWeekPlan from '../components/AdminWeekPlan';
 import AdminMatching from '../components/AdminMatching';
 import AdminAttendance from '../components/AdminAttendance';
+import AdminActivity from '../components/AdminActivity';
 import { BillingSwitch, PackageMenu, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
 import { stableOrder } from '../utils/stableOrder';
+import { TABS, adminTabOf } from '../utils/adminNav';
 import '../components/AdminApplicants.css';
 import './Admin.css';
-
-// Tabs in the order the admin works through them. `plan` is the old id of
-// Week (pushes still open /admin?tab=plan).
-const TABS = [
-  { id: 'premium', label: 'Students' },
-  { id: 'applicants', label: 'Applicants' },
-  { id: 'matching', label: 'Matching' },
-  { id: 'week', label: 'Week' },
-  { id: 'slots', label: 'Sessions' },
-  { id: 'attendance', label: 'Attendance' },
-  { id: 'intros', label: 'Intros' },
-  // Cohorts (the old paid group course, AdminCohorts.jsx) is hidden since
-  // 2026-10-03: individual lessons replaced it and the tab read as the place
-  // to schedule them. The component and its data stay; re-add the row to bring it back.
-];
 
 const BOT_NOTIFY_URL = `${FUNCTIONS_BASE}/notifyPremiumActivated`;
 
@@ -38,15 +25,13 @@ export default function Admin({ user }) {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [timeFilter, setTimeFilter] = useState('all'); // all, day, week, month
-  // ?tab= lets a push open the right tab (notifyAdminOnboarding → applicants).
-  const [adminTab, setAdminTab] = useState(() => {
-    const t = new URLSearchParams(window.location.search).get('tab');
-    if (t === 'plan') return 'week';
-    return TABS.some((x) => x.id === t) ? t : 'premium';
-  });
+  // ?tab= is the state: a push opens the right tab (notifyAdminOnboarding →
+  // applicants) and the bottom nav switches groups by changing it.
+  const [params, setParams] = useSearchParams();
+  const adminTab = adminTabOf(params.get('tab'));
+  const setAdminTab = (id) => setParams({ tab: id }, { replace: true });
   const [loading, setLoading] = useState({});
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const [rawUsers, setRawUsers] = useState([]);
   const packageSummaries = usePackageSummaries();
@@ -186,28 +171,29 @@ export default function Admin({ user }) {
     rankRef.current.rank,
   );
 
-  const tabLabel = (TABS.find((t) => t.id === adminTab) || TABS[0]).label;
+  const current = TABS.find((t) => t.id === adminTab);
+  const groupTabs = TABS.filter((t) => t.group === current.group);
 
   return (
     <div className="adm">
       <header className="adm-head">
         <div className="adm-top">
-          <button type="button" className="adm-back" onClick={() => navigate('/')} aria-label="Back"><ArrowLeft size={20} /></button>
-          <h1 className="adm-title">Admin <span className="adm-sub">· {tabLabel}</span></h1>
+          <h1 className="adm-title">Admin <span className="adm-sub">· {current.label}</span></h1>
         </div>
-        {/* The tabs do not fit a phone width, so the row scrolls sideways. */}
-        <nav className="adm-tabs" aria-label="Admin sections">
-          {TABS.map((t) => (
+        {/* Only this group's tabs; a group of one needs no row. */}
+        {groupTabs.length > 1 && <nav className="adm-tabs" aria-label="Admin sections">
+          {groupTabs.map((t) => (
             <button key={t.id} type="button" className={`adm-tab ${adminTab === t.id ? 'is-on' : ''}`}
               aria-current={adminTab === t.id ? 'page' : undefined} onClick={() => setAdminTab(t.id)}>
               {t.label}
             </button>
           ))}
-        </nav>
+        </nav>}
       </header>
 
       <main className={`adm-body ${adminTab === 'matching' ? 'adm-body--wide' : ''}`}>
-        {adminTab === 'matching' ? <AdminMatching users={users} />
+        {adminTab === 'activity' ? <AdminActivity users={users} />
+          : adminTab === 'matching' ? <AdminMatching users={users} />
           : adminTab === 'week' ? <AdminWeekPlan users={users} />
           : adminTab === 'attendance' ? <AdminAttendance users={users} />
           : adminTab === 'intros' ? <AdminIntros users={users} />

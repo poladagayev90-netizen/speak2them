@@ -40,6 +40,7 @@
 }
 
 .aa-panel {
+  min-width: 0;
   padding: var(--s-4);
   border-radius: var(--r-lg);
   border: 1px solid var(--border);
@@ -220,14 +221,19 @@
 }
 .aa-search input { flex: 1; min-width: 0; border: 0; background: none; color: var(--text-primary); font: inherit; font-size: var(--fs-sm); outline: none; }
 .aa-roster-list { list-style: none; margin: var(--s-3) 0 0; padding: 0; display: grid; gap: var(--s-1); max-height: 60vh; overflow-y: auto; }
+/* The row wraps: on a phone the Auto / Always / Never group drops under the
+   name instead of pushing the whole panel wider than the screen (Polad's
+   screenshot 2026-10-07 — a flex row that cannot shrink made every grid
+   around it as wide as itself, so even the week chips ran off the edge). */
 .aa-roster-row {
-  display: flex; align-items: center; gap: var(--s-3);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
   padding: var(--s-2) var(--s-3);
   border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer;
 }
 .aa-roster-row:hover { background: var(--bg-secondary); }
 .aa-roster-row.is-on { background: var(--accent-soft); border-color: var(--accent-ring); }
-.aa-roster-main { display: grid; gap: 2px; min-width: 0; }
+.aa-roster-main { display: grid; gap: 2px; min-width: 0; flex: 1 1 160px; }
+.aa-roster-main .aa-name { overflow-wrap: anywhere; }
 .aa-sticky-bar {
   /* Above the floating bottom nav (14px gap + 64px bar, App.css .bottom-nav). */
   position: sticky; bottom: calc(92px + var(--safe-area-bottom, 0px));
@@ -261,3 +267,36 @@
 .aa-mode { display: flex; gap: var(--s-1); margin: var(--s-2) 0; }
 .aa-tri { display: inline-flex; gap: 2px; flex-shrink: 0; margin-left: auto; }
 .aa-chip--sm { padding: 2px var(--s-2); font-size: var(--fs-xs); }
+
+/* Admin → Activity (AdminActivity.jsx). */
+.act-list { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: grid; gap: var(--s-1); }
+.act-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-3);
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background: var(--bg-secondary);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary);
+}
+.act-row--live { background: var(--accent-soft); color: var(--accent); }
+.act-time { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--text-secondary); }
+.act-main { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
+.act-side { margin-left: auto; font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.act-day + .act-day { margin-top: var(--s-3); }
+.act-day-h { margin: 0; font-size: var(--fs-xs); font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.act-chips { display: flex; flex-wrap: wrap; gap: var(--s-1); margin-top: var(--s-2); }
+.act-person {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px var(--s-2);
+  border-radius: var(--r-pill); border: 1px solid var(--border);
+  font-size: var(--fs-xs); font-weight: 700; color: var(--text-primary);
+}
+.act-person i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.act-person.is-busy { background: var(--accent-soft); border-color: var(--accent-ring); }
+.act-grid { display: grid; gap: 4px; margin-top: var(--s-2); overflow-x: auto; }
+.act-grid-row { display: grid; grid-template-columns: minmax(90px, 1fr) repeat(7, 30px); gap: 4px; align-items: center; }
+.act-grid-head span { font-size: var(--fs-xs); font-weight: 800; color: var(--text-muted); text-align: center; }
+.act-grid-name { font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.act-cell {
+  height: 26px; border-radius: var(--r-sm); display: grid; place-items: center;
+  font-size: var(--fs-xs); font-weight: 800;
+  background: color-mix(in srgb, var(--accent) calc(var(--act-level, 0) * 100%), var(--bg-secondary));
+  color: var(--text-primary);
+}
+.act-cell.is-strong { color: var(--text-on-accent); }

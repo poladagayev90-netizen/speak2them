@@ -310,6 +310,24 @@ body {
   justify-content: center;
 }
 
+.home-icon-btn {
+  position: relative;
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--accent);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.home-icon-badge {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: var(--r-pill);
+  background: var(--danger-solid); color: var(--ink-on-danger);
+  font-size: 10px; font-weight: 800; line-height: 18px; text-align: center;
+}
+
 .home-avatar:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -2995,3 +3013,16 @@ body {
 .partners-invite-text { margin: 0 0 var(--s-3); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
 .partners-invite-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .partners-invite-actions .ui-btn { text-decoration: none; gap: var(--s-2); }
+
+/* A student's Activity tab (TeacherStudent.jsx). */
+.ts-activity { display: grid; gap: var(--s-2); }
+.ts-activity-now { margin: 0; font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.ts-activity-sub { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.ts-activity-list { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: grid; gap: 4px; }
+.ts-activity-list li {
+  display: flex; justify-content: space-between; gap: var(--s-3);
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background: var(--bg-secondary);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary);
+}
+.ts-activity-list li b { color: var(--accent); font-weight: 800; font-variant-numeric: tabular-nums; }
+.ts-activity-list li.is-off b { color: var(--text-muted); }

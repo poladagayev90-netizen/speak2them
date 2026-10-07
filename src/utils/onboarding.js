@@ -1,4 +1,4 @@
-import { ADMIN_UID } from '../constants';
+import { isAdminUser } from '../constants';
 
 // Shared vocabulary of the onboarding wizard. Lives outside the page so the
 // admin "Applicants" view and the App.js gate can read it without pulling the
@@ -15,7 +15,7 @@ export const ONBOARDING_VERSION = 2;
 // Teachers never answer the learner wizard; the admin can open /onboarding to
 // look at it but is not forced through it on every home visit.
 export function needsOnboarding(user) {
-  if (!user || user.role === 'teacher' || user.uid === ADMIN_UID) return false;
+  if (!user || user.role === 'teacher' || isAdminUser(user)) return false;
   return (Number(user.onboardingVersion) || 0) < ONBOARDING_VERSION;
 }
 

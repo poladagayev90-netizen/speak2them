@@ -9,6 +9,7 @@ import { subscribeToBlocked } from '../utils/blocklist';
 import { subscribeToFavorites, setFavorite } from '../utils/favorites';
 import { getPresence } from '../utils/presence';
 import OnlineNow from '../components/OnlineNow';
+import ComingUpPartners from '../components/plan/ComingUpPartners';
 import useOnlineNow from '../hooks/useOnlineNow';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
 
@@ -114,6 +115,7 @@ export default function Chats({ user }) {
           People you have practised with. Message or call them any time. Star the ones you
           would like to practise with again — your weekly plan pairs you with them more often.
         </p>
+        <ComingUpPartners uid={user.uid} />
         <OnlineNow people={strangers} on={online.on} />
         <InviteCard user={user} />
         {rows.length === 0 ? (

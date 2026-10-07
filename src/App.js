@@ -9,6 +9,7 @@ import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/fires
 import { auth, db, watchFcmToken } from './firebase';
 import { isNativePush, watchNativePush } from './nativePush';
 import { isInCall } from './utils/presence';
+import { logPresence } from './utils/presenceLog';
 import { subscribeToCycle } from './utils/cycle';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppLayout from './components/AppLayout';
@@ -16,7 +17,7 @@ import GlobalCallListener from './components/GlobalCallListener';
 import { needsOnboarding } from './utils/onboarding';
 import { mustWriteWhatsApp } from './utils/intro';
 import useBackButton from './hooks/useBackButton';
-import { ADMIN_UID } from './constants';
+import { isAdminUser } from './constants';
 import { readCodeFromLocation, setPendingJoinCode, getPendingJoinCode, clearPendingJoinCode } from './utils/teacher';
 import { readPeerFromPath, setPendingPeer, getPendingPeer, clearPendingPeer } from './utils/invite';
 import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage';
@@ -142,7 +143,7 @@ function AppShell({ user }) {
   // bilər. Bu cüt yoxlama auth yarışını da bağlayır: Register-in setDoc-u
   // App-ın ilk getDoc-undan gec çatanda müəllim əvvəl /onboarding-ə düşür, rol
   // LIVE_USER_FIELDS onSnapshot-u ilə gələn kimi oradan /teacher-ə atılır.
-  const isTeacherUser = user?.role === 'teacher';
+  const isTeacherUser = user?.role === 'teacher' || isAdminUser(user);
   // Register-in yazdığı birdəfəlik açar (bax /register route-undakı şərh).
   let postRegRole = null;
   try { postRegRole = sessionStorage.getItem('slk_postreg_role'); } catch { /* private mode */ }
@@ -267,7 +268,7 @@ function AppShell({ user }) {
           <Route path="/teach" element={user ? <Teach /> : <Navigate to="/login" />} />
           <Route path="/lessons" element={user ? <Lessons user={user} /> : <Navigate to="/login" />} />
           <Route path="/lessons/:lessonId" element={user ? <Lesson user={user} /> : <Navigate to="/login" />} />
-          <Route path="/admin" element={user?.uid === ADMIN_UID ? <Admin user={user} /> : <Navigate to="/" />} />
+          <Route path="/admin" element={isAdminUser(user) ? <Admin user={user} /> : <Navigate to="/" />} />
         </Routes>
       </Suspense>
     </AppLayout>
@@ -400,6 +401,10 @@ function App() {
               lastSeen: serverTimestamp(),
             }, { merge: true });
           } catch (e) {}
+          // The hour-by-hour record (a write only when the hour changes), and
+          // only while the app is really in use — the timer keeps running in a
+          // backgrounded tab.
+          if (document.visibilityState === 'visible' || isInCall()) logPresence(uid);
         }, 60000); // presence heartbeat; ONLINE_WINDOW_MS (150s) must stay ≥2.5× this
 
         const goOffline = async () => {
@@ -432,6 +437,7 @@ function App() {
             }
             if (document.visibilityState === 'hidden') await goOffline();
             if (document.visibilityState === 'visible') {
+              logPresence(uid);
               await setDoc(doc(db, 'users', uid), {
                 online: true,
                 status: 'online',
@@ -443,6 +449,7 @@ function App() {
         document.addEventListener('visibilitychange', visibilityHandler);
 
         // Ensure user is online and available on initial load
+        logPresence(uid);
         try {
           await setDoc(doc(db, 'users', uid), {
             online: true,
@@ -459,6 +466,8 @@ function App() {
           ...freshUserData,
           uid,
           email: currentUser.email || freshUserData.email || '',
+          // Read by isAdminUser: a second admin is known by a verified e-mail.
+          emailVerified: currentUser.emailVerified === true,
           displayName: currentUser.displayName || freshUserData.name || 'User',
         };
 

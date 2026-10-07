@@ -1,4 +1,11 @@
 export const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
+// A second admin account (Polad 2026-10-07) is recognised by its VERIFIED
+// e-mail — the same list as firestore.rules isAdmin() and functions/index.js
+// ADMIN_EMAILS. ADMIN_UID stays the admin IDENTITY (the admin's own students,
+// pushes, unlimited practice); this decides who may open the admin tools.
+export const ADMIN_EMAILS = ['poladagayev90@gmail.com', 'agayevpoli7@gmail.com'];
+export const isAdminUser = (user) => !!user && (user.uid === ADMIN_UID
+  || (user.emailVerified === true && ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())));
 
 // REACT_APP_FUNCTIONS_BASE exists only for local emulator builds (see firebase.js).
 export const FUNCTIONS_BASE = process.env.REACT_APP_FUNCTIONS_BASE || 'https://us-central1-speak2them-64f2b.cloudfunctions.net';

@@ -8,30 +8,35 @@ const mockNavigate = jest.fn();
 jest.mock('../firebase', () => ({ db: {} }));
 jest.mock('react-router-dom', () => ({ useNavigate: () => mockNavigate, useParams: () => ({ studentId: 'student' }) }), { virtual: true });
 jest.mock('../utils/teacher', () => ({ nudgeStudent: jest.fn(), removeStudent: jest.fn(), NUDGE_RESULT_TEXT: {} }));
-jest.mock('./History', () => ({ AnalysisDetail: () => <div>Report detail</div> }));
+jest.mock('./Progress', () => ({ learnerUid }) => <div>Lab of {learnerUid}</div>);
+jest.mock('../components/tutor/StudentLessons', () => () => <div>Lessons panel</div>);
+jest.mock('../utils/presenceLog', () => ({
+  fetchPresenceDays: () => Promise.resolve([{ date: '2026-10-07', hours: [20, 21] }, { date: '2026-10-06', hours: [] }]),
+  hoursLabel: () => '20–22',
+}));
 jest.mock('firebase/firestore', () => ({
-  doc: () => 'student', collection: () => 'analyses', query: source => source,
-  where: jest.fn(), orderBy: jest.fn(), limit: jest.fn(),
+  doc: () => 'student',
   onSnapshot: (source, next, error) => { mockListeners[source] = {next, error}; return jest.fn(); },
 }));
 
-test('teacher receives live totals without adding visible AI reports twice', () => {
+test('a linked student opens on their Lab, read-only, with live totals', () => {
   render(<TeacherStudent user={{uid:'teacher'}} />);
-  act(() => {
-    mockListeners.student.next({exists:()=>true,data:()=>({name:'Student',totalMinutes:7,aiPracticeSeconds:90})});
-    mockListeners.analyses.next({docs:[{id:'a',data:()=>({source:'ainur',durationSeconds:90,status:'processing'})}]});
-  });
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Student',teacherId:'teacher',totalMinutes:7,aiPracticeSeconds:90})}));
+  expect(screen.getByText('Lab of student')).toBeTruthy();
   expect(screen.getByText('8.5')).toBeTruthy();
-  expect(screen.getByText('Analysing…')).toBeTruthy();
-  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Student',totalMinutes:8,aiPracticeSeconds:90})}));
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Student',teacherId:'teacher',totalMinutes:8,aiPracticeSeconds:90})}));
   expect(screen.getByText('9.5')).toBeTruthy();
 });
 
-test('a failed report query is shown as an error, not no practice', () => {
+test('lessons and activity are a tab away; an unlinked student shows neither', async () => {
   render(<TeacherStudent user={{uid:'teacher'}} />);
-  act(() => mockListeners.analyses.error({code:'unavailable'}));
-  expect(screen.getByRole('alert').textContent).toContain('Could not load');
-  expect(screen.queryByText('No analyses yet.')).toBeNull();
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Student',teacherId:'teacher'})}));
+  fireEvent.click(screen.getByRole('tab', { name: 'Lessons' }));
+  expect(screen.getByText('Lessons panel')).toBeTruthy();
+  fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
+  expect(await screen.findByText('In the app on 1 of the last 14 days · hours in Baku time')).toBeTruthy();
+  act(() => mockListeners.student.next({exists:()=>true,data:()=>({name:'Student',teacherId:'someone-else'})}));
+  expect(screen.getByText('This student is not linked to you.')).toBeTruthy();
 });
 
 test('removal requires confirmation, cancel leaves membership intact, success returns to class', async () => {

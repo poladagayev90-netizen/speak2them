@@ -26,6 +26,9 @@
 }
 .adm-tab.is-on { color: var(--accent); border-bottom-color: var(--accent); }
 .adm-body { width: 100%; max-width: 960px; margin: 0 auto; padding: var(--s-4); box-sizing: border-box; }
+/* Grid and flex children default to min-width: auto, so one wide row made the
+   whole tab wider than a phone. Every block in a tab may shrink instead. */
+.adm-body > *, .adm-body > * > * { min-width: 0; }
 /* Matching puts people and pairs side by side on a computer (Polad: "the admin
    panel is too narrow"). */
 .adm-body--wide { max-width: 1440px; }

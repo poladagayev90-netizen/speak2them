@@ -471,3 +471,19 @@
 .wk-status { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
 .wk-actions { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .wk-actions:empty { display: none; }
+
+/* Partners → Coming up (ComingUpPartners.jsx): booked partners, each one
+   message or one time change away. */
+.pl-cu { margin-bottom: var(--s-3); }
+.pl-cu-list { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: grid; }
+.pl-cu-row { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) 0; }
+.pl-cu-row + .pl-cu-row { border-top: 1px solid var(--border); }
+.pl-cu-main { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--s-2); }
+.pl-cu-main b { font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); overflow-wrap: anywhere; }
+.pl-cu-when { flex-basis: 100%; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+.pl-cu-actions { display: flex; gap: var(--s-1); flex-shrink: 0; }
+.pl-cu-btn {
+  width: 40px; height: 40px; border-radius: var(--r-pill); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--accent-ring); background: var(--accent-soft); color: var(--accent);
+}

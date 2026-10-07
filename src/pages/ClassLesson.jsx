@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { ArrowLeft, ExternalLink } from 'lucide-react';
 import { db } from '../firebase';
-import { ADMIN_UID } from '../constants';
+import { isAdminUser } from '../constants';
 import { weeklyContent } from '../data/weeklyContent';
 import { plainTopic } from '../utils/topicLabel';
 import { atMs, episodeFor, lessonWhen, PLATFORM_LABEL } from '../utils/tutorLessons';
@@ -40,7 +40,7 @@ export default function ClassLesson({ user }) {
   // All of this learner's lessons (for this one's number) and their level.
   // (For a teacher or the admin viewing: the learner's, not their own.)
   const subject = lesson?.uid || uid;
-  const { enrolment, lessons } = useMyLessons(subject, subject !== uid && uid !== ADMIN_UID ? uid : undefined);
+  const { enrolment, lessons } = useMyLessons(subject, subject !== uid && !isAdminUser(user) ? uid : undefined);
   const level = enrolment?.level || null;
 
   // The episode for this lesson's number at the learner's level. The rules
@@ -60,7 +60,7 @@ export default function ClassLesson({ user }) {
   if (lesson === undefined) return <div className="hw-page"><p className="hw-lead">Loading…</p></div>;
   // The learner, their teacher and the admin may open it — the teacher shares
   // this same topic sheet in the lesson (the rules already let them read it).
-  const isTeacher = !!lesson && (lesson.teacherId === uid || uid === ADMIN_UID);
+  const isTeacher = !!lesson && (lesson.teacherId === uid || isAdminUser(user));
   if (!lesson || (lesson.uid !== uid && !isTeacher)) {
     return <div className="hw-page">{back}<p className="hw-lead">This lesson is not available.</p></div>;
   }

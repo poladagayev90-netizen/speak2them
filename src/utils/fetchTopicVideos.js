@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { describeVideos } from '../data/describeVideos';
 import { topicVideos } from '../data/topicVideos';
-import { ADMIN_UID } from '../constants';
+import { isAdminUser } from '../constants';
 
 // Web shows every clip. The Android app (Polad, 2026-10-02) shows only the
 // clips licensed for the Play Store (`licensed: true`, Pexels / CC0), three
@@ -27,7 +27,7 @@ export const NATIVE_VIDEOS_PER_TOPIC = 3;
 // rules-protected `teacherVerified` instead.
 export function canBrowseAllVideos(user) {
   if (NATIVE || !user) return false;
-  return user.role === 'teacher' || user.teacherVerified === true || user.uid === ADMIN_UID;
+  return user.role === 'teacher' || user.teacherVerified === true || isAdminUser(user);
 }
 
 // How many clips one topic is worth. Six is the number the activity was

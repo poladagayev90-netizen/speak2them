@@ -3,7 +3,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { authedFetch } from '../api';
-import { FUNCTIONS_BASE, ADMIN_UID } from '../constants';
+import { FUNCTIONS_BASE, isAdminUser } from '../constants';
 
 // Intro call with the SpeakLab team — client side (see bookIntro in functions).
 //
@@ -19,7 +19,7 @@ export const INTRO_REQUIRED = false;
 // app: anyone with a call behind them, anyone with a teacher (the teacher
 // already knows them), anyone the admin accepted into a course.
 export function needsIntro(user) {
-  if (!user || user.role === 'teacher' || user.uid === ADMIN_UID) return false;
+  if (!user || user.role === 'teacher' || isAdminUser(user)) return false;
   if (user.introDoneAt) return false;
   if (user.teacherId) return false;
   if (['accepted', 'active'].includes(user.cohortStatus)) return false;
