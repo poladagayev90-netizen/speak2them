@@ -242,13 +242,6 @@
 .pl-booking + .pl-booking { border-top: 1px solid var(--border); }
 .pl-booking-top { display: flex; align-items: center; gap: var(--s-3); }
 .pl-booking .pl-actions { margin-top: var(--s-3); }
-.pl-slots { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-2); max-height: 180px; overflow-y: auto; }
-.pl-slot {
-  padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
-  border: 1px solid var(--border); background: var(--bg-card);
-  font: inherit; font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); cursor: pointer;
-}
-.pl-slot:disabled { opacity: .5; cursor: default; }
 .pl-notice { margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
 .pl-notice--error { color: var(--danger); }
 
@@ -487,3 +480,25 @@
   display: inline-flex; align-items: center; justify-content: center;
   border: 1px solid var(--accent-ring); background: var(--accent-soft); color: var(--accent);
 }
+
+/* Time picker (SlotPicker.jsx): the day, then its hours — any whole hour
+   07:00–23:00 can be a start since 2026-10-07. */
+.pl-pick { display: grid; gap: var(--s-2); margin-top: var(--s-2); }
+.pl-pick-days { display: flex; gap: var(--s-1); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.pl-pick-days::-webkit-scrollbar { display: none; }
+.pl-pick-day {
+  flex: 0 0 auto; min-width: 48px; display: grid; justify-items: center; gap: 0;
+  padding: var(--s-1) var(--s-2); border-radius: var(--r-md); cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-card); font: inherit; color: var(--text-secondary);
+}
+.pl-pick-day span { font-size: var(--fs-xs); font-weight: 700; }
+.pl-pick-day b { font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
+.pl-pick-day.is-on { background: var(--accent); border-color: var(--accent); color: var(--text-on-accent); }
+.pl-pick-day.is-on b { color: var(--text-on-accent); }
+.pl-pick-hours { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: var(--s-1); }
+.pl-pick-hour {
+  min-height: 40px; border-radius: var(--r-md); cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-card);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums;
+}
+.pl-pick-hour:disabled { opacity: .5; cursor: default; }

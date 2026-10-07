@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CalendarCheck } from 'lucide-react';
 import { cancelSlotMatch } from '../utils/teacher';
-import { parseSlotId, blockLabel, dayLabel } from '../utils/practiceSlots';
+import { parseSlotId, hourLabel, dayLabel } from '../utils/practiceSlots';
 
 // Reuse the dashboard's live user profiles; a one-time read missed new calls.
 export default function TeacherUpcoming({ students, loading = false, error = '' }) {
@@ -42,7 +42,7 @@ export default function TeacherUpcoming({ students, loading = false, error = '' 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {rows.map(row => <div key={row.key} style={{ padding: 12, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 140 }}><p style={{ fontWeight: 700, fontSize: 14, overflowWrap: 'anywhere' }}>{row.name} ↔ {row.peerName}</p><p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>{dayLabel(row.date)} · {blockLabel(row.date, row.hour)}</p></div>
+            <div style={{ flex: 1, minWidth: 140 }}><p style={{ fontWeight: 700, fontSize: 14, overflowWrap: 'anywhere' }}>{row.name} ↔ {row.peerName}</p><p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>{dayLabel(row.date)} · {hourLabel(row.date, row.hour)}</p></div>
             <button type="button" disabled={!!busy} style={{ ...buttonStyle, color: 'var(--danger)' }} onClick={() => { setConfirm(row.key); setMsg(null); }}>Cancel call</button>
           </div>
           {confirm === row.key && <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 12 }}>

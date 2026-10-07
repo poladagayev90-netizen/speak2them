@@ -140,6 +140,24 @@ async function sameDayBookingsTx(tx, db, uid, slot) {
   return snap.docs.filter((d) => d.get('slotId') !== slot.slotId);
 }
 
+// Two practices clash when their two-hour windows overlap. Since 2026-10-07 a
+// practice may start at ANY whole hour (Polad: a student wanted 11:00 and only
+// 10:00 / 12:00 existed), so "the same block" is no longer the same document:
+// a 20:00 and a 21:00 practice share an hour.
+const windowsOverlap = (aStartMs, bStartMs) => Math.abs(Number(aStartMs) - Number(bStartMs)) < BLOCK_MS;
+
+// Confirmed bookings of this person whose window overlaps `slot`'s, in another
+// slot (the same slot is the member docs' business). Same index as above.
+async function overlappingBookingsTx(tx, db, uid, slot) {
+  const snap = await tx.get(db.collection('bookings')
+    .where('participants', 'array-contains', uid)
+    .where('status', '==', 'confirmed')
+    .where('startMs', '>', slot.startMs - BLOCK_MS)
+    .where('startMs', '<', slot.startMs + BLOCK_MS)
+    .limit(5));
+  return snap.docs.filter((d) => d.get('slotId') !== slot.slotId);
+}
+
 const msOf = (v) => v?.toMillis?.() || 0;
 // A call two people are in right now — never overwritten by a booking.
 function callIsLive(call, nowMs) {
@@ -188,5 +206,5 @@ module.exports = {
   BLOCK_MS, CALL_PREP_LEAD_MS, CALL_PREP_TICK_MS,
   bookingIdFor, bookingDoc, writeBookingTx, closeBookingTx,
   upcomingFor, pickUpcoming, sameUpcoming, refreshUpcomingCall,
-  sameDayBookingsTx, callIsLive, planCallDocTx, bakuDayStartMs,
+  sameDayBookingsTx, overlappingBookingsTx, windowsOverlap, callIsLive, planCallDocTx, bakuDayStartMs,
 };

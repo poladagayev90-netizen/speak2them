@@ -11,7 +11,7 @@
 //     they already have booked or offered that week);
 //   • at most one practice per person per day;
 //   • the same two people at most once a week;
-//   • both are free from the block's start for PLAN_MIN_OVERLAP_MIN minutes
+//   • both are free from the start for PLAN_MIN_OVERLAP_MIN minutes
 //     (a practice is 20–30 minutes — asking for an hour of shared free time
 //     threw away pairs that fit perfectly well);
 //   • nothing earlier than `earliestMs` (people need notice).
@@ -25,7 +25,13 @@
 
 const { toBakuIntervals, covers } = require('./availability');
 
-const BLOCK_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
+// A practice may start at any whole hour 07:00–23:00 (2026-10-07 — someone
+// free only 11:00–12:00 could never be planned on the old 2-hour grid). One a
+// day per person still holds, so two planned practices never overlap.
+const BLOCK_HOURS = Array.from({ length: 17 }, (_, i) => 7 + i);
+// The 2-hour grid that is left: popular times (appConfig/popularTimes) and the
+// admin's week overview count people per block of it.
+const GRID_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
 const PLAN_MIN_OVERLAP_MIN = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -46,7 +52,16 @@ function weekDates(monday) {
 }
 // Day of week of a Baku date, 0 = Sunday (the app's convention).
 const weekdayOf = (date) => new Date(`${date}T12:00:00Z`).getUTCDay();
-const dateShift = (date, days) => new Date(Date.parse(`${date}T12:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
+const dateShiftRaw = (date, days) => new Date(Date.parse(`${date}T12:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
+// Memoised: the score asks for a day's neighbours for every option of every
+// step of every restart, and with hourly starts there are twice the options.
+const shiftMemo = new Map();
+const dateShift = (date, days) => {
+  const k = `${date}|${days}`;
+  let v = shiftMemo.get(k);
+  if (v === undefined) { v = dateShiftRaw(date, days); if (shiftMemo.size > 5000) shiftMemo.clear(); shiftMemo.set(k, v); }
+  return v;
+};
 
 // The blocks of `dates` a learner is free for, as slot ids.
 function freeSlots({ availability, timeZone }, dates, earliestMs, minOverlap = PLAN_MIN_OVERLAP_MIN) {
@@ -89,7 +104,8 @@ function levelScore(a, b) {
   if (gap === 1) return { score: 1, reason: 'one level apart' };
   return { score: -2, reason: `${gap} levels apart` };
 }
-const HOUR_BONUS = { 20: 0.5, 18: 0.25, 22: 0.25 };
+// The evening hours most people use; 20:00 is the app's recommended hour.
+const HOUR_BONUS = { 19: 0.3, 20: 0.5, 21: 0.4, 18: 0.25, 22: 0.2 };
 
 // Deterministic randomness: the same week and inputs give the same plan.
 function rngFrom(seed) {
@@ -139,10 +155,14 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
       const shared = [...a.free].filter((s) => b.free.has(s)).sort();
       if (!shared.length) continue;
       const sharedDates = shared.map((s) => s.slice(0, 10));
+      // Options are counted per DAY: with hourly starts, a pair free all
+      // evening would otherwise look four times as flexible as one free for
+      // an hour, and "most constrained first" would stop meaning anything.
+      const days = [...new Set(sharedDates)];
       const lvl = levelScore(a, b);
       const fav = Math.min(2, Number(favorites.get(pairKey(a.uid, b.uid))) || 0);
       const isRecent = !fav && recent.has(pairKey(a.uid, b.uid));
-      pairs.push({ a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, lvl, isRecent, fav });
+      pairs.push({ a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, days, lvl, isRecent, fav });
     }
   }
   const pairsOf = new Map();
@@ -185,7 +205,7 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
         if (!live(pr)) continue;
         const da = state.days.get(pr.a); const db = state.days.get(pr.b);
         let n = 0;
-        for (const d of pr.sharedDates) if (!da.has(d) && !db.has(d)) n += 1;
+        for (const d of pr.days) if (!da.has(d) && !db.has(d)) n += 1;
         if (!n) continue;
         count.set(pr.a, (count.get(pr.a) || 0) + n);
         count.set(pr.b, (count.get(pr.b) || 0) + n);
@@ -282,6 +302,6 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
 }
 
 module.exports = {
-  BLOCK_HOURS, PLAN_MIN_OVERLAP_MIN,
+  BLOCK_HOURS, GRID_HOURS, PLAN_MIN_OVERLAP_MIN,
   weekDates, weekdayOf, freeSlots, pairAllowed, pairKey, blockStartMs, slotIdOf, buildWeekPlan,
 };

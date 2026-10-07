@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Mic, MessageCircle, X, Clock, MoreHorizontal } from 'lucide-react';
 import { Button } from '../ui';
 import { countdownLabel, canJoin, peerOf, joinState } from '../../utils/planState';
-import { leavePracticeSlot, proposeSlotChange, upcomingBlocks, dayLabel, blockLabel } from '../../utils/practiceSlots';
+import { leavePracticeSlot, proposeSlotChange } from '../../utils/practiceSlots';
+import SlotPicker from './SlotPicker';
 import './plan.css';
 
 const LATE_CANCEL_MS = 2 * 60 * 60 * 1000;
@@ -100,13 +101,7 @@ export default function BookingRow({ booking, uid, now, autoOpen = null }) {
       {picking && (
         <>
           <p className="pl-notice">Pick a new time — {peerName} gets the request.</p>
-          <div className="pl-slots">
-            {upcomingBlocks(now, booking.slotId).map((b) => (
-              <button key={b.slotId} type="button" className="pl-slot" disabled={!!busy} onClick={() => move(b.slotId)}>
-                {busy === b.slotId ? '…' : `${dayLabel(b.date, now)} ${blockLabel(b.date, b.hour)}`}
-              </button>
-            ))}
-          </div>
+          <SlotPicker nowMs={now} excludeSlotId={booking.slotId} busySlotId={busy} disabled={!!busy} onPick={move} />
         </>
       )}
       {notice && <p className={`pl-notice ${notice.ok ? '' : 'pl-notice--error'}`} role="status">{notice.text}</p>}

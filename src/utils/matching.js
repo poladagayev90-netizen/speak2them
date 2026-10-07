@@ -3,7 +3,7 @@
 // blocks (practiceSlots.js) and availability is converted with
 // toBakuIntervals before it reaches here.
 
-import { SLOT_BLOCK_HOURS, slotIdOf, slotStartMs } from './practiceSlots';
+import { SLOT_BLOCK_HOURS, SLOT_START_HOURS, slotIdOf, slotStartMs, SLOT_BLOCK_MS } from './practiceSlots';
 import { LEVELS } from './onboarding';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -13,6 +13,9 @@ export const PROPOSE_HORIZON_DAYS = 9;
 export const PROPOSE_LEAD_MS = 30 * 60 * 1000;
 // A block "fits" someone when at least this much of its two hours is free.
 export const FIT_MIN = 60;
+// A START fits when both are free this long from it — the weekly planner's
+// rule (PLAN_MIN_OVERLAP_MIN): a practice is 20–30 minutes.
+export const START_FIT_MIN = 30;
 
 export const addDays = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);
 const weekdayOf = (date) => new Date(`${date}T12:00:00Z`).getUTCDay();
@@ -32,6 +35,46 @@ export function weekBlocks(monday, nowMs = Date.now()) {
     }
   }
   return out;
+}
+
+// Every whole-hour START of the week (07:00–23:00) — what the admin can
+// propose or move a practice to since 2026-10-07. The 2-hour weekBlocks above
+// stay the overview grid.
+export function weekStarts(monday, nowMs = Date.now()) {
+  const out = [];
+  for (let i = 0; i < 7; i += 1) {
+    const date = addDays(monday, i);
+    for (const hour of SLOT_START_HOURS) {
+      const startMs = slotStartMs(date, hour);
+      out.push({
+        slotId: slotIdOf(date, hour), date, hour, day: weekdayOf(date), startMs,
+        bookable: startMs > nowMs + PROPOSE_LEAD_MS && startMs <= nowMs + PROPOSE_HORIZON_DAYS * DAY_MS,
+      });
+    }
+  }
+  return out;
+}
+
+// Free minutes in a row from a start (at most the two-hour window).
+export function startFitMin(bakuIntervals, block) {
+  let t = block.day * 1440 + block.hour * 60;
+  const end = t + 120;
+  for (let moved = true; moved && t < end;) {
+    moved = false;
+    for (const [x, y] of bakuIntervals || []) {
+      if (x <= t && y > t) { t = Math.min(end, y); moved = true; }
+    }
+  }
+  return t - (block.day * 1440 + block.hour * 60);
+}
+
+// People in a practice whose window overlaps one starting at `startMs`.
+export function busyAround(pairs, startMs) {
+  const s = new Set();
+  for (const p of pairs) {
+    if (Math.abs(Number(p.startMs) - Number(startMs)) < SLOT_BLOCK_MS) { s.add(p.a); s.add(p.b); }
+  }
+  return s;
 }
 
 // Minutes of a block that fall inside free time (Baku week minutes, Sunday 0).
@@ -127,17 +170,18 @@ export function levelGap(x, y) {
 // admin can still choose someone who has not filled in their times.
 export function candidatesFor({ keepId, block, people, pairs, all = false }) {
   const keep = people.find((p) => p.id === keepId);
-  const busy = busyInBlock(pairs, block.slotId);
+  // Busy = in any practice whose window overlaps this one (hourly starts).
+  const busy = Number.isFinite(block.startMs) ? busyAround(pairs, block.startMs) : busyInBlock(pairs, block.slotId);
   return people
     .filter((p) => p.id !== keepId && !busy.has(p.id))
     .map((p) => {
-      const fit = blockFitMin(p.baku, block);
+      const fit = startFitMin(p.baku, block);
       const gap = keep ? levelGap(keep.level, p.level) : null;
       const planned = plannedCount(pairs, p.id);
       return { ...p, fit, gap, planned, short: Math.max(0, (p.wants || 0) - planned) };
     })
-    .filter((p) => all || p.fit >= FIT_MIN)
-    .sort((x, y) => (y.fit >= FIT_MIN) - (x.fit >= FIT_MIN)
+    .filter((p) => all || p.fit >= START_FIT_MIN)
+    .sort((x, y) => (y.fit >= START_FIT_MIN) - (x.fit >= START_FIT_MIN)
       || (y.inList - x.inList)
       || ((x.gap ?? 9) - (y.gap ?? 9))
       || (y.short - x.short)

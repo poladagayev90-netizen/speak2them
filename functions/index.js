@@ -3041,7 +3041,15 @@ exports.setTutorVerification = onRequest({ secrets: [], invoker: "public" }, asy
 // Az istifadəçi ilə istənilən filtr eşləşmə şansını sıfıra endirir; A2-nin B2
 // ilə danışması heç danışmamaqdan qat-qat yaxşıdır. Səviyyə yalnız eşləşmədən
 // SONRA, bildiriş mətnini seçmək üçün oxunur.
-const SLOT_BLOCK_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
+// Since 2026-10-07 a practice may START at any whole hour 07:00–23:00 (Polad:
+// a student wanted 11:00 and only 10:00 / 12:00 existed). The slot id keeps
+// its shape (YYYY-MM-DD-HH) and every time still runs as a two-hour WINDOW
+// from its start — reminders, the call doc at T−15, no-show at +10 and the
+// close at +2 h key off each slot doc as before. Windows of different starts
+// can now overlap, so "busy in this block" checks use
+// bookings.overlappingBookingsTx, not just the members of one slot doc.
+// The old even hours are all still in the list, so older app builds' slots parse.
+const SLOT_BLOCK_HOURS = Array.from({ length: 17 }, (_, i) => 7 + i);
 const SLOT_BLOCK_MS = 2 * 60 * 60 * 1000;
 // Client-dəki eyni adlı sabitlə (src/utils/practiceSlots.js) EYNİ qalmalıdır:
 // lövhə beş gün göstərir, joinPracticeSlot isə üfüqdən kənar slotu rədd edir —
@@ -3369,6 +3377,10 @@ async function joinSlotTx(db, tx, slot, uid, user) {
   const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
 
   if (members.some((m) => m.id === uid)) return { already: true };
+  // A practice in an overlapping window (another start hour) is a clash.
+  if ((await bookingsLib.overlappingBookingsTx(tx, db, uid, slot)).length) {
+    throw Object.assign(new Error("busy-then"), { httpStatus: 409 });
+  }
   // Planned practice needs the free weeks or a package (only while the
   // admin's switch is on).
   if (!await practiceAllowedTx(db, tx, uid, user, slot)) {
@@ -4233,13 +4245,17 @@ async function bookPairTx(db, tx, { uidA, uidB, a, b, slot, now, marker, source,
   // 2026-09-30: Sabina had a call with Nisa and he could not add one with
   // Rümeysa later that day). Two pairs in the SAME block are still
   // impossible — the member docs below re-pair within a block.
-  const [aDay, bDay, callSnap] = await Promise.all([
+  // Overlapping windows (another start hour within two hours) always clash,
+  // even for a hand-made pair on a day that allows two.
+  const [aDay, bDay, aNear, bNear, callSnap] = await Promise.all([
     oneADay ? bookingsLib.sameDayBookingsTx(tx, db, uidA, slot) : [],
     oneADay ? bookingsLib.sameDayBookingsTx(tx, db, uidB, slot) : [],
+    bookingsLib.overlappingBookingsTx(tx, db, uidA, slot),
+    bookingsLib.overlappingBookingsTx(tx, db, uidB, slot),
     tx.get(db.collection("calls").doc(callIdForPair(uidA, uidB))),
   ]);
-  if (aDay.length) throw slotFail(409, "student-a-busy");
-  if (bDay.length) throw slotFail(409, "student-b-busy");
+  if (aDay.length || aNear.length) throw slotFail(409, "student-a-busy");
+  if (bDay.length || bNear.length) throw slotFail(409, "student-b-busy");
   // A proposal (weekly plan or the admin's) uses up a practice; a teacher
   // pairing their own student by hand does not.
   if (source === "admin_offer") {
@@ -4564,10 +4580,14 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       // The admin may book someone twice in a day (bookPairTx oneADay:false
       // for admin offers); only a partner in the SAME 2-hour block refuses.
       const membersRef = db.collection("practiceSlots").doc(slot.slotId).collection("members");
-      const [memA, memB] = await Promise.all([tx.get(membersRef.doc(uidA)), tx.get(membersRef.doc(uidB))]);
+      const [memA, memB, nearA, nearB] = await Promise.all([
+        tx.get(membersRef.doc(uidA)), tx.get(membersRef.doc(uidB)),
+        bookingsLib.overlappingBookingsTx(tx, db, uidA, slot),
+        bookingsLib.overlappingBookingsTx(tx, db, uidB, slot),
+      ]);
       const takenInBlock = (mem, peer) => mem.exists && mem.get("status") === "matched" && mem.get("pairedWith") !== peer;
-      if (takenInBlock(memA, uidB)) throw slotFail(409, "user-a-busy");
-      if (takenInBlock(memB, uidA)) throw slotFail(409, "user-b-busy");
+      if (takenInBlock(memA, uidB) || nearA.length) throw slotFail(409, "user-a-busy");
+      if (takenInBlock(memB, uidA) || nearB.length) throw slotFail(409, "user-b-busy");
 
       // Only the admin sees this reason — learners are never told.
       const v = await pairVerdict(db, (r) => tx.get(r), uidA, uidB, { known: { [uidA]: a, [uidB]: b }, checkLevel: false });
@@ -4580,7 +4600,9 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       // the admin offering a second practice later the same day.)
       const pa = await livePendingOffersTx(db, tx, uidA, now);
       const pb = await livePendingOffersTx(db, tx, uidB, now);
-      const sameBlock = (p) => p.live.some((d) => d.get("slotId") === slot.slotId);
+      // Any start hour whose two-hour window overlaps this one counts.
+      const sameBlock = (p) => p.live.some((d) => d.get("slotId") === slot.slotId
+        || bookingsLib.windowsOverlap(d.get("startMs"), slot.startMs));
       if (sameBlock(pa)) throw slotFail(409, "user-a-has-offer");
       if (sameBlock(pb)) throw slotFail(409, "user-b-has-offer");
 
@@ -5284,7 +5306,7 @@ async function writePopularTimes(db, nowMs) {
     const ob = d.data() || {};
     const iv = availToBaku(ob.availability, ob.timeZone || "Asia/Baku", mid);
     for (let wd = 0; wd < 7; wd += 1) {
-      for (const hour of weeklyPlanner.BLOCK_HOURS) {
+      for (const hour of weeklyPlanner.GRID_HOURS) {
         const a = wd * 1440 + hour * 60;
         if (availCovers(iv, a, a + 30)) counts[`${wd}-${hour}`] = (counts[`${wd}-${hour}`] || 0) + 1;
       }

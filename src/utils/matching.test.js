@@ -1,6 +1,8 @@
 import {
   closedOffers, weekBlocks, blockFitMin, weekPairs, plannedCount, busyInBlock, levelGap, candidatesFor, FIT_MIN,
+  weekStarts, startFitMin, busyAround, START_FIT_MIN,
 } from './matching';
+import { parseSlotId } from './practiceSlots';
 
 const MON = '2026-10-05';
 // Wed 7 Oct 2026, 22:00 Baku block. Wednesday = 3.
@@ -81,4 +83,37 @@ test('closedOffers: unanswered proposals that can be sent again, not ones alread
   const closed = closedOffers(offers, pairs);
   expect(closed.map((c) => c.offerId)).toEqual(['x2']);
   expect(closed[0].kind).toBe('expired');
+});
+
+test('weekStarts: every whole hour 07–23, 17 a day', () => {
+  const s = weekStarts(MON, Date.parse('2026-10-01T00:00:00Z'));
+  expect(s.length).toBe(7 * 17);
+  expect(s[0].slotId).toBe(`${MON}-07`);
+  expect(s.some((x) => x.slotId === `${MON}-11`)).toBe(true);
+  expect(s[16].slotId).toBe(`${MON}-23`);
+});
+
+test('startFitMin: free minutes in a row from the start, at most two hours', () => {
+  const wed = 3 * 1440;
+  const free1112 = [[wed + 11 * 60, wed + 12 * 60]];
+  expect(startFitMin(free1112, { day: 3, hour: 11 })).toBe(60);
+  expect(startFitMin(free1112, { day: 3, hour: 10 })).toBe(0);
+  expect(startFitMin([[wed + 18 * 60, wed + 19 * 60], [wed + 19 * 60, wed + 23 * 60]], { day: 3, hour: 18 })).toBe(120);
+  expect(START_FIT_MIN).toBe(30);
+});
+
+test('busyAround: a practice two hours either side counts, further does not', () => {
+  const H = 3600000;
+  const pairs = [{ a: 'x', b: 'y', startMs: 20 * H }];
+  expect([...busyAround(pairs, 21 * H)].sort()).toEqual(['x', 'y']);
+  expect([...busyAround(pairs, 19 * H)].sort()).toEqual(['x', 'y']);
+  expect(busyAround(pairs, 22 * H).size).toBe(0);
+  expect(busyAround(pairs, 18 * H).size).toBe(0);
+});
+
+test('parseSlotId takes any whole hour 07–23 and nothing else', () => {
+  expect(parseSlotId('2026-10-14-11').hour).toBe(11);
+  expect(parseSlotId('2026-10-14-23').endMs - parseSlotId('2026-10-14-23').startMs).toBe(2 * 3600000);
+  expect(parseSlotId('2026-10-14-06')).toBeNull();
+  expect(parseSlotId('2026-10-14-20').hour).toBe(20);
 });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BottomNav from './BottomNav';
 import InstallGate from './InstallGate';
+import UpdateBanner from './UpdateBanner';
 import { useLocation } from 'react-router-dom';
 
 export default function AppLayout({ children, user }) {
@@ -90,6 +91,7 @@ export default function AppLayout({ children, user }) {
             </button>
           )}
           {children}
+          <UpdateBanner />
           <BottomNav user={user} />
           <InstallGate />
         </div>
@@ -109,6 +111,7 @@ export default function AppLayout({ children, user }) {
     <div className="desktop-layout">
       <main className="main-content">
         {children}
+        <UpdateBanner />
         {/* Desktop-da əvvəllər HEÇ BİR naviqasiya yox idi (sidebar yalnız
             Settings-dir) — müəllim PC-də Dashboard-a keçə bilmirdi. Eyni alt
             nav burada da göstərilir; tab dəsti rola görə özü uyğunlaşır. */}

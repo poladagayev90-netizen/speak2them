@@ -10,7 +10,7 @@ import { toBakuIntervals, overlapAll, offsetVsBaku, formatMinutes, cityOf } from
 import { proposeMatch, cancelOffer, subscribeToWeekPlan, weekPlanAction } from '../utils/matchOffers';
 import { cancelSlotMatch } from '../utils/teacher';
 import {
-  PROPOSE_HORIZON_DAYS, closedOffers, weekBlocks, blockFitMin, fitsBlock, weekPairs, plannedCount, candidatesFor, levelGap, addDays, FIT_MIN,
+  PROPOSE_HORIZON_DAYS, closedOffers, weekBlocks, weekStarts, startFitMin, busyAround, fitsBlock, weekPairs, plannedCount, candidatesFor, levelGap, addDays, START_FIT_MIN,
 } from '../utils/matching';
 import { stableOrder } from '../utils/stableOrder';
 import { Button, Sheet } from './ui';
@@ -119,6 +119,8 @@ export default function AdminMatching({ users = [] }) {
   useEffect(() => { setSelected([]); setMsg(null); }, [week]);
 
   const blocks = useMemo(() => weekBlocks(week, now), [week, now]);
+  // What a practice can be proposed or moved to: any whole hour (2026-10-07).
+  const starts = useMemo(() => weekStarts(week, now), [week, now]);
   const pairs = useMemo(() => weekPairs(offers, bookings), [offers, bookings]);
   // Weekly-plan offers close after 24 h without an answer (respondBy); they
   // stay on the desk, faded, with "Send again" while the time is still ahead.
@@ -189,8 +191,8 @@ export default function AdminMatching({ users = [] }) {
     if (res.ok) return { ok: true };
     const who = { 'user-a-busy': aId, 'user-b-busy': bId, 'user-a-has-offer': aId, 'user-b-has-offer': bId }[res.error];
     const name = who ? firstName(personById.get(who)?.name) : '';
-    if (res.error?.endsWith('-busy')) return { ok: false, text: `${name} already has a call in this block.` };
-    if (res.error?.endsWith('-has-offer')) return { ok: false, text: `${name} already has an open proposal in this block.` };
+    if (res.error?.endsWith('-busy')) return { ok: false, text: `${name} already has a practice within two hours of this time.` };
+    if (res.error?.endsWith('-has-offer')) return { ok: false, text: `${name} already has an open proposal within two hours of this time.` };
     return { ok: false, text: res.errorText };
   };
   // A proposal nobody answered in time: the same pair, the same block, again.
@@ -354,7 +356,7 @@ export default function AdminMatching({ users = [] }) {
       {selected.length > 0 && (
         <NewPairBar
           chosen={selected.map((id) => personById.get(id)).filter(Boolean)}
-          blocks={blocks} pairs={pairs}
+          blocks={starts} pairs={pairs}
           onClear={() => setSelected([])}
           onSend={async (slotId, note) => {
             const [a, b] = selected;
@@ -369,7 +371,7 @@ export default function AdminMatching({ users = [] }) {
       )}
 
       <TimeSheet
-        pair={moving} people={people} pairs={pairs} blocks={blocks} busy={!!busy}
+        pair={moving} people={people} pairs={pairs} blocks={starts} busy={!!busy}
         onClose={() => setMoving(null)} onPick={(slotId) => moveTo(moving, slotId)}
       />
 
@@ -546,12 +548,13 @@ function TimeSheet({ pair, people, pairs, blocks, busy, onClose, onPick }) {
   const a = people.find((p) => p.id === pair.a);
   const b = people.find((p) => p.id === pair.b);
   const common = overlapAll([a?.baku || [], b?.baku || []]);
-  const busyAt = (slotId) => pairs.some((x) => x.key !== pair.key && x.slotId === slotId
-    && [x.a, x.b].some((u) => u === pair.a || u === pair.b));
+  // Busy = either of them in ANOTHER practice whose window overlaps.
+  const others = pairs.filter((x) => x.key !== pair.key);
+  const busyAt = (blk) => { const s = busyAround(others, blk.startMs); return s.has(pair.a) || s.has(pair.b); };
   const options = blocks
-    .filter((blk) => blk.bookable && blk.slotId !== pair.slotId && !busyAt(blk.slotId))
-    .map((blk) => ({ ...blk, fit: blockFitMin(common, blk) }))
-    .filter((blk) => all || blk.fit >= FIT_MIN);
+    .filter((blk) => blk.bookable && blk.slotId !== pair.slotId && !busyAt(blk))
+    .map((blk) => ({ ...blk, fit: startFitMin(common, blk) }))
+    .filter((blk) => all || blk.fit >= START_FIT_MIN);
   const names = `${firstName(pair.nameA)} + ${firstName(pair.nameB)}`;
   return (
     <Sheet open onClose={onClose} title={`New time for ${names}`}>
@@ -560,14 +563,14 @@ function TimeSheet({ pair, people, pairs, blocks, busy, onClose, onPick }) {
         the new one is an ordinary proposal — booked when both say yes.
       </p>
       {options.length === 0
-        ? <p className="aa-empty">{all ? 'No bookable block left this week.' : 'No other block this week fits both.'}</p>
+        ? <p className="aa-empty">{all ? 'No bookable time left this week.' : 'No other time this week fits both.'}</p>
         : (
           <div className="aa-blocks mt-blocks">
             {options.map((blk) => (
-              <button key={blk.slotId} type="button" className={`aa-block ${blk.fit >= FIT_MIN ? '' : 'is-weak'}`} disabled={busy}
+              <button key={blk.slotId} type="button" className={`aa-block ${blk.fit >= START_FIT_MIN ? '' : 'is-weak'}`} disabled={busy}
                 onClick={() => { if (window.confirm(`${names} → ${blockLabel(blk.slotId)} Baku?`)) onPick(blk.slotId); }}>
                 <b>{blockLabel(blk.slotId)}</b>
-                <span>{blk.fit >= FIT_MIN ? `fits ${blk.fit} min` : 'outside common time'}</span>
+                <span>{blk.fit >= START_FIT_MIN ? `both free ${blk.fit} min` : 'outside common time'}</span>
                 <span>{[a, b].map((p) => p && localAt(blk.hour, p.timeZone) && `${firstName(p.name)} ${localAt(blk.hour, p.timeZone)}`).filter(Boolean).join(' · ')}</span>
               </button>
             ))}
@@ -587,7 +590,7 @@ function ChangeSheet({ change, people, pairs, busy, onClose, onPick }) {
   if (!change) return <Sheet open={false} onClose={onClose} />;
   const { pair, keepId } = change;
   const hour = Number(pair.slotId.slice(11));
-  const block = { slotId: pair.slotId, hour, day: new Date(`${pair.slotId.slice(0, 10)}T12:00:00Z`).getUTCDay() };
+  const block = { slotId: pair.slotId, hour, startMs: pair.startMs, day: new Date(`${pair.slotId.slice(0, 10)}T12:00:00Z`).getUTCDay() };
   const keep = people.find((p) => p.id === keepId);
   const keepName = firstName(keep?.name || (keepId === pair.a ? pair.nameA : pair.nameB));
   const outName = firstName(keepId === pair.a ? pair.nameB : pair.nameA);
@@ -609,7 +612,7 @@ function ChangeSheet({ change, people, pairs, busy, onClose, onPick }) {
                 {!p.inList && <span className="aa-badge">not in the list</span>}
               </span>
               <span className="aa-meta">
-                {p.fit >= FIT_MIN ? `free ${p.fit} min of it` : 'not free then'}
+                {p.fit >= START_FIT_MIN ? `free ${p.fit} min from then` : 'not free then'}
                 {' · '}{p.planned} of {p.wants || '—'} this week
                 {localAt(hour, p.timeZone) ? ` · ${localAt(hour, p.timeZone)}` : ''}
               </span>
@@ -644,11 +647,11 @@ function NewPairBar({ chosen, blocks, pairs, onClear, onSend }) {
   }
   const [a, b] = chosen;
   const common = overlapAll([a.baku, b.baku]);
-  const busyBlock = (s) => pairs.some((p) => p.slotId === s && [p.a, p.b].some((u) => u === a.id || u === b.id));
+  const busyBlock = (blk) => { const s = busyAround(pairs, blk.startMs); return s.has(a.id) || s.has(b.id); };
   const options = blocks
-    .filter((blk) => blk.bookable && !busyBlock(blk.slotId))
-    .map((blk) => ({ ...blk, fit: blockFitMin(common, blk) }))
-    .filter((blk) => all || blk.fit >= FIT_MIN);
+    .filter((blk) => blk.bookable && !busyBlock(blk))
+    .map((blk) => ({ ...blk, fit: startFitMin(common, blk) }))
+    .filter((blk) => all || blk.fit >= START_FIT_MIN);
   const send = async () => {
     setState('sending');
     const res = await onSend(slotId, note);
@@ -661,15 +664,15 @@ function NewPairBar({ chosen, blocks, pairs, onClear, onSend }) {
         <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
       </div>
       {options.length === 0 ? (
-        <p className="aa-empty">{all ? 'No bookable block left this week.' : 'No block this week fits both.'}</p>
+        <p className="aa-empty">{all ? 'No bookable time left this week.' : 'No time this week fits both.'}</p>
       ) : (
         <div className="aa-blocks mt-blocks" role="radiogroup" aria-label="Practice time">
           {options.map((blk) => (
             <button key={blk.slotId} type="button" role="radio" aria-checked={slotId === blk.slotId}
-              className={`aa-block ${slotId === blk.slotId ? 'is-on' : ''} ${blk.fit >= FIT_MIN ? '' : 'is-weak'}`}
+              className={`aa-block ${slotId === blk.slotId ? 'is-on' : ''} ${blk.fit >= START_FIT_MIN ? '' : 'is-weak'}`}
               onClick={() => setSlotId(blk.slotId)}>
               <b>{blockLabel(blk.slotId)}</b>
-              <span>{blk.fit >= FIT_MIN ? `fits ${blk.fit} min` : 'outside common time'}</span>
+              <span>{blk.fit >= START_FIT_MIN ? `both free ${blk.fit} min` : 'outside common time'}</span>
               <span>{[a, b].map((p) => localAt(blk.hour, p.timeZone) && `${firstName(p.name)} ${localAt(blk.hour, p.timeZone)}`).filter(Boolean).join(' · ')}</span>
             </button>
           ))}

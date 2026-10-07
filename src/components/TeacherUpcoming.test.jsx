@@ -5,7 +5,7 @@ import { cancelSlotMatch } from '../utils/teacher';
 jest.mock('../utils/teacher', () => ({ cancelSlotMatch: jest.fn() }));
 jest.mock('../utils/practiceSlots', () => ({
   parseSlotId: id => id ? { date: '2026-09-12', hour: 14, startMs: Date.now() + 3600000, endMs: id === 'past' ? 0 : Date.now() + 7200000 } : null,
-  dayLabel: () => '12 Sep', blockLabel: () => '14:00–16:00',
+  dayLabel: () => '12 Sep', hourLabel: () => '14:00',
 }));
 const pair = [
  {id:'a',displayName:'Sabina',upcomingCall:{slotId:'future',peerUid:'b',peerName:'Nisa'}},

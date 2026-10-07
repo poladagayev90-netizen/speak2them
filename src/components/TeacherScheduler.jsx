@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarClock, Check, ChevronDown } from 'lucide-react';
 import { teacherSetMatch } from '../utils/teacher';
-import { upcomingBlocks, dayLabel, blockLabel } from '../utils/practiceSlots';
+import { upcomingBlocks, dayLabel, hourLabel } from '../utils/practiceSlots';
 
 // Müəllim əl ilə zəng təyin edir.
 //
@@ -145,7 +145,7 @@ export default function TeacherScheduler({ students }) {
               <option value="">Choose…</option>
               {blocks.map((b) => (
                 <option key={b.slotId} value={b.slotId}>
-                  {`${dayLabel(b.date)} · ${blockLabel(b.date, b.hour)}`}
+                  {`${dayLabel(b.date)} · ${hourLabel(b.date, b.hour)}`}
                 </option>
               ))}
             </select>

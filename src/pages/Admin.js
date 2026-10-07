@@ -12,6 +12,7 @@ import AdminWeekPlan from '../components/AdminWeekPlan';
 import AdminMatching from '../components/AdminMatching';
 import AdminAttendance from '../components/AdminAttendance';
 import AdminActivity from '../components/AdminActivity';
+import AdminAppVersion from '../components/AdminAppVersion';
 import { BillingSwitch, PackageMenu, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
 import { stableOrder } from '../utils/stableOrder';
@@ -203,6 +204,7 @@ export default function Admin({ user }) {
           <div className="adm-students">
             {error && <p className="aa-error">{error}</p>}
             <BillingSwitch />
+            <AdminAppVersion />
             <div className="adm-stats">
               <span><b>{users.length}</b> accounts</span>
               <span><b>{users.filter((u) => u.isPremium).length}</b> premium</span>

@@ -14,6 +14,12 @@ import { bakuDateStr } from './sessionSchedule';
 // Blok yalnız MÜSAİTLİK elanıdır. İki nəfər eyni bloka düşəndə randevu blokun
 // BAŞLANĞIC saatına bərkidilir ("Bu gün 14:00"), yəni qeyri-müəyyənlik qalmır.
 export const SLOT_BLOCK_HOURS = [8, 10, 12, 14, 16, 18, 20, 22];
+// The hours a practice may START at (2026-10-07, Polad: «all hours should be
+// open to set» — a student wanted 11:00 and only 10:00 / 12:00 existed). Each
+// start still opens a two-hour window. SLOT_BLOCK_HOURS above is what is left
+// of the 2-hour grid: the old board and the admin's week overview. Keep in
+// step with functions/index.js SLOT_BLOCK_HOURS.
+export const SLOT_START_HOURS = Array.from({ length: 17 }, (_, i) => 7 + i);
 // Beş gün. Üç gün o demək idi ki, axşam saat 21-də lövhəni açan adam praktikada
 // iki gün görürdü — "bu həftə sonu vaxtım var" deyən adamın seçəcəyi xana yox
 // idi. Server tərəfdəki eyni adlı sabit (functions/index.js) bu dəyərlə eyni
@@ -37,7 +43,7 @@ export function parseSlotId(slotId) {
   const m = /^(\d{4}-\d{2}-\d{2})-(\d{2})$/.exec(String(slotId || ''));
   if (!m) return null;
   const hour = Number(m[2]);
-  if (!SLOT_BLOCK_HOURS.includes(hour)) return null;
+  if (!SLOT_START_HOURS.includes(hour)) return null;
   const startMs = slotStartMs(m[1], hour);
   if (!Number.isFinite(startMs)) return null;
   return { slotId, date: m[1], hour, startMs, endMs: startMs + SLOT_BLOCK_MS };
@@ -133,7 +139,7 @@ const SLOT_ERROR_TEXT = {
   'same-slot': 'That time is already in your schedule.',
   'not-in-slot': 'You are not in this block.',
   'not-matched': 'That call is not confirmed yet.',
-  'already-in-target': 'You or your partner are already booked in that block.',
+  'already-in-target': 'You or your partner are already booked at that time.',
   'busy-that-day': 'You or your partner already have a practice that day.',
   'request-not-found': 'Request not found.',
   'not-your-request': 'That request is not yours.',
@@ -165,14 +171,18 @@ async function callSlotFn(path, body) {
   }
 }
 
-// Gələcək bloklar — vaxt dəyişikliyi seçicisi üçün (keçmiş və cari üfüq daxili).
-export function upcomingBlocks(nowMs = Date.now(), excludeSlotId = null) {
+// Every start that has not begun yet, any whole hour 07:00–23:00, for the
+// time pickers (change the time, a teacher's pair, an admin proposal). `days`
+// reaches past the board's five when a booking is further out (the server
+// allows moves up to BOOKING_HORIZON_DAYS, 9).
+export function upcomingBlocks(nowMs = Date.now(), excludeSlotId = null, days = SLOT_HORIZON_DAYS) {
   const out = [];
-  for (const dateStr of boardDates(nowMs)) {
-    for (const hour of SLOT_BLOCK_HOURS) {
+  const dates = Array.from({ length: days }, (_, i) => bakuDateStr(nowMs + i * DAY_MS));
+  for (const dateStr of dates) {
+    for (const hour of SLOT_START_HOURS) {
       const slotId = slotIdOf(dateStr, hour);
       const startMs = slotStartMs(dateStr, hour);
-      if (startMs + SLOT_BLOCK_MS <= nowMs) continue;
+      if (startMs <= nowMs) continue;
       if (slotId === excludeSlotId) continue;
       out.push({ slotId, date: dateStr, hour, startMs });
     }

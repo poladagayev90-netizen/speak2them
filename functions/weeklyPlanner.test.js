@@ -30,11 +30,13 @@ test('a block needs 30 free minutes from its start, not an hour', () => {
   assert.deepEqual(wp.freeSlots({ availability: short, timeZone: 'Asia/Baku' }, dates, 0), []);
 });
 
-test('DST: Berlin moves against Baku in late October, Istanbul does not', () => {
+test('DST: Berlin moves against Baku in late October, Istanbul does not (any whole hour)', () => {
   const berlin = { availability: [{ day: 1, startMin: 16 * 60, endMin: 17 * 60 }], timeZone: 'Europe/Berlin' };
   const ist = { availability: [{ day: 1, startMin: 17 * 60, endMin: 18 * 60 }], timeZone: 'Europe/Istanbul' };
   assert.deepEqual(wp.freeSlots(berlin, wp.weekDates('2026-10-05'), 0), ['2026-10-05-18']); // CEST: 16:00 Berlin = 18:00 Baku
-  assert.deepEqual(wp.freeSlots(berlin, wp.weekDates('2026-10-26'), 0), []);                // CET: 16:00 Berlin = 19:00 Baku
+  // CET: 16:00 Berlin = 19:00 Baku — a start the old 2-hour grid did not have,
+  // so this learner could not be planned at all after the clocks changed.
+  assert.deepEqual(wp.freeSlots(berlin, wp.weekDates('2026-10-26'), 0), ['2026-10-26-19']);
   assert.deepEqual(wp.freeSlots(ist, wp.weekDates('2026-10-26'), 0), ['2026-10-26-18']);
 });
 
@@ -161,4 +163,12 @@ test('a starred partner is preferred, a mutual star even more', () => {
   const plan = wp.buildWeekPlan({ learners, recent, favorites: new Map([[wp.pairKey('ann', 'cal'), 2]]), dates, earliestMs: 0, seed: 's5' });
   assert.equal(wp.pairKey(plan.pairs[0].a, plan.pairs[0].b), wp.pairKey('ann', 'cal'));
   assert.ok(plan.pairs[0].reasons.includes('both want to practise again'));
+});
+
+test('any whole hour: someone free only 11:00-12:00 is planned at 11:00', () => {
+  const at11 = [{ day: 3, startMin: 11 * 60, endMin: 12 * 60 }];
+  assert.deepEqual(wp.freeSlots({ availability: at11, timeZone: 'Asia/Baku' }, dates, 0), [`${dates[2]}-11`]);
+  const plan = wp.buildWeekPlan({ learners: [L('x', { availability: at11 }), L('y', { availability: at11 })], dates, seed: 'h' });
+  assert.equal(plan.pairs.length, 1);
+  assert.equal(plan.pairs[0].slotId, `${dates[2]}-11`);
 });

@@ -300,3 +300,4 @@
   color: var(--text-primary);
 }
 .act-cell.is-strong { color: var(--text-on-accent); }
+.aa-input--num { width: 72px; margin-left: var(--s-1); }

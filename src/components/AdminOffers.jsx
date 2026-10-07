@@ -2,17 +2,18 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Send, CheckCircle2, XCircle, Clock3 } from 'lucide-react';
 import { upcomingBlocks, SLOT_BLOCK_MS } from '../utils/practiceSlots';
 import {
-  WEEK_DAYS, intersectIntervals, offsetVsBaku, formatMinutes,
+  WEEK_DAYS, offsetVsBaku, formatMinutes,
 } from '../utils/timezone';
+import { startFitMin, START_FIT_MIN } from '../utils/matching';
 import {
   proposeMatch, cancelOffer, subscribeToRecentOffers, subscribeToOfferNotes, DECLINE_REASONS,
 } from '../utils/matchOffers';
 
 // Admin side of the two-sided proposal flow (see respondMatchOffer).
 //
-// ProposePanel lists the upcoming 2-hour blocks — practice is booked in these
-// Baku blocks so reminders, no-show marking and block close keep working — and
-// ranks the ones that fall inside BOTH people's free time first, each shown in
+// ProposePanel lists the upcoming whole-hour starts (any hour 07–23 since
+// 2026-10-07; each opens a two-hour window, so reminders, no-show marking and
+// close keep working) and ranks the ones BOTH people are free at first, each shown in
 // every person's own clock. Nobody is asked anything before the admin has seen
 // that the time actually fits.
 
@@ -36,13 +37,12 @@ export function ProposePanel({ a, b, overlapWeek }) {
     return upcomingBlocks(now)
       .filter((blk) => blk.startMs > now + 30 * 60 * 1000) // leave time to answer
       .map((blk) => {
-        const start = bakuWeekday(blk.date) * 1440 + blk.hour * 60;
-        const fitMin = intersectIntervals([[start, start + 120]], overlapWeek)
-          .reduce((s, [x, y]) => s + (y - x), 0);
-        return { ...blk, fitMin, day: bakuWeekday(blk.date) };
+        const day = bakuWeekday(blk.date);
+        // Free in a row from the start — the planner's 30-minute rule.
+        return { ...blk, fitMin: startFitMin(overlapWeek, { day, hour: blk.hour }), day };
       });
   }, [overlapWeek]);
-  const fitting = blocks.filter((blk) => blk.fitMin >= 60);
+  const fitting = blocks.filter((blk) => blk.fitMin >= START_FIT_MIN);
   const shown = showAll ? blocks : fitting;
 
   // A new pair resets the form.
@@ -60,7 +60,7 @@ export function ProposePanel({ a, b, overlapWeek }) {
       return;
     }
     const who = { 'user-a-busy': a, 'user-b-busy': b, 'user-a-has-offer': a, 'user-b-has-offer': b }[res.error];
-    const text = res.error?.endsWith('-busy') ? `${firstName(who.name)} already has a call in this time block. Pick another time.`
+    const text = res.error?.endsWith('-busy') ? `${firstName(who.name)} already has a practice within two hours of this. Pick another time.`
       : res.error?.endsWith('-has-offer') ? `${firstName(who.name)} already has an open proposal at this time. Withdraw it first.`
         : res.errorText;
     setMsg({ ok: false, text });
@@ -71,7 +71,7 @@ export function ProposePanel({ a, b, overlapWeek }) {
       <h4 className="aa-sub">Propose a practice</h4>
       {shown.length === 0 ? (
         <p className="aa-empty">
-          {fitting.length === 0 ? 'No bookable block in the next five days fits both. ' : ''}
+          {fitting.length === 0 ? 'No time in the next five days fits both. ' : ''}
           <button type="button" className="aa-linkbtn" onClick={() => setShowAll(true)}>Show all times</button>
         </p>
       ) : (
@@ -82,11 +82,11 @@ export function ProposePanel({ a, b, overlapWeek }) {
               type="button"
               role="radio"
               aria-checked={slotId === blk.slotId}
-              className={`aa-block ${slotId === blk.slotId ? 'is-on' : ''} ${blk.fitMin >= 60 ? '' : 'is-weak'}`}
+              className={`aa-block ${slotId === blk.slotId ? 'is-on' : ''} ${blk.fitMin >= START_FIT_MIN ? '' : 'is-weak'}`}
               onClick={() => setSlotId(blk.slotId)}
             >
               <b>{dayShort(blk.day)} {String(blk.hour).padStart(2, '0')}:00</b>
-              <span>Baku{blk.fitMin >= 60 ? ` · fits ${blk.fitMin} min` : ' · outside common time'}</span>
+              <span>Baku{blk.fitMin >= START_FIT_MIN ? ` · both free ${blk.fitMin} min` : ' · outside common time'}</span>
               <span>
                 {[a, b].filter((p) => offsetVsBaku(p.timeZone) !== 0)
                   .map((p) => `${firstName(p.name)} ${localStart(blk.hour, p.timeZone)}`).join(' · ')}
