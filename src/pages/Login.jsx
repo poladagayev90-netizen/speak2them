@@ -25,10 +25,19 @@ function getResetPasswordErrorMessage(code) {
   }
 }
 
+const SUSPENDED_TEXT = 'This account is paused. Write to us on WhatsApp and we will sort it out.';
+
 export default function Login() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
+  // App.js signs a suspended account out and leaves this flag behind.
+  const [error, setError]       = useState(() => {
+    try {
+      if (sessionStorage.getItem('slk_suspended') !== '1') return '';
+      sessionStorage.removeItem('slk_suspended');
+      return SUSPENDED_TEXT;
+    } catch { return ''; }
+  });
   const [loading, setLoading]   = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -44,8 +53,8 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, normalizedEmail, password);
       navigate('/');
-    } catch {
-      setError('Email or password is incorrect.');
+    } catch (err) {
+      setError(err?.code === 'auth/user-disabled' ? SUSPENDED_TEXT : 'Email or password is incorrect.');
     }
     setLoading(false);
   };
@@ -100,7 +109,7 @@ export default function Login() {
       navigate('/');
     } catch (err) {
       console.error('[GoogleLogin]', err);
-      setError('Google auth error: ' + (err.message || 'Unknown error'));
+      setError(err?.code === 'auth/user-disabled' ? SUSPENDED_TEXT : 'Google auth error: ' + (err.message || 'Unknown error'));
     }
     setLoading(false);
   };

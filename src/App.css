@@ -2435,6 +2435,29 @@ body {
   .btn-primary { margin-top: 16px; }
 }
 
+/* Sign-up on a phone (2026-10-10, Polad: «Register takes too much room, you
+   have to scroll»). The whole form — logo, role, Google, three fields, the
+   button — has to fit one phone screen, so everything steps down a size:
+   tighter card, a one-line role picker, shorter fields and gaps. */
+@media (max-width: 480px), (max-height: 760px) {
+  .auth-page { padding: calc(var(--safe-area-top, 0px) + var(--s-3)) var(--s-3) calc(var(--safe-area-bottom, 0px) + var(--s-3)); }
+  .auth-card { padding: var(--s-4); }
+  .auth-card .auth-logo { margin-bottom: var(--s-2) !important; }
+  .auth-card .auth-logo svg, .auth-card .auth-logo img { max-width: 110px; height: auto; }
+  .auth-card h2 { margin-bottom: 2px !important; }
+  .auth-sub { font-size: var(--fs-sm); margin-bottom: var(--s-3) !important; }
+  .auth-role-row { margin-bottom: var(--s-2); }
+  .auth-role { flex-direction: row; justify-content: center; gap: var(--s-2); padding: var(--s-2); }
+  .auth-role-sub { display: none; }
+  .auth-hint { margin-bottom: var(--s-2); }
+  .auth-google { height: 42px; }
+  .auth-divider { margin: var(--s-3) 0; }
+  .auth-card label { margin-top: var(--s-2); margin-bottom: 4px; }
+  .auth-card input, .auth-card select, .auth-card textarea { padding: 10px 14px; }
+  .auth-card .btn-primary { margin-top: var(--s-3); margin-bottom: var(--s-2); padding: 12px; }
+  .auth-footer { margin-top: var(--s-2); }
+}
+
 /* ===== Daily word puzzle (Wordle-style) ===== */
 .puzzle-hint {
   background: var(--bg-card);

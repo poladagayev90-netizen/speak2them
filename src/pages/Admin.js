@@ -13,7 +13,7 @@ import AdminMatching from '../components/AdminMatching';
 import AdminAttendance from '../components/AdminAttendance';
 import AdminActivity from '../components/AdminActivity';
 import AdminAppVersion from '../components/AdminAppVersion';
-import { BillingSwitch, PackageMenu, packageLabel, usePackageSummaries } from '../components/AdminPackages';
+import { BillingSwitch, PackageMenu, SuspendButton, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
 import { stableOrder } from '../utils/stableOrder';
 import { TABS, adminTabOf } from '../utils/adminNav';
@@ -242,7 +242,7 @@ export default function Admin({ user }) {
                   <li key={id} className={`adm-user ${isAdmin ? 'is-admin' : ''} ${u.isPremium ? 'is-premium' : ''}`}>
                     <span className="adm-avatar" aria-hidden="true">{u.name?.charAt(0) || '?'}</span>
                     <div className="adm-user-main">
-                      <p className="adm-user-name">{u.name || 'No name'}{isAdmin && <span className="aa-badge">admin</span>}</p>
+                      <p className="adm-user-name">{u.name || 'No name'}{isAdmin && <span className="aa-badge">admin</span>}{u.suspended && <span className="aa-badge">suspended</span>}</p>
                       <p className="adm-user-email">{u.email}</p>
                       <p className="adm-user-meta">
                         <span><Phone size={12} aria-hidden="true" /> {u.callCount || 0}</span>
@@ -287,6 +287,7 @@ export default function Admin({ user }) {
                       {!isAdmin && (u.isPremium
                         ? <button type="button" className="adm-btn adm-btn--danger" disabled={busy} onClick={() => setPremium(u, false)}>{busy ? '…' : 'Remove Pro'}</button>
                         : <button type="button" className="adm-btn" disabled={busy} onClick={() => setPremium(u, true, 'pro')}>{busy ? '…' : 'Make Pro'}</button>)}
+                      {!isAdmin && <SuspendButton uid={id} name={u.name} suspended={!!u.suspended} />}
                     </div>
                   </li>
                 );

@@ -70,7 +70,7 @@ service cloud.firestore {
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
-          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt'])
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt'])
         && validRoleOneTimeSet();
     }
 
@@ -114,7 +114,7 @@ service cloud.firestore {
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
-          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt'])
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
         // The trial clock starts NOW, by the server's clock. Register writes

@@ -1,0 +1,195 @@
+/* InstallGate: every colour here is a LITERAL, not a token. The gate covers the
+   whole app before anything else paints and is always drawn on its own dark
+   plum surface — a themed token would flip the ink to near-black on it the
+   moment a learner is in light mode. Spacing, radius and type use the tokens. */
+
+.ig {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow-y: auto;
+  background: linear-gradient(160deg, #241e48, #171331);
+  color: #e7e3fa;
+  display: flex;
+  justify-content: center;
+  /* Bottom room for the pointer arrow, so it never sits on a button. */
+  padding: calc(var(--safe-area-top, 0px) + var(--s-5)) var(--s-4) calc(var(--safe-area-bottom, 0px) + 64px);
+}
+.ig-inner { width: 100%; max-width: 400px; margin: auto 0; text-align: center; }
+
+.ig-icon { display: block; margin: 0 auto var(--s-3); border-radius: var(--r-lg); }
+.ig-title { margin: 0 0 var(--s-2); color: #f4f2fc; font-size: var(--fs-h1); font-weight: 800; line-height: 1.2; }
+.ig-sub { margin: 0 0 var(--s-3); color: #b3acd4; font-size: var(--fs-sm); line-height: 1.5; }
+
+.ig-perks {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-4);
+  padding: 0;
+}
+.ig-perks li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px var(--s-2);
+  border-radius: var(--r-pill, 999px);
+  background: rgba(182, 166, 255, 0.14);
+  color: #d8ceff;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+.ig-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border: none;
+  border-radius: var(--r-lg);
+  padding: 14px;
+  margin-bottom: var(--s-3);
+  background: #b6a6ff;
+  color: #171331;
+  font: inherit;
+  font-size: var(--fs-body);
+  font-weight: 800;
+  cursor: pointer;
+}
+.ig-primary--soft { margin: var(--s-3) 0 0; padding: 12px; background: rgba(182, 166, 255, 0.22); color: #f4f2fc; }
+
+.ig-card {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(182, 166, 255, 0.28);
+  border-radius: var(--r-xl);
+  padding: var(--s-4);
+}
+.ig-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+  color: #b3acd4;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.ig-card-head b { color: #f4f2fc; }
+.ig-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(182, 166, 255, 0.35);
+  border-radius: var(--r-pill, 999px);
+  background: none;
+  color: #d8ceff;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.ig-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--s-3); }
+.ig-pick {
+  border: 1px solid rgba(182, 166, 255, 0.3);
+  border-radius: var(--r-pill, 999px);
+  background: none;
+  color: #e7e3fa;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.ig-pick.is-on { background: #b6a6ff; color: #171331; border-color: #b6a6ff; }
+
+.ig-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.ig-step { display: flex; align-items: center; gap: var(--s-3); }
+.ig-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #b6a6ff;
+  color: #171331;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+.ig-step-body { flex: 1; min-width: 0; }
+.ig-step-text { margin: 0; color: #f4f2fc; font-size: var(--fs-body); font-weight: 700; line-height: 1.35; }
+.ig-step-hint { margin: 2px 0 0; color: #a49dc6; font-size: var(--fs-xs); font-weight: 600; line-height: 1.4; }
+.ig-glyph {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(182, 166, 255, 0.16);
+  color: #c9b8ff;
+}
+.ig-after { margin: var(--s-3) 0 0; color: #a49dc6; font-size: var(--fs-xs); font-weight: 600; line-height: 1.4; }
+
+.ig-secondary {
+  width: 100%;
+  margin-top: var(--s-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-lg);
+  background: transparent;
+  color: #e7e3fa;
+  padding: 12px;
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.ig-skip {
+  margin-top: var(--s-2);
+  width: 100%;
+  border: none;
+  background: none;
+  color: #a49dc6;
+  padding: var(--s-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The arrow towards the browser's own button. */
+.ig-pointer {
+  position: fixed;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #b6a6ff;
+  color: #171331;
+  pointer-events: none;
+  animation: ig-bob 1.2s ease-in-out infinite;
+}
+.ig-pointer--bottom { bottom: calc(var(--safe-area-bottom, 0px) + 10px); left: calc(50% - 20px); }
+.ig-pointer--bottom-right { bottom: calc(var(--safe-area-bottom, 0px) + 10px); right: 14px; }
+.ig-pointer--top-right { top: calc(var(--safe-area-top, 0px) + 10px); right: 14px; animation-name: ig-bob-up; }
+@keyframes ig-bob { 50% { transform: translateY(6px); } }
+@keyframes ig-bob-up { 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .ig-pointer { animation: none; } }

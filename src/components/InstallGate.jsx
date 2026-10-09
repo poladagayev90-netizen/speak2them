@@ -1,46 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { Bell, Share, Plus, MoreVertical, MessageCircle, Copy, Check, ExternalLink } from 'lucide-react';
+import {
+  Share, SquarePlus, Check, Menu, MoreHorizontal, MoreVertical, Download, Smartphone,
+  ExternalLink, Copy, Globe, MessageCircle, ArrowDown, ArrowUp, ChevronDown, Bell, Phone,
+} from 'lucide-react';
 import { whatsappLink } from '../constants';
+import { detectBrowser, guideFor, PICKABLE } from '../utils/installGuide';
+import './InstallGate.css';
 
 const BYPASS_KEY = 'installGateBypass';
-
+const ICONS = { Share, SquarePlus, Check, Menu, MoreHorizontal, MoreVertical, Download, Smartphone, ExternalLink, Copy, Globe };
 
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   window.navigator.standalone === true;
 
-// In-app browsers (Instagram, Facebook, TikTok, WeChat, Android WebView, …)
-// cannot install a PWA — the user must first reopen the link in a real browser.
-const isInAppBrowser = () =>
-  /FBAN|FBAV|Instagram|Line\/|Twitter|TikTok|musical_ly|BytedanceWebview|Snapchat|MicroMessenger|; wv\)/i.test(navigator.userAgent);
-
-const isIOS = () =>
-  /iP(hone|ad|od)/.test(navigator.userAgent) ||
-  // iPadOS 13+ reports as "Mac"; a touch-capable Mac is really an iPad.
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-const isAndroid = () => /Android/i.test(navigator.userAgent);
-
-const isMobile = () => isAndroid() || isIOS();
-
-// Add-to-Home-Screen on iOS only works in Safari, not Chrome/Firefox/Edge iOS.
-const isIOSNonSafari = () => isIOS() && /CriOS|FxiOS|EdgiOS/i.test(navigator.userAgent);
-
-// Full-screen warning shown to mobile users who have not installed the PWA.
-// Installing is what makes push (session reminders) work — especially on iOS,
-// where a browser tab can never receive push. Soft gate: an escape and a help
-// path mean nobody is ever locked out.
+// Full-screen guide shown to mobile users who have not installed the PWA.
+// Installing is what makes push (calls, practice reminders) work — on iOS a
+// browser tab can never receive push. Soft gate: an escape and a help path
+// mean nobody is ever locked out.
+//
+// The steps are per browser (utils/installGuide.js): each one hides «Add to
+// Home Screen» in a different menu, so the gate names that browser's own
+// buttons, points at where its button is, and lets the person pick another
+// browser when the guess is wrong.
 export default function InstallGate() {
   const [visible, setVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const ua = navigator.userAgent;
+  const detected = useMemo(() => detectBrowser(ua, {
+    platform: navigator.platform, maxTouchPoints: navigator.maxTouchPoints,
+  }), [ua]);
+  const [browser, setBrowser] = useState(detected);
 
   useEffect(() => {
     // The Capacitor native app renders the same web build but is already an
     // installed app — it must never see the "install me" gate.
     if (Capacitor.isNativePlatform()) return;
-    if (isStandalone() || !isMobile()) return;
+    if (isStandalone() || detected === 'desktop') return;
     if (sessionStorage.getItem(BYPASS_KEY) === '1') return;
     setVisible(true);
 
@@ -55,9 +54,14 @@ export default function InstallGate() {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall);
       window.removeEventListener('appinstalled', onInstalled);
     };
-  }, []);
+  }, [detected]);
 
   if (!visible) return null;
+
+  const guide = guideFor(browser, ua);
+  const isIOS = browser.startsWith('ios-');
+  const options = isIOS ? PICKABLE.ios : (browser === 'inapp' ? [] : PICKABLE.android);
+  const showCopy = browser === 'inapp' || guide.needsSafari;
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -68,12 +72,12 @@ export default function InstallGate() {
   };
 
   const handleBypass = () => {
-    sessionStorage.setItem(BYPASS_KEY, '1');
+    try { sessionStorage.setItem(BYPASS_KEY, '1'); } catch { /* private mode */ }
     setVisible(false);
   };
 
   const openHelp = () => {
-    const msg = 'Hi! I need help adding the SpeakLab app to my home screen.';
+    const msg = `Hi! I need help adding the SpeakLab app to my home screen (${guide.name}).`;
     window.open(whatsappLink(msg), '_blank');
   };
 
@@ -88,138 +92,82 @@ export default function InstallGate() {
     }
   };
 
-  const ios = isIOS();
-  const inApp = isInAppBrowser();
+  const Pointer = guide.where === 'top-right' ? ArrowUp : ArrowDown;
 
-  const step = (icon, text) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
-      <div style={{
-        flexShrink: 0, width: 36, height: 36, borderRadius: 10,
-        background: 'rgba(182, 166, 255, 0.16)', color: '#c9b8ff',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        {icon}
-      </div>
-      <span style={{ color: '#e7e3fa', fontSize: 14, lineHeight: 1.4 }}>{text}</span>
-    </div>
-  );
-
-  // Every colour on this gate is a LITERAL, not a token. The gate covers the
-  // whole app before anything else can paint, and it is always drawn on its own
-  // dark plum surface — a themed token would flip the ink to near-black on it
-  // the moment a learner is in light mode.
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'linear-gradient(160deg, #241e48, #171331)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', padding: '28px 22px',
-      overflowY: 'auto',
-    }}>
-      <div style={{ width: '100%', maxWidth: 400 }}>
-        <div style={{
-          width: 64, height: 64, borderRadius: 18, margin: '0 auto 18px',
-          background: 'rgba(182, 166, 255, 0.16)', color: '#c9b8ff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34,
-        }}>
-          ⚠
-        </div>
-
-        <h2 style={{ color: '#f4f2fc', fontSize: 21, fontWeight: 800, textAlign: 'center', margin: '0 0 10px' }}>
-          {inApp ? 'Open in browser' : 'Add the app to your home screen'}
+    <div className="ig" role="dialog" aria-modal="true" aria-labelledby="ig-title">
+      <div className="ig-inner">
+        <img className="ig-icon" src="/logo192.png" alt="" width="64" height="64" />
+        <h2 id="ig-title" className="ig-title">
+          {browser === 'inapp' ? 'Open SpeakLab in your browser' : 'Add SpeakLab to your home screen'}
         </h2>
-        <p style={{ color: '#a49dc6', fontSize: 14, lineHeight: 1.5, textAlign: 'center', margin: '0 0 22px' }}>
-          {inApp ? (
-            <>
-              This app cannot be installed here. Open the link in
-              {' '}<b style={{ color: '#f4f2fc' }}>Safari</b> or <b style={{ color: '#f4f2fc' }}>Chrome</b> and add it to your home screen — otherwise <b style={{ color: '#c9b8ff' }}>notifications are off</b>.
-            </>
-          ) : (
-            <>
-              Add SpeakLab to your home screen to use it fully and get session notifications. Otherwise <b style={{ color: '#c9b8ff' }}>notifications are off</b> and you will miss sessions.
-            </>
-          )}
-        </p>
+        <p className="ig-sub">It opens full screen like an app, and your partner&apos;s calls and practice reminders reach you.</p>
 
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(182, 166, 255, 0.28)',
-          borderRadius: 16, padding: 18, display: 'flex', flexDirection: 'column', gap: 14,
-        }}>
-          {inApp ? (
-            <>
-              {step(<MoreVertical size={18} />, 'Open the ⋯ menu in the top corner')}
-              {step(<ExternalLink size={18} />, 'Choose “Open in browser”')}
-              {step(<Plus size={18} />, 'Add to home screen from the browser')}
-              <button
-                onClick={copyLink}
-                style={{
-                  marginTop: 4, border: 'none', borderRadius: 12, padding: '13px',
-                  background: '#b6a6ff', color: '#171331',
-                  fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}
-              >
-                {copied ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Linki kopyala</>}
+        <ul className="ig-perks" aria-label="What you get">
+          <li><Phone size={14} aria-hidden="true" /> Calls ring</li>
+          <li><Bell size={14} aria-hidden="true" /> Reminders</li>
+          <li><Smartphone size={14} aria-hidden="true" /> Full screen</li>
+        </ul>
+
+        {deferredPrompt && (
+          <button type="button" className="ig-primary" onClick={handleInstall}>
+            <Download size={18} aria-hidden="true" /> Install SpeakLab
+          </button>
+        )}
+
+        <section className="ig-card" aria-label={`Steps for ${guide.name}`}>
+          <div className="ig-card-head">
+            <span>{deferredPrompt ? 'Or by hand' : 'In'} <b>{guide.name}</b></span>
+            {options.length > 1 && (
+              <button type="button" className="ig-switch" aria-expanded={picking} onClick={() => setPicking((v) => !v)}>
+                Other browser <ChevronDown size={14} aria-hidden="true" />
               </button>
-            </>
-          ) : ios ? (
-            <>
-              {isIOSNonSafari() && (
-                <p style={{ color: '#c9b8ff', fontSize: 13, margin: 0, fontWeight: 600 }}>
-                  First open this page in <b>Safari</b> .
-                </p>
-              )}
-              {step(<Share size={18} />, 'Tap the Share button below')}
-              {step(<Plus size={18} />, 'Choose “Add to Home Screen”')}
-              {step(<Bell size={18} />, 'Open the app from your home screen and allow notifications')}
-            </>
-          ) : deferredPrompt ? (
-            <>
-              <p style={{ color: '#a49dc6', fontSize: 13, margin: 0, textAlign: 'center' }}>
-                Install with one tap:
-              </p>
-              <button
-                onClick={handleInstall}
-                style={{
-                  border: 'none', borderRadius: 12, padding: '14px',
-                  background: '#b6a6ff', color: '#171331',
-                  fontSize: 16, fontWeight: 800, cursor: 'pointer', width: '100%',
-                }}
-              >
-                Install
-              </button>
-            </>
-          ) : (
-            <>
-              {step(<MoreVertical size={18} />, "Open the browser’s ⋮ menu")}
-              {step(<Plus size={18} />, 'Choose “Install app” or “Add to Home Screen”')}
-              {step(<Bell size={18} />, 'Open the app from your home screen and allow notifications')}
-            </>
+            )}
+          </div>
+          {picking && (
+            <div className="ig-picker" role="listbox" aria-label="Your browser">
+              {options.map((b) => (
+                <button key={b} type="button" role="option" aria-selected={b === browser}
+                  className={`ig-pick ${b === browser ? 'is-on' : ''}`}
+                  onClick={() => { setBrowser(b); setPicking(false); }}>
+                  {guideFor(b).name}
+                </button>
+              ))}
+            </div>
           )}
-        </div>
+          <ol className="ig-steps">
+            {guide.steps.map((s, i) => {
+              const Icon = ICONS[s.icon] || SquarePlus;
+              return (
+                <li key={s.text} className="ig-step">
+                  <span className="ig-num" aria-hidden="true">{i + 1}</span>
+                  <div className="ig-step-body">
+                    <p className="ig-step-text">{s.text}</p>
+                    {s.hint && <p className="ig-step-hint">{s.hint}</p>}
+                  </div>
+                  <span className="ig-glyph" aria-hidden="true"><Icon size={18} /></span>
+                </li>
+              );
+            })}
+          </ol>
+          {showCopy && (
+            <button type="button" className="ig-primary ig-primary--soft" onClick={copyLink}>
+              {copied ? <><Check size={16} aria-hidden="true" /> Copied</> : <><Copy size={16} aria-hidden="true" /> Copy the link</>}
+            </button>
+          )}
+          <p className="ig-after">Then open SpeakLab from your home screen and allow notifications.</p>
+        </section>
 
-        <button
-          onClick={openHelp}
-          style={{
-            marginTop: 16, width: '100%', border: '1px solid rgba(255,255,255,0.15)',
-            background: 'transparent', color: '#e7e3fa', borderRadius: 12, padding: '12px',
-            fontSize: 14, fontWeight: 700, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          }}
-        >
-          <MessageCircle size={16} /> Need help?
+        <button type="button" className="ig-secondary" onClick={openHelp}>
+          <MessageCircle size={16} aria-hidden="true" /> Need help? Write to us
         </button>
-
-        <button
-          onClick={handleBypass}
-          style={{
-            marginTop: 12, width: '100%', border: 'none', background: 'none',
-            color: '#a49dc6', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          }}
-        >
-          Continue for now
-        </button>
+        <button type="button" className="ig-skip" onClick={handleBypass}>Continue in the browser</button>
       </div>
+
+      {/* Points at where this browser keeps its button. */}
+      {!deferredPrompt && (
+        <span className={`ig-pointer ig-pointer--${guide.where}`} aria-hidden="true"><Pointer size={22} /></span>
+      )}
     </div>
   );
 }

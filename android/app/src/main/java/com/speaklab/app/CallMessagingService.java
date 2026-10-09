@@ -10,6 +10,7 @@ import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PowerManager;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -87,7 +88,32 @@ public class CallMessagingService extends MessagingService {
             NotificationManagerCompat.from(ctx).notify(TAG, ID, n);
         } catch (SecurityException e) {
             // Notifications are switched off for the app: nothing to show.
+            return;
         }
+        wakeScreen(ctx);
+    }
+
+    // A phone asleep in a pocket: light the screen for the ring, the way a
+    // call does. With full-screen calls allowed Android does this itself; on
+    // Android 14+ without that permission the call is only a heads-up
+    // notification, and a dark screen hides it (2026-10-10).
+    @SuppressWarnings("deprecation")
+    private static void wakeScreen(Context ctx) {
+        try {
+            PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            if (pm == null || pm.isInteractive()) return;
+            PowerManager.WakeLock wl = pm.newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE,
+                "speaklab:incoming_call");
+            wl.acquire(10000);
+        } catch (Exception ignored) {
+            // A maker that refuses the wake lock: the ringtone still plays.
+        }
+    }
+
+    // CallSetupPlugin opens the channel's settings page; it must exist first.
+    static void ensureChannelPublic(Context ctx) {
+        ensureChannel(ctx);
     }
 
     private static PendingIntent launch(Context ctx, String action, String callerId, int code) {

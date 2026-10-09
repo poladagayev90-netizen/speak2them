@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard } from '@capacitor/keyboard';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, watchFcmToken } from './firebase';
 import { isNativePush, watchNativePush } from './nativePush';
@@ -77,6 +77,13 @@ const VideoLibrary = React.lazy(() => import('./pages/VideoLibrary'));
 // müəllim kilidi reload olmadan açılmalıdır — funnel-in bütün gücü məhz o
 // andadır. Bu sahələr gündə bir neçə dəfə dəyişir, presence-in 60 saniyəlik
 // lastSeen yazısı kimi re-render seli yaratmır.
+// The admin suspended this account: sign out and let Login say why.
+const SUSPENDED_FLAG = 'slk_suspended'; // read by pages/Login.jsx
+function leaveSuspended() {
+  try { sessionStorage.setItem(SUSPENDED_FLAG, '1'); } catch { /* private mode */ }
+  signOut(auth).catch(() => {});
+}
+
 const LIVE_USER_FIELDS = [
   'mode', 'startTick', 'cohortId', 'cohortStatus', 'isPremium', 'subscriptionPlan',
   'premiumPlan', 'trialStartedAt', 'courseActivatedAt', 'courseCompletedAt',
@@ -367,6 +374,14 @@ function App() {
         const userRef = doc(db, 'users', uid);
         const userSnap = await getDoc(userRef);
 
+        // Suspended by the admin (adminAccess suspend): Auth is disabled too,
+        // but a signed-in session lives until its token runs out. Leave now,
+        // before anything is written; Login explains.
+        if (userSnap.exists() && userSnap.data().suspended) {
+          leaveSuspended();
+          return;
+        }
+
         // appLanguage/timeZone: bunlar SERVERİN push göndərərkən ehtiyac
         // duyduğu iki siqnaldır — hansı dildə yazsın və randevu saatını hansı
         // qurşaqda çap etsin. Onsuz da olan yazıya minilir, ona görə əlavə
@@ -488,6 +503,7 @@ function App() {
         stopLiveUserSync = onSnapshot(userRef, (snap) => {
           if (!snap.exists()) return;
           const d = snap.data();
+          if (d.suspended) { leaveSuspended(); return; }
           setUser((prev) => {
             if (!prev || prev.uid !== uid) return prev;
             const changed = LIVE_USER_FIELDS.some(

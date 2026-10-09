@@ -109,3 +109,39 @@ export function PackageMenu({ uid, summary }) {
     </select>
   );
 }
+
+// Suspend / restore an account (adminAccess suspend|unsuspend): the person can
+// no longer sign in, is never paired, and their upcoming practices and open
+// proposals are cancelled (partners are told). Restore lets them back in;
+// nothing was deleted.
+export function SuspendButton({ uid, name, suspended }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    let body;
+    if (suspended) {
+      if (!window.confirm(`Restore ${name || 'this account'}? They can sign in and be planned again.`)) return;
+      body = { action: 'unsuspend', uid };
+    } else {
+      const reason = window.prompt(`Suspend ${name || 'this account'}?
+They are signed out, cannot sign in, and their upcoming practices are cancelled.
+
+Reason (only the team sees it):`, '');
+      if (reason === null) return;
+      body = { action: 'suspend', uid, reason };
+    }
+    setBusy(true);
+    try {
+      const r = await callAccess(body);
+      if (r.suspended) alert(`Suspended. Cancelled: ${r.cancelledBookings} practice(s), ${r.cancelledOffers} proposal(s).`);
+    } catch (e) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button type="button" className={`adm-btn ${suspended ? 'adm-btn--soft' : 'adm-btn--danger'}`} disabled={busy} onClick={run}>
+      {busy ? '…' : suspended ? 'Restore account' : 'Suspend'}
+    </button>
+  );
+}

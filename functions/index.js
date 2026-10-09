@@ -342,6 +342,72 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
       const next = await refreshAccessSummary(db, uid);
       return res.status(200).json({ ok: true, access: packagesLib.accessSummary(next) });
     }
+    // Suspend: the account cannot sign in (Auth disabled + sessions revoked;
+    // an open app sees users.suspended and signs itself out), no pairing path
+    // takes it (pairVerdict, the planner, Online now), and its upcoming
+    // practices and open proposals are cancelled so no partner is left
+    // waiting. Nothing is deleted — unsuspend gives everything back.
+    if (action === "suspend" || action === "unsuspend") {
+      const on = action === "suspend";
+      if (on) {
+        const rec = await admin.auth().getUser(uid).catch(() => null);
+        if (uid === ADMIN_UID || ADMIN_EMAILS.includes(String(rec?.email || "").toLowerCase())) {
+          return res.status(400).json({ error: "cannot-suspend-admin" });
+        }
+      }
+      const reason = String(body.reason || "").trim().slice(0, 200);
+      await admin.auth().updateUser(uid, { disabled: on }).catch((e) => {
+        if (e.code !== "auth/user-not-found") throw e;
+      });
+      if (on) await admin.auth().revokeRefreshTokens(uid).catch(() => null);
+      const del = admin.firestore.FieldValue.delete();
+      await db.collection("users").doc(uid).set(on
+        ? { suspended: true, suspendedAt: admin.firestore.FieldValue.serverTimestamp() }
+        : { suspended: del, suspendedAt: del }, { merge: true });
+      await db.collection("access").doc(uid).set({
+        suspension: on ? { atMs: Date.now(), by: decoded.uid, reason } : del,
+        history: admin.firestore.FieldValue.arrayUnion({ action, atMs: Date.now(), by: decoded.uid, ...(reason ? { reason } : {}) }),
+      }, { merge: true });
+      let cancelledBookings = 0;
+      let cancelledOffers = 0;
+      if (on) {
+        const nowMs = Date.now();
+        const bSnap = await db.collection("bookings")
+          .where("participants", "array-contains", uid)
+          .where("startMs", ">=", nowMs)
+          .orderBy("startMs")
+          .limit(100)
+          .get();
+        for (const d of bSnap.docs) {
+          const b = d.data() || {};
+          const slot = b.status === "confirmed" ? parseSlotId(String(b.slotId || "")) : null;
+          if (!slot) continue;
+          try {
+            const r = await cancelSlotPairCore(db, { slot, slotId: slot.slotId, studentUid: uid, callerUid: decoded.uid, isAdminCaller: true });
+            cancelledBookings += 1;
+            // Only the partner is told; the suspended account gets nothing.
+            await sendPushToUser(db, r.peerId, {
+              key: "slot_match_cancelled", vars: { at: slot.startMs, byName: "SpeakLab" },
+              type: "slot_match_cancelled", url: "/",
+            }).catch(() => null);
+          } catch (e) {
+            console.warn("[adminAccess suspend] booking", d.id, e.message);
+          }
+        }
+        const oSnap = await db.collection("matchOffers").where("participants", "array-contains", uid).get();
+        for (const d of oSnap.docs) {
+          const o = d.data() || {};
+          if (o.status !== "pending") continue;
+          await d.ref.update({ status: "cancelled", closedAt: admin.firestore.FieldValue.serverTimestamp() });
+          cancelledOffers += 1;
+          const waiting = Object.entries(o.responses || {}).filter(([k, v]) => k !== uid && v === "accepted").map(([k]) => k);
+          await Promise.all(waiting.map((u) => sendPushToUser(db, u, {
+            key: "match_offer_withdrawn", vars: { at: o.startMs }, type: "match_offer", url: "/",
+          }))).catch(() => null);
+        }
+      }
+      return res.status(200).json({ ok: true, suspended: on, cancelledBookings, cancelledOffers });
+    }
     if (action === "summary") {
       const next = await refreshAccessSummary(db, uid);
       return res.status(200).json({ ok: true, access: packagesLib.accessSummary(next) });
@@ -3181,7 +3247,8 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true,
   const b = known[uidB] || data(s.userB) || {};
   const minor = (ob) => (ob && ob.ageBand) === "under18";
 
-  const blocked = !!(s.blockAB.exists || s.blockBA.exists);
+  // A suspended account (adminAccess suspend) is never paired by any path.
+  const blocked = !!(s.blockAB.exists || s.blockBA.exists || a.suspended || b.suspended);
   const avoided = !!(s.avoidAB.exists || s.avoidBA.exists);
   // The minor↔adult rule protects PEER practice. It must not be applied when
   // one side is the team or the learner's own teacher: the intro call and every
@@ -3263,7 +3330,7 @@ function onlineRoster(db) {
     const fresh = snap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((u) => u.id !== ADMIN_UID && u.role !== "teacher"
-        && u.status !== "offline" && u.showOnline !== false && !u.deleted);
+        && u.status !== "offline" && u.showOnline !== false && !u.deleted && !u.suspended);
     if (!fresh.length) return { people: [] };
     const users = db.collection("users");
     const [obs, blocked, avoid] = await Promise.all([
@@ -4156,6 +4223,73 @@ exports.respondSlotChange = onRequest({ secrets: [], invoker: "public" }, async 
 // İcazə: admin hər cütü söküb bilər; müəllim isə cütdə ƏN AZI BİR şagirdi
 // ona bağlıdırsa. Qarşı tərəf zərər görmür — blokda qalır və yenidən
 // eşləşə bilər.
+// The cancel itself, shared by cancelSlotMatch and adminAccess suspend:
+// both members back to waiting, the booking closed as cancelled, the T−15
+// call doc (if written) cancelled. isAdminCaller skips the teacher check.
+async function cancelSlotPairCore(db, { slot, slotId, studentUid, callerUid, isAdminCaller }) {
+  return db.runTransaction(async (tx) => {
+    const slotRef = db.collection("practiceSlots").doc(slotId);
+    const membersRef = slotRef.collection("members");
+    const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
+    const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+
+    const mine = members.find((m) => m.id === studentUid);
+    if (!mine) throw Object.assign(new Error("not-in-slot"), { httpStatus: 404 });
+    if (mine.status !== "matched" || !mine.pairedWith) {
+      throw Object.assign(new Error("not-matched"), { httpStatus: 409 });
+    }
+    const peerId = mine.pairedWith;
+
+    // İcazə yoxlaması oxu mərhələsindədir — tranzaksiyada bütün oxular
+    // yazılardan ƏVVƏL olmalıdır.
+    let allowed = isAdminCaller;
+    let byName = "";
+    const [aSnap, bSnap, callerSnap] = await Promise.all([
+      tx.get(db.collection("users").doc(studentUid)),
+      tx.get(db.collection("users").doc(peerId)),
+      tx.get(db.collection("users").doc(callerUid)),
+    ]);
+    byName = (callerSnap.exists ? (callerSnap.data() || {}).name : "") || "";
+    if (!allowed) {
+      const a = aSnap.exists ? aSnap.data() || {} : {};
+      const b = bSnap.exists ? bSnap.data() || {} : {};
+      allowed = a.teacherId === callerUid || b.teacherId === callerUid;
+    }
+    if (!allowed) throw Object.assign(new Error("not-your-student"), { httpStatus: 403 });
+
+    const del = admin.firestore.FieldValue.delete();
+
+    for (const id of [studentUid, peerId]) {
+      tx.set(membersRef.doc(id), { status: "waiting", pairedWith: del, callId: del }, { merge: true });
+    }
+    bookingsLib.closeBookingTx(tx, db, {
+      slot, uidA: studentUid, uidB: peerId, status: "cancelled", extra: { cancelledBy: callerUid },
+    });
+
+    if (mine.callId) {
+      tx.set(db.collection("calls").doc(mine.callId), {
+        status: "cancelled",
+        cancelledBy: callerUid,
+        cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    }
+
+    let waitingCount = 0;
+    let matchedCount = 0;
+    for (const m of members) {
+      const status = (m.id === studentUid || m.id === peerId) ? "waiting" : m.status;
+      if (status === "waiting") waitingCount += 1;
+      else if (status === "matched") matchedCount += 1;
+    }
+    tx.set(slotRef, {
+      waitingCount, matchedCount,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return { peerId, byName };
+  });
+}
+
 exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -4180,67 +4314,8 @@ exports.cancelSlotMatch = onRequest({ secrets: [], invoker: "public" }, async (r
   try {
     await enforceRateLimit(callerUid, "cancelSlotMatch", 60, 24 * 60 * 60 * 1000);
 
-    const result = await db.runTransaction(async (tx) => {
-      const slotRef = db.collection("practiceSlots").doc(slotId);
-      const membersRef = slotRef.collection("members");
-      const membersSnap = await tx.get(membersRef.limit(SLOT_MAX_MEMBERS));
-      const members = membersSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
-
-      const mine = members.find((m) => m.id === studentUid);
-      if (!mine) throw Object.assign(new Error("not-in-slot"), { httpStatus: 404 });
-      if (mine.status !== "matched" || !mine.pairedWith) {
-        throw Object.assign(new Error("not-matched"), { httpStatus: 409 });
-      }
-      const peerId = mine.pairedWith;
-
-      // İcazə yoxlaması oxu mərhələsindədir — tranzaksiyada bütün oxular
-      // yazılardan ƏVVƏL olmalıdır.
-      const isAdminCaller = isAdminToken(decoded);
-      let allowed = isAdminCaller;
-      let byName = "";
-      const [aSnap, bSnap, callerSnap] = await Promise.all([
-        tx.get(db.collection("users").doc(studentUid)),
-        tx.get(db.collection("users").doc(peerId)),
-        tx.get(db.collection("users").doc(callerUid)),
-      ]);
-      byName = (callerSnap.exists ? (callerSnap.data() || {}).name : "") || "";
-      if (!allowed) {
-        const a = aSnap.exists ? aSnap.data() || {} : {};
-        const b = bSnap.exists ? bSnap.data() || {} : {};
-        allowed = a.teacherId === callerUid || b.teacherId === callerUid;
-      }
-      if (!allowed) throw Object.assign(new Error("not-your-student"), { httpStatus: 403 });
-
-      const del = admin.firestore.FieldValue.delete();
-
-      for (const id of [studentUid, peerId]) {
-        tx.set(membersRef.doc(id), { status: "waiting", pairedWith: del, callId: del }, { merge: true });
-      }
-      bookingsLib.closeBookingTx(tx, db, {
-        slot, uidA: studentUid, uidB: peerId, status: "cancelled", extra: { cancelledBy: callerUid },
-      });
-
-      if (mine.callId) {
-        tx.set(db.collection("calls").doc(mine.callId), {
-          status: "cancelled",
-          cancelledBy: callerUid,
-          cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-      }
-
-      let waitingCount = 0;
-      let matchedCount = 0;
-      for (const m of members) {
-        const status = (m.id === studentUid || m.id === peerId) ? "waiting" : m.status;
-        if (status === "waiting") waitingCount += 1;
-        else if (status === "matched") matchedCount += 1;
-      }
-      tx.set(slotRef, {
-        waitingCount, matchedCount,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
-
-      return { peerId, byName };
+    const result = await cancelSlotPairCore(db, {
+      slot, slotId, studentUid, callerUid, isAdminCaller: isAdminToken(decoded),
     });
 
     await Promise.all([studentUid, result.peerId].map((id) => sendPushToUser(db, id, {
@@ -5005,6 +5080,10 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   for (const [uid, ob] of obs) {
     const u = users.get(uid);
     if (!u || uid === ADMIN_UID || u.role === "teacher") continue;
+    if (u.suspended) {
+      if (auto) verdicts.set(uid, { in: false, why: "excluded" });
+      continue;
+    }
     // The learner's own answer for this week (Plan tab calendar / check-in):
     // the days they picked narrow their times and set the number.
     const answer = autoRoster.weekAnswer(ob, monday);
@@ -6469,8 +6548,10 @@ const ANALYSIS_STUCK_MS = 10 * 60 * 1000;
 // download ≈ 310s, so claiming must stop by 540 - 310 = 230s. 200s keeps a
 // margin, and a normal ticket takes ~30s, so all three still fit in a tick.
 const ANALYSIS_INVOCATION_BUDGET_MS = 200 * 1000;
-// 80% of Groq's free-tier 7200 audio-seconds/hour, rolling window.
-const ANALYSIS_HOURLY_AUDIO_BUDGET = 21600; // 6 saat audio/saat — 50% analiz üçün 5760 çox dar idi
+// Global audio analysed per rolling hour. 6 h (21600 s) was the ceiling until
+// 2026-10-10; Polad raised it to 20 h so an evening crowd of calls is never
+// queued past the hour (Groq's paid tier allows far more).
+const ANALYSIS_HOURLY_AUDIO_BUDGET = 20 * 60 * 60;
 // Per learner per Baku day. A ticket is analysed up to ANALYSIS_MAX_SECONDS
 // (30 min), so this is at least six full calls a day — far above real use,
 // and it stops one account from eating the global hourly budget above.
