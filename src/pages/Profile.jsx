@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db, auth, enableNotifications, signOutEverywhere } from '../firebase';
-import CallRingSetup from '../components/CallRingSetup';
 import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, Radio, BookMarked, Flame, BarChart3,
@@ -524,9 +523,6 @@ export default function Profile({ user }) {
           ),
         })}
       </div>
-
-      {/* Android app only: what makes a call ring on a sleeping phone. */}
-      <CallRingSetup uid={user.uid} variant="profile" />
 
       {sectionLabel('Settings')}
       <div style={listCard}>

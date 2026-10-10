@@ -26,7 +26,6 @@ import NextTopics from '../components/plan/NextTopics';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import MissReasonCard from '../components/plan/MissReason';
 import WeekProfileCard from '../components/plan/WeekProfileCard';
-import CallRingSetup from '../components/CallRingSetup';
 import useMyPlan, { useAutoMode } from '../hooks/useMyPlan';
 import { useBillingConfig } from '../hooks/usePackages';
 import { outOfPractices, packageView } from '../utils/packages';
@@ -246,8 +245,6 @@ export default function Home({ user }) {
             once — the general week profile for those already practising. */}
         <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
         {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} />}
-        {/* Android app: a phone setting that stops calls from ringing while it sleeps. */}
-        <CallRingSetup uid={user.uid} variant="today" />
 
         {/* 2. Proposals, when the card above is already a booking. */}
         {headline.kind === 'next' && open.length > 0 && (
