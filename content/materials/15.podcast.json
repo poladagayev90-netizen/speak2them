@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 15,
+  "title": "I always loved the villain",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What was your favourite cartoon as a child? Guess: who in this episode always liked the bad character — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Cartoons with my niece",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a red-haired bearded man and a small girl on a sofa under a blanket watching an old-style cartoon on TV, the man is much more excited than the bored girl, popcorn, warm evening light"
+    },
+    {
+      "from": 6,
+      "title": "Heroes and villains",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a big colourful cartoon villain with a cape, a curly moustache and huge eyebrows laughing dramatically, next to a small calm hero, drawn in a playful cartoon style inside a TV frame, no text"
+    },
+    {
+      "from": 13,
+      "title": "A hundred thousand frames",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: an animator's desk with a light table, a stack of paper drawings of a running cat in small steps, pencils, a flip book in motion, a lamp and a window at night"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is cartoons and animation. And yesterday I watched a cartoon with my niece.",
+      "at": 4.94
+    },
+    {
+      "s": "Leyla",
+      "t": "Which one?",
+      "at": 14.4
+    },
+    {
+      "s": "Sam",
+      "t": "An old one — the one I loved when I was eight. And I was much more excited than she was!",
+      "at": 15.62
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] That's nostalgia. One song from a cartoon can take someone back thirty years.",
+      "at": 22.56
+    },
+    {
+      "s": "Sam",
+      "t": "Exactly. In the first minute I remembered every character and almost every line.",
+      "at": 28.7
+    },
+    {
+      "s": "Leyla",
+      "t": "When I was a child, our cartoons were always dubbed. The characters spoke Russian or Turkish, never English.",
+      "at": 34.52
+    },
+    {
+      "s": "Sam",
+      "t": "So the famous mouse spoke Turkish?",
+      "at": 41.48
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] Yes, with a very deep voice. Years later I heard the English voiceover and I was shocked.",
+      "at": 44.48
+    },
+    {
+      "s": "Sam",
+      "t": "My favourite character was never the hero. I always loved the villain.",
+      "at": 51.58
+    },
+    {
+      "s": "Leyla",
+      "t": "Why the villain?",
+      "at": 56.34
+    },
+    {
+      "s": "Sam",
+      "t": "Villains are larger than life. Big voice, big plans, big eyebrows. The hero is often a bit boring.",
+      "at": 57.02
+    },
+    {
+      "s": "Leyla",
+      "t": "True. But the storyline needs a good hero too, or there's no story.",
+      "at": 69.16
+    },
+    {
+      "s": "Sam",
+      "t": "Fair. And did you know that a long animated film has more than a hundred thousand frames?",
+      "at": 75
+    },
+    {
+      "s": "Leyla",
+      "t": "A hundred thousand? Someone draws all of them?",
+      "at": 82.22
+    },
+    {
+      "s": "Sam",
+      "t": "In the old days, yes — by hand. Twenty-four drawings for every second.",
+      "at": 87.4
+    },
+    {
+      "s": "Leyla",
+      "t": "That's amazing. And when the pictures move, they really come to life.",
+      "at": 94.02
+    },
+    {
+      "s": "Sam",
+      "t": "Now computers do a lot of the work, but artists still plan every frame.",
+      "at": 99.58
+    },
+    {
+      "s": "Leyla",
+      "t": "I think cartoons aren't only for children. The best ones make adults cry.",
+      "at": 105.24
+    },
+    {
+      "s": "Sam",
+      "t": "[sigh] Don't remind me. I cried at the cinema last year. Next to my niece. She wasn't crying.",
+      "at": 111.88
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what cartoon did you love as a child — and who was your favourite character?",
+      "at": 119.82
+    },
+    {
+      "s": "Sam",
+      "t": "Mine was the villain, of course. See you next time!",
+      "at": 127.58
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 131.14
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to become an animator",
+        "Childhood cartoons, characters and how animation is made",
+        "The best films for adults",
+        "Learning Turkish with cartoons"
+      ],
+      "answer": 1,
+      "why": "Nostalgia, dubbed cartoons, villains and frames."
+    },
+    {
+      "type": "detail",
+      "q": "What language did the cartoons speak when Leyla was a child?",
+      "options": [
+        "English",
+        "Azerbaijani only",
+        "Russian or Turkish",
+        "French"
+      ],
+      "answer": 2,
+      "why": "\"The characters spoke Russian or Turkish, never English.\""
+    },
+    {
+      "type": "detail",
+      "q": "How many drawings are there for every second of an old animated film?",
+      "options": [
+        "Ten",
+        "Twenty-four",
+        "A hundred",
+        "A thousand"
+      ],
+      "answer": 1,
+      "why": "\"Twenty-four drawings for every second.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's niece cried at the cinema.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"She wasn't crying.\" Sam was."
+    },
+    {
+      "type": "vocab",
+      "q": "If something is \"larger than life\", it is…",
+      "options": [
+        "Very small and quiet",
+        "Bigger, louder and more exciting than normal",
+        "Drawn on a big screen",
+        "Too long"
+      ],
+      "answer": 1,
+      "why": "Big voice, big plans, big eyebrows."
+    },
+    {
+      "type": "inference",
+      "q": "Why was Sam more excited than his niece?",
+      "options": [
+        "The cartoon was new to him",
+        "It reminded him of his childhood",
+        "He works in animation",
+        "She was tired"
+      ],
+      "answer": 1,
+      "why": "It was the cartoon he loved when he was eight — nostalgia."
+    }
+  ],
+  "coverPrompt": "COVER: Leyla and Sam at the desk wearing paper masks of simple cartoon faces (one hero with a big smile, one villain with a curly moustache), laughing, an old TV with a rainbow test screen and a pencil sketch of a bouncing ball on the desk",
+  "talk": [
+    "What cartoon did you love as a child — and who was your favourite character?",
+    "Do you prefer the hero or the villain in a story? Why?"
+  ],
+  "duration": 132.3,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}

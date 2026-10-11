@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 16,
+  "title": "Halfway across the bridge",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What are you afraid of? Guess: who in this episode is scared of heights — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The glass bridge",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a glass bridge high between green mountains, a woman with long dark hair and a lavender jacket frozen in the middle holding the rail with both hands, eyes shut, a friend gently holding her other hand, tiny trees far below"
+    },
+    {
+      "from": 9,
+      "title": "A speech at a wedding",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a wedding reception, a red-haired bearded man in a suit standing with a microphone and a sheet of paper, nervous but smiling, guests at round tables laughing warmly, fairy lights"
+    },
+    {
+      "from": 16,
+      "title": "Step by step",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a staircase of soft clouds going up into a warm sunrise, small footprints on each step, a little flag at the top, calm and hopeful, no people"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is fears and phobias. And Leyla, I know your secret.",
+      "at": 5.36
+    },
+    {
+      "s": "Leyla",
+      "t": "[sigh] Yes, everyone knows. I'm scared of heights. It's a real phobia.",
+      "at": 13.66
+    },
+    {
+      "s": "Sam",
+      "t": "Tell them about the glass bridge.",
+      "at": 19.8
+    },
+    {
+      "s": "Leyla",
+      "t": "Last spring, in the mountains, my friends wanted to walk across a glass bridge. I looked down and I was scared stiff. I could not move.",
+      "at": 22.62
+    },
+    {
+      "s": "Sam",
+      "t": "What did your friends do?",
+      "at": 33.14
+    },
+    {
+      "s": "Leyla",
+      "t": "One friend held my hand and tried to reassure me. \"It's safe, Leyla. Thousands of people walk here every day.\"",
+      "at": 35.1
+    },
+    {
+      "s": "Sam",
+      "t": "Did it help?",
+      "at": 42.68
+    },
+    {
+      "s": "Leyla",
+      "t": "Not really. I know the fear is irrational. The bridge is strong. But my body doesn't listen.",
+      "at": 44.4
+    },
+    {
+      "s": "Sam",
+      "t": "I understand. My trigger is different. Put me in front of a big audience, and my hands start shaking.",
+      "at": 51.76
+    },
+    {
+      "s": "Leyla",
+      "t": "Public speaking?",
+      "at": 59.74
+    },
+    {
+      "s": "Sam",
+      "t": "Yes. At my best friend's wedding, I had to give a speech. The night before, I started to get cold feet. I wanted to call him and say, \"Ask someone else.\"",
+      "at": 61.12
+    },
+    {
+      "s": "Leyla",
+      "t": "But you didn't.",
+      "at": 73.3
+    },
+    {
+      "s": "Sam",
+      "t": "No. Everyone says: face your fears. So I did. I practised the speech twenty times in front of my cat.",
+      "at": 74.9
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] And on the day?",
+      "at": 85.9
+    },
+    {
+      "s": "Sam",
+      "t": "My voice was shaking for the first minute. Then people laughed at my first joke, and the anxiety just… went away.",
+      "at": 87.48
+    },
+    {
+      "s": "Leyla",
+      "t": "That's a great way to overcome a fear — step by step.",
+      "at": 96.22
+    },
+    {
+      "s": "Sam",
+      "t": "And you? Did you cross the bridge in the end?",
+      "at": 100.6
+    },
+    {
+      "s": "Leyla",
+      "t": "Half of it. Then I had a small panic attack and walked back. But next year I will try again.",
+      "at": 103.66
+    },
+    {
+      "s": "Sam",
+      "t": "Half is good! And at least it's not a nightmare any more.",
+      "at": 111.26
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what are you afraid of — and have you ever tried to face it?",
+      "at": 115.44
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is spiders. But let's not talk about that. See you next time!",
+      "at": 122.94
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 128.46
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Dangerous sports in the mountains",
+        "Fears and how to deal with them",
+        "How to plan a wedding",
+        "Why cats are good pets"
+      ],
+      "answer": 1,
+      "why": "Leyla's fear of heights, Sam's fear of speaking in public, and facing them."
+    },
+    {
+      "type": "detail",
+      "q": "What happened to Leyla on the glass bridge?",
+      "options": [
+        "She ran across it",
+        "She crossed half of it and walked back",
+        "She refused to go near it",
+        "She took photos from the middle"
+      ],
+      "answer": 1,
+      "why": "\"Half of it. Then I had a small panic attack and walked back.\""
+    },
+    {
+      "type": "detail",
+      "q": "How did Sam practise his speech?",
+      "options": [
+        "With his best friend",
+        "In front of his cat",
+        "With a teacher",
+        "At the wedding venue"
+      ],
+      "answer": 1,
+      "why": "\"I practised the speech twenty times in front of my cat.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam asked someone else to give the speech.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "He wanted to, but he did not — he gave the speech."
+    },
+    {
+      "type": "vocab",
+      "q": "If you \"get cold feet\", you…",
+      "options": [
+        "Feel cold in winter",
+        "Become nervous and want to stop before something important",
+        "Walk too far",
+        "Get sick"
+      ],
+      "answer": 1,
+      "why": "The night before the speech Sam wanted to say \"Ask someone else.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why did Sam's anxiety go away?",
+      "options": [
+        "He stopped the speech",
+        "People laughed at his first joke",
+        "His friend helped him",
+        "He read from his phone"
+      ],
+      "answer": 1,
+      "why": "\"Then people laughed at my first joke, and the anxiety just went away.\""
+    }
+  ],
+  "coverPrompt": "COVER: Leyla peeking nervously over the edge of the desk as if it were a cliff, holding on tight, Sam next to her holding a stack of speech cards with shaking hands and a nervous smile, a small toy spider on the desk",
+  "talk": [
+    "What are you afraid of — and have you ever tried to face it?",
+    "Is it better to face a fear quickly or step by step? Why?"
+  ],
+  "duration": 129.7,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}

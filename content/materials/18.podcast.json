@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 18,
+  "title": "Too fast, too soon",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you do any sport? Guess: who in this episode ran twenty-one kilometres yesterday — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The half marathon",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a city half marathon on a sunny morning, a red-haired bearded runner in a purple running shirt starting much too fast at the front of a crowd of runners, a big distance marker shaped like a simple arch"
+    },
+    {
+      "from": 8,
+      "title": "Warm up first",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a running coach with a whistle pointing at his watch and shaking his head, next to a young man stretching his legs on a park bench, early morning park"
+    },
+    {
+      "from": 10,
+      "title": "The underdog",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a school tennis final on a clay court, a small determined girl with long dark hair hitting a strong backhand, a tall powerful opponent on the other side, a referee on a high chair, a few students cheering"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is sport. And I can't walk properly today.",
+      "at": 5.06
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Why not?",
+      "at": 12.6
+    },
+    {
+      "s": "Sam",
+      "t": "Yesterday I ran my first half marathon. Twenty-one kilometres.",
+      "at": 14.38
+    },
+    {
+      "s": "Leyla",
+      "t": "Wow, congratulations! How was it?",
+      "at": 19.86
+    },
+    {
+      "s": "Sam",
+      "t": "The first ten kilometres were great. But I made a classic mistake. Everyone around me was running fast, so I ran fast too.",
+      "at": 23.1
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no. You should never jump the gun in a long race.",
+      "at": 33.24
+    },
+    {
+      "s": "Sam",
+      "t": "I know that now. After fifteen kilometres I had no stamina left. I walked a lot of the last part.",
+      "at": 37.28
+    },
+    {
+      "s": "Leyla",
+      "t": "But you finished! That's what matters. Did you warm up before the race?",
+      "at": 45.58
+    },
+    {
+      "s": "Sam",
+      "t": "For two minutes. My coach was not happy. He says a good warm-up protects you from injury.",
+      "at": 50.9
+    },
+    {
+      "s": "Leyla",
+      "t": "He's right. At school I played tennis, and I hurt my knee because I never stretched.",
+      "at": 58.64
+    },
+    {
+      "s": "Sam",
+      "t": "Were you good?",
+      "at": 64.52
+    },
+    {
+      "s": "Leyla",
+      "t": "Not really. But once I played in a school tournament, and I was the underdog. Everyone thought I'd lose in the first round.",
+      "at": 65.52
+    },
+    {
+      "s": "Sam",
+      "t": "And?",
+      "at": 72.88
+    },
+    {
+      "s": "Leyla",
+      "t": "I got to the final! My opponent was a real athlete, much stronger than me. I said to myself: just give it your best shot.",
+      "at": 73.72
+    },
+    {
+      "s": "Sam",
+      "t": "Did you win?",
+      "at": 83.24
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] No, I lost the final. And I still think the referee made a mistake on the last point.",
+      "at": 84.7
+    },
+    {
+      "s": "Sam",
+      "t": "Of course he did.",
+      "at": 91.02
+    },
+    {
+      "s": "Leyla",
+      "t": "But it was the best day of my sporting life.",
+      "at": 92.22
+    },
+    {
+      "s": "Sam",
+      "t": "I love that. Next year I want to run the half marathon again and raise the bar — under two hours.",
+      "at": 95.2
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: have you ever been the underdog — in sport or in life? What happened?",
+      "at": 102.66
+    },
+    {
+      "s": "Sam",
+      "t": "Ask me again next year. See you next time!",
+      "at": 111.18
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 114.06
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to become a tennis coach",
+        "Races, competitions and doing your best",
+        "The rules of tennis",
+        "Healthy food for athletes"
+      ],
+      "answer": 1,
+      "why": "Sam's half marathon and Leyla's school tennis tournament."
+    },
+    {
+      "type": "detail",
+      "q": "What was Sam's mistake in the race?",
+      "options": [
+        "He forgot his shoes",
+        "He started too fast",
+        "He ran the wrong way",
+        "He did not drink water"
+      ],
+      "answer": 1,
+      "why": "Everyone was running fast, so he ran fast too."
+    },
+    {
+      "type": "detail",
+      "q": "How far did Leyla get in the tournament?",
+      "options": [
+        "The first round",
+        "The semi-final",
+        "The final",
+        "She won it"
+      ],
+      "answer": 2,
+      "why": "\"I got to the final!\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam warmed up for twenty minutes before the race.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "Only for two minutes."
+    },
+    {
+      "type": "vocab",
+      "q": "An \"underdog\" is…",
+      "options": [
+        "The best player in the team",
+        "Someone people expect to lose",
+        "A referee",
+        "A sports injury"
+      ],
+      "answer": 1,
+      "why": "\"Everyone thought I'd lose in the first round.\""
+    },
+    {
+      "type": "inference",
+      "q": "What does Sam mean by \"raise the bar\" next year?",
+      "options": [
+        "Run a shorter race",
+        "Set a harder goal — under two hours",
+        "Stop running",
+        "Train less"
+      ],
+      "answer": 1,
+      "why": "He wants a better time than this year."
+    }
+  ],
+  "coverPrompt": "COVER: Sam with a finisher medal around his neck, sitting stiffly with an ice pack on his knee and a tired proud smile, Leyla next to him spinning an old tennis racket, a small trophy and a stopwatch on the desk",
+  "talk": [
+    "Have you ever been the underdog — in sport or in life? What happened?",
+    "Do you prefer to win or to have fun? Why?"
+  ],
+  "duration": 115.1,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}

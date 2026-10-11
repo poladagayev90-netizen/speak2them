@@ -85,6 +85,7 @@ async function publish(token, nn) {
     if (pod.lines.some((l) => typeof l.at !== 'number')) throw new Error(`${nn}: every podcast line needs its start time "at" (scripts/align-listening.py)`);
     pod.audio = await urlOf('podcast.mp3');
     if (fs.existsSync(path.join(dir, 'cover.webp'))) pod.cover = await urlOf('cover.webp');
+    delete pod.coverPrompt; // like the chapter prompts: kept in content/, not shipped
     for (const c of pod.chapters) {
       c.src = await urlOf(`${c.image}.webp`);
       delete c.prompt; // generation prompts stay in content/, the app doesn't need them

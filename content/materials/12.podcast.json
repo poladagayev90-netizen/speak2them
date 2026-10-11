@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 12,
+  "title": "Ten seconds with a star",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Have you ever met someone famous? Guess: who in this episode stood next to a famous actor — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Coffee with a star",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: an airport coffee queue, a red-haired bearded man in a denim shirt looking nervous and excited next to a tall man in sunglasses and a cap, two photographers with big cameras and flashes behind a glass wall"
+    },
+    {
+      "from": 8,
+      "title": "Fifteen minutes of fame",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a young woman in her kitchen filming a funny cooking video on her phone, flour everywhere, floating hearts and like icons rising from the phone screen as simple shapes"
+    },
+    {
+      "from": 16,
+      "title": "A real role model",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a famous footballer in a sports jacket opening a new school with happy children in a sunny schoolyard, a ribbon being cut, a football on the ground"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is famous people. And I have a celebrity story.",
+      "at": 4.34
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh, go on!",
+      "at": 10.36
+    },
+    {
+      "s": "Sam",
+      "t": "Two years ago, at the airport in London, I stood next to a very famous actor in the coffee queue. I won't say his name.",
+      "at": 11.9
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you say anything to him?",
+      "at": 19.8
+    },
+    {
+      "s": "Sam",
+      "t": "I said, \"I'm a big fan.\" He said, \"Thanks, mate.\" And that was it. Ten seconds.",
+      "at": 21.52
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Still a great story. Were there paparazzi?",
+      "at": 28.62
+    },
+    {
+      "s": "Sam",
+      "t": "Two photographers, yes. They followed him all the way to the gate. He looked so tired.",
+      "at": 32.3
+    },
+    {
+      "s": "Leyla",
+      "t": "I think that's the worst part of fame. No privacy at all. You can't even buy a coffee.",
+      "at": 38.1
+    },
+    {
+      "s": "Sam",
+      "t": "Exactly. Life in the limelight sounds fun, but every small mistake becomes news.",
+      "at": 44.2
+    },
+    {
+      "s": "Leyla",
+      "t": "And one scandal can destroy your reputation in a day.",
+      "at": 50.28
+    },
+    {
+      "s": "Sam",
+      "t": "True. What about you, Leyla? Do you know anyone famous?",
+      "at": 54.14
+    },
+    {
+      "s": "Leyla",
+      "t": "Sort of. A girl from my school posted a funny cooking video, and suddenly she had two million views.",
+      "at": 57.5
+    },
+    {
+      "s": "Sam",
+      "t": "Wow. Her fifteen minutes of fame!",
+      "at": 66.14
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] More like fifteen days. Then people forgot. But she said it was enough for her.",
+      "at": 70.04
+    },
+    {
+      "s": "Sam",
+      "t": "Some people rise to fame slowly, over many years. I think that's healthier.",
+      "at": 75.84
+    },
+    {
+      "s": "Leyla",
+      "t": "I agree. And I often think about who is a good role model for young people.",
+      "at": 81.85
+    },
+    {
+      "s": "Sam",
+      "t": "For me, it's not the most famous person. It's the person who does something useful with their fame.",
+      "at": 87.72
+    },
+    {
+      "s": "Leyla",
+      "t": "Like a footballer who builds schools. That's a real legacy.",
+      "at": 95.12
+    },
+    {
+      "s": "Sam",
+      "t": "Yes. In fifty years nobody remembers the likes. They remember what you built.",
+      "at": 99.46
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: if you could meet one famous person, who would it be — and what would you ask?",
+      "at": 105.46
+    },
+    {
+      "s": "Sam",
+      "t": "I'd ask that actor for eleven seconds. See you next time!",
+      "at": 114.78
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 119.06
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to become an actor",
+        "Meeting famous people and the good and bad sides of fame",
+        "The best films of the year",
+        "Working at an airport"
+      ],
+      "answer": 1,
+      "why": "Sam's ten seconds with an actor, privacy, a viral video and role models."
+    },
+    {
+      "type": "detail",
+      "q": "What did Sam say to the actor?",
+      "options": [
+        "\"Can I have a photo?\"",
+        "\"I'm a big fan.\"",
+        "\"What's your name?\"",
+        "Nothing"
+      ],
+      "answer": 1,
+      "why": "\"I said, 'I'm a big fan.'\""
+    },
+    {
+      "type": "detail",
+      "q": "How did Leyla's school friend become famous?",
+      "options": [
+        "She sang on TV",
+        "She posted a funny cooking video",
+        "She won a competition",
+        "She wrote a book"
+      ],
+      "answer": 1,
+      "why": "Her cooking video had two million views."
+    },
+    {
+      "type": "tf",
+      "q": "The actor looked happy and full of energy.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"He looked so tired.\""
+    },
+    {
+      "type": "vocab",
+      "q": "A \"legacy\" is…",
+      "options": [
+        "Money you spend on fame",
+        "Something good that people remember after you",
+        "A famous person's house",
+        "A photo of a celebrity"
+      ],
+      "answer": 1,
+      "why": "The footballer's schools stay after him — that is his legacy."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Sam think rising to fame slowly is healthier?",
+      "options": [
+        "You get more money",
+        "You have time to get used to it",
+        "Photographers do not follow you",
+        "You never make mistakes"
+      ],
+      "answer": 1,
+      "why": "Fast fame can disappear in days, like the cooking video."
+    }
+  ],
+  "coverPrompt": "COVER: Sam holding a paper coffee cup and looking star-struck at a gold star sticker on it, Leyla next to him laughing and holding up her phone with a red heart and a big number of views drawn as simple shapes, a small camera with a flash on the desk",
+  "talk": [
+    "If you could meet one famous person, who would it be — and what would you ask?",
+    "Would you like to be famous? What would be the worst part for you?"
+  ],
+  "duration": 120.2,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}

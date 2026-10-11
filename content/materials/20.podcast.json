@@ -1,0 +1,206 @@
+{
+  "kind": "podcast",
+  "episode": 20,
+  "title": "Jumping over the fire",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What is your favourite holiday tradition? Guess: who in this episode jumped over a fire — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Sam's first Novruz",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: an evening courtyard in Baku during Novruz, a small bonfire, a red-haired bearded man in a denim shirt jumping over the little fire with a big surprised smile, neighbours clapping, a table with sweets and green wheat sprouts"
+    },
+    {
+      "from": 11,
+      "title": "Old habits die hard",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a cosy kitchen, an old grandmother and a young woman with round glasses together making shekerbura pastries with their hands, flour on the table, a warm family moment"
+    },
+    {
+      "from": 16,
+      "title": "Many cultures, one city",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a lively international street festival in a modern city, food stalls from different countries, people of many backgrounds dancing in a circle to folk music, colourful lanterns overhead"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is culture and traditions. And I have to tell you about my first Novruz."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Oh yes. I was there."
+    },
+    {
+      "s": "Sam",
+      "t": "In March my friends in Baku invited me to celebrate. And in the evening, everyone started jumping over small fires!"
+    },
+    {
+      "s": "Leyla",
+      "t": "That's one of our oldest customs. It's a ritual for a new start — you leave the problems of the old year behind."
+    },
+    {
+      "s": "Sam",
+      "t": "I was nervous. But my friend said, \"When in Rome…\" So I jumped too."
+    },
+    {
+      "s": "Leyla",
+      "t": "And you were great! Only your trousers were in a little danger."
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] Then there were the sweets — shekerbura, pakhlava. I ate far too many."
+    },
+    {
+      "s": "Leyla",
+      "t": "That food is part of our heritage. My grandmother makes shekerbura the way her mother did, and her mother before that."
+    },
+    {
+      "s": "Sam",
+      "t": "That's lovely. Who taught you?"
+    },
+    {
+      "s": "Leyla",
+      "t": "She did. Every year we make them together. I think every family needs to pass something down — a recipe, a song, a story."
+    },
+    {
+      "s": "Sam",
+      "t": "Do you have any superstitions?"
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Some. My grandmother says you mustn't whistle in the house, or money will leave. I don't believe it, but I still never whistle at home."
+    },
+    {
+      "s": "Sam",
+      "t": "Old habits die hard!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Exactly. What about your family, Sam?"
+    },
+    {
+      "s": "Sam",
+      "t": "In England, at Christmas, we pull crackers and wear silly paper crowns. Nobody knows why. It's just what we do."
+    },
+    {
+      "s": "Leyla",
+      "t": "I think the best cities are multicultural. In Baku you can eat food from twenty countries on one street."
+    },
+    {
+      "s": "Sam",
+      "t": "London is the same. But it's important not to lose your own culture. Assimilation is one thing — forgetting where you're from is another."
+    },
+    {
+      "s": "Leyla",
+      "t": "I agree. My ancestors lived in the mountains, and we still sing their folk songs at weddings."
+    },
+    {
+      "s": "Sam",
+      "t": "That's beautiful. I'd love to hear one."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is one tradition from your family that you want to keep — and why?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is the silly paper crown. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to cook pakhlava",
+        "Holidays, customs and keeping family traditions",
+        "The history of England",
+        "Travelling to the mountains"
+      ],
+      "answer": 1,
+      "why": "Sam's first Novruz, family recipes, superstitions and culture in big cities."
+    },
+    {
+      "type": "detail",
+      "q": "What did people do on the Novruz evening?",
+      "options": [
+        "They swam in the sea",
+        "They jumped over small fires",
+        "They sang in a concert",
+        "They pulled crackers"
+      ],
+      "answer": 1,
+      "why": "\"Everyone started jumping over small fires!\""
+    },
+    {
+      "type": "detail",
+      "q": "What is Leyla's grandmother's superstition?",
+      "options": [
+        "Don't open an umbrella inside",
+        "Don't whistle in the house, or money will leave",
+        "Don't walk under a ladder",
+        "Don't cut your hair on Friday"
+      ],
+      "answer": 1,
+      "why": "\"You mustn't whistle in the house, or money will leave.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam knows why English families wear paper crowns at Christmas.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"Nobody knows why.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"When in Rome…\" means…",
+      "options": [
+        "Travel to Italy",
+        "Do what the local people do",
+        "Be careful in a new place",
+        "Eat Italian food"
+      ],
+      "answer": 1,
+      "why": "Sam jumped over the fire like everyone else."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla still never whistle at home?",
+      "options": [
+        "She can't whistle",
+        "Old habits are hard to stop, even if you don't believe them",
+        "Her neighbours complain",
+        "She wants more money"
+      ],
+      "answer": 1,
+      "why": "\"I don't believe it, but I still never whistle at home.\" — old habits die hard."
+    }
+  ],
+  "coverPrompt": "COVER: Leyla holding a plate of colourful Novruz sweets (shekerbura and pakhlava) and a small dish of green wheat sprouts, Sam next to her holding a Christmas cracker and wearing a paper crown, both laughing, a small candle on the desk",
+  "talk": [
+    "What is one tradition from your family that you want to keep — and why?",
+    "Do you have a superstition, even one you don't really believe?"
+  ]
+}
