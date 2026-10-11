@@ -1,0 +1,476 @@
+{
+  "index": 0,
+  "topic": "Travel",
+  "listening": {
+    "title": "Six hours in Istanbul",
+    "level": "B1",
+    "speakers": {
+      "Julian": "a young lawyer from Baku who plans everything",
+      "Yunus": "his friend, a potter who prefers to go with the flow"
+    },
+    "direction": "Two old friends talking in a busy airport café in Istanbul at 6 a.m. Natural, unscripted feel: overlaps, small hesitations, real laughter. Background: soft announcements, cups. Not a textbook recording.",
+    "scenes": [
+      {
+        "from": 0,
+        "image": "scene1",
+        "prompt": "Early morning airport café in Istanbul, big windows with planes at sunrise, two coffee cups and a crumpled boarding pass on the table, warm purple and peach light, soft editorial illustration, no text"
+      },
+      {
+        "from": 3,
+        "image": "scene2",
+        "prompt": "Close-up of a hand-written travel itinerary in a notebook with a phone showing a departures board, a small backpack beside it, soft editorial illustration, plum and peach palette, no text"
+      },
+      {
+        "from": 12,
+        "image": "scene3",
+        "prompt": "Narrow old street in Istanbul with a tiny tea shop and a cat on the steps, morning light, two travellers seen from behind walking away with backpacks, soft editorial illustration, plum and peach palette, no text"
+      }
+    ],
+    "lines": [
+      {
+        "s": "Yunus",
+        "t": "[yawns] Six in the morning. Six. And you've already had two coffees.",
+        "at": 0
+      },
+      {
+        "s": "Julian",
+        "t": "Three. But who's counting? Look, we have a six-hour layover, and I made a plan.",
+        "at": 6.48
+      },
+      {
+        "s": "Yunus",
+        "t": "Of course you made a plan. [laughs] Let me see... Julian, this is a whole page.",
+        "at": 12.36
+      },
+      {
+        "s": "Julian",
+        "t": "It's an itinerary. It's different. So — first, we take the metro to Sultanahmet, that's forty minutes. Then the Blue Mosque, then the Grand Bazaar, then lunch by the water, and then back here by eleven-thirty.",
+        "at": 19.04
+      },
+      {
+        "s": "Yunus",
+        "t": "Eleven-thirty. And our flight to London is at...?",
+        "at": 30.08
+      },
+      {
+        "s": "Julian",
+        "t": "Twelve-fifteen.",
+        "at": 33.48
+      },
+      {
+        "s": "Yunus",
+        "t": "[slowly] Forty-five minutes. For customs, security, finding the gate...",
+        "at": 35.3
+      },
+      {
+        "s": "Julian",
+        "t": "Okay, okay — maybe eleven. I'll fix it.",
+        "at": 42.76
+      },
+      {
+        "s": "Yunus",
+        "t": "Can I say something? Every time you travel, you come home more tired than when you left.",
+        "at": 45.68
+      },
+      {
+        "s": "Julian",
+        "t": "That's not true. [pause] That's... a little bit true.",
+        "at": 51.1
+      },
+      {
+        "s": "Yunus",
+        "t": "Remember Rome? You saw nine churches in one day and you couldn't remember any of them.",
+        "at": 55.28
+      },
+      {
+        "s": "Julian",
+        "t": "[laughs] I remember the third one. It had a nice door.",
+        "at": 61.3
+      },
+      {
+        "s": "Yunus",
+        "t": "A nice door. Great. So here's my plan. We take the metro, yes. But then we just walk. No list. We find a small street, off the beaten track, somewhere with good tea and no tour groups.",
+        "at": 64.88
+      },
+      {
+        "s": "Julian",
+        "t": "And if we get lost?",
+        "at": 80.42
+      },
+      {
+        "s": "Yunus",
+        "t": "Then we ask someone. People here are friendly. That's the best part of travelling — talking to people, not taking photos of buildings.",
+        "at": 82.44
+      },
+      {
+        "s": "Julian",
+        "t": "Hmm. But we're only here once. Don't you want to see the famous places?",
+        "at": 90.82
+      },
+      {
+        "s": "Yunus",
+        "t": "The famous places will be here next year. This morning won't.",
+        "at": 95.92
+      },
+      {
+        "s": "Julian",
+        "t": "[sighs] That sounds like something you read on a tea bag.",
+        "at": 100.6
+      },
+      {
+        "s": "Yunus",
+        "t": "[laughs] Maybe. But it's still true.",
+        "at": 104.04
+      },
+      {
+        "s": "Julian",
+        "t": "Fine. Compromise. One famous place, then your little streets. And we're back here at ten-thirty. Not eleven. Ten-thirty.",
+        "at": 106.84
+      },
+      {
+        "s": "Yunus",
+        "t": "Deal. And Julian? Leave the big bag in a locker. Travel light for once.",
+        "at": 114.36
+      },
+      {
+        "s": "Julian",
+        "t": "My laptop is in that bag.",
+        "at": 121.82
+      },
+      {
+        "s": "Yunus",
+        "t": "Exactly. [laughs] Come on, let's hit the road before you make another list.",
+        "at": 124
+      }
+    ],
+    "questions": [
+      {
+        "q": "What is the main disagreement between Julian and Yunus?",
+        "options": [
+          "Which airline to fly with",
+          "How to spend their layover",
+          "Whether to go to London",
+          "How much coffee to drink"
+        ],
+        "answer": 1,
+        "why": "Julian wants a full plan of famous places; Yunus wants to walk freely."
+      },
+      {
+        "q": "How long is their layover?",
+        "options": [
+          "Four hours",
+          "Five hours",
+          "Six hours",
+          "Nine hours"
+        ],
+        "answer": 2,
+        "why": "Julian says: \"We have a six-hour layover.\""
+      },
+      {
+        "q": "Why does Yunus mention Rome?",
+        "options": [
+          "Julian got lost there",
+          "Julian saw too much and remembered almost nothing",
+          "They missed a flight there",
+          "The food was bad"
+        ],
+        "answer": 1,
+        "why": "Julian saw nine churches in one day and couldn't remember them."
+      },
+      {
+        "q": "What does Yunus mean by \"The famous places will be here next year. This morning won't\"?",
+        "options": [
+          "They should come back next year",
+          "The museums are closed today",
+          "Enjoy the moment — it won't happen again",
+          "They don't have enough time to see anything"
+        ],
+        "answer": 2,
+        "why": "He means the experience of this morning is special and won't repeat."
+      },
+      {
+        "q": "In the end, what do they agree to do?",
+        "options": [
+          "Stay at the airport",
+          "Follow Julian's whole itinerary",
+          "See one famous place, then walk the small streets",
+          "Only walk the small streets"
+        ],
+        "answer": 2,
+        "why": "Julian's compromise: one famous place, then Yunus's little streets."
+      }
+    ],
+    "duration": 128.5,
+    "voices": {
+      "Yunus": "Varo",
+      "Julian": "Puck",
+      "model": "gemini-3.8-flash-tts",
+      "made": "2026-10-11"
+    },
+    "voiceDirection": {
+      "Julian": "Late twenties, Baku lawyer. Warm, a little anxious, over-plans everything. Speaks fast when nervous, laughs at himself.",
+      "Yunus": "Early thirties, potter and chess player. Relaxed, slow, dry humour, teases Julian like an older brother."
+    }
+  },
+  "reading": {
+    "title": "The wrong train",
+    "A2": {
+      "text": "Julian lives in Baku. He works a lot, and he does not travel often. Last spring, he had a holiday in Georgia with his friend Yunus.\n\nJulian made a plan for every day. He wrote the times of the trains, the names of the museums and the cafés in a small notebook. Yunus laughed at the notebook. \"You don't need a plan,\" he said. \"You need good shoes.\"\n\nOn the third day, they wanted to go from Tbilisi to a small town in the mountains. Julian checked his notebook and they got on a train. After one hour, Julian looked out of the window. There were no mountains. There was the sea.\n\n\"Yunus,\" he said, \"I think this is the wrong train.\"\n\nThey got off at a small station. There was no café, only an old woman selling bread and cheese. She did not speak English, and they did not speak Georgian. But she smiled, gave them tea and drew a map on a piece of paper.\n\nThey waited three hours for the next train. They ate bread, drank tea and played chess on Yunus's phone. Julian did not look at his notebook once.\n\nLater, Julian told everyone about the holiday. He did not talk about the museums. He talked about the wrong train.",
+      "words": [
+        {
+          "phrase": "made a plan",
+          "az": "plan qurdu",
+          "tr": "plan yaptı"
+        },
+        {
+          "phrase": "got on a train",
+          "az": "qatara mindilər",
+          "tr": "trene bindiler"
+        },
+        {
+          "phrase": "got off",
+          "az": "düşdülər",
+          "tr": "indiler"
+        },
+        {
+          "phrase": "drew a map",
+          "az": "xəritə çəkdi",
+          "tr": "harita çizdi"
+        },
+        {
+          "phrase": "did not look at his notebook once",
+          "az": "bir dəfə də baxmadı",
+          "tr": "bir kez bile bakmadı"
+        }
+      ],
+      "questions": [
+        {
+          "q": "Who did Julian travel with?",
+          "options": [
+            "His brother",
+            "Yunus",
+            "Alone",
+            "His boss"
+          ],
+          "answer": 1,
+          "why": "\"He had a holiday in Georgia with his friend Yunus.\""
+        },
+        {
+          "q": "What did Julian write in his notebook?",
+          "options": [
+            "Poems",
+            "Train times, museums and cafés",
+            "Georgian words",
+            "Phone numbers"
+          ],
+          "answer": 1,
+          "why": "He wrote train times, museum names and cafés."
+        },
+        {
+          "q": "How did Julian know it was the wrong train?",
+          "options": [
+            "Yunus told him",
+            "He saw the sea, not mountains",
+            "The ticket was wrong",
+            "A man told him"
+          ],
+          "answer": 1,
+          "why": "\"There were no mountains. There was the sea.\""
+        },
+        {
+          "q": "The old woman spoke English. True, false or not given?",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "\"She did not speak English.\""
+        },
+        {
+          "q": "What was Julian's favourite memory of the holiday?",
+          "options": [
+            "The museums",
+            "The mountains",
+            "The wrong train",
+            "The hotel"
+          ],
+          "answer": 2,
+          "why": "\"He talked about the wrong train.\""
+        }
+      ]
+    },
+    "B1": {
+      "text": "Julian is the kind of traveller who checks the weather a week before a trip and packs his suitcase three days early. So when his friend Yunus suggested a spring holiday in Georgia, Julian spent two evenings building the perfect itinerary: train times, museum opening hours, even the name of the café where they would have breakfast each morning.\n\nYunus, who prefers to travel light and decide things on the day, found the notebook hilarious. \"You've planned so much,\" he said, \"that there's no room left for anything to happen.\"\n\nFor two days, the plan worked perfectly. Then, on the third morning, they rushed onto a train they believed was going to Kazbegi, in the mountains. An hour later, Julian noticed something strange. The view outside was getting flatter, not higher, and in the distance he could see the grey line of the sea.\n\nThey got off at the next stop, a tiny station with one bench and no timetable. The only person there was an elderly woman selling bread and cheese from a basket. Communication was difficult — a mix of Russian, gestures and laughter — but she understood their problem immediately. She poured them tea from a flask, drew a careful map on the back of a paper bag and told them the next train would come \"maybe in three hours\".\n\nAt first Julian was annoyed. Half a day of his plan was gone. But slowly, something changed. They shared her bread, watched farmers working in the fields and played chess on a broken bench. By the time the train finally arrived, Julian realised he hadn't checked the time once.\n\nBack in Baku, colleagues asked him about the trip. He tried to describe the famous monastery, but the story he kept telling was about the wrong train, the paper-bag map and the woman with the flask.",
+      "words": [
+        {
+          "phrase": "hilarious",
+          "az": "çox gülməli gəldi",
+          "tr": "çok komik buldu"
+        },
+        {
+          "phrase": "rushed onto a train",
+          "az": "tələsik qatara mindilər",
+          "tr": "aceleyle trene bindiler"
+        },
+        {
+          "phrase": "gestures",
+          "az": "jestlər, əl hərəkətləri",
+          "tr": "el kol hareketleri"
+        },
+        {
+          "phrase": "at first",
+          "az": "əvvəlcə",
+          "tr": "ilk başta"
+        },
+        {
+          "phrase": "he kept telling",
+          "az": "təkrar-təkrar danışırdı",
+          "tr": "anlatıp duruyordu"
+        }
+      ],
+      "questions": [
+        {
+          "q": "What does the first paragraph tell us about Julian?",
+          "options": [
+            "He hates travelling",
+            "He is very organised",
+            "He often gets lost",
+            "He travels a lot for work"
+          ],
+          "answer": 1,
+          "why": "He checks the weather a week early and packs three days early."
+        },
+        {
+          "q": "What does Yunus mean by \"there's no room left for anything to happen\"?",
+          "options": [
+            "The suitcase is too full",
+            "The hotel is too small",
+            "Too much planning stops surprises",
+            "They have no money left"
+          ],
+          "answer": 2,
+          "why": "He thinks a full plan leaves no space for unexpected experiences."
+        },
+        {
+          "q": "How did Julian realise they were on the wrong train?",
+          "options": [
+            "The conductor told him",
+            "The land became flatter and he saw the sea",
+            "His phone showed the wrong city",
+            "The train stopped for a long time"
+          ],
+          "answer": 1,
+          "why": "\"The view was getting flatter... he could see the sea.\""
+        },
+        {
+          "q": "The woman spoke good English. True, false or not given?",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "They communicated with Russian, gestures and laughter."
+        },
+        {
+          "q": "How did Julian's feelings change at the station?",
+          "options": [
+            "From happy to angry",
+            "From annoyed to relaxed",
+            "From bored to scared",
+            "They didn't change"
+          ],
+          "answer": 1,
+          "why": "At first he was annoyed, then he stopped checking the time."
+        }
+      ]
+    },
+    "B2": {
+      "text": "There are two kinds of travellers, Julian once read: those who collect places and those who collect moments. For most of his adult life he had belonged firmly to the first group. A trip, for him, was a project to be managed — a series of famous sights to be visited, photographed and ticked off a list. So when his friend Yunus proposed a week in Georgia, Julian responded the way he always did: with a spreadsheet.\n\nYunus, a potter who measures time in the hours it takes clay to dry, was openly amused. \"You've scheduled breakfast,\" he pointed out. \"Do you also schedule being hungry?\" Julian laughed, but kept the spreadsheet.\n\nThe first two days went exactly as planned, which, looking back, was precisely the problem: Julian remembered them as a blur of queues and ticket offices. On the third morning, in their hurry to catch a train to Kazbegi, they jumped onto the wrong platform. It took Julian almost an hour to notice that the mountains he had been promised were stubbornly refusing to appear, and that the horizon ahead was unmistakably the sea.\n\nThey abandoned the train at a station so small it seemed to exist only out of habit. Its sole occupant was an elderly woman with a basket of bread and cheese, who assessed their situation with a single glance. Without a common language, she nevertheless managed to communicate everything that mattered: that they were lost, that this was not a disaster, and that tea would help. She sketched a remarkably precise map on a paper bag and estimated, with a shrug, that the next train might come in three hours.\n\nJulian's first instinct was to calculate what the delay had cost him — a museum, a viewpoint, a carefully chosen lunch. But somewhere between the second cup of tea and a surprisingly competitive game of chess, the calculation stopped mattering. For the first time on the trip, he was not on his way to somewhere else.\n\nMonths later, when colleagues asked about Georgia, Julian noticed that he could barely describe the monastery he had travelled so far to see. Yet he could still picture every line of that paper-bag map. Perhaps, he admitted to Yunus, he had been collecting the wrong things all along.",
+      "words": [
+        {
+          "phrase": "belonged firmly to",
+          "az": "tamamilə aid idi",
+          "tr": "kesinlikle aitti"
+        },
+        {
+          "phrase": "ticked off a list",
+          "az": "siyahıdan işarələnmək",
+          "tr": "listeden işaretlemek"
+        },
+        {
+          "phrase": "stubbornly refusing to appear",
+          "az": "inadla görünmək istəmirdi",
+          "tr": "inatla görünmüyordu"
+        },
+        {
+          "phrase": "with a single glance",
+          "az": "bir baxışla qiymətləndirdi",
+          "tr": "tek bakışta değerlendirdi"
+        },
+        {
+          "phrase": "all along",
+          "az": "əvvəldən bəri",
+          "tr": "baştan beri"
+        }
+      ],
+      "questions": [
+        {
+          "q": "What is the main idea of the text?",
+          "options": [
+            "Georgia is a beautiful country",
+            "Unplanned moments can matter more than famous sights",
+            "Trains in Georgia are unreliable",
+            "Yunus is a better planner than Julian"
+          ],
+          "answer": 1,
+          "why": "Julian ends up valuing the moment at the station over the monastery."
+        },
+        {
+          "q": "Why does the writer say the first two days going to plan \"was precisely the problem\"?",
+          "options": [
+            "They were too expensive",
+            "Julian got ill",
+            "They left no real memories",
+            "Yunus was bored"
+          ],
+          "answer": 2,
+          "why": "Julian remembers them only \"as a blur of queues and ticket offices\"."
+        },
+        {
+          "q": "\"A station so small it seemed to exist only out of habit\" suggests the station was…",
+          "options": [
+            "Very busy",
+            "Almost unused",
+            "Newly built",
+            "Closed for repairs"
+          ],
+          "answer": 1,
+          "why": "It was so small and empty it seemed to have no real purpose."
+        },
+        {
+          "q": "The woman spoke some Georgian and some English. True, false or not given?",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "They had no common language."
+        },
+        {
+          "q": "What does Julian mean by \"collecting the wrong things all along\"?",
+          "options": [
+            "He bought bad souvenirs",
+            "He valued places over experiences",
+            "He took the wrong photos",
+            "He chose the wrong friends"
+          ],
+          "answer": 1,
+          "why": "It links back to \"those who collect places and those who collect moments\"."
+        }
+      ]
+    }
+  }
+}

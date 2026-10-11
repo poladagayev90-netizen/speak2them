@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 1,
+  "title": "Plan it or wing it?",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "voiceDirection": "The SpeakLab Podcast: two friendly hosts recording in a cosy studio. Warm, smiling, unhurried. Clear articulation for B1 learners, about 130 words a minute, natural pauses between turns. Real chemistry, light laughter, never rushed.",
+  "before": {
+    "predict": "Do you plan every day of a trip, or do you just go? Guess: who is the planner — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "title": "Planner or not?",
+      "image": "ch1",
+      "prompt": "SCENE: a backpacker with a huge rucksack on a mountain road in South America at sunrise, a paper map in hand, small and alone in a wide landscape",
+      "picFrom": 3
+    },
+    {
+      "from": 10,
+      "title": "Airport stories",
+      "image": "ch2",
+      "prompt": "SCENE: a busy airport at night, a tired traveller asleep on a row of chairs during a long layover, a departures board glowing, a boarding pass sticking out of a jacket pocket"
+    },
+    {
+      "from": 16,
+      "title": "Tips for your next trip",
+      "image": "ch3",
+      "prompt": "SCENE: one small carry-on bag, a water bottle and an open notebook with a short simple plan, a sunny window with a city outside, calm and light"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is one of my favourites: travel.",
+      "at": 5.66
+    },
+    {
+      "s": "Leyla",
+      "t": "Mine too. So, Sam, a simple question to start. When you travel, do you plan everything, or do you just hit the road?",
+      "at": 11.28
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] Honestly? I used to plan nothing. When I was twenty, I was a backpacker in South America for three months. No hotels, no plan. Just a big bag and a map.",
+      "at": 22.3
+    },
+    {
+      "s": "Leyla",
+      "t": "Three months! Weren't you homesick?",
+      "at": 35.68
+    },
+    {
+      "s": "Sam",
+      "t": "Oh, very. By week two I missed my mum's cooking so much. But I learned a lot.",
+      "at": 38.72
+    },
+    {
+      "s": "Leyla",
+      "t": "I'm the opposite. I love an itinerary. Before a trip, I write down every day: where we go, what we eat, what time the museum opens.",
+      "at": 45.7
+    },
+    {
+      "s": "Sam",
+      "t": "Every day? That sounds like a lot of sightseeing.",
+      "at": 56.12
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] It is! And sometimes it's too much. Last year in Rome I saw so many famous places that I was exhausted.",
+      "at": 60.76
+    },
+    {
+      "s": "Sam",
+      "t": "That's why I like places off the beaten track. A small village, a quiet café, no tour buses.",
+      "at": 69.46
+    },
+    {
+      "s": "Leyla",
+      "t": "That sounds lovely. Okay, but here's the part of travel I really hate: airports.",
+      "at": 77.2
+    },
+    {
+      "s": "Sam",
+      "t": "Ah, yes. The long queues at customs...",
+      "at": 82.7
+    },
+    {
+      "s": "Leyla",
+      "t": "...and the moment you can't find your boarding pass. [sigh] It's always in the last pocket.",
+      "at": 87.54
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] Always. And what about a long layover? Last month I had nine hours in Doha.",
+      "at": 92.78
+    },
+    {
+      "s": "Leyla",
+      "t": "Nine hours! What did you do?",
+      "at": 99.92
+    },
+    {
+      "s": "Sam",
+      "t": "I slept on a chair. Not my best idea. And then I had terrible jet lag for three days.",
+      "at": 102.84
+    },
+    {
+      "s": "Leyla",
+      "t": "My tip for jet lag: drink lots of water, go outside in the daylight, and don't sleep in the afternoon.",
+      "at": 108.8
+    },
+    {
+      "s": "Sam",
+      "t": "Good advice. And here's mine: travel light. One small bag. You move faster, and you never wait for your suitcase.",
+      "at": 116.5
+    },
+    {
+      "s": "Leyla",
+      "t": "I'm trying! It's hard for me. [short pause] So, let's sum up. Plan a little, but leave some space for surprises.",
+      "at": 125
+    },
+    {
+      "s": "Sam",
+      "t": "Exactly. The best memories are often the things you didn't plan.",
+      "at": 134.58
+    },
+    {
+      "s": "Leyla",
+      "t": "Now it's your turn. In your next SpeakLab call, ask your partner: what was your best trip, and what went wrong?",
+      "at": 139.3
+    },
+    {
+      "s": "Sam",
+      "t": "Have fun with it. See you next time!",
+      "at": 147.94
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 150.44
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to find cheap flights",
+        "Planning a trip versus going with no plan",
+        "The best cities in South America",
+        "How to learn a language abroad"
+      ],
+      "answer": 1,
+      "why": "Leyla loves an itinerary, Sam once travelled with no plan — they compare the two."
+    },
+    {
+      "type": "detail",
+      "q": "How long was Sam a backpacker in South America?",
+      "options": [
+        "Two weeks",
+        "One month",
+        "Three months",
+        "A year"
+      ],
+      "answer": 2,
+      "why": "Sam: \"I was a backpacker in South America for three months.\""
+    },
+    {
+      "type": "detail",
+      "q": "What happened after Sam's nine-hour layover?",
+      "options": [
+        "He missed his flight",
+        "He lost his boarding pass",
+        "He had jet lag for three days",
+        "He went sightseeing in Doha"
+      ],
+      "answer": 2,
+      "why": "\"I slept on a chair... and then I had terrible jet lag for three days.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla enjoyed every minute of her sightseeing in Rome.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "She saw so many places that she was exhausted."
+    },
+    {
+      "type": "vocab",
+      "q": "Sam likes places \"off the beaten track\". What kind of places are they?",
+      "options": [
+        "Famous and crowded",
+        "Quiet, away from tourists",
+        "Near the airport",
+        "Expensive hotels"
+      ],
+      "answer": 1,
+      "why": "\"A small village, a quiet café, no tour buses.\""
+    },
+    {
+      "type": "inference",
+      "q": "What do Leyla and Sam agree on at the end?",
+      "options": [
+        "Always plan every day",
+        "Never plan anything",
+        "Plan a little and leave space for surprises",
+        "Only travel with one bag"
+      ],
+      "answer": 2,
+      "why": "Leyla: \"Plan a little, but leave some space for surprises.\" Sam: \"Exactly.\""
+    }
+  ],
+  "talk": [
+    "What was your best trip — and what went wrong?",
+    "Are you a planner like Leyla, or do you just hit the road like young Sam? Give an example."
+  ],
+  "duration": 151.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}

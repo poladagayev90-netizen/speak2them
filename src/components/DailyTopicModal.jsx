@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
 import { getContentByIndex, getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
 import { VIDEOS_ENABLED, canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import SpeakingCards from './SpeakingCards';
+import PodcastEpisode from './materials/PodcastEpisode';
+import ReadingView from './materials/ReadingView';
+import { readingLevelFor } from '../utils/topicMaterials';
+import { hasMaterials, loadMaterials } from '../utils/topicMaterialsLoader';
+import './materials/materials.css';
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
@@ -139,6 +144,11 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
   const [difficulty, setDifficulty] = useState('easy');
   const [expandedVocab, setExpandedVocab] = useState(null);
   const [showPictureDescribing, setShowPictureDescribing] = useState(false);
+  const [materials, setMaterials] = useState(null);
+  const contentRef = useRef(null);
+
+  // A long tab (a reading, a script) must not leave the next one scrolled halfway.
+  useEffect(() => { if (contentRef.current) contentRef.current.scrollTop = 0; }, [activeSection]);
 
   useEffect(() => {
     if (open) {
@@ -147,6 +157,16 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
       setExpandedVocab(null);
     }
   }, [open, topicIndex]);
+
+  // Listening + reading exist for some topics only; their tabs appear when they do.
+  useEffect(() => {
+    let alive = true;
+    setMaterials(null);
+    if (open && content && hasMaterials(content.day)) {
+      loadMaterials(content.day).then((m) => { if (alive) setMaterials(m); }).catch(() => {});
+    }
+    return () => { alive = false; };
+  }, [open, content]);
 
   if (!open || !content) return null;
 
@@ -173,6 +193,22 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
           >
             <BookOpen size={16} /> Words
           </button>
+          {materials?.podcast && (
+            <button
+              className={`dt-tab ${activeSection === 'listen' ? 'active' : ''}`}
+              onClick={() => setActiveSection('listen')}
+            >
+              <Headphones size={16} /> Listen
+            </button>
+          )}
+          {materials?.reading && (
+            <button
+              className={`dt-tab ${activeSection === 'read' ? 'active' : ''}`}
+              onClick={() => setActiveSection('read')}
+            >
+              <BookOpenText size={16} /> Read
+            </button>
+          )}
           <button
             className={`dt-tab ${activeSection === 'idioms' ? 'active' : ''}`}
             onClick={() => setActiveSection('idioms')}
@@ -208,7 +244,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
         </div>
 
         {/* Content Area */}
-        <div className="dt-content">
+        <div className="dt-content" ref={contentRef}>
 
           {activeSection === 'vocabulary' && (
             <div className="dt-section dt-section--list">
@@ -229,6 +265,18 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeSection === 'listen' && materials?.podcast && (
+            <div className="dt-section dt-section--episode">
+              <PodcastEpisode podcast={materials.podcast} topic={content} />
+            </div>
+          )}
+
+          {activeSection === 'read' && materials?.reading && (
+            <div className="dt-section dt-section--narrow">
+              <ReadingView reading={materials.reading} topic={content} initialLevel={readingLevelFor(user?.level)} />
             </div>
           )}
 

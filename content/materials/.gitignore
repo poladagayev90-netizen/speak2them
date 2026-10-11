@@ -1,0 +1,6 @@
+*.wav
+*.src.jpg
+*.raw.*
+# media lives in Storage (published.json has the URLs); keep only the texts here
+*.mp3
+*.webp

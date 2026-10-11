@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { plainTopic } from '../../utils/topicLabel';
+import { hasMaterials } from '../../utils/topicMaterialsLoader';
 import './plan.css';
 
 // Today's topic as a picture, not a line of text. Polad (2026-09-30): the app
@@ -59,7 +60,7 @@ export default function TopicCard({ topic, onOpen, kicker = null, cta = null, le
         </span>
         <span className="pl-topic-title">{plainTopic(topic?.topic) || 'Today’s topic'}</span>
         {question && <span className="pl-topic-q">{question}</span>}
-        <span className="pl-topic-cta">{cta || 'Words, idioms and questions'} <ChevronRight size={16} aria-hidden="true" /></span>
+        <span className="pl-topic-cta">{cta || (hasMaterials(day) ? 'Listen, read, words and questions' : 'Words, idioms and questions')} <ChevronRight size={16} aria-hidden="true" /></span>
       </span>
     </button>
   );
