@@ -62,7 +62,9 @@ function warnUnusedVocabulary(nn, texts) {
 
 async function publish(token, nn) {
   const dir = path.join(SRC, nn);
-  const data = JSON.parse(fs.readFileSync(path.join(SRC, `${nn}.json`), 'utf8'));
+  // NN.json holds the reading; a topic may get its podcast first.
+  const readingPath = path.join(SRC, `${nn}.json`);
+  const data = fs.existsSync(readingPath) ? JSON.parse(fs.readFileSync(readingPath, 'utf8')) : { index: Number(nn) - 1 };
   const lockPath = path.join(dir, 'published.json'); // file -> {sha, url}
   const lock = fs.existsSync(lockPath) ? JSON.parse(fs.readFileSync(lockPath, 'utf8')) : {};
   const urlOf = async (file) => {

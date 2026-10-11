@@ -1,0 +1,236 @@
+{
+  "kind": "podcast",
+  "episode": 2,
+  "title": "Is my phone smarter than me?",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How many apps do you use before breakfast? Guess: who in this episode loses everything on their phone — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The day my phone died",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a frustrated young man holding a black, broken smartphone with a cracked screen in a messy home office at night, a laptop showing an abstract cloud icon made of shapes, warm desk lamp"
+    },
+    {
+      "from": 9,
+      "title": "Smart machines everywhere",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a modern kitchen where small friendly robots and smart devices work by themselves — a robot vacuum, a coffee machine with glowing buttons, a phone on the table suggesting music — calm morning light"
+    },
+    {
+      "from": 15,
+      "title": "Staying safe online",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a big glowing padlock shield floating above a laptop on a desk, tiny abstract keys and dots around it, a cup of tea beside the laptop, safe and calm atmosphere"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome back to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today we're talking about technology — and I have a sad story.",
+      "at": 5.88
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no. What happened?",
+      "at": 12.94
+    },
+    {
+      "s": "Sam",
+      "t": "Last week my phone had a crash. The screen went black and it never came back. [sigh] All my photos, all my notes... gone.",
+      "at": 15.1
+    },
+    {
+      "s": "Leyla",
+      "t": "Didn't you use cloud storage? Your photos can live online, not only on the phone.",
+      "at": 25.98
+    },
+    {
+      "s": "Sam",
+      "t": "I know, I know. My phone asked me again and again: 'Do you want to back up?' And I always pressed 'Later'.",
+      "at": 32.68
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Like every update. 'Remind me tomorrow.'",
+      "at": 40.86
+    },
+    {
+      "s": "Sam",
+      "t": "Exactly! So now I'm learning. I'm trying to get up to speed with all these settings.",
+      "at": 43.88
+    },
+    {
+      "s": "Leyla",
+      "t": "Good. Because phones today are amazing. Mine knows what music I like before I do.",
+      "at": 50.38
+    },
+    {
+      "s": "Sam",
+      "t": "That's the algorithm. It watches what you click and makes a guess about what you want next.",
+      "at": 56.92
+    },
+    {
+      "s": "Leyla",
+      "t": "It's a little scary, isn't it? And now there's artificial intelligence in everything — my email, my camera, even my fridge!",
+      "at": 61.98
+    },
+    {
+      "s": "Sam",
+      "t": "Your fridge has AI?",
+      "at": 71.04
+    },
+    {
+      "s": "Leyla",
+      "t": "Well... it tells me when the milk is finished. [chuckle] That's cutting edge for me.",
+      "at": 73.42
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] And automation is everywhere at work too. Machines do the boring jobs, so people can do the interesting ones. At least, that's the idea.",
+      "at": 78.48
+    },
+    {
+      "s": "Leyla",
+      "t": "Some people worry about their jobs, though.",
+      "at": 87.94
+    },
+    {
+      "s": "Sam",
+      "t": "True. It's a big question. But let's talk about something we can all do today: cybersecurity.",
+      "at": 91.1
+    },
+    {
+      "s": "Leyla",
+      "t": "Yes! My first tip: please don't use the same password for everything.",
+      "at": 98.48
+    },
+    {
+      "s": "Sam",
+      "t": "Guilty. [short pause] Mine used to be my cat's name and one, two, three.",
+      "at": 102.8
+    },
+    {
+      "s": "Leyla",
+      "t": "Sam! Use a long password, like a short sentence, and turn on the second step — the code on your phone.",
+      "at": 108.16
+    },
+    {
+      "s": "Sam",
+      "t": "Okay. And my tip: if a message looks strange, don't click. Just pull the plug on the conversation.",
+      "at": 116.42
+    },
+    {
+      "s": "Leyla",
+      "t": "Great advice. Now your question for your next SpeakLab call: which app could you never live without — and why?",
+      "at": 124.76
+    },
+    {
+      "s": "Sam",
+      "t": "And I'll be backing up my new phone. Every week. Promise.",
+      "at": 134.7
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] We'll check! Bye for now!",
+      "at": 139.62
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to build a robot",
+        "Living with technology and staying safe online",
+        "The best phones to buy",
+        "Why social media is bad"
+      ],
+      "answer": 1,
+      "why": "They talk about a phone crash, smart technology and safety tips."
+    },
+    {
+      "type": "detail",
+      "q": "Why did Sam lose his photos?",
+      "options": [
+        "He deleted them",
+        "Somebody stole his phone",
+        "He never backed them up to cloud storage",
+        "His password stopped working"
+      ],
+      "answer": 2,
+      "why": "His phone asked to back up, but he always pressed 'Later'."
+    },
+    {
+      "type": "detail",
+      "q": "What does an algorithm do, according to Sam?",
+      "options": [
+        "It fixes broken phones",
+        "It watches what you click and guesses what you want",
+        "It protects your password",
+        "It makes phones cheaper"
+      ],
+      "answer": 1,
+      "why": "\"It watches what you click and makes a guess about what you want next.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla's fridge can order milk by itself.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "It only tells her when the milk is finished."
+    },
+    {
+      "type": "vocab",
+      "q": "Sam wants to \"get up to speed\" with his phone settings. What does he mean?",
+      "options": [
+        "Use his phone faster",
+        "Learn what he needs to know",
+        "Buy a faster phone",
+        "Stop using his phone"
+      ],
+      "answer": 1,
+      "why": "He is learning the settings he ignored before."
+    },
+    {
+      "type": "inference",
+      "q": "What does Leyla suggest for a strong password?",
+      "options": [
+        "A pet's name and numbers",
+        "The same password everywhere",
+        "A long one, like a short sentence, plus a code on your phone",
+        "Writing it on paper"
+      ],
+      "answer": 2,
+      "why": "\"Use a long password, like a short sentence, and turn on the second step.\""
+    }
+  ],
+  "talk": [
+    "Which app could you never live without — and why?",
+    "Have you ever lost something important on a phone or computer? What happened?"
+  ],
+  "duration": 142.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}
