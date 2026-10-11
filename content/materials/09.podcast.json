@@ -11,45 +11,226 @@
     "predict": "Do you know how much you spent last week? Guess: who in this episode once had no money for a whole month — Leyla or Sam?"
   },
   "chapters": [
-    { "from": 0, "picFrom": 3, "title": "Sam's empty wallet", "image": "ch1", "prompt": "CHAPTER 1 SCENE: a young man sitting on the floor of a small flat surrounded by shopping bags and food delivery boxes, holding an open empty wallet with a moth flying out, a calendar showing the middle of the month" },
-    { "from": 9, "title": "Making a budget", "image": "ch2", "prompt": "CHAPTER 2 SCENE: a tidy desk with a notebook showing a simple budget drawn as coloured boxes and coins, three glass jars with coins labelled only by small icons (house, food, piggy bank), a calculator and a cup of tea" },
-    { "from": 15, "title": "Saving for later", "image": "ch3", "prompt": "CHAPTER 3 SCENE: a big pink piggy bank on a windowsill with a plant growing out of a stack of coins next to it, a small picture of a house and a plane pinned on the wall, warm hopeful light" }
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Sam's empty wallet",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a young man sitting on the floor of a small flat surrounded by shopping bags and food delivery boxes, holding an open empty wallet with a moth flying out, a calendar showing the middle of the month"
+    },
+    {
+      "from": 9,
+      "title": "Making a budget",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a tidy desk with a notebook showing a simple budget drawn as coloured boxes and coins, three glass jars with coins labelled only by small icons (house, food, piggy bank), a calculator and a cup of tea"
+    },
+    {
+      "from": 15,
+      "title": "Saving for later",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a big pink piggy bank on a windowsill with a plant growing out of a stack of coins next to it, a small picture of a house and a plane pinned on the wall, warm hopeful light"
+    }
   ],
   "lines": [
-    { "s": "Leyla", "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla." },
-    { "s": "Sam", "t": "And I'm Sam. Today's topic is money — and I have to start with a sad student story." },
-    { "s": "Leyla", "t": "[laugh] Another one?" },
-    { "s": "Sam", "t": "My first month at university, I got my student loan and I felt rich. New trainers, restaurants every night, taxis everywhere." },
-    { "s": "Leyla", "t": "Oh no. I know where this is going." },
-    { "s": "Sam", "t": "By the fifteenth, my account was empty. I lived on toast and pasta for two weeks. [sigh] I couldn't even afford the bus." },
-    { "s": "Leyla", "t": "So you had to tighten your belt." },
-    { "s": "Sam", "t": "Very tight. And I borrowed money from my friends, so I had debt too. It was a terrible feeling." },
-    { "s": "Leyla", "t": "That's how many people learn. My parents taught me to make a budget when I was a teenager." },
-    { "s": "Sam", "t": "How does your budget work?" },
-    { "s": "Leyla", "t": "It's simple. When I get my salary, I divide it: first rent and bills, then food and transport, then savings, and what's left is for fun." },
-    { "s": "Sam", "t": "Savings before fun? That's very Leyla." },
-    { "s": "Leyla", "t": "[chuckle] Yes! If I wait until the end of the month, there's nothing to save." },
-    { "s": "Sam", "t": "Fair. And prices go up every year now. Inflation makes everything harder." },
-    { "s": "Leyla", "t": "True. Coffee costs almost double what it did five years ago." },
-    { "s": "Sam", "t": "So now I live on a shoestring when I can. I cook at home and take my lunch to work." },
-    { "s": "Leyla", "t": "Good. And are you thinking about the future? Like an investment?" },
-    { "s": "Sam", "t": "A small one. Every month I put a little into a savings plan. It doesn't break the bank, but it grows." },
-    { "s": "Leyla", "t": "That's the secret, I think. Small amounts, but every month." },
-    { "s": "Sam", "t": "And don't buy things to feel happy. That feeling lasts ten minutes." },
-    { "s": "Leyla", "t": "Here's your question for your next SpeakLab call: what is something you saved money for — and was it worth it?" },
-    { "s": "Sam", "t": "Mine was a bike. Totally worth it. See you next time!" },
-    { "s": "Leyla", "t": "Bye for now!" }
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is money — and I have to start with a sad student story.",
+      "at": 5.06
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Another one?",
+      "at": 13.18
+    },
+    {
+      "s": "Sam",
+      "t": "My first month at university, I got my student loan and I felt rich. New trainers, restaurants every night, taxis everywhere.",
+      "at": 14.56
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no. I know where this is going.",
+      "at": 26.68
+    },
+    {
+      "s": "Sam",
+      "t": "By the fifteenth, my account was empty. I lived on toast and pasta for two weeks. [sigh] I couldn't even afford the bus.",
+      "at": 29.6
+    },
+    {
+      "s": "Leyla",
+      "t": "So you had to tighten your belt.",
+      "at": 40.1
+    },
+    {
+      "s": "Sam",
+      "t": "Very tight. And I borrowed money from my friends, so I had debt too. It was a terrible feeling.",
+      "at": 42.36
+    },
+    {
+      "s": "Leyla",
+      "t": "That's how many people learn. My parents taught me to make a budget when I was a teenager.",
+      "at": 49.58
+    },
+    {
+      "s": "Sam",
+      "t": "How does your budget work?",
+      "at": 55.9
+    },
+    {
+      "s": "Leyla",
+      "t": "It's simple. When I get my salary, I divide it: first rent and bills, then food and transport, then savings, and what's left is for fun.",
+      "at": 57.68
+    },
+    {
+      "s": "Sam",
+      "t": "Savings before fun? That's very Leyla.",
+      "at": 69.54
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] Yes! If I wait until the end of the month, there's nothing to save.",
+      "at": 74.24
+    },
+    {
+      "s": "Sam",
+      "t": "Fair. And prices go up every year now. Inflation makes everything harder.",
+      "at": 79.96
+    },
+    {
+      "s": "Leyla",
+      "t": "True. Coffee costs almost double what it did five years ago.",
+      "at": 85.74
+    },
+    {
+      "s": "Sam",
+      "t": "So now I live on a shoestring when I can. I cook at home and take my lunch to work.",
+      "at": 90.88
+    },
+    {
+      "s": "Leyla",
+      "t": "Good. And are you thinking about the future? Like an investment?",
+      "at": 96.78
+    },
+    {
+      "s": "Sam",
+      "t": "A small one. Every month I put a little into a savings plan. It doesn't break the bank, but it grows.",
+      "at": 102.06
+    },
+    {
+      "s": "Leyla",
+      "t": "That's the secret, I think. Small amounts, but every month.",
+      "at": 109.28
+    },
+    {
+      "s": "Sam",
+      "t": "And don't buy things to feel happy. That feeling lasts ten minutes.",
+      "at": 113.46
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is something you saved money for — and was it worth it?",
+      "at": 119.72
+    },
+    {
+      "s": "Sam",
+      "t": "Mine was a bike. Totally worth it. See you next time!",
+      "at": 127.08
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 131.36
+    }
   ],
   "questions": [
-    { "type": "gist", "q": "What is the episode mainly about?", "options": ["How banks work", "Spending, budgeting and saving money", "How to become rich fast", "The best jobs for students"], "answer": 1, "why": "Sam's student money story, Leyla's budget, inflation and saving." },
-    { "type": "detail", "q": "What happened to Sam in his first month at university?", "options": ["He found a job", "He spent all his loan by the fifteenth", "He saved a lot", "He bought a bike"], "answer": 1, "why": "\"By the fifteenth, my account was empty.\"" },
-    { "type": "detail", "q": "In Leyla's budget, what comes before money for fun?", "options": ["Only rent", "Rent and bills, food and transport, and savings", "Restaurants", "Clothes"], "answer": 1, "why": "First rent and bills, then food and transport, then savings, then fun." },
-    { "type": "tf", "q": "Sam borrowed money from his parents.", "options": ["True", "False", "Not given"], "answer": 1, "why": "He borrowed from his friends." },
-    { "type": "vocab", "q": "Living \"on a shoestring\" means…", "options": ["Living with very little money", "Living near the shops", "Buying expensive shoes", "Living with friends"], "answer": 0, "why": "He cooks at home and takes his lunch to work to spend less." },
-    { "type": "inference", "q": "Why does Leyla put money into savings first?", "options": ["Her bank asks her to", "If she waits, nothing is left at the end of the month", "She doesn't like fun", "Her salary is very high"], "answer": 1, "why": "\"If I wait until the end of the month, there's nothing to save.\"" }
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How banks work",
+        "Spending, budgeting and saving money",
+        "How to become rich fast",
+        "The best jobs for students"
+      ],
+      "answer": 1,
+      "why": "Sam's student money story, Leyla's budget, inflation and saving."
+    },
+    {
+      "type": "detail",
+      "q": "What happened to Sam in his first month at university?",
+      "options": [
+        "He found a job",
+        "He spent all his loan by the fifteenth",
+        "He saved a lot",
+        "He bought a bike"
+      ],
+      "answer": 1,
+      "why": "\"By the fifteenth, my account was empty.\""
+    },
+    {
+      "type": "detail",
+      "q": "In Leyla's budget, what comes before money for fun?",
+      "options": [
+        "Only rent",
+        "Rent and bills, food and transport, and savings",
+        "Restaurants",
+        "Clothes"
+      ],
+      "answer": 1,
+      "why": "First rent and bills, then food and transport, then savings, then fun."
+    },
+    {
+      "type": "tf",
+      "q": "Sam borrowed money from his parents.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "He borrowed from his friends."
+    },
+    {
+      "type": "vocab",
+      "q": "Living \"on a shoestring\" means…",
+      "options": [
+        "Living with very little money",
+        "Living near the shops",
+        "Buying expensive shoes",
+        "Living with friends"
+      ],
+      "answer": 0,
+      "why": "He cooks at home and takes his lunch to work to spend less."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla put money into savings first?",
+      "options": [
+        "Her bank asks her to",
+        "If she waits, nothing is left at the end of the month",
+        "She doesn't like fun",
+        "Her salary is very high"
+      ],
+      "answer": 1,
+      "why": "\"If I wait until the end of the month, there's nothing to save.\""
+    }
   ],
   "talk": [
     "What is something you saved money for — and was it worth it?",
     "Do you use a budget? What is the hardest thing to spend less on?"
-  ]
+  ],
+  "duration": 132.4,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
 }
