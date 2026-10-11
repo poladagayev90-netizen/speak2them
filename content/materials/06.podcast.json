@@ -1,0 +1,55 @@
+{
+  "kind": "podcast",
+  "episode": 6,
+  "title": "One bag at a time",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How many plastic bags or bottles did you use this week? Guess: who in this episode started a big green project at home — Leyla or Sam?"
+  },
+  "chapters": [
+    { "from": 0, "picFrom": 3, "title": "Sam's plastic week", "image": "ch1", "prompt": "CHAPTER 1 SCENE: a kitchen table covered with a week of plastic rubbish — bottles, bags, coffee cups, food boxes — piled up high, a surprised man looking at it with his hands on his head, morning light" },
+    { "from": 9, "title": "The bigger picture", "image": "ch2", "prompt": "CHAPTER 2 SCENE: a wide landscape split in two — on the left a green forest full of birds and animals, on the right cut trees and a factory with smoke, wind turbines and solar panels on a hill in the distance" },
+    { "from": 16, "title": "What we can do", "image": "ch3", "prompt": "CHAPTER 3 SCENE: a sunny balcony in Baku with recycling bins in three colours, a cloth shopping bag full of vegetables, a reusable water bottle and a small plant growing in a pot, the Caspian sea in the distance" }
+  ],
+  "lines": [
+    { "s": "Leyla", "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla." },
+    { "s": "Sam", "t": "And I'm Sam. Today we're talking about the environment — and I did an experiment." },
+    { "s": "Leyla", "t": "Oh, I love experiments. What was it?" },
+    { "s": "Sam", "t": "For one week I kept every piece of plastic I used. Every bottle, every bag, every coffee cup. [sigh] By Sunday my kitchen table was full." },
+    { "s": "Leyla", "t": "Full? In one week?" },
+    { "s": "Sam", "t": "Yes. And most of it was single-use. I used it for five minutes and then threw it away." },
+    { "s": "Leyla", "t": "That's the problem, isn't it? Plastic lives for hundreds of years. Pollution in the sea is terrible now." },
+    { "s": "Sam", "t": "So I decided to turn over a new leaf. Now I carry a cloth bag and my own bottle." },
+    { "s": "Leyla", "t": "Good for you! But some people say: 'One person can't change anything. It's just a drop in the ocean.'" },
+    { "s": "Sam", "t": "I hear that a lot. And it's true that the big changes must come from countries and companies." },
+    { "s": "Leyla", "t": "Like renewable energy — sun and wind instead of oil and gas." },
+    { "s": "Sam", "t": "Exactly. And stopping deforestation. When we cut down forests, we lose biodiversity — thousands of animals and plants." },
+    { "s": "Leyla", "t": "And the forests take carbon from the air. So every tree matters." },
+    { "s": "Sam", "t": "But I still think small actions count. If a million people do one small thing, it's not small any more." },
+    { "s": "Leyla", "t": "I agree. My family started to recycle last year. Paper, glass and plastic in different bins." },
+    { "s": "Sam", "t": "Was that difficult?" },
+    { "s": "Leyla", "t": "At first, yes. [chuckle] My dad put everything in the wrong bin for a month. Now he checks everyone else's!" },
+    { "s": "Sam", "t": "[laugh] The new environmental police. Do you think about your carbon footprint too?" },
+    { "s": "Leyla", "t": "A little. I take the metro more and I fly less. For me, sustainability means asking: do I really need this?" },
+    { "s": "Sam", "t": "That's a great question. Buy less, buy better, use it longer. That's how we go green without stress." },
+    { "s": "Leyla", "t": "Here's your question for your next SpeakLab call: what is one thing you could do this week for the planet?" },
+    { "s": "Sam", "t": "Mine is no more coffee cups. See you next time!" },
+    { "s": "Leyla", "t": "Bye for now!" }
+  ],
+  "questions": [
+    { "type": "gist", "q": "What is the episode mainly about?", "options": ["Why plastic is cheap", "Plastic, the bigger environmental problems and what people can do", "The best places to travel in nature", "How to start a company"], "answer": 1, "why": "Sam's plastic week, forests and energy, and small daily actions." },
+    { "type": "detail", "q": "What did Sam do for one week?", "options": ["He lived without electricity", "He kept every piece of plastic he used", "He planted trees", "He stopped eating meat"], "answer": 1, "why": "\"For one week I kept every piece of plastic I used.\"" },
+    { "type": "detail", "q": "What happened when Leyla's family started to recycle?", "options": ["Her dad refused", "Her dad used the wrong bins for a month, then checked everyone else's", "They stopped after a week", "They bought a new car"], "answer": 1, "why": "\"My dad put everything in the wrong bin for a month. Now he checks everyone else's!\"" },
+    { "type": "tf", "q": "Sam thinks only governments and companies can help the environment.", "options": ["True", "False", "Not given"], "answer": 1, "why": "He says big changes must come from them, but small actions still count." },
+    { "type": "vocab", "q": "\"It's just a drop in the ocean\" means…", "options": ["It's a big problem", "It's too small to make a difference", "It's about the sea", "It's very expensive"], "answer": 1, "why": "Some people say one person's actions are too small to matter." },
+    { "type": "inference", "q": "For Leyla, what is the key question of sustainability?", "options": ["Is it cheap?", "Is it new?", "Do I really need this?", "Is it popular?"], "answer": 2, "why": "\"For me, sustainability means asking: do I really need this?\"" }
+  ],
+  "talk": [
+    "What is one thing you could do this week for the planet?",
+    "Is recycling easy where you live? What would make it easier?"
+  ]
+}

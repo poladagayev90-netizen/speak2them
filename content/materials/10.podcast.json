@@ -1,0 +1,55 @@
+{
+  "kind": "podcast",
+  "episode": 10,
+  "title": "Just one more episode",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What was the last series you watched? Guess: who in this episode stayed up until 4 a.m. watching a series — Leyla or Sam?"
+  },
+  "chapters": [
+    { "from": 0, "picFrom": 3, "title": "A very late night", "image": "ch1", "prompt": "CHAPTER 1 SCENE: a dark living room at 4 a.m., a woman wrapped in a blanket on the sofa with wide eyes watching a glowing TV screen showing a dramatic silhouette on a cliff, popcorn bowl almost empty, a clock on the wall" },
+    { "from": 10, "title": "No spoilers, please!", "image": "ch2", "prompt": "CHAPTER 2 SCENE: two friends in a café, one covering his ears and closing his eyes, the other one excitedly talking and gesturing about a film, a phone on the table with a film poster made of shapes, funny and light" },
+    { "from": 16, "title": "Learning with subtitles", "image": "ch3", "prompt": "CHAPTER 3 SCENE: a cosy evening at home, a laptop showing a film scene with subtitle lines as simple white bars (no readable text), a notebook with a few new words and a cup of tea, headphones on the table" }
+  ],
+  "lines": [
+    { "s": "Leyla", "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla." },
+    { "s": "Sam", "t": "And I'm Sam. Today's topic is films and series. And Leyla looks very tired." },
+    { "s": "Leyla", "t": "[sigh] Because I only slept three hours. Last night I started a new series at ten o'clock..." },
+    { "s": "Sam", "t": "And?" },
+    { "s": "Leyla", "t": "And I finished the whole first season at four in the morning. I wanted to binge-watch two episodes, not eight!" },
+    { "s": "Sam", "t": "[laugh] What happened?" },
+    { "s": "Leyla", "t": "Every episode ended with a cliffhanger. The hero is falling from a building — and then, black screen. How can you sleep after that?" },
+    { "s": "Sam", "t": "You can't. That's the trick. They keep you on the edge of your seat." },
+    { "s": "Leyla", "t": "Exactly. The plot was so clever. And the soundtrack! I'm still singing the music." },
+    { "s": "Sam", "t": "So tell me — how does it end?" },
+    { "s": "Leyla", "t": "No! No spoilers. You have to watch it yourself." },
+    { "s": "Sam", "t": "Thank you. I hate spoilers. My brother once told me the ending of a film in the cinema queue." },
+    { "s": "Leyla", "t": "That's terrible! [laugh] Is the cast good, at least, in the things you watch?" },
+    { "s": "Sam", "t": "In my favourite film, yes. The main actor is great, but sometimes a small character can steal the show. In this one it's an old taxi driver. He's so funny." },
+    { "s": "Leyla", "t": "I love that. And do you watch sequels? I'm always disappointed." },
+    { "s": "Sam", "t": "Usually the first film is better. But not always." },
+    { "s": "Leyla", "t": "Okay, here's a tip for English learners: watch with English subtitles, not Azerbaijani or Turkish ones." },
+    { "s": "Sam", "t": "Yes! You hear the words and see them at the same time. It's like a free English lesson." },
+    { "s": "Leyla", "t": "And choose something you really like. Then it doesn't feel like studying." },
+    { "s": "Sam", "t": "If you're not sure, try a comedy series. The episodes are short. Give it a shot." },
+    { "s": "Leyla", "t": "Here's your question for your next SpeakLab call: what film or series would you recommend — without spoilers?" },
+    { "s": "Sam", "t": "And Leyla — sleep tonight, please. See you next time!" },
+    { "s": "Leyla", "t": "[laugh] One more episode... Bye for now!" }
+  ],
+  "questions": [
+    { "type": "gist", "q": "What is the episode mainly about?", "options": ["How films are made", "Watching films and series, and using them to learn English", "The history of cinema", "Why TV is bad for children"], "answer": 1, "why": "Leyla's late night, cliffhangers, spoilers, and watching with subtitles." },
+    { "type": "detail", "q": "Why did Leyla stay up until 4 a.m.?", "options": ["She was working", "Every episode ended with a cliffhanger", "She couldn't find the remote", "Her neighbours were noisy"], "answer": 1, "why": "\"Every episode ended with a cliffhanger... How can you sleep after that?\"" },
+    { "type": "detail", "q": "What did Sam's brother do?", "options": ["Bought him a ticket", "Told him the ending of a film", "Watched a series with him", "Recommended a comedy"], "answer": 1, "why": "\"My brother once told me the ending of a film in the cinema queue.\"" },
+    { "type": "tf", "q": "Leyla thinks sequels are usually better than the first film.", "options": ["True", "False", "Not given"], "answer": 1, "why": "She says she is always disappointed by sequels." },
+    { "type": "vocab", "q": "A small character can \"steal the show\". What does it mean?", "options": ["He takes money", "He is the most memorable part of the film", "He leaves the film early", "He is the main actor"], "answer": 1, "why": "He has a small role but he is the funniest, most memorable character." },
+    { "type": "inference", "q": "Why do the hosts recommend English subtitles?", "options": ["They are easier to read", "You hear and see the same words at the same time", "Films don't have other subtitles", "They make films shorter"], "answer": 1, "why": "\"You hear the words and see them at the same time.\"" }
+  ],
+  "talk": [
+    "What film or series would you recommend — without spoilers?",
+    "Do you watch with subtitles? Which language, and does it help you?"
+  ]
+}

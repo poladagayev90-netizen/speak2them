@@ -1,0 +1,55 @@
+{
+  "kind": "podcast",
+  "episode": 7,
+  "title": "The job I almost quit",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Would you prefer to work from home or in an office? Guess: who in this episode wanted to resign from a job — Leyla or Sam?"
+  },
+  "chapters": [
+    { "from": 0, "picFrom": 3, "title": "Too much on my desk", "image": "ch1", "prompt": "CHAPTER 1 SCENE: an open-plan office in the evening, one young man still working at a desk buried under folders and two screens full of tasks, a big wall calendar with many red marks, colleagues' empty chairs" },
+    { "from": 10, "title": "Office or home?", "image": "ch2", "prompt": "CHAPTER 2 SCENE: split image — on the left a woman working on a laptop at a kitchen table at home with a cat beside her, on the right a busy bright office with people talking at a coffee machine" },
+    { "from": 16, "title": "Growing at work", "image": "ch3", "prompt": "CHAPTER 3 SCENE: a friendly networking event in a modern hall, small groups of young professionals talking with name badges and coffee cups, a staircase going up in the background like a ladder" }
+  ],
+  "lines": [
+    { "s": "Leyla", "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla." },
+    { "s": "Sam", "t": "And I'm Sam. Today's topic is work and career — and I have a confession." },
+    { "s": "Leyla", "t": "Go on." },
+    { "s": "Sam", "t": "In my first job, I almost decided to resign after six months. [sigh] My workload was crazy. I stayed at the office until nine every night." },
+    { "s": "Leyla", "t": "Why so much?" },
+    { "s": "Sam", "t": "I wanted to go the extra mile. I said yes to every task, every deadline. I thought that was the way to get a promotion." },
+    { "s": "Leyla", "t": "And was it?" },
+    { "s": "Sam", "t": "No! I was just tired and slow. My manager told me: doing more is not the same as doing better." },
+    { "s": "Leyla", "t": "Wise manager. So what did you do?" },
+    { "s": "Sam", "t": "I went back to the drawing board. I learned to say no politely, and to ask a colleague for help." },
+    { "s": "Leyla", "t": "That's hard for many people. For me the big change was remote work." },
+    { "s": "Sam", "t": "Oh, you love working from home." },
+    { "s": "Leyla", "t": "I do. No traffic, my own coffee, my cat. [chuckle] But sometimes I feel lonely." },
+    { "s": "Sam", "t": "Yes. In the office you chat at the coffee machine, you learn from people." },
+    { "s": "Leyla", "t": "So now I go to the office two days a week. It's a good mix." },
+    { "s": "Sam", "t": "And what about your friend who started her own company?" },
+    { "s": "Leyla", "t": "Nigar! She's an entrepreneur now — she sells handmade bags online. She works hard, but she says she's never bored." },
+    { "s": "Sam", "t": "That's brave. Does she have any advice?" },
+    { "s": "Leyla", "t": "Yes: networking. Go to events, talk to people, help them. Most jobs come from people you know." },
+    { "s": "Sam", "t": "True. You don't have to climb the ladder alone. Other people can give you a hand." },
+    { "s": "Leyla", "t": "Here's your question for your next SpeakLab call: what is your dream job, and what is one step you can take towards it?" },
+    { "s": "Sam", "t": "And remember — no one's dream job is staying at the office until nine! See you next time." },
+    { "s": "Leyla", "t": "[laugh] Bye for now!" }
+  ],
+  "questions": [
+    { "type": "gist", "q": "What is the episode mainly about?", "options": ["How to write a CV", "Workload, ways of working and building a career", "The best companies in Baku", "Why everyone should start a company"], "answer": 1, "why": "Sam's heavy first job, remote work, an entrepreneur friend and networking." },
+    { "type": "detail", "q": "Why did Sam almost resign from his first job?", "options": ["He hated his manager", "The salary was low", "His workload was too heavy", "He moved to another city"], "answer": 2, "why": "\"My workload was crazy. I stayed at the office until nine every night.\"" },
+    { "type": "detail", "q": "How often does Leyla go to the office now?", "options": ["Every day", "Two days a week", "Once a month", "Never"], "answer": 1, "why": "\"Now I go to the office two days a week.\"" },
+    { "type": "tf", "q": "Nigar sells handmade bags in a shop in the city centre.", "options": ["True", "False", "Not given"], "answer": 1, "why": "She sells them online." },
+    { "type": "vocab", "q": "Sam \"went back to the drawing board\". What does it mean?", "options": ["He started drawing", "He started again with a new plan", "He went back to school", "He left the company"], "answer": 1, "why": "He changed his way of working: saying no, asking for help." },
+    { "type": "inference", "q": "What did Sam's manager mean by \"doing more is not the same as doing better\"?", "options": ["Work faster", "Quality matters more than the number of tasks", "Stay later at the office", "Never say no"], "answer": 1, "why": "Saying yes to everything made Sam tired and slow." }
+  ],
+  "talk": [
+    "What is your dream job, and what is one step you can take towards it?",
+    "Would you rather work from home or in an office? Why?"
+  ]
+}

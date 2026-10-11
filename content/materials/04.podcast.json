@@ -1,0 +1,236 @@
+{
+  "kind": "podcast",
+  "episode": 4,
+  "title": "The night before the exam",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you study a little every day, or a lot the night before? Guess: who almost dropped out of university — Leyla or Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Last-minute Sam",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a tired student at 3 a.m. at a desk covered in open books, empty coffee cups and sticky notes, a clock on the wall, a laptop glowing, moonlight through the window"
+    },
+    {
+      "from": 10,
+      "title": "School then and now",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a bright modern classroom where teenagers work in small groups around tables, discussing and pointing at a big sheet of paper, a teacher listening with a smile"
+    },
+    {
+      "from": 16,
+      "title": "How to really learn",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a calm library corner with a weekly study plan on the wall drawn as simple coloured blocks, a student reading in a comfy chair, a plant and soft afternoon light"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today we're going back to school — the topic is education.",
+      "at": 4.84
+    },
+    {
+      "s": "Leyla",
+      "t": "Sam, be honest. What kind of student were you?",
+      "at": 10.7
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] The last-minute kind. I always started to revise the night before the exam. Coffee, three a.m., panic.",
+      "at": 14.94
+    },
+    {
+      "s": "Leyla",
+      "t": "And did it work?",
+      "at": 24.2
+    },
+    {
+      "s": "Sam",
+      "t": "Sometimes. But at university it stopped working. I missed one deadline, then another, and in my first year I almost had to drop out.",
+      "at": 26.7
+    },
+    {
+      "s": "Leyla",
+      "t": "Really? What changed?",
+      "at": 36.82
+    },
+    {
+      "s": "Sam",
+      "t": "A teacher sat down with me and showed me how to plan. I had to learn the ropes — how to study, not just what to study.",
+      "at": 39.02
+    },
+    {
+      "s": "Leyla",
+      "t": "That's a good teacher. I was the opposite. I hit the books every day, even on holiday.",
+      "at": 47.94
+    },
+    {
+      "s": "Sam",
+      "t": "Of course you did. [laugh]",
+      "at": 54.08
+    },
+    {
+      "s": "Leyla",
+      "t": "And I got a scholarship, so I didn't have to pay tuition. That was a big help for my family.",
+      "at": 56.62
+    },
+    {
+      "s": "Sam",
+      "t": "Well done. Do you think school has changed since we were kids?",
+      "at": 62.62
+    },
+    {
+      "s": "Leyla",
+      "t": "A lot. When I was at school, the curriculum was mostly facts. Learn the dates, write them down, forget them.",
+      "at": 68.02
+    },
+    {
+      "s": "Sam",
+      "t": "And now?",
+      "at": 76.02
+    },
+    {
+      "s": "Leyla",
+      "t": "Now good schools teach critical thinking — asking questions, checking information, not believing everything you read online.",
+      "at": 77.1
+    },
+    {
+      "s": "Sam",
+      "t": "That's so important today. And it's not only reading and writing. Digital literacy matters too.",
+      "at": 86.4
+    },
+    {
+      "s": "Leyla",
+      "t": "Okay, tips for our listeners who are studying English. Mine: a little every day is better than a lot once a week.",
+      "at": 94.06
+    },
+    {
+      "s": "Sam",
+      "t": "And mine: test yourself. Close the book and try to say it, or write it. That's how it stays in your head.",
+      "at": 101.64
+    },
+    {
+      "s": "Leyla",
+      "t": "Like speaking in a SpeakLab call, actually.",
+      "at": 108.86
+    },
+    {
+      "s": "Sam",
+      "t": "Exactly. You don't need to be perfect. You need to practise. Then you'll pass with flying colours.",
+      "at": 111.94
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next call: who was your best teacher, and what did they do differently?",
+      "at": 119.14
+    },
+    {
+      "s": "Sam",
+      "t": "Mine changed my life. See you next time!",
+      "at": 125.48
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 128.76
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to become a teacher",
+        "How Leyla and Sam studied, and how to learn well",
+        "The best universities in Europe",
+        "Why exams are bad"
+      ],
+      "answer": 1,
+      "why": "They compare their study habits, talk about school today and give study tips."
+    },
+    {
+      "type": "detail",
+      "q": "Why did Sam nearly drop out of university?",
+      "options": [
+        "He had no money",
+        "He missed deadlines because he studied too late",
+        "He moved to another city",
+        "He didn't like his teachers"
+      ],
+      "answer": 1,
+      "why": "\"I missed one deadline, then another, and... I nearly dropped out.\""
+    },
+    {
+      "type": "detail",
+      "q": "Why didn't Leyla pay tuition?",
+      "options": [
+        "Her university was free",
+        "Her parents paid",
+        "She got a scholarship",
+        "She worked at the university"
+      ],
+      "answer": 2,
+      "why": "\"I got a scholarship, so I didn't have to pay tuition.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla says schools today only teach facts and dates.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "That was her school; good schools now teach critical thinking."
+    },
+    {
+      "type": "vocab",
+      "q": "Sam had to \"learn the ropes\". What does it mean?",
+      "options": [
+        "Learn a sport",
+        "Learn the basic way of doing something",
+        "Learn to climb",
+        "Learn faster than others"
+      ],
+      "answer": 1,
+      "why": "He learned how to study — the basics of doing it well."
+    },
+    {
+      "type": "inference",
+      "q": "Which tip would BOTH hosts agree with?",
+      "options": [
+        "Study the night before",
+        "Practise regularly and test yourself",
+        "Never use the internet",
+        "Only read, never speak"
+      ],
+      "answer": 1,
+      "why": "Leyla: a little every day. Sam: test yourself. Both: practise."
+    }
+  ],
+  "talk": [
+    "Who was your best teacher, and what did they do differently?",
+    "Are you a 'last-minute' learner like young Sam, or do you hit the books every day like Leyla?"
+  ],
+  "duration": 129.8,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "rubberband tempo 0.86 + loudnorm -16",
+    "made": "2026-10-11"
+  }
+}

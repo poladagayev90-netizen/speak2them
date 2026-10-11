@@ -1,0 +1,55 @@
+{
+  "kind": "podcast",
+  "episode": 8,
+  "title": "Thirty seconds of fame",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How many hours a day do you spend on social media? Guess: whose video went viral — Leyla's or Sam's?"
+  },
+  "chapters": [
+    { "from": 0, "picFrom": 3, "title": "Leyla goes viral", "image": "ch1", "prompt": "CHAPTER 1 SCENE: a smartphone screen floating in the air showing a funny video of a cat knocking a cake off a kitchen table, hundreds of small heart and comment bubbles flying out of the phone like confetti" },
+    { "from": 9, "title": "Likes, trolls and stress", "image": "ch2", "prompt": "CHAPTER 2 SCENE: a young woman sitting on a sofa at night with a phone, her face lit by the screen, dark cartoonish storm clouds and angry bubbles coming out of the phone, a calm lamp beside her" },
+    { "from": 16, "title": "Taking back control", "image": "ch3", "prompt": "CHAPTER 3 SCENE: a phone lying face down on a wooden table next to an open book, a cup of tea and a small timer, a sunny park visible through the window, peaceful mood" }
+  ],
+  "lines": [
+    { "s": "Leyla", "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla." },
+    { "s": "Sam", "t": "And I'm Sam. Today's topic is social media — and Leyla is a little bit famous now." },
+    { "s": "Leyla", "t": "[laugh] Stop it. Only for one week." },
+    { "s": "Sam", "t": "Tell everyone what happened." },
+    { "s": "Leyla", "t": "I filmed my cat, Pişik, pushing a birthday cake off the table. I posted it, went to sleep, and in the morning it was viral. Two million views!" },
+    { "s": "Sam", "t": "Two million! You were in the spotlight." },
+    { "s": "Leyla", "t": "It was so strange. My phone didn't stop. Brands wrote to me. Someone asked if Pişik wanted to be an influencer." },
+    { "s": "Sam", "t": "[chuckle] And did she say yes?" },
+    { "s": "Leyla", "t": "She said nothing, she's a cat. But I learned a lot about how the algorithm works. It loves engagement — likes, comments, shares." },
+    { "s": "Sam", "t": "Right. The more people react, the more people see it in their feed." },
+    { "s": "Leyla", "t": "But it wasn't all nice. Some comments were really rude. One troll wrote that I'm a terrible owner." },
+    { "s": "Sam", "t": "Oh no. What did you do?" },
+    { "s": "Leyla", "t": "At first I wanted to answer. But an answer would only stir up more anger. So I just used the block button." },
+    { "s": "Sam", "t": "Good choice. And I think many people now jump on the bandwagon — they copy every trend just to get likes." },
+    { "s": "Leyla", "t": "Yes, and they feel bad when the numbers are low. Social media can be fun, but it can also make us anxious." },
+    { "s": "Sam", "t": "I agree. I checked my screen time last month. Five hours a day. [sigh] Five!" },
+    { "s": "Leyla", "t": "That's a lot of hours. What did you change?" },
+    { "s": "Sam", "t": "I turned off notifications, and my phone sleeps in the kitchen at night. I read more now." },
+    { "s": "Leyla", "t": "Nice. My rule: no phone for the first hour of the day." },
+    { "s": "Sam", "t": "Hard, but good. Use social media — don't let it use you." },
+    { "s": "Leyla", "t": "Here's your question for your next SpeakLab call: what do you love and what do you hate about social media?" },
+    { "s": "Sam", "t": "And send us your cat videos. See you next time!" },
+    { "s": "Leyla", "t": "[laugh] Bye for now!" }
+  ],
+  "questions": [
+    { "type": "gist", "q": "What is the episode mainly about?", "options": ["How to become rich online", "The good and bad sides of social media", "How to train a cat", "The history of the internet"], "answer": 1, "why": "Leyla's viral video, the algorithm, trolls and screen time." },
+    { "type": "detail", "q": "Why did Leyla's video go viral?", "options": ["It showed a famous singer", "Her cat pushed a birthday cake off the table", "She danced in the street", "A brand paid for it"], "answer": 1, "why": "\"I filmed my cat, Pişik, pushing a birthday cake off the table.\"" },
+    { "type": "detail", "q": "What did Leyla do about the troll?", "options": ["She answered angrily", "She deleted her account", "She blocked him", "She called the police"], "answer": 2, "why": "\"So I just used the block button.\"" },
+    { "type": "tf", "q": "Sam spends five hours a day on his phone now.", "options": ["True", "False", "Not given"], "answer": 1, "why": "That was last month; he has changed his habits since." },
+    { "type": "vocab", "q": "People who \"jump on the bandwagon\"…", "options": ["play in a band", "copy a popular trend", "travel a lot", "stop using the internet"], "answer": 1, "why": "\"They copy every trend just to get likes.\"" },
+    { "type": "inference", "q": "What does Sam mean by \"Use social media — don't let it use you\"?", "options": ["Delete all apps", "Stay in control of your time and feelings", "Post more videos", "Only use it at work"], "answer": 1, "why": "He turned off notifications and keeps his phone away at night." }
+  ],
+  "talk": [
+    "What do you love and what do you hate about social media?",
+    "How much screen time do you have a day? Would you like to change it?"
+  ]
+}
