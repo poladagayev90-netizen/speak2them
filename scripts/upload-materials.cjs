@@ -42,7 +42,8 @@ async function upload(token, object, buf, contentType) {
 }
 
 // Polad's rule (2026-10-11): every word and idiom of the topic is used at least
-// once in the podcast or the readings. Same matching as utils/topicMaterials.js.
+// once in the podcast or the readings — or, when the episode names its `words`
+// (2026-10-12: only what people really say), every one of those. Same matching as utils/topicMaterials.js.
 function topicOf(nn) {
   const src = fs.readFileSync(path.join(ROOT, 'src/data/weeklyContent.js'), 'utf8')
     .replace(/^import .*$/m, '').replace('export const weeklyContent', 'globalThis.__wc').split('export function')[0];
@@ -50,14 +51,14 @@ function topicOf(nn) {
   eval(src);
   return globalThis.__wc[Number(nn) - 1];
 }
-function warnUnusedVocabulary(nn, texts) {
+function warnUnusedVocabulary(nn, texts, words) {
   const topic = topicOf(nn);
   const all = texts.join(' \n ');
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const phrases = [...topic.vocabulary.map((v) => v.word), ...topic.idioms.map((v) => v.phrase)];
+  const phrases = words?.length ? words : [...topic.vocabulary.map((v) => v.word), ...topic.idioms.map((v) => v.phrase)];
   const unused = phrases.filter((p) => !new RegExp(`\\b${esc(p)}(?:s|es|ed|d|ing)?\\b`, 'i').test(all));
   if (unused.length) console.warn(`  ! ${nn}: not used yet — ${unused.join(', ')}`);
-  else console.log(`  all ${phrases.length} topic words and idioms are used`);
+  else console.log(`  all ${phrases.length} ${words?.length ? 'episode' : 'topic'} words and idioms are used`);
 }
 
 async function publish(token, nn) {
@@ -92,7 +93,7 @@ async function publish(token, nn) {
     }
     delete pod.voiceDirection; // TTS persona notes, not for learners
     data.podcast = pod;
-    warnUnusedVocabulary(nn, [...pod.lines.map((l) => l.t), ...['A2', 'B1', 'B2'].map((l) => data.reading?.[l]?.text || '')]);
+    warnUnusedVocabulary(nn, [...pod.lines.map((l) => l.t), ...['A2', 'B1', 'B2'].map((l) => data.reading?.[l]?.text || '')], pod.words);
   }
   fs.writeFileSync(lockPath, JSON.stringify(lock, null, 2) + '\n');
   fs.mkdirSync(OUT, { recursive: true });

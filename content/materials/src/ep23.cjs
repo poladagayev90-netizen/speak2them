@@ -2,6 +2,7 @@ module.exports = {
   episode: 23,
   title: 'Three in the morning',
   predict: 'Do you read more paper books or e-books? Guess: why does Leyla look so tired today?',
+  words: ['Fiction', 'Non-fiction', 'Author', 'Chapter', 'E-book', 'Page-turner', 'An open book', 'By the book', 'Lose yourself in a book'],
   cover: 'COVER: Leyla hugging a thick novel, tired eyes but a big happy smile, Sam holding up a phone with an e-book on the screen, a tall stack of books on the desk next to the microphones',
   chapters: [
     [0, 'Three in the morning', 'a bedroom at night, a young woman with round glasses sitting in bed reading a thick novel by a small lamp, a clock showing three, a cup of cold tea on the bedside table'],

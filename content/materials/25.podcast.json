@@ -221,6 +221,17 @@
       "why": "Leyla always shops around; Sam says \"I should do that.\""
     }
   ],
+  "words": [
+    "Discount",
+    "Impulse buy",
+    "Second-hand",
+    "Receipt",
+    "Refund",
+    "Queue",
+    "Brand new",
+    "Cost an arm and a leg",
+    "Shop around"
+  ],
   "coverPrompt": "COVER: Sam holding a big unopened coffee machine box with a guilty smile, Leyla in a stylish vintage jacket shaking her head and laughing, two shopping bags on the desk",
   "talk": [
     "What is the best — or the worst — thing you have ever bought?",

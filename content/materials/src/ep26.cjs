@@ -2,6 +2,7 @@ module.exports = {
   episode: 26,
   title: 'A dream that changed',
   predict: 'What did you want to be when you were a child? Guess: what did Sam dream of becoming?',
+  words: ['Ambition', 'Motivation', 'Determination', 'Goal', 'Setback', 'Role model', 'Aim high', 'Chase your dreams'],
   cover: 'COVER: Leyla holding a small model of a cosy café, Sam wearing a running number pinned on his denim shirt and holding a football under his arm, both smiling with determination',
   chapters: [
     [0, 'The footballer', 'a muddy school football field in light rain, a red-haired teenage boy in a football kit training alone with a ball, an old coach watching from the side'],

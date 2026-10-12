@@ -2,6 +2,7 @@ module.exports = {
   episode: 28,
   title: 'Still no flying cars',
   predict: 'When you were a child, what did you think the future would look like? Guess: what did ten-year-old Sam predict for 2025?',
+  words: ['Innovation', 'Forecast', 'Sustainable', 'Prediction', 'Generation gap', 'Crystal ball', 'Shape the future', 'A matter of time'],
   cover: 'COVER: Leyla holding a crystal ball with a tiny glowing green city inside, Sam wearing a silly cardboard robot helmet, both laughing',
   chapters: [
     [0, 'The world in 2025', "a desk with a child's colourful drawing of flying cars and a robot teacher, a red-haired bearded man in a denim shirt holding an old folded letter and laughing"],

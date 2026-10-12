@@ -2,6 +2,7 @@ module.exports = {
   episode: 24,
   title: 'Trouble in a taxi',
   predict: 'Have you ever made a funny mistake in English? Guess: where did Sam make his funny mistake?',
+  words: ['Fluency', 'Accent', 'Slang', 'Small talk', 'Body language', 'Bilingual', 'Speak your mind', 'Beat around the bush', 'Get your point across'],
   cover: 'COVER: Sam holding a small notebook full of new words with a proud face, Leyla pointing at it and laughing, a world map on the wall behind them',
   chapters: [
     [0, 'Trouble in a taxi', 'inside a taxi on an old city street, a red-haired bearded man in a denim shirt in the back seat speaking with his hands, the friendly driver turning around and laughing'],

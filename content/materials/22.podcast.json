@@ -221,6 +221,17 @@
       "why": "\"Half city, half countryside… grow my own tomatoes.\""
     }
   ],
+  "words": [
+    "Urban",
+    "Rural",
+    "Commute",
+    "Suburb",
+    "Skyline",
+    "Peaceful",
+    "Rat race",
+    "Put down roots",
+    "Green space"
+  ],
   "coverPrompt": "COVER: Leyla holding a small potted tomato plant, Sam wearing headphones and laughing, a small toy rooster on the desk next to the microphones, a city skyline poster on one wall and a green hills poster on the other",
   "talk": [
     "Would you rather live in a big city or in the countryside — and why?",

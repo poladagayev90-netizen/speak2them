@@ -2,6 +2,7 @@ module.exports = {
   episode: 20,
   title: 'Jumping over the fire',
   predict: 'What is your favourite holiday tradition? Guess: who in this episode jumped over a fire — Leyla or Sam?',
+  words: ['Heritage', 'Custom', 'Folk', 'Ancestor', 'Superstition', 'Multicultural', 'When in Rome', 'Old habits die hard', 'Pass something down'],
   cover: 'COVER: Leyla holding a plate of colourful Novruz sweets (shekerbura and pakhlava) and a small dish of green wheat sprouts, Sam next to her holding a Christmas cracker and wearing a paper crown, both laughing, a small candle on the desk',
   chapters: [
     [0, "Sam's first Novruz", 'an evening courtyard in Baku during Novruz, a small bonfire, a red-haired bearded man in a denim shirt jumping over the little fire with a big surprised smile, neighbours clapping, a table with sweets and green wheat sprouts'],

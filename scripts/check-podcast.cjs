@@ -1,7 +1,7 @@
 // Checks podcast scripts before they go to AI Studio:
 //   node scripts/check-podcast.cjs 03 04 05
 // - 23 lines, Leyla/Sam alternating from Leyla (the TTS page's 23 blocks are reused as they are)
-// - every topic word and idiom used (Polad's rule, same matching as utils/topicMaterials.js)
+// - every word in the episode's `words` used (else every topic word and idiom), same matching as utils/topicMaterials.js
 // - 6 questions with a valid answer index, chapters pointing at real lines
 // Prints the TTS lines (tags as <tag>) to content/materials/NN/tts-lines.json.
 const fs = require('fs');
@@ -22,7 +22,11 @@ for (const nn of process.argv.slice(2)) {
   if (p.lines.length !== 23) errs.push(`${p.lines.length} lines (want 23)`);
   p.lines.forEach((l, i) => { if (l.s !== (i % 2 ? 'Sam' : 'Leyla')) errs.push(`line ${i} speaker ${l.s}`); });
   const all = p.lines.map((l) => l.t).join(' \n ');
-  const phrases = [...topic.vocabulary.map((v) => v.word), ...topic.idioms.map((v) => v.phrase)];
+  const topicWords = [...topic.vocabulary.map((v) => v.word), ...topic.idioms.map((v) => v.phrase)];
+  // An episode with `words` teaches only those (common ones); each must be a topic word.
+  const phrases = p.words?.length ? p.words : topicWords;
+  const foreign = phrases.filter((w) => !topicWords.some((a) => a.toLowerCase() === w.toLowerCase()));
+  if (foreign.length) errs.push(`not topic words: ${foreign.join(', ')}`);
   const unused = phrases.filter((ph) => !new RegExp(`\\b${esc(ph)}(?:s|es|ed|d|ing)?\\b`, 'i').test(all));
   if (unused.length) errs.push(`unused: ${unused.join(', ')}`);
   if (p.questions.length !== 6) errs.push(`${p.questions.length} questions`);

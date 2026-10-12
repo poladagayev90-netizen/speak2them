@@ -68,6 +68,19 @@ describe('key vocabulary', () => {
   });
 });
 
+describe('onlyWords', () => {
+  const { onlyWords } = require('./topicMaterials');
+  const terms = [{ key: 'commute' }, { key: 'utopia' }, { key: 'rat race' }];
+
+  test('keeps the episode list, any case', () => {
+    expect(onlyWords(terms, ['Commute', 'Rat race']).map((t) => t.key)).toEqual(['commute', 'rat race']);
+  });
+
+  test('no list keeps every term', () => {
+    expect(onlyWords(terms, undefined)).toBe(terms);
+  });
+});
+
 describe('optionOrder', () => {
   const q = (text, type = 'detail') => ({ type, q: text, options: ['a', 'b', 'c', 'd'], answer: 1 });
 

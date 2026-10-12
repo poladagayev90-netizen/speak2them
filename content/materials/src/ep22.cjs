@@ -2,6 +2,7 @@ module.exports = {
   episode: 22,
   title: 'A rooster at six',
   predict: 'Do you live in a city or a village? Guess: what woke Sam up at six in the morning in the countryside?',
+  words: ['Urban', 'Rural', 'Commute', 'Suburb', 'Skyline', 'Peaceful', 'Rat race', 'Put down roots', 'Green space'],
   cover: 'COVER: Leyla holding a small potted tomato plant, Sam wearing headphones and laughing, a small toy rooster on the desk next to the microphones, a city skyline poster on one wall and a green hills poster on the other',
   chapters: [
     [0, 'A rooster at six', 'a peaceful mountain village in Azerbaijan at sunrise, a red-haired bearded man in a denim shirt at an open window looking surprised at a loud rooster on the fence, green hills behind'],

@@ -2,6 +2,7 @@ module.exports = {
   episode: 21,
   title: 'A telescope on the balcony',
   predict: 'What can you see in the night sky from your home? Guess: who bought a telescope this week — Leyla or Sam?',
+  words: ['Galaxy', 'Orbit', 'Experiment', 'Gravity', 'Telescope', 'Launch', 'Discovery', 'Rocket science', 'Reach for the stars'],
   cover: 'COVER: Leyla with a toy astronaut helmet pushed back on her head, Sam holding a small telescope pointed at the ceiling, little paper planets hanging above the desk',
   chapters: [
     [0, 'Jupiter from a balcony', 'a small city balcony at night, a red-haired bearded man in a denim shirt looking through a small telescope at a bright full Moon, one bright dot of a planet nearby, warm city lights below'],

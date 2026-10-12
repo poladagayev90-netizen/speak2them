@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Play, Pause, RotateCcw, Eye, EyeOff, Mic, MessagesSquare, Sparkles, Maximize2, Minimize2 } from 'lucide-react';
-import { activeLineAt, buildTerms, sceneAt, spokenText } from '../../utils/topicMaterials';
+import { activeLineAt, buildTerms, onlyWords, sceneAt, spokenText } from '../../utils/topicMaterials';
 import { TermText, LangSwitch, WordCard } from './TermText';
 import MaterialQuestions from './MaterialQuestions';
 
@@ -24,7 +24,7 @@ export default function PodcastEpisode({ podcast, topic }) {
   const [picked, setPicked] = useState(null);
   const [present, setPresent] = useState(false);
 
-  const terms = useMemo(() => buildTerms(topic), [topic]);
+  const terms = useMemo(() => onlyWords(buildTerms(topic), podcast.words), [topic, podcast.words]);
   const lines = podcast.lines;
   const idx = activeLineAt(lines, t);
   const chapters = podcast.chapters || [];

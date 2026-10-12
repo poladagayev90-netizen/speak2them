@@ -2,6 +2,7 @@ module.exports = {
   episode: 19,
   title: 'A cat called Pilot',
   predict: 'Do you have a pet? Guess: who in this episode found a cat in the street — Leyla or Sam?',
+  words: ['Endangered', 'Habitat', 'Stray', 'Adopt', 'Predator', 'Let the cat out of the bag', 'The elephant in the room', 'Hold your horses'],
   cover: 'COVER: Leyla at the desk with a small grey cat with one white paw sitting on her shoulder, Sam leaning away a little and smiling nervously, a squeaky dog toy and a bag of cat food next to the microphones',
   chapters: [
     [0, 'The cat under the car', 'a rainy evening street in Baku, a woman with round glasses crouching next to a parked car, gently reaching for a small wet grey kitten with one white paw hiding under it, warm street lamp light'],

@@ -221,6 +221,17 @@
       "why": "She could not stop reading until three in the morning."
     }
   ],
+  "words": [
+    "Fiction",
+    "Non-fiction",
+    "Author",
+    "Chapter",
+    "E-book",
+    "Page-turner",
+    "An open book",
+    "By the book",
+    "Lose yourself in a book"
+  ],
   "coverPrompt": "COVER: Leyla hugging a thick novel, tired eyes but a big happy smile, Sam holding up a phone with an e-book on the screen, a tall stack of books on the desk next to the microphones",
   "talk": [
     "What is the best book you have ever read — and why should your partner read it?",

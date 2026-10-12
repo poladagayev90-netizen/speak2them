@@ -58,6 +58,16 @@ export function buildTerms(topic, extra = []) {
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// An episode's own word list (`words`, Polad 2026-10-12: only what people
+// really say). The topic list has rarer words too ("utopia", "colonisation");
+// an episode that names its `words` marks and teaches only those. No list =
+// every topic word, as the first episodes were written.
+export function onlyWords(terms, words) {
+  if (!words?.length) return terms;
+  const keep = new Set(words.map((w) => String(w).toLowerCase().trim()));
+  return terms.filter((t) => keep.has(t.key));
+}
+
 // Splits `text` into [{ text, term? }] pieces; pieces with a term are the
 // matches. Pure, so the highlighter is the same on phone and in the teacher view.
 export function splitByTerms(text, terms) {

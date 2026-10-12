@@ -2,6 +2,7 @@ module.exports = {
   episode: 25,
   title: 'A coffee machine for a tea drinker',
   predict: 'Do you ever buy things you do not need? Guess: what did Sam buy that he never uses?',
+  words: ['Discount', 'Impulse buy', 'Second-hand', 'Receipt', 'Refund', 'Queue', 'Brand new', 'Cost an arm and a leg', 'Shop around'],
   cover: 'COVER: Sam holding a big unopened coffee machine box with a guilty smile, Leyla in a stylish vintage jacket shaking her head and laughing, two shopping bags on the desk',
   chapters: [
     [0, 'Fifty percent off', 'a bright shop window full of coffee machines and big red sale posters, a red-haired bearded man in a denim shirt walking out of the shop very happily carrying a big box'],

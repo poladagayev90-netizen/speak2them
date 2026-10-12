@@ -2,6 +2,7 @@ module.exports = {
   episode: 27,
   title: 'A trip into the past',
   predict: 'Do you like history? Guess: where did Leyla go last weekend — a museum, old ruins or a library?',
+  words: ['Ancient', 'Ruins', 'Empire', 'Revolution', 'Era', 'Make history', 'A blast from the past', 'Go down in history'],
   cover: 'COVER: Leyla looking at an old coin through a magnifying glass, Sam holding an open black-and-white photo album, a small old clay pot on the desk next to the microphones',
   chapters: [
     [0, 'The old capital', 'ancient stone ruins of a city wall on green hills, a young woman with round glasses in a lavender sweater walking among the old stones, soft mountains in the distance'],

@@ -2,7 +2,8 @@
 //   node scripts/build-podcast.cjs content/materials/src/ep21.cjs [ep22.cjs …]
 // Source shape (see content/materials/src/ep11.cjs): episode, title, predict, cover,
 // chapters [[fromLine, title, scene]], lines[23] (Leyla first, alternating),
-// questions [[type, q, options, answer, why]] (tf options are filled in), talk[2].
+// questions [[type, q, options, answer, why]] (tf options are filled in), talk[2],
+// words: the topic words/idioms this episode teaches — only ones people really use (Polad 2026-10-12).
 // Then: node scripts/check-podcast.cjs NN
 // WARNING: rebuilding an episode that already has timings wipes its "at" values and duration —
 // only build NEW episodes, or run set-timings again afterwards.
@@ -18,6 +19,7 @@ for (const f of process.argv.slice(2)) {
     chapters: e.chapters.map(([from, title, prompt], i) => ({ from, ...(i === 0 ? { picFrom: 3 } : {}), title, image: `ch${i + 1}`, prompt: `CHAPTER ${i + 1} SCENE: ${prompt}` })),
     lines: e.lines.map((t, i) => ({ s: i % 2 ? 'Sam' : 'Leyla', t })),
     questions: e.questions.map(([type, q, options, answer, why]) => ({ type, q, options: type === 'tf' ? ['True', 'False', 'Not given'] : options, answer, why })),
+    ...(e.words ? { words: e.words } : {}),
     coverPrompt: e.cover,
     talk: e.talk,
   };
