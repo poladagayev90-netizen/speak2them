@@ -1,0 +1,248 @@
+{
+  "kind": "podcast",
+  "episode": 30,
+  "title": "Plov for breakfast",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How do you usually celebrate New Year? Guess: what did Leyla eat for breakfast after the party?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Thirty years together",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a big family anniversary party in a warm living room, an older couple in the middle smiling, many relatives around a long table full of food"
+    },
+    {
+      "from": 8,
+      "title": "Leftovers",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a kitchen in the morning, an open fridge full of food boxes, a young woman with round glasses and a lavender sweater eating plov from a box at the counter, happy and sleepy"
+    },
+    {
+      "from": 10,
+      "title": "Fireworks over the sea",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: New Year night in a seaside city, colourful fireworks over the dark sea and the city lights, a family watching from a balcony with a decorated New Year tree behind them"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is holidays and celebrations. And Leyla had a big party last weekend.",
+      "at": 4.02
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Not my party — my parents'. It was their thirtieth wedding anniversary.",
+      "at": 11.74
+    },
+    {
+      "s": "Sam",
+      "t": "Thirty years! Congratulations to them. How did you celebrate?",
+      "at": 16.66
+    },
+    {
+      "s": "Leyla",
+      "t": "A big family gathering at their house. We invited about forty people. My mum said, \"The more the merrier!\"",
+      "at": 20.66
+    },
+    {
+      "s": "Sam",
+      "t": "Forty people at home? Who cooked?",
+      "at": 27.24
+    },
+    {
+      "s": "Leyla",
+      "t": "Everyone! My aunts brought plov, dolma, salads, cakes… It was a real feast.",
+      "at": 29.7
+    },
+    {
+      "s": "Sam",
+      "t": "That sounds amazing. And what happened to all the food?",
+      "at": 36.3
+    },
+    {
+      "s": "Leyla",
+      "t": "We're still eating the leftovers. I had plov for breakfast today.",
+      "at": 39.76
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] Lucky you. In my family, Christmas leftovers last a week. Turkey sandwiches every day.",
+      "at": 43.78
+    },
+    {
+      "s": "Leyla",
+      "t": "Speaking of big holidays — this year you'll spend New Year in Baku, right?",
+      "at": 50.12
+    },
+    {
+      "s": "Sam",
+      "t": "Yes! I'm excited. What's the tradition here?",
+      "at": 54.7
+    },
+    {
+      "s": "Leyla",
+      "t": "New Year is huge here. We decorate a tree with lights and toys, and the whole family sits at the table until midnight.",
+      "at": 58.86
+    },
+    {
+      "s": "Sam",
+      "t": "In England, a lot of people go out to ring in the new year with friends — in pubs, or in the street.",
+      "at": 67.26
+    },
+    {
+      "s": "Leyla",
+      "t": "Here it's more about family. But at midnight, everyone goes to the window or the balcony to watch the fireworks over the sea.",
+      "at": 72.96
+    },
+    {
+      "s": "Sam",
+      "t": "Fireworks over the sea. That must be beautiful.",
+      "at": 80.46
+    },
+    {
+      "s": "Leyla",
+      "t": "It is. And then, at about one in the morning, the young people go out and visit their friends.",
+      "at": 84
+    },
+    {
+      "s": "Sam",
+      "t": "So the party never ends!",
+      "at": 89.48
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Not until the second of January.",
+      "at": 91.44
+    },
+    {
+      "s": "Sam",
+      "t": "Then I'd better start practising. Eating, I mean.",
+      "at": 93.86
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is your favourite celebration of the year, and how does your family spend it?",
+      "at": 97.18
+    },
+    {
+      "s": "Sam",
+      "t": "Mine will be New Year in Baku. See you next time!",
+      "at": 104.2
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 107.38
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Family parties, food and New Year traditions",
+        "How to make plov",
+        "Working in a pub",
+        "A wedding in England"
+      ],
+      "answer": 0,
+      "why": "An anniversary party, leftovers, and how New Year is celebrated in Baku and England."
+    },
+    {
+      "type": "detail",
+      "q": "What were Leyla's parents celebrating?",
+      "options": [
+        "A birthday",
+        "Their thirtieth wedding anniversary",
+        "Novruz",
+        "A new house"
+      ],
+      "answer": 1,
+      "why": "\"It was their thirtieth wedding anniversary.\""
+    },
+    {
+      "type": "detail",
+      "q": "What did Leyla eat for breakfast?",
+      "options": [
+        "Cake",
+        "Plov from the party",
+        "Turkey sandwiches",
+        "Nothing"
+      ],
+      "answer": 1,
+      "why": "\"I had plov for breakfast today.\""
+    },
+    {
+      "type": "tf",
+      "q": "In Leyla's family, New Year is mostly spent in pubs with friends.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"Here it's more about family.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"The more the merrier\" means…",
+      "options": [
+        "More people make it more fun",
+        "Too many people is a problem",
+        "Buy more food",
+        "Party for longer"
+      ],
+      "answer": 0,
+      "why": "Leyla's mum was happy to invite forty people."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Sam say he should start \"practising — eating\"?",
+      "options": [
+        "He is on a diet",
+        "He expects a lot of food at New Year in Baku",
+        "He wants to be a chef",
+        "He doesn't like plov"
+      ],
+      "answer": 1,
+      "why": "Families sit at the table until midnight, and the party goes on for days."
+    }
+  ],
+  "words": [
+    "Tradition",
+    "Gathering",
+    "Feast",
+    "Anniversary",
+    "Decorate",
+    "Fireworks",
+    "Leftovers",
+    "The more the merrier",
+    "Ring in the new year"
+  ],
+  "coverPrompt": "COVER: Leyla wearing a party hat and holding a plate with a slice of cake, Sam holding a small sparkler, colourful paper streamers above the desk",
+  "talk": [
+    "What is your favourite celebration of the year, and how does your family spend it?",
+    "Do you prefer big parties or small celebrations? Why?"
+  ],
+  "duration": 108.2,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
+}

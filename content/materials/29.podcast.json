@@ -1,0 +1,247 @@
+{
+  "kind": "podcast",
+  "episode": 29,
+  "title": "Seven under one roof",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How many people lived in your home when you were a child? Guess: how many lived in Leyla's?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Seven under one roof",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a busy morning in a family flat in Baku, grandparents, parents and three children around a breakfast table, a short queue at the bathroom door, warm and funny"
+    },
+    {
+      "from": 8,
+      "title": "Chores and pocket money",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a small English kitchen in the evening, a ginger-haired boy of ten washing dishes at the sink, his mother putting a coin on the table"
+    },
+    {
+      "from": 14,
+      "title": "Aysu's family tree",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a ten-year-old girl at a table drawing a big family tree on a poster with small photos, her aunt with round glasses and a lavender sweater helping her"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is family and home. Leyla, how many people lived in your house when you were a child?",
+      "at": 4.16
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Seven! My grandparents, my parents, my brother, my sister and me — all under one roof.",
+      "at": 12.16
+    },
+    {
+      "s": "Sam",
+      "t": "Seven people and one bathroom?",
+      "at": 18.7
+    },
+    {
+      "s": "Leyla",
+      "t": "Two, thank goodness. But the mornings were still a battle. How about you?",
+      "at": 21.12
+    },
+    {
+      "s": "Sam",
+      "t": "I have two older sisters. When we were kids, we argued about everything — the TV, the front seat of the car, the last biscuit.",
+      "at": 25.76
+    },
+    {
+      "s": "Leyla",
+      "t": "That's normal with siblings. My brother and I fought all the time, but now he's my best friend. The bond is really strong.",
+      "at": 34.52
+    },
+    {
+      "s": "Sam",
+      "t": "Same with my sisters. We have a group chat, and we talk every day.",
+      "at": 41.96
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you have to do chores at home?",
+      "at": 45.66
+    },
+    {
+      "s": "Sam",
+      "t": "Oh yes. I washed the dishes every evening, and on Saturdays I cleaned the car. My mum paid me one pound a week.",
+      "at": 47.8
+    },
+    {
+      "s": "Leyla",
+      "t": "One pound! We didn't get money. My grandmother said helping at home is just what family does.",
+      "at": 54.98
+    },
+    {
+      "s": "Sam",
+      "t": "Was she strict?",
+      "at": 60.9
+    },
+    {
+      "s": "Leyla",
+      "t": "With my parents, very. With us grandchildren? Not at all. She spoiled us completely — sweets, money, staying up late.",
+      "at": 62.76
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] Grandparents are the same everywhere. My mum spoils my sisters' kids now.",
+      "at": 72.44
+    },
+    {
+      "s": "Leyla",
+      "t": "My niece Aysu is making a family tree for school. She called me yesterday with a hundred questions.",
+      "at": 77.24
+    },
+    {
+      "s": "Sam",
+      "t": "That's a great project. How far back can she go?",
+      "at": 82.96
+    },
+    {
+      "s": "Leyla",
+      "t": "To my great-grandparents. After that, nobody remembers. Some relatives moved away long ago, and we lost contact.",
+      "at": 85.96
+    },
+    {
+      "s": "Sam",
+      "t": "My dad tried to make our family tree too. And he tells terrible jokes — exactly like me.",
+      "at": 92.98
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Well, the apple doesn't fall far from the tree.",
+      "at": 100.18
+    },
+    {
+      "s": "Sam",
+      "t": "Ha! A family tree joke. I'm proud of you.",
+      "at": 102.16
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: who is the person in your family you are most like — and how?",
+      "at": 107.74
+    },
+    {
+      "s": "Sam",
+      "t": "For me, it's my dad. Sadly. See you next time!",
+      "at": 114.44
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 120.42
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Big families, brothers and sisters, chores and family memories",
+        "How to cook for seven people",
+        "A trip abroad",
+        "School projects about trees"
+      ],
+      "answer": 0,
+      "why": "They compare growing up in a big family in Baku and in England."
+    },
+    {
+      "type": "detail",
+      "q": "How many people lived in Leyla's home when she was a child?",
+      "options": [
+        "Four",
+        "Five",
+        "Seven",
+        "Nine"
+      ],
+      "answer": 2,
+      "why": "\"Seven! … all under one roof.\""
+    },
+    {
+      "type": "detail",
+      "q": "What chores did Sam do?",
+      "options": [
+        "He cooked dinner",
+        "He washed the dishes and cleaned the car",
+        "He walked the dog",
+        "He did the shopping"
+      ],
+      "answer": 1,
+      "why": "\"I washed the dishes every evening, and on Saturdays I cleaned the car.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla's grandmother was strict with her grandchildren.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"With us grandchildren? Not at all.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"The apple doesn't fall far from the tree\" means…",
+      "options": [
+        "Children are often like their parents",
+        "Apples are good for you",
+        "Families live close together",
+        "Trees are important"
+      ],
+      "answer": 0,
+      "why": "Sam tells bad jokes, just like his dad."
+    },
+    {
+      "type": "inference",
+      "q": "Why can't Aysu go further back than her great-grandparents?",
+      "options": [
+        "She is too young",
+        "Nobody remembers, and the family lost contact with some relatives",
+        "Her teacher told her to stop",
+        "There are no photos"
+      ],
+      "answer": 1,
+      "why": "\"After that, nobody remembers… we lost contact.\""
+    }
+  ],
+  "words": [
+    "Sibling",
+    "Relative",
+    "Bond",
+    "Chores",
+    "Spoil",
+    "Family tree",
+    "The apple doesn't fall far from the tree",
+    "Under one roof"
+  ],
+  "coverPrompt": "COVER: Leyla holding an old framed family photo, Sam laughing and pointing at a small hand-drawn family tree on the desk",
+  "talk": [
+    "Who is the person in your family you are most like — and how?",
+    "Did you do chores when you were a child? Which one did you hate?"
+  ],
+  "duration": 121.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
+}
