@@ -1,0 +1,247 @@
+{
+  "kind": "podcast",
+  "episode": 33,
+  "title": "Ninety minutes in a taxi",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How long is your journey to work or school? Guess: how long did Sam's journey take this morning?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Ninety minutes",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a long traffic jam on a wide city avenue in the morning, a taxi in the middle, a red-haired bearded man in a denim shirt in the back seat looking at his watch"
+    },
+    {
+      "from": 6,
+      "title": "A short cut",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a narrow old street, a taxi squeezing between parked cars, pedestrians crossing everywhere, a cat on the pavement watching"
+    },
+    {
+      "from": 12,
+      "title": "The back seat driver",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: inside a car, a young woman with round glasses driving calmly while her father in the passenger seat points and talks with big gestures"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is traffic. And this morning it took me ninety minutes to get to the studio.",
+      "at": 4.4
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Ninety minutes! What happened?",
+      "at": 12.3
+    },
+    {
+      "s": "Sam",
+      "t": "Rush hour happened. I took a taxi because I was late, and we sat in a traffic jam for forty minutes.",
+      "at": 14.58
+    },
+    {
+      "s": "Leyla",
+      "t": "You should take the metro in the morning. It's faster, and the fare is cheap.",
+      "at": 21.48
+    },
+    {
+      "s": "Sam",
+      "t": "I know, I know. But my taxi driver was very entertaining. He honked at every car, every bus and even a cat.",
+      "at": 25.42
+    },
+    {
+      "s": "Leyla",
+      "t": "Drivers here love to honk. It's like a language. One short honk means \"hello\", a long one means \"move!\"",
+      "at": 34.16
+    },
+    {
+      "s": "Sam",
+      "t": "And pedestrians? Nobody waits for the green light.",
+      "at": 40.82
+    },
+    {
+      "s": "Leyla",
+      "t": "True, people cross everywhere. As a pedestrian in Baku, you need eyes in the back of your head.",
+      "at": 44.02
+    },
+    {
+      "s": "Sam",
+      "t": "In Manchester we wait at the crossing even when the street is empty. It's almost a religion.",
+      "at": 50.04
+    },
+    {
+      "s": "Leyla",
+      "t": "And let me guess — the driver took a detour.",
+      "at": 55.26
+    },
+    {
+      "s": "Sam",
+      "t": "How did you know? He said, \"I know a short cut.\" We went through tiny streets, and it took twenty minutes more!",
+      "at": 57.36
+    },
+    {
+      "s": "Leyla",
+      "t": "Classic. Do you drive yourself?",
+      "at": 65.42
+    },
+    {
+      "s": "Sam",
+      "t": "Not here. I'm too scared. What about you?",
+      "at": 67.52
+    },
+    {
+      "s": "Leyla",
+      "t": "I do, but driving with my dad is terrible. He's the worst back seat driver in the world.",
+      "at": 70.84
+    },
+    {
+      "s": "Sam",
+      "t": "What does he do?",
+      "at": 76
+    },
+    {
+      "s": "Leyla",
+      "t": "\"Slow down! Watch that bus! Why this lane?\" And he doesn't even sit in the back seat. He sits next to me!",
+      "at": 77.44
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] My mum is the same. So how long is your commute?",
+      "at": 83.88
+    },
+    {
+      "s": "Leyla",
+      "t": "Only fifteen minutes. I walk to the metro, and I read on the train.",
+      "at": 87.7
+    },
+    {
+      "s": "Sam",
+      "t": "That's the dream. Tomorrow I'll try the metro. I promise.",
+      "at": 91.92
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: how do you get to work or school — and what is your worst traffic story?",
+      "at": 96.1
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is this morning. See you next time!",
+      "at": 102.98
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 105.5
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Traffic, taxis, pedestrians and getting to work",
+        "How to become a taxi driver",
+        "Life in Manchester",
+        "Buying a car"
+      ],
+      "answer": 0,
+      "why": "Sam's long taxi ride starts a talk about traffic in Baku and England."
+    },
+    {
+      "type": "detail",
+      "q": "How long did Sam's journey to the studio take?",
+      "options": [
+        "Fifteen minutes",
+        "Forty minutes",
+        "Ninety minutes",
+        "Two hours"
+      ],
+      "answer": 2,
+      "why": "\"It took me ninety minutes to get to the studio.\""
+    },
+    {
+      "type": "detail",
+      "q": "What did the driver's short cut do?",
+      "options": [
+        "It saved twenty minutes",
+        "It took twenty minutes more",
+        "It ended at the metro",
+        "It was closed"
+      ],
+      "answer": 1,
+      "why": "\"It took twenty minutes more!\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla's dad sits in the back seat when she drives.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"He doesn't even sit in the back seat. He sits next to me!\""
+    },
+    {
+      "type": "vocab",
+      "q": "A \"back seat driver\" is someone who…",
+      "options": [
+        "gives the driver advice they didn't ask for",
+        "drives very slowly",
+        "sits quietly in the car",
+        "repairs cars"
+      ],
+      "answer": 0,
+      "why": "Leyla's dad tells her how to drive all the time."
+    },
+    {
+      "type": "inference",
+      "q": "What will Sam probably do tomorrow?",
+      "options": [
+        "Take a taxi again",
+        "Take the metro",
+        "Drive his own car",
+        "Stay at home"
+      ],
+      "answer": 1,
+      "why": "\"Tomorrow I'll try the metro. I promise.\""
+    }
+  ],
+  "words": [
+    "Rush hour",
+    "Commute",
+    "Traffic jam",
+    "Pedestrian",
+    "Fare",
+    "Detour",
+    "Honk",
+    "Back seat driver"
+  ],
+  "coverPrompt": "COVER: Leyla holding a small toy car, Sam holding a metro card and a paper cup of coffee and looking tired, both laughing",
+  "talk": [
+    "How do you get to work or school — and what is your worst traffic story?",
+    "Are you a calm driver or passenger? Why?"
+  ],
+  "duration": 106.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
+}

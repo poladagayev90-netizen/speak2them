@@ -7,7 +7,7 @@ module.exports = {
   chapters: [
     [0, 'Trouble in a taxi', 'inside a taxi on an old city street, a red-haired bearded man in a denim shirt in the back seat speaking with his hands, the friendly driver turning around and laughing'],
     [7, 'Knackered?', 'a rainy British street, two friends at a bus stop under umbrellas, one yawning with a funny very tired face, the other looking confused'],
-    [14, 'Two languages at home', 'a bright family living room, a mother and a father talking with their two small children over drawings at the table, everyone laughing'],
+    [14, 'Two languages at home', 'a bright family living room, a mother with a headscarf and a dark-haired father with a moustache talking with their two small children over drawings at the table, everyone laughing'],
   ],
   lines: [
     "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",

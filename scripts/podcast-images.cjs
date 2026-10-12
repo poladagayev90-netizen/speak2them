@@ -35,10 +35,13 @@ async function draw(prompt, refFile) {
     generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '16:9' } },
   };
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': KEY }, body: JSON.stringify(body),
-    });
-    const j = await res.json();
+    let res; let j;
+    try { // a dropped connection throws — retry it like a bad answer
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': KEY }, body: JSON.stringify(body),
+      });
+      j = await res.json();
+    } catch (e) { res = { status: 'network' }; j = { error: e.message }; }
     const part = j.candidates?.[0]?.content?.parts?.find((p) => p.inlineData || p.inline_data);
     if (part) {
       const d = part.inlineData || part.inline_data;
@@ -55,7 +58,10 @@ async function draw(prompt, refFile) {
     const [nn, only] = arg.split(':');
     const d = JSON.parse(fs.readFileSync(path.join(ROOT, `content/materials/${nn}.podcast.json`), 'utf8'));
     const jobs = [['cover', STYLE + HOSTS + d.coverPrompt + '.']];
-    d.chapters.forEach((c, i) => jobs.push([`ch${i + 1}`, `${STYLE}${LEYLA}Only the people described. ${c.prompt}.`]));
+    // Name the hosts only in scenes that have them — otherwise the model turns every
+    // couple (a bilingual family, an aunt) into Leyla and Sam.
+    const hostsIn = (p) => /round glasses|red-haired|ginger/i.test(p);
+    d.chapters.forEach((c, i) => jobs.push([`ch${i + 1}`, `${STYLE}${hostsIn(c.prompt) ? LEYLA : 'These people are NOT the podcast hosts — different faces, hair and clothes. '}Only the people described. ${c.prompt}.`]));
     const ref = reference(nn);
     for (const [name, prompt] of jobs) {
       if (only && only !== name) continue;

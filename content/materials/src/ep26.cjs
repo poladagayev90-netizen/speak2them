@@ -6,7 +6,7 @@ module.exports = {
   cover: 'COVER: Leyla holding a small model of a cosy café, Sam wearing a running number pinned on his denim shirt and holding a football under his arm, both smiling with determination',
   chapters: [
     [0, 'The footballer', 'a muddy school football field in light rain, a red-haired teenage boy in a football kit training alone with a ball, an old coach watching from the side'],
-    [8, 'Aunt Nigar', 'a kitchen table late at night, a woman around forty studying thick medical books under a lamp, children\'s drawings on the fridge, a glass of tea'],
+    [8, 'Aunt Nigar', 'a kitchen table late at night, a woman around forty with short brown hair and a green cardigan, no glasses, studying thick medical books under a lamp, children\'s drawings on the fridge, a glass of tea'],
     [15, 'Next steps', 'an early morning seaside park, a red-haired bearded man in running clothes jogging past, a young woman with round glasses on a bench sketching a little café in a notebook'],
   ],
   lines: [

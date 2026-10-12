@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is weather and seasons — the favourite topic of every English person."
+      "t": "And I'm Sam. Today's topic is weather and seasons — the favourite topic of every English person.",
+      "at": 4.38
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Is it true that you talk about the weather all the time?"
+      "t": "[laugh] Is it true that you talk about the weather all the time?",
+      "at": 11.6
     },
     {
       "s": "Sam",
-      "t": "Completely true. In Manchester it rains a lot, but usually it's just drizzle — light rain that never stops."
+      "t": "Completely true. In Manchester it rains a lot, but usually it's just drizzle — light rain that never stops.",
+      "at": 15.12
     },
     {
       "s": "Leyla",
-      "t": "That sounds a bit sad."
+      "t": "That sounds a bit sad.",
+      "at": 22.92
     },
     {
       "s": "Sam",
-      "t": "You get used to it. Nobody uses an umbrella. We just put our hood up and walk through the puddles."
+      "t": "You get used to it. Nobody uses an umbrella. We just put our hood up and walk through the puddles.",
+      "at": 24.7
     },
     {
       "s": "Leyla",
-      "t": "Here in Baku, the problem isn't the rain. It's the wind. Baku is called the city of winds."
+      "t": "Here in Baku, the problem isn't the rain. It's the wind. Baku is called the city of winds.",
+      "at": 29.84
     },
     {
       "s": "Sam",
-      "t": "I noticed! On my first day, the wind took my hat into the sea."
+      "t": "I noticed! On my first day, the wind took my hat into the sea.",
+      "at": 36.22
     },
     {
       "s": "Leyla",
-      "t": "[laugh] That's the Khazri, our north wind. In summer we love a light breeze from the sea, but in winter the wind is freezing."
+      "t": "[laugh] That's the Khazri, our north wind. In summer we love a light breeze from the sea, but in winter the wind is freezing.",
+      "at": 41.44
     },
     {
       "s": "Sam",
-      "t": "And the summer here is so hot. In July there was a heatwave — forty degrees!"
+      "t": "And the summer here is so hot. In July there was a heatwave — forty degrees!",
+      "at": 49.64
     },
     {
       "s": "Leyla",
-      "t": "And very humid near the sea. You feel wet just walking to the shop."
+      "t": "And very humid near the sea. You feel wet just walking to the shop.",
+      "at": 55.64
     },
     {
       "s": "Sam",
-      "t": "And then you were under the weather last week. Was it the air conditioning?"
+      "t": "And then you were under the weather last week. Was it the air conditioning?",
+      "at": 60.84
     },
     {
       "s": "Leyla",
-      "t": "Yes! Hot outside, ice-cold inside. I caught a cold in the office."
+      "t": "Yes! Hot outside, ice-cold inside. I caught a cold in the office.",
+      "at": 63.72
     },
     {
       "s": "Sam",
-      "t": "My mum always says that. Air conditioning is the enemy."
+      "t": "My mum always says that. Air conditioning is the enemy.",
+      "at": 68.86
     },
     {
       "s": "Leyla",
-      "t": "What's your favourite season?"
+      "t": "What's your favourite season?",
+      "at": 72.08
     },
     {
       "s": "Sam",
-      "t": "Autumn. Cool air, golden trees. Perfect for running."
+      "t": "Autumn. Cool air, golden trees. Perfect for running.",
+      "at": 73.34
     },
     {
       "s": "Leyla",
-      "t": "You run every day, don't you?"
+      "t": "You run every day, don't you?",
+      "at": 77.22
     },
     {
       "s": "Sam",
-      "t": "Come rain or shine! I'm training for the half marathon. Yesterday I ran in the rain and came home completely wet."
+      "t": "Come rain or shine! I'm training for the half marathon. Yesterday I ran in the rain and came home completely wet.",
+      "at": 79.06
     },
     {
       "s": "Leyla",
-      "t": "Didn't you check the forecast?"
+      "t": "Didn't you check the forecast?",
+      "at": 85.8
     },
     {
       "s": "Sam",
-      "t": "I did. It said sunny. The forecast is the biggest liar in the world."
+      "t": "I did. It said sunny. The forecast is the biggest liar in the world.",
+      "at": 87.6
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Here's your question for your next SpeakLab call: what's the weather like where you live today — and what's your favourite season, and why?"
+      "t": "[laugh] Here's your question for your next SpeakLab call: what's the weather like where you live today — and what's your favourite season, and why?",
+      "at": 93.2
     },
     {
       "s": "Sam",
-      "t": "Mine is autumn — with a good raincoat. See you next time!"
+      "t": "Mine is autumn — with a good raincoat. See you next time!",
+      "at": 100.76
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 104.64
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What's the weather like where you live today — and what is your favourite season, and why?",
     "What do you like doing when it rains?"
-  ]
+  ],
+  "duration": 105.7,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
 }
