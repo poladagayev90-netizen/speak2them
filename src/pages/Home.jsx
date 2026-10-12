@@ -23,6 +23,7 @@ import NextPracticeCard from '../components/plan/NextPracticeCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import NextTopics from '../components/plan/NextTopics';
+import ReadyTopics from '../components/plan/ReadyTopics';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import MissReasonCard from '../components/plan/MissReason';
 import WeekProfileCard from '../components/plan/WeekProfileCard';
@@ -278,6 +279,9 @@ export default function Home({ user }) {
             todayIndex={weeklyContent.indexOf(todayTopic)}
             onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }}
           />
+        )}
+        {isAdminUser(user) && (
+          <ReadyTopics onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }} />
         )}
 
         {/* 2b. The next few booked practices and individual lessons, as a
