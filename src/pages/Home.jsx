@@ -39,8 +39,6 @@ import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
 import '../components/plan/plan.css';
 
-const LESSON_CARD_MS = 48 * 60 * 60 * 1000;
-
 // Today: what to do now.
 //
 // Practice is planned now (the weekly plan, Phase 3 of the scheduled-practice
@@ -167,16 +165,13 @@ export default function Home({ user }) {
     myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
     teachingItems(teaching, plan.now),
   );
-  // The next lesson within two days gets its own picture card above the daily
-  // topic (Sabina, 2026-10-03: she prepared the day before from Today's topic,
-  // and by the lesson Today showed another one). A lesson's topic is fixed when
-  // it is planned; the daily topic keeps moving for practice calls — the two
-  // cards say which is which, and the lesson leaves the list below.
-  const lessonCard = lessons.find((l) => l.startMs - plan.now <= LESSON_CARD_MS) || null;
-  const comingUp = mergeSchedule(
-    booked.slice(headline.kind === 'next' ? 1 : 0),
-    lessons.filter((l) => l !== lessonCard),
-  ).slice(0, 3);
+  // Lessons live in «Coming up» only (Polad 2026-10-12: a second picture card
+  // next to today's topic made Today look crowded). The row names the lesson's
+  // own topic, so it is not confused with the daily one, and opens /class/:id.
+  const upcoming = mergeSchedule(booked.slice(headline.kind === 'next' ? 1 : 0), lessons);
+  const comingUp = upcoming.slice(0, 3);
+  // The next lesson always keeps a row, even behind three earlier practices.
+  if (lessons[0] && !comingUp.includes(lessons[0])) comingUp[comingUp.length - 1] = lessons[0];
 
   return (
     <div className="home-page">
@@ -257,18 +252,6 @@ export default function Home({ user }) {
             </span>
             <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
           </button>
-        )}
-
-        {/* A lesson within 48 h is an appointment: it comes before the daily
-            materials, which then sit together (topic + the next topics). */}
-        {lessonCard && (
-          <TopicCard
-            topic={weeklyContent[lessonCard.topicIndex]}
-            kicker={`Lesson ${lessonCard.number}${lessonCard.teaching ? ` · ${lessonCard.studentName}` : ''} · ${comingUpLabel(lessonCard.startMs, plan.now)}`}
-            lesson
-            cta={lessonCard.teaching ? 'Open the lesson sheet' : 'Prepare for the lesson'}
-            onOpen={() => navigate(`/class/${lessonCard.id}`)}
-          />
         )}
 
         {/* Today's materials, right under the plan (Polad 2026-10-06: "they
