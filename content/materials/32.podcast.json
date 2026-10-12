@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 32,
+  "title": "The city of winds",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you talk about the weather a lot? Guess: what did the wind take from Sam on his first day in Baku?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Drizzle in Manchester",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a grey rainy street in an English city, people in hoods walking through puddles without umbrellas, red brick houses, light drizzle"
+    },
+    {
+      "from": 6,
+      "title": "The city of winds",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a windy seaside promenade, a red-haired bearded man in a denim shirt chasing his hat as it flies towards the sea, people holding their coats"
+    },
+    {
+      "from": 14,
+      "title": "Come rain or shine",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a park in autumn with golden trees in light rain, a red-haired bearded man in running clothes running happily, completely wet"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is weather and seasons — the favourite topic of every English person."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Is it true that you talk about the weather all the time?"
+    },
+    {
+      "s": "Sam",
+      "t": "Completely true. In Manchester it rains a lot, but usually it's just drizzle — light rain that never stops."
+    },
+    {
+      "s": "Leyla",
+      "t": "That sounds a bit sad."
+    },
+    {
+      "s": "Sam",
+      "t": "You get used to it. Nobody uses an umbrella. We just put our hood up and walk through the puddles."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here in Baku, the problem isn't the rain. It's the wind. Baku is called the city of winds."
+    },
+    {
+      "s": "Sam",
+      "t": "I noticed! On my first day, the wind took my hat into the sea."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] That's the Khazri, our north wind. In summer we love a light breeze from the sea, but in winter the wind is freezing."
+    },
+    {
+      "s": "Sam",
+      "t": "And the summer here is so hot. In July there was a heatwave — forty degrees!"
+    },
+    {
+      "s": "Leyla",
+      "t": "And very humid near the sea. You feel wet just walking to the shop."
+    },
+    {
+      "s": "Sam",
+      "t": "And then you were under the weather last week. Was it the air conditioning?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Yes! Hot outside, ice-cold inside. I caught a cold in the office."
+    },
+    {
+      "s": "Sam",
+      "t": "My mum always says that. Air conditioning is the enemy."
+    },
+    {
+      "s": "Leyla",
+      "t": "What's your favourite season?"
+    },
+    {
+      "s": "Sam",
+      "t": "Autumn. Cool air, golden trees. Perfect for running."
+    },
+    {
+      "s": "Leyla",
+      "t": "You run every day, don't you?"
+    },
+    {
+      "s": "Sam",
+      "t": "Come rain or shine! I'm training for the half marathon. Yesterday I ran in the rain and came home completely wet."
+    },
+    {
+      "s": "Leyla",
+      "t": "Didn't you check the forecast?"
+    },
+    {
+      "s": "Sam",
+      "t": "I did. It said sunny. The forecast is the biggest liar in the world."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Here's your question for your next SpeakLab call: what's the weather like where you live today — and what's your favourite season, and why?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is autumn — with a good raincoat. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "The weather in England and Baku, and favourite seasons",
+        "How to make a weather forecast",
+        "A trip to the beach",
+        "Running a marathon"
+      ],
+      "answer": 0,
+      "why": "Drizzle in Manchester, wind and heat in Baku, and the best season for running."
+    },
+    {
+      "type": "detail",
+      "q": "What is the main problem with Baku's weather, according to Leyla?",
+      "options": [
+        "Rain",
+        "The wind",
+        "Snow",
+        "Fog"
+      ],
+      "answer": 1,
+      "why": "\"The problem isn't the rain. It's the wind.\""
+    },
+    {
+      "type": "detail",
+      "q": "How hot was it in the July heatwave?",
+      "options": [
+        "Thirty degrees",
+        "Thirty-five degrees",
+        "Forty degrees",
+        "Forty-five degrees"
+      ],
+      "answer": 2,
+      "why": "\"In July there was a heatwave — forty degrees!\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's hat flew into the sea on his first day in Baku.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 0,
+      "why": "\"On my first day, the wind took my hat into the sea.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Come rain or shine\" means…",
+      "options": [
+        "Only when it is sunny",
+        "Whatever the weather or situation",
+        "Only in summer",
+        "When it rains"
+      ],
+      "answer": 1,
+      "why": "Sam runs every day, in any weather."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Sam call the forecast \"the biggest liar in the world\"?",
+      "options": [
+        "It said sunny, but it rained",
+        "It is always correct",
+        "He doesn't read it",
+        "It is in another language"
+      ],
+      "answer": 0,
+      "why": "\"It said sunny\" — and he came home completely wet."
+    }
+  ],
+  "words": [
+    "Drizzle",
+    "Heatwave",
+    "Forecast",
+    "Humid",
+    "Freezing",
+    "Breeze",
+    "Puddle",
+    "Under the weather",
+    "Come rain or shine"
+  ],
+  "coverPrompt": "COVER: Leyla holding a small electric fan with sunglasses pushed up on her head, Sam in a yellow raincoat holding a closed umbrella, both laughing",
+  "talk": [
+    "What's the weather like where you live today — and what is your favourite season, and why?",
+    "What do you like doing when it rains?"
+  ]
+}
