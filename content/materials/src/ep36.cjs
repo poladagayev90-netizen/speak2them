@@ -7,7 +7,7 @@ module.exports = {
   chapters: [
     [0, "Murad's big day", 'a young dark-haired man in a new suit practising in front of a mirror at home, holding his CV, a young woman with round glasses giving him a thumbs up'],
     [5, 'Chocolate', 'a formal interview room, a nervous young red-haired man in a tie sitting across a table from two interviewers, one laughing and one writing in a notebook'],
-    [16, 'The offer', 'a modern office with a view of the city, a young woman with round glasses politely saying no to a manager, a contract on the table between them'],
+    [16, 'The offer', 'a modern office with a view of the city, a young woman with round glasses politely saying no to a bald older manager in a dark grey suit, a contract on the table between them'],
   ],
   lines: [
     "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",

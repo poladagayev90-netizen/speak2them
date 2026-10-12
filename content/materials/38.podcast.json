@@ -1,0 +1,248 @@
+{
+  "kind": "podcast",
+  "episode": 38,
+  "title": "Lucky green socks",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Are you a lucky person? Guess: what does Sam always wear for a race?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Lucky socks",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a sunny city running race, a red-haired bearded man in running clothes and bright green socks smiling at the start line among other runners"
+    },
+    {
+      "from": 8,
+      "title": "The blue charm",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a warm home, a grandmother pinning a small blue glass evil-eye bead onto a baby's jacket with love"
+    },
+    {
+      "from": 12,
+      "title": "A café in Istanbul",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a tiny cosy café in Istanbul, a red-haired bearded man and another man with dark hair looking very surprised to recognise each other, small glasses of tea on the table"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is luck. Leyla, are you a lucky person?",
+      "at": 4.52
+    },
+    {
+      "s": "Leyla",
+      "t": "Touch wood — yes, I think so. Look, I'm touching the table.",
+      "at": 10.22
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] We do the same in England. And I have a confession: I have lucky socks.",
+      "at": 14.52
+    },
+    {
+      "s": "Leyla",
+      "t": "Lucky socks?",
+      "at": 20.66
+    },
+    {
+      "s": "Sam",
+      "t": "Green ones. I wear them for every race. The one day I forgot them, I fell in the first kilometre.",
+      "at": 21.94
+    },
+    {
+      "s": "Leyla",
+      "t": "That's not luck, Sam. That's a coincidence.",
+      "at": 28.1
+    },
+    {
+      "s": "Sam",
+      "t": "Maybe. But I'm not taking any risks. They're already in my bag for the half marathon.",
+      "at": 30.84
+    },
+    {
+      "s": "Leyla",
+      "t": "Here, many people have a small blue glass charm against the evil eye. My mum put one on my baby niece's jacket.",
+      "at": 36.68
+    },
+    {
+      "s": "Sam",
+      "t": "I've seen those! In taxis, in shops, everywhere.",
+      "at": 43.56
+    },
+    {
+      "s": "Leyla",
+      "t": "And when someone says something too nice, like \"Your life is perfect\", we say, \"Don't jinx it!\"",
+      "at": 47.3
+    },
+    {
+      "s": "Sam",
+      "t": "We say that too! You don't talk about good things too early.",
+      "at": 52.78
+    },
+    {
+      "s": "Leyla",
+      "t": "Do you believe in fate?",
+      "at": 56.74
+    },
+    {
+      "s": "Sam",
+      "t": "Sometimes. Two years ago I was in Istanbul, and in a tiny café I met a man from my own street in Manchester.",
+      "at": 58.32
+    },
+    {
+      "s": "Leyla",
+      "t": "What are the odds?",
+      "at": 67.28
+    },
+    {
+      "s": "Sam",
+      "t": "One in a million! And now he's one of my closest friends.",
+      "at": 68.96
+    },
+    {
+      "s": "Leyla",
+      "t": "That's beautiful. Maybe it was fate. Any other lucky stories?",
+      "at": 72.48
+    },
+    {
+      "s": "Sam",
+      "t": "Last month I played bowling for the first time. Against all odds, I won against everyone.",
+      "at": 77.52
+    },
+    {
+      "s": "Leyla",
+      "t": "And the second time?",
+      "at": 84.22
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] Last place. It was just beginner's luck.",
+      "at": 86.52
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: do you have a superstition or a lucky object — and do you really believe in it?",
+      "at": 89.88
+    },
+    {
+      "s": "Sam",
+      "t": "My green socks. Don't laugh. See you next time!",
+      "at": 97.5
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 101.7
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Luck, superstitions and surprising coincidences",
+        "How to win at bowling",
+        "Training for a race",
+        "A holiday in Istanbul"
+      ],
+      "answer": 0,
+      "why": "Lucky socks, a blue charm, a meeting in Istanbul and beginner's luck."
+    },
+    {
+      "type": "detail",
+      "q": "What does Sam wear for every race?",
+      "options": [
+        "A lucky hat",
+        "Green socks",
+        "A blue charm",
+        "His grandad's watch"
+      ],
+      "answer": 1,
+      "why": "\"Green ones. I wear them for every race.\""
+    },
+    {
+      "type": "detail",
+      "q": "Who did Sam meet in Istanbul?",
+      "options": [
+        "Leyla",
+        "A man from his own street in Manchester",
+        "His boss",
+        "An old teacher"
+      ],
+      "answer": 1,
+      "why": "\"I met a man from my own street in Manchester.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam won the second time he played bowling.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"Last place.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Don't jinx it!\" means…",
+      "options": [
+        "Don't bring bad luck by talking about good things too early",
+        "Don't be late",
+        "Don't forget it",
+        "Don't tell anyone"
+      ],
+      "answer": 0,
+      "why": "\"You don't talk about good things too early.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla call the socks story \"a coincidence\"?",
+      "options": [
+        "She thinks the fall had nothing to do with the socks",
+        "She likes green socks",
+        "She has the same socks",
+        "She thinks the socks are lucky"
+      ],
+      "answer": 0,
+      "why": "For her, forgetting the socks and falling just happened on the same day."
+    }
+  ],
+  "words": [
+    "Superstition",
+    "Coincidence",
+    "Fate",
+    "Charm",
+    "Jinx",
+    "Odds",
+    "Touch wood",
+    "Beginner's luck",
+    "Against all odds"
+  ],
+  "coverPrompt": "COVER: Leyla touching the wooden desk with one hand and holding a small blue glass charm in the other, Sam holding up a pair of bright green socks, both laughing",
+  "talk": [
+    "Do you have a superstition or a lucky object — and do you really believe in it?",
+    "Tell your partner about a surprising coincidence in your life."
+  ],
+  "duration": 102.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
+}
