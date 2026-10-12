@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 23,
+  "title": "Three in the morning",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you read more paper books or e-books? Guess: why does Leyla look so tired today?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Three in the morning",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a bedroom at night, a young woman with round glasses sitting in bed reading a thick novel by a small lamp, a clock showing three, a cup of cold tea on the bedside table"
+    },
+    {
+      "from": 7,
+      "title": "Grandfather's bookshelf",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a warm old living room with a huge wooden bookshelf from floor to ceiling, an old grandfather reading in an armchair with a glass of tea, a little girl on the carpet with a picture book"
+    },
+    {
+      "from": 15,
+      "title": "A book club",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a small cosy café, five young people of different backgrounds sitting in a circle, each holding the same short book, talking and laughing under warm lamps"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is books and reading. And Leyla looks very tired today.",
+      "at": 4.42
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] I am! I started a novel on Sunday evening, and I couldn't stop. I finished the last chapter at three in the morning.",
+      "at": 11.82
+    },
+    {
+      "s": "Sam",
+      "t": "Ah, a real page-turner. What's it about?",
+      "at": 17.9
+    },
+    {
+      "s": "Leyla",
+      "t": "It's a mystery. A woman finds an old letter inside a library book, and she tries to find the person who wrote it. The narrative jumps between today and the 1950s.",
+      "at": 21.4
+    },
+    {
+      "s": "Sam",
+      "t": "That sounds great. Who's the author?",
+      "at": 31.8
+    },
+    {
+      "s": "Leyla",
+      "t": "A young Turkish writer — it's her first novel. Honestly, that's my favourite feeling: to lose yourself in a book and forget about time.",
+      "at": 33.76
+    },
+    {
+      "s": "Sam",
+      "t": "I'm the opposite. I almost never read fiction. I like non-fiction — history, science, the lives of real people.",
+      "at": 41.96
+    },
+    {
+      "s": "Leyla",
+      "t": "And do you read paper books?",
+      "at": 48.76
+    },
+    {
+      "s": "Sam",
+      "t": "Mostly e-books, on my phone, on the metro. I can carry two hundred books in my pocket.",
+      "at": 50.82
+    },
+    {
+      "s": "Leyla",
+      "t": "Practical. But I love paper. My grandfather had a huge bookshelf in his living room, from the floor to the ceiling.",
+      "at": 56.62
+    },
+    {
+      "s": "Sam",
+      "t": "Did he let you read everything?",
+      "at": 64.8
+    },
+    {
+      "s": "Leyla",
+      "t": "Everything! He read every evening with a glass of tea, and I sat on the carpet next to him with my own little book.",
+      "at": 66.66
+    },
+    {
+      "s": "Sam",
+      "t": "I love that. My dad was different. He did everything by the book — even reading. He finished every book he started, even the boring ones.",
+      "at": 73.46
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] I don't do that. If a book is boring after fifty pages, I stop.",
+      "at": 84.1
+    },
+    {
+      "s": "Sam",
+      "t": "Me too. Life is too short. So what makes a book good for you?",
+      "at": 89.1
+    },
+    {
+      "s": "Leyla",
+      "t": "The characters. I like a hero who is an open book — no secrets, every feeling right there on the page. And then a surprise at the end.",
+      "at": 93.82
+    },
+    {
+      "s": "Sam",
+      "t": "For me, it's what I learn. After a good history book, I see the world a little differently.",
+      "at": 103
+    },
+    {
+      "s": "Leyla",
+      "t": "Maybe we should start a SpeakLab book club. One short book a month, and we talk about it on a call.",
+      "at": 108.38
+    },
+    {
+      "s": "Sam",
+      "t": "Great idea. But please, no books that keep me awake until three.",
+      "at": 114.34
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is the best book you have ever read — and why should your partner read it?",
+      "at": 118.38
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is a history book about old ships. See you next time!",
+      "at": 126.28
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 131.94
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to write a novel",
+        "Reading habits, favourite kinds of books and a book club idea",
+        "The history of libraries",
+        "A trip to Turkey"
+      ],
+      "answer": 1,
+      "why": "They talk about a novel, paper and e-books, family readers and a book club."
+    },
+    {
+      "type": "detail",
+      "q": "When did Leyla finish her novel?",
+      "options": [
+        "On Sunday evening",
+        "At three in the morning",
+        "On the metro",
+        "After a month"
+      ],
+      "answer": 1,
+      "why": "\"I finished the last chapter at three in the morning.\""
+    },
+    {
+      "type": "detail",
+      "q": "How does Sam usually read?",
+      "options": [
+        "Paper books at home",
+        "E-books on his phone on the metro",
+        "Audiobooks in the car",
+        "He never reads"
+      ],
+      "answer": 1,
+      "why": "\"Mostly e-books, on my phone, on the metro.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's dad stopped reading boring books after fifty pages.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"He finished every book he started, even the boring ones.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"By the book\" means…",
+      "options": [
+        "Using a book",
+        "Exactly following the rules",
+        "Very quickly",
+        "In a library"
+      ],
+      "answer": 1,
+      "why": "Sam's dad always did things the correct, official way."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla look tired?",
+      "options": [
+        "She worked late",
+        "A book kept her reading most of the night",
+        "She was on a long flight",
+        "Her cat woke her up"
+      ],
+      "answer": 1,
+      "why": "She could not stop reading until three in the morning."
+    }
+  ],
+  "coverPrompt": "COVER: Leyla hugging a thick novel, tired eyes but a big happy smile, Sam holding up a phone with an e-book on the screen, a tall stack of books on the desk next to the microphones",
+  "talk": [
+    "What is the best book you have ever read — and why should your partner read it?",
+    "Paper books or e-books: which do you prefer, and why?"
+  ],
+  "duration": 132.9,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
+}

@@ -1,0 +1,237 @@
+{
+  "kind": "podcast",
+  "episode": 26,
+  "title": "A dream that changed",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What did you want to be when you were a child? Guess: what did Sam dream of becoming?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The footballer",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a muddy school football field in light rain, a red-haired teenage boy in a football kit training alone with a ball, an old coach watching from the side"
+    },
+    {
+      "from": 8,
+      "title": "Aunt Nigar",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a kitchen table late at night, a woman around forty studying thick medical books under a lamp, children's drawings on the fridge, a glass of tea"
+    },
+    {
+      "from": 15,
+      "title": "Next steps",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: an early morning seaside park, a red-haired bearded man in running clothes jogging past, a young woman with round glasses on a bench sketching a little café in a notebook"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is dreams and ambitions. Leyla, what did you want to be when you were a child?",
+      "at": 4.5
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] A pilot! Then a singer, then a vet. My ambition changed every year. What about you?",
+      "at": 12.48
+    },
+    {
+      "s": "Sam",
+      "t": "A footballer. I trained every day after school. I really wanted to play for Manchester United.",
+      "at": 19.54
+    },
+    {
+      "s": "Leyla",
+      "t": "So what happened?",
+      "at": 25.4
+    },
+    {
+      "s": "Sam",
+      "t": "When I was sixteen, I broke my leg. It was a big setback. I couldn't play for a year, and after that I was never fast enough.",
+      "at": 26.96
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no. That must have been hard.",
+      "at": 34.68
+    },
+    {
+      "s": "Sam",
+      "t": "It was. But my coach said something I still remember: \"Aim high, but don't forget to enjoy the game.\"",
+      "at": 37.54
+    },
+    {
+      "s": "Leyla",
+      "t": "That's good advice. My role model is my aunt Nigar. She always wanted to be a doctor, but she married young and had three children.",
+      "at": 43.94
+    },
+    {
+      "s": "Sam",
+      "t": "And she gave up?",
+      "at": 52.46
+    },
+    {
+      "s": "Leyla",
+      "t": "Never! At thirty-eight she went back to university. She studied at night while the kids slept. Now she's a children's doctor.",
+      "at": 53.66
+    },
+    {
+      "s": "Sam",
+      "t": "Wow. That's real determination.",
+      "at": 61.94
+    },
+    {
+      "s": "Leyla",
+      "t": "And perseverance. She failed one big exam twice. The third time, she passed with the best result in her group.",
+      "at": 64.5
+    },
+    {
+      "s": "Sam",
+      "t": "Amazing. Where did she find the motivation?",
+      "at": 72.88
+    },
+    {
+      "s": "Leyla",
+      "t": "She told me, \"Chase your dreams while you still can. I didn't want to be seventy and still wondering.\"",
+      "at": 75.78
+    },
+    {
+      "s": "Sam",
+      "t": "I love that. So, Leyla, what do you aspire to now?",
+      "at": 82.34
+    },
+    {
+      "s": "Leyla",
+      "t": "One day I'd like to open a small café with books — a quiet place where people can read and practise English.",
+      "at": 87.28
+    },
+    {
+      "s": "Sam",
+      "t": "A SpeakLab café! I'd come every day.",
+      "at": 94.64
+    },
+    {
+      "s": "Leyla",
+      "t": "And you? Do you have a goal now?",
+      "at": 98.2
+    },
+    {
+      "s": "Sam",
+      "t": "I'm running a half marathon in the spring. It's not Manchester United, but I want to go after something difficult again.",
+      "at": 100.4
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is one dream you still have — and what is your first small step?",
+      "at": 107.26
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is to finish the race — without breaking my leg. See you next time!",
+      "at": 115.28
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!",
+      "at": 120.18
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "The rules of football",
+        "Childhood dreams, setbacks and not giving up",
+        "How to become a pilot",
+        "Running a café"
+      ],
+      "answer": 1,
+      "why": "Sam lost his football dream, Aunt Nigar became a doctor late, and both hosts have new goals."
+    },
+    {
+      "type": "detail",
+      "q": "Why did Sam stop playing football seriously?",
+      "options": [
+        "He moved to Baku",
+        "He broke his leg at sixteen",
+        "His coach told him to stop",
+        "He lost interest"
+      ],
+      "answer": 1,
+      "why": "\"When I was sixteen, I broke my leg.\""
+    },
+    {
+      "type": "detail",
+      "q": "What did Aunt Nigar do at thirty-eight?",
+      "options": [
+        "She opened a café",
+        "She went back to university",
+        "She ran a marathon",
+        "She moved to England"
+      ],
+      "answer": 1,
+      "why": "\"At thirty-eight she went back to university.\""
+    },
+    {
+      "type": "tf",
+      "q": "Aunt Nigar passed her big exam the first time.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"She failed one big exam twice.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Aim high\" means…",
+      "options": [
+        "Look up at the sky",
+        "Try to achieve something big",
+        "Speak loudly",
+        "Find a job in a tall building"
+      ],
+      "answer": 1,
+      "why": "The coach wanted Sam to have big goals — and enjoy the game."
+    },
+    {
+      "type": "inference",
+      "q": "Why is Sam running a half marathon?",
+      "options": [
+        "To become famous",
+        "He wants a hard goal again after football",
+        "His doctor told him to",
+        "To win money"
+      ],
+      "answer": 1,
+      "why": "\"I want to go after something difficult again.\""
+    }
+  ],
+  "coverPrompt": "COVER: Leyla holding a small model of a cosy café, Sam wearing a running number pinned on his denim shirt and holding a football under his arm, both smiling with determination",
+  "talk": [
+    "What is one dream you still have — and what is your first small step?",
+    "Who is your role model, and why?"
+  ],
+  "duration": 121,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
+}

@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is animals and pets. And Leyla has news."
+      "t": "And I'm Sam. Today's topic is animals and pets. And Leyla has news.",
+      "at": 4.24
     },
     {
       "s": "Leyla",
-      "t": "[laugh] I do! I'm going to let the cat out of the bag — literally. I have a cat now."
+      "t": "[laugh] I do! I'm going to let the cat out of the bag — literally. I have a cat now.",
+      "at": 10.42
     },
     {
       "s": "Sam",
-      "t": "No way! Since when?"
+      "t": "No way! Since when?",
+      "at": 16.22
     },
     {
       "s": "Leyla",
-      "t": "Since last Tuesday. It was raining, and I heard a little sound under a car. It was a tiny stray kitten, wet and very scared."
+      "t": "Since last Tuesday. It was raining, and I heard a little sound under a car. It was a tiny stray kitten, wet and very scared.",
+      "at": 18.22
     },
     {
       "s": "Sam",
-      "t": "Oh, poor thing. So you took him home?"
+      "t": "Oh, poor thing. So you took him home?",
+      "at": 27.32
     },
     {
       "s": "Leyla",
-      "t": "Not at first. I wanted to adopt him immediately, but my mum said, \"Hold your horses. First take him to the vet.\""
+      "t": "Not at first. I wanted to adopt him immediately, but my mum said, \"Hold your horses. First take him to the vet.\"",
+      "at": 29.66
     },
     {
       "s": "Sam",
-      "t": "Smart mum."
+      "t": "Smart mum.",
+      "at": 36.38
     },
     {
       "s": "Leyla",
-      "t": "So the next morning I took him to a veterinarian. He was healthy, just hungry. Now he lives with me. His name is Pilot."
+      "t": "So the next morning I took him to a veterinarian. He was healthy, just hungry. Now he lives with me. His name is Pilot.",
+      "at": 37.58
     },
     {
       "s": "Sam",
-      "t": "Pilot?"
+      "t": "Pilot?",
+      "at": 45
     },
     {
       "s": "Leyla",
-      "t": "Because he jumps from the wardrobe to the sofa like a plane. [chuckle]"
+      "t": "Because he jumps from the wardrobe to the sofa like a plane. [chuckle]",
+      "at": 46.22
     },
     {
       "s": "Sam",
-      "t": "I love it. I grew up with dogs. Dogs are so easy to love — they're domesticated, they want to be your friend."
+      "t": "I love it. I grew up with dogs. Dogs are so easy to love — they're domesticated, they want to be your friend.",
+      "at": 49.9
     },
     {
       "s": "Leyla",
-      "t": "Cats are different. They're tame, but they decide when they want to be your friend."
+      "t": "Cats are different. They're tame, but they decide when they want to be your friend.",
+      "at": 57.66
     },
     {
       "s": "Sam",
-      "t": "True. So, can I say something? The elephant in the room is that I'm a bit scared of cats."
+      "t": "True. So, can I say something? The elephant in the room is that I'm a bit scared of cats.",
+      "at": 62.88
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Sam! Pilot weighs one kilo!"
+      "t": "[laugh] Sam! Pilot weighs one kilo!",
+      "at": 70.04
     },
     {
       "s": "Sam",
-      "t": "I know! But in the wild, cats are predators. I respect them."
+      "t": "I know! But in the wild, cats are predators. I respect them.",
+      "at": 73.38
     },
     {
       "s": "Leyla",
-      "t": "Speaking of the wild — last week I read about the snow leopard. It lives in the mountains, even in the Caucasus, and it is endangered."
+      "t": "Speaking of the wild — last week I read about the snow leopard. It lives in the mountains, even in the Caucasus, and it is endangered.",
+      "at": 78.26
     },
     {
       "s": "Sam",
-      "t": "Why is it endangered?"
+      "t": "Why is it endangered?",
+      "at": 85.94
     },
     {
       "s": "Leyla",
-      "t": "People are taking its habitat for farms and roads, and some still hunt it. There are only a few thousand left in the world."
+      "t": "People are taking its habitat for farms and roads, and some still hunt it. There are only a few thousand left in the world.",
+      "at": 88.12
     },
     {
       "s": "Sam",
-      "t": "That's terrible. I hope people protect them."
+      "t": "That's terrible. I hope people protect them.",
+      "at": 95.64
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: do you have a pet — or which animal would you like to have, and why?"
+      "t": "Here's your question for your next SpeakLab call: do you have a pet — or which animal would you like to have, and why?",
+      "at": 98.5
     },
     {
       "s": "Sam",
-      "t": "Not a cat. Sorry, Pilot. See you next time!"
+      "t": "Not a cat. Sorry, Pilot. See you next time!",
+      "at": 105.56
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 108.9
     }
   ],
   "questions": [
@@ -202,5 +225,13 @@
   "talk": [
     "Do you have a pet — or which animal would you like to have, and why?",
     "Should people keep wild animals in zoos? Why or why not?"
-  ]
+  ],
+  "duration": 109.8,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
 }

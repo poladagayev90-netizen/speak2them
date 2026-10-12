@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is culture and traditions. And I have to tell you about my first Novruz."
+      "t": "And I'm Sam. Today's topic is culture and traditions. And I have to tell you about my first Novruz.",
+      "at": 4.14
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Oh yes. I was there."
+      "t": "[laugh] Oh yes. I was there.",
+      "at": 10.22
     },
     {
       "s": "Sam",
-      "t": "In March my friends in Baku invited me to celebrate. And in the evening, everyone started jumping over small fires!"
+      "t": "In March my friends in Baku invited me to celebrate. And in the evening, everyone started jumping over small fires!",
+      "at": 13.9
     },
     {
       "s": "Leyla",
-      "t": "That's one of our oldest customs. It's a ritual for a new start — you leave the problems of the old year behind."
+      "t": "That's one of our oldest customs. It's a ritual for a new start — you leave the problems of the old year behind.",
+      "at": 22.8
     },
     {
       "s": "Sam",
-      "t": "I was nervous. But my friend said, \"When in Rome…\" So I jumped too."
+      "t": "I was nervous. But my friend said, \"When in Rome…\" So I jumped too.",
+      "at": 29.66
     },
     {
       "s": "Leyla",
-      "t": "And you were great! Only your trousers were in a little danger."
+      "t": "And you were great! Only your trousers were in a little danger.",
+      "at": 35.28
     },
     {
       "s": "Sam",
-      "t": "[chuckle] Then there were the sweets — shekerbura, pakhlava. I ate far too many."
+      "t": "[chuckle] Then there were the sweets — shekerbura, pakhlava. I ate far too many.",
+      "at": 39.98
     },
     {
       "s": "Leyla",
-      "t": "That food is part of our heritage. My grandmother makes shekerbura the way her mother did, and her mother before that."
+      "t": "That food is part of our heritage. My grandmother makes shekerbura the way her mother did, and her mother before that.",
+      "at": 45.12
     },
     {
       "s": "Sam",
-      "t": "That's lovely. Who taught you?"
+      "t": "That's lovely. Who taught you?",
+      "at": 51.14
     },
     {
       "s": "Leyla",
-      "t": "She did. Every year we make them together. I think every family needs to pass something down — a recipe, a song, a story."
+      "t": "She did. Every year we make them together. I think every family needs to pass something down — a recipe, a song, a story.",
+      "at": 53.3
     },
     {
       "s": "Sam",
-      "t": "Do you have any superstitions?"
+      "t": "Do you have any superstitions?",
+      "at": 61.14
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Some. My grandmother says you mustn't whistle in the house, or money will leave. I don't believe it, but I still never whistle at home."
+      "t": "[laugh] Some. My grandmother says you mustn't whistle in the house, or money will leave. I don't believe it, but I still never whistle at home.",
+      "at": 63.44
     },
     {
       "s": "Sam",
-      "t": "Old habits die hard!"
+      "t": "Old habits die hard!",
+      "at": 70.74
     },
     {
       "s": "Leyla",
-      "t": "Exactly. What about your family, Sam?"
+      "t": "Exactly. What about your family, Sam?",
+      "at": 72.16
     },
     {
       "s": "Sam",
-      "t": "In England, at Christmas, we pull crackers and wear silly paper crowns. Nobody knows why. It's just what we do."
+      "t": "In England, at Christmas, we pull crackers and wear silly paper crowns. Nobody knows why. It's just what we do.",
+      "at": 74.86
     },
     {
       "s": "Leyla",
-      "t": "I think the best cities are multicultural. In Baku you can eat food from twenty countries on one street."
+      "t": "I think the best cities are multicultural. In Baku you can eat food from twenty countries on one street.",
+      "at": 81.16
     },
     {
       "s": "Sam",
-      "t": "London is the same. But it's important not to lose your own culture. Assimilation is one thing — forgetting where you're from is another."
+      "t": "London is the same. But it's important not to lose your own culture. Assimilation is one thing — forgetting where you're from is another.",
+      "at": 87.52
     },
     {
       "s": "Leyla",
-      "t": "I agree. My ancestors lived in the mountains, and we still sing their folk songs at weddings."
+      "t": "I agree. My ancestors lived in the mountains, and we still sing their folk songs at weddings.",
+      "at": 95.58
     },
     {
       "s": "Sam",
-      "t": "That's beautiful. I'd love to hear one."
+      "t": "That's beautiful. I'd love to hear one.",
+      "at": 100.86
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what is one tradition from your family that you want to keep — and why?"
+      "t": "Here's your question for your next SpeakLab call: what is one tradition from your family that you want to keep — and why?",
+      "at": 103.56
     },
     {
       "s": "Sam",
-      "t": "Mine is the silly paper crown. See you next time!"
+      "t": "Mine is the silly paper crown. See you next time!",
+      "at": 110.84
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 113.68
     }
   ],
   "questions": [
@@ -202,5 +225,13 @@
   "talk": [
     "What is one tradition from your family that you want to keep — and why?",
     "Do you have a superstition, even one you don't really believe?"
-  ]
+  ],
+  "duration": 114.6,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
+  }
 }
