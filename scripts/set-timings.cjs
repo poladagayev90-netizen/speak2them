@@ -10,6 +10,6 @@ const at = JSON.parse(atJson);
 if (at.length !== d.lines.length || at.some((x) => typeof x !== 'number')) throw new Error(`${nn}: need ${d.lines.length} numbers`);
 d.lines.forEach((l, i) => { l.at = at[i]; });
 d.duration = Number(dur);
-d.voices = { Leyla: 'Cleo', Sam: 'Puck', model: 'gemini-3.8-flash-tts', post: 'rubberband tempo 0.86 + loudnorm -16', made: new Date().toISOString().slice(0, 10) };
+d.voices = { Leyla: 'Cleo', Sam: 'Puck', model: 'gemini-3.8-flash-tts', post: 'natural speed, loudnorm -16, mp3 128k', made: new Date().toISOString().slice(0, 10) };
 fs.writeFileSync(f, JSON.stringify(d, null, 2) + '\n');
 console.log(`${nn}: ${at.length} lines, ${dur}s`);
