@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, X, RotateCcw } from 'lucide-react';
+import { optionOrder } from '../../utils/topicMaterials';
 
 // The skill each question trains, so a teacher (and the learner) can see that
 // the set goes from the main idea to details to reading between the lines.
@@ -28,7 +29,8 @@ export default function MaterialQuestions({ questions, title = 'Check your under
             {TYPE_LABEL[q.type] && <p className="mt-q-type">{TYPE_LABEL[q.type]}</p>}
             <p className="mt-q-text"><span className="mt-q-n">{i + 1}</span>{q.q}</p>
             <div className="mt-q-opts">
-              {q.options.map((o, oi) => {
+              {optionOrder(q).map((oi) => {
+                const o = q.options[oi];
                 const state = p == null ? '' : oi === q.answer ? ' is-right' : oi === p ? ' is-wrong' : ' is-dim';
                 return (
                   <button key={oi} type="button" disabled={p != null} className={`mt-opt${state}`}

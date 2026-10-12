@@ -83,3 +83,26 @@ export function missingTerms(texts, topic) {
   const all = texts.join(' \n ');
   return buildTerms(topic).filter((t) => !splitByTerms(all, [t]).some((p) => p.term));
 }
+
+// The order a question's options are shown in. The scripts were written with the
+// right answer mostly second, so showing them as stored taught learners "always B".
+// The order is seeded by the question and its options — the same on every screen (a teacher's
+// Present view matches the learner's) and on every visit. True / false / not given
+// keeps its natural order.
+export function optionOrder(q) {
+  const idx = (q?.options || []).map((_, i) => i);
+  if (q?.type === 'tf' || idx.length < 3) return idx;
+  let h = 2166136261;
+  for (const ch of String(q.q || '') + q.options.join('|')) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  const rand = () => { // mulberry32
+    h = (h + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(h ^ (h >>> 15), 1 | h);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let i = idx.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx;
+}

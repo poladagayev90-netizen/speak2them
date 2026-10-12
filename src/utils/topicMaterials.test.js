@@ -1,4 +1,4 @@
-import { readingLevelFor, activeLineAt, sceneAt, spokenText } from './topicMaterials';
+import { readingLevelFor, activeLineAt, sceneAt, spokenText, optionOrder } from './topicMaterials';
 
 describe('topicMaterials', () => {
   test('readingLevelFor maps free-text levels', () => {
@@ -65,5 +65,25 @@ describe('key vocabulary', () => {
   test('extra phrases carry az/tr', () => {
     const t = buildTerms({}, [{ phrase: 'at first', az: 'əvvəlcə', tr: 'ilk başta' }]);
     expect(t[0]).toMatchObject({ phrase: 'at first', meaningAZ: 'əvvəlcə', meaningTR: 'ilk başta' });
+  });
+});
+
+describe('optionOrder', () => {
+  const q = (text, type = 'detail') => ({ type, q: text, options: ['a', 'b', 'c', 'd'], answer: 1 });
+
+  test('is a stable permutation of the options', () => {
+    const o = optionOrder(q('What did Sam see?'));
+    expect([...o].sort()).toEqual([0, 1, 2, 3]);
+    expect(optionOrder(q('What did Sam see?'))).toEqual(o);
+  });
+
+  test('true / false / not given keeps its order', () => {
+    expect(optionOrder({ type: 'tf', q: 'x', options: ['True', 'False', 'Not given'] })).toEqual([0, 1, 2]);
+  });
+
+  test('the right answer does not stay in one place', () => {
+    const spots = new Set(['Why?', 'Where did she go?', 'What is it about?', 'Who is the author?', 'How long is it?', 'What woke Sam up?']
+      .map((t) => optionOrder(q(t)).indexOf(1)));
+    expect(spots.size).toBeGreaterThan(1);
   });
 });
