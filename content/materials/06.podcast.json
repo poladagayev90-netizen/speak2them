@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today we're talking about the environment — and I did an experiment.",
-      "at": 5.6
+      "at": 4.8
     },
     {
       "s": "Leyla",
       "t": "Oh, I love experiments. What was it?",
-      "at": 11.9
+      "at": 10.3
     },
     {
       "s": "Sam",
       "t": "For one week I kept every piece of plastic I used. Every bottle, every bag, every coffee cup. [sigh] By Sunday my kitchen table was full.",
-      "at": 15.02
+      "at": 12.96
     },
     {
       "s": "Leyla",
       "t": "Full? In one week?",
-      "at": 26.9
+      "at": 23.7
     },
     {
       "s": "Sam",
       "t": "Yes. And most of it was single-use. I used it for five minutes and then threw it away.",
-      "at": 30.42
+      "at": 26.02
     },
     {
       "s": "Leyla",
       "t": "That's the problem, isn't it? Plastic lives for hundreds of years. Pollution in the sea is terrible now.",
-      "at": 37.26
+      "at": 32.06
     },
     {
       "s": "Sam",
       "t": "So I decided to turn over a new leaf. Now I carry a cloth bag and my own bottle.",
-      "at": 45.78
+      "at": 39.4
     },
     {
       "s": "Leyla",
       "t": "Good for you! But some people say: 'One person can't change anything. It's just a drop in the ocean.'",
-      "at": 52.2
+      "at": 45.3
     },
     {
       "s": "Sam",
       "t": "I hear that a lot. And it's true that the big changes must come from countries and companies.",
-      "at": 60.6
+      "at": 51.96
     },
     {
       "s": "Leyla",
       "t": "Like renewable energy — sun and wind instead of oil and gas.",
-      "at": 66.46
+      "at": 57.38
     },
     {
       "s": "Sam",
       "t": "Exactly. And stopping deforestation. When we cut down forests, we lose biodiversity — thousands of animals and plants.",
-      "at": 71.96
+      "at": 62.36
     },
     {
       "s": "Leyla",
       "t": "And the forests take carbon from the air. So every tree matters.",
-      "at": 83.1
+      "at": 71.24
     },
     {
       "s": "Sam",
       "t": "But I still think small actions count. If a million people do one small thing, it's not small any more.",
-      "at": 88.46
+      "at": 75.66
     },
     {
       "s": "Leyla",
       "t": "I agree. My family started to recycle last year. Paper, glass and plastic in different bins.",
-      "at": 97.2
+      "at": 83.8
     },
     {
       "s": "Sam",
       "t": "Was that difficult?",
-      "at": 104.98
+      "at": 90.3
     },
     {
       "s": "Leyla",
       "t": "At first, yes. [chuckle] My dad put everything in the wrong bin for a month. Now he checks everyone else's!",
-      "at": 106.48
+      "at": 91.92
     },
     {
       "s": "Sam",
       "t": "[laugh] The new environmental police. Do you think about your carbon footprint too?",
-      "at": 115.38
+      "at": 98.92
     },
     {
       "s": "Leyla",
       "t": "A little. I take the metro more and I fly less. For me, sustainability means asking: do I really need this?",
-      "at": 121.14
+      "at": 104.06
     },
     {
       "s": "Sam",
       "t": "That's a great question. Buy less, buy better, use it longer. That's how we go green without stress.",
-      "at": 130.26
+      "at": 111.98
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what is one thing you could do this week for the planet?",
-      "at": 137.96
+      "at": 118.6
     },
     {
       "s": "Sam",
       "t": "Mine is no more coffee cups. See you next time!",
-      "at": 144.42
+      "at": 124.2
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 147.94
+      "at": 127.22
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What is one thing you could do this week for the planet?",
     "Is recycling easy where you live? What would make it easier?"
   ],
-  "duration": 148.9,
+  "duration": 128.1,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

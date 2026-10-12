@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is health and wellbeing — and Leyla has a story.",
-      "at": 5.32
+      "at": 4.64
     },
     {
       "s": "Leyla",
       "t": "I do. [sigh] Two years ago I had a really bad time. I had two jobs and I was studying at night.",
-      "at": 11.36
+      "at": 9.82
     },
     {
       "s": "Sam",
       "t": "So you tried to burn the candle at both ends.",
-      "at": 21.12
+      "at": 18.16
     },
     {
       "s": "Leyla",
       "t": "Exactly. I slept five hours a night. After a few months I felt under the weather all the time — always tired, always ill.",
-      "at": 24
+      "at": 20.98
     },
     {
       "s": "Sam",
       "t": "That sounds like burnout.",
-      "at": 35.02
+      "at": 30.2
     },
     {
       "s": "Leyla",
       "t": "It was. My immunity was so low that I caught every cold in Baku. I lived on painkillers and coffee.",
-      "at": 36.82
+      "at": 31.68
     },
     {
       "s": "Sam",
       "t": "So what did you do?",
-      "at": 44.92
+      "at": 38.64
     },
     {
       "s": "Leyla",
       "t": "My mum made me go for a checkup. The doctor was very kind but very clear: you need to stop, or your body will stop for you.",
-      "at": 46.92
+      "at": 40.3
     },
     {
       "s": "Sam",
       "t": "Wow. That's strong.",
-      "at": 57.46
+      "at": 49.22
     },
     {
       "s": "Leyla",
       "t": "It was what I needed. I left one job, I started sleeping more, and slowly — it takes time — you get back on your feet.",
-      "at": 59.34
+      "at": 50.66
     },
     {
       "s": "Sam",
       "t": "I'm glad. And people often forget that mental health is health too. Not just your body.",
-      "at": 69.78
+      "at": 60.12
     },
     {
       "s": "Leyla",
       "t": "Yes! Feeling stressed for months is not normal. It's a sign.",
-      "at": 76.42
+      "at": 65.76
     },
     {
       "s": "Sam",
       "t": "My problem is different. My job is very sedentary. I sit at a computer for eight hours.",
-      "at": 81.64
+      "at": 70.6
     },
     {
       "s": "Leyla",
       "t": "So what helps you?",
-      "at": 89.8
+      "at": 77.16
     },
     {
       "s": "Sam",
       "t": "Every hour I stand up and stretch for two minutes. My back loves it. [chuckle] My colleagues think I'm strange.",
-      "at": 91.96
+      "at": 78.88
     },
     {
       "s": "Leyla",
       "t": "Not strange — smart. And nutrition is the other half. I used to skip breakfast. Now I eat fruit, eggs and drink lots of water.",
-      "at": 100.2
+      "at": 86.32
     },
     {
       "s": "Sam",
       "t": "Small habits. You don't need to change your whole life on Monday.",
-      "at": 110.92
+      "at": 95.76
     },
     {
       "s": "Leyla",
       "t": "Exactly. One small thing a day: a walk, an early night, one less coffee.",
-      "at": 116.08
+      "at": 99.8
     },
     {
       "s": "Sam",
       "t": "And talk to someone when you feel bad. That's not weak. That's normal.",
-      "at": 123.94
+      "at": 106.34
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what is one small healthy habit you have — or want to start?",
-      "at": 129.5
+      "at": 111.56
     },
     {
       "s": "Sam",
       "t": "Mine is the two-minute stretch. See you next time!",
-      "at": 137.32
+      "at": 118.12
     },
     {
       "s": "Leyla",
       "t": "Take care. Bye for now!",
-      "at": 140.92
+      "at": 121.28
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What is one small healthy habit you have — or want to start?",
     "Have you ever felt burnout or too much stress? What helped you?"
   ],
-  "duration": 142.7,
+  "duration": 122.7,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is famous people. And I have a celebrity story.",
-      "at": 4.34
+      "at": 3.76
     },
     {
       "s": "Leyla",
       "t": "Oh, go on!",
-      "at": 10.36
+      "at": 8.9
     },
     {
       "s": "Sam",
       "t": "Two years ago, at the airport in London, I stood next to a very famous actor in the coffee queue. I won't say his name.",
-      "at": 11.9
+      "at": 10.3
     },
     {
       "s": "Leyla",
       "t": "Did you say anything to him?",
-      "at": 19.8
+      "at": 17.04
     },
     {
       "s": "Sam",
       "t": "I said, \"I'm a big fan.\" He said, \"Thanks, mate.\" And that was it. Ten seconds.",
-      "at": 21.52
+      "at": 18.58
     },
     {
       "s": "Leyla",
       "t": "[laugh] Still a great story. Were there paparazzi?",
-      "at": 28.62
+      "at": 24.64
     },
     {
       "s": "Sam",
       "t": "Two photographers, yes. They followed him all the way to the gate. He looked so tired.",
-      "at": 32.3
+      "at": 27.58
     },
     {
       "s": "Leyla",
       "t": "I think that's the worst part of fame. No privacy at all. You can't even buy a coffee.",
-      "at": 38.1
+      "at": 32.78
     },
     {
       "s": "Sam",
       "t": "Exactly. Life in the limelight sounds fun, but every small mistake becomes news.",
-      "at": 44.2
+      "at": 37.92
     },
     {
       "s": "Leyla",
       "t": "And one scandal can destroy your reputation in a day.",
-      "at": 50.28
+      "at": 43.26
     },
     {
       "s": "Sam",
       "t": "True. What about you, Leyla? Do you know anyone famous?",
-      "at": 54.14
+      "at": 46.6
     },
     {
       "s": "Leyla",
       "t": "Sort of. A girl from my school posted a funny cooking video, and suddenly she had two million views.",
-      "at": 57.5
+      "at": 49.6
     },
     {
       "s": "Sam",
       "t": "Wow. Her fifteen minutes of fame!",
-      "at": 66.14
+      "at": 57.12
     },
     {
       "s": "Leyla",
       "t": "[chuckle] More like fifteen days. Then people forgot. But she said it was enough for her.",
-      "at": 70.04
+      "at": 60.24
     },
     {
       "s": "Sam",
       "t": "Some people rise to fame slowly, over many years. I think that's healthier.",
-      "at": 75.84
+      "at": 65.38
     },
     {
       "s": "Leyla",
       "t": "I agree. And I often think about who is a good role model for young people.",
-      "at": 81.85
+      "at": 70.58
     },
     {
       "s": "Sam",
       "t": "For me, it's not the most famous person. It's the person who does something useful with their fame.",
-      "at": 87.72
+      "at": 75.42
     },
     {
       "s": "Leyla",
       "t": "Like a footballer who builds schools. That's a real legacy.",
-      "at": 95.12
+      "at": 81.52
     },
     {
       "s": "Sam",
       "t": "Yes. In fifty years nobody remembers the likes. They remember what you built.",
-      "at": 99.46
+      "at": 85.58
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: if you could meet one famous person, who would it be — and what would you ask?",
-      "at": 105.46
+      "at": 90.82
     },
     {
       "s": "Sam",
       "t": "I'd ask that actor for eleven seconds. See you next time!",
-      "at": 114.78
+      "at": 98.7
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 119.06
+      "at": 102.4
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "If you could meet one famous person, who would it be — and what would you ask?",
     "Would you like to be famous? What would be the worst part for you?"
   ],
-  "duration": 120.2,
+  "duration": 103.4,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

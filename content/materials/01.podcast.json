@@ -41,112 +41,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is one of my favourites: travel.",
-      "at": 5.66
+      "at": 4.9
     },
     {
       "s": "Leyla",
       "t": "Mine too. So, Sam, a simple question to start. When you travel, do you plan everything, or do you just hit the road?",
-      "at": 11.28
+      "at": 9.72
     },
     {
       "s": "Sam",
       "t": "[chuckle] Honestly? I used to plan nothing. When I was twenty, I was a backpacker in South America for three months. No hotels, no plan. Just a big bag and a map.",
-      "at": 22.3
+      "at": 19.58
     },
     {
       "s": "Leyla",
       "t": "Three months! Weren't you homesick?",
-      "at": 35.68
+      "at": 30.69
     },
     {
       "s": "Sam",
       "t": "Oh, very. By week two I missed my mum's cooking so much. But I learned a lot.",
-      "at": 38.72
+      "at": 33.31
     },
     {
       "s": "Leyla",
       "t": "I'm the opposite. I love an itinerary. Before a trip, I write down every day: where we go, what we eat, what time the museum opens.",
-      "at": 45.7
+      "at": 39.35
     },
     {
       "s": "Sam",
       "t": "Every day? That sounds like a lot of sightseeing.",
-      "at": 56.12
+      "at": 48.55
     },
     {
       "s": "Leyla",
       "t": "[laugh] It is! And sometimes it's too much. Last year in Rome I saw so many famous places that I was exhausted.",
-      "at": 60.76
+      "at": 51.35
     },
     {
       "s": "Sam",
       "t": "That's why I like places off the beaten track. A small village, a quiet café, no tour buses.",
-      "at": 69.46
+      "at": 59.77
     },
     {
       "s": "Leyla",
       "t": "That sounds lovely. Okay, but here's the part of travel I really hate: airports.",
-      "at": 77.2
+      "at": 66.37
     },
     {
       "s": "Sam",
       "t": "Ah, yes. The long queues at customs...",
-      "at": 82.7
+      "at": 71.07
     },
     {
       "s": "Leyla",
       "t": "...and the moment you can't find your boarding pass. [sigh] It's always in the last pocket.",
-      "at": 87.54
+      "at": 75.21
     },
     {
       "s": "Sam",
       "t": "[laugh] Always. And what about a long layover? Last month I had nine hours in Doha.",
-      "at": 92.78
+      "at": 80.25
     },
     {
       "s": "Leyla",
       "t": "Nine hours! What did you do?",
-      "at": 99.92
+      "at": 85.81
     },
     {
       "s": "Sam",
       "t": "I slept on a chair. Not my best idea. And then I had terrible jet lag for three days.",
-      "at": 102.84
+      "at": 88.47
     },
     {
       "s": "Leyla",
       "t": "My tip for jet lag: drink lots of water, go outside in the daylight, and don't sleep in the afternoon.",
-      "at": 108.8
+      "at": 93.63
     },
     {
       "s": "Sam",
       "t": "Good advice. And here's mine: travel light. One small bag. You move faster, and you never wait for your suitcase.",
-      "at": 116.5
+      "at": 100.13
     },
     {
       "s": "Leyla",
       "t": "I'm trying! It's hard for me. [short pause] So, let's sum up. Plan a little, but leave some space for surprises.",
-      "at": 125
+      "at": 107.59
     },
     {
       "s": "Sam",
       "t": "Exactly. The best memories are often the things you didn't plan.",
-      "at": 134.58
+      "at": 115.77
     },
     {
       "s": "Leyla",
       "t": "Now it's your turn. In your next SpeakLab call, ask your partner: what was your best trip, and what went wrong?",
-      "at": 139.3
+      "at": 119.65
     },
     {
       "s": "Sam",
       "t": "Have fun with it. See you next time!",
-      "at": 147.94
+      "at": 127.27
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 150.44
+      "at": 129.39
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "What was your best trip — and what went wrong?",
     "Are you a planner like Leyla, or do you just hit the road like young Sam? Give an example."
   ],
-  "duration": 151.5,
+  "duration": 130.3,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

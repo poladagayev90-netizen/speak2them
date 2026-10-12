@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is money — and I have to start with a sad student story.",
-      "at": 5.06
+      "at": 4.38
     },
     {
       "s": "Leyla",
       "t": "[laugh] Another one?",
-      "at": 13.18
+      "at": 11.36
     },
     {
       "s": "Sam",
       "t": "My first month at university, I got my student loan and I felt rich. New trainers, restaurants every night, taxis everywhere.",
-      "at": 14.56
+      "at": 12.68
     },
     {
       "s": "Leyla",
       "t": "Oh no. I know where this is going.",
-      "at": 26.68
+      "at": 22.96
     },
     {
       "s": "Sam",
       "t": "By the fifteenth, my account was empty. I lived on toast and pasta for two weeks. [sigh] I couldn't even afford the bus.",
-      "at": 29.6
+      "at": 24.9
     },
     {
       "s": "Leyla",
       "t": "So you had to tighten your belt.",
-      "at": 40.1
+      "at": 34.46
     },
     {
       "s": "Sam",
       "t": "Very tight. And I borrowed money from my friends, so I had debt too. It was a terrible feeling.",
-      "at": 42.36
+      "at": 36.4
     },
     {
       "s": "Leyla",
       "t": "That's how many people learn. My parents taught me to make a budget when I was a teenager.",
-      "at": 49.58
+      "at": 42.64
     },
     {
       "s": "Sam",
       "t": "How does your budget work?",
-      "at": 55.9
+      "at": 48.16
     },
     {
       "s": "Leyla",
       "t": "It's simple. When I get my salary, I divide it: first rent and bills, then food and transport, then savings, and what's left is for fun.",
-      "at": 57.68
+      "at": 49.74
     },
     {
       "s": "Sam",
       "t": "Savings before fun? That's very Leyla.",
-      "at": 69.54
+      "at": 60.04
     },
     {
       "s": "Leyla",
       "t": "[chuckle] Yes! If I wait until the end of the month, there's nothing to save.",
-      "at": 74.24
+      "at": 63.82
     },
     {
       "s": "Sam",
       "t": "Fair. And prices go up every year now. Inflation makes everything harder.",
-      "at": 79.96
+      "at": 68.68
     },
     {
       "s": "Leyla",
       "t": "True. Coffee costs almost double what it did five years ago.",
-      "at": 85.74
+      "at": 73.98
     },
     {
       "s": "Sam",
       "t": "So now I live on a shoestring when I can. I cook at home and take my lunch to work.",
-      "at": 90.88
+      "at": 77.76
     },
     {
       "s": "Leyla",
       "t": "Good. And are you thinking about the future? Like an investment?",
-      "at": 96.78
+      "at": 83.5
     },
     {
       "s": "Sam",
       "t": "A small one. Every month I put a little into a savings plan. It doesn't break the bank, but it grows.",
-      "at": 102.06
+      "at": 87.82
     },
     {
       "s": "Leyla",
       "t": "That's the secret, I think. Small amounts, but every month.",
-      "at": 109.28
+      "at": 94.06
     },
     {
       "s": "Sam",
       "t": "And don't buy things to feel happy. That feeling lasts ten minutes.",
-      "at": 113.46
+      "at": 97.88
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what is something you saved money for — and was it worth it?",
-      "at": 119.72
+      "at": 102.6
     },
     {
       "s": "Sam",
       "t": "Mine was a bike. Totally worth it. See you next time!",
-      "at": 127.08
+      "at": 109.3
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 131.36
+      "at": 112.98
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What is something you saved money for — and was it worth it?",
     "Do you use a budget? What is the hardest thing to spend less on?"
   ],
-  "duration": 132.4,
+  "duration": 113.8,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

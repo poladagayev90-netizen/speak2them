@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is friendship. Leyla, how did you meet your best friend?",
-      "at": 5.22
+      "at": 4.58
     },
     {
       "s": "Leyla",
       "t": "On the first day of school. We were six. She took my pencil, and I took her apple.",
-      "at": 12
+      "at": 10.32
     },
     {
       "s": "Sam",
       "t": "[laugh] A fair trade.",
-      "at": 18.36
+      "at": 15.92
     },
     {
       "s": "Leyla",
       "t": "We hit it off immediately. Twenty-five years later, she's still my best friend. But now she lives in Canada.",
-      "at": 20.34
+      "at": 17.5
     },
     {
       "s": "Sam",
       "t": "Oh, so it's a long-distance friendship.",
-      "at": 28.04
+      "at": 24.14
     },
     {
       "s": "Leyla",
       "t": "Yes. There's a nine-hour time difference. When I wake up, she's going to bed.",
-      "at": 30.88
+      "at": 25.94
     },
     {
       "s": "Sam",
       "t": "How do you keep it strong?",
-      "at": 36.7
+      "at": 31.64
     },
     {
       "s": "Leyla",
       "t": "Every Sunday morning we have a video call. Sometimes it's two hours. And she always remembers my exams, my interviews, everything. She's so supportive.",
-      "at": 38.82
+      "at": 33.4
     },
     {
       "s": "Sam",
       "t": "That's loyalty. I'm a bit jealous. I had a best friend at school too — Danny. But after university we started to drift apart.",
-      "at": 49.84
+      "at": 42.92
     },
     {
       "s": "Leyla",
       "t": "What happened?",
-      "at": 61.36
+      "at": 52.74
     },
     {
       "s": "Sam",
       "t": "Nothing big. No conflict, no fight. He moved to another city, got married, and we just… stopped calling.",
-      "at": 62.58
+      "at": 53.76
     },
     {
       "s": "Leyla",
       "t": "[sigh] That happens to many people. It's sad, but it's normal.",
-      "at": 70.96
+      "at": 61.5
     },
     {
       "s": "Sam",
       "t": "Last month I sent him a message. We talked for an hour, like in the old days.",
-      "at": 76.12
+      "at": 65.8
     },
     {
       "s": "Leyla",
       "t": "That's lovely! And do you and your friends ever argue?",
-      "at": 82.32
+      "at": 70.78
     },
     {
       "s": "Sam",
       "t": "Of course. My flatmate and I argue about the dishes every week.",
-      "at": 87.4
+      "at": 75.12
     },
     {
       "s": "Leyla",
       "t": "[chuckle] And then you make up?",
-      "at": 92.12
+      "at": 79.22
     },
     {
       "s": "Sam",
       "t": "Always. We found a compromise — I cook, and he washes up.",
-      "at": 94.08
+      "at": 80.82
     },
     {
       "s": "Leyla",
       "t": "For me, the most important thing is trust. I can tell my friend anything, and it stays between us.",
-      "at": 99.34
+      "at": 85.74
     },
     {
       "s": "Sam",
       "t": "Agreed. And a real friend will stand by someone even when they make a mistake.",
-      "at": 106.56
+      "at": 91.66
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: who is your oldest friend — and how did you meet?",
-      "at": 112.26
+      "at": 96.46
     },
     {
       "s": "Sam",
       "t": "Mine is Danny. I think I'll call him again. See you next time!",
-      "at": 119.9
+      "at": 103.06
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 124.42
+      "at": 107.08
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "Who is your oldest friend — and how did you meet?",
     "Have you ever drifted apart from a friend? Would you like to contact them again?"
   ],
-  "duration": 125.6,
+  "duration": 108,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

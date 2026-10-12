@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is cartoons and animation. And yesterday I watched a cartoon with my niece.",
-      "at": 4.94
+      "at": 4.38
     },
     {
       "s": "Leyla",
       "t": "Which one?",
-      "at": 14.4
+      "at": 12.36
     },
     {
       "s": "Sam",
       "t": "An old one — the one I loved when I was eight. And I was much more excited than she was!",
-      "at": 15.62
+      "at": 13.28
     },
     {
       "s": "Leyla",
       "t": "[laugh] That's nostalgia. One song from a cartoon can take someone back thirty years.",
-      "at": 22.56
+      "at": 19.36
     },
     {
       "s": "Sam",
       "t": "Exactly. In the first minute I remembered every character and almost every line.",
-      "at": 28.7
+      "at": 24.7
     },
     {
       "s": "Leyla",
       "t": "When I was a child, our cartoons were always dubbed. The characters spoke Russian or Turkish, never English.",
-      "at": 34.52
+      "at": 29.48
     },
     {
       "s": "Sam",
       "t": "So the famous mouse spoke Turkish?",
-      "at": 41.48
+      "at": 35.64
     },
     {
       "s": "Leyla",
       "t": "[chuckle] Yes, with a very deep voice. Years later I heard the English voiceover and I was shocked.",
-      "at": 44.48
+      "at": 38.24
     },
     {
       "s": "Sam",
       "t": "My favourite character was never the hero. I always loved the villain.",
-      "at": 51.58
+      "at": 44.38
     },
     {
       "s": "Leyla",
       "t": "Why the villain?",
-      "at": 56.34
+      "at": 48.42
     },
     {
       "s": "Sam",
       "t": "Villains are larger than life. Big voice, big plans, big eyebrows. The hero is often a bit boring.",
-      "at": 57.02
+      "at": 49.68
     },
     {
       "s": "Leyla",
       "t": "True. But the storyline needs a good hero too, or there's no story.",
-      "at": 69.16
+      "at": 59.72
     },
     {
       "s": "Sam",
       "t": "Fair. And did you know that a long animated film has more than a hundred thousand frames?",
-      "at": 75
+      "at": 64.56
     },
     {
       "s": "Leyla",
       "t": "A hundred thousand? Someone draws all of them?",
-      "at": 82.22
+      "at": 69.4
     },
     {
       "s": "Sam",
       "t": "In the old days, yes — by hand. Twenty-four drawings for every second.",
-      "at": 87.4
+      "at": 75.08
     },
     {
       "s": "Leyla",
       "t": "That's amazing. And when the pictures move, they really come to life.",
-      "at": 94.02
+      "at": 80.9
     },
     {
       "s": "Sam",
       "t": "Now computers do a lot of the work, but artists still plan every frame.",
-      "at": 99.58
+      "at": 85.88
     },
     {
       "s": "Leyla",
       "t": "I think cartoons aren't only for children. The best ones make adults cry.",
-      "at": 105.24
+      "at": 90.96
     },
     {
       "s": "Sam",
       "t": "[sigh] Don't remind me. I cried at the cinema last year. Next to my niece. She wasn't crying.",
-      "at": 111.88
+      "at": 96.18
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what cartoon did you love as a child — and who was your favourite character?",
-      "at": 119.82
+      "at": 103
     },
     {
       "s": "Sam",
       "t": "Mine was the villain, of course. See you next time!",
-      "at": 127.58
+      "at": 109.42
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 131.14
+      "at": 112.84
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "What cartoon did you love as a child — and who was your favourite character?",
     "Do you prefer the hero or the villain in a story? Why?"
   ],
-  "duration": 132.3,
+  "duration": 113.8,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

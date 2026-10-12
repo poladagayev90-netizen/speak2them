@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is work and career — and I have a confession.",
-      "at": 5.22
+      "at": 4.54
     },
     {
       "s": "Leyla",
       "t": "Go on.",
-      "at": 12.58
+      "at": 10.8
     },
     {
       "s": "Sam",
       "t": "In my first job, I almost decided to resign after six months. [sigh] My workload was crazy. I stayed at the office until nine every night.",
-      "at": 13.88
+      "at": 11.8
     },
     {
       "s": "Leyla",
       "t": "Why so much?",
-      "at": 25.06
+      "at": 21.54
     },
     {
       "s": "Sam",
       "t": "I wanted to go the extra mile. I said yes to every task, every deadline. I thought that was the way to get a promotion.",
-      "at": 26.46
+      "at": 22.78
     },
     {
       "s": "Leyla",
       "t": "And was it?",
-      "at": 35
+      "at": 30
     },
     {
       "s": "Sam",
       "t": "No! I was just tired and slow. My manager told me: doing more is not the same as doing better.",
-      "at": 36.16
+      "at": 31.16
     },
     {
       "s": "Leyla",
       "t": "Wise manager. So what did you do?",
-      "at": 44.16
+      "at": 37.88
     },
     {
       "s": "Sam",
       "t": "I went back to the drawing board. I learned to say no politely, and to ask a colleague for help.",
-      "at": 46.76
+      "at": 40.26
     },
     {
       "s": "Leyla",
       "t": "That's hard for many people. For me the big change was remote work.",
-      "at": 54.14
+      "at": 46.62
     },
     {
       "s": "Sam",
       "t": "Oh, you love working from home.",
-      "at": 58.78
+      "at": 50.5
     },
     {
       "s": "Leyla",
       "t": "I do. No traffic, my own coffee, my cat. [chuckle] But sometimes I feel lonely.",
-      "at": 61.62
+      "at": 52.86
     },
     {
       "s": "Sam",
       "t": "Yes. In the office you chat at the coffee machine, you learn from people.",
-      "at": 69.74
+      "at": 59.78
     },
     {
       "s": "Leyla",
       "t": "So now I go to the office two days a week. It's a good mix.",
-      "at": 75.34
+      "at": 64.94
     },
     {
       "s": "Sam",
       "t": "And what about your friend who started her own company?",
-      "at": 79.38
+      "at": 68.32
     },
     {
       "s": "Leyla",
       "t": "Nigar! She's an entrepreneur now — she sells handmade bags online. She works hard, but she says she's never bored.",
-      "at": 82.86
+      "at": 71.18
     },
     {
       "s": "Sam",
       "t": "That's brave. Does she have any advice?",
-      "at": 91.62
+      "at": 78.72
     },
     {
       "s": "Leyla",
       "t": "Yes: networking. Go to events, talk to people, help them. Most jobs come from people you know.",
-      "at": 94.3
+      "at": 81.06
     },
     {
       "s": "Sam",
       "t": "True. You don't have to climb the ladder alone. Other people can give you a hand.",
-      "at": 102.5
+      "at": 87.88
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what is your dream job, and what is one step you can take towards it?",
-      "at": 107.1
+      "at": 92.2
     },
     {
       "s": "Sam",
       "t": "And remember — no one's dream job is staying at the office until nine! See you next time.",
-      "at": 115.64
+      "at": 99.28
     },
     {
       "s": "Leyla",
       "t": "[laugh] Bye for now!",
-      "at": 122.08
+      "at": 105.48
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What is your dream job, and what is one step you can take towards it?",
     "Would you rather work from home or in an office? Why?"
   ],
-  "duration": 124,
+  "duration": 106.6,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

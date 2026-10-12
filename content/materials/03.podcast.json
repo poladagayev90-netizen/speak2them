@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. And I'm a little hungry, because today's topic is food and culture.",
-      "at": 5.14
+      "at": 4.42
     },
     {
       "s": "Leyla",
       "t": "[laugh] Perfect timing. Sam, you came to my family's house last month. What did you eat?",
-      "at": 11.76
+      "at": 10.12
     },
     {
       "s": "Sam",
       "t": "Plov! Your mum's plov. Rice with saffron, meat, chestnuts, dried fruit... honestly, it was the best homemade meal of my year.",
-      "at": 18.7
+      "at": 16.12
     },
     {
       "s": "Leyla",
       "t": "In Azerbaijani cuisine, plov is like a king. There are more than forty kinds.",
-      "at": 28.06
+      "at": 24.54
     },
     {
       "s": "Sam",
       "t": "Forty! And the portion she gave me was huge. Then she gave me a second one.",
-      "at": 34.78
+      "at": 29.92
     },
     {
       "s": "Leyla",
       "t": "Of course. If your plate is empty, a mother thinks you're still hungry.",
-      "at": 41.02
+      "at": 35.28
     },
     {
       "s": "Sam",
       "t": "I learned that the hard way. [chuckle] I couldn't move for an hour.",
-      "at": 45.7
+      "at": 39.32
     },
     {
       "s": "Leyla",
       "t": "So what's a staple food in England? Something people eat every day?",
-      "at": 50.2
+      "at": 43.18
     },
     {
       "s": "Sam",
       "t": "Bread and potatoes, I think. Simple food. But I love trying new things when I travel.",
-      "at": 53.64
+      "at": 46.7
     },
     {
       "s": "Leyla",
       "t": "Even very spicy food?",
-      "at": 60.5
+      "at": 51.96
     },
     {
       "s": "Sam",
       "t": "[sigh] That's my weak point. In Thailand I ordered noodles that the waiter called 'a little hot'.",
-      "at": 63.34
+      "at": 54.56
     },
     {
       "s": "Leyla",
       "t": "And?",
-      "at": 69.88
+      "at": 60.04
     },
     {
       "s": "Sam",
       "t": "I cried for ten minutes. Lesson learned: never bite off more than you can chew.",
-      "at": 70.96
+      "at": 61.06
     },
     {
       "s": "Leyla",
       "t": "[laugh] Poor Sam. For me, the most interesting part of travel is trying a local delicacy, even a strange one.",
-      "at": 77.62
+      "at": 66.72
     },
     {
       "s": "Sam",
       "t": "Like what?",
-      "at": 85.4
+      "at": 73.38
     },
     {
       "s": "Leyla",
       "t": "In Japan I tried raw sea urchin. The main ingredient is... well, the sea urchin. It tasted like the ocean.",
-      "at": 86.72
+      "at": 74.48
     },
     {
       "s": "Sam",
       "t": "Brave. Okay, let's talk about table manners. They're different everywhere, aren't they?",
-      "at": 95.94
+      "at": 82.56
     },
     {
       "s": "Leyla",
       "t": "Very. Here we serve tea to guests again and again. In some countries you shouldn't finish everything; in others you should.",
-      "at": 100.92
+      "at": 87.22
     },
     {
       "s": "Sam",
       "t": "So the easy rule is: watch what your host does. It's a piece of cake.",
-      "at": 109.58
+      "at": 94.18
     },
     {
       "s": "Leyla",
       "t": "Nice. And here's some food for thought: when you share a meal, you share a culture. Your question for your next SpeakLab call: what dish would you cook for a guest from abroad?",
-      "at": 114.82
+      "at": 98.74
     },
     {
       "s": "Sam",
       "t": "Not too spicy, please! See you next time.",
-      "at": 126.08
+      "at": 108.42
     },
     {
       "s": "Leyla",
       "t": "[laugh] Bye for now!",
-      "at": 129.64
+      "at": 111.3
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What dish would you cook for a guest from abroad — and why that one?",
     "What is a table manner in your family that a visitor might not know?"
   ],
-  "duration": 130.9,
+  "duration": 112.6,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

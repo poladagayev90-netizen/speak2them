@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is social media — and Leyla is a little bit famous now.",
-      "at": 5.4
+      "at": 4.68
     },
     {
       "s": "Leyla",
       "t": "[laugh] Stop it. Only for one week.",
-      "at": 13.84
+      "at": 11.72
     },
     {
       "s": "Sam",
       "t": "Tell everyone what happened.",
-      "at": 16.5
+      "at": 14.18
     },
     {
       "s": "Leyla",
       "t": "I filmed my cat, Pişik, pushing a birthday cake off the table. I posted it, went to sleep, and in the morning it was viral. Two million views!",
-      "at": 18.2
+      "at": 15.78
     },
     {
       "s": "Sam",
       "t": "Two million! You were in the spotlight.",
-      "at": 30.06
+      "at": 25.8
     },
     {
       "s": "Leyla",
       "t": "It was so strange. My phone didn't stop. Brands wrote to me. Someone asked if Pişik wanted to be an influencer.",
-      "at": 33.5
+      "at": 28.6
     },
     {
       "s": "Sam",
       "t": "[chuckle] And did she say yes?",
-      "at": 42.44
+      "at": 36.52
     },
     {
       "s": "Leyla",
       "t": "She said nothing, she's a cat. But I learned a lot about how the algorithm works. It loves engagement — likes, comments, shares.",
-      "at": 44.78
+      "at": 38.5
     },
     {
       "s": "Sam",
       "t": "Right. The more people react, the more people see it in their feed.",
-      "at": 55.04
+      "at": 47.46
     },
     {
       "s": "Leyla",
       "t": "But it wasn't all nice. Some comments were really rude. One troll wrote that I'm a terrible owner.",
-      "at": 59.14
+      "at": 50.72
     },
     {
       "s": "Sam",
       "t": "Oh no. What did you do?",
-      "at": 67.7
+      "at": 57.54
     },
     {
       "s": "Leyla",
       "t": "At first I wanted to answer. But an answer would only stir up more anger. So I just used the block button.",
-      "at": 70.78
+      "at": 61.08
     },
     {
       "s": "Sam",
       "t": "Good choice. And I think many people now jump on the bandwagon — they copy every trend just to get likes.",
-      "at": 79.48
+      "at": 68.32
     },
     {
       "s": "Leyla",
       "t": "Yes, and they feel bad when the numbers are low. Social media can be fun, but it can also make us anxious.",
-      "at": 87.92
+      "at": 75.62
     },
     {
       "s": "Sam",
       "t": "I agree. I checked my screen time last month. Five hours a day. [sigh] Five!",
-      "at": 95.92
+      "at": 82.16
     },
     {
       "s": "Leyla",
       "t": "That's a lot of hours. What did you change?",
-      "at": 103.72
+      "at": 89.3
     },
     {
       "s": "Sam",
       "t": "I turned off notifications, and my phone sleeps in the kitchen at night. I read more now.",
-      "at": 106.5
+      "at": 92.54
     },
     {
       "s": "Leyla",
       "t": "Nice. My rule: no phone for the first hour of the day.",
-      "at": 114.08
+      "at": 97.8
     },
     {
       "s": "Sam",
       "t": "Hard, but good. Use social media — don't let it use you.",
-      "at": 118.94
+      "at": 102.3
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what do you love and what do you hate about social media?",
-      "at": 124.42
+      "at": 106.44
     },
     {
       "s": "Sam",
       "t": "And send us your cat videos. See you next time!",
-      "at": 132.14
+      "at": 113.76
     },
     {
       "s": "Leyla",
       "t": "[laugh] Bye for now!",
-      "at": 137.84
+      "at": 118.9
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What do you love and what do you hate about social media?",
     "How much screen time do you have a day? Would you like to change it?"
   ],
-  "duration": 139,
+  "duration": 119.6,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

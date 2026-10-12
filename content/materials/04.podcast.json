@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today we're going back to school — the topic is education.",
-      "at": 4.84
+      "at": 4.16
     },
     {
       "s": "Leyla",
       "t": "Sam, be honest. What kind of student were you?",
-      "at": 10.7
+      "at": 9.22
     },
     {
       "s": "Sam",
       "t": "[chuckle] The last-minute kind. I always started to revise the night before the exam. Coffee, three a.m., panic.",
-      "at": 14.94
+      "at": 12.84
     },
     {
       "s": "Leyla",
       "t": "And did it work?",
-      "at": 24.2
+      "at": 20.82
     },
     {
       "s": "Sam",
       "t": "Sometimes. But at university it stopped working. I missed one deadline, then another, and in my first year I almost had to drop out.",
-      "at": 26.7
+      "at": 22.82
     },
     {
       "s": "Leyla",
       "t": "Really? What changed?",
-      "at": 36.82
+      "at": 31.8
     },
     {
       "s": "Sam",
       "t": "A teacher sat down with me and showed me how to plan. I had to learn the ropes — how to study, not just what to study.",
-      "at": 39.02
+      "at": 33.56
     },
     {
       "s": "Leyla",
       "t": "That's a good teacher. I was the opposite. I hit the books every day, even on holiday.",
-      "at": 47.94
+      "at": 41.2
     },
     {
       "s": "Sam",
       "t": "Of course you did. [laugh]",
-      "at": 54.08
+      "at": 46.82
     },
     {
       "s": "Leyla",
       "t": "And I got a scholarship, so I didn't have to pay tuition. That was a big help for my family.",
-      "at": 56.62
+      "at": 48.5
     },
     {
       "s": "Sam",
       "t": "Well done. Do you think school has changed since we were kids?",
-      "at": 62.62
+      "at": 53.84
     },
     {
       "s": "Leyla",
       "t": "A lot. When I was at school, the curriculum was mostly facts. Learn the dates, write them down, forget them.",
-      "at": 68.02
+      "at": 58.31
     },
     {
       "s": "Sam",
       "t": "And now?",
-      "at": 76.02
+      "at": 65.42
     },
     {
       "s": "Leyla",
       "t": "Now good schools teach critical thinking — asking questions, checking information, not believing everything you read online.",
-      "at": 77.1
+      "at": 66.46
     },
     {
       "s": "Sam",
       "t": "That's so important today. And it's not only reading and writing. Digital literacy matters too.",
-      "at": 86.4
+      "at": 74.08
     },
     {
       "s": "Leyla",
       "t": "Okay, tips for our listeners who are studying English. Mine: a little every day is better than a lot once a week.",
-      "at": 94.06
+      "at": 80.88
     },
     {
       "s": "Sam",
       "t": "And mine: test yourself. Close the book and try to say it, or write it. That's how it stays in your head.",
-      "at": 101.64
+      "at": 87.44
     },
     {
       "s": "Leyla",
       "t": "Like speaking in a SpeakLab call, actually.",
-      "at": 108.86
+      "at": 93.66
     },
     {
       "s": "Sam",
       "t": "Exactly. You don't need to be perfect. You need to practise. Then you'll pass with flying colours.",
-      "at": 111.94
+      "at": 96.62
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next call: who was your best teacher, and what did they do differently?",
-      "at": 119.14
+      "at": 102.56
     },
     {
       "s": "Sam",
       "t": "Mine changed my life. See you next time!",
-      "at": 125.48
+      "at": 107.96
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 128.76
+      "at": 110.8
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "Who was your best teacher, and what did they do differently?",
     "Are you a 'last-minute' learner like young Sam, or do you hit the books every day like Leyla?"
   ],
-  "duration": 129.8,
+  "duration": 111.6,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

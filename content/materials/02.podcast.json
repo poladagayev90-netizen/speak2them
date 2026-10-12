@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today we're talking about technology — and I have a sad story.",
-      "at": 5.88
+      "at": 5.06
     },
     {
       "s": "Leyla",
       "t": "Oh no. What happened?",
-      "at": 12.94
+      "at": 11.16
     },
     {
       "s": "Sam",
       "t": "Last week my phone had a crash. The screen went black and it never came back. [sigh] All my photos, all my notes... gone.",
-      "at": 15.1
+      "at": 13.04
     },
     {
       "s": "Leyla",
       "t": "Didn't you use cloud storage? Your photos can live online, not only on the phone.",
-      "at": 25.98
+      "at": 22.66
     },
     {
       "s": "Sam",
       "t": "I know, I know. My phone asked me again and again: 'Do you want to back up?' And I always pressed 'Later'.",
-      "at": 32.68
+      "at": 28.04
     },
     {
       "s": "Leyla",
       "t": "[laugh] Like every update. 'Remind me tomorrow.'",
-      "at": 40.86
+      "at": 35.16
     },
     {
       "s": "Sam",
       "t": "Exactly! So now I'm learning. I'm trying to get up to speed with all these settings.",
-      "at": 43.88
+      "at": 37.76
     },
     {
       "s": "Leyla",
       "t": "Good. Because phones today are amazing. Mine knows what music I like before I do.",
-      "at": 50.38
+      "at": 43.32
     },
     {
       "s": "Sam",
       "t": "That's the algorithm. It watches what you click and makes a guess about what you want next.",
-      "at": 56.92
+      "at": 48.7
     },
     {
       "s": "Leyla",
       "t": "It's a little scary, isn't it? And now there's artificial intelligence in everything — my email, my camera, even my fridge!",
-      "at": 61.98
+      "at": 53.18
     },
     {
       "s": "Sam",
       "t": "Your fridge has AI?",
-      "at": 71.04
+      "at": 61.08
     },
     {
       "s": "Leyla",
       "t": "Well... it tells me when the milk is finished. [chuckle] That's cutting edge for me.",
-      "at": 73.42
+      "at": 63.14
     },
     {
       "s": "Sam",
       "t": "[laugh] And automation is everywhere at work too. Machines do the boring jobs, so people can do the interesting ones. At least, that's the idea.",
-      "at": 78.48
+      "at": 67.98
     },
     {
       "s": "Leyla",
       "t": "Some people worry about their jobs, though.",
-      "at": 87.94
+      "at": 75.56
     },
     {
       "s": "Sam",
       "t": "True. It's a big question. But let's talk about something we can all do today: cybersecurity.",
-      "at": 91.1
+      "at": 78.32
     },
     {
       "s": "Leyla",
       "t": "Yes! My first tip: please don't use the same password for everything.",
-      "at": 98.48
+      "at": 85.02
     },
     {
       "s": "Sam",
       "t": "Guilty. [short pause] Mine used to be my cat's name and one, two, three.",
-      "at": 102.8
+      "at": 88.92
     },
     {
       "s": "Leyla",
       "t": "Sam! Use a long password, like a short sentence, and turn on the second step — the code on your phone.",
-      "at": 108.16
+      "at": 93.04
     },
     {
       "s": "Sam",
       "t": "Okay. And my tip: if a message looks strange, don't click. Just pull the plug on the conversation.",
-      "at": 116.42
+      "at": 100.16
     },
     {
       "s": "Leyla",
       "t": "Great advice. Now your question for your next SpeakLab call: which app could you never live without — and why?",
-      "at": 124.76
+      "at": 107.3
     },
     {
       "s": "Sam",
       "t": "And I'll be backing up my new phone. Every week. Promise.",
-      "at": 134.7
+      "at": 115.74
     },
     {
       "s": "Leyla",
       "t": "[laugh] We'll check! Bye for now!",
-      "at": 139.62
+      "at": 120.18
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "Which app could you never live without — and why?",
     "Have you ever lost something important on a phone or computer? What happened?"
   ],
-  "duration": 142.5,
+  "duration": 122.6,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

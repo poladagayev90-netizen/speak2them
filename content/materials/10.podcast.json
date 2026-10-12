@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is films and series. And Leyla looks very tired.",
-      "at": 5.82
+      "at": 4.9
     },
     {
       "s": "Leyla",
       "t": "[sigh] Because I only slept three hours. Last night I started a new series at ten o'clock...",
-      "at": 13.06
+      "at": 11.22
     },
     {
       "s": "Sam",
       "t": "And?",
-      "at": 20.02
+      "at": 17.24
     },
     {
       "s": "Leyla",
       "t": "And I finished the whole first season at four in the morning. I wanted to binge-watch two episodes, not eight!",
-      "at": 21
+      "at": 18.02
     },
     {
       "s": "Sam",
       "t": "[laugh] What happened?",
-      "at": 29.8
+      "at": 25.58
     },
     {
       "s": "Leyla",
       "t": "Every episode ended with a cliffhanger. The hero is falling from a building — and then, black screen. How can you sleep after that?",
-      "at": 31.58
+      "at": 27.14
     },
     {
       "s": "Sam",
       "t": "You can't. That's the trick. They keep you on the edge of your seat.",
-      "at": 40.48
+      "at": 34.84
     },
     {
       "s": "Leyla",
       "t": "Exactly. The plot was so clever. And the soundtrack! I'm still singing the music.",
-      "at": 45.2
+      "at": 38.8
     },
     {
       "s": "Sam",
       "t": "So tell me — how does it end?",
-      "at": 52.08
+      "at": 44.74
     },
     {
       "s": "Leyla",
       "t": "No! No spoilers. You have to watch it yourself.",
-      "at": 53.9
+      "at": 46.7
     },
     {
       "s": "Sam",
       "t": "Thank you. I hate spoilers. My brother once told me the ending of a film in the cinema queue.",
-      "at": 58.18
+      "at": 49.98
     },
     {
       "s": "Leyla",
       "t": "That's terrible! [laugh] Is the cast good, at least, in the things you watch?",
-      "at": 65.96
+      "at": 56.6
     },
     {
       "s": "Sam",
       "t": "In my favourite film, yes. The main actor is great, but sometimes a small character can steal the show. In this one it's an old taxi driver. He's so funny.",
-      "at": 71.54
+      "at": 61.46
     },
     {
       "s": "Leyla",
       "t": "I love that. And do you watch sequels? I'm always disappointed.",
-      "at": 82.59
+      "at": 71.1
     },
     {
       "s": "Sam",
       "t": "Usually the first film is better. But not always.",
-      "at": 88.26
+      "at": 75.92
     },
     {
       "s": "Leyla",
       "t": "Okay, here's a tip for English learners: watch with English subtitles, not Azerbaijani or Turkish ones.",
-      "at": 92.98
+      "at": 79.84
     },
     {
       "s": "Sam",
       "t": "Yes! You hear the words and see them at the same time. It's like a free English lesson.",
-      "at": 100.18
+      "at": 86.04
     },
     {
       "s": "Leyla",
       "t": "And choose something you really like. Then it doesn't feel like studying.",
-      "at": 105.84
+      "at": 91.16
     },
     {
       "s": "Sam",
       "t": "If you're not sure, try a comedy series. The episodes are short. Give it a shot.",
-      "at": 109.93
+      "at": 94.62
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what film or series would you recommend — without spoilers?",
-      "at": 115.62
+      "at": 99.34
     },
     {
       "s": "Sam",
       "t": "And Leyla — sleep tonight, please. See you next time!",
-      "at": 122.9
+      "at": 105.52
     },
     {
       "s": "Leyla",
       "t": "[laugh] One more episode... Bye for now!",
-      "at": 128.32
+      "at": 110.74
     }
   ],
   "questions": [
@@ -225,12 +225,12 @@
     "What film or series would you recommend — without spoilers?",
     "Do you watch with subtitles? Which language, and does it help you?"
   ],
-  "duration": 131.3,
+  "duration": 112.9,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

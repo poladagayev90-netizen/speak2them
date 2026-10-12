@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is music — and I have a confession. I'm completely tone-deaf.",
-      "at": 5.34
+      "at": 4.68
     },
     {
       "s": "Leyla",
       "t": "[laugh] I know. I heard you at karaoke last month.",
-      "at": 14.84
+      "at": 12.8
     },
     {
       "s": "Sam",
       "t": "Everyone heard me. I chose a slow love song, and by the chorus half the room was laughing.",
-      "at": 19.34
+      "at": 16.64
     },
     {
       "s": "Leyla",
       "t": "But you finished it! That was brave. And the next morning you had to face the music — your friend posted the video.",
-      "at": 26.32
+      "at": 22.64
     },
     {
       "s": "Sam",
       "t": "[sigh] Four hundred views. My mum watched it twice.",
-      "at": 33.34
+      "at": 28.66
     },
     {
       "s": "Leyla",
       "t": "My story is the opposite. Last summer my cousin asked me to sing at her wedding.",
-      "at": 40.08
+      "at": 34.54
     },
     {
       "s": "Sam",
       "t": "Really? What did you sing?",
-      "at": 45.36
+      "at": 38.98
     },
     {
       "s": "Leyla",
       "t": "An old Azerbaijani song with a beautiful melody. I didn't know all the lyrics, so I had to learn them first.",
-      "at": 47.98
+      "at": 41.28
     },
     {
       "s": "Sam",
       "t": "And did you practise a lot?",
-      "at": 55.12
+      "at": 47.44
     },
     {
       "s": "Leyla",
       "t": "I had to rehearse every evening for three weeks. My neighbours know that song very well now.",
-      "at": 56.54
+      "at": 49.22
     },
     {
       "s": "Sam",
       "t": "[chuckle] And on the day?",
-      "at": 66.6
+      "at": 56.98
     },
     {
       "s": "Leyla",
       "t": "When I finished, my grandmother was crying. She hugged me and said, \"That was music to my ears.\"",
-      "at": 67.86
+      "at": 57.8
     },
     {
       "s": "Sam",
       "t": "That's lovely. A live performance is so different from singing in the shower.",
-      "at": 75.2
+      "at": 64.8
     },
     {
       "s": "Leyla",
       "t": "Totally. So what do you listen to, Sam? Which genre is your favourite?",
-      "at": 81.4
+      "at": 70.54
     },
     {
       "s": "Sam",
       "t": "Mostly indie rock. But for years I hated jazz. I said it was just noise. Then a friend took me to a jazz club in London.",
-      "at": 87.32
+      "at": 75.1
     },
     {
       "s": "Leyla",
       "t": "And one night made you change your tune?",
-      "at": 96.6
+      "at": 83.1
     },
     {
       "s": "Sam",
       "t": "Completely. Live, jazz is magic. Now I go every month.",
-      "at": 99.76
+      "at": 85.74
     },
     {
       "s": "Leyla",
       "t": "My favourite thing right now is a collaboration between two very different artists — like a rapper and an opera singer.",
-      "at": 104.84
+      "at": 90.22
     },
     {
       "s": "Sam",
       "t": "Those are great. Two styles, one song. Sometimes it works, and sometimes it's a disaster.",
-      "at": 113.3
+      "at": 97.22
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what song do you know all the words to — and why?",
-      "at": 120.32
+      "at": 103.44
     },
     {
       "s": "Sam",
       "t": "Please don't ask me to sing it. See you next time!",
-      "at": 127.98
+      "at": 109.98
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 131.18
+      "at": 112.86
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "What song do you know all the words to — and why?",
     "Is there a kind of music you hated before and like now?"
   ],
-  "duration": 132.4,
+  "duration": 113.9,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

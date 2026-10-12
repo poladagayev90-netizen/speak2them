@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is fears and phobias. And Leyla, I know your secret.",
-      "at": 5.36
+      "at": 4.64
     },
     {
       "s": "Leyla",
       "t": "[sigh] Yes, everyone knows. I'm scared of heights. It's a real phobia.",
-      "at": 13.66
+      "at": 11.82
     },
     {
       "s": "Sam",
       "t": "Tell them about the glass bridge.",
-      "at": 19.8
+      "at": 17.1
     },
     {
       "s": "Leyla",
       "t": "Last spring, in the mountains, my friends wanted to walk across a glass bridge. I looked down and I was scared stiff. I could not move.",
-      "at": 22.62
+      "at": 19.5
     },
     {
       "s": "Sam",
       "t": "What did your friends do?",
-      "at": 33.14
+      "at": 28.32
     },
     {
       "s": "Leyla",
       "t": "One friend held my hand and tried to reassure me. \"It's safe, Leyla. Thousands of people walk here every day.\"",
-      "at": 35.1
+      "at": 30.1
     },
     {
       "s": "Sam",
       "t": "Did it help?",
-      "at": 42.68
+      "at": 36.8
     },
     {
       "s": "Leyla",
       "t": "Not really. I know the fear is irrational. The bridge is strong. But my body doesn't listen.",
-      "at": 44.4
+      "at": 38.22
     },
     {
       "s": "Sam",
       "t": "I understand. My trigger is different. Put me in front of a big audience, and my hands start shaking.",
-      "at": 51.76
+      "at": 44.7
     },
     {
       "s": "Leyla",
       "t": "Public speaking?",
-      "at": 59.74
+      "at": 51.26
     },
     {
       "s": "Sam",
       "t": "Yes. At my best friend's wedding, I had to give a speech. The night before, I started to get cold feet. I wanted to call him and say, \"Ask someone else.\"",
-      "at": 61.12
+      "at": 52.54
     },
     {
       "s": "Leyla",
       "t": "But you didn't.",
-      "at": 73.3
+      "at": 63.08
     },
     {
       "s": "Sam",
       "t": "No. Everyone says: face your fears. So I did. I practised the speech twenty times in front of my cat.",
-      "at": 74.9
+      "at": 64.4
     },
     {
       "s": "Leyla",
       "t": "[laugh] And on the day?",
-      "at": 85.9
+      "at": 73.82
     },
     {
       "s": "Sam",
       "t": "My voice was shaking for the first minute. Then people laughed at my first joke, and the anxiety just… went away.",
-      "at": 87.48
+      "at": 75.18
     },
     {
       "s": "Leyla",
       "t": "That's a great way to overcome a fear — step by step.",
-      "at": 96.22
+      "at": 82.7
     },
     {
       "s": "Sam",
       "t": "And you? Did you cross the bridge in the end?",
-      "at": 100.6
+      "at": 86.28
     },
     {
       "s": "Leyla",
       "t": "Half of it. Then I had a small panic attack and walked back. But next year I will try again.",
-      "at": 103.66
+      "at": 89.42
     },
     {
       "s": "Sam",
       "t": "Half is good! And at least it's not a nightmare any more.",
-      "at": 111.26
+      "at": 95.7
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what are you afraid of — and have you ever tried to face it?",
-      "at": 115.44
+      "at": 99.28
     },
     {
       "s": "Sam",
       "t": "Mine is spiders. But let's not talk about that. See you next time!",
-      "at": 122.94
+      "at": 105.76
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 128.46
+      "at": 110.46
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "What are you afraid of — and have you ever tried to face it?",
     "Is it better to face a fear quickly or step by step? Why?"
   ],
-  "duration": 129.7,
+  "duration": 111.6,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

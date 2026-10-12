@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is sport. And I can't walk properly today.",
-      "at": 5.06
+      "at": 4.36
     },
     {
       "s": "Leyla",
       "t": "[laugh] Why not?",
-      "at": 12.6
+      "at": 10.88
     },
     {
       "s": "Sam",
       "t": "Yesterday I ran my first half marathon. Twenty-one kilometres.",
-      "at": 14.38
+      "at": 12.38
     },
     {
       "s": "Leyla",
       "t": "Wow, congratulations! How was it?",
-      "at": 19.86
+      "at": 16.98
     },
     {
       "s": "Sam",
       "t": "The first ten kilometres were great. But I made a classic mistake. Everyone around me was running fast, so I ran fast too.",
-      "at": 23.1
+      "at": 19.9
     },
     {
       "s": "Leyla",
       "t": "Oh no. You should never jump the gun in a long race.",
-      "at": 33.24
+      "at": 28.4
     },
     {
       "s": "Sam",
       "t": "I know that now. After fifteen kilometres I had no stamina left. I walked a lot of the last part.",
-      "at": 37.28
+      "at": 32.26
     },
     {
       "s": "Leyla",
       "t": "But you finished! That's what matters. Did you warm up before the race?",
-      "at": 45.58
+      "at": 39.3
     },
     {
       "s": "Sam",
       "t": "For two minutes. My coach was not happy. He says a good warm-up protects you from injury.",
-      "at": 50.9
+      "at": 44
     },
     {
       "s": "Leyla",
       "t": "He's right. At school I played tennis, and I hurt my knee because I never stretched.",
-      "at": 58.64
+      "at": 50.4
     },
     {
       "s": "Sam",
       "t": "Were you good?",
-      "at": 64.52
+      "at": 55.5
     },
     {
       "s": "Leyla",
       "t": "Not really. But once I played in a school tournament, and I was the underdog. Everyone thought I'd lose in the first round.",
-      "at": 65.52
+      "at": 55.98
     },
     {
       "s": "Sam",
       "t": "And?",
-      "at": 72.88
+      "at": 62.7
     },
     {
       "s": "Leyla",
       "t": "I got to the final! My opponent was a real athlete, much stronger than me. I said to myself: just give it your best shot.",
-      "at": 73.72
+      "at": 63.66
     },
     {
       "s": "Sam",
       "t": "Did you win?",
-      "at": 83.24
+      "at": 71.48
     },
     {
       "s": "Leyla",
       "t": "[chuckle] No, I lost the final. And I still think the referee made a mistake on the last point.",
-      "at": 84.7
+      "at": 72.54
     },
     {
       "s": "Sam",
       "t": "Of course he did.",
-      "at": 91.02
+      "at": 78.26
     },
     {
       "s": "Leyla",
       "t": "But it was the best day of my sporting life.",
-      "at": 92.22
+      "at": 79.3
     },
     {
       "s": "Sam",
       "t": "I love that. Next year I want to run the half marathon again and raise the bar — under two hours.",
-      "at": 95.2
+      "at": 81.36
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: have you ever been the underdog — in sport or in life? What happened?",
-      "at": 102.66
+      "at": 88.3
     },
     {
       "s": "Sam",
       "t": "Ask me again next year. See you next time!",
-      "at": 111.18
+      "at": 95.6
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 114.06
+      "at": 98.14
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "Have you ever been the underdog — in sport or in life? What happened?",
     "Do you prefer to win or to have fun? Why?"
   ],
-  "duration": 115.1,
+  "duration": 99,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is hobbies. And Leyla has something to show me.",
-      "at": 5.28
+      "at": 4.6
     },
     {
       "s": "Leyla",
       "t": "[laugh] Yes! Look at this cup. I made it myself.",
-      "at": 12.64
+      "at": 10.82
     },
     {
       "s": "Sam",
       "t": "Wow. It's very… round. Is it a cup or a bowl?",
-      "at": 17.08
+      "at": 14.7
     },
     {
       "s": "Leyla",
       "t": "It's a cup! I'm a beginner. I started a pottery class two months ago.",
-      "at": 22.84
+      "at": 19.64
     },
     {
       "s": "Sam",
       "t": "Why pottery?",
-      "at": 29.02
+      "at": 24.96
     },
     {
       "s": "Leyla",
       "t": "After work I only looked at my phone to kill time. I wanted to get into something new — something with my hands.",
-      "at": 31.4
+      "at": 26.5
     },
     {
       "s": "Sam",
       "t": "And now?",
-      "at": 38.44
+      "at": 33.06
     },
     {
       "s": "Leyla",
       "t": "Now I'm completely hooked. Every Saturday morning I'm at the studio, with clay on my face.",
-      "at": 39.96
+      "at": 34.44
     },
     {
       "s": "Sam",
       "t": "[chuckle] It's a good creative outlet. Your job is all spreadsheets.",
-      "at": 46.2
+      "at": 39.7
     },
     {
       "s": "Leyla",
       "t": "Exactly. My brain needs a break. What about you, Sam? What's your favourite pastime?",
-      "at": 50.82
+      "at": 43.76
     },
     {
       "s": "Sam",
       "t": "I collect old football shirts. I have forty-three.",
-      "at": 55.7
+      "at": 48.46
     },
     {
       "s": "Leyla",
       "t": "Forty-three! Where do you keep them?",
-      "at": 59.2
+      "at": 50.9
     },
     {
       "s": "Sam",
       "t": "In my wardrobe. My normal clothes live in a box under the bed now.",
-      "at": 64.1
+      "at": 54.4
     },
     {
       "s": "Leyla",
       "t": "[laugh] That's dedicated. How did it start?",
-      "at": 71.34
+      "at": 61.5
     },
     {
       "s": "Sam",
       "t": "My dad gave me his shirt from 1994. Then I found one at a market, and then another one… and another one.",
-      "at": 74.66
+      "at": 64.22
     },
     {
       "s": "Leyla",
       "t": "I think many people want to pick up a hobby, but they say they don't have time.",
-      "at": 83.24
+      "at": 72.1
     },
     {
       "s": "Sam",
       "t": "True. But leisure time doesn't have to be long. Twenty minutes a day is enough.",
-      "at": 89.16
+      "at": 76.56
     },
     {
       "s": "Leyla",
       "t": "And a hobby builds a new skill set. My hands are much more patient now. So am I.",
-      "at": 93.88
+      "at": 80.16
     },
     {
       "s": "Sam",
       "t": "And my hands are very good at… folding shirts.",
-      "at": 101.18
+      "at": 87.02
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what hobby would you like to start — and what is stopping you?",
-      "at": 105.56
+      "at": 90.94
     },
     {
       "s": "Sam",
       "t": "Mine is pottery. Leyla, you can teach me. See you next time!",
-      "at": 112.52
+      "at": 97.4
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 117.76
+      "at": 101.32
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "What hobby would you like to start — and what is stopping you?",
     "Do you collect anything? What did you collect as a child?"
   ],
-  "duration": 118.9,
+  "duration": 102.3,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }

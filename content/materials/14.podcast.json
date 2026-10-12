@@ -40,112 +40,112 @@
     {
       "s": "Sam",
       "t": "And I'm Sam. Today's topic is fashion and style. And I'm wearing my best shirt for it.",
-      "at": 4.26
+      "at": 3.68
     },
     {
       "s": "Leyla",
       "t": "[laugh] I noticed. Very smart. Is it new?",
-      "at": 11.6
+      "at": 9.74
     },
     {
       "s": "Sam",
       "t": "No, it's a hand-me-down from my older brother. Most of my wardrobe is his old clothes.",
-      "at": 14.3
+      "at": 12.3
     },
     {
       "s": "Leyla",
       "t": "That's actually very good. It's sustainable fashion.",
-      "at": 20.96
+      "at": 18
     },
     {
       "s": "Sam",
       "t": "It was not so good for my first job interview. I wanted to dress to impress, so I borrowed his suit.",
-      "at": 23.94
+      "at": 21.14
     },
     {
       "s": "Leyla",
       "t": "And?",
-      "at": 32.04
+      "at": 27.56
     },
     {
       "s": "Sam",
       "t": "He's ten centimetres taller than me. The jacket didn't fit at all. The sleeves covered my hands.",
-      "at": 32.86
+      "at": 27.86
     },
     {
       "s": "Leyla",
       "t": "Oh no! Did you get the job?",
-      "at": 39.92
+      "at": 34.34
     },
     {
       "s": "Sam",
       "t": "I did! The manager smiled and said, \"Nice suit. Is it your dad's?\"",
-      "at": 42.68
+      "at": 36.82
     },
     {
       "s": "Leyla",
       "t": "[laugh] For me, it's the opposite story. I buy almost nothing new now. I go to second-hand shops.",
-      "at": 50.68
+      "at": 43.32
     },
     {
       "s": "Sam",
       "t": "Really? Why?",
-      "at": 57.24
+      "at": 49.22
     },
     {
       "s": "Leyla",
       "t": "Every trend comes and goes so fast. Something is in fashion for one season, and then people throw it away.",
-      "at": 58.9
+      "at": 50.68
     },
     {
       "s": "Sam",
       "t": "True. And cheap clothes off the rack often fall apart after a few washes.",
-      "at": 66.04
+      "at": 56.72
     },
     {
       "s": "Leyla",
       "t": "Exactly. So I buy fewer things, but better ones. One good brand of jeans that lasts five years.",
-      "at": 71
+      "at": 61.8
     },
     {
       "s": "Sam",
       "t": "What about accessories?",
-      "at": 79.52
+      "at": 68.32
     },
     {
       "s": "Leyla",
       "t": "That's my secret. One simple outfit, and then a different accessory every day — a scarf, earrings, a bag. It always looks new.",
-      "at": 81
+      "at": 69.66
     },
     {
       "s": "Sam",
       "t": "Clever. My only accessory is my watch. And it's also my brother's.",
-      "at": 90.52
+      "at": 77.82
     },
     {
       "s": "Leyla",
       "t": "[chuckle] Your brother has very good style, then.",
-      "at": 96.6
+      "at": 83.08
     },
     {
       "s": "Sam",
       "t": "He does. I just have his old style, five years later.",
-      "at": 99.6
+      "at": 85.6
     },
     {
       "s": "Leyla",
       "t": "Here's your question for your next SpeakLab call: what is your favourite piece of clothing — and what's the story behind it?",
-      "at": 104.34
+      "at": 89.74
     },
     {
       "s": "Sam",
       "t": "Mine is this shirt. Thanks, brother. See you next time!",
-      "at": 112
+      "at": 96.32
     },
     {
       "s": "Leyla",
       "t": "Bye for now!",
-      "at": 116.04
+      "at": 99.86
     }
   ],
   "questions": [
@@ -226,12 +226,12 @@
     "What is your favourite piece of clothing — and what's the story behind it?",
     "Do you follow trends, or do you have your own style?"
   ],
-  "duration": 117.2,
+  "duration": 100.8,
   "voices": {
     "Leyla": "Cleo",
     "Sam": "Puck",
     "model": "gemini-3.8-flash-tts",
-    "post": "rubberband tempo 0.86 + loudnorm -16",
-    "made": "2026-10-11"
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-12"
   }
 }
