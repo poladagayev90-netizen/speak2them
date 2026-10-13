@@ -235,6 +235,27 @@ const OVERRIDES = {
   'balance': { az: 'tarazlıq', tr: 'denge' },
   'spinning': { az: 'fırlanır', tr: 'dönüyor' },
   'bushy tail': { az: 'qalın tüklü quyruq', tr: 'gür kuyruk' },
+  // Telegram batch (2026-10-13): written by hand — the translator was rate-limited.
+  'glass door': { az: 'şüşə qapı', tr: 'cam kapı' },
+  handle: { az: 'qapı dəstəyi', tr: 'kapı kolu' },
+  jump: { az: 'tullanmaq', tr: 'zıplamak' },
+  computer: { az: 'kompüter', tr: 'bilgisayar' },
+  pot: { az: 'qazan', tr: 'tencere' },
+  lid: { az: 'qapaq', tr: 'kapak' },
+  'big eyes': { az: 'iri gözlər', tr: 'iri gözler' },
+  'air conditioner': { az: 'kondisioner', tr: 'klima' },
+  carry: { az: 'daşımaq', tr: 'taşımak' },
+  'security camera': { az: 'təhlükəsizlik kamerası', tr: 'güvenlik kamerası' },
+  carrot: { az: 'yerkökü', tr: 'havuç' },
+  stick: { az: 'çubuq', tr: 'sopa' },
+  'black dog': { az: 'qara it', tr: 'siyah köpek' },
+  'grey cat': { az: 'boz pişik', tr: 'gri kedi' },
+  'gravel path': { az: 'çınqıllı cığır', tr: 'çakıllı yol' },
+  'walk away': { az: 'uzaqlaşmaq', tr: 'uzaklaşmak' },
+  'merry-go-round': { az: 'karusel', tr: 'atlıkarınca' },
+  'upside down': { az: 'tərsinə, başıaşağı', tr: 'baş aşağı' },
+  spin: { az: 'fırlanmaq', tr: 'dönmek' },
+  bear: { az: 'ayı', tr: 'ayı' },
 };
 
 function loadKeywords(file) {

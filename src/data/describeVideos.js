@@ -832,6 +832,110 @@ export const describeVideos = [
       'Should the man be angry? Why or why not?',
     ],
   },
+  {
+    // source: video_2026-10-13_11-06-27.mp4
+    id: 'squirrel-door-jump',
+    src: '/videos/squirrel-door-jump.mp4',
+    poster: '/videos/squirrel-door-jump.jpg',
+    seconds: 16,
+    alt: 'A squirrel holds on to the glass of an open garden door and looks in, then suddenly jumps straight at the camera.',
+    keywords: ['squirrel', 'glass door', 'garden', 'handle', 'jump'],
+    prompts: [
+      'What do you think the squirrel wants?',
+      'What would you do if it jumped into your room?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-29.mp4
+    id: 'dog-closes-curtain',
+    src: '/videos/dog-closes-curtain.mp4',
+    poster: '/videos/dog-closes-curtain.jpg',
+    seconds: 10,
+    alt: 'At night the camera zooms into a lit window of a block of flats: a dog in glasses sits at a computer, sees the camera and pulls the curtain shut.',
+    keywords: ['window', 'glasses', 'computer', 'office chair', 'curtain'],
+    prompts: [
+      'What is the dog doing so late at night?',
+      'Why does it close the curtain?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-31.mp4
+    id: 'cat-by-the-pot',
+    src: '/videos/cat-by-the-pot.mp4',
+    poster: '/videos/cat-by-the-pot.jpg',
+    seconds: 16,
+    alt: 'A ginger cat jumps down from a cooking pot, then sits beside it and stares at the camera with big round eyes, while another cat watches from behind.',
+    keywords: ['ginger cat', 'pot', 'lid', 'big eyes', 'window'],
+    prompts: [
+      'What was the cat doing before the camera came?',
+      'How does the cat look now: guilty or innocent?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-36.mp4
+    id: 'pool-fall',
+    src: '/videos/pool-fall.mp4',
+    poster: '/videos/pool-fall.jpg',
+    seconds: 26,
+    alt: 'A security camera shows two men carrying an air conditioner along the edge of a swimming pool; one of them steps back and falls into the water.',
+    keywords: ['swimming pool', 'air conditioner', 'carry', 'ladder', 'security camera'],
+    prompts: [
+      'What went wrong? Tell the story step by step.',
+      'What does the other man do after the fall?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-42.mp4
+    id: 'horse-carrot-stick',
+    src: '/videos/horse-carrot-stick.mp4',
+    poster: '/videos/horse-carrot-stick.jpg',
+    seconds: 10,
+    alt: 'Outside a wooden stable, a little girl holds out a carrot on a long stick and a horse leans out of its window to eat it.',
+    keywords: ['stable', 'horse', 'carrot', 'stick', 'little girl'],
+    prompts: [
+      'Why does the girl use a long stick?',
+      'Have you ever fed an animal? What happened?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-46.mp4
+    id: 'dog-cat-walk',
+    src: '/videos/dog-cat-walk.mp4',
+    poster: '/videos/dog-cat-walk.jpg',
+    seconds: 26,
+    alt: 'A black dog and a grey cat meet in the grass and then walk off together down a long gravel path, side by side.',
+    keywords: ['black dog', 'grey cat', 'gravel path', 'grass', 'walk away'],
+    prompts: [
+      'Where do you think the two friends are going?',
+      'Why are cats and dogs usually not friends?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-49.mp4
+    id: 'cat-merry-go-round',
+    src: '/videos/cat-merry-go-round.mp4',
+    poster: '/videos/cat-merry-go-round.jpg',
+    seconds: 9,
+    alt: 'A white cat lies on its back on a spinning blue merry-go-round in a playground, paws in the air, going round and round.',
+    keywords: ['playground', 'merry-go-round', 'white cat', 'upside down', 'spin'],
+    prompts: [
+      'How does the cat feel? How do you know?',
+      'Who started the merry-go-round, do you think?',
+    ],
+  },
+  {
+    // source: video_2026-10-13_11-06-51.mp4
+    id: 'bear-apple-tree',
+    src: '/videos/bear-apple-tree.mp4',
+    poster: '/videos/bear-apple-tree.jpg',
+    seconds: 9,
+    alt: 'In a quiet street with houses and a rainbow above, a brown bear sits high in an apple tree, eating the red apples.',
+    keywords: ['bear', 'apple tree', 'apples', 'branch', 'rainbow'],
+    prompts: [
+      'How did the bear get there, and how will it get down?',
+      'What should the people living here do?',
+    ],
+  },
 ];
 
 // Which clips a topic gets lives in topicVideos.js, which
