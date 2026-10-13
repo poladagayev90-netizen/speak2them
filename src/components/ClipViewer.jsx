@@ -1,6 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, VideoOff } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { ChevronLeft, ChevronRight, RotateCcw, VideoOff, Volume2, VolumeX } from 'lucide-react';
 import KeywordChips from './KeywordChips';
+
+// Sound is web/PWA only (Polad, 2026-10-13); the Android app keeps every clip
+// silent. Only clips marked `sound` in describeVideos.js have an audio track.
+// The choice is remembered per device, but a clip always TRIES its sound and
+// falls back to muted when the browser refuses unmuted autoplay (no tap yet).
+const SOUND_ALLOWED = !Capacitor.isNativePlatform();
+const SOUND_KEY = 'clipSound';
+const readSound = () => {
+  try { return localStorage.getItem(SOUND_KEY) === 'on'; } catch { return false; }
+};
 
 // One clip at a time, with arrows, its words and its two questions. Shared by
 // the topic sheet (a topic's six clips) and the teacher's video library (the
@@ -27,8 +38,12 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
   const [ratio, setRatio] = useState(null);
   const videoRef = useRef(null);
   const pendingRef = useRef(null);
+  const [soundOn, setSoundOn] = useState(readSound);
+  const soundRef = useRef(soundOn);
+  soundRef.current = soundOn;
 
   const clip = clips[i];
+  const hasSound = SOUND_ALLOWED && !!clip?.sound;
 
   useEffect(() => { pendingRef.current = null; }, [i]);
 
@@ -43,9 +58,16 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
     setRatio(el && el.videoWidth && el.videoHeight ? el.videoWidth / el.videoHeight : null);
     if (!el) return;
     el.currentTime = 0;
-    const p = el.play();
-    if (p && p.catch) p.catch(() => {});
-  }, [clip?.id]);
+    el.muted = !(hasSound && soundRef.current);
+    el.play().catch(() => {
+      // Unmuted autoplay refused: play silently and show the speaker as off,
+      // without forgetting the choice — the next tap on it turns sound on.
+      if (el.muted) return;
+      el.muted = true;
+      setSoundOn(false);
+      el.play().catch(() => {});
+    });
+  }, [clip?.id, hasSound]);
 
   // Arrow keys step through the clips when the sheet owns the index (the
   // library has its own keys). A teacher sharing a laptop screen changes clips
@@ -82,6 +104,15 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
     el.currentTime = 0;
     el.play().catch(() => {});
   };
+  const toggleSound = () => {
+    const el = videoRef.current;
+    const next = !soundOn;
+    setSoundOn(next);
+    try { localStorage.setItem(SOUND_KEY, next ? 'on' : 'off'); } catch { /* private mode */ }
+    if (!el) return;
+    el.muted = !next;
+    if (el.paused) el.play().catch(() => {});
+  };
 
   return (
     <div className="dt-section dt-section--video">
@@ -105,7 +136,7 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
                 key={clip.id}
                 src={clip.src}
                 poster={clip.poster}
-                muted
+                muted={!(hasSound && soundOn)}
                 loop
                 playsInline
                 autoPlay
@@ -120,6 +151,19 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
               <button type="button" className="dt-video-replay" onClick={replay} aria-label="Play again">
                 <RotateCcw size={18} strokeWidth={2} aria-hidden="true" />
               </button>
+              {hasSound && (
+                <button
+                  type="button"
+                  className="dt-video-replay dt-video-sound"
+                  onClick={toggleSound}
+                  aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}
+                  aria-pressed={soundOn}
+                >
+                  {soundOn
+                    ? <Volume2 size={18} strokeWidth={2} aria-hidden="true" />
+                    : <VolumeX size={18} strokeWidth={2} aria-hidden="true" />}
+                </button>
+              )}
             </>
           )}
         </div>

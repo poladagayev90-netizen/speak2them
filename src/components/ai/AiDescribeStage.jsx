@@ -25,7 +25,8 @@ import './ai.css';
  * Scoring is the server's: a stemming match on the transcript, so "kneeling"
  * counts for "kneel". Instant and free — no model is involved.
  *
- * `isVideo` swaps the photograph for a muted looping clip. Same item shape,
+ * `isVideo` swaps the photograph for a muted looping clip (muted even when the
+ * clip has `sound` — the mic is open, so its audio would reach the transcript). Same item shape,
  * same keyword pills, same report — a clip is just a picture that moves, and
  * the learner describes it the same way. It loops on purpose: describing is
  * slower than watching, and a still last frame would leave them talking about

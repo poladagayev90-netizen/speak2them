@@ -24,9 +24,10 @@
 //        node scripts/build_keyword_glossary.js   # yeni sözlərin az/tr-i
 //        node scripts/assign_topic_videos.js      # mövzulara paylanma
 //
-// SƏS QƏSDƏN SİLİNİR: orijinal səs sosial media musiqisi/başqa dildə voice-over
-// olur və təsviri şagirdin əvəzinə edir. Səsli klip lazım olsa, bu qərar bir
-// yerdə dəyişir: aşağıdakı `-an`.
+// SƏS SAXLANIR (Polad, 2026-10-13): mənbədə səs varsa mono AAC 64k, loudnorm
+// ilə qalır və girişə `sound: true` yazılır — ClipViewer (yalnız web/PWA)
+// səs düyməsini yalnız onlarda göstərir. Zəng və AInur həmişə səssizdir.
+// Səsi atmaq lazım olsa: inbox girişinə `sound: false`.
 
 const fs = require('fs');
 const path = require('path');
@@ -46,6 +47,9 @@ const WIDTH = 480;          // portrait clips; landscape gets 640 (see scaleExpr
 const scaleExpr = `scale='if(gt(iw,ih),640,${WIDTH})':-2:flags=lanczos`;
 
 const ff = (bin, args) => execFileSync(bin, args, { stdio: ['ignore', 'pipe', 'pipe'] }).toString();
+const hasAudio = (file) => ff('ffprobe', [
+  '-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=index', '-of', 'csv=p=0', file,
+]).trim() !== '';
 const duration = (file) => Number(ff('ffprobe', [
   '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file,
 ]).trim());
@@ -94,7 +98,11 @@ function encode(row, from) {
   const poster = path.join(VIDEO_DIR, `${row.id}.jpg`);
   const boxes = Array.isArray(row.blur) ? row.blur : [];
   const args = ['-nostdin', '-v', 'error', '-y', '-ss', String(row.start || 0), '-i', src,
-    '-t', String(Math.min(row.seconds || MAX_SECONDS, MAX_SECONDS)), '-an', '-map_metadata', '-1'];
+    '-t', String(Math.min(row.seconds || MAX_SECONDS, MAX_SECONDS)), '-map_metadata', '-1'];
+  const sound = row.sound !== false && hasAudio(src);
+  const audio = sound
+    ? ['-map', '0:a:0', '-af', 'loudnorm=I=-18:TP=-2,aresample=44100', '-c:a', 'aac', '-b:a', '64k', '-ac', '1']
+    : ['-an'];
   if (boxes.length) {
     // Hər qutu: kəs → blurla → üstünə qoy. `until` verilibsə yalnız o vaxta qədər.
     const chain = [`[0:v]${scaleExpr}[v0]`];
@@ -106,14 +114,15 @@ function encode(row, from) {
     });
     args.push('-filter_complex', chain.join(';'), '-map', `[v${boxes.length}]`);
   } else {
-    args.push('-vf', scaleExpr);
+    args.push('-vf', scaleExpr, '-map', '0:v:0');
   }
+  args.push(...audio);
   args.push('-c:v', 'libx264', '-preset', 'slow', '-crf', '32', '-maxrate', '750k', '-bufsize', '1400k',
     '-profile:v', 'main', '-level', '3.1', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-r', '24', out);
   ff('ffmpeg', args);
   ff('ffmpeg', ['-nostdin', '-v', 'error', '-y', '-ss', String(row.posterAt || 1), '-i', out,
     '-frames:v', '1', '-q:v', '6', poster]);
-  return { out, bytes: fs.statSync(out).size };
+  return { out, bytes: fs.statSync(out).size, sound };
 }
 
 function apply(from) {
@@ -129,7 +138,7 @@ function apply(from) {
   for (const row of ready) {
     if (existing.has(row.id)) { console.log(`atlandı (id artıq var): ${row.id}`); continue; }
     if (row.keywords.length > 5) { console.log(`XƏBƏRDARLIQ ${row.id}: 5-dən çox söz, ilk 5 götürülür`); }
-    const { bytes } = encode(row, from);
+    const { bytes, sound } = encode(row, from);
     const kw = row.keywords.slice(0, 5).map((w) => `'${w.replace(/'/g, "\\'")}'`).join(', ');
     const pr = row.prompts.slice(0, 2).map((p) => `      '${p.replace(/'/g, "\\'")}',`).join('\n');
     entries.push(`  {
@@ -138,7 +147,7 @@ function apply(from) {
     src: '/videos/${row.id}.mp4',
     poster: '/videos/${row.id}.jpg',
     seconds: ${Math.min(row.seconds || MAX_SECONDS, MAX_SECONDS)},
-    alt: '${(row.alt || '').replace(/'/g, "\\'")}',
+${sound ? '    sound: true,\n' : ''}    alt: '${(row.alt || '').replace(/'/g, "\\'")}',
     keywords: [${kw}],
     prompts: [
 ${pr}

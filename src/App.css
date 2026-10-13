@@ -2081,6 +2081,12 @@ body {
   cursor: pointer;
 }
 
+/* Sound sits opposite Replay, in the same dark disc. */
+.dt-video-replay.dt-video-sound {
+  right: auto;
+  left: 10px;
+}
+
 .dt-video-nav {
   flex-shrink: 0;
   display: flex;

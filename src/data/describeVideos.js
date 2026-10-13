@@ -7,11 +7,17 @@
 //
 // SELECTION RULE (same as the picture deck, one clip stricter): people or
 // animals DOING something, a visible turn in the action, and nothing that
-// depends on hearing the audio. Every file is stripped of its soundtrack on
-// purpose: the original sound was social-media music and voice-over in other
-// languages, and a learner describing a scene should not be racing a narrator.
+// depends on hearing the audio.
 //
-// FILES: local under public/videos/ — mp4, H.264, ~480px wide, no audio track,
+// SOUND (Polad, 2026-10-13): clips with `sound: true` carry their original
+// audio (mono AAC 64k, loudness-normalised); the rest have no audio track.
+// Every clip still STARTS muted (browsers refuse unmuted autoplay), and only
+// ClipViewer — the topic sheet and the teacher library, web/PWA only — has a
+// sound button. The call stage and the AInur session stay muted for good: in
+// a call the clip would go into the microphone and Agora's echo filter would
+// cut the partner; with AInur it would land in the transcript.
+//
+// FILES: local under public/videos/ — mp4, H.264, ~480px wide, audio only with `sound`,
 // 6–26 s, faststart. They are served from the same origin as the app, so there
 // is no third-party host that can rate-limit one peer and not the other. When
 // the library outgrows the bundle (the plan is 5–6 clips PER TOPIC, i.e. 300+),
@@ -70,6 +76,7 @@ export const describeVideos = [
     src: '/videos/garden-guitar.mp4',
     poster: '/videos/garden-guitar.jpg',
     seconds: 20,
+    sound: true,
     alt: 'A boy sits on a low wall in a vegetable garden playing a guitar while a big rooster stands next to him.',
     keywords: ['rooster', 'guitar', 'vegetable patch', 'basketball', 'cross-legged'],
     prompts: [
@@ -83,6 +90,7 @@ export const describeVideos = [
     src: '/videos/rope-swing.mp4',
     poster: '/videos/rope-swing.jpg',
     seconds: 17,
+    sound: true,
     alt: 'Friends take turns on a rope swing over a pond; one of them lets go and drops into the water.',
     keywords: ['rope swing', 'pond', 'let go', 'splash', 'reeds'],
     prompts: [
@@ -96,6 +104,7 @@ export const describeVideos = [
     src: '/videos/gorilla-meet.mp4',
     poster: '/videos/gorilla-meet.jpg',
     seconds: 22,
+    sound: true,
     alt: 'Trekkers stand still in the forest as a mountain gorilla walks past; one man slowly holds out an open hand.',
     keywords: ['gorilla', 'open palm', 'chewing leaves', 'forest', 'standing still'],
     prompts: [
@@ -109,6 +118,7 @@ export const describeVideos = [
     src: '/videos/garden-camera.mp4',
     poster: '/videos/garden-camera.jpg',
     seconds: 21,
+    sound: true,
     alt: 'A camera on a garden bird feeder films a squirrel, then a dove, then a deer that puts its face into the tray.',
     keywords: ['bird feeder', 'squirrel', 'dove', 'seeds', 'deer'],
     prompts: [
@@ -122,6 +132,7 @@ export const describeVideos = [
     src: '/videos/stairs-fall.mp4',
     poster: '/videos/stairs-fall.jpg',
     seconds: 6,
+    sound: true,
     alt: 'An estate agent showing an empty house loses his footing at the top of the stairs and slides down them.',
     keywords: ['estate agent', 'staircase', 'carpet', 'slip', 'empty house'],
     prompts: [
@@ -135,6 +146,7 @@ export const describeVideos = [
     src: '/videos/petting-hen.mp4',
     poster: '/videos/petting-hen.jpg',
     seconds: 17,
+    sound: true,
     alt: 'A hand strokes a ginger hen lying on a blue blanket; each time the hand stops, the hen pushes its head back for more.',
     keywords: ['hen', 'stroke', 'blanket', 'sofa', 'feathers'],
     prompts: [
@@ -148,6 +160,7 @@ export const describeVideos = [
     src: '/videos/leopard-road.mp4',
     poster: '/videos/leopard-road.jpg',
     seconds: 22,
+    sound: true,
     alt: 'Filmed from a safari vehicle, a leopard walks down a dirt track in the evening light and then lies down in the dust.',
     keywords: ['leopard', 'dirt track', 'safari vehicle', 'dry grass', 'spots'],
     prompts: [
@@ -161,6 +174,7 @@ export const describeVideos = [
     src: '/videos/table-knife.mp4',
     poster: '/videos/table-knife.jpg',
     seconds: 20,
+    sound: true,
     alt: 'In a busy restaurant a waiter raises a huge blade and cuts a steaming round bread pie in front of a guest.',
     keywords: ['huge knife', 'steam', 'flatbread', 'salads', 'waiter'],
     prompts: [
@@ -174,6 +188,7 @@ export const describeVideos = [
     src: '/videos/pier-fish.mp4',
     poster: '/videos/pier-fish.jpg',
     seconds: 24,
+    sound: true,
     alt: 'A man on a wooden pier holds up a big fish, kneels to put it back in the sea, loses his balance and falls in.',
     keywords: ['pier', 'big fish', 'put back', 'lose balance', 'soaked'],
     prompts: [
@@ -187,6 +202,7 @@ export const describeVideos = [
     src: '/videos/dream-fall.mp4',
     poster: '/videos/dream-fall.jpg',
     seconds: 14,
+    sound: true,
     alt: 'A first-person view falling from the sky above a huge city; the ground rushes closer and then the person is lying safely in bed.',
     keywords: ['falling', 'city below', 'clouds', 'bed', 'wake up'],
     prompts: [
@@ -200,6 +216,7 @@ export const describeVideos = [
     src: '/videos/tv-studio.mp4',
     poster: '/videos/tv-studio.jpg',
     seconds: 10,
+    sound: true,
     alt: 'During a live news broadcast somebody crawls across the studio floor behind the presenter while she keeps talking.',
     keywords: ['news studio', 'presenter', 'crawl', 'live TV', 'screen'],
     prompts: [
@@ -213,6 +230,7 @@ export const describeVideos = [
     src: '/videos/canal-slide.mp4',
     poster: '/videos/canal-slide.jpg',
     seconds: 26,
+    sound: true,
     alt: 'A man in a motorbike helmet drops a toy boat into a fast irrigation canal beside rice fields, runs along the bank and then slides into the water himself.',
     keywords: ['canal', 'helmet', 'rice field', 'toy boat', 'current'],
     prompts: [
@@ -422,6 +440,7 @@ export const describeVideos = [
     src: '/videos/contortionist-heels.mp4',
     poster: '/videos/contortionist-heels.jpg',
     seconds: 18,
+    sound: true,
     alt: 'A contortionist in a black bodysuit bends backwards to the floor and puts on a pair of high-heeled shoes with her feet in the air.',
     keywords: ['contortionist', 'backbend', 'high heels', 'staircase', 'bare feet'],
     prompts: [
@@ -435,6 +454,7 @@ export const describeVideos = [
     src: '/videos/goat-calf-milk.mp4',
     poster: '/videos/goat-calf-milk.jpg',
     seconds: 10,
+    sound: true,
     alt: 'A baby goat and a fluffy white calf drink milk side by side from metal feeding chutes in a barn, then wander off.',
     keywords: ['baby goat', 'fluffy calf', 'milk', 'metal chute', 'barn'],
     prompts: [
@@ -448,6 +468,7 @@ export const describeVideos = [
     src: '/videos/baby-donkey-jump.mp4',
     poster: '/videos/baby-donkey-jump.jpg',
     seconds: 12,
+    sound: true,
     alt: 'A small grey donkey foal bucks and kicks its back legs in a sandy yard, then trots up to the camera and sniffs it.',
     keywords: ['donkey foal', 'kicking', 'sandy yard', 'wooden fence', 'long ears'],
     prompts: [
@@ -461,6 +482,7 @@ export const describeVideos = [
     src: '/videos/baby-giraffe-hair.mp4',
     poster: '/videos/baby-giraffe-hair.jpg',
     seconds: 10,
+    sound: true,
     alt: 'A baby giraffe with a funny tuft of dark hair on its head walks up to the camera in a stable and stares straight into it.',
     keywords: ['baby giraffe', 'tuft of hair', 'long neck', 'spots', 'stable'],
     prompts: [
@@ -474,6 +496,7 @@ export const describeVideos = [
     src: '/videos/bear-water-hose.mp4',
     poster: '/videos/bear-water-hose.jpg',
     seconds: 18,
+    sound: true,
     alt: 'A brown bear sits in a muddy puddle in the forest, plays with a water hose that sprays everywhere, then runs straight at the camera.',
     keywords: ['brown bear', 'muddy puddle', 'water hose', 'splashing', 'forest'],
     prompts: [
@@ -487,6 +510,7 @@ export const describeVideos = [
     src: '/videos/canopy-tree-climb.mp4',
     poster: '/videos/canopy-tree-climb.jpg',
     seconds: 26,
+    sound: true,
     alt: 'Filmed from his own point of view, a barefoot man climbs a very tall tree above a green jungle, with the ground far below.',
     keywords: ['tree trunk', 'bare feet', 'jungle', 'climbing', 'branches'],
     prompts: [
@@ -500,6 +524,7 @@ export const describeVideos = [
     src: '/videos/dancing-lemur.mp4',
     poster: '/videos/dancing-lemur.jpg',
     seconds: 26,
+    sound: true,
     alt: 'A white and brown sifaka lemur takes a piece of fruit, climbs a tree, then hops sideways along a forest path on two legs with its arms open.',
     keywords: ['lemur', 'hopping sideways', 'forest path', 'piece of fruit', 'open arms'],
     prompts: [
@@ -513,6 +538,7 @@ export const describeVideos = [
     src: '/videos/dog-wizard.mp4',
     poster: '/videos/dog-wizard.jpg',
     seconds: 14,
+    sound: true,
     alt: 'A golden retriever dressed in a black hooded wizard cloak sits on rocks in a forest holding a wooden staff, while someone hangs an amulet on it.',
     keywords: ['wizard cloak', 'wooden staff', 'golden retriever', 'amulet', 'forest'],
     prompts: [
@@ -526,6 +552,7 @@ export const describeVideos = [
     src: '/videos/ginger-trio.mp4',
     poster: '/videos/ginger-trio.jpg',
     seconds: 14,
+    sound: true,
     alt: 'A ginger chick, a ginger kitten and a ginger rabbit sit side by side in the grass, and the kitten keeps looking at the others.',
     keywords: ['chick', 'kitten', 'rabbit', 'grass', 'side by side'],
     prompts: [
@@ -539,6 +566,7 @@ export const describeVideos = [
     src: '/videos/hammock-highrise.mp4',
     poster: '/videos/hammock-highrise.jpg',
     seconds: 10,
+    sound: true,
     alt: 'A man lies in a hammock tied between two tall apartment buildings, reading high above the street, next to laundry drying on a line.',
     keywords: ['hammock', 'apartment block', 'laundry', 'windows', 'reading'],
     prompts: [
@@ -552,6 +580,7 @@ export const describeVideos = [
     src: '/videos/hedgehog-run.mp4',
     poster: '/videos/hedgehog-run.jpg',
     seconds: 6,
+    sound: true,
     alt: 'A tiny pet hedgehog runs fast across a wooden floor straight at the camera and bumps past it.',
     keywords: ['hedgehog', 'wooden floor', 'running', 'spines', 'tiny legs'],
     prompts: [
@@ -565,6 +594,7 @@ export const describeVideos = [
     src: '/videos/kittens-bottle-play.mp4',
     poster: '/videos/kittens-bottle-play.jpg',
     seconds: 8,
+    sound: true,
     alt: 'A group of black-and-white kittens chase and bat a green plastic bottle across a wooden floor while an adult cat lies watching.',
     keywords: ['kittens', 'plastic bottle', 'rolling', 'wooden floor', 'chest of drawers'],
     prompts: [
@@ -578,6 +608,7 @@ export const describeVideos = [
     src: '/videos/man-seagull-argument.mp4',
     poster: '/videos/man-seagull-argument.jpg',
     seconds: 6,
+    sound: true,
     alt: 'A man in a cap and an orange shirt leans on a stone wall and waves his hands as if arguing with a seagull standing next to him.',
     keywords: ['seagull', 'orange shirt', 'stone wall', 'waving hands', 'cap'],
     prompts: [
@@ -591,6 +622,7 @@ export const describeVideos = [
     src: '/videos/moose-roadside.mp4',
     poster: '/videos/moose-roadside.jpg',
     seconds: 18,
+    sound: true,
     alt: 'Filmed from a moving car, two huge moose walk along the grass beside a busy road while cars drive past.',
     keywords: ['moose', 'antlers', 'car window', 'roadside', 'pine trees'],
     prompts: [
@@ -604,6 +636,7 @@ export const describeVideos = [
     src: '/videos/round-blue-bird.mp4',
     poster: '/videos/round-blue-bird.jpg',
     seconds: 13,
+    sound: true,
     alt: 'A very round, fluffy blue and white bird sits on a thin branch in a garden and turns to show its bright blue tail.',
     keywords: ['round bird', 'blue feathers', 'thin branch', 'garden', 'brick wall'],
     prompts: [
@@ -617,6 +650,7 @@ export const describeVideos = [
     src: '/videos/tortoise-apple-bite.mp4',
     poster: '/videos/tortoise-apple-bite.jpg',
     seconds: 9,
+    sound: true,
     alt: 'A small tortoise with orange spots, wearing a tiny backpack next to a toy truck, takes big bites from an apple slice someone holds out.',
     keywords: ['tortoise', 'apple slice', 'toy truck', 'tiny backpack', 'orange spots'],
     prompts: [
@@ -630,6 +664,7 @@ export const describeVideos = [
     src: '/videos/grandma-brick-wall.mp4',
     poster: '/videos/grandma-brick-wall.jpg',
     seconds: 16,
+    sound: true,
     alt: 'An older woman in glasses and a flowery dress spreads mortar and lays bricks on a house wall, then gives the camera a thumbs up.',
     keywords: ['bricks', 'mortar', 'trowel', 'flowery dress', 'thumbs up'],
     prompts: [
@@ -643,6 +678,7 @@ export const describeVideos = [
     src: '/videos/monkey-house-chase.mp4',
     poster: '/videos/monkey-house-chase.jpg',
     seconds: 7,
+    sound: true,
     alt: 'A monkey walks into a living room by the sea, and a woman in a green top chases it out through the balcony door.',
     keywords: ['monkey', 'living room', 'balcony door', 'sea view', 'glass table'],
     prompts: [
@@ -656,6 +692,7 @@ export const describeVideos = [
     src: '/videos/cat-under-car.mp4',
     poster: '/videos/cat-under-car.jpg',
     seconds: 11,
+    sound: true,
     alt: 'A delivery rider pulls a cat out from under a parked car, but the cat rolls straight back to its spot on the road.',
     keywords: ['delivery rider', 'cat', 'parked car', 'number plate', 'rolling'],
     prompts: [
@@ -669,6 +706,7 @@ export const describeVideos = [
     src: '/videos/fridge-on-back.mp4',
     poster: '/videos/fridge-on-back.jpg',
     seconds: 21,
+    sound: true,
     alt: 'A man in a red shirt takes a big fridge off a lorry, lifts it onto his back and carries it down the street alone.',
     keywords: ['fridge', 'lorry', 'red shirt', 'carrying', 'street'],
     prompts: [
@@ -682,6 +720,7 @@ export const describeVideos = [
     src: '/videos/fish-tank-fall.mp4',
     poster: '/videos/fish-tank-fall.jpg',
     seconds: 26,
+    sound: true,
     alt: 'A man in a work uniform leans into a big fish tank to catch a fish, loses his balance and falls in head first, then climbs out and waves.',
     keywords: ['fish tank', 'uniform', 'leaning over', 'splash', 'soaking wet'],
     prompts: [
@@ -695,6 +734,7 @@ export const describeVideos = [
     src: '/videos/cat-dump-truck.mp4',
     poster: '/videos/cat-dump-truck.jpg',
     seconds: 12,
+    sound: true,
     alt: 'A ginger cat rides in the back of a toy dump truck across a shiny floor and straight into a cardboard box.',
     keywords: ['ginger cat', 'toy truck', 'cardboard box', 'shiny floor', 'riding'],
     prompts: [
@@ -708,6 +748,7 @@ export const describeVideos = [
     src: '/videos/fairy-door-cats.mp4',
     poster: '/videos/fairy-door-cats.jpg',
     seconds: 12,
+    sound: true,
     alt: 'Someone knocks on a tiny door in a big tree, and one by one, kittens holding bunches of flowers come out and line up.',
     keywords: ['tiny door', 'tree trunk', 'knocking', 'kittens', 'bunches of flowers'],
     prompts: [
@@ -721,6 +762,7 @@ export const describeVideos = [
     src: '/videos/snow-slip.mp4',
     poster: '/videos/snow-slip.jpg',
     seconds: 16,
+    sound: true,
     alt: 'On a bright street at night, a woman slips on the icy path and falls into a pile of snow while people walk past.',
     keywords: ['icy street', 'snow pile', 'slipping', 'lights', 'winter coat'],
     prompts: [
@@ -734,6 +776,7 @@ export const describeVideos = [
     src: '/videos/sloth-dashboard.mp4',
     poster: '/videos/sloth-dashboard.jpg',
     seconds: 17,
+    sound: true,
     alt: 'A sloth lies stretched out on the dashboard of a lorry driving down a motorway on a sunny day.',
     keywords: ['sloth', 'dashboard', 'motorway', 'steering wheel', 'long claws'],
     prompts: [
@@ -747,6 +790,7 @@ export const describeVideos = [
     src: '/videos/boulder-push.mp4',
     poster: '/videos/boulder-push.jpg',
     seconds: 10,
+    sound: true,
     alt: 'A man sitting on a steep hillside pushes a big rock with his feet, and it crashes down through the bushes towards the camera.',
     keywords: ['big rock', 'hillside', 'pushing', 'bushes', 'dust'],
     prompts: [
@@ -760,6 +804,7 @@ export const describeVideos = [
     src: '/videos/cat-wall-jump.mp4',
     poster: '/videos/cat-wall-jump.jpg',
     seconds: 9,
+    sound: true,
     alt: 'A cat runs across a big empty room, jumps high up the wall and flies back through the air.',
     keywords: ['cat', 'empty room', 'jumping', 'wall', 'television'],
     prompts: [
@@ -773,6 +818,7 @@ export const describeVideos = [
     src: '/videos/turtles-log.mp4',
     poster: '/videos/turtles-log.jpg',
     seconds: 17,
+    sound: true,
     alt: 'A row of turtles climbs onto a floating log in a green pond, and the log tips and rolls as they try to stay on.',
     keywords: ['turtles', 'floating log', 'pond', 'balance', 'row'],
     prompts: [
@@ -786,6 +832,7 @@ export const describeVideos = [
     src: '/videos/cat-washing-machine.mp4',
     poster: '/videos/cat-washing-machine.jpg',
     seconds: 7,
+    sound: true,
     alt: 'A fluffy ginger cat stands at a washing machine and paws at the glass door while the clothes spin inside.',
     keywords: ['washing machine', 'ginger cat', 'paws', 'spinning', 'clothes'],
     prompts: [
@@ -799,6 +846,7 @@ export const describeVideos = [
     src: '/videos/squirrel-fountain.mp4',
     poster: '/videos/squirrel-fountain.jpg',
     seconds: 14,
+    sound: true,
     alt: 'In a park, a squirrel climbs onto a drinking fountain and drinks from the stream of water like a person.',
     keywords: ['squirrel', 'drinking fountain', 'park', 'stream of water', 'bushy tail'],
     prompts: [
@@ -812,6 +860,7 @@ export const describeVideos = [
     src: '/videos/runaway-cart.mp4',
     poster: '/videos/runaway-cart.jpg',
     seconds: 13,
+    sound: true,
     alt: 'On a rainy, windy day, an empty shopping trolley rolls across a car park towards the parked cars, filmed from inside a car.',
     keywords: ['shopping trolley', 'car park', 'rain', 'wind', 'parked cars'],
     prompts: [
@@ -825,6 +874,7 @@ export const describeVideos = [
     src: '/videos/cat-steals-fish.mp4',
     poster: '/videos/cat-steals-fish.jpg',
     seconds: 17,
+    sound: true,
     alt: 'While a man fishes by the sea, a cat puts its head in his bucket, takes a fish and runs off with it past the people walking by.',
     keywords: ['fisherman', 'fishing rod', 'bucket', 'cat', 'seafront'],
     prompts: [
@@ -838,6 +888,7 @@ export const describeVideos = [
     src: '/videos/squirrel-door-jump.mp4',
     poster: '/videos/squirrel-door-jump.jpg',
     seconds: 16,
+    sound: true,
     alt: 'A squirrel holds on to the glass of an open garden door and looks in, then suddenly jumps straight at the camera.',
     keywords: ['squirrel', 'glass door', 'garden', 'handle', 'jump'],
     prompts: [
@@ -851,6 +902,7 @@ export const describeVideos = [
     src: '/videos/dog-closes-curtain.mp4',
     poster: '/videos/dog-closes-curtain.jpg',
     seconds: 10,
+    sound: true,
     alt: 'At night the camera zooms into a lit window of a block of flats: a dog in glasses sits at a computer, sees the camera and pulls the curtain shut.',
     keywords: ['window', 'glasses', 'computer', 'office chair', 'curtain'],
     prompts: [
@@ -864,6 +916,7 @@ export const describeVideos = [
     src: '/videos/cat-by-the-pot.mp4',
     poster: '/videos/cat-by-the-pot.jpg',
     seconds: 16,
+    sound: true,
     alt: 'A ginger cat jumps down from a cooking pot, then sits beside it and stares at the camera with big round eyes, while another cat watches from behind.',
     keywords: ['ginger cat', 'pot', 'lid', 'big eyes', 'window'],
     prompts: [
@@ -877,6 +930,7 @@ export const describeVideos = [
     src: '/videos/pool-fall.mp4',
     poster: '/videos/pool-fall.jpg',
     seconds: 26,
+    sound: true,
     alt: 'A security camera shows two men carrying an air conditioner along the edge of a swimming pool; one of them steps back and falls into the water.',
     keywords: ['swimming pool', 'air conditioner', 'carry', 'ladder', 'security camera'],
     prompts: [
@@ -890,6 +944,7 @@ export const describeVideos = [
     src: '/videos/horse-carrot-stick.mp4',
     poster: '/videos/horse-carrot-stick.jpg',
     seconds: 10,
+    sound: true,
     alt: 'Outside a wooden stable, a little girl holds out a carrot on a long stick and a horse leans out of its window to eat it.',
     keywords: ['stable', 'horse', 'carrot', 'stick', 'little girl'],
     prompts: [
@@ -903,6 +958,7 @@ export const describeVideos = [
     src: '/videos/dog-cat-walk.mp4',
     poster: '/videos/dog-cat-walk.jpg',
     seconds: 26,
+    sound: true,
     alt: 'A black dog and a grey cat meet in the grass and then walk off together down a long gravel path, side by side.',
     keywords: ['black dog', 'grey cat', 'gravel path', 'grass', 'walk away'],
     prompts: [
@@ -916,6 +972,7 @@ export const describeVideos = [
     src: '/videos/cat-merry-go-round.mp4',
     poster: '/videos/cat-merry-go-round.jpg',
     seconds: 9,
+    sound: true,
     alt: 'A white cat lies on its back on a spinning blue merry-go-round in a playground, paws in the air, going round and round.',
     keywords: ['playground', 'merry-go-round', 'white cat', 'upside down', 'spin'],
     prompts: [
@@ -929,6 +986,7 @@ export const describeVideos = [
     src: '/videos/bear-apple-tree.mp4',
     poster: '/videos/bear-apple-tree.jpg',
     seconds: 9,
+    sound: true,
     alt: 'In a quiet street with houses and a rainbow above, a brown bear sits high in an apple tree, eating the red apples.',
     keywords: ['bear', 'apple tree', 'apples', 'branch', 'rainbow'],
     prompts: [

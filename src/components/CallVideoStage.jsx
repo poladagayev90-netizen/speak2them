@@ -137,6 +137,8 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
             </div>
           ) : (
             <>
+              {/* Muted for good, even for clips with `sound`: the clip's audio
+                  would go into the mic and the echo filter would cut the partner. */}
               <video
                 ref={videoRef}
                 key={clip.id}
