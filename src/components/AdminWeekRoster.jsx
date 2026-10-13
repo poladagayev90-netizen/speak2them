@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { collection, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
-import { Copy, Search, UsersRound } from 'lucide-react';
+import { Copy, Flag, Search, UsersRound } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
 import { LEVELS } from '../utils/onboarding';
@@ -16,6 +16,53 @@ function seenLabel(ms, now) {
   if (!ms) return 'never seen';
   const d = Math.floor((now - ms) / DAY_MS);
   return d <= 0 ? 'seen today' : d === 1 ? 'seen yesterday' : `seen ${d} days ago`;
+}
+
+// Account health (functions/accountHealth.js), written by the server on every
+// planner run: only active and new accounts are planned. The admin can flag
+// an account (kept out until unflagged) — the only field the rules let them set.
+const HEALTH = {
+  active: null,
+  new: null,
+  sleeping: { away_7d: 'sleeping · not seen 7+ days', silent: 'sleeping · left 2 proposals', no_first_call: 'sleeping · never practised' },
+  ghost: { away_21d: 'ghost · not seen 21+ days', never_answered: 'ghost · never called, 3 proposals left' },
+  suspicious: { flagged: 'flagged by you' },
+};
+const healthLabel = (h) => {
+  if (!h || !HEALTH[h.cls]) return null;
+  // Unflagged here, not yet re-checked by the server.
+  if (h.cls === 'suspicious' && h.flag !== 'suspicious') return 'unflagged · back on the next planner run';
+  return HEALTH[h.cls][h.why] || h.cls;
+};
+
+function useAccountHealth() {
+  const [map, setMap] = useState(new Map());
+  useEffect(() => onSnapshot(collection(db, 'accountHealth'),
+    (snap) => setMap(new Map(snap.docs.map((d) => [d.id, d.data()]))), () => setMap(new Map())), []);
+  return map;
+}
+
+function HealthSummary({ health }) {
+  const n = { sleeping: 0, ghost: 0, suspicious: 0 };
+  for (const h of health.values()) if (h.flag === 'suspicious') n.suspicious += 1; else if (h.cls === 'sleeping' || h.cls === 'ghost') n[h.cls] += 1;
+  if (!n.sleeping && !n.ghost && !n.suspicious) return null;
+  return <p className="aa-meta">Not planned: {n.sleeping} sleeping · {n.ghost} ghost · {n.suspicious} flagged. They come back by opening the app or saying «I'm in».</p>;
+}
+
+function FlagButton({ id, name, h }) {
+  const flagged = h?.flag === 'suspicious';
+  const flip = async () => {
+    if (!flagged && !window.confirm(`Keep ${name} out of planning until you unflag them?`)) return;
+    await setDoc(doc(db, 'accountHealth', id), flagged
+      ? { flag: null, flaggedAt: serverTimestamp() }
+      : { flag: 'suspicious', flaggedAt: serverTimestamp() }, { merge: true }).catch((e) => window.alert(e.message));
+  };
+  return (
+    <button type="button" className={`aa-chip aa-chip--sm ${flagged ? 'is-on' : ''}`} onClick={flip}
+      aria-label={flagged ? `Unflag ${name}` : `Flag ${name}`} title={flagged ? 'Unflag' : 'Flag: keep out of planning'}>
+      <Flag size={14} aria-hidden="true" />{flagged ? ' Flagged' : ''}
+    </button>
+  );
 }
 
 // Admin → Week → "Who practises": the people allowed into practice sessions
@@ -61,6 +108,7 @@ const WHY = {
   said_in: 'said "in"', package: 'package', new: 'new this week', included: 'always (you)',
   excluded: 'never (you)', asleep: 'not seen 7+ days', not_confirmed: 'did not say "in"', skipped: 'week off',
   snoozed: '2 proposals ignored', no_practices_left: 'no practices left', not_set_up: 'not set up', paused: 'paused',
+  sleeping: 'sleeping', ghost: 'ghost', suspicious: 'flagged',
 };
 
 // Autopilot: the server decides (functions/autoRoster.js) and writes its
@@ -68,6 +116,7 @@ const WHY = {
 // only overrides: Always (include) or Never (exclude). Nothing moves while
 // you work — sorted by name once.
 function AutoRoster({ week, users }) {
+  const health = useAccountHealth();
   const [docData, setDocData] = useState(undefined);
   const [onboarding, setOnboarding] = useState([]);
   const [draft, setDraft] = useState(null); // Map uid → 'in' | 'out' (absent = auto)
@@ -121,6 +170,7 @@ function AutoRoster({ week, users }) {
           ? <><b>Autopilot · {sum.in} in</b>{reasons.length ? ` · out: ${reasons.map(([k, n]) => `${n} ${WHY[k] || k}`).join(', ')}` : ''}{docData.autoAt ? ` · checked ${new Date(docData.autoAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}</>
           : 'Autopilot · this week has not been checked yet — the next plan or refill run decides.'}
       </p>
+      <HealthSummary health={health} />
       <div className="aa-filters">
         {['All', 'In', 'Out'].map((f) => (
           <button key={f} type="button" className={`aa-chip ${filter === f ? 'is-on' : ''}`} onClick={() => setFilter(f)}>{f}</button>
@@ -133,9 +183,10 @@ function AutoRoster({ week, users }) {
             <li key={p.id} className={`aa-roster-row ${inSet.has(p.id) ? 'is-on' : ''}`}>
               <span className="aa-roster-main">
                 <span className="aa-name">{p.name} <span className="aa-level">{levelShort(p.level)}</span></span>
-                <span className="aa-meta">{WHY[why[p.id]] || '—'} · {seenLabel(p.seen, now)}</span>
+                <span className="aa-meta">{WHY[why[p.id]] || '—'} · {seenLabel(p.seen, now)}{healthLabel(health.get(p.id)) ? ` · ${healthLabel(health.get(p.id))}` : ''}</span>
               </span>
               <span className="aa-tri" role="group" aria-label={`${p.name}: override`}>
+                <FlagButton id={p.id} name={p.name} h={health.get(p.id)} />
                 {[['auto', 'Auto'], ['in', 'Always'], ['out', 'Never']].map(([k, label]) => (
                   <button key={k} type="button" className={`aa-chip aa-chip--sm ${v === k ? 'is-on' : ''}`} onClick={() => set(p.id, k)}>{label}</button>
                 ))}
@@ -155,6 +206,7 @@ function AutoRoster({ week, users }) {
 }
 
 function ManualRoster({ week, users }) {
+  const health = useAccountHealth();
   const [saved, setSaved] = useState(undefined);
   const [prev, setPrev] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -244,6 +296,7 @@ function ManualRoster({ week, users }) {
           : <b> No list yet — nobody is planned for that week.</b>)}
         {carriedFrom && <b> Carried over from the week of {dayMonth(carriedFrom)} — edit if needed.</b>}
       </p>
+      <HealthSummary health={health} />
 
       <div className="aa-filters">
         <label className="aa-search">
@@ -257,14 +310,15 @@ function ManualRoster({ week, users }) {
 
       <ul className="aa-roster-list">
         {shown.map((p) => (
-          <li key={p.id}>
+          <li key={p.id} className="aa-roster-item">
             <label className={`aa-roster-row ${draft.has(p.id) ? 'is-on' : ''}`}>
               <input type="checkbox" className="aa-check" checked={draft.has(p.id)} onChange={() => toggle(p.id)} />
               <span className="aa-roster-main">
                 <span className="aa-name">{p.name} <span className="aa-level">{levelShort(p.level)}</span></span>
-                <span className="aa-meta">{p.wants ? `wants ${p.wants}/week` : 'no weekly target'} · {seenLabel(p.seen, now)}</span>
+                <span className="aa-meta">{p.wants ? `wants ${p.wants}/week` : 'no weekly target'} · {seenLabel(p.seen, now)}{healthLabel(health.get(p.id)) ? ` · ${healthLabel(health.get(p.id))}` : ''}</span>
               </span>
             </label>
+            <FlagButton id={p.id} name={p.name} h={health.get(p.id)} />
           </li>
         ))}
         {shown.length === 0 && <li className="aa-empty">Nobody matches.</li>}

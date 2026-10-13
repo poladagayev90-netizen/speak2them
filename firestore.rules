@@ -773,6 +773,17 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Account health (functions/accountHealth.js): the server writes cls/why
+    // on every planner run; the admin may only set or clear the flag that
+    // keeps an account out of planning. Never shown to the learner.
+    match /accountHealth/{uid} {
+      allow read: if isAdmin();
+      allow write: if isAdmin()
+        && request.resource.data.diff(resource == null ? {} : resource.data).affectedKeys()
+             .hasOnly(['flag', 'flaggedAt', 'flagNote'])
+        && (request.resource.data.get('flag', null) == null || request.resource.data.flag == 'suspicious');
+    }
+
     // Who declined an offer and why. Admin-only ON PURPOSE: the other person
     // must never learn who said no — that is the whole point of proposing to
     // both at once instead of asking one and then the other.

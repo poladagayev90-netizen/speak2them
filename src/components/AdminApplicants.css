@@ -234,6 +234,9 @@
 .aa-roster-row.is-on { background: var(--accent-soft); border-color: var(--accent-ring); }
 .aa-roster-main { display: grid; gap: 2px; min-width: 0; flex: 1 1 160px; }
 .aa-roster-main .aa-name { overflow-wrap: anywhere; }
+/* Manual list: the flag sits beside the row, outside the checkbox label. */
+.aa-roster-item { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.aa-roster-item > .aa-roster-row { flex: 1 1 auto; min-width: 0; }
 .aa-sticky-bar {
   /* Above the floating bottom nav (14px gap + 64px bar, App.css .bottom-nav). */
   position: sticky; bottom: calc(92px + var(--safe-area-bottom, 0px));

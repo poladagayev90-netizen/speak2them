@@ -21,6 +21,7 @@ const tutorLessons = require("./tutorLessons");
 const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
 const autoRoster = require("./autoRoster");
+const accountHealth = require("./accountHealth");
 const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const callLogLib = require("./callLog");
@@ -1340,6 +1341,14 @@ exports.syncUpcomingCall = onDocumentWritten({ document: "bookings/{bookingId}",
     ...((event.data?.after?.exists && event.data.after.get("participants")) || []),
   ]);
   const db = admin.firestore();
+  // Someone's partner cancelled or did not come: the refill looks for a new
+  // partner on the next minute tick instead of waiting for the hourly run.
+  const before = event.data?.before?.exists ? (event.data.before.data() || {}) : {};
+  const after = event.data?.after?.exists ? (event.data.after.data() || {}) : {};
+  const strandedNow = (before.status === "confirmed" && after.status === "cancelled")
+    || (after.status === "done" && Object.values(after.outcome || {}).includes("partner_no_show")
+      && !Object.values(before.outcome || {}).includes("partner_no_show"));
+  if (strandedNow) await requestRefill(db).catch(() => null);
   for (const uid of people) {
     await bookingsLib.refreshUpcomingCall(db, uid);
     // The package balance is derived from bookings, so it moves with them.
@@ -4803,8 +4812,20 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
       }
 
       if (!otherAccepted) {
-        tx.update(offerRef, { [`responses.${uid}`]: "accepted" });
-        return { kind: "waiting" };
+        // The first yes: the other side now has at most 6 h (and never past
+        // 2 h before the start) — the one who said yes must not wait days
+        // for an answer. The other side is told, once, that their partner is
+        // in; that push stands in for the halfway reminder.
+        const limitBy = Math.min(now + FIRST_YES_WINDOW_MS, slot.startMs - 2 * 60 * 60 * 1000);
+        // At least an hour to answer, but never later than it already was.
+        const respondBy = Math.min(Number(offer.respondBy) || Infinity, Math.max(limitBy, now + 60 * 60 * 1000));
+        tx.update(offerRef, {
+          [`responses.${uid}`]: "accepted",
+          [`acceptedAt.${uid}`]: now,
+          respondBy,
+          [`reminded.${otherUid}`]: now,
+        });
+        return { kind: "waiting", otherUid, offer, respondBy };
       }
 
       // Second yes: book it. Users are read here, before bookPairTx writes.
@@ -4830,7 +4851,15 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
       return { kind: "confirmed", slot, offer, released: booked.released };
     });
 
-    if (result.kind === "declined") {
+    if (result.kind === "waiting") {
+      const { offer } = result;
+      const myName = uid === offer.userA ? offer.nameA : offer.nameB;
+      await sendPushToUser(db, result.otherUid, {
+        key: "match_offer_partner_yes",
+        vars: { at: offer.startMs, peerName: myName || "" },
+        type: "match_offer", url: "/plan",
+      }).catch(() => null);
+    } else if (result.kind === "declined") {
       const { offer, slot } = result;
       const myName = uid === offer.userA ? offer.nameA : offer.nameB;
       await Promise.all([
@@ -4842,6 +4871,7 @@ exports.respondMatchOffer = onRequest({ secrets: [], invoker: "public" }, async 
         result.otherAccepted ? sendPushToUser(db, result.otherUid, {
           key: "match_offer_withdrawn", vars: { at: slot.startMs }, type: "match_offer", url: "/",
         }) : null,
+        result.otherAccepted ? requestRefill(db) : null,
       ]).catch(() => null);
     } else if (result.kind === "confirmed") {
       const { offer, slot } = result;
@@ -4949,13 +4979,18 @@ exports.adminCancelOffer = onRequest({ secrets: [], invoker: "public" }, async (
 // and the Plan tab that explain them ship after this (Phase 4).
 // rosterMode: "manual" = the admin's weekly list (weekRoster.js); "auto" =
 // the autopilot (autoRoster.js) decides, the list is only an override.
-const PLAN_CONFIG_DEFAULTS = { autoSend: false, refill: false, requireCharter: false, rosterMode: "manual" };
+const PLAN_CONFIG_DEFAULTS = { autoSend: false, refill: false, requireCharter: false, rosterMode: "manual", directBook: false };
 const PLAN_NOTICE_MS = 14 * 60 * 60 * 1000;   // a planned practice is at least this far after the send
 // …and a refill offer this far. Was 4 h with a 6 h answer window: the
 // real-life simulation (2026-10-06) showed most mid-week offers running out
 // before people who open the app once a day saw them — 173 of 197.
 const REFILL_NOTICE_MS = 10 * 60 * 60 * 1000;
 const REFILL_ANSWER_MS = 20 * 60 * 60 * 1000;
+// A direct booking (both said «in», directBook on) needs no answer time.
+const REFILL_DIRECT_NOTICE_MS = 3 * 60 * 60 * 1000;
+// Once one side has said yes, the other has at most this long left: the yes
+// must not hang for days (2026-10-14: a median 24 h, then a no).
+const FIRST_YES_WINDOW_MS = 6 * 60 * 60 * 1000;
 const PLAN_ACTIVE_WINDOW_MS = 21 * DAY_MS;    // only learners seen in the last three weeks are planned
 
 async function plannerConfig(db) {
@@ -4984,8 +5019,9 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   const uids = [...obs.keys()];
   const userSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("users").doc(u))) : [];
   const users = new Map(userSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
-  // Auto only: packages (paid = in without being asked) and the proposals of
-  // the last four weeks (two left unanswered in a row = snoozed).
+  // Auto only: packages (paid = in without being asked). Both modes: the
+  // proposals of the last four weeks (two left unanswered in a row = snoozed
+  // in auto, «sleeping» for accountHealth) and the account flags.
   const paidUids = new Set();
   const offersOf = new Map();
   if (auto && uids.length) {
@@ -4993,6 +5029,11 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     for (const a of accSnaps) {
       if (a.exists && packagesLib.activePackage(a.data() || {}, nowMs)) paidUids.add(a.id);
     }
+  }
+  const healthSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("accountHealth").doc(u))) : [];
+  const healthDocs = new Map(healthSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
+  const healths = new Map();
+  if (uids.length) {
     const recentOffers = await db.collection("matchOffers").where("startMs", ">=", nowMs - 28 * DAY_MS).get().catch(() => ({ docs: [] }));
     for (const d of recentOffers.docs) {
       const o = d.data() || {};
@@ -5066,11 +5107,14 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     }
   }
   // A plan offer that was declined or ran out is not proposed again this week.
+  // Whoever had said yes to it was let down — the refill looks for them first.
   for (const d of planOffersSnap.docs) {
     const o = d.data() || {};
     if (o.status === "pending") continue;
     const [x, y] = o.participants || [];
     if (x && y) { noteOf(x).partners.add(y); noteOf(y).partners.add(x); }
+    if (o.status === "confirmed") continue;
+    for (const u of [x, y]) if (u && (o.responses || {})[u] === "accepted") noteOf(u).letDown += 1;
   }
 
   // Packages: while the admin's switch is on, nobody is planned past what
@@ -5110,6 +5154,21 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       verdicts.set(uid, v);
       if (!v.in) continue;
     }
+    // Account health (accountHealth.js): dead, silent and flagged accounts are
+    // not planned in either mode — only the admin's «Always» overrides it.
+    const health = accountHealth.classify({
+      lastSeenMs: seen,
+      callCount: u.callCount,
+      joinedAtMs: ob.charterAcceptedAt?.toMillis?.() || u.createdAt?.toMillis?.() || 0,
+      unanswered: autoRoster.unansweredStreak(offersOf.get(uid), answer ? answer.atMs : 0),
+      committed: !!(answer && answer.in),
+      flag: healthDocs.get(uid)?.flag || null,
+    }, { nowMs });
+    healths.set(uid, health);
+    if (!accountHealth.planned(health) && !(auto && (override.include || []).includes(uid))) {
+      if (auto) verdicts.set(uid, { in: false, why: health.cls });
+      continue;
+    }
     if (!availability.length) continue;
     const limited = limitedUids.has(uid);
     const asked = autoRoster.weekTarget(ob.weeklyTarget, answer);
@@ -5146,8 +5205,20 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       priority: h.letDown ? 1 : 0,
       limited,
       newcomer: !(Number(u.callCount) > 0),
+      // Said «I'm in» for this week: with appConfig/planner.directBook two
+      // such people are booked straight away, nobody waits for a second yes.
+      committed: !!(answer && answer.in),
     });
   }
+  // The verdicts for Admin → Week (admin-only accountHealth/{uid}), written
+  // only when they change; the flag field belongs to the admin and stays.
+  await Promise.all([...healths].map(([uid, h]) => {
+    const cur = healthDocs.get(uid) || {};
+    if (cur.cls === h.cls && cur.why === h.why) return null;
+    return db.collection("accountHealth").doc(uid).set({
+      cls: h.cls, why: h.why, week: monday, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true }).catch(() => null);
+  }));
 
   // Blocks and "don't pair me again", either way — the same lists pairVerdict reads.
   const blocked = new Set();
@@ -5212,6 +5283,7 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
     nameA: info.get(p.a)?.name || "", nameB: info.get(p.b)?.name || "",
     levelA: info.get(p.a)?.level || null, levelB: info.get(p.b)?.level || null,
     tzA: info.get(p.a)?.timeZone || null, tzB: info.get(p.b)?.timeZone || null,
+    committedA: !!info.get(p.a)?.committed, committedB: !!info.get(p.b)?.committed,
     removed: false, offerId: null,
   }));
   const unmet = result.unmet.map((u) => ({ ...u, name: info.get(u.uid)?.name || "", level: info.get(u.uid)?.level || null }));
@@ -5228,6 +5300,64 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
     noRoster,
   });
   return { pairs: pairs.length, unmet: unmet.length, learners: learners.length, noRoster };
+}
+
+// Two people who both said «I'm in» for the week, with appConfig/planner
+// .directBook on: booked straight away. The offer and its second yes were
+// where the plan lost people — 2026-10-14: 3 of 42 offers confirmed, and the
+// one who had said yes waited a median 24 h for a no. Saying «in» for the
+// week IS the yes; a practice that does not suit can be cancelled free up to
+// 2 h before (leavePracticeSlot). Re-checked here: still «in», not paused,
+// practices left; then bookPairTx (pairVerdict, one a day, no overlap).
+async function directBookTx(db, { pair, planWeek, source }) {
+  const slot = parseSlotId(pair.slotId);
+  if (!slot) return { skip: "invalid-slot" };
+  return db.runTransaction(async (tx) => {
+    const usersCol = db.collection("users");
+    const obCol = db.collection("onboarding");
+    const [aSnap, bSnap, aOb, bOb] = await Promise.all([
+      tx.get(usersCol.doc(pair.a)), tx.get(usersCol.doc(pair.b)), tx.get(obCol.doc(pair.a)), tx.get(obCol.doc(pair.b)),
+    ]);
+    if (!aSnap.exists || !bSnap.exists) return { skip: "user-gone" };
+    for (const ob of [aOb, bOb]) {
+      const o = ob.exists ? (ob.data() || {}) : {};
+      const answer = autoRoster.weekAnswer(o, planWeek);
+      if (!(answer && answer.in) || o.planPaused === true) return { skip: "not-committed" };
+    }
+    const a = aSnap.data() || {};
+    const b = bSnap.data() || {};
+    const billing = await billingConfigOf(db, tx);
+    if (!await practiceAllowedTx(db, tx, pair.a, a, slot, billing)
+      || !await practiceAllowedTx(db, tx, pair.b, b, slot, billing)) return { skip: "no-practices-left" };
+    const booked = await bookPairTx(db, tx, {
+      uidA: pair.a, uidB: pair.b, a, b, slot, now: Date.now(),
+      marker: { planWeek, planned: true }, source, oneADay: true, replaceInBlock: false,
+    });
+    if (booked.alreadyPaired) return { skip: "already-booked" };
+    return { booked: true, slot, released: booked.released || [], nameA: a.name || "", nameB: b.name || "" };
+  }).catch((e) => ({ skip: e.message }));
+}
+
+// After a directly booked pair: the same pushes and same-day clean-up as a
+// confirmed offer, worded as a booking (nobody has to confirm anything).
+async function afterDirectBook(db, pair, r) {
+  await afterPairBooked(db, {
+    uidA: pair.a, uidB: pair.b, slot: r.slot, released: r.released,
+    pushFor: (u) => ({
+      key: "plan_booked",
+      vars: { at: r.slot.startMs, peerName: u === pair.a ? r.nameB : r.nameA },
+      type: "match_confirmed", url: "/plan",
+    }),
+  });
+}
+
+const directPair = (cfg, p) => cfg.directBook === true && !!p.committedA && !!p.committedB;
+
+// A booking that fell through (cancelled, partner did not come) or a
+// proposal that left someone's yes hanging: the refill runs on the next tick
+// (within its hours) rather than at the top of the next hour.
+function requestRefill(db) {
+  return db.collection("plannerState").doc("refill").set({ wantedAt: Date.now() }, { merge: true });
 }
 
 // One offer for one planned pair, re-checked against what happened since the
@@ -5290,10 +5420,23 @@ async function sendWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule" 
   const plan = snap.data() || {};
   if (plan.status === "sent") return { alreadySent: true };
   const pairs = plan.pairs || [];
+  const cfg = await plannerConfig(db);
   const offersFor = new Map();
+  const bookedFor = new Map();
   for (const p of pairs) {
-    if (p.removed || p.offerId) continue;
+    if (p.removed || p.offerId || p.booked) continue;
     if (p.startMs < nowMs + REFILL_NOTICE_MS) { p.skip = "too-soon"; continue; }
+    if (directPair(cfg, p)) {
+      const r = await directBookTx(db, { pair: p, planWeek: monday, source: "weekly_plan" });
+      if (r.booked) {
+        p.booked = true;
+        for (const u of [p.a, p.b]) bookedFor.set(u, (bookedFor.get(u) || 0) + 1);
+        await afterDirectBook(db, p, r);
+        continue;
+      }
+      // Someone took back their «in» since the draft: an ordinary proposal.
+      if (r.skip !== "not-committed") { p.skip = r.skip; continue; }
+    }
     // 48 h, not 24: in the week of 2026-10-05 every plan offer ran out before
     // the learners opened the app. One reminder goes halfway (offerReminders.js).
     const respondBy = Math.min(nowMs + 2 * DAY_MS, p.startMs - 2 * 60 * 60 * 1000);
@@ -5313,11 +5456,18 @@ async function sendWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule" 
     key: "week_plan", vars: { count }, type: "match_offer", url: "/",
   }).catch(() => null)));
   for (const [uid, count] of offersFor) await writePlanStatus(db, uid, monday, { state: "offered", offered: count, reason: null });
+  for (const [uid, count] of bookedFor) {
+    if (!offersFor.has(uid)) await writePlanStatus(db, uid, monday, { state: "booked", booked: count, reason: null });
+  }
   for (const u of plan.unmet || []) {
-    if (offersFor.has(u.uid)) continue;
+    if (offersFor.has(u.uid) || bookedFor.has(u.uid)) continue;
     await writePlanStatus(db, u.uid, monday, { state: "no_match", offered: 0, reason: u.reason });
   }
-  return { offers: [...offersFor.values()].reduce((s, n) => s + n, 0) / 2, people: offersFor.size };
+  return {
+    offers: [...offersFor.values()].reduce((s, n) => s + n, 0) / 2,
+    booked: [...bookedFor.values()].reduce((s, n) => s + n, 0) / 2,
+    people: new Set([...offersFor.keys(), ...bookedFor.keys()]).size,
+  };
 }
 
 // Offers whose answer time has passed are closed. Silence is not a no-show —
@@ -5340,6 +5490,7 @@ async function expireLateOffers(db, nowMs) {
     await Promise.all(yes.map((u) => sendPushToUser(db, u, {
       key: "plan_offer_expired", vars: { at: done.startMs }, type: "match_offer", url: "/",
     }).catch(() => null)));
+    if (yes.length) await requestRefill(db).catch(() => null);
   }
 }
 
@@ -5353,13 +5504,29 @@ async function refillThisWeek(db, nowMs) {
   const left = dates.filter((d) => d >= today);
   const wanting = learners.filter((l) => l.need > 0);
   if (wanting.length < 2 || !left.length) return { offers: 0 };
+  // Two people who both said «in» can be booked with less notice: nobody has
+  // to answer anything first. Proposals still need the 10 h.
+  const direct = cfg.directBook === true;
   const result = weeklyPlanner.buildWeekPlan({
     learners, blocked, recent, favorites, dates: left,
-    earliestMs: nowMs + REFILL_NOTICE_MS, seed: `${monday}_${nowMs}`, restarts: 8,
+    earliestMs: nowMs + (direct ? REFILL_DIRECT_NOTICE_MS : REFILL_NOTICE_MS), seed: `${monday}_${nowMs}`, restarts: 8,
   });
+  const committed = new Set(learners.filter((l) => l.committed).map((l) => l.uid));
   let offers = 0;
+  let booked = 0;
   const offered = new Set();
+  const bookedNow = new Set();
   for (const p of result.pairs) {
+    if (direct && committed.has(p.a) && committed.has(p.b)) {
+      const r = await directBookTx(db, { pair: p, planWeek: monday, source: "weekly_plan" });
+      if (r.booked) {
+        booked += 1;
+        bookedNow.add(p.a); bookedNow.add(p.b);
+        await afterDirectBook(db, p, r);
+      }
+      continue;
+    }
+    if (p.startMs < nowMs + REFILL_NOTICE_MS) continue;
     const respondBy = Math.min(nowMs + REFILL_ANSWER_MS, p.startMs - 2 * 60 * 60 * 1000);
     const r = await createPlanOfferTx(db, { id: `rf_${p.slotId}_${p.id}`, pair: p, planWeek: monday, respondBy, source: "refill" })
       .catch((e) => ({ skip: e.message }));
@@ -5375,16 +5542,18 @@ async function refillThisWeek(db, nowMs) {
   // honestly — that no other time has turned up yet (Phase 5).
   for (const l of wanting) {
     if (!l.priority) continue;
-    await writePlanStatus(db, l.uid, monday, offered.has(l.uid)
-      ? { state: "offered", reason: null }
-      : { state: "no_match", offered: 0, reason: "replacement_not_found" });
+    await writePlanStatus(db, l.uid, monday, bookedNow.has(l.uid)
+      ? { state: "booked", reason: null }
+      : offered.has(l.uid)
+        ? { state: "offered", reason: null }
+        : { state: "no_match", offered: 0, reason: "replacement_not_found" });
   }
-  if (offers) {
+  if (offers || booked) {
     await db.collection("weeklyPlans").doc(monday).set({
-      refillLog: admin.firestore.FieldValue.arrayUnion({ at: nowMs, offers }),
+      refillLog: admin.firestore.FieldValue.arrayUnion({ at: nowMs, offers, booked }),
     }, { merge: true }).catch(() => null);
   }
-  return { offers };
+  return { offers, booked };
 }
 
 // Called from practiceSlotTick every minute.
@@ -5490,15 +5659,22 @@ async function runPlannerTick(db, nowMs) {
       const sent = await sendWeeklyPlan(db, monday, { nowMs, by: "schedule" }).catch((e) => { console.warn("[plan] send failed:", e.message); return null; });
       if (sent && !sent.alreadySent) {
         await sendPushToUser(db, ADMIN_UID, {
-          key: "admin_plan_sent", vars: { offers: sent.offers, people: sent.people }, type: "admin_plan", url: "/admin?tab=matching",
+          key: "admin_plan_sent", vars: { offers: sent.offers, booked: sent.booked, people: sent.people }, type: "admin_plan", url: "/admin?tab=matching",
         }).catch(() => null);
       }
     }
   }
   await sendOfferReminders(db, nowMs).catch((e) => console.warn("[plan] reminders failed:", e.message));
-  if (cfg.refill && hour >= 8 && hour <= 21
-    && await claimSlotRun(db, `refill_${bakuDateStr(nowMs)}_${hour}`)) {
-    await refillThisWeek(db, nowMs).catch((e) => console.warn("[plan] refill failed:", e.message));
+  if (cfg.refill && hour >= 8 && hour <= 21) {
+    const stateRef = db.collection("plannerState").doc("refill");
+    const st = ((await stateRef.get().catch(() => null))?.data()) || {};
+    const wanted = Number(st.wantedAt) || 0;
+    const hourly = await claimSlotRun(db, `refill_${bakuDateStr(nowMs)}_${hour}`);
+    const asked = !hourly && wanted > (Number(st.doneAt) || 0) && await claimSlotRun(db, `refill_now_${wanted}`);
+    if (hourly || asked) {
+      await refillThisWeek(db, nowMs).catch((e) => console.warn("[plan] refill failed:", e.message));
+      await stateRef.set({ doneAt: nowMs }, { merge: true }).catch(() => null);
+    }
   }
 }
 
