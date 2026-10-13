@@ -146,6 +146,13 @@ const OVERRIDES = {
   'chewing leaves': { az: 'yarpaq çeynəyir', tr: 'yaprak çiğniyor' },
   'bird feeder': { az: 'quş yemliyi', tr: 'kuş yemliği' },
   'squirrel': { az: 'dələ', tr: 'sincap' },
+  // Veo clips (2026-10-13)
+  'robot vacuum': { az: 'robot tozsoran', tr: 'robot süpürge' },
+  'apron': { az: 'önlük', tr: 'önlük' },
+  'ride': { az: 'minmək', tr: 'binmek' },
+  'bonnet': { az: 'kapot', tr: 'kaput' },
+  'slice of pizza': { az: 'bir dilim pizza', tr: 'bir dilim pizza' },
+  'car roof': { az: 'maşının damı', tr: 'arabanın tavanı' },
   'dove': { az: 'göyərçin', tr: 'güvercin' },
   'seeds': { az: 'dən', tr: 'yem tanesi' },
   'deer': { az: 'maral', tr: 'geyik' },

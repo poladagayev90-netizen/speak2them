@@ -141,10 +141,13 @@ function apply(from) {
     const { bytes, sound } = encode(row, from);
     const kw = row.keywords.slice(0, 5).map((w) => `'${w.replace(/'/g, "\\'")}'`).join(', ');
     const pr = row.prompts.slice(0, 2).map((p) => `      '${p.replace(/'/g, "\\'")}',`).join('\n');
+    // `licensed` / `ai` come straight from the inbox row: an AI clip (Veo) is our
+    // own output, so it ships in the Play build too (see describeVideos.js).
+    const flags = (row.licensed === true ? '    licensed: true,\n' : '') + (row.ai === true ? '    ai: true,\n' : '');
     entries.push(`  {
     // source: ${row.source}
     id: '${row.id}',
-    src: '/videos/${row.id}.mp4',
+${flags}    src: '/videos/${row.id}.mp4',
     poster: '/videos/${row.id}.jpg',
     seconds: ${Math.min(row.seconds || MAX_SECONDS, MAX_SECONDS)},
 ${sound ? '    sound: true,\n' : ''}    alt: '${(row.alt || '').replace(/'/g, "\\'")}',

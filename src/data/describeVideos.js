@@ -1033,6 +1033,134 @@ export const describeVideos = [
       'What should the people living here do?',
     ],
   },
+  {
+    // source: cake-dog-lick.mp4
+    id: 'cake-dog-lick',
+    licensed: true,
+    ai: true,
+    src: '/videos/cake-dog-lick.mp4',
+    poster: '/videos/cake-dog-lick.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A small dog jumps up to a birthday cake with candles and licks the cream while the family comes back into the room.',
+    keywords: ['birthday cake', 'candles', 'small dog', 'cream', 'family'],
+    prompts: [
+      'What did the dog do to the cake?',
+      'What should the family do now — eat the cake or not?',
+    ],
+  },
+  {
+    // source: cat-glass-push.mp4
+    id: 'cat-glass-push',
+    licensed: true,
+    ai: true,
+    src: '/videos/cat-glass-push.mp4',
+    poster: '/videos/cat-glass-push.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A cat looks at the camera and slowly pushes a glass of water off the kitchen table with its paw.',
+    keywords: ['cat', 'glass of water', 'paw', 'kitchen table', 'edge'],
+    prompts: [
+      'How did the cat move the glass?',
+      'Why do you think cats like to push things off tables?',
+    ],
+  },
+  {
+    // source: dog-cushion-caught.mp4
+    id: 'dog-cushion-caught',
+    licensed: true,
+    ai: true,
+    src: '/videos/dog-cushion-caught.mp4',
+    poster: '/videos/dog-cushion-caught.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A dog alone at home rips a sofa cushion apart, feathers fly, and it lies down innocently when the owner walks in.',
+    keywords: ['dog', 'cushion', 'feathers', 'sofa', 'front door'],
+    prompts: [
+      'What was the dog doing before the door opened?',
+      'What do you think the owner said when she saw the room?',
+    ],
+  },
+  {
+    // source: goat-car-roof.mp4
+    id: 'goat-car-roof',
+    licensed: true,
+    ai: true,
+    src: '/videos/goat-car-roof.mp4',
+    poster: '/videos/goat-car-roof.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A goat jumps onto a parked car, climbs onto the roof and stands there while a farmer waves her arms.',
+    keywords: ['goat', 'car roof', 'farmer', 'barn', 'bonnet'],
+    prompts: [
+      'How did the goat get onto the roof?',
+      'What would you do if you were the farmer?',
+    ],
+  },
+  {
+    // source: robot-vacuum-cat.mp4
+    id: 'robot-vacuum-cat',
+    licensed: true,
+    ai: true,
+    src: '/videos/robot-vacuum-cat.mp4',
+    poster: '/videos/robot-vacuum-cat.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A cat rides on a robot vacuum cleaner until the robot hits a wall and the cat slides off onto the floor.',
+    keywords: ['cat', 'robot vacuum', 'wall', 'wooden floor', 'ride'],
+    prompts: [
+      'What happened when the robot hit the wall?',
+      'Do you have a robot vacuum or a pet at home? What do they do?',
+    ],
+  },
+  {
+    // source: seagull-pizza.mp4
+    id: 'seagull-pizza',
+    licensed: true,
+    ai: true,
+    src: '/videos/seagull-pizza.mp4',
+    poster: '/videos/seagull-pizza.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A seagull lands on a doorstep, opens a pizza box with its beak and flies away with a slice.',
+    keywords: ['seagull', 'pizza box', 'doormat', 'front door', 'slice of pizza'],
+    prompts: [
+      'What did the seagull do, step by step?',
+      'Who do you think ordered the pizza, and how did they feel when they opened the door?',
+    ],
+  },
+  {
+    // source: umbrella-wind.mp4
+    id: 'umbrella-wind',
+    licensed: true,
+    ai: true,
+    src: '/videos/umbrella-wind.mp4',
+    poster: '/videos/umbrella-wind.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'On a rainy, windy street the wind turns a man’s umbrella inside out and blows it away, and he runs after it.',
+    keywords: ['umbrella', 'rain', 'wind', 'street', 'puddles'],
+    prompts: [
+      'What did the wind do to the umbrella?',
+      'What is the worst weather you have been out in?',
+    ],
+  },
+  {
+    // source: waiter-tray-save.mp4
+    id: 'waiter-tray-save',
+    licensed: true,
+    ai: true,
+    src: '/videos/waiter-tray-save.mp4',
+    poster: '/videos/waiter-tray-save.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A waiter in a busy café trips while carrying a tray of glasses, catches them all, and the customers clap.',
+    keywords: ['waiter', 'tray', 'glasses', 'apron', 'customers'],
+    prompts: [
+      'What almost happened to the glasses?',
+      'Have you ever dropped something in public? What happened?',
+    ],
+  },
 ];
 
 // Which clips a topic gets lives in topicVideos.js, which

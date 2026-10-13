@@ -2081,6 +2081,23 @@ body {
   cursor: pointer;
 }
 
+/* «AI video» on a Veo clip — top left, the same dark glass as Replay. */
+.dt-video-ai {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  pointer-events: none;
+}
+
 /* Sound sits opposite Replay, in the same dark disc. */
 .dt-video-replay.dt-video-sound {
   right: auto;

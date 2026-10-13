@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { ChevronLeft, ChevronRight, RotateCcw, VideoOff, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Sparkles, VideoOff, Volume2, VolumeX } from 'lucide-react';
 import KeywordChips from './KeywordChips';
 
 // Sound is web/PWA only (Polad, 2026-10-13); the Android app keeps every clip
@@ -148,6 +148,10 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
                 }}
                 onError={() => setDead((prev) => ({ ...prev, [clip.id]: true }))}
               />
+              {/* A Veo clip looks like a real moment caught on a phone — say it is not. */}
+              {clip.ai && (
+                <span className="dt-video-ai"><Sparkles size={12} strokeWidth={2.25} aria-hidden="true" /> AI video</span>
+              )}
               <button type="button" className="dt-video-replay" onClick={replay} aria-label="Play again">
                 <RotateCcw size={18} strokeWidth={2} aria-hidden="true" />
               </button>
