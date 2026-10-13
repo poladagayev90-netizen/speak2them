@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 59,
+  "title": "Dear Dave, the plates miss you",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Have you ever shared a flat or a room? Guess: who is moving in with Sam?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "A new roommate",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a small flat by the sea, a red-haired bearded man opening the door to a tired friend with short brown hair and a big suitcase, NOT Leyla"
+    },
+    {
+      "from": 7,
+      "title": "Dear Dave",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a messy student kitchen, a sink full of dirty dishes, a young red-haired bearded man sticking a funny note on the fridge"
+    },
+    {
+      "from": 14,
+      "title": "Two sides of one room",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a shared girls' bedroom split in two: one side very tidy, the other side a mess of books and clothes, two teenage sisters with dark hair, one of them secretly reading a diary, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is sharing a home. And from next week, I'll have a roommate."
+    },
+    {
+      "s": "Leyla",
+      "t": "Who?"
+    },
+    {
+      "s": "Sam",
+      "t": "My friend Tom. After his breakup he needs a change for a month, so he's coming to Baku."
+    },
+    {
+      "s": "Leyla",
+      "t": "Poor Tom. Are you ready to share your small flat?"
+    },
+    {
+      "s": "Sam",
+      "t": "I hope so. At university I lived with three roommates. It wasn't always easy."
+    },
+    {
+      "s": "Leyla",
+      "t": "Why not?"
+    },
+    {
+      "s": "Sam",
+      "t": "One of them, Dave, never did any chores. His dishes stayed in the sink for a week."
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no. What did you do?"
+    },
+    {
+      "s": "Sam",
+      "t": "I left notes on the fridge: \"Dear Dave, the plates miss you.\" [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Did it work?"
+    },
+    {
+      "s": "Sam",
+      "t": "No. In the end we sat down and talked. We had to clear the air."
+    },
+    {
+      "s": "Leyla",
+      "t": "My mum always says: pull your weight, or don't complain."
+    },
+    {
+      "s": "Sam",
+      "t": "Wise woman. What about you? Did you ever share a room?"
+    },
+    {
+      "s": "Leyla",
+      "t": "With my sister, for eighteen years! She was tidy, and I was… not."
+    },
+    {
+      "s": "Sam",
+      "t": "So your side was a mess?"
+    },
+    {
+      "s": "Leyla",
+      "t": "A big mess. Books everywhere. And no privacy at all — she read my diary!"
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] So how did you survive?"
+    },
+    {
+      "s": "Leyla",
+      "t": "We made a compromise: I cleaned my side on Sundays, and she stopped reading my diary."
+    },
+    {
+      "s": "Sam",
+      "t": "Good deal. So, for Tom: we split the chores, we split the bills, and he cooks on Fridays."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: have you ever shared a room or a flat — and what was the hardest part?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine was Dave's dishes. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Sharing a home with roommates or family",
+        "Washing dishes",
+        "Tom's breakup",
+        "Writing a diary"
+      ],
+      "answer": 0,
+      "why": "Tom moving in, Dave's dishes, Leyla and her sister."
+    },
+    {
+      "type": "detail",
+      "q": "Why is Tom coming to Baku?",
+      "options": [
+        "For a new job",
+        "For a holiday with Leyla",
+        "He needs a change after his breakup",
+        "To run a race"
+      ],
+      "answer": 2,
+      "why": "\"After his breakup he needs a change for a month.\""
+    },
+    {
+      "type": "detail",
+      "q": "What was Dave's problem?",
+      "options": [
+        "He was too loud",
+        "He never did any chores",
+        "He never paid the rent",
+        "He read Sam's diary"
+      ],
+      "answer": 1,
+      "why": "\"Dave, never did any chores.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla shared a room with her sister.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 0,
+      "why": "\"With my sister, for eighteen years!\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Clear the air\" means…",
+      "options": [
+        "Open the windows",
+        "Clean the flat",
+        "Leave home",
+        "Talk openly to end a problem or bad feeling"
+      ],
+      "answer": 3,
+      "why": "\"In the end we sat down and talked. We had to clear the air.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why did Leyla's sister stop reading her diary?",
+      "options": [
+        "She lost it",
+        "It was part of their compromise",
+        "Their mum took it",
+        "It was boring"
+      ],
+      "answer": 1,
+      "why": "\"I cleaned my side on Sundays, and she stopped reading my diary.\""
+    }
+  ],
+  "words": [
+    "Roommate",
+    "Chore",
+    "Tidy",
+    "Mess",
+    "Split",
+    "Privacy",
+    "Compromise",
+    "Pull your weight",
+    "Clear the air"
+  ],
+  "coverPrompt": "COVER: Sam holding a mop like a guitar, Leyla holding a long list of chores and laughing",
+  "talk": [
+    "Have you ever shared a room or a flat — and what was the hardest part?",
+    "Make three house rules for the perfect roommate."
+  ]
+}

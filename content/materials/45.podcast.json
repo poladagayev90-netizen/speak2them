@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 45,
+  "title": "A ball on the road",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you know the emergency number in your country? Guess: how did Sam help a runner who fell?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "A fall near the boulevard",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: stone steps near the Baku seaside boulevard, a red-haired bearded man in running clothes kneeling calmly next to an injured runner — a young woman with short blonde hair in a ponytail, no glasses, a bright orange running top — who sits on the steps holding her ankle, a coach in a tracksuit calling on his phone"
+    },
+    {
+      "from": 10,
+      "title": "A close call",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a city street crossing, a little girl reaching for a ball rolling on the road, a car stopping just in time, a woman with round glasses and a lavender sweater rushing to grab her hand"
+    },
+    {
+      "from": 16,
+      "title": "A first aid course",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a bright classroom, a small group of adults practising bandaging each other's arms, a friendly instructor showing how, a first aid kit on the table, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is accidents and emergencies. Not the happiest topic, but a useful one."
+    },
+    {
+      "s": "Leyla",
+      "t": "Very useful. Sam, have you ever called an ambulance?"
+    },
+    {
+      "s": "Sam",
+      "t": "Once. Last spring, at running club. A woman fell on the stairs near the boulevard and hurt her leg badly."
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no. What did you do?"
+    },
+    {
+      "s": "Sam",
+      "t": "Luckily I did a first aid course last year. I told her not to move, and our coach called the ambulance."
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you panic?"
+    },
+    {
+      "s": "Sam",
+      "t": "Inside, a little! But you have to keep a cool head. Everyone was looking at me."
+    },
+    {
+      "s": "Leyla",
+      "t": "Was it a serious injury?"
+    },
+    {
+      "s": "Sam",
+      "t": "A broken ankle. But she recovered quickly — she's running again now."
+    },
+    {
+      "s": "Leyla",
+      "t": "That's good news. I had a close call last month with my niece Aysu."
+    },
+    {
+      "s": "Sam",
+      "t": "What happened?"
+    },
+    {
+      "s": "Leyla",
+      "t": "We were crossing the street, and she suddenly ran after her ball. A car stopped just in time."
+    },
+    {
+      "s": "Sam",
+      "t": "That must have been terrifying."
+    },
+    {
+      "s": "Leyla",
+      "t": "My heart stopped. Now she holds my hand on every street, and the ball stays in the bag."
+    },
+    {
+      "s": "Sam",
+      "t": "Better safe than sorry."
+    },
+    {
+      "s": "Leyla",
+      "t": "Exactly. Do you know the emergency number in Azerbaijan?"
+    },
+    {
+      "s": "Sam",
+      "t": "Is it one-one-two?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Yes, one-one-two. And one-zero-three for an ambulance. Everyone should know them."
+    },
+    {
+      "s": "Sam",
+      "t": "Good. I'm saving them in my phone right now. [chuckle]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: have you ever been in an emergency — and did you keep a cool head?"
+    },
+    {
+      "s": "Sam",
+      "t": "And maybe it's time for a first aid course! See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to train for a race",
+        "Accidents and how to act in an emergency",
+        "Playing football in the street",
+        "Phone numbers of friends"
+      ],
+      "answer": 1,
+      "why": "A fall at running club, a close call with Aysu, emergency numbers."
+    },
+    {
+      "type": "detail",
+      "q": "How did the woman at running club get hurt?",
+      "options": [
+        "She fell on the stairs and broke her ankle",
+        "A car hit her",
+        "She fell off a bicycle",
+        "She hurt her back in the gym"
+      ],
+      "answer": 0,
+      "why": "\"A woman fell on the stairs… A broken ankle.\""
+    },
+    {
+      "type": "detail",
+      "q": "Why did Aysu run into the street?",
+      "options": [
+        "To see a dog",
+        "To catch a bus",
+        "After her ball",
+        "To meet a friend"
+      ],
+      "answer": 2,
+      "why": "\"She suddenly ran after her ball.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's coach called the ambulance.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 0,
+      "why": "\"Our coach called the ambulance.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"A close call\" is…",
+      "options": [
+        "A phone call from a friend",
+        "A short visit",
+        "A loud noise",
+        "A moment when something bad almost happened"
+      ],
+      "answer": 3,
+      "why": "\"A car stopped just in time.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why did Sam know what to do?",
+      "options": [
+        "He is a doctor",
+        "He did a first aid course",
+        "Leyla told him",
+        "He saw it on TV"
+      ],
+      "answer": 1,
+      "why": "\"Luckily I did a first aid course last year.\""
+    }
+  ],
+  "words": [
+    "Emergency",
+    "Injury",
+    "Ambulance",
+    "First aid",
+    "Panic",
+    "Recover",
+    "A close call",
+    "Keep a cool head",
+    "Better safe than sorry"
+  ],
+  "coverPrompt": "COVER: Leyla holding a small red first aid kit, Sam with a plaster on his finger showing it proudly, both smiling",
+  "talk": [
+    "Have you ever been in an emergency — and did you keep a cool head?",
+    "What should everyone know about first aid? Make a short list with your partner."
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 50,
+  "title": "Bread at three in the morning",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you ever work or study late? Guess: what is Sam's secret for long days?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Midnight at the office",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: an empty office at midnight, a tired red-haired bearded man at a desk with a plain grey laptop with no logo and three coffee cups, city lights outside the window"
+    },
+    {
+      "from": 6,
+      "title": "The night shift",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a quiet hospital corridor at night, a young nurse with dark hair in a ponytail and blue scrubs checking a chart under a soft lamp, NOT the podcast hosts"
+    },
+    {
+      "from": 16,
+      "title": "Bread at three a.m.",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a small bakery at night, a baker with flour on his apron taking round loaves out of an oven, warm golden light, dark street outside, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is working late. And I'm a bit tired today — I worked until midnight yesterday."
+    },
+    {
+      "s": "Leyla",
+      "t": "Why so late?"
+    },
+    {
+      "s": "Sam",
+      "t": "A big deadline. The report was due this morning, so I had to burn the midnight oil."
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you get paid for the overtime?"
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] No. That's not how it works in my office."
+    },
+    {
+      "s": "Leyla",
+      "t": "My cousin Nigar is a nurse. She works night shifts — from eight in the evening to eight in the morning."
+    },
+    {
+      "s": "Sam",
+      "t": "Twelve hours at night? How does she sleep?"
+    },
+    {
+      "s": "Leyla",
+      "t": "With black curtains and earplugs. She sleeps when everyone else is awake."
+    },
+    {
+      "s": "Sam",
+      "t": "That sounds really hard on the body."
+    },
+    {
+      "s": "Leyla",
+      "t": "It is. After a month of nights she was completely exhausted. She told me, \"I can't run on empty any more.\""
+    },
+    {
+      "s": "Sam",
+      "t": "In England many doctors and nurses leave because of burnout. It's a big problem."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here too. Now she does nights only one week a month."
+    },
+    {
+      "s": "Sam",
+      "t": "Good. My secret for long days is a nap. Twenty minutes after lunch, and I'm a new man."
+    },
+    {
+      "s": "Leyla",
+      "t": "In the office?"
+    },
+    {
+      "s": "Sam",
+      "t": "In my car! [chuckle] With the seat back."
+    },
+    {
+      "s": "Leyla",
+      "t": "My dad was a baker. He started at three in the morning, every day, for thirty years."
+    },
+    {
+      "s": "Sam",
+      "t": "Three in the morning! When did he finish?"
+    },
+    {
+      "s": "Leyla",
+      "t": "At noon. Then he said, \"Okay, let's call it a day,\" and slept all afternoon."
+    },
+    {
+      "s": "Sam",
+      "t": "Honestly, that sounds better than my office."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: do you ever work or study late — and how do you stay awake?"
+    },
+    {
+      "s": "Sam",
+      "t": "And when do you call it a day? See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Working late, night shifts and being tired",
+        "How to bake bread",
+        "Finding a new job",
+        "Sleeping in a car"
+      ],
+      "answer": 0,
+      "why": "A deadline, a nurse on nights, naps, a baker who started at three."
+    },
+    {
+      "type": "detail",
+      "q": "Why did Sam work until midnight?",
+      "options": [
+        "He started late",
+        "He had a big deadline",
+        "His boss was angry",
+        "He wanted overtime pay"
+      ],
+      "answer": 1,
+      "why": "\"A big deadline. The report was due this morning.\""
+    },
+    {
+      "type": "detail",
+      "q": "When does Leyla's cousin Nigar work on night shifts?",
+      "options": [
+        "From midnight to noon",
+        "From three to twelve",
+        "From eight in the evening to eight in the morning",
+        "Only at weekends"
+      ],
+      "answer": 2,
+      "why": "\"From eight in the evening to eight in the morning.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam got paid for his overtime.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"No. That's not how it works in my office.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Burn the midnight oil\" means…",
+      "options": [
+        "Cook late at night",
+        "Work or study late into the night",
+        "Waste money",
+        "Light a candle"
+      ],
+      "answer": 1,
+      "why": "\"The report was due this morning, so I had to burn the midnight oil.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Nigar use black curtains?",
+      "options": [
+        "She likes dark colours",
+        "The neighbours are noisy",
+        "To keep the room warm",
+        "She needs to sleep during the day"
+      ],
+      "answer": 3,
+      "why": "\"She sleeps when everyone else is awake.\""
+    }
+  ],
+  "words": [
+    "Shift",
+    "Overtime",
+    "Exhausted",
+    "Deadline",
+    "Burnout",
+    "Nap",
+    "Burn the midnight oil",
+    "Call it a day",
+    "Run on empty"
+  ],
+  "coverPrompt": "COVER: Sam yawning and holding a huge coffee mug, Leyla holding a small old-fashioned alarm clock and laughing, a dark night sky in the window behind them",
+  "talk": [
+    "Do you ever work or study late — and how do you stay awake?",
+    "Would you like a job with night shifts? Why or why not?"
+  ]
+}

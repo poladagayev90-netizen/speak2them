@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 54,
+  "title": "A rumour from a ladder",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you believe everything you read? Guess: what is the big rumour in Sam and Leyla's street?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The ladder",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a quiet Baku street, workers on ladders painting the front of a house, a bald older man with a grey moustache and a checked shirt watching them, neighbours whispering at a bakery door, NOT the podcast hosts"
+    },
+    {
+      "from": 10,
+      "title": "The family group",
+      "image": "ch2",
+      "prompt": "her own old-fashioned kitchen at home with a carpet on the wall and a stove, NOT a studio, no microphones, no bookshelves, an elderly grandmother with a flowered headscarf proudly typing a message on her smartphone, a glass of lemon water beside her"
+    },
+    {
+      "from": 17,
+      "title": "Six in the morning",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a dark early-morning bedroom, a sleepy red-haired bearded man answering his phone in bed and suddenly smiling with joy"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is news and rumours. And there's a big rumour in our street."
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh, I know. Mr Aliyev is selling his house."
+    },
+    {
+      "s": "Sam",
+      "t": "That is what everyone says! The woman at the bakery told me, and the taxi driver told her."
+    },
+    {
+      "s": "Leyla",
+      "t": "In two days it was the talk of the town. And do you know what's really happening?"
+    },
+    {
+      "s": "Sam",
+      "t": "No, what?"
+    },
+    {
+      "s": "Leyla",
+      "t": "He's painting it. That's all. Somebody saw the workers and the ladders."
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] So the rumour started with a ladder!"
+    },
+    {
+      "s": "Leyla",
+      "t": "That's how gossip works. It spreads faster than the truth."
+    },
+    {
+      "s": "Sam",
+      "t": "My mum is the same with the internet. She reads a headline and calls me straight away."
+    },
+    {
+      "s": "Leyla",
+      "t": "My grandmother too! She sends messages to the family group: \"Lemon water cures everything!\""
+    },
+    {
+      "s": "Sam",
+      "t": "And who says that?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Exactly my question: what's the source? Usually, nobody knows."
+    },
+    {
+      "s": "Sam",
+      "t": "I have a rule: if it's very shocking, I take it with a pinch of salt."
+    },
+    {
+      "s": "Leyla",
+      "t": "Good rule. And I read the same story in two or three places. Some news sites are very biased."
+    },
+    {
+      "s": "Sam",
+      "t": "True. Each one tells you only its half of the story."
+    },
+    {
+      "s": "Leyla",
+      "t": "But some news is real. Who told you about your sister's engagement?"
+    },
+    {
+      "s": "Sam",
+      "t": "My mum! She called at six in the morning to break the news. She couldn't wait."
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] That's the best kind of news."
+    },
+    {
+      "s": "Sam",
+      "t": "And it was true — I checked with my sister. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: where do you get your news — and how do you know if it's true?"
+    },
+    {
+      "s": "Sam",
+      "t": "And tell your partner the funniest rumour you ever heard. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "News, rumours and how to check them",
+        "Painting a house",
+        "Healthy drinks",
+        "Sam's sister's wedding"
+      ],
+      "answer": 0,
+      "why": "A street rumour, family messages, sources, a real piece of news."
+    },
+    {
+      "type": "detail",
+      "q": "What is Mr Aliyev really doing?",
+      "options": [
+        "Selling his house",
+        "Painting his house",
+        "Moving to another city",
+        "Building a garage"
+      ],
+      "answer": 1,
+      "why": "\"He's painting it. That's all.\""
+    },
+    {
+      "type": "detail",
+      "q": "What message did Leyla's grandmother send to the family group?",
+      "options": [
+        "That Mr Aliyev is moving",
+        "That it will rain",
+        "That lemon water cures everything",
+        "That the bakery is closing"
+      ],
+      "answer": 2,
+      "why": "\"Lemon water cures everything!\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's mum told him the news about his sister in the evening.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"She called at six in the morning.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Take it with a pinch of salt\" means…",
+      "options": [
+        "Add salt to your food",
+        "Not believe it completely",
+        "Tell everyone",
+        "Get angry about it"
+      ],
+      "answer": 1,
+      "why": "\"If it's very shocking, I take it with a pinch of salt.\""
+    },
+    {
+      "type": "inference",
+      "q": "How did the rumour about Mr Aliyev start?",
+      "options": [
+        "He told the taxi driver",
+        "Leyla started it",
+        "There was an advert online",
+        "Someone saw workers and ladders and guessed wrongly"
+      ],
+      "answer": 3,
+      "why": "\"Somebody saw the workers and the ladders.\""
+    }
+  ],
+  "words": [
+    "Headline",
+    "Source",
+    "Rumour",
+    "Spread",
+    "Gossip",
+    "Biased",
+    "Take it with a pinch of salt",
+    "The talk of the town",
+    "Break the news"
+  ],
+  "coverPrompt": "COVER: Leyla whispering into Sam's ear with a hand beside her mouth, Sam looking very surprised, a folded newspaper on the table",
+  "talk": [
+    "Where do you get your news — and how do you know if it's true?",
+    "Tell your partner about a rumour that turned out to be false."
+  ]
+}

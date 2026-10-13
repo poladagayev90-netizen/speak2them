@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 47,
+  "title": "Five hundred guests",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How big is a wedding in your country? Guess: how many guests were at the wedding Sam went to?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Five hundred guests",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a huge bright Azerbaijani wedding hall with long tables full of food and hundreds of guests dancing, a bride in white and a groom in the centre, NOT the podcast hosts"
+    },
+    {
+      "from": 9,
+      "title": "A toast in Azerbaijani",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a wedding table, a red-haired bearded man in a suit standing and raising a glass of juice to give a toast, smiling guests clapping around him"
+    },
+    {
+      "from": 15,
+      "title": "A garden wedding",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a small English garden wedding with about forty guests, fairy lights between trees, a young couple holding hands under a flower arch, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is weddings. And I have big news: last Saturday I went to my first Azerbaijani wedding!"
+    },
+    {
+      "s": "Leyla",
+      "t": "My cousin's wedding! Tell everyone how many guests there were."
+    },
+    {
+      "s": "Sam",
+      "t": "Five hundred! In England, a big wedding is maybe a hundred people."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Five hundred is normal here. Cousins, neighbours, colleagues, neighbours of colleagues…"
+    },
+    {
+      "s": "Sam",
+      "t": "And the dancing! Four hours of dancing. My legs hurt more than after a long run."
+    },
+    {
+      "s": "Leyla",
+      "t": "What did you think of the bride and groom?"
+    },
+    {
+      "s": "Sam",
+      "t": "They looked so happy. But the ceremony was short — the party was the main event."
+    },
+    {
+      "s": "Leyla",
+      "t": "That's a tradition here. The official part is often a few days before, just with the family."
+    },
+    {
+      "s": "Sam",
+      "t": "And someone gave a toast every ten minutes!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you give one?"
+    },
+    {
+      "s": "Sam",
+      "t": "I did! In Azerbaijani. Three sentences. Everyone clapped — I think because they were surprised."
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] They loved it. But you know who can always steal the show?"
+    },
+    {
+      "s": "Sam",
+      "t": "Aysu! She danced with the groom's grandfather!"
+    },
+    {
+      "s": "Leyla",
+      "t": "For twenty minutes! Now, what about weddings in England?"
+    },
+    {
+      "s": "Sam",
+      "t": "My sister just got engaged. She and her boyfriend want a small wedding — forty guests, in a garden."
+    },
+    {
+      "s": "Leyla",
+      "t": "Forty! My mum would say that is just the family. When will they tie the knot?"
+    },
+    {
+      "s": "Sam",
+      "t": "Next summer. And I'm going to give the toast — in English this time. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Will you bring the Azerbaijani dancing to England?"
+    },
+    {
+      "s": "Sam",
+      "t": "Definitely. Forty English people dancing for four hours — they won't know what hit them."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is a typical wedding like in your country — big or small?"
+    },
+    {
+      "s": "Sam",
+      "t": "And what's the best wedding you've ever been to? See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Weddings in Azerbaijan and England",
+        "How to dance",
+        "Sam's sister's job",
+        "Planning a party at work"
+      ],
+      "answer": 0,
+      "why": "A big Baku wedding, a toast, Aysu, a small garden wedding."
+    },
+    {
+      "type": "detail",
+      "q": "How many guests were at the wedding in Baku?",
+      "options": [
+        "Forty",
+        "A hundred",
+        "Five hundred",
+        "Two hundred"
+      ],
+      "answer": 2,
+      "why": "\"Five hundred!\""
+    },
+    {
+      "type": "detail",
+      "q": "What did Sam do at the wedding?",
+      "options": [
+        "He sang a song",
+        "He gave a short toast in Azerbaijani",
+        "He took the photos",
+        "He cooked"
+      ],
+      "answer": 1,
+      "why": "\"I did! In Azerbaijani. Three sentences.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's sister wants a big wedding with five hundred guests.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"A small wedding — forty guests, in a garden.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Tie the knot\" means…",
+      "options": [
+        "Get married",
+        "Buy a tie",
+        "Stop a fight",
+        "Learn a dance"
+      ],
+      "answer": 0,
+      "why": "\"When will they tie the knot?\" — \"Next summer.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Sam think people clapped so much?",
+      "options": [
+        "He spoke for an hour",
+        "His toast was very funny",
+        "He gave everyone a present",
+        "They were surprised a British man spoke Azerbaijani"
+      ],
+      "answer": 3,
+      "why": "\"Everyone clapped — I think because they were surprised.\""
+    }
+  ],
+  "words": [
+    "Ceremony",
+    "Guest",
+    "Bride",
+    "Groom",
+    "Toast",
+    "Engaged",
+    "Tradition",
+    "Tie the knot",
+    "Steal the show"
+  ],
+  "coverPrompt": "COVER: Leyla in an elegant lavender dress and Sam in a suit, Sam dancing with his arms out like a traditional dancer, Leyla laughing and clapping",
+  "talk": [
+    "What is a typical wedding like in your country — big or small?",
+    "Would you prefer a big wedding or a small one? Explain why to your partner."
+  ]
+}

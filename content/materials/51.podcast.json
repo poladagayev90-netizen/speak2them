@@ -1,0 +1,216 @@
+{
+  "kind": "podcast",
+  "episode": 51,
+  "title": "Salsa at sixty-six",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What do you want to do when you are old? Guess: what does Sam's dad do now that he has retired?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Salsa at sixty-six",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a bright dance studio, a cheerful older man of sixty-six with grey hair dancing salsa with a partner in a class, NOT the podcast hosts"
+    },
+    {
+      "from": 6,
+      "title": "Two generations",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a cosy sofa, a little girl showing an elderly grandmother with a flowered headscarf how to make a video call on a smartphone, both laughing"
+    },
+    {
+      "from": 15,
+      "title": "The first grey hair",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a bathroom mirror, a red-haired bearded man leaning close and looking with surprise at one grey hair in his beard"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is growing older. And my dad just retired!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Congratulations to him! What is he doing with his free time?"
+    },
+    {
+      "s": "Sam",
+      "t": "Salsa classes. Twice a week. He's sixty-six and he dances better than me."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] He sounds young at heart."
+    },
+    {
+      "s": "Sam",
+      "t": "Very. My mum tells him, \"Act your age!\", but she is secretly proud."
+    },
+    {
+      "s": "Leyla",
+      "t": "My grandmother is eighty, and this year she learned to make video calls."
+    },
+    {
+      "s": "Sam",
+      "t": "Wow. Who taught her?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Aysu! A little girl teaching an eighty-year-old. Two generations apart, laughing together."
+    },
+    {
+      "s": "Sam",
+      "t": "I love that. And what does your grandmother teach Aysu?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Patience, recipes, old songs. She has so much wisdom."
+    },
+    {
+      "s": "Sam",
+      "t": "In England, many older people live alone or in a care home. Here families seem closer."
+    },
+    {
+      "s": "Leyla",
+      "t": "Usually, yes. Grandparents often live with the family, or very near."
+    },
+    {
+      "s": "Sam",
+      "t": "And Mr Aliyev? He's retired too, isn't he?"
+    },
+    {
+      "s": "Leyla",
+      "t": "For ten years. He says his pension is small, but his garden is big. [chuckle]"
+    },
+    {
+      "s": "Sam",
+      "t": "And his nard games never end. By the way, I found my first grey hair this week."
+    },
+    {
+      "s": "Leyla",
+      "t": "Oh no! And wrinkles?"
+    },
+    {
+      "s": "Sam",
+      "t": "A few, around the eyes. From laughing, I hope. My friends say that at forty you're over the hill."
+    },
+    {
+      "s": "Leyla",
+      "t": "Nonsense. My grandmother says life starts at forty — and again at eighty."
+    },
+    {
+      "s": "Sam",
+      "t": "I like her more every week."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what do you want to do when you're old — and who is the oldest person you know?"
+    },
+    {
+      "s": "Sam",
+      "t": "Me? Salsa, like my dad. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Growing older — retired parents, grandparents and the first grey hair",
+        "Learning to dance salsa",
+        "How to use video calls",
+        "Gardening"
+      ],
+      "answer": 0,
+      "why": "Sam's dad, Leyla's grandmother, Mr Aliyev, a grey hair."
+    },
+    {
+      "type": "detail",
+      "q": "What does Sam's dad do now?",
+      "options": [
+        "He works in a garden",
+        "He plays nard",
+        "He takes salsa classes",
+        "He travels"
+      ],
+      "answer": 2,
+      "why": "\"Salsa classes. Twice a week.\""
+    },
+    {
+      "type": "detail",
+      "q": "Who taught Leyla's grandmother to make video calls?",
+      "options": [
+        "Leyla",
+        "Aysu",
+        "Sam",
+        "Mr Aliyev"
+      ],
+      "answer": 1,
+      "why": "\"Aysu! A little girl teaching an eighty-year-old.\""
+    },
+    {
+      "type": "tf",
+      "q": "Mr Aliyev says his pension is big.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"He says his pension is small, but his garden is big.\""
+    },
+    {
+      "type": "vocab",
+      "q": "Someone who is \"young at heart\"…",
+      "options": [
+        "is very young",
+        "has heart problems",
+        "acts like a child",
+        "is old but feels and acts young"
+      ],
+      "answer": 3,
+      "why": "Leyla says it about Sam's dad, who dances salsa at sixty-six."
+    },
+    {
+      "type": "inference",
+      "q": "What does the grandmother mean by \"life starts at forty — and again at eighty\"?",
+      "options": [
+        "Every age can be a new beginning",
+        "Forty is very old",
+        "She is forty",
+        "Life is short"
+      ],
+      "answer": 0,
+      "why": "She answers the joke that at forty you are \"over the hill\"."
+    }
+  ],
+  "words": [
+    "Retire",
+    "Pension",
+    "Wrinkle",
+    "Generation",
+    "Wisdom",
+    "Young at heart",
+    "Act your age",
+    "Over the hill"
+  ],
+  "coverPrompt": "COVER: Leyla and Sam each holding an old family photo in a frame, smiling warmly at each other",
+  "talk": [
+    "What do you want to do when you're old — and who is the oldest person you know?",
+    "What can young people learn from older people, and what can older people learn from the young?"
+  ]
+}

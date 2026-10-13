@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 46,
+  "title": "Sorry, I mean thank you",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Are you a polite person? Guess: what does Sam say when someone steps on his foot?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Sorry, sorry, sorry",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a busy London street, a red-haired bearded man apologising to a businessman who has just stepped on his foot, both looking awkward"
+    },
+    {
+      "from": 5,
+      "title": "Tea first",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a cosy Baku living room, a bald older man with a grey moustache and a checked shirt pouring tea into pear-shaped armudu glasses for a smiling red-haired bearded guest, sweets and jam on the table"
+    },
+    {
+      "from": 12,
+      "title": "No pause",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a lively family dinner table, many relatives all talking at once with their hands moving, a red-haired bearded man in the middle waiting politely to speak, an elderly grandmother with a flowered headscarf at the head of the table"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is manners. And I have to say sorry first."
+    },
+    {
+      "s": "Leyla",
+      "t": "Sorry for what?"
+    },
+    {
+      "s": "Sam",
+      "t": "Nothing! That's the problem. British people say sorry all the time. Someone steps on my foot, and I say sorry."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] That's too polite, Sam."
+    },
+    {
+      "s": "Sam",
+      "t": "I know. What surprised me in Baku was the respect for older people."
+    },
+    {
+      "s": "Leyla",
+      "t": "Yes. On the bus, young people always stand up for an older person. Not doing it is really rude."
+    },
+    {
+      "s": "Sam",
+      "t": "And at Mr Aliyev's house, I learned you never say no to tea."
+    },
+    {
+      "s": "Leyla",
+      "t": "Never! Tea is the first thing a guest gets. Saying no is almost an insult."
+    },
+    {
+      "s": "Sam",
+      "t": "Then there is small talk. Here a taxi driver asked me how much I earn — in the first minute!"
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] What did you say?"
+    },
+    {
+      "s": "Sam",
+      "t": "In England we say: bite your tongue. So I just smiled and talked about the weather."
+    },
+    {
+      "s": "Leyla",
+      "t": "In my family, people interrupt each other all the time. It's not rude — it means we're interested."
+    },
+    {
+      "s": "Sam",
+      "t": "At my first dinner with your family, I waited for a pause. There was no pause! [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "My grandmother is strict about one thing: the table. When Aysu takes food before the guests, she says, \"Mind your manners!\""
+    },
+    {
+      "s": "Sam",
+      "t": "My mum said exactly the same to me. In English!"
+    },
+    {
+      "s": "Leyla",
+      "t": "So what's the most important rule for you?"
+    },
+    {
+      "s": "Sam",
+      "t": "A real apology. Not my automatic \"sorry\" — a real one, when you are wrong."
+    },
+    {
+      "s": "Leyla",
+      "t": "I agree. And showing respect to everyone, from the cleaner to the boss."
+    },
+    {
+      "s": "Sam",
+      "t": "Well said. Sorry, I mean — thank you. [chuckle]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is polite in your country but rude somewhere else?"
+    },
+    {
+      "s": "Sam",
+      "t": "Tell us — and don't interrupt your partner! See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to make tea",
+        "Polite and rude behaviour in Britain and Azerbaijan",
+        "Taxi prices in Baku",
+        "A family holiday"
+      ],
+      "answer": 1,
+      "why": "Saying sorry, respect for elders, tea, small talk, interrupting."
+    },
+    {
+      "type": "detail",
+      "q": "What should a guest never say no to at Mr Aliyev's house?",
+      "options": [
+        "Dinner",
+        "A walk",
+        "Tea",
+        "A game of nard"
+      ],
+      "answer": 2,
+      "why": "\"I learned you never say no to tea.\""
+    },
+    {
+      "type": "detail",
+      "q": "What did the taxi driver ask Sam?",
+      "options": [
+        "How much he earns",
+        "Where he is from",
+        "If he is married",
+        "Why he came to Baku"
+      ],
+      "answer": 0,
+      "why": "\"A taxi driver asked me how much I earn.\""
+    },
+    {
+      "type": "tf",
+      "q": "In Leyla's family, interrupting is rude.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"It's not rude — it means we're interested.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Bite your tongue\" means…",
+      "options": [
+        "Eat too fast",
+        "Stop yourself from saying something",
+        "Speak very quietly",
+        "Say sorry"
+      ],
+      "answer": 1,
+      "why": "\"So I just smiled and talked about the weather.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Sam say \"Sorry, I mean — thank you\" at the end?",
+      "options": [
+        "He made a real mistake",
+        "He is angry with Leyla",
+        "He forgot the word",
+        "It is a joke — he says sorry automatically"
+      ],
+      "answer": 3,
+      "why": "He talked about his automatic \"sorry\" earlier."
+    }
+  ],
+  "words": [
+    "Polite",
+    "Rude",
+    "Manners",
+    "Respect",
+    "Interrupt",
+    "Apology",
+    "Small talk",
+    "Bite your tongue",
+    "Mind your manners"
+  ],
+  "coverPrompt": "COVER: Sam bowing politely with a hand on his heart, Leyla offering him a pear-shaped glass of tea on a saucer, both smiling",
+  "talk": [
+    "What is polite in your country but rude somewhere else?",
+    "Which small-talk questions are fine for you, and which ones are too personal?"
+  ]
+}

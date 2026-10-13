@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 53,
+  "title": "The purple scarf",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Have you ever made something by hand? Guess: what did Sam make at a workshop?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The purple scarf",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a cosy kitchen, an elderly grandmother with a flowered headscarf giving a hand-knitted purple scarf to a red-haired bearded man, a glass of tea on the table"
+    },
+    {
+      "from": 7,
+      "title": "An imperfect bowl",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a small pottery workshop, a red-haired bearded man with clay on his hands proudly holding a lopsided clay bowl, a pottery teacher laughing kindly"
+    },
+    {
+      "from": 12,
+      "title": "Weaving a carpet",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a carpet workshop in the Old City of Baku, an older woman weaving a colourful traditional carpet by hand on a big wooden loom, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is crafts and handmade things. And look what I'm wearing!"
+    },
+    {
+      "s": "Leyla",
+      "t": "The scarf! My grandmother finished it?"
+    },
+    {
+      "s": "Sam",
+      "t": "Last night. She gave it to me with a glass of tea. It's purple and very, very warm."
+    },
+    {
+      "s": "Leyla",
+      "t": "She worked on it for a month. For her, it's a labour of love."
+    },
+    {
+      "s": "Sam",
+      "t": "I can see it. Every row is perfect. How does she do it?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Seventy years of practice. And patience. She learned to knit when she was nine."
+    },
+    {
+      "s": "Sam",
+      "t": "Well, I tried something new too. A pottery workshop near Fountain Square."
+    },
+    {
+      "s": "Leyla",
+      "t": "Pottery! What did you make?"
+    },
+    {
+      "s": "Sam",
+      "t": "A bowl. Well — it's supposed to be a bowl. It's a bit… imperfect. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Imperfect is the beauty of handmade things. Every one is different."
+    },
+    {
+      "s": "Sam",
+      "t": "That is what the teacher said. She says it takes a year to learn the ropes."
+    },
+    {
+      "s": "Leyla",
+      "t": "Have you seen the carpet makers in the Old City?"
+    },
+    {
+      "s": "Sam",
+      "t": "Yes! A woman was weaving a carpet by hand. The pattern was so detailed."
+    },
+    {
+      "s": "Leyla",
+      "t": "Some carpets take a whole year. My family has one that's a hundred years old."
+    },
+    {
+      "s": "Sam",
+      "t": "A hundred years! Things like that are made to last."
+    },
+    {
+      "s": "Leyla",
+      "t": "Not like the cheap carpets from big shops. They're finished in two years."
+    },
+    {
+      "s": "Sam",
+      "t": "And there is the copper village, Lahij. Is it true every house is a workshop?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Almost. You can hear the hammers in the whole street. It's a real craft village — you should go."
+    },
+    {
+      "s": "Sam",
+      "t": "Next month. And I'll bring my bowl to show them. [chuckle]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: have you ever made something by hand — and what is the most special handmade thing you own?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is this scarf, of course. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Shopping for carpets",
+        "Crafts and handmade things",
+        "A trip to the mountains",
+        "How to cook in clay pots"
+      ],
+      "answer": 1,
+      "why": "A knitted scarf, a pottery bowl, carpets, the copper village."
+    },
+    {
+      "type": "detail",
+      "q": "What did Leyla's grandmother make for Sam?",
+      "options": [
+        "A carpet",
+        "A bowl",
+        "A purple scarf",
+        "A hat"
+      ],
+      "answer": 2,
+      "why": "\"The scarf! My grandmother finished it?\""
+    },
+    {
+      "type": "detail",
+      "q": "What did Sam make at the pottery workshop?",
+      "options": [
+        "A bowl",
+        "A cup",
+        "A plate",
+        "A vase"
+      ],
+      "answer": 0,
+      "why": "\"A bowl. Well — it's supposed to be a bowl.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla's family carpet is ten years old.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"My family has one that's a hundred years old.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Learn the ropes\" means…",
+      "options": [
+        "Learn to climb",
+        "Learn how to tie knots",
+        "Learn the basics of a new job or activity",
+        "Learn a sport"
+      ],
+      "answer": 2,
+      "why": "\"She says it takes a year to learn the ropes.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla say \"imperfect is the beauty of handmade things\"?",
+      "options": [
+        "Because every handmade thing is different and special",
+        "Because they are cheap",
+        "Because she doesn't like Sam's bowl",
+        "Because machines make mistakes"
+      ],
+      "answer": 0,
+      "why": "\"Every one is different.\""
+    }
+  ],
+  "words": [
+    "Handmade",
+    "Craft",
+    "Pattern",
+    "Workshop",
+    "Imperfect",
+    "Patience",
+    "A labour of love",
+    "Learn the ropes",
+    "Made to last"
+  ],
+  "coverPrompt": "COVER: Sam wearing a long purple hand-knitted scarf, Leyla holding up a lopsided clay bowl, both laughing",
+  "talk": [
+    "Have you ever made something by hand — and what is the most special handmade thing you own?",
+    "Would you pay more for something handmade than for something from a factory? Why?"
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "kind": "podcast",
+  "episode": 60,
+  "title": "Sixty episodes",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Who do you miss? Guess: where is Sam going next month?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Going home",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a cosy bedroom, a red-haired bearded man packing a suitcase with a box of sweets and pear-shaped tea glasses wrapped in paper, smiling"
+    },
+    {
+      "from": 8,
+      "title": "The class reunion",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a restaurant table in the evening, a group of old school friends in their late thirties laughing together, two women hugging happily, everyone with dark or brown hair, nobody with red hair, nobody with round glasses, NOT the podcast hosts"
+    },
+    {
+      "from": 15,
+      "title": "Waving at the airport",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: an airport departure hall, a mother with short grey hair waving goodbye with a tearful smile, a young red-haired bearded man waving back from the security gate"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is goodbyes and reunions. And Leyla — this is our sixtieth episode."
+    },
+    {
+      "s": "Leyla",
+      "t": "Sixty! The last one of our season. It feels a bit bittersweet."
+    },
+    {
+      "s": "Sam",
+      "t": "Happy and sad at the same time. Exactly. And I have news: I'm going home to Manchester next month."
+    },
+    {
+      "s": "Leyla",
+      "t": "For good?"
+    },
+    {
+      "s": "Sam",
+      "t": "No, no! Just for two weeks. My sister's party, my mum's cooking, my old running friends."
+    },
+    {
+      "s": "Leyla",
+      "t": "Will you be homesick for Baku? [laugh]"
+    },
+    {
+      "s": "Sam",
+      "t": "Honestly? Probably. I'll miss the tea, the sea… and Mr Aliyev's figs."
+    },
+    {
+      "s": "Leyla",
+      "t": "My school class had a reunion last month. Twenty years after we finished school."
+    },
+    {
+      "s": "Sam",
+      "t": "How was it?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Strange and lovely. Some friends I see every week. With others, we started to drift apart after school."
+    },
+    {
+      "s": "Sam",
+      "t": "That happens. Life takes people in different directions."
+    },
+    {
+      "s": "Leyla",
+      "t": "But my best friend from school now lives in Canada. She flew in just for the reunion."
+    },
+    {
+      "s": "Sam",
+      "t": "Wow. You must have been so happy."
+    },
+    {
+      "s": "Leyla",
+      "t": "We cried and laughed all night. Absence makes the heart grow fonder, they say."
+    },
+    {
+      "s": "Sam",
+      "t": "When I left Manchester, my mum stood at the airport and waved until she couldn't see me."
+    },
+    {
+      "s": "Leyla",
+      "t": "And now she calls you every evening."
+    },
+    {
+      "s": "Sam",
+      "t": "Every single evening. [chuckle] We really keep in touch."
+    },
+    {
+      "s": "Leyla",
+      "t": "And that's what we hope you do too — with your SpeakLab partners."
+    },
+    {
+      "s": "Sam",
+      "t": "Yes! Don't say farewell after one call. Call them again. Make a friend."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your last question for your next SpeakLab call: who do you miss — and when did you last see them?"
+    },
+    {
+      "s": "Sam",
+      "t": "Thank you for listening to all sixty episodes. See you next season!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Saying goodbye and meeting people again",
+        "Travelling to Canada",
+        "Cooking for a party",
+        "Learning to run"
+      ],
+      "answer": 0,
+      "why": "The last episode, a trip home, a class reunion, an airport goodbye."
+    },
+    {
+      "type": "detail",
+      "q": "How long will Sam stay in Manchester?",
+      "options": [
+        "A month",
+        "Two weeks",
+        "For good",
+        "A weekend"
+      ],
+      "answer": 1,
+      "why": "\"Just for two weeks.\""
+    },
+    {
+      "type": "detail",
+      "q": "Where does Leyla's best friend from school live now?",
+      "options": [
+        "In Manchester",
+        "In Baku",
+        "In Canada",
+        "In Istanbul"
+      ],
+      "answer": 2,
+      "why": "\"My best friend from school now lives in Canada.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's mum calls him once a week.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"Every single evening.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Drift apart\" means…",
+      "options": [
+        "Have a big fight",
+        "Slowly become less close",
+        "Travel together",
+        "Swim away"
+      ],
+      "answer": 1,
+      "why": "\"With others, we started to drift apart after school.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla say the episode feels \"bittersweet\"?",
+      "options": [
+        "It is the last one of the season — happy and sad at once",
+        "She does not like sweets",
+        "Sam is leaving Baku for good",
+        "She is ill"
+      ],
+      "answer": 0,
+      "why": "\"Happy and sad at the same time.\""
+    }
+  ],
+  "words": [
+    "Farewell",
+    "Reunion",
+    "Homesick",
+    "Wave",
+    "Bittersweet",
+    "Keep in touch",
+    "Drift apart",
+    "Absence makes the heart grow fonder"
+  ],
+  "coverPrompt": "COVER: Leyla and Sam waving warmly at the viewer with big smiles, a small cake with candles and two glasses of tea on the studio table",
+  "talk": [
+    "Who do you miss — and when did you last see them?",
+    "How do you keep in touch with friends who live far away?"
+  ]
+}

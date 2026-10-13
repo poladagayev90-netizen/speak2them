@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 52,
+  "title": "Forty boxes",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "How many times have you moved house? Guess: what did Sam bring when he moved to Baku?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Forty boxes",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a small flat full of cardboard moving boxes, a young woman with long red hair and no beard packing books while talking to a laptop on a video call, NOT the podcast hosts"
+    },
+    {
+      "from": 6,
+      "title": "Every school notebook",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a bedroom in a family flat, a woman with round glasses and a lavender sweater sitting on the floor among piles of old school notebooks, her mother standing in the doorway looking a little sad"
+    },
+    {
+      "from": 17,
+      "title": "Near the sea",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a small bright flat with a balcony and a view of the Caspian Sea, a red-haired bearded man opening the door with a suitcase and smiling happily"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is moving house. My sister and her fiancé just moved in together."
+    },
+    {
+      "s": "Leyla",
+      "t": "Exciting! Was it a big move?"
+    },
+    {
+      "s": "Sam",
+      "t": "Huge. She had forty boxes. I helped her pack the whole weekend — on a video call."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Very helpful, Sam."
+    },
+    {
+      "s": "Sam",
+      "t": "I gave advice! Mostly: \"Do you really need this?\" She had to declutter."
+    },
+    {
+      "s": "Leyla",
+      "t": "When I left my parents' flat, I learned that lesson too. I had kept every school notebook."
+    },
+    {
+      "s": "Sam",
+      "t": "When was that?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Three years ago. It's not so common here to move out before you marry, so my mum cried for a week."
+    },
+    {
+      "s": "Sam",
+      "t": "Really?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Really. But now she loves visiting me. For me it was a fresh start."
+    },
+    {
+      "s": "Sam",
+      "t": "When I moved to Baku, I brought only two suitcases. Everything else stayed in my mum's garage."
+    },
+    {
+      "s": "Leyla",
+      "t": "And your first flat here?"
+    },
+    {
+      "s": "Sam",
+      "t": "Terrible! The rent was too high, and the furniture was older than me."
+    },
+    {
+      "s": "Leyla",
+      "t": "And the landlord?"
+    },
+    {
+      "s": "Sam",
+      "t": "He kept half of my deposit when I left. He said the sofa was damaged. It was damaged when I arrived!"
+    },
+    {
+      "s": "Leyla",
+      "t": "That happens a lot. Take photos on the first day. Always."
+    },
+    {
+      "s": "Sam",
+      "t": "Lesson learned. My flat now is small, but it's near the sea, and the neighbours are lovely."
+    },
+    {
+      "s": "Leyla",
+      "t": "So it was easy to settle in this time."
+    },
+    {
+      "s": "Sam",
+      "t": "Very easy. When I come back from a trip and open the door, I think: home sweet home."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: how many times have you moved — and what was the hardest part?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine: carrying a washing machine up five floors. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Buying furniture",
+        "Moving house — packing, moving out and renting",
+        "Life by the sea",
+        "Sam's sister's wedding"
+      ],
+      "answer": 1,
+      "why": "Forty boxes, moving out, a bad landlord, a new flat."
+    },
+    {
+      "type": "detail",
+      "q": "How many boxes did Sam's sister have?",
+      "options": [
+        "Two",
+        "Fourteen",
+        "Forty",
+        "Four hundred"
+      ],
+      "answer": 2,
+      "why": "\"She had forty boxes.\""
+    },
+    {
+      "type": "detail",
+      "q": "What did Sam bring when he moved to Baku?",
+      "options": [
+        "Only two suitcases",
+        "Forty boxes",
+        "All his furniture",
+        "A washing machine"
+      ],
+      "answer": 0,
+      "why": "\"I brought only two suitcases.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's first landlord gave back all of his deposit.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"He kept half of my deposit when I left.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Declutter\" means…",
+      "options": [
+        "Clean the windows",
+        "Buy new things",
+        "Paint the walls",
+        "Get rid of things you don't need"
+      ],
+      "answer": 3,
+      "why": "\"Do you really need this?\" She had to declutter."
+    },
+    {
+      "type": "inference",
+      "q": "Why does Leyla say \"Take photos on the first day\"?",
+      "options": [
+        "To show friends the new flat",
+        "To prove the damage was already there, so you get your deposit back",
+        "To remember the view",
+        "Because the landlord asks for them"
+      ],
+      "answer": 1,
+      "why": "Sam lost half his deposit for a sofa that was already damaged."
+    }
+  ],
+  "words": [
+    "Move out",
+    "Deposit",
+    "Furniture",
+    "Pack",
+    "Rent",
+    "Declutter",
+    "Settle in",
+    "A fresh start",
+    "Home sweet home"
+  ],
+  "coverPrompt": "COVER: Leyla and Sam sitting on cardboard moving boxes in the studio, Sam holding a potted plant, Leyla holding a roll of packing tape, both smiling",
+  "talk": [
+    "How many times have you moved — and what was the hardest part?",
+    "What makes a place feel like home to you?"
+  ]
+}

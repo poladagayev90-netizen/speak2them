@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 58,
+  "title": "A red line on white",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you like modern art? Guess: what painting did Sam not understand?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The Carpet Museum",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: the modern Carpet Museum building in Baku shaped like a rolled-up carpet, by the sea on a sunny day, a red-haired bearded man looking up at it with a ticket in his hand"
+    },
+    {
+      "from": 5,
+      "title": "A red line",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a white modern art gallery, a huge white canvas with one single red line, several visitors standing in front of it thinking seriously, a red-haired bearded man scratching his head"
+    },
+    {
+      "from": 10,
+      "title": "Aysu's exhibition",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a school hall with children's drawings pinned on boards, a little girl proudly pointing at her crayon drawing of a grandmother in a garden, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is art and museums. And on Saturday I finally went to the Carpet Museum."
+    },
+    {
+      "s": "Leyla",
+      "t": "The building that looks like a rolled carpet! What did you think?"
+    },
+    {
+      "s": "Sam",
+      "t": "Amazing. Some of those carpets are real masterpieces. Three hundred years old!"
+    },
+    {
+      "s": "Leyla",
+      "t": "And then?"
+    },
+    {
+      "s": "Sam",
+      "t": "Then the Museum of Modern Art. And honestly, I didn't understand everything."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Abstract art?"
+    },
+    {
+      "s": "Sam",
+      "t": "There was one huge canvas — just a red line on white. People stood in front of it for ten minutes."
+    },
+    {
+      "s": "Leyla",
+      "t": "Maybe it made them feel something. Beauty is in the eye of the beholder."
+    },
+    {
+      "s": "Sam",
+      "t": "Maybe. But Aysu could paint that red line. [chuckle]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Funny you say that. Aysu had her first exhibition last week — at school."
+    },
+    {
+      "s": "Sam",
+      "t": "A real exhibition?"
+    },
+    {
+      "s": "Leyla",
+      "t": "In the school hall. Twenty children, two drawings each. She drew our grandmother in her garden."
+    },
+    {
+      "s": "Sam",
+      "t": "I'd love to see it."
+    },
+    {
+      "s": "Leyla",
+      "t": "I'll send you a photo. When I saw it, I almost cried. A picture is worth a thousand words."
+    },
+    {
+      "s": "Sam",
+      "t": "Do you have a favourite place for art in Baku?"
+    },
+    {
+      "s": "Leyla",
+      "t": "A small gallery in the Old City. The artists are often there, and you can talk to them."
+    },
+    {
+      "s": "Sam",
+      "t": "That's nice. In England I loved the sculpture parks — art in the open air, with trees all around."
+    },
+    {
+      "s": "Leyla",
+      "t": "Art doesn't have to be in a building. It can inspire you anywhere."
+    },
+    {
+      "s": "Sam",
+      "t": "Even a red line on white. Okay — I'll go back and look again."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what kind of art do you like — and which museum would you love to visit?"
+    },
+    {
+      "s": "Sam",
+      "t": "And would you hang a red line on your wall? See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to paint",
+        "Art and museums",
+        "Buying carpets",
+        "A school trip"
+      ],
+      "answer": 1,
+      "why": "The Carpet Museum, abstract art, Aysu's exhibition, galleries."
+    },
+    {
+      "type": "detail",
+      "q": "How old are some carpets in the Carpet Museum?",
+      "options": [
+        "Thirty years",
+        "A hundred years",
+        "Three hundred years",
+        "A thousand years"
+      ],
+      "answer": 2,
+      "why": "\"Three hundred years old!\""
+    },
+    {
+      "type": "detail",
+      "q": "What did Aysu draw for her exhibition?",
+      "options": [
+        "Her grandmother in her garden",
+        "A red line",
+        "The sea",
+        "Sam"
+      ],
+      "answer": 0,
+      "why": "\"She drew our grandmother in her garden.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam understood all the art in the Museum of Modern Art.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"Honestly, I didn't understand everything.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Beauty is in the eye of the beholder\" means…",
+      "options": [
+        "Only artists understand beauty",
+        "Beautiful eyes are important",
+        "You need glasses to see art",
+        "Different people find different things beautiful"
+      ],
+      "answer": 3,
+      "why": "Leyla says it about the red line that others liked."
+    },
+    {
+      "type": "inference",
+      "q": "Why did Leyla almost cry at Aysu's drawing?",
+      "options": [
+        "It was very bad",
+        "It showed someone she loves, drawn with love",
+        "Aysu did not win",
+        "It was lost"
+      ],
+      "answer": 1,
+      "why": "\"A picture is worth a thousand words.\""
+    }
+  ],
+  "words": [
+    "Exhibition",
+    "Masterpiece",
+    "Sculpture",
+    "Canvas",
+    "Gallery",
+    "Abstract",
+    "Inspire",
+    "In the eye of the beholder",
+    "Worth a thousand words"
+  ],
+  "coverPrompt": "COVER: Leyla and Sam standing in front of a big abstract painting with one single red line, Sam tilting his head in confusion, Leyla laughing",
+  "talk": [
+    "What kind of art do you like — and which museum would you love to visit?",
+    "Is abstract art real art? Discuss with your partner."
+  ]
+}

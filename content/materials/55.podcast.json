@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 55,
+  "title": "I dare you",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you like speed and adrenaline? Guess: what did Sam do in the mountains last weekend?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "The zipline",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: green mountains near Gabala, a red-haired bearded man in a helmet flying on a zipline high over a deep valley, screaming and laughing"
+    },
+    {
+      "from": 10,
+      "title": "Rashad's motorbike",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a winding mountain road, a young man with short dark hair in a black helmet and a leather jacket riding a motorbike, NOT the podcast hosts"
+    },
+    {
+      "from": 16,
+      "title": "The big wheel",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: the big Ferris wheel on the Baku boulevard at sunset, a woman with round glasses and a lavender sweater inside a cabin, holding on tight and smiling bravely"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is speed and thrills. Leyla, are you an adrenaline person?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Not at all. I play it safe. Even a fast lift makes me nervous."
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] Then you'll love my story. Last weekend in Gabala, I did a zipline in the mountains."
+    },
+    {
+      "s": "Leyla",
+      "t": "Over the valley? How high is it?"
+    },
+    {
+      "s": "Sam",
+      "t": "High enough. When I stood at the start, I was terrified. My legs were shaking."
+    },
+    {
+      "s": "Leyla",
+      "t": "So why did you do it?"
+    },
+    {
+      "s": "Sam",
+      "t": "My friends from running club. One of them said, \"I dare you.\" And I can never say no to a dare."
+    },
+    {
+      "s": "Leyla",
+      "t": "And how was it?"
+    },
+    {
+      "s": "Sam",
+      "t": "The first second was horrible. Then — pure thrill. I was screaming and laughing at the same time."
+    },
+    {
+      "s": "Leyla",
+      "t": "That's the adrenaline. My cousin Rashad loves that feeling. He rides a motorbike."
+    },
+    {
+      "s": "Sam",
+      "t": "Fast?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Too fast. My aunt is always worried. At least he always wears a helmet."
+    },
+    {
+      "s": "Sam",
+      "t": "And the speed limit?"
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] He says he knows it. I'm not sure he follows it."
+    },
+    {
+      "s": "Sam",
+      "t": "When I run, I feel a small rush too, especially at the end of a race. That's my kind of speed."
+    },
+    {
+      "s": "Leyla",
+      "t": "That I understand. Okay, I have a confession. Last summer I went on the big wheel on the boulevard."
+    },
+    {
+      "s": "Sam",
+      "t": "The big wheel is slow, Leyla."
+    },
+    {
+      "s": "Leyla",
+      "t": "For me it was a big step! Next year maybe I'll take the plunge and try the zipline."
+    },
+    {
+      "s": "Sam",
+      "t": "I'll hold your bag. And film everything. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is the most exciting thing you have ever done — and would you do it again?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is the zipline. And yes — tomorrow. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "Speed, thrills and taking risks",
+        "Buying a motorbike",
+        "Safe driving in Baku",
+        "A running race in Gabala"
+      ],
+      "answer": 0,
+      "why": "A zipline, a fast cousin, a race, the big wheel."
+    },
+    {
+      "type": "detail",
+      "q": "Where did Sam do the zipline?",
+      "options": [
+        "On the boulevard",
+        "In Gabala",
+        "In Manchester",
+        "In the Old City"
+      ],
+      "answer": 1,
+      "why": "\"Last weekend in Gabala, I did a zipline in the mountains.\""
+    },
+    {
+      "type": "detail",
+      "q": "Why did Sam do the zipline?",
+      "options": [
+        "Leyla asked him",
+        "It was his birthday",
+        "A friend dared him",
+        "It was free"
+      ],
+      "answer": 2,
+      "why": "\"One of them said, 'I dare you.'\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla's cousin Rashad never wears a helmet.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"At least he always wears a helmet.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Take the plunge\" means…",
+      "options": [
+        "Jump into a swimming pool",
+        "Fall down",
+        "Finally decide to do something new or scary",
+        "Go very fast"
+      ],
+      "answer": 2,
+      "why": "\"Next year maybe I'll take the plunge and try the zipline.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Sam say \"The big wheel is slow, Leyla\"?",
+      "options": [
+        "He is teasing her — for him it is not a thrill",
+        "He is scared of it",
+        "He wants to go with her",
+        "He thinks it is broken"
+      ],
+      "answer": 0,
+      "why": "For Leyla it was \"a big step\", for Sam it is nothing."
+    }
+  ],
+  "words": [
+    "Thrill",
+    "Adrenaline",
+    "Dare",
+    "Helmet",
+    "Speed limit",
+    "Terrified",
+    "Rush",
+    "Take the plunge",
+    "Play it safe"
+  ],
+  "coverPrompt": "COVER: Sam wearing a bright helmet and giving a thumbs up, Leyla covering her eyes and peeking through her fingers, both laughing",
+  "talk": [
+    "What is the most exciting thing you have ever done — and would you do it again?",
+    "Are you more of a risk-taker or do you play it safe? Give an example."
+  ]
+}
