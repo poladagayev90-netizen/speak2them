@@ -1,6 +1,6 @@
 import KeywordChips from './KeywordChips';
 import React, { useEffect, useRef, useState } from 'react';
-import { videosForTopic } from '../utils/fetchTopicVideos';
+import { callVideosForTopic } from '../utils/fetchTopicVideos';
 import { X, VideoOff, RotateCcw, Play, Pause } from 'lucide-react';
 import DescribeFrames from './DescribeFrames';
 
@@ -13,12 +13,12 @@ import DescribeFrames from './DescribeFrames';
 // seek storm on every "Next" and a stall on the slower connection. The activity
 // is "you two describe this", not "watch it in unison".
 //
-// MUTED, ALWAYS: the files carry no audio track at all (stripped at encode
-// time). Muted also happens to be what every mobile browser requires before it
+// MUTED, ALWAYS: even a clip with `sound` — its audio would go into the mic
+// and the echo filter would cut the partner. Muted also happens to be what every mobile browser requires before it
 // will autoplay without a tap — so the clip starts by itself, which is what a
 // pair mid-call needs.
-export default function CallVideoStage({ content, videoIndex, onNext, onClose }) {
-  const videos = videosForTopic(content.day);
+export default function CallVideoStage({ content, deck, videoIndex, onNext, onClose }) {
+  const videos = callVideosForTopic(content.day, deck);
   const videoRef = useRef(null);
   const [dead, setDead] = useState({});
   const [paused, setPaused] = useState(false);
@@ -44,7 +44,7 @@ export default function CallVideoStage({ content, videoIndex, onNext, onClose })
   // Warm the next clip while this one is on screen, so "Next" starts instantly
   // instead of showing a poster and a spinner.
   //
-  // Keyed on the SRC string, not on `videos`: videosForTopic builds a new array
+  // Keyed on the SRC string, not on `videos`: callVideosForTopic builds a new array
   // on every call, and Chat re-renders this stage once a second for the call
   // timer — so an array dependency started a fresh preload every second, on
   // the same connection that carries the voice.

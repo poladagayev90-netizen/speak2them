@@ -3,18 +3,22 @@ import { describeVideos } from '../data/describeVideos';
 import { topicVideos } from '../data/topicVideos';
 import { isAdminUser } from '../constants';
 
-// Web shows every clip. The Android app (Polad, 2026-10-02) shows only the
-// clips licensed for the Play Store (`licensed: true`, Pexels / CC0), three
-// per topic, and ships only their files (scripts/strip-native-videos.js).
+// Web shows every clip. The Android app shows only the clips allowed in the
+// Play build — `licensed: true` (Pexels / CC0) or `playOk: true` (see the
+// ANDROID note in describeVideos.js) — and ships only their files
+// (scripts/strip-native-videos.js).
 // VIDEOS_ENABLED still gates every video entry point; it is on everywhere now.
 //
-// The in-call Video stage stays web-only (CALL_VIDEOS_ENABLED): both phones
-// must show the same clip at the same index, and the two platforms no longer
-// share a deck. Chat.jsx hides the button when the partner is in the app.
+// The in-call Video stage (2026-10-13) runs everywhere: both phones must show
+// the same clip at the same index, so the call doc's videoStage carries the
+// DECK — 'app' as soon as either side is in the Android app (the only clips
+// both have), 'full' between two web users. See callVideosForTopic.
+// APKs older than this have no CALL_VIDEO_CAP, so Chat.jsx still hides the
+// button from a web user whose partner runs one.
 export const NATIVE = Capacitor.isNativePlatform();
 export const VIDEOS_ENABLED = true;
-export const CALL_VIDEOS_ENABLED = !NATIVE;
-export const NATIVE_VIDEOS_PER_TOPIC = 3;
+export const CALL_VIDEOS_ENABLED = true;
+export const CALL_VIDEO_CAP = 'licensedVideo';
 
 // Who may open the whole deck (/teacher/videos) instead of a topic's six.
 // A teacher running a lesson needs to pick the clip that fits the student in
@@ -48,19 +52,27 @@ export const VIDEOS_PER_TOPIC = 6;
 // deck rather than an empty screen.
 const byId = new Map(describeVideos.map((v) => [v.id, v]));
 
-// The Android app's list for a topic: three licensed clips, a window over the
-// licensed deck that moves three clips per topic, so neighbouring topics show
-// different clips and the whole licensed set comes round in turn.
-const LICENSED = describeVideos.filter((v) => v.licensed === true);
-export function licensedVideosForTopic(day, count = NATIVE_VIDEOS_PER_TOPIC, deck = LICENSED) {
+// The Android app's list for a topic, six like the web: the topic's own
+// clips that are allowed in the Play build first, then a window over the
+// allowed deck that moves six clips per topic fills the rest. Deterministic,
+// so a web phone and an Android phone in one call build the same list.
+export const isAppClip = (v) => v.licensed === true || v.playOk === true;
+const APP_DECK = describeVideos.filter(isAppClip);
+export function appVideosForTopic(day, count = VIDEOS_PER_TOPIC, deck = APP_DECK) {
   if (!deck.length) return [];
+  const allowed = new Set(deck.map((v) => v.id));
+  const picked = (topicVideos[day] || []).filter((id) => allowed.has(id)).map((id) => byId.get(id));
   const take = Math.min(count, deck.length);
   const offset = (((Math.max(1, Number(day) || 1) - 1) * take) % deck.length);
-  return Array.from({ length: take }, (_, i) => deck[(offset + i) % deck.length]);
+  for (let i = 0; picked.length < take && i < deck.length; i += 1) {
+    const v = deck[(offset + i) % deck.length];
+    if (!picked.includes(v)) picked.push(v);
+  }
+  return picked.slice(0, take);
 }
 
 export function videosForTopic(day, count = VIDEOS_PER_TOPIC) {
-  if (NATIVE) return licensedVideosForTopic(day, Math.min(count, NATIVE_VIDEOS_PER_TOPIC));
+  if (NATIVE) return appVideosForTopic(day, count);
   const curated = (topicVideos[day] || []).map((id) => byId.get(id)).filter(Boolean);
   if (curated.length > 0) return curated.slice(0, count);
 
@@ -69,6 +81,14 @@ export function videosForTopic(day, count = VIDEOS_PER_TOPIC) {
   const take = Math.min(count, deck.length);
   const offset = (((Number(day) || 1) - 1) * take) % deck.length;
   return Array.from({ length: take }, (_, i) => deck[(offset + i) % deck.length]);
+}
+
+// The in-call list: the deck is decided once, in the call doc, by whoever
+// starts the stage — never per device, or a web phone and an Android phone
+// would index into different lists.
+export function callVideosForTopic(day, deck) {
+  if (deck === 'app') return appVideosForTopic(day);
+  return videosForTopic(day);
 }
 
 export default videosForTopic;

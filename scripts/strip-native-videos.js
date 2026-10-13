@@ -1,7 +1,7 @@
 // Runs after every `npx cap copy` / `npx cap sync` (package.json
-// "capacitor:copy:after"). Only the describe-video clips licensed for the Play
-// Store (`licensed: true` in src/data/describeVideos.js — Pexels / CC0) may be
-// inside the APK/AAB. Everything else under public/videos — the other clips
+// "capacitor:copy:after"). Only the describe-video clips allowed in the Play
+// build (`licensed: true` — Pexels / CC0 — or `playOk: true` in
+// src/data/describeVideos.js) may be inside the APK/AAB. Everything else under public/videos — the other clips
 // and the film clips in videos/clips — is deleted from the copy of the web
 // bundle that goes into the Android app. The app shows only the licensed
 // clips there (videosForTopic in src/utils/fetchTopicVideos.js); this makes
@@ -21,11 +21,11 @@ if (!fs.existsSync(dir)) {
 
 // The deck is an ES module; read the licensed entries' files out of its text.
 // Each entry is one `{ ... }` block; keep the src/poster of those that say
-// `licensed: true`.
+// `licensed: true` or `playOk: true`.
 const deck = fs.readFileSync(path.join(root, 'src', 'data', 'describeVideos.js'), 'utf8').replace(/\r\n/g, '\n');
 const keep = new Set();
 for (const block of deck.split(/\n  \{\n/).slice(1)) {
-  if (!/\n\s+licensed: true,/.test(block)) continue;
+  if (!/\n\s+(?:licensed|playOk): true,/.test(block)) continue;
   for (const m of block.matchAll(/\n\s+(?:src|poster): '\/videos\/([^']+)'/g)) keep.add(m[1]);
 }
 if (keep.size === 0) {

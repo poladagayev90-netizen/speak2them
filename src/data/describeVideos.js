@@ -32,6 +32,13 @@
 // clip at the same index (the index lives in the call doc's videoStage).
 // Nothing here is fetched at runtime, so the two sides cannot drift apart.
 //
+// ANDROID (Polad, 2026-10-13): the Play build carries `licensed: true` (Pexels /
+// CC0) AND `playOk: true` — clips of animals, or with nobody recognisable in
+// them (point-of-view, an empty car park), that have been shared widely. Clips
+// that show a recognisable person stay web-only — above all children and
+// anyone who may be from Azerbaijan or Turkey, whose friends would know them.
+// scripts/strip-native-videos.js keeps exactly these files in the APK/AAB.
+//
 // IDS ARE STORAGE KEYS (aiSessions itemId, lesson-style rule): add, never
 // rename.
 //
@@ -101,6 +108,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-21-56.mp4
     id: 'gorilla-meet',
+    playOk: true,
     src: '/videos/gorilla-meet.mp4',
     poster: '/videos/gorilla-meet.jpg',
     seconds: 22,
@@ -115,6 +123,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-21-58.mp4
     id: 'garden-camera',
+    playOk: true,
     src: '/videos/garden-camera.mp4',
     poster: '/videos/garden-camera.jpg',
     seconds: 21,
@@ -143,6 +152,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-22-01.mp4
     id: 'petting-hen',
+    playOk: true,
     src: '/videos/petting-hen.mp4',
     poster: '/videos/petting-hen.jpg',
     seconds: 17,
@@ -157,6 +167,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-22-11.mp4
     id: 'leopard-road',
+    playOk: true,
     src: '/videos/leopard-road.mp4',
     poster: '/videos/leopard-road.jpg',
     seconds: 22,
@@ -199,6 +210,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-22-23.mp4
     id: 'dream-fall',
+    playOk: true,
     src: '/videos/dream-fall.mp4',
     poster: '/videos/dream-fall.jpg',
     seconds: 14,
@@ -451,6 +463,7 @@ export const describeVideos = [
   {
     // source: baby-calves-milk.mp4
     id: 'goat-calf-milk',
+    playOk: true,
     src: '/videos/goat-calf-milk.mp4',
     poster: '/videos/goat-calf-milk.jpg',
     seconds: 10,
@@ -465,6 +478,7 @@ export const describeVideos = [
   {
     // source: baby-donkey-jump.mp4
     id: 'baby-donkey-jump',
+    playOk: true,
     src: '/videos/baby-donkey-jump.mp4',
     poster: '/videos/baby-donkey-jump.jpg',
     seconds: 12,
@@ -479,6 +493,7 @@ export const describeVideos = [
   {
     // source: baby-giraffe-hair.mp4
     id: 'baby-giraffe-hair',
+    playOk: true,
     src: '/videos/baby-giraffe-hair.mp4',
     poster: '/videos/baby-giraffe-hair.jpg',
     seconds: 10,
@@ -493,6 +508,7 @@ export const describeVideos = [
   {
     // source: bear-water-hose.mp4
     id: 'bear-water-hose',
+    playOk: true,
     src: '/videos/bear-water-hose.mp4',
     poster: '/videos/bear-water-hose.jpg',
     seconds: 18,
@@ -507,6 +523,7 @@ export const describeVideos = [
   {
     // source: canopy-tree-climb.mp4
     id: 'canopy-tree-climb',
+    playOk: true,
     src: '/videos/canopy-tree-climb.mp4',
     poster: '/videos/canopy-tree-climb.jpg',
     seconds: 26,
@@ -521,6 +538,7 @@ export const describeVideos = [
   {
     // source: dancing-lemur.mp4
     id: 'dancing-lemur',
+    playOk: true,
     src: '/videos/dancing-lemur.mp4',
     poster: '/videos/dancing-lemur.jpg',
     seconds: 26,
@@ -535,6 +553,7 @@ export const describeVideos = [
   {
     // source: dog-wizard.mp4
     id: 'dog-wizard',
+    playOk: true,
     src: '/videos/dog-wizard.mp4',
     poster: '/videos/dog-wizard.jpg',
     seconds: 14,
@@ -549,6 +568,7 @@ export const describeVideos = [
   {
     // source: ginger-trio.mp4
     id: 'ginger-trio',
+    playOk: true,
     src: '/videos/ginger-trio.mp4',
     poster: '/videos/ginger-trio.jpg',
     seconds: 14,
@@ -577,6 +597,7 @@ export const describeVideos = [
   {
     // source: hedgehog-run.mp4
     id: 'hedgehog-run',
+    playOk: true,
     src: '/videos/hedgehog-run.mp4',
     poster: '/videos/hedgehog-run.jpg',
     seconds: 6,
@@ -591,6 +612,7 @@ export const describeVideos = [
   {
     // source: kittens-bottle-play.mp4
     id: 'kittens-bottle-play',
+    playOk: true,
     src: '/videos/kittens-bottle-play.mp4',
     poster: '/videos/kittens-bottle-play.jpg',
     seconds: 8,
@@ -619,6 +641,7 @@ export const describeVideos = [
   {
     // source: moose-roadside.mp4
     id: 'moose-roadside',
+    playOk: true,
     src: '/videos/moose-roadside.mp4',
     poster: '/videos/moose-roadside.jpg',
     seconds: 18,
@@ -633,6 +656,7 @@ export const describeVideos = [
   {
     // source: round-blue-bird.mp4
     id: 'round-blue-bird',
+    playOk: true,
     src: '/videos/round-blue-bird.mp4',
     poster: '/videos/round-blue-bird.jpg',
     seconds: 13,
@@ -647,6 +671,7 @@ export const describeVideos = [
   {
     // source: toad-apple-bite.mp4
     id: 'tortoise-apple-bite',
+    playOk: true,
     src: '/videos/tortoise-apple-bite.mp4',
     poster: '/videos/tortoise-apple-bite.jpg',
     seconds: 9,
@@ -731,6 +756,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-09-34.mp4
     id: 'cat-dump-truck',
+    playOk: true,
     src: '/videos/cat-dump-truck.mp4',
     poster: '/videos/cat-dump-truck.jpg',
     seconds: 12,
@@ -745,6 +771,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-09-40.mp4
     id: 'fairy-door-cats',
+    playOk: true,
     src: '/videos/fairy-door-cats.mp4',
     poster: '/videos/fairy-door-cats.jpg',
     seconds: 12,
@@ -773,6 +800,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-09-45.mp4
     id: 'sloth-dashboard',
+    playOk: true,
     src: '/videos/sloth-dashboard.mp4',
     poster: '/videos/sloth-dashboard.jpg',
     seconds: 17,
@@ -801,6 +829,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-09-53.mp4
     id: 'cat-wall-jump',
+    playOk: true,
     src: '/videos/cat-wall-jump.mp4',
     poster: '/videos/cat-wall-jump.jpg',
     seconds: 9,
@@ -815,6 +844,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-09-57.mp4
     id: 'turtles-log',
+    playOk: true,
     src: '/videos/turtles-log.mp4',
     poster: '/videos/turtles-log.jpg',
     seconds: 17,
@@ -829,6 +859,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-10-00.mp4
     id: 'cat-washing-machine',
+    playOk: true,
     src: '/videos/cat-washing-machine.mp4',
     poster: '/videos/cat-washing-machine.jpg',
     seconds: 7,
@@ -843,6 +874,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-10-01.mp4
     id: 'squirrel-fountain',
+    playOk: true,
     src: '/videos/squirrel-fountain.mp4',
     poster: '/videos/squirrel-fountain.jpg',
     seconds: 14,
@@ -857,6 +889,7 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-10-06.mp4
     id: 'runaway-cart',
+    playOk: true,
     src: '/videos/runaway-cart.mp4',
     poster: '/videos/runaway-cart.jpg',
     seconds: 13,
@@ -885,6 +918,7 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-27.mp4
     id: 'squirrel-door-jump',
+    playOk: true,
     src: '/videos/squirrel-door-jump.mp4',
     poster: '/videos/squirrel-door-jump.jpg',
     seconds: 16,
@@ -899,6 +933,7 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-29.mp4
     id: 'dog-closes-curtain',
+    playOk: true,
     src: '/videos/dog-closes-curtain.mp4',
     poster: '/videos/dog-closes-curtain.jpg',
     seconds: 10,
@@ -913,6 +948,7 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-31.mp4
     id: 'cat-by-the-pot',
+    playOk: true,
     src: '/videos/cat-by-the-pot.mp4',
     poster: '/videos/cat-by-the-pot.jpg',
     seconds: 16,
@@ -955,6 +991,7 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-46.mp4
     id: 'dog-cat-walk',
+    playOk: true,
     src: '/videos/dog-cat-walk.mp4',
     poster: '/videos/dog-cat-walk.jpg',
     seconds: 26,
@@ -969,6 +1006,7 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-49.mp4
     id: 'cat-merry-go-round',
+    playOk: true,
     src: '/videos/cat-merry-go-round.mp4',
     poster: '/videos/cat-merry-go-round.jpg',
     seconds: 9,
@@ -983,6 +1021,7 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-51.mp4
     id: 'bear-apple-tree',
+    playOk: true,
     src: '/videos/bear-apple-tree.mp4',
     poster: '/videos/bear-apple-tree.jpg',
     seconds: 9,
