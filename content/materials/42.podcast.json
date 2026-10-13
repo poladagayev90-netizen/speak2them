@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 42,
+  "title": "Tea, a book and silence",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you enjoy time alone? Guess: what helped Sam in his first lonely months in Baku?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Tea and silence",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a quiet evening room, a woman with round glasses and a lavender sweater reading a book with a cup of tea by a window, soft lamp light"
+    },
+    {
+      "from": 5,
+      "title": "First months in Baku",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a small simple flat at night, a homesick red-haired bearded man sitting alone on a sofa looking a little sad and lonely, a video call with his mother on his phone, an empty takeaway box, city lights outside the window"
+    },
+    {
+      "from": 12,
+      "title": "Grandmother's routine",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a sunny garden, an independent elderly woman of eighty with a flowered headscarf watering flowers, a basket of vegetables from the market beside her, NOT the podcast hosts"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is being alone. Leyla, do you like being alone?"
+    },
+    {
+      "s": "Leyla",
+      "t": "I love it. I'm an introvert. After a long day with people, I need some me time."
+    },
+    {
+      "s": "Sam",
+      "t": "What do you do?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Nothing special. A cup of tea, a book, and silence. That's how I recharge."
+    },
+    {
+      "s": "Sam",
+      "t": "I'm the opposite. I get my energy from people. But my first months in Baku were hard."
+    },
+    {
+      "s": "Leyla",
+      "t": "Why?"
+    },
+    {
+      "s": "Sam",
+      "t": "I lived alone, I didn't know anyone, and I didn't speak a word of Azerbaijani. I felt really lonely."
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you miss home?"
+    },
+    {
+      "s": "Sam",
+      "t": "Every day. I missed my mum's Sunday dinners. I called her every evening."
+    },
+    {
+      "s": "Leyla",
+      "t": "And what changed?"
+    },
+    {
+      "s": "Sam",
+      "t": "The running club. Suddenly I had twenty friends — and a reason to get up early. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "My grandmother lives alone too. She's eighty, but she's very independent."
+    },
+    {
+      "s": "Sam",
+      "t": "Doesn't she feel lonely?"
+    },
+    {
+      "s": "Leyla",
+      "t": "She says no. She has a routine: the market in the morning, her garden, and her TV series at nine."
+    },
+    {
+      "s": "Sam",
+      "t": "[chuckle] So don't call her at nine."
+    },
+    {
+      "s": "Leyla",
+      "t": "Never! But I visit her every Sunday."
+    },
+    {
+      "s": "Sam",
+      "t": "You know, I do like one kind of being alone: my long runs. Two hours, no phone, just me."
+    },
+    {
+      "s": "Leyla",
+      "t": "What do you think about?"
+    },
+    {
+      "s": "Sam",
+      "t": "Everything and nothing. I'm lost in thought, and suddenly I'm home."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: how do you spend time alone — and do you enjoy it?"
+    },
+    {
+      "s": "Sam",
+      "t": "Tell your partner honestly. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to make friends at work",
+        "Being alone — when it feels good and when it feels lonely",
+        "Training for a race",
+        "Learning Azerbaijani"
+      ],
+      "answer": 1,
+      "why": "Leyla's me time, Sam's first months, the grandmother's routine, long runs."
+    },
+    {
+      "type": "detail",
+      "q": "How does Leyla recharge?",
+      "options": [
+        "With tea, a book and silence",
+        "At a party with friends",
+        "With a long run",
+        "By calling her mum"
+      ],
+      "answer": 0,
+      "why": "\"A cup of tea, a book, and silence. That's how I recharge.\""
+    },
+    {
+      "type": "detail",
+      "q": "What helped Sam feel less lonely in Baku?",
+      "options": [
+        "A new job",
+        "Learning Azerbaijani",
+        "Calling his mum",
+        "The running club"
+      ],
+      "answer": 3,
+      "why": "\"The running club. Suddenly I had twenty friends.\""
+    },
+    {
+      "type": "tf",
+      "q": "Leyla's grandmother lives with Leyla.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"My grandmother lives alone too.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Me time\" means…",
+      "options": [
+        "Time you spend at work",
+        "Time for yourself, to relax alone",
+        "A meeting about you",
+        "Time with your family"
+      ],
+      "answer": 1,
+      "why": "\"After a long day with people, I need some me time.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why shouldn't anyone call the grandmother at nine?",
+      "options": [
+        "She goes to bed early",
+        "She is at the market",
+        "She watches her TV series then",
+        "Her phone doesn't work at night"
+      ],
+      "answer": 2,
+      "why": "\"…and her TV series at nine.\" — \"So don't call her at nine.\""
+    }
+  ],
+  "words": [
+    "Lonely",
+    "Recharge",
+    "Introvert",
+    "Silence",
+    "Routine",
+    "Miss",
+    "Independent",
+    "Me time",
+    "Lost in thought"
+  ],
+  "coverPrompt": "COVER: Leyla relaxing in a big armchair with a cup of tea and a book, Sam beside her holding a running cap and smiling at her",
+  "talk": [
+    "How do you spend time alone — and do you enjoy it?",
+    "Are you more of an introvert or an extrovert? Give your partner an example."
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 44,
+  "title": "No, no, please!",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What is a good gift? Guess: why did Mr Aliyev say \"no\" to Sam's gift?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "A gift for Mum",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a small gift shop in Baku, a red-haired bearded man holding a tea set with small pear-shaped armudu glasses, a shop assistant wrapping a box in pretty paper"
+    },
+    {
+      "from": 9,
+      "title": "No, no, please!",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a doorway, a bald older man with a grey moustache and a checked shirt politely pushing back a small wrapped gift from a red-haired bearded man, a basket of apples and figs at his feet"
+    },
+    {
+      "from": 14,
+      "title": "A cat with six legs",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a fridge door with a child's glittery handmade birthday card showing a funny orange cat clearly drawn with SIX legs (three on each side, a child's mistake), held by colourful magnets"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is gifts and giving. And I need your help, Leyla."
+    },
+    {
+      "s": "Leyla",
+      "t": "Why?"
+    },
+    {
+      "s": "Sam",
+      "t": "It's my mum's birthday next week, and I have no idea what to buy."
+    },
+    {
+      "s": "Leyla",
+      "t": "What does she like?"
+    },
+    {
+      "s": "Sam",
+      "t": "Gardening, tea, and calling me every evening. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "Then something thoughtful. Maybe a nice tea set from Baku, with armudu glasses."
+    },
+    {
+      "s": "Sam",
+      "t": "Perfect! But I'm terrible at wrapping presents. Last year my present looked like a used bag."
+    },
+    {
+      "s": "Leyla",
+      "t": "The shop can wrap it for you. And honestly, it's the thought that counts."
+    },
+    {
+      "s": "Sam",
+      "t": "You know what surprised me here? When I gave Mr Aliyev a small gift, he said no twice."
+    },
+    {
+      "s": "Leyla",
+      "t": "Ah, yes. Many people refuse a gift once or twice — it's just polite. You have to insist."
+    },
+    {
+      "s": "Sam",
+      "t": "I had no idea! I almost took it back home."
+    },
+    {
+      "s": "Leyla",
+      "t": "[chuckle] And he's very generous himself, isn't he?"
+    },
+    {
+      "s": "Sam",
+      "t": "Very. Every week he brings me apples and figs from his garden. It's a lovely gesture."
+    },
+    {
+      "s": "Leyla",
+      "t": "My niece Aysu made me a birthday card last month. Glitter everywhere, and a cat with six legs."
+    },
+    {
+      "s": "Sam",
+      "t": "That's the best kind of gift."
+    },
+    {
+      "s": "Leyla",
+      "t": "It is. It's on my fridge. Now tell me about your half marathon — I heard it's for charity?"
+    },
+    {
+      "s": "Sam",
+      "t": "Yes! Our running club is raising money for a children's hospital. People donate for every kilometre."
+    },
+    {
+      "s": "Leyla",
+      "t": "That's wonderful. I'll donate too. You always go the extra mile, Sam."
+    },
+    {
+      "s": "Sam",
+      "t": "Twenty-one kilometres, actually. [laugh] Thank you!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what is the best gift you have ever received — and why was it special?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is a bag of figs from my neighbour. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to wrap presents",
+        "Gifts, kindness and giving to others",
+        "Shopping in Baku",
+        "Training for a race"
+      ],
+      "answer": 1,
+      "why": "A gift for Sam's mum, a polite \"no\", figs, a handmade card, a charity run."
+    },
+    {
+      "type": "detail",
+      "q": "What gift does Leyla suggest for Sam's mum?",
+      "options": [
+        "Flowers for her garden",
+        "A new phone",
+        "A tea set with armudu glasses",
+        "A birthday card"
+      ],
+      "answer": 2,
+      "why": "\"Maybe a nice tea set from Baku, with armudu glasses.\""
+    },
+    {
+      "type": "detail",
+      "q": "What does Mr Aliyev bring Sam every week?",
+      "options": [
+        "Apples and figs from his garden",
+        "Bread from the bakery",
+        "Tea",
+        "Newspapers"
+      ],
+      "answer": 0,
+      "why": "\"Every week he brings me apples and figs from his garden.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam's half marathon raises money for a school.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"…raising money for a children's hospital.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Go the extra mile\" means…",
+      "options": [
+        "Run a very long way",
+        "Get lost on the way",
+        "Drive to another city",
+        "Do more than people expect"
+      ],
+      "answer": 3,
+      "why": "\"I'll donate too. You always go the extra mile, Sam.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why did Mr Aliyev say no to the gift twice?",
+      "options": [
+        "He did not like it",
+        "To be polite — it is a custom",
+        "He was angry with Sam",
+        "He already had one"
+      ],
+      "answer": 1,
+      "why": "\"Many people refuse a gift once or twice — it's just polite.\""
+    }
+  ],
+  "words": [
+    "Generous",
+    "Thoughtful",
+    "Wrap",
+    "Donate",
+    "Charity",
+    "Refuse",
+    "Gesture",
+    "It's the thought that counts",
+    "Go the extra mile"
+  ],
+  "coverPrompt": "COVER: Sam holding a badly wrapped present covered in tape, Leyla holding a neat gift box with a lavender bow, both laughing",
+  "talk": [
+    "What is the best gift you have ever received — and why was it special?",
+    "In your country, how do people give and accept gifts? Is there anything a guest should never bring?"
+  ]
+}

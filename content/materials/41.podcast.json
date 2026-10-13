@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 41,
+  "title": "A girl in a red hat",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "Do you like crowds? Guess: who got lost on New Year's Eve?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Packed like sardines",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: a crowded Baku metro carriage at morning rush hour, a woman with round glasses and a lavender sweater squeezed between many commuters"
+    },
+    {
+      "from": 8,
+      "title": "Fireworks on the boulevard",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: night fireworks over the Baku seaside boulevard, a huge happy crowd seen from behind, one little girl in a bright red hat standing out in the crowd"
+    },
+    {
+      "from": 15,
+      "title": "Saturday at the mall",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a busy bright shopping centre on a Saturday, a red-haired bearded man covering his ears among crowds of shoppers and shopping bags"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is crowds and public places. Leyla, how was your trip this morning?"
+    },
+    {
+      "s": "Leyla",
+      "t": "Terrible. The metro was packed. We were packed like sardines."
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] At eight in the morning it's always the same. Nobody has any space."
+    },
+    {
+      "s": "Leyla",
+      "t": "And everyone is pushing. I almost couldn't get out at my station."
+    },
+    {
+      "s": "Sam",
+      "t": "In England people make a queue for everything. Even for the bus."
+    },
+    {
+      "s": "Leyla",
+      "t": "Really? Here, a queue is more like… a suggestion. [chuckle]"
+    },
+    {
+      "s": "Sam",
+      "t": "I learned that in my first week in Baku. I stood politely, and ten people walked in front of me."
+    },
+    {
+      "s": "Leyla",
+      "t": "Big crowds can be scary, too. Last New Year, we took my niece Aysu to the boulevard for the fireworks."
+    },
+    {
+      "s": "Sam",
+      "t": "Oh, that's a huge crowd."
+    },
+    {
+      "s": "Leyla",
+      "t": "Thousands of people. I looked at the sky for one second, and Aysu was gone."
+    },
+    {
+      "s": "Sam",
+      "t": "No! What did you do?"
+    },
+    {
+      "s": "Leyla",
+      "t": "I ran to the information point. A minute later there was an announcement: \"A little girl in a red hat is looking for her aunt.\""
+    },
+    {
+      "s": "Sam",
+      "t": "Phew. Good thing she had a red hat. A red hat helps you stand out in a crowd."
+    },
+    {
+      "s": "Leyla",
+      "t": "Exactly. Now she always wears something bright."
+    },
+    {
+      "s": "Sam",
+      "t": "For me, the worst is a shopping centre on Saturday. The music, the lights, the people — it's overwhelming."
+    },
+    {
+      "s": "Leyla",
+      "t": "So why do you go?"
+    },
+    {
+      "s": "Sam",
+      "t": "Because my friends go. I just follow the crowd. [laugh]"
+    },
+    {
+      "s": "Leyla",
+      "t": "And your half marathon? There will be a crowd there too."
+    },
+    {
+      "s": "Sam",
+      "t": "That's a good crowd. When people cheer, I run faster. And I always bump into friends at the finish."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: do you love crowds or avoid them — and where is the most crowded place in your city?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mine is the shopping centre on Saturday. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "The history of fireworks",
+        "How to find a lost phone",
+        "A trip to London",
+        "Crowds and busy public places"
+      ],
+      "answer": 3,
+      "why": "The metro, queues, New Year fireworks, a mall on Saturday, a race."
+    },
+    {
+      "type": "detail",
+      "q": "Where did Aysu get lost?",
+      "options": [
+        "In the metro",
+        "At the boulevard on New Year",
+        "In a shopping centre",
+        "At the half marathon"
+      ],
+      "answer": 1,
+      "why": "\"We took my niece Aysu to the boulevard for the fireworks.\""
+    },
+    {
+      "type": "detail",
+      "q": "How did Leyla find Aysu?",
+      "options": [
+        "A police officer brought her",
+        "Aysu called her",
+        "There was an announcement at the information point",
+        "Sam found her"
+      ],
+      "answer": 2,
+      "why": "\"A minute later there was an announcement.\""
+    },
+    {
+      "type": "tf",
+      "q": "In England people make a queue even for the bus.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 0,
+      "why": "\"In England people make a queue for everything. Even for the bus.\""
+    },
+    {
+      "type": "vocab",
+      "q": "\"Packed like sardines\" means…",
+      "options": [
+        "Very crowded, with almost no space",
+        "Ready for a trip",
+        "Hungry for fish",
+        "Very quiet"
+      ],
+      "answer": 0,
+      "why": "\"The metro was packed. We were packed like sardines.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why does Aysu always wear something bright now?",
+      "options": [
+        "It is her favourite colour",
+        "So people can find her easily in a crowd",
+        "Her school asks for it",
+        "Sam gave her a red hat"
+      ],
+      "answer": 1,
+      "why": "\"A red hat helps you stand out in a crowd.\""
+    }
+  ],
+  "words": [
+    "Crowd",
+    "Queue",
+    "Packed",
+    "Announcement",
+    "Overwhelming",
+    "Bump into",
+    "Packed like sardines",
+    "Follow the crowd",
+    "Stand out in a crowd"
+  ],
+  "coverPrompt": "COVER: Leyla and Sam squeezed together in a packed metro carriage, both holding the same pole and laughing",
+  "talk": [
+    "Do you love crowds or avoid them — and where is the most crowded place in your city?",
+    "Tell your partner about a time you got lost, or lost someone, in a crowd."
+  ]
+}

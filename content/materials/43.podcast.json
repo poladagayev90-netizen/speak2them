@@ -1,0 +1,217 @@
+{
+  "kind": "podcast",
+  "episode": 43,
+  "title": "Nard in the yard",
+  "level": "B1",
+  "hosts": {
+    "Leyla": "lives in Baku and loves a good plan",
+    "Sam": "grew up in Manchester and once travelled with no plan at all"
+  },
+  "before": {
+    "predict": "What games do you play? Guess: who in Leyla's family cheats at cards?"
+  },
+  "chapters": [
+    {
+      "from": 0,
+      "picFrom": 3,
+      "title": "Nard in the yard",
+      "image": "ch1",
+      "prompt": "CHAPTER 1 SCENE: an evening courtyard in Baku, a bald older man with a grey moustache and a checked shirt calmly playing backgammon against a red-haired bearded man who looks confused"
+    },
+    {
+      "from": 10,
+      "title": "Cards at New Year",
+      "image": "ch2",
+      "prompt": "CHAPTER 2 SCENE: a family table at New Year with tangerines and tea, an elderly grandmother with a flowered headscarf secretly sliding a playing card out of her sleeve with a sly smile, relatives pretending not to see, NOT the podcast hosts"
+    },
+    {
+      "from": 15,
+      "title": "Sunday crossword",
+      "image": "ch3",
+      "prompt": "CHAPTER 3 SCENE: a sunny kitchen, a red-haired bearded man with a cup of coffee frowning at a newspaper crossword, a pencil behind his ear"
+    }
+  ],
+  "lines": [
+    {
+      "s": "Leyla",
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+    },
+    {
+      "s": "Sam",
+      "t": "And I'm Sam. Today's topic is games and puzzles. Leyla, I have news: I've started playing nard."
+    },
+    {
+      "s": "Leyla",
+      "t": "Backgammon! Who taught you?"
+    },
+    {
+      "s": "Sam",
+      "t": "Mr Aliyev, your neighbour. He plays in the yard every evening."
+    },
+    {
+      "s": "Leyla",
+      "t": "[laugh] Then you're losing every game."
+    },
+    {
+      "s": "Sam",
+      "t": "Every single one. He has a perfect poker face. I never know what he's thinking."
+    },
+    {
+      "s": "Leyla",
+      "t": "And he plays fast. Before you finish your turn, he's already moving."
+    },
+    {
+      "s": "Sam",
+      "t": "Yes! And he talks about strategy the whole time — in Azerbaijani. I understand nothing."
+    },
+    {
+      "s": "Leyla",
+      "t": "Did you ever win?"
+    },
+    {
+      "s": "Sam",
+      "t": "Once it was a draw. Well, we stopped because it got dark. [chuckle]"
+    },
+    {
+      "s": "Leyla",
+      "t": "In my family the big game is cards at New Year. And my grandmother always cheats."
+    },
+    {
+      "s": "Sam",
+      "t": "Your grandmother? No!"
+    },
+    {
+      "s": "Leyla",
+      "t": "She hides cards in her sleeve. We all know, but nobody says anything."
+    },
+    {
+      "s": "Sam",
+      "t": "[laugh] That's a clever opponent."
+    },
+    {
+      "s": "Leyla",
+      "t": "What about puzzles? Do you like them?"
+    },
+    {
+      "s": "Sam",
+      "t": "Crosswords. Every Sunday with my coffee. But some clues are impossible."
+    },
+    {
+      "s": "Leyla",
+      "t": "Do you give up?"
+    },
+    {
+      "s": "Sam",
+      "t": "Never. I put it on the fridge and finish it on Wednesday."
+    },
+    {
+      "s": "Leyla",
+      "t": "My niece Aysu plays a puzzle game on her phone. It's so addictive — she plays it under the table at dinner."
+    },
+    {
+      "s": "Sam",
+      "t": "Ah, the modern way to hide cards in your sleeve."
+    },
+    {
+      "s": "Leyla",
+      "t": "Here's your question for your next SpeakLab call: what game are you really good at — and do you play to win or just for fun?"
+    },
+    {
+      "s": "Sam",
+      "t": "I play to win. I just don't win yet. See you next time!"
+    },
+    {
+      "s": "Leyla",
+      "t": "Bye for now!"
+    }
+  ],
+  "questions": [
+    {
+      "type": "gist",
+      "q": "What is the episode mainly about?",
+      "options": [
+        "How to win at cards",
+        "Games and puzzles in Sam and Leyla's lives",
+        "Phone apps for children",
+        "A New Year party"
+      ],
+      "answer": 1,
+      "why": "Nard with Mr Aliyev, cards at New Year, crosswords, a phone game."
+    },
+    {
+      "type": "detail",
+      "q": "Who taught Sam to play nard?",
+      "options": [
+        "Leyla",
+        "Leyla's grandmother",
+        "Mr Aliyev",
+        "Aysu"
+      ],
+      "answer": 2,
+      "why": "\"Mr Aliyev, your neighbour.\""
+    },
+    {
+      "type": "detail",
+      "q": "How does Leyla's grandmother cheat?",
+      "options": [
+        "She hides cards in her sleeve",
+        "She looks at other players' cards",
+        "She changes the rules",
+        "She moves the pieces"
+      ],
+      "answer": 0,
+      "why": "\"She hides cards in her sleeve.\""
+    },
+    {
+      "type": "tf",
+      "q": "Sam once won a game against Mr Aliyev.",
+      "options": [
+        "True",
+        "False",
+        "Not given"
+      ],
+      "answer": 1,
+      "why": "\"Once it was a draw.\""
+    },
+    {
+      "type": "vocab",
+      "q": "Someone with a \"poker face\"…",
+      "options": [
+        "shows no feelings on their face",
+        "laughs all the time",
+        "is very good at cards",
+        "looks tired"
+      ],
+      "answer": 0,
+      "why": "\"He has a perfect poker face. I never know what he's thinking.\""
+    },
+    {
+      "type": "inference",
+      "q": "Why was the one game a draw?",
+      "options": [
+        "Both players were very good",
+        "Mr Aliyev let Sam win",
+        "Leyla stopped the game",
+        "It got dark, so they had to stop"
+      ],
+      "answer": 3,
+      "why": "\"We stopped because it got dark.\""
+    }
+  ],
+  "words": [
+    "Opponent",
+    "Turn",
+    "Cheat",
+    "Strategy",
+    "Draw",
+    "Clue",
+    "Give up",
+    "Addictive",
+    "Poker face"
+  ],
+  "coverPrompt": "COVER: Leyla and Sam playing backgammon at a studio table, Sam frowning at the dice, Leyla laughing",
+  "talk": [
+    "What game are you really good at — and do you play to win or just for fun?",
+    "Is there a game or app you find addictive? How much time do you spend on it?"
+  ]
+}
