@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is fixing things. Leyla, are you handy at home?"
+      "t": "And I'm Sam. Today's topic is fixing things. Leyla, are you handy at home?",
+      "at": 4.1
     },
     {
       "s": "Leyla",
-      "t": "Not really. When something breaks, I call my neighbour, Mr Aliyev. He can repair anything."
+      "t": "Not really. When something breaks, I call my neighbour, Mr Aliyev. He can repair anything.",
+      "at": 10.24
     },
     {
       "s": "Sam",
-      "t": "Lucky you. I need someone like that."
+      "t": "Lucky you. I need someone like that.",
+      "at": 15.42
     },
     {
       "s": "Leyla",
-      "t": "[laugh] He has more tools than a shop."
+      "t": "[laugh] He has more tools than a shop.",
+      "at": 17.66
     },
     {
       "s": "Sam",
-      "t": "Well, I need him. My kitchen tap has a leak. Drip, drip, drip, all night."
+      "t": "Well, I need him. My kitchen tap has a leak. Drip, drip, drip, all night.",
+      "at": 20.2
     },
     {
       "s": "Leyla",
-      "t": "Oh no. What did you do?"
+      "t": "Oh no. What did you do?",
+      "at": 26.18
     },
     {
       "s": "Sam",
-      "t": "I put tape around it. A temporary fix. That was three months ago."
+      "t": "I put tape around it. A temporary fix. That was three months ago.",
+      "at": 28
     },
     {
       "s": "Leyla",
-      "t": "[chuckle] Three months is not temporary, Sam!"
+      "t": "[chuckle] Three months is not temporary, Sam!",
+      "at": 34.1
     },
     {
       "s": "Sam",
-      "t": "I know. The real problem is a spare part. The shop says it comes from Germany."
+      "t": "I know. The real problem is a spare part. The shop says it comes from Germany.",
+      "at": 36.66
     },
     {
       "s": "Leyla",
-      "t": "My grandmother never throws anything away. Her old radio is fifty years old, and it still works."
+      "t": "My grandmother never throws anything away. Her old radio is fifty years old, and it still works.",
+      "at": 41.8
     },
     {
       "s": "Sam",
-      "t": "How?"
+      "t": "How?",
+      "at": 47.8
     },
     {
       "s": "Leyla",
-      "t": "My grandad repaired it again and again. When a button was loose, he fixed it with a tiny screw."
+      "t": "My grandad repaired it again and again. When a button was loose, he fixed it with a tiny screw.",
+      "at": 48.78
     },
     {
       "s": "Sam",
-      "t": "Things lasted longer back then. Now a phone feels old after three years."
+      "t": "Things lasted longer back then. Now a phone feels old after three years.",
+      "at": 55.66
     },
     {
       "s": "Leyla",
-      "t": "That's true. Do you repair your own things?"
+      "t": "That's true. Do you repair your own things?",
+      "at": 61.2
     },
     {
       "s": "Sam",
-      "t": "Only my running shoes. They're completely worn out, but I glued the sole back on."
+      "t": "Only my running shoes. They're completely worn out, but I glued the sole back on.",
+      "at": 64.06
     },
     {
       "s": "Leyla",
-      "t": "Sam! Your half marathon is soon. Don't cut corners with your shoes."
+      "t": "Sam! Your half marathon is soon. Don't cut corners with your shoes.",
+      "at": 69.04
     },
     {
       "s": "Sam",
-      "t": "You're right. A cheap repair could cost me a broken ankle."
+      "t": "You're right. A cheap repair could cost me a broken ankle.",
+      "at": 73.78
     },
     {
       "s": "Leyla",
-      "t": "So — new shoes this week?"
+      "t": "So — new shoes this week?",
+      "at": 77.84
     },
     {
       "s": "Sam",
-      "t": "New shoes. And maybe I'll finally call Mr Aliyev about the tap."
+      "t": "New shoes. And maybe I'll finally call Mr Aliyev about the tap.",
+      "at": 80.02
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what was the last thing you fixed yourself — and how did it go?"
+      "t": "Here's your question for your next SpeakLab call: what was the last thing you fixed yourself — and how did it go?",
+      "at": 84.52
     },
     {
       "s": "Sam",
-      "t": "Mine is a tap with tape on it. See you next time!"
+      "t": "Mine is a tap with tape on it. See you next time!",
+      "at": 91.5
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 94.62
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What was the last thing you fixed yourself — and how did it go?",
     "Do you prefer to repair old things or buy new ones? Why?"
-  ]
+  ],
+  "duration": 95.6,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-13"
+  }
 }

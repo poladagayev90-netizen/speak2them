@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is being alone. Leyla, do you like being alone?"
+      "t": "And I'm Sam. Today's topic is being alone. Leyla, do you like being alone?",
+      "at": 4.08
     },
     {
       "s": "Leyla",
-      "t": "I love it. I'm an introvert. After a long day with people, I need some me time."
+      "t": "I love it. I'm an introvert. After a long day with people, I need some me time.",
+      "at": 9.42
     },
     {
       "s": "Sam",
-      "t": "What do you do?"
+      "t": "What do you do?",
+      "at": 14.56
     },
     {
       "s": "Leyla",
-      "t": "Nothing special. A cup of tea, a book, and silence. That's how I recharge."
+      "t": "Nothing special. A cup of tea, a book, and silence. That's how I recharge.",
+      "at": 15.66
     },
     {
       "s": "Sam",
-      "t": "I'm the opposite. I get my energy from people. But my first months in Baku were hard."
+      "t": "I'm the opposite. I get my energy from people. But my first months in Baku were hard.",
+      "at": 20.96
     },
     {
       "s": "Leyla",
-      "t": "Why?"
+      "t": "Why?",
+      "at": 26.7
     },
     {
       "s": "Sam",
-      "t": "I lived alone, I didn't know anyone, and I didn't speak a word of Azerbaijani. I felt really lonely."
+      "t": "I lived alone, I didn't know anyone, and I didn't speak a word of Azerbaijani. I felt really lonely.",
+      "at": 27.48
     },
     {
       "s": "Leyla",
-      "t": "Did you miss home?"
+      "t": "Did you miss home?",
+      "at": 34.02
     },
     {
       "s": "Sam",
-      "t": "Every day. I missed my mum's Sunday dinners. I called her every evening."
+      "t": "Every day. I missed my mum's Sunday dinners. I called her every evening.",
+      "at": 35.4
     },
     {
       "s": "Leyla",
-      "t": "And what changed?"
+      "t": "And what changed?",
+      "at": 39.6
     },
     {
       "s": "Sam",
-      "t": "The running club. Suddenly I had twenty friends — and a reason to get up early. [laugh]"
+      "t": "The running club. Suddenly I had twenty friends — and a reason to get up early. [laugh]",
+      "at": 40.82
     },
     {
       "s": "Leyla",
-      "t": "My grandmother lives alone too. She's eighty, but she's very independent."
+      "t": "My grandmother lives alone too. She's eighty, but she's very independent.",
+      "at": 45.72
     },
     {
       "s": "Sam",
-      "t": "Doesn't she feel lonely?"
+      "t": "Doesn't she feel lonely?",
+      "at": 50.82
     },
     {
       "s": "Leyla",
-      "t": "She says no. She has a routine: the market in the morning, her garden, and her TV series at nine."
+      "t": "She says no. She has a routine: the market in the morning, her garden, and her TV series at nine.",
+      "at": 52.48
     },
     {
       "s": "Sam",
-      "t": "[chuckle] So don't call her at nine."
+      "t": "[chuckle] So don't call her at nine.",
+      "at": 59.72
     },
     {
       "s": "Leyla",
-      "t": "Never! But I visit her every Sunday."
+      "t": "Never! But I visit her every Sunday.",
+      "at": 61.1
     },
     {
       "s": "Sam",
-      "t": "You know, I do like one kind of being alone: my long runs. Two hours, no phone, just me."
+      "t": "You know, I do like one kind of being alone: my long runs. Two hours, no phone, just me.",
+      "at": 64.22
     },
     {
       "s": "Leyla",
-      "t": "What do you think about?"
+      "t": "What do you think about?",
+      "at": 71.1
     },
     {
       "s": "Sam",
-      "t": "Everything and nothing. I'm lost in thought, and suddenly I'm home."
+      "t": "Everything and nothing. I'm lost in thought, and suddenly I'm home.",
+      "at": 72.62
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: how do you spend time alone — and do you enjoy it?"
+      "t": "Here's your question for your next SpeakLab call: how do you spend time alone — and do you enjoy it?",
+      "at": 77.34
     },
     {
       "s": "Sam",
-      "t": "Tell your partner honestly. See you next time!"
+      "t": "Tell your partner honestly. See you next time!",
+      "at": 83.2
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 85.6
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "How do you spend time alone — and do you enjoy it?",
     "Are you more of an introvert or an extrovert? Give your partner an example."
-  ]
+  ],
+  "duration": 87,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-13"
+  }
 }

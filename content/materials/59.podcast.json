@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is sharing a home. And from next week, I'll have a roommate."
+      "t": "And I'm Sam. Today's topic is sharing a home. And from next week, I'll have a roommate.",
+      "at": 4.38
     },
     {
       "s": "Leyla",
-      "t": "Who?"
+      "t": "Who?",
+      "at": 10.8
     },
     {
       "s": "Sam",
-      "t": "My friend Tom. After his breakup he needs a change for a month, so he's coming to Baku."
+      "t": "My friend Tom. After his breakup he needs a change for a month, so he's coming to Baku.",
+      "at": 11.52
     },
     {
       "s": "Leyla",
-      "t": "Poor Tom. Are you ready to share your small flat?"
+      "t": "Poor Tom. Are you ready to share your small flat?",
+      "at": 17.12
     },
     {
       "s": "Sam",
-      "t": "I hope so. At university I lived with three roommates. It wasn't always easy."
+      "t": "I hope so. At university I lived with three roommates. It wasn't always easy.",
+      "at": 20.94
     },
     {
       "s": "Leyla",
-      "t": "Why not?"
+      "t": "Why not?",
+      "at": 26.46
     },
     {
       "s": "Sam",
-      "t": "One of them, Dave, never did any chores. His dishes stayed in the sink for a week."
+      "t": "One of them, Dave, never did any chores. His dishes stayed in the sink for a week.",
+      "at": 27.48
     },
     {
       "s": "Leyla",
-      "t": "Oh no. What did you do?"
+      "t": "Oh no. What did you do?",
+      "at": 34
     },
     {
       "s": "Sam",
-      "t": "I left notes on the fridge: \"Dear Dave, the plates miss you.\" [laugh]"
+      "t": "I left notes on the fridge: \"Dear Dave, the plates miss you.\" [laugh]",
+      "at": 36.18
     },
     {
       "s": "Leyla",
-      "t": "Did it work?"
+      "t": "Did it work?",
+      "at": 42.36
     },
     {
       "s": "Sam",
-      "t": "No. In the end we sat down and talked. We had to clear the air."
+      "t": "No. In the end we sat down and talked. We had to clear the air.",
+      "at": 44.1
     },
     {
       "s": "Leyla",
-      "t": "My mum always says: pull your weight, or don't complain."
+      "t": "My mum always says: pull your weight, or don't complain.",
+      "at": 48.82
     },
     {
       "s": "Sam",
-      "t": "Wise woman. What about you? Did you ever share a room?"
+      "t": "Wise woman. What about you? Did you ever share a room?",
+      "at": 52.96
     },
     {
       "s": "Leyla",
-      "t": "With my sister, for eighteen years! She was tidy, and I was… not."
+      "t": "With my sister, for eighteen years! She was tidy, and I was… not.",
+      "at": 56.29
     },
     {
       "s": "Sam",
-      "t": "So your side was a mess?"
+      "t": "So your side was a mess?",
+      "at": 62.54
     },
     {
       "s": "Leyla",
-      "t": "A big mess. Books everywhere. And no privacy at all — she read my diary!"
+      "t": "A big mess. Books everywhere. And no privacy at all — she read my diary!",
+      "at": 63.86
     },
     {
       "s": "Sam",
-      "t": "[chuckle] So how did you survive?"
+      "t": "[chuckle] So how did you survive?",
+      "at": 69.4
     },
     {
       "s": "Leyla",
-      "t": "We made a compromise: I cleaned my side on Sundays, and she stopped reading my diary."
+      "t": "We made a compromise: I cleaned my side on Sundays, and she stopped reading my diary.",
+      "at": 71.22
     },
     {
       "s": "Sam",
-      "t": "Good deal. So, for Tom: we split the chores, we split the bills, and he cooks on Fridays."
+      "t": "Good deal. So, for Tom: we split the chores, we split the bills, and he cooks on Fridays.",
+      "at": 76.48
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: have you ever shared a room or a flat — and what was the hardest part?"
+      "t": "Here's your question for your next SpeakLab call: have you ever shared a room or a flat — and what was the hardest part?",
+      "at": 83.48
     },
     {
       "s": "Sam",
-      "t": "Mine was Dave's dishes. See you next time!"
+      "t": "Mine was Dave's dishes. See you next time!",
+      "at": 90.3
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 92.66
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Have you ever shared a room or a flat — and what was the hardest part?",
     "Make three house rules for the perfect roommate."
-  ]
+  ],
+  "duration": 93.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-13"
+  }
 }

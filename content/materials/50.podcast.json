@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is working late. And I'm a bit tired today — I worked until midnight yesterday."
+      "t": "And I'm Sam. Today's topic is working late. And I'm a bit tired today — I worked until midnight yesterday.",
+      "at": 4.22
     },
     {
       "s": "Leyla",
-      "t": "Why so late?"
+      "t": "Why so late?",
+      "at": 12.26
     },
     {
       "s": "Sam",
-      "t": "A big deadline. The report was due this morning, so I had to burn the midnight oil."
+      "t": "A big deadline. The report was due this morning, so I had to burn the midnight oil.",
+      "at": 13.72
     },
     {
       "s": "Leyla",
-      "t": "Did you get paid for the overtime?"
+      "t": "Did you get paid for the overtime?",
+      "at": 18.7
     },
     {
       "s": "Sam",
-      "t": "[laugh] No. That's not how it works in my office."
+      "t": "[laugh] No. That's not how it works in my office.",
+      "at": 21.26
     },
     {
       "s": "Leyla",
-      "t": "My cousin Nigar is a nurse. She works night shifts — from eight in the evening to eight in the morning."
+      "t": "My cousin Nigar is a nurse. She works night shifts — from eight in the evening to eight in the morning.",
+      "at": 24.38
     },
     {
       "s": "Sam",
-      "t": "Twelve hours at night? How does she sleep?"
+      "t": "Twelve hours at night? How does she sleep?",
+      "at": 30.48
     },
     {
       "s": "Leyla",
-      "t": "With black curtains and earplugs. She sleeps when everyone else is awake."
+      "t": "With black curtains and earplugs. She sleeps when everyone else is awake.",
+      "at": 33.72
     },
     {
       "s": "Sam",
-      "t": "That sounds really hard on the body."
+      "t": "That sounds really hard on the body.",
+      "at": 37.92
     },
     {
       "s": "Leyla",
-      "t": "It is. After a month of nights she was completely exhausted. She told me, \"I can't run on empty any more.\""
+      "t": "It is. After a month of nights she was completely exhausted. She told me, \"I can't run on empty any more.\"",
+      "at": 39.88
     },
     {
       "s": "Sam",
-      "t": "In England many doctors and nurses leave because of burnout. It's a big problem."
+      "t": "In England many doctors and nurses leave because of burnout. It's a big problem.",
+      "at": 46.78
     },
     {
       "s": "Leyla",
-      "t": "Here too. Now she does nights only one week a month."
+      "t": "Here too. Now she does nights only one week a month.",
+      "at": 51.72
     },
     {
       "s": "Sam",
-      "t": "Good. My secret for long days is a nap. Twenty minutes after lunch, and I'm a new man."
+      "t": "Good. My secret for long days is a nap. Twenty minutes after lunch, and I'm a new man.",
+      "at": 55.82
     },
     {
       "s": "Leyla",
-      "t": "In the office?"
+      "t": "In the office?",
+      "at": 63.38
     },
     {
       "s": "Sam",
-      "t": "In my car! [chuckle] With the seat back."
+      "t": "In my car! [chuckle] With the seat back.",
+      "at": 65.24
     },
     {
       "s": "Leyla",
-      "t": "My dad was a baker. He started at three in the morning, every day, for thirty years."
+      "t": "My dad was a baker. He started at three in the morning, every day, for thirty years.",
+      "at": 68.52
     },
     {
       "s": "Sam",
-      "t": "Three in the morning! When did he finish?"
+      "t": "Three in the morning! When did he finish?",
+      "at": 74.9
     },
     {
       "s": "Leyla",
-      "t": "At noon. Then he said, \"Okay, let's call it a day,\" and slept all afternoon."
+      "t": "At noon. Then he said, \"Okay, let's call it a day,\" and slept all afternoon.",
+      "at": 78.34
     },
     {
       "s": "Sam",
-      "t": "Honestly, that sounds better than my office."
+      "t": "Honestly, that sounds better than my office.",
+      "at": 83.28
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: do you ever work or study late — and how do you stay awake?"
+      "t": "Here's your question for your next SpeakLab call: do you ever work or study late — and how do you stay awake?",
+      "at": 86.56
     },
     {
       "s": "Sam",
-      "t": "And when do you call it a day? See you next time!"
+      "t": "And when do you call it a day? See you next time!",
+      "at": 92.84
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 96.16
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Do you ever work or study late — and how do you stay awake?",
     "Would you like a job with night shifts? Why or why not?"
-  ]
+  ],
+  "duration": 97,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-13"
+  }
 }
