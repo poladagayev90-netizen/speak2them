@@ -31,7 +31,7 @@ export async function enqueueCallAnalysis({ uid, callDocId, sessionId, storagePa
   // doğrudur, amma iki müddət iki ayrı mənbədən gəlir (audio saatı vs divar
   // saatı) və yuvarlaqlaşma bir saniyəlik fərq yarada bilər. Sıxmasaq həmin
   // nadir hal ticket-i tamamilə rədd etdirər və analiz heç vaxt gəlməz.
-  const callSec = Math.min(Math.max(1, Math.round(callSeconds || audioSeconds)), 3600);
+  const callSec = Math.min(Math.max(1, Math.round(callSeconds || audioSeconds)), 5400);
   const audioSec = Math.min(Math.max(1, Math.round(audioSeconds)), callSec);
 
   await withRetry('ticket write', () => setDoc(doc(db, 'analysisQueue', docId), {
@@ -40,7 +40,7 @@ export async function enqueueCallAnalysis({ uid, callDocId, sessionId, storagePa
     // Yüklənən FAYLIN uzunluğu (sükut kəsildikdən sonra). Worker-in saatlıq
     // audio büdcəsi və qismən-analiz bayt-prefiksi buna bölür — ona görə bu
     // rəqəm zəngin uzunluğu deyil, faylın uzunluğu olmalıdır.
-    // Tavan firestore.rules-dakı `audioSeconds <= 3600` ilə SİNXRON olmalıdır.
+    // Tavan firestore.rules-dakı `audioSeconds <= 5400` ilə SİNXRON olmalıdır (90 dəq = Chat.jsx CALL_MAX_SECONDS).
     // 1800 idi: 1 saatlıq zəng 30 dəq kimi yazılırdı və analiz nisbəti səhv
     // hesablanırdı.
     audioSeconds: audioSec,

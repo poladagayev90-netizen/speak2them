@@ -73,7 +73,7 @@ async function syncAiPractice(db, uid) {
 // the claim is clamped to the server-clock span between them. A forged
 // "one hour" call now has to actually last an hour; an honest call is
 // unchanged (its claim is already <= the span, give or take clock skew).
-const CALL_CAP_SECONDS = 60 * 60;
+const CALL_CAP_SECONDS = 90 * 60; // = CALL_MAX_SECONDS in src/pages/Chat.jsx (60 min + three «+10 min»)
 
 // When the conversation began. `connectedAt` is written once, by whichever
 // client first sees the other person in the Agora channel (Chat.jsx). Before

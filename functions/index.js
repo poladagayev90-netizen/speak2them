@@ -1031,7 +1031,7 @@ exports.testPush = onRequest({ secrets: [] }, async (req, res) => {
 
 // ─── Trial / Subscription ────────────────────────────────────
 const TRIAL_MINUTES = 100;
-const CALL_CAP_SECONDS = 60 * 60; // calls are capped at 60 minutes (client maxCallSeconds ilə sinxron)
+const CALL_CAP_SECONDS = 90 * 60; // 60 minutes + up to three «+10 min» (client CALL_MAX_SECONDS ilə sinxron)
 const METERED_PLANS = new Set(["free", "trial"]);
 
 // ─── Müəllim funnel-i ────────────────────────────────────────

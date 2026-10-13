@@ -4,6 +4,7 @@ import { AnalysisDetail } from '../../pages/History';
 import { toAnalysisView } from '../../utils/analysisView';
 import { sessionTrend, cefrIndex } from '../../utils/labCharts';
 import { Tile, Bars, Line, Ladder, ScoreRing } from './LabBits';
+import { canPronounce, pronounce } from '../../utils/pronounce';
 
 // One analysed session in the Lab — Progress / Feedback / Vocabulary, the way
 // a tutor's lesson insights split a lesson. Polad (2026-10-01): the Lab
@@ -102,26 +103,16 @@ function SessionProgress({ analysis, view, analyses, level }) {
 }
 
 // The words the report picked for this learner to reuse. Tap the speaker to
-// hear it (the browser's own voice — free and offline), open the row for the
+// hear it (the recorded pronunciation for a topic word, otherwise the browser's
+// own voice — utils/pronounce.js), open the row for the
 // meaning and the example. The level chip and the meaning exist only on
 // reports written from 2026-10-01; older words show without them.
 function SessionWords({ words }) {
   const [open, setOpen] = useState(null);
-  const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
-
   if (!words.length) {
     return <p className="lab-empty">This report has no words picked out. Longer sessions give it more to choose from.</p>;
   }
 
-  const say = (w) => {
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(w);
-      u.lang = 'en-US';
-      u.rate = 0.9;
-      window.speechSynthesis.speak(u);
-    } catch { /* no voice on this device */ }
-  };
 
   return (
     <div className="lab-words">
@@ -132,8 +123,8 @@ function SessionWords({ words }) {
           return (
             <div key={`${v.word}-${i}`} className={`lab-word ${isOpen ? 'is-open' : ''}`}>
               <div className="lab-word-row">
-                {canSpeak && (
-                  <button type="button" className="lab-word-say" onClick={() => say(v.word)} aria-label={`Hear “${v.word}”`}>
+                {canPronounce(v.word) && (
+                  <button type="button" className="lab-word-say" onClick={() => pronounce(v.word)} aria-label={`Hear “${v.word}”`}>
                     <Volume2 size={18} />
                   </button>
                 )}

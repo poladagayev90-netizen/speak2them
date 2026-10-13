@@ -5,6 +5,7 @@ import { ArrowLeft, Check, Volume2, Snail } from 'lucide-react';
 import { db } from '../firebase';
 import { weeklyContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
+import { canPronounce, pronounce } from '../utils/pronounce';
 import { markDictation, markOriginal } from '../utils/dictation';
 import { homeworkStepKeys } from '../utils/tutorLessons';
 import AnalysisHomework from '../components/AnalysisHomework';
@@ -21,16 +22,9 @@ import '../components/homework/homework.css';
 
 const DICTATION_COUNT = 5;
 
-function say(text, slow) {
-  try {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US';
-    u.rate = slow ? 0.65 : 0.9;
-    window.speechSynthesis.speak(u);
-  } catch { /* no voice on this device */ }
-}
-const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
+// A topic word or idiom plays its recorded pronunciation; anything else
+// (a dictation sentence) the browser's voice — utils/pronounce.js.
+const say = (text, slow) => pronounce(text, { slow });
 
 let clip = null;
 function play(url, slow) {
@@ -43,7 +37,7 @@ function play(url, slow) {
 }
 
 function SpeakButton({ text, audioUrl = null, slow = false, label }) {
-  if (!audioUrl && !canSpeak) return null;
+  if (!audioUrl && !canPronounce(text)) return null;
   return (
     <button type="button" className="hw-speak" aria-label={label || (slow ? 'Play slowly' : 'Play')}
       onClick={() => (audioUrl ? play(audioUrl, slow) : say(text, slow))}>

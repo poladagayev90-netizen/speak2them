@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { splitByTerms } from '../../utils/topicMaterials';
 import { localMeaning } from '../../utils/feedbackLanguage';
 import useMeaningLang from './useMeaningLang';
+import SayButton from '../ui/SayButton';
 
 // A text with the topic's key words marked; a tap opens the word card.
 export function TermText({ text, terms, picked, onPick }) {
@@ -37,6 +38,7 @@ export function WordCard({ term, onClose }) {
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- only stops the outside-tap close
     <div className="mt-card" role="dialog" aria-label={term.phrase} onClick={(e) => e.stopPropagation()}>
       <div className="mt-card-top">
+        <SayButton text={term.phrase} />
         <span className="mt-card-phrase">{term.phrase}</span>
         <LangSwitch compact />
         <button type="button" className="mt-card-x" onClick={onClose} aria-label="Close"><X size={18} /></button>

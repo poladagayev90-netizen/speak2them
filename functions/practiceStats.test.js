@@ -56,7 +56,7 @@ test('a call one person sat through alone records nothing — no practice, no at
 test('a forged duration claim is clamped to the server-clock span', () => {
   assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z',authoritativeDurationSec:3600}),120);
   assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z',authoritativeDurationSec:90}),90);
-  assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T05:00:00Z',authoritativeDurationSec:99999}),3600);
+  assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T05:00:00Z',authoritativeDurationSec:99999}),5400);
   assert.equal(trustedCallSeconds({createdAt:at,endedAt:'2026-09-07T00:02:00Z'}),0); // no claim, no credit
   assert.equal(trustedCallSeconds({createdAt:at,authoritativeDurationSec:60}),0); // not ended
   assert.equal(trustedCallSeconds({createdAt:'2026-09-07T00:05:00Z',endedAt:at,authoritativeDurationSec:60}),0); // stale end

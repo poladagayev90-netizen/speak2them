@@ -10,7 +10,7 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import {
   BookOpen, MessageCircleQuestion, Image as ImageIcon, Video as VideoIcon, Drama, MessagesSquare, Target,
   Mic, MicOff, PhoneOff, Clock, X, Check, Phone, ArrowLeft,
-  BookMarked, Lightbulb,
+  BookMarked, Lightbulb, Plus,
 } from 'lucide-react';
 import { getTodayIndex, getContentByIndex } from '../data/weeklyContent';
 import GuidedTour from '../components/GuidedTour';
@@ -54,6 +54,7 @@ import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallRoadmap from '../components/CallRoadmap';
 import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
+import SayButton from '../components/ui/SayButton';
 
 const CHAT_TOUR_STEPS = [
   {
@@ -68,10 +69,20 @@ const CHAT_TOUR_STEPS = [
 const APP_ID = process.env.REACT_APP_AGORA_APP_ID;
 const TOKEN_URL = `${FUNCTIONS_BASE}/getAgoraToken`;
 
+// A call runs 60 minutes; either partner may add 10 minutes at a time
+// (calls/{id}.callExtension — both screens follow it) up to 90 in all
+// (Polad 2026-10-13: a good conversation was cut off mid-sentence at 60).
+// Agora bills per participant-minute, so the extension is a deliberate tap,
+// never automatic. Keep CALL_MAX_SECONDS in step with the server's
+// CALL_CAP_SECONDS (functions/practiceStats.js, functions/index.js).
+const CALL_BASE_SECONDS = 60 * 60;
+const CALL_EXTEND_MINUTES = 10;
+const CALL_MAX_SECONDS = 90 * 60;
+
 // Ceiling for the authoritative (timestamp-derived) call length written to
 // leaderboard stats. Mirrors the server's CALL_CAP_SECONDS so a pathological
 // start timestamp can never inflate a user's minutes.
-const AUTHORITATIVE_CALL_CAP_SECONDS = 60 * 60;
+const AUTHORITATIVE_CALL_CAP_SECONDS = CALL_MAX_SECONDS;
 
 // The moment the conversation actually began: both people in the channel.
 // Written ONCE per call (the transaction skips it if already set, and a
@@ -284,8 +295,30 @@ export default function Chat({ user }) {
   // brauzerin default bitrate-i ilə 1 saat Storage limitini keçib yükləməni
   // sındırırdı. Analiz tavanı 1800 saniyədir (ANALYSIS_MAX_SECONDS) və yazıdan
   // sükut kəsildiyi üçün uzun zəngdə belə tavana nadir hallarda çatılır.
-  // Serverdəki CALL_CAP_SECONDS ilə sinxron saxla.
-  let maxCallSeconds = 60 * 60;
+  // Serverdəki CALL_CAP_SECONDS ilə sinxron saxla. The extension lives in the
+  // call doc so both partners' clocks end together; one written before THIS
+  // call began (the doc is per pair) is ignored.
+  const [callExtension, setCallExtension] = useState(null);
+  const extraMinutes = callExtension && callExtension.at >= callStartedAtRef.current - 120000
+    ? Math.max(0, Number(callExtension.minutes) || 0) : 0;
+  const maxCallSeconds = Math.min(CALL_BASE_SECONDS + extraMinutes * 60, CALL_MAX_SECONDS);
+  const maxCallSecondsRef = useRef(maxCallSeconds);
+  maxCallSecondsRef.current = maxCallSeconds;
+  const canExtend = maxCallSeconds + CALL_EXTEND_MINUTES * 60 <= CALL_MAX_SECONDS;
+  // The partner extended: their tap hides the warning on this screen too.
+  useEffect(() => {
+    if (callSecondsRef.current < maxCallSeconds - 120) {
+      warnedRef.current = false;
+      setTimeWarning(false);
+    }
+  }, [maxCallSeconds]);
+  const extendCall = () => {
+    setTimeWarning(false);
+    warnedRef.current = false;
+    updateDoc(doc(db, 'calls', callDocId), {
+      callExtension: { minutes: extraMinutes + CALL_EXTEND_MINUTES, by: user.uid, at: Date.now() },
+    }).catch((e) => console.error('[Chat] call extension failed:', e));
+  };
 
   const chatIdRef = useRef(chatId);
   const callDocIdRef = useRef(callDocId);
@@ -777,6 +810,8 @@ export default function Chat({ user }) {
 
       // The shared topic. When the PARTNER changes it, say so once — the
       // vocabulary and the next activity quietly moving would be confusing.
+      setCallExtension(data.callExtension || null);
+
       const ct = data.callTopic || null;
       setCallTopic(ct);
       if (ct?.at && topicSeenRef.current !== null && topicSeenRef.current !== ct.at && ct.by !== user.uid) {
@@ -850,20 +885,20 @@ export default function Chat({ user }) {
         callSecondsRef.current = elapsed;
         setCallSeconds(elapsed);
 
-        // Limitə 1 dəqiqə qalmış bloklamayan xəbərdarlıq. Bərabərlik yox,
-        // ARALIQ yoxlanılır: boğulmuş tick dəqiq saniyəni atlaya bilər.
-        if (maxCallSeconds !== Infinity && !warnedRef.current
-          && elapsed >= maxCallSeconds - 60 && elapsed < maxCallSeconds) {
+        // Limitə 2 dəqiqə qalmış bloklamayan xəbərdarlıq (+10 min düyməsi ilə).
+        // Bərabərlik yox, ARALIQ yoxlanılır: boğulmuş tick dəqiq saniyəni
+        // atlaya bilər. The cap is read from a ref: an extension must not
+        // restart this effect, which would reset the call's start.
+        const cap = maxCallSecondsRef.current;
+        if (!warnedRef.current && elapsed >= cap - 120 && elapsed < cap) {
           warnedRef.current = true;
           setTimeWarning(true);
-          setTimeout(() => setTimeWarning(false), 10000);
         }
-        if (maxCallSeconds !== Infinity && elapsed >= maxCallSeconds) {
-          // endCall is async and alert() blocks — without this the interval
-          // keeps firing and stacks one alert per second.
+        if (elapsed >= cap) {
+          // No alert() any more: it blocked the screen and read like an error.
           clearInterval(timerRef.current);
+          setTimeWarning(false);
           endCallRef.current?.();
-          alert('Time is up for this call. Start a new one to keep going.');
         }
       }, 1000);
     } else {
@@ -871,7 +906,7 @@ export default function Chat({ user }) {
       setCallSeconds(0);
     }
     return () => clearInterval(timerRef.current);
-  }, [maxCallSeconds, inCall]);
+  }, [inCall]);
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -1453,26 +1488,27 @@ export default function Chat({ user }) {
           </p>
           {inCall && (
             <>
-              {maxCallSeconds !== Infinity && (
-                <div style={{
-                  background: timeWarning ? 'var(--warning-bg)' : 'var(--bg-secondary)',
-                  border: timeWarning ? '1px solid var(--warning)' : 'none',
-                  padding: '6px 12px', borderRadius: '20px',
-                  fontSize: '12px', color: timeWarning ? 'var(--warning)' : 'var(--text-secondary)',
-                  fontWeight: 600, marginTop: '8px',
-                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                }}>
-                  <Clock size={13} strokeWidth={2} aria-hidden="true" />
-                  {formatTime(Math.max(0, maxCallSeconds - callSeconds))} left
-                </div>
-              )}
+              <div style={{
+                background: timeWarning ? 'var(--warning-bg)' : 'var(--bg-secondary)',
+                border: timeWarning ? '1px solid var(--warning)' : 'none',
+                padding: '6px 12px', borderRadius: '20px',
+                fontSize: '12px', color: timeWarning ? 'var(--warning)' : 'var(--text-secondary)',
+                fontWeight: 600, marginTop: '8px',
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+              }}>
+                <Clock size={13} strokeWidth={2} aria-hidden="true" />
+                {formatTime(Math.max(0, maxCallSeconds - callSeconds))} left
+              </div>
               {timeWarning && (
-                <div style={{
-                  background: 'var(--warning)', color: 'var(--text-on-accent)', padding: '10px 16px',
-                  borderRadius: '14px', fontSize: '14px', fontWeight: 800,
-                  marginTop: '10px', animation: 'pulse 1s ease-in-out infinite',
-                }}>
-                  ⏳ One minute left — start wrapping up
+                <div className="call-extend">
+                  <span className="call-extend-text">
+                    {canExtend ? 'Two minutes left. Still talking?' : 'Two minutes left — time to wrap up.'}
+                  </span>
+                  {canExtend && (
+                    <button type="button" className="call-extend-btn" onClick={extendCall}>
+                      <Plus size={15} strokeWidth={2.4} aria-hidden="true" /> {CALL_EXTEND_MINUTES} min
+                    </button>
+                  )}
                 </div>
               )}
             </>
@@ -1522,7 +1558,6 @@ export default function Chat({ user }) {
                           imageStage: {
                             active: true, imageIndex: 0, startedAtMs: Date.now(),
                             contentIndex: topicIndex,
-                            deck: NATIVE || peerNative ? 'app' : 'full',
                           },
                         }).catch((e) => console.error('[Chat] imageStage start failed:', e));
                       }}
@@ -1542,6 +1577,7 @@ export default function Chat({ user }) {
                           videoStage: {
                             active: true, videoIndex: 0, startedAtMs: Date.now(),
                             contentIndex: topicIndex,
+                            deck: NATIVE || peerNative ? 'app' : 'full',
                           },
                         }).catch((e) => console.error('[Chat] videoStage start failed:', e));
                       }}
@@ -1854,7 +1890,7 @@ export default function Chat({ user }) {
                 {content.vocabulary.map((v, i) => (
                   <div key={i} className="vocab-card" onClick={() => setFlipped(p => ({ ...p, [i]: !p[i] }))}>
                     {!flipped[i]
-                      ? <div className="vocab-front"><h3>{v.word}</h3><span className="tap-hint">Tap to see meaning</span></div>
+                      ? <div className="vocab-front"><div className="say-row say-row--center"><SayButton text={v.word} /><h3>{v.word}</h3></div><span className="tap-hint">Tap to see meaning</span></div>
                       : <div className="vocab-back"><p className="vocab-meaning">{v.meaning}</p><p className="vocab-example">"{v.example}"</p></div>
                     }
                   </div>
@@ -1865,7 +1901,7 @@ export default function Chat({ user }) {
               <div className="idioms-list">
                 {content.idioms.map((idiom, i) => (
                   <div key={i} className="idiom-card">
-                    <h3>"{idiom.phrase}"</h3>
+                    <div className="say-row"><SayButton text={idiom.phrase} /><h3>"{idiom.phrase}"</h3></div>
                     <p className="idiom-meaning"> {idiom.meaning}</p>
                     <p className="idiom-example"> "{idiom.example}"</p>
                   </div>

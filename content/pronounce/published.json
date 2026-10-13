@@ -1,0 +1,3803 @@
+{
+ "jet-lag": {
+  "text": "Jet lag",
+  "sha": "6b7b5dd55c451879",
+  "sec": 4.37,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "itinerary": {
+  "text": "Itinerary",
+  "sha": "7d5a6c36bc726d45",
+  "sec": 3.42,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "off-the-beaten-track": {
+  "text": "Off the beaten track",
+  "sha": "388da0833a9f8091",
+  "sec": 6.32,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "customs": {
+  "text": "Customs",
+  "sha": "16d81efae1398b63",
+  "sec": 0.78
+ },
+ "backpacker": {
+  "text": "Backpacker",
+  "sha": "cbd7e66d2112c596",
+  "sec": 0.89
+ },
+ "sightseeing": {
+  "text": "Sightseeing",
+  "sha": "cec46e7f5b96a18f",
+  "sec": 0.92
+ },
+ "boarding-pass": {
+  "text": "Boarding pass",
+  "sha": "4403a39814419914",
+  "sec": 0.98
+ },
+ "layover": {
+  "text": "Layover",
+  "sha": "0a311835157bf102",
+  "sec": 4.44,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "homesick": {
+  "text": "Homesick",
+  "sha": "da20c2e383921fbc",
+  "sec": 4.57,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "travel-light": {
+  "text": "Travel light",
+  "sha": "69a4fca0ffb55368",
+  "sec": 0.97
+ },
+ "hit-the-road": {
+  "text": "Hit the road",
+  "sha": "841549bcee259f97",
+  "sec": 0.98
+ },
+ "artificial-intelligence": {
+  "text": "Artificial Intelligence",
+  "sha": "c229662398779535",
+  "sec": 1.58
+ },
+ "algorithm": {
+  "text": "Algorithm",
+  "sha": "c78c57244582850d",
+  "sec": 0.82
+ },
+ "cybersecurity": {
+  "text": "Cybersecurity",
+  "sha": "d30599a5fc86b61c",
+  "sec": 5.78,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cloud-storage": {
+  "text": "Cloud storage",
+  "sha": "c74417095ae66f82",
+  "sec": 1.11
+ },
+ "automation": {
+  "text": "Automation",
+  "sha": "261a8ddcc19cbedf",
+  "sec": 0.94
+ },
+ "update": {
+  "text": "Update",
+  "sha": "1d75a8c75d49b927",
+  "sec": 0.68
+ },
+ "crash": {
+  "text": "Crash",
+  "sha": "9719a7412e44103d",
+  "sec": 0.71
+ },
+ "password": {
+  "text": "Password",
+  "sha": "16dafbc8d1d4c699",
+  "sec": 0.85
+ },
+ "cutting-edge": {
+  "text": "Cutting edge",
+  "sha": "fe4717a7544ecb7f",
+  "sec": 1.06
+ },
+ "pull-the-plug": {
+  "text": "Pull the plug",
+  "sha": "c565204127f484f5",
+  "sec": 0.93
+ },
+ "delicacy": {
+  "text": "Delicacy",
+  "sha": "3a54dfcaa355a725",
+  "sec": 1.12
+ },
+ "get-up-to-speed": {
+  "text": "Get up to speed",
+  "sha": "0fc40b8a1a6f4c93",
+  "sec": 1.09
+ },
+ "table-manners": {
+  "text": "Table manners",
+  "sha": "71457fe3fbc3d681",
+  "sec": 1.08
+ },
+ "bite-off-more-than-you-can-chew": {
+  "text": "Bite off more than you can chew",
+  "sha": "9311b0ed14bd341c",
+  "sec": 8.29,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "scholarship": {
+  "text": "Scholarship",
+  "sha": "7cc3e26c2e2bcb45",
+  "sec": 1.01
+ },
+ "curriculum": {
+  "text": "Curriculum",
+  "sha": "f1790366176e9227",
+  "sec": 0.79
+ },
+ "critical-thinking": {
+  "text": "Critical thinking",
+  "sha": "9129b853e34b1f7f",
+  "sec": 1.17
+ },
+ "staple": {
+  "text": "Staple",
+  "sha": "e38a0f9230802d62",
+  "sec": 0.7
+ },
+ "cuisine": {
+  "text": "Cuisine",
+  "sha": "212c936f39aa9334",
+  "sec": 0.71
+ },
+ "ingredient": {
+  "text": "Ingredient",
+  "sha": "d40d2775cc0d6c6b",
+  "sec": 1.01
+ },
+ "portion": {
+  "text": "Portion",
+  "sha": "5c5b61aa01fa80ed",
+  "sec": 0.69
+ },
+ "homemade": {
+  "text": "Homemade",
+  "sha": "2ad47798fa45ed49",
+  "sec": 1
+ },
+ "spicy": {
+  "text": "Spicy",
+  "sha": "fef839786d5e27dd",
+  "sec": 1.19
+ },
+ "food-for-thought": {
+  "text": "Food for thought",
+  "sha": "bef60beabc1693fc",
+  "sec": 0.96
+ },
+ "a-piece-of-cake": {
+  "text": "A piece of cake",
+  "sha": "1348fb35179c4ad7",
+  "sec": 1.09
+ },
+ "literacy": {
+  "text": "Literacy",
+  "sha": "b5eb5e6acf2c7578",
+  "sec": 0.78
+ },
+ "tuition": {
+  "text": "Tuition",
+  "sha": "68fffc7fd0b7ebc8",
+  "sec": 0.8
+ },
+ "revise": {
+  "text": "Revise",
+  "sha": "a8fe106c024ac7f5",
+  "sec": 0.97
+ },
+ "deadline": {
+  "text": "Deadline",
+  "sha": "012bf13b828f3834",
+  "sec": 0.82
+ },
+ "drop-out": {
+  "text": "Drop out",
+  "sha": "709e48bc3d792a37",
+  "sec": 0.61
+ },
+ "hit-the-books": {
+  "text": "Hit the books",
+  "sha": "c8f181a2c94b7e0b",
+  "sec": 1.01
+ },
+ "learn-the-ropes": {
+  "text": "Learn the ropes",
+  "sha": "8dc71c1e6f4a0807",
+  "sec": 1.14
+ },
+ "pass-with-flying-colours": {
+  "text": "Pass with flying colours",
+  "sha": "67870f2c4958f307",
+  "sec": 1.85
+ },
+ "nutrition": {
+  "text": "Nutrition",
+  "sha": "a0fdd18145503dfd",
+  "sec": 0.94
+ },
+ "mental-health": {
+  "text": "Mental health",
+  "sha": "7ff15e6815d273aa",
+  "sec": 1.13
+ },
+ "sedentary": {
+  "text": "Sedentary",
+  "sha": "c4e656dea0306ce8",
+  "sec": 1.08
+ },
+ "immunity": {
+  "text": "Immunity",
+  "sha": "17ddcbedc2c9f915",
+  "sec": 0.83
+ },
+ "burnout": {
+  "text": "Burnout",
+  "sha": "e16e1970f3c85291",
+  "sec": 0.76
+ },
+ "checkup": {
+  "text": "Checkup",
+  "sha": "565bbb38509334ef",
+  "sec": 0.64
+ },
+ "painkiller": {
+  "text": "Painkiller",
+  "sha": "7653effd5d6058dc",
+  "sec": 5.57,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stretch": {
+  "text": "Stretch",
+  "sha": "2a693da3e4bd88ea",
+  "sec": 1.13
+ },
+ "under-the-weather": {
+  "text": "Under the weather",
+  "sha": "79c4b830c83e23ae",
+  "sec": 1.16
+ },
+ "back-on-your-feet": {
+  "text": "Back on your feet",
+  "sha": "eb9270c0abdc6deb",
+  "sec": 1.09
+ },
+ "burn-the-candle-at-both-ends": {
+  "text": "Burn the candle at both ends",
+  "sha": "defb2ee81262804d",
+  "sec": 2.02
+ },
+ "sustainability": {
+  "text": "Sustainability",
+  "sha": "24b812cf53bd37a8",
+  "sec": 1.35
+ },
+ "carbon-footprint": {
+  "text": "Carbon footprint",
+  "sha": "a185d1c728ecff5f",
+  "sec": 1.25
+ },
+ "renewable-energy": {
+  "text": "Renewable energy",
+  "sha": "4751ffc56fa22812",
+  "sec": 1.5
+ },
+ "deforestation": {
+  "text": "Deforestation",
+  "sha": "e93b10acca1d8a86",
+  "sec": 1.38
+ },
+ "biodiversity": {
+  "text": "Biodiversity",
+  "sha": "5fabe48e43df4130",
+  "sec": 1.19
+ },
+ "recycle": {
+  "text": "Recycle",
+  "sha": "d4e369e29c2d32b7",
+  "sec": 0.84
+ },
+ "pollution": {
+  "text": "Pollution",
+  "sha": "336a80aec6f7364a",
+  "sec": 0.77
+ },
+ "single-use": {
+  "text": "Single-use",
+  "sha": "b3a4c5cd1ab1cbf1",
+  "sec": 1.08
+ },
+ "go-green": {
+  "text": "Go green",
+  "sha": "67a1767539b73727",
+  "sec": 0.78
+ },
+ "drop-in-the-ocean": {
+  "text": "Drop in the ocean",
+  "sha": "646eb9c128255fa5",
+  "sec": 1.12
+ },
+ "turn-over-a-new-leaf": {
+  "text": "Turn over a new leaf",
+  "sha": "c15bfb58b6a6be17",
+  "sec": 1.66
+ },
+ "entrepreneur": {
+  "text": "Entrepreneur",
+  "sha": "2c48d64e4ef69e54",
+  "sec": 1
+ },
+ "networking": {
+  "text": "Networking",
+  "sha": "e89fb72913285f80",
+  "sec": 0.88
+ },
+ "remote-work": {
+  "text": "Remote work",
+  "sha": "7bdc106511c69b7e",
+  "sec": 1.12
+ },
+ "promotion": {
+  "text": "Promotion",
+  "sha": "b659f47a89f1449c",
+  "sec": 0.67
+ },
+ "colleague": {
+  "text": "Colleague",
+  "sha": "f23bdc68d620d4ab",
+  "sec": 0.79
+ },
+ "resign": {
+  "text": "Resign",
+  "sha": "9c5421312aaaf1a2",
+  "sec": 0.8
+ },
+ "workload": {
+  "text": "Workload",
+  "sha": "85030dc8e160ac7c",
+  "sec": 0.77
+ },
+ "climb-the-ladder": {
+  "text": "Climb the ladder",
+  "sha": "9a4a52bb7a2fb0ea",
+  "sec": 1.26
+ },
+ "go-the-extra-mile": {
+  "text": "Go the extra mile",
+  "sha": "417a419141642fb0",
+  "sec": 1.72
+ },
+ "back-to-the-drawing-board": {
+  "text": "Back to the drawing board",
+  "sha": "22cfa1157f519016",
+  "sec": 1.49
+ },
+ "influencer": {
+  "text": "Influencer",
+  "sha": "8213b3c5e5ca2c11",
+  "sec": 1
+ },
+ "viral": {
+  "text": "Viral",
+  "sha": "676a81326eac2ccd",
+  "sec": 0.78
+ },
+ "engagement": {
+  "text": "Engagement",
+  "sha": "b0e4186b0f6b7186",
+  "sec": 0.8
+ },
+ "troll": {
+  "text": "Troll",
+  "sha": "f9e9892bef68f0d5",
+  "sec": 0.89,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "feed": {
+  "text": "Feed",
+  "sha": "8e49031490ff5c69",
+  "sec": 0.63
+ },
+ "block": {
+  "text": "Block",
+  "sha": "f584f74ed4788cec",
+  "sec": 0.78
+ },
+ "screen-time": {
+  "text": "Screen time",
+  "sha": "d370a3fa7b31a710",
+  "sec": 1.03
+ },
+ "in-the-spotlight": {
+  "text": "In the spotlight",
+  "sha": "a48ec56f9ee4b6ed",
+  "sec": 6.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stir-up": {
+  "text": "Stir up",
+  "sha": "53e61593c6b0b239",
+  "sec": 0.77
+ },
+ "jump-on-the-bandwagon": {
+  "text": "Jump on the bandwagon",
+  "sha": "c86950564eff96c1",
+  "sec": 7.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "budget": {
+  "text": "Budget",
+  "sha": "d18d4f608bdde446",
+  "sec": 5.42,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "debt": {
+  "text": "Debt",
+  "sha": "7376666448f50b16",
+  "sec": 0.45,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "investment": {
+  "text": "Investment",
+  "sha": "4b6c935d32aa01bd",
+  "sec": 1.22,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "inflation": {
+  "text": "Inflation",
+  "sha": "502b2ace3583b181",
+  "sec": 1.11,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "salary": {
+  "text": "Salary",
+  "sha": "fc973bfc52a65e0e",
+  "sec": 1.1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "savings": {
+  "text": "Savings",
+  "sha": "910ae5d2e31d3ca1",
+  "sec": 1.11,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "loan": {
+  "text": "Loan",
+  "sha": "0055ead318581570",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "afford": {
+  "text": "Afford",
+  "sha": "8ac0b9441af7f4c6",
+  "sec": 0.74,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "break-the-bank": {
+  "text": "Break the bank",
+  "sha": "207f139663409257",
+  "sec": 1.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tighten-your-belt": {
+  "text": "Tighten your belt",
+  "sha": "e32749d4157aa086",
+  "sec": 1.72,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "on-a-shoestring": {
+  "text": "On a shoestring",
+  "sha": "117710f66bc779a4",
+  "sec": 1.77,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "plot": {
+  "text": "Plot",
+  "sha": "488cdeb6ad756281",
+  "sec": 0.5,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "sequel": {
+  "text": "Sequel",
+  "sha": "57350573322f3f60",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "soundtrack": {
+  "text": "Soundtrack",
+  "sha": "27295a3c2e5d7e31",
+  "sec": 1.08,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "binge-watch": {
+  "text": "Binge-watch",
+  "sha": "7afbd7a5ce176733",
+  "sec": 1.44,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cliffhanger": {
+  "text": "Cliffhanger",
+  "sha": "94af0f94ee86764b",
+  "sec": 1.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "subtitles": {
+  "text": "Subtitles",
+  "sha": "ed0b9ae3e47d07a6",
+  "sec": 1.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "spoiler": {
+  "text": "Spoiler",
+  "sha": "0582a606e53af75e",
+  "sec": 1.09,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cast": {
+  "text": "Cast",
+  "sha": "94b1fc2235dd6ed5",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "steal-the-show": {
+  "text": "Steal the show",
+  "sha": "e318e51fc25243ee",
+  "sec": 1.72,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "on-the-edge-of-your-seat": {
+  "text": "On the edge of your seat",
+  "sha": "f49fab35983ac2fc",
+  "sec": 2.2,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "give-it-a-shot": {
+  "text": "Give it a shot",
+  "sha": "71c21c68e417a029",
+  "sec": 1.28,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "genre": {
+  "text": "Genre",
+  "sha": "e7a131c743927e26",
+  "sec": 0.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "lyrics": {
+  "text": "Lyrics",
+  "sha": "b3a33e5baa68b216",
+  "sec": 0.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "chorus": {
+  "text": "Chorus",
+  "sha": "9f107bb59d89c6f6",
+  "sec": 0.95,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "live-performance": {
+  "text": "Live performance",
+  "sha": "483ecc92b90ceea0",
+  "sec": 1.84,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "collaboration": {
+  "text": "Collaboration",
+  "sha": "137a1cb76e3fda20",
+  "sec": 1.31,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "melody": {
+  "text": "Melody",
+  "sha": "02d53a3b1a19ad2c",
+  "sec": 0.84,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rehearse": {
+  "text": "Rehearse",
+  "sha": "3b4eae645c29d671",
+  "sec": 0.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tone-deaf": {
+  "text": "Tone-deaf",
+  "sha": "29b0f74e9905295d",
+  "sec": 0.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "face-the-music": {
+  "text": "Face the music",
+  "sha": "742ac6e72e710ef4",
+  "sec": 1.57,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "music-to-my-ears": {
+  "text": "Music to my ears",
+  "sha": "0a5d51133f686442",
+  "sec": 1.95,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "change-your-tune": {
+  "text": "Change your tune",
+  "sha": "a0933f43124d3c74",
+  "sec": 1.51,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "celebrity": {
+  "text": "Celebrity",
+  "sha": "d83fcca42cfe667e",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "role-model": {
+  "text": "Role model",
+  "sha": "391325fb2f509587",
+  "sec": 1.06,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "reputation": {
+  "text": "Reputation",
+  "sha": "2f23e30ce685a553",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "paparazzi": {
+  "text": "Paparazzi",
+  "sha": "bd4094c9498f5546",
+  "sec": 1.06,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "legacy": {
+  "text": "Legacy",
+  "sha": "d4c21377ec9e3982",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fan": {
+  "text": "Fan",
+  "sha": "5d0cf17236ae2e90",
+  "sec": 0.87,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "scandal": {
+  "text": "Scandal",
+  "sha": "a504f791c7fdb8e1",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "privacy": {
+  "text": "Privacy",
+  "sha": "57a0401218a23792",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "in-the-limelight": {
+  "text": "In the limelight",
+  "sha": "742806319422de1b",
+  "sec": 1.65,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fifteen-minutes-of-fame": {
+  "text": "Fifteen minutes of fame",
+  "sha": "6f7e3e1da6e3e4d8",
+  "sec": 2.83,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rise-to-fame": {
+  "text": "Rise to fame",
+  "sha": "6b8d49611c5bdede",
+  "sec": 1.68,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "pastime": {
+  "text": "Pastime",
+  "sha": "b805988456c209c1",
+  "sec": 1.06,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "creative-outlet": {
+  "text": "Creative outlet",
+  "sha": "56fb6f0aad43f760",
+  "sec": 1.59,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "dedicated": {
+  "text": "Dedicated",
+  "sha": "2d8fb44b1653a60e",
+  "sec": 0.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "leisure": {
+  "text": "Leisure",
+  "sha": "e96d2bd9e6f0d01c",
+  "sec": 0.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "skill-set": {
+  "text": "Skill set",
+  "sha": "9ea0396aa2f9fe8c",
+  "sec": 1.06,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "collect": {
+  "text": "Collect",
+  "sha": "3c3084675830e493",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "beginner": {
+  "text": "Beginner",
+  "sha": "4c0ea2659e37e512",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "hooked": {
+  "text": "Hooked",
+  "sha": "f9a111822a2e3e4d",
+  "sec": 0.72,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "pick-up-a-hobby": {
+  "text": "Pick up a hobby",
+  "sha": "bb6ea504d793ca6b",
+  "sec": 1.38,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "kill-time": {
+  "text": "Kill time",
+  "sha": "3c9b96cff84eeaf8",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "get-into-something": {
+  "text": "Get into something",
+  "sha": "00bf66f4b7e7856b",
+  "sec": 1.62,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "trend": {
+  "text": "Trend",
+  "sha": "4337205287141db5",
+  "sec": 0.78,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "sustainable-fashion": {
+  "text": "Sustainable fashion",
+  "sha": "d3552d049f19495c",
+  "sec": 2.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "accessory": {
+  "text": "Accessory",
+  "sha": "ec6057bc0e2b9a20",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "brand": {
+  "text": "Brand",
+  "sha": "9a8ab3ede44b8ac6",
+  "sec": 0.83,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "wardrobe": {
+  "text": "Wardrobe",
+  "sha": "4d4a84bddfcc1365",
+  "sec": 1.15,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fit": {
+  "text": "Fit",
+  "sha": "e2e6a3105b5072f2",
+  "sec": 0.49,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "outfit": {
+  "text": "Outfit",
+  "sha": "942096f0a3715d54",
+  "sec": 0.63,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "hand-me-down": {
+  "text": "Hand-me-down",
+  "sha": "3526ab1901ec51f4",
+  "sec": 1.3,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "dress-to-impress": {
+  "text": "Dress to impress",
+  "sha": "cfaca9d666b43145",
+  "sec": 1.72,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "in-fashion": {
+  "text": "In fashion",
+  "sha": "19389cc7073556bd",
+  "sec": 1.3,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "off-the-rack": {
+  "text": "Off the rack",
+  "sha": "30e6a7343b00b7a4",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "animated": {
+  "text": "Animated",
+  "sha": "1d35543ef1dff30c",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "character": {
+  "text": "Character",
+  "sha": "6419312e7e01e540",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "nostalgia": {
+  "text": "Nostalgia",
+  "sha": "241d61177290b37f",
+  "sec": 1.21,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "voiceover": {
+  "text": "Voiceover",
+  "sha": "21c5c97dfdc5bfd6",
+  "sec": 1.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "storyline": {
+  "text": "Storyline",
+  "sha": "6787191df799898b",
+  "sec": 1.31,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "villain": {
+  "text": "Villain",
+  "sha": "06933cdb97b45e6e",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "dubbed": {
+  "text": "Dubbed",
+  "sha": "69e5962d87db325f",
+  "sec": 0.8,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "frame": {
+  "text": "Frame",
+  "sha": "6370369f0e77001d",
+  "sec": 0.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "larger-than-life": {
+  "text": "Larger than life",
+  "sha": "d14440a42a258bb1",
+  "sec": 2.08,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "come-to-life": {
+  "text": "Come to life",
+  "sha": "788631b6f2693bc7",
+  "sec": 1.44,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "take-someone-back": {
+  "text": "Take someone back",
+  "sha": "9c3ee21755d073ca",
+  "sec": 1.68,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "phobia": {
+  "text": "Phobia",
+  "sha": "5d508ad4cda42b04",
+  "sec": 0.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "anxiety": {
+  "text": "Anxiety",
+  "sha": "4eb2b55110187525",
+  "sec": 1.17,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "trigger": {
+  "text": "Trigger",
+  "sha": "3ffd2a0b80a6bd5b",
+  "sec": 0.71,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "irrational": {
+  "text": "Irrational",
+  "sha": "694d2c37a447fffb",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "overcome": {
+  "text": "Overcome",
+  "sha": "c6ad2e4ab238e85e",
+  "sec": 0.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "panic-attack": {
+  "text": "Panic attack",
+  "sha": "ca332d0ae8e38097",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "nightmare": {
+  "text": "Nightmare",
+  "sha": "67292bd620ac1f01",
+  "sec": 0.95,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "reassure": {
+  "text": "Reassure",
+  "sha": "ee0f86cda1deaabe",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "scared-stiff": {
+  "text": "Scared stiff",
+  "sha": "3689914511d405a1",
+  "sec": 1.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "face-your-fears": {
+  "text": "Face your fears",
+  "sha": "b50653ee732d6022",
+  "sec": 1.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "get-cold-feet": {
+  "text": "Get cold feet",
+  "sha": "7c657c12359a9904",
+  "sec": 1.72,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "loyalty": {
+  "text": "Loyalty",
+  "sha": "e72c7d25faf84ed9",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "trust": {
+  "text": "Trust",
+  "sha": "cf02bd9aa2b00b04",
+  "sec": 0.76,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "conflict": {
+  "text": "Conflict",
+  "sha": "e9ab50efbee23472",
+  "sec": 1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "compromise": {
+  "text": "Compromise",
+  "sha": "b737338eac8ceaae",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "long-distance": {
+  "text": "Long-distance",
+  "sha": "9d0fefa0b91cd926",
+  "sec": 1.48,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "argue": {
+  "text": "Argue",
+  "sha": "30787cfce0a25794",
+  "sec": 0.86,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "make-up": {
+  "text": "Make up",
+  "sha": "d365cd723643d085",
+  "sec": 0.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "supportive": {
+  "text": "Supportive",
+  "sha": "cb6ba79331725770",
+  "sec": 1.09,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "hit-it-off": {
+  "text": "Hit it off",
+  "sha": "9fd14c968ab8bcc4",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stand-by-someone": {
+  "text": "Stand by someone",
+  "sha": "9a80377e98132975",
+  "sec": 1.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "drift-apart": {
+  "text": "Drift apart",
+  "sha": "308685482ea2b415",
+  "sec": 1.39,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "athlete": {
+  "text": "Athlete",
+  "sha": "511012acbcbb8e90",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stamina": {
+  "text": "Stamina",
+  "sha": "84fe80d952caab0e",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "coach": {
+  "text": "Coach",
+  "sha": "d46b4c22648c1430",
+  "sec": 0.79,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tournament": {
+  "text": "Tournament",
+  "sha": "4ec41041b2fb6c05",
+  "sec": 0.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "injury": {
+  "text": "Injury",
+  "sha": "85b14837abdaebf0",
+  "sec": 0.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "referee": {
+  "text": "Referee",
+  "sha": "02decfed7bd7bdf8",
+  "sec": 1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "warm-up": {
+  "text": "Warm up",
+  "sha": "bb2560f0427173b0",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "underdog": {
+  "text": "Underdog",
+  "sha": "0e6b2ef73cab1187",
+  "sec": 1.11,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "jump-the-gun": {
+  "text": "Jump the gun",
+  "sha": "6196bbcbf890d460",
+  "sec": 1.44,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "give-it-your-best-shot": {
+  "text": "Give it your best shot",
+  "sha": "ab38d93d5c01b03a",
+  "sec": 2.26,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "raise-the-bar": {
+  "text": "Raise the bar",
+  "sha": "4951ca69fadd912b",
+  "sec": 1.59,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "domesticated": {
+  "text": "Domesticated",
+  "sha": "a3122d74049dcfed",
+  "sec": 1.52,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "endangered": {
+  "text": "Endangered",
+  "sha": "b0d12908216de562",
+  "sec": 1.33,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "habitat": {
+  "text": "Habitat",
+  "sha": "c658236f276c41a1",
+  "sec": 1.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "veterinarian": {
+  "text": "Veterinarian",
+  "sha": "2c1fdeea8ea47dff",
+  "sec": 1.61,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "predator": {
+  "text": "Predator",
+  "sha": "d9b9907a1190376e",
+  "sec": 1.04,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stray": {
+  "text": "Stray",
+  "sha": "a34d46a22991b0af",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "adopt": {
+  "text": "Adopt",
+  "sha": "edbfe39490cc25a1",
+  "sec": 0.67,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tame": {
+  "text": "Tame",
+  "sha": "56e2bb182cec2bfe",
+  "sec": 0.86,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "let-the-cat-out-of-the-bag": {
+  "text": "Let the cat out of the bag",
+  "sha": "84daf043cace3c52",
+  "sec": 3.39,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "the-elephant-in-the-room": {
+  "text": "The elephant in the room",
+  "sha": "313c196a85b57d30",
+  "sec": 2.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "hold-your-horses": {
+  "text": "Hold your horses",
+  "sha": "d28eef315f42c951",
+  "sec": 2.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "heritage": {
+  "text": "Heritage",
+  "sha": "8c2edda7356de950",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "custom": {
+  "text": "Custom",
+  "sha": "29afaf5d56a16853",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ritual": {
+  "text": "Ritual",
+  "sha": "f84e4c60412b30d3",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "multicultural": {
+  "text": "Multicultural",
+  "sha": "540c2236a8565f16",
+  "sec": 1.37,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "assimilation": {
+  "text": "Assimilation",
+  "sha": "eb67aecbc52d1baa",
+  "sec": 1.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "folk": {
+  "text": "Folk",
+  "sha": "560a61a6e8a7597e",
+  "sec": 0.49,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ancestor": {
+  "text": "Ancestor",
+  "sha": "fc3da3f68cceaee8",
+  "sec": 1.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "superstition": {
+  "text": "Superstition",
+  "sha": "33d9fd195753a92c",
+  "sec": 1.29,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "when-in-rome": {
+  "text": "When in Rome",
+  "sha": "66b1414d168f579c",
+  "sec": 1.1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "old-habits-die-hard": {
+  "text": "Old habits die hard",
+  "sha": "7156c096ecd24df8",
+  "sec": 2.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "pass-something-down": {
+  "text": "Pass something down",
+  "sha": "52d3a1b0e5393e38",
+  "sec": 1.53,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "galaxy": {
+  "text": "Galaxy",
+  "sha": "0be30b49f585d7e7",
+  "sec": 1.07,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "orbit": {
+  "text": "Orbit",
+  "sha": "9cfbac1fc3f0458e",
+  "sec": 0.48,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "experiment": {
+  "text": "Experiment",
+  "sha": "bcc077689ab54765",
+  "sec": 1.38,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "hypothesis": {
+  "text": "Hypothesis",
+  "sha": "465032df3b25b39e",
+  "sec": 1.56,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "gravity": {
+  "text": "Gravity",
+  "sha": "b63d842d93160b13",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "telescope": {
+  "text": "Telescope",
+  "sha": "96ea77049b330882",
+  "sec": 0.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "launch": {
+  "text": "Launch",
+  "sha": "b9651941651476d3",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "discovery": {
+  "text": "Discovery",
+  "sha": "7c60a56397775b9c",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "reach-for-the-stars": {
+  "text": "Reach for the stars",
+  "sha": "fa1619a1023dad3d",
+  "sec": 2.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "light-years-ahead": {
+  "text": "Light-years ahead",
+  "sha": "bc6c0946c253b8c3",
+  "sec": 1.7,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rocket-science": {
+  "text": "Rocket science",
+  "sha": "ec363f7032741632",
+  "sec": 1.51,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "urban": {
+  "text": "Urban",
+  "sha": "cf22750d521f1b0c",
+  "sec": 0.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rural": {
+  "text": "Rural",
+  "sha": "ce201f79d834257f",
+  "sec": 1.04,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "infrastructure": {
+  "text": "Infrastructure",
+  "sha": "cc55d053fe003ec4",
+  "sec": 1.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "commute": {
+  "text": "Commute",
+  "sha": "83907aacf19afbb9",
+  "sec": 0.63,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "overcrowding": {
+  "text": "Overcrowding",
+  "sha": "d49d95b313d1ce50",
+  "sec": 1.26,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "suburb": {
+  "text": "Suburb",
+  "sha": "2a74d3f206645525",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "skyline": {
+  "text": "Skyline",
+  "sha": "9ead14b3ee298ad8",
+  "sec": 1.22,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "peaceful": {
+  "text": "Peaceful",
+  "sha": "74f0a6aaa72d5dee",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rat-race": {
+  "text": "Rat race",
+  "sha": "bf2e8b233f6b91cc",
+  "sec": 1.29,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "put-down-roots": {
+  "text": "Put down roots",
+  "sha": "00d606e259a4c63b",
+  "sec": 1.76,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "green-space": {
+  "text": "Green space",
+  "sha": "fabbb439185d4e84",
+  "sec": 1.58,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fiction": {
+  "text": "Fiction",
+  "sha": "6ee8ceb16d06fc72",
+  "sec": 0.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "non-fiction": {
+  "text": "Non-fiction",
+  "sha": "9aed860de4d750b8",
+  "sec": 1.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "author": {
+  "text": "Author",
+  "sha": "3de0b5835369ce9f",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "narrative": {
+  "text": "Narrative",
+  "sha": "8148dc00530457d9",
+  "sec": 1.19,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "e-book": {
+  "text": "E-book",
+  "sha": "5f90f3e6b8251f41",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "chapter": {
+  "text": "Chapter",
+  "sha": "d5e58290ce03cb21",
+  "sec": 0.95,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bookshelf": {
+  "text": "Bookshelf",
+  "sha": "0787bb13f78748ec",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "page-turner": {
+  "text": "Page-turner",
+  "sha": "75d9c426fcf4722a",
+  "sec": 1.3,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "an-open-book": {
+  "text": "An open book",
+  "sha": "bf03d00ffee15309",
+  "sec": 1.48,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "by-the-book": {
+  "text": "By the book",
+  "sha": "39e62b0df5247964",
+  "sec": 1.31,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "lose-yourself-in-a-book": {
+  "text": "Lose yourself in a book",
+  "sha": "8248b310bc8bd04c",
+  "sec": 2.09,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fluency": {
+  "text": "Fluency",
+  "sha": "2b6b349bd0276997",
+  "sec": 1.15,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "dialect": {
+  "text": "Dialect",
+  "sha": "cf8a5ddf7b63b3e3",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "body-language": {
+  "text": "Body language",
+  "sha": "146a3f098a663179",
+  "sec": 1.47,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bilingual": {
+  "text": "Bilingual",
+  "sha": "da387628695fbf65",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "slang": {
+  "text": "Slang",
+  "sha": "b4f63a6dad2d018f",
+  "sec": 0.97,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "accent": {
+  "text": "Accent",
+  "sha": "dee84bfb717ac2e3",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "mispronounce": {
+  "text": "Mispronounce",
+  "sha": "614457fb1bf0dafb",
+  "sec": 1.48,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "small-talk": {
+  "text": "Small talk",
+  "sha": "b808500ea955cd00",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "speak-your-mind": {
+  "text": "Speak your mind",
+  "sha": "c3a435955a2711ce",
+  "sec": 1.68,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "beat-around-the-bush": {
+  "text": "Beat around the bush",
+  "sha": "45c8ef63aa4c61aa",
+  "sec": 2.17,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "get-your-point-across": {
+  "text": "Get your point across",
+  "sha": "436943eccb4716db",
+  "sec": 2.15,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "consumer": {
+  "text": "Consumer",
+  "sha": "18e6c7fcb575f414",
+  "sec": 0.98,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "discount": {
+  "text": "Discount",
+  "sha": "946edc8502dccf4d",
+  "sec": 1.08,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "impulse-buy": {
+  "text": "Impulse buy",
+  "sha": "169ad3cb7fbe6dca",
+  "sec": 1.35,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "second-hand": {
+  "text": "Second-hand",
+  "sha": "c02648a4d4ca9cf2",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "receipt": {
+  "text": "Receipt",
+  "sha": "d5345dce2a033ced",
+  "sec": 0.67,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "refund": {
+  "text": "Refund",
+  "sha": "a0850265db1d29ce",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "queue": {
+  "text": "Queue",
+  "sha": "9a652bbb3080117d",
+  "sec": 0.7,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "brand-new": {
+  "text": "Brand new",
+  "sha": "0a85532ae3cf84b4",
+  "sec": 1.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "splurge-on-something": {
+  "text": "Splurge on something",
+  "sha": "c688407599487173",
+  "sec": 1.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cost-an-arm-and-a-leg": {
+  "text": "Cost an arm and a leg",
+  "sha": "12dc5043de72f497",
+  "sec": 2.34,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "shop-around": {
+  "text": "Shop around",
+  "sha": "abab1c02e35d3fed",
+  "sec": 1.4,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ambition": {
+  "text": "Ambition",
+  "sha": "0f9a0f9930254e17",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "motivation": {
+  "text": "Motivation",
+  "sha": "bb1ad840bd2c904e",
+  "sec": 1.27,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "determination": {
+  "text": "Determination",
+  "sha": "18b5eb9df75b96a2",
+  "sec": 1.5,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "aspire": {
+  "text": "Aspire",
+  "sha": "e420c26393550b74",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "perseverance": {
+  "text": "Perseverance",
+  "sha": "236dcda14a10ba40",
+  "sec": 1.37,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "goal": {
+  "text": "Goal",
+  "sha": "1a2632028fead9e1",
+  "sec": 0.79,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "setback": {
+  "text": "Setback",
+  "sha": "8da8161f34d6ebc9",
+  "sec": 0.86,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "aim-high": {
+  "text": "Aim high",
+  "sha": "c79a8b78e3aa8fc3",
+  "sec": 1.42,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "chase-your-dreams": {
+  "text": "Chase your dreams",
+  "sha": "923c72f4d92b7ad6",
+  "sec": 1.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "go-after-something": {
+  "text": "Go after something",
+  "sha": "3276a01df6784c25",
+  "sec": 2.35,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "revolution": {
+  "text": "Revolution",
+  "sha": "3a3da0bc65ce110d",
+  "sec": 1.35,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "era": {
+  "text": "Era",
+  "sha": "a3abe11020f1673b",
+  "sec": 0.54,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "empire": {
+  "text": "Empire",
+  "sha": "95ba2e98d5c3d397",
+  "sec": 1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "artifact": {
+  "text": "Artifact",
+  "sha": "0e3c38f9fc0d24a5",
+  "sec": 0.87,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "colonisation": {
+  "text": "Colonisation",
+  "sha": "12a68d970b73b635",
+  "sec": 1.6,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ruins": {
+  "text": "Ruins",
+  "sha": "87260a2f38706af7",
+  "sec": 1.04,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ancient": {
+  "text": "Ancient",
+  "sha": "9503f7cf7e9ac8c5",
+  "sec": 0.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "eyewitness-account": {
+  "text": "Eyewitness account",
+  "sha": "a1255854116d09cf",
+  "sec": 1.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "make-history": {
+  "text": "Make history",
+  "sha": "e472e4bae703bae5",
+  "sec": 1.6,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "a-blast-from-the-past": {
+  "text": "A blast from the past",
+  "sha": "7fd40f11f0f9d788",
+  "sec": 2.44,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "go-down-in-history": {
+  "text": "Go down in history",
+  "sha": "10723bdd41fc1163",
+  "sec": 2.34,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "innovation": {
+  "text": "Innovation",
+  "sha": "cfbcc9af38dc28b6",
+  "sec": 1.24,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "forecast": {
+  "text": "Forecast",
+  "sha": "28a68af82895c0e9",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "sustainable": {
+  "text": "Sustainable",
+  "sha": "7730d2399a716ae6",
+  "sec": 1.21,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "utopia": {
+  "text": "Utopia",
+  "sha": "0b1353220d6aff82",
+  "sec": 1.17,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "disruption": {
+  "text": "Disruption",
+  "sha": "932c91b35962da8d",
+  "sec": 1.21,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "prediction": {
+  "text": "Prediction",
+  "sha": "feb46058225440d6",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "generation-gap": {
+  "text": "Generation gap",
+  "sha": "e6d93f6231635e74",
+  "sec": 1.52,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "obsolete": {
+  "text": "Obsolete",
+  "sha": "0d191fafca54d758",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "crystal-ball": {
+  "text": "Crystal ball",
+  "sha": "78781a0d559b89a7",
+  "sec": 1.35,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "shape-the-future": {
+  "text": "Shape the future",
+  "sha": "77960f495e97534e",
+  "sec": 1.85,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "a-matter-of-time": {
+  "text": "A matter of time",
+  "sha": "458415f6db329ae0",
+  "sec": 2.3,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "sibling": {
+  "text": "Sibling",
+  "sha": "657f0494f8f40027",
+  "sec": 1.08,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "upbringing": {
+  "text": "Upbringing",
+  "sha": "ed9d4a1c2814ba01",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "household": {
+  "text": "Household",
+  "sha": "2ee3db33d7dce84f",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "relative": {
+  "text": "Relative",
+  "sha": "c09b2597f1f9d278",
+  "sec": 1.15,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bond": {
+  "text": "Bond",
+  "sha": "2adad38694fd7619",
+  "sec": 0.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "chores": {
+  "text": "Chores",
+  "sha": "fd0a9ca4efe8646a",
+  "sec": 1.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "spoil": {
+  "text": "Spoil",
+  "sha": "67fc7db67067d6b2",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "family-tree": {
+  "text": "Family tree",
+  "sha": "7109a581f126ff1f",
+  "sec": 1.64,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "the-apple-doesnt-fall-far-from-the-tree": {
+  "text": "The apple doesn't fall far from the tree",
+  "sha": "846022770f9654b1",
+  "sec": 4.7,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "under-one-roof": {
+  "text": "Under one roof",
+  "sha": "55bffd7174de0c20",
+  "sec": 2.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "flesh-and-blood": {
+  "text": "Flesh and blood",
+  "sha": "3dcdf915d2084361",
+  "sec": 2.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "festivity": {
+  "text": "Festivity",
+  "sha": "fbfa66275548e054",
+  "sec": 1.39,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tradition": {
+  "text": "Tradition",
+  "sha": "44d35439a50cfdf1",
+  "sec": 1.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "gathering": {
+  "text": "Gathering",
+  "sha": "7bbe09130428ecd5",
+  "sec": 1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "feast": {
+  "text": "Feast",
+  "sha": "6c95850d64341764",
+  "sec": 0.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "anniversary": {
+  "text": "Anniversary",
+  "sha": "59d603185b8e2b79",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "decorate": {
+  "text": "Decorate",
+  "sha": "a33003ac0b60967d",
+  "sec": 0.8,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fireworks": {
+  "text": "Fireworks",
+  "sha": "f00ea2616c97a6a9",
+  "sec": 1.57,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "leftovers": {
+  "text": "Leftovers",
+  "sha": "5f494e24a1219c75",
+  "sec": 1.28,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "paint-the-town-red": {
+  "text": "Paint the town red",
+  "sha": "684eb9af65fe7c08",
+  "sec": 2.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ring-in-the-new-year": {
+  "text": "Ring in the new year",
+  "sha": "44f75458d3c062f1",
+  "sec": 2.52,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "the-more-the-merrier": {
+  "text": "The more the merrier",
+  "sha": "290d8caadc8e0153",
+  "sec": 2.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "neighbourhood": {
+  "text": "Neighbourhood",
+  "sha": "6228e90f4c883e7d",
+  "sec": 1.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tenant": {
+  "text": "Tenant",
+  "sha": "7c9537211ff545bb",
+  "sec": 0.75,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "landlord": {
+  "text": "Landlord",
+  "sha": "84a41d3b647db57d",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "courtyard": {
+  "text": "Courtyard",
+  "sha": "5aba7a168ff21616",
+  "sec": 0.83,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "noise-complaint": {
+  "text": "Noise complaint",
+  "sha": "1833dfd7b66d7b12",
+  "sec": 1.3,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "look-after": {
+  "text": "Look after",
+  "sha": "6fa8a76388a14c0c",
+  "sec": 1.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "get-along": {
+  "text": "Get along",
+  "sha": "9f3d82aa7b8196f0",
+  "sec": 1.26,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "community": {
+  "text": "Community",
+  "sha": "0938e1f3055f0312",
+  "sec": 0.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "the-walls-have-ears": {
+  "text": "The walls have ears",
+  "sha": "3980e6b52c3db9f9",
+  "sec": 1.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "keep-yourself-to-yourself": {
+  "text": "Keep yourself to yourself",
+  "sha": "078765bde77426c6",
+  "sec": 2.37,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "lend-a-hand": {
+  "text": "Lend a hand",
+  "sha": "e667d74f131f050d",
+  "sec": 1.42,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "downpour": {
+  "text": "Downpour",
+  "sha": "f876f497faca16e0",
+  "sec": 1.09,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "drizzle": {
+  "text": "Drizzle",
+  "sha": "f800da313ac22c1f",
+  "sec": 0.78,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "heatwave": {
+  "text": "Heatwave",
+  "sha": "9833605ee859c97c",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "humid": {
+  "text": "Humid",
+  "sha": "bbcfcb6823b0123b",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "freezing": {
+  "text": "Freezing",
+  "sha": "07e9a99687edb6a0",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "breeze": {
+  "text": "Breeze",
+  "sha": "ee78af760c475d5e",
+  "sec": 0.98,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "puddle": {
+  "text": "Puddle",
+  "sha": "18eacf26d034d539",
+  "sec": 0.65,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "come-rain-or-shine": {
+  "text": "Come rain or shine",
+  "sha": "0cdba99b106d7d63",
+  "sec": 1.87,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "a-storm-in-a-teacup": {
+  "text": "A storm in a teacup",
+  "sha": "eea6afae90aaef4a",
+  "sec": 1.84,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rush-hour": {
+  "text": "Rush hour",
+  "sha": "3a5cf5279784faea",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "traffic-jam": {
+  "text": "Traffic jam",
+  "sha": "6c9115696d8e0fc5",
+  "sec": 1.26,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "pedestrian": {
+  "text": "Pedestrian",
+  "sha": "fc970aac49168203",
+  "sec": 1.15,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fare": {
+  "text": "Fare",
+  "sha": "ecfb5cdf3c526f13",
+  "sec": 0.84,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "detour": {
+  "text": "Detour",
+  "sha": "0fbc0d35837da124",
+  "sec": 1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "overtake": {
+  "text": "Overtake",
+  "sha": "f8d0647785a81998",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "honk": {
+  "text": "Honk",
+  "sha": "35c23e988dcbbf52",
+  "sec": 0.76,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "in-the-fast-lane": {
+  "text": "In the fast lane",
+  "sha": "57f3cf6488a7e9e4",
+  "sec": 1.79,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "hit-a-roadblock": {
+  "text": "Hit a roadblock",
+  "sha": "9dc21cde31ff6b8e",
+  "sec": 1.84,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "back-seat-driver": {
+  "text": "Back seat driver",
+  "sha": "adade34db6728d80",
+  "sec": 1.87,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "recipe": {
+  "text": "Recipe",
+  "sha": "8dc51d1a6eed051f",
+  "sec": 0.79,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "simmer": {
+  "text": "Simmer",
+  "sha": "b121f86aad51b965",
+  "sec": 0.75,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "chop": {
+  "text": "Chop",
+  "sha": "4ef67bb9493f85e6",
+  "sec": 0.47,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "burnt": {
+  "text": "Burnt",
+  "sha": "c0c39477c46c233d",
+  "sec": 0.69,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "seasoning": {
+  "text": "Seasoning",
+  "sha": "3493eb454cde51f2",
+  "sec": 1.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "washing-up": {
+  "text": "Washing-up",
+  "sha": "bf179780ef211f14",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "too-many-cooks-spoil-the-broth": {
+  "text": "Too many cooks spoil the broth",
+  "sha": "1647aa45399424c0",
+  "sec": 3.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "from-scratch": {
+  "text": "From scratch",
+  "sha": "93fa10c8e7123a7c",
+  "sec": 1.4,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "have-a-lot-on-your-plate": {
+  "text": "Have a lot on your plate",
+  "sha": "4340aa46a5a849f1",
+  "sec": 2.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "memory": {
+  "text": "Memory",
+  "sha": "729ab3462aab6134",
+  "sec": 0.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "grow-up": {
+  "text": "Grow up",
+  "sha": "c934bdc72ed01ee8",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "playground": {
+  "text": "Playground",
+  "sha": "b3af480aa0964196",
+  "sec": 0.95,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "spoiled": {
+  "text": "Spoiled",
+  "sha": "dced90a9f4588ee6",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "strict": {
+  "text": "Strict",
+  "sha": "67e32e546e00b7c8",
+  "sec": 0.77,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "imaginary": {
+  "text": "Imaginary",
+  "sha": "f3727f64eff977aa",
+  "sec": 1.22,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "scar": {
+  "text": "Scar",
+  "sha": "d962e6af77f7cad7",
+  "sec": 1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "like-it-was-yesterday": {
+  "text": "Like it was yesterday",
+  "sha": "8b3d3621fd8f8098",
+  "sec": 1.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "take-a-trip-down-memory-lane": {
+  "text": "Take a trip down memory lane",
+  "sha": "fb86ad9fa708be9e",
+  "sec": 2.83,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "childs-play": {
+  "text": "Child's play",
+  "sha": "c489439367e1adee",
+  "sec": 1.26,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "candidate": {
+  "text": "Candidate",
+  "sha": "e006941884bddad4",
+  "sec": 0.73,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cv": {
+  "text": "CV",
+  "sha": "7ddea05a086d03b0",
+  "sec": 1.32,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "qualification": {
+  "text": "Qualification",
+  "sha": "532ba16eddf28de2",
+  "sec": 1.32,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "strength": {
+  "text": "Strength",
+  "sha": "8f57c17d106bff4a",
+  "sec": 0.97,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "weakness": {
+  "text": "Weakness",
+  "sha": "a53c2a0b3aeaf24c",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "probation": {
+  "text": "Probation",
+  "sha": "6161465707adce6e",
+  "sec": 1.2,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "turn-down": {
+  "text": "Turn down",
+  "sha": "78a38baff2b123c2",
+  "sec": 1.21,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "put-your-best-foot-forward": {
+  "text": "Put your best foot forward",
+  "sha": "f3529718dc219770",
+  "sec": 2.4,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "land-a-job": {
+  "text": "Land a job",
+  "sha": "f945937ac0b75273",
+  "sec": 1.73,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "think-on-your-feet": {
+  "text": "Think on your feet",
+  "sha": "28fd1dbfe0aed68d",
+  "sec": 1.49,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "regret": {
+  "text": "Regret",
+  "sha": "eeed153ab22fe256",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "apologise": {
+  "text": "Apologise",
+  "sha": "15b996894e804601",
+  "sec": 1.37,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "blame": {
+  "text": "Blame",
+  "sha": "a50cdf89b8d36168",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "on-purpose": {
+  "text": "On purpose",
+  "sha": "0fb2578d340f09cc",
+  "sec": 1.24,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "careless": {
+  "text": "Careless",
+  "sha": "a7825fde234fc0d5",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "make-up-for": {
+  "text": "Make up for",
+  "sha": "0f30d399eddc129e",
+  "sec": 1.42,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "lesson": {
+  "text": "Lesson",
+  "sha": "f02b6cf72dbdeb81",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "forgive": {
+  "text": "Forgive",
+  "sha": "6b634288d97f97ec",
+  "sec": 1.11,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "spilled-milk": {
+  "text": "Spilled milk",
+  "sha": "e57facfa813fdcd8",
+  "sec": 1.64,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "learn-the-hard-way": {
+  "text": "Learn the hard way",
+  "sha": "02296daaf0e82b0a",
+  "sec": 1.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bite-your-tongue": {
+  "text": "Bite your tongue",
+  "sha": "c909267de6b27829",
+  "sec": 1.73,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "coincidence": {
+  "text": "Coincidence",
+  "sha": "93756aaecbe3b076",
+  "sec": 1.31,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fate": {
+  "text": "Fate",
+  "sha": "a9402dffaebe3f1b",
+  "sec": 0.78,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "charm": {
+  "text": "Charm",
+  "sha": "5a552e8e33ba6114",
+  "sec": 0.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "jinx": {
+  "text": "Jinx",
+  "sha": "c1be9eab78c00d6e",
+  "sec": 1.04,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "odds": {
+  "text": "Odds",
+  "sha": "a330e464f9534e47",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "gamble": {
+  "text": "Gamble",
+  "sha": "12c58475f2676003",
+  "sec": 0.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "omen": {
+  "text": "Omen",
+  "sha": "d9f5a30f59d1e183",
+  "sec": 0.8,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "touch-wood": {
+  "text": "Touch wood",
+  "sha": "5071f9721d99ca0c",
+  "sec": 1.18,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "beginners-luck": {
+  "text": "Beginner's luck",
+  "sha": "2cb5e5851341a9e9",
+  "sec": 1.33,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "against-all-odds": {
+  "text": "Against all odds",
+  "sha": "800b16ed41f80328",
+  "sec": 1.98,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "law": {
+  "text": "Law",
+  "sha": "1ef3f0c88cc12efa",
+  "sec": 0.66,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fine": {
+  "text": "Fine",
+  "sha": "6ff5bdb71840d53b",
+  "sec": 0.84,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "forbidden": {
+  "text": "Forbidden",
+  "sha": "6b86314edf98977a",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "permit": {
+  "text": "Permit",
+  "sha": "6c48a566f5e86e5d",
+  "sec": 0.56,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "enforce": {
+  "text": "Enforce",
+  "sha": "63a04c4697715882",
+  "sec": 1.04,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "witness": {
+  "text": "Witness",
+  "sha": "23544c96c690ce77",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fair": {
+  "text": "Fair",
+  "sha": "90c16d20acd17eba",
+  "sec": 0.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "loophole": {
+  "text": "Loophole",
+  "sha": "db09c0504c088148",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bend-the-rules": {
+  "text": "Bend the rules",
+  "sha": "63e1bdbc5281e67a",
+  "sec": 1.75,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "get-away-with-it": {
+  "text": "Get away with it",
+  "sha": "354851b19e023a22",
+  "sec": 1.67,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "take-the-law-into-your-own-hands": {
+  "text": "Take the law into your own hands",
+  "sha": "7fbb6892573c3cd7",
+  "sec": 3.31,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "repair": {
+  "text": "Repair",
+  "sha": "1e7ec66f0d0a32f6",
+  "sec": 1.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tool": {
+  "text": "Tool",
+  "sha": "920488a7c3ec6f42",
+  "sec": 0.72,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "spare-part": {
+  "text": "Spare part",
+  "sha": "8bc935d262b882eb",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "leak": {
+  "text": "Leak",
+  "sha": "20795ad09b77f17b",
+  "sec": 0.69,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "loose": {
+  "text": "Loose",
+  "sha": "c922d38faf729e75",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "worn-out": {
+  "text": "Worn out",
+  "sha": "c0399dfc7ce34ed8",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "handy": {
+  "text": "Handy",
+  "sha": "ed01e68eb62e75f9",
+  "sec": 0.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "temporary-fix": {
+  "text": "Temporary fix",
+  "sha": "a0ba9c6ea4bf481b",
+  "sec": 1.91,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "if-it-aint-broke-dont-fix-it": {
+  "text": "If it ain't broke, don't fix it",
+  "sha": "fe09250ebd7d7ed4",
+  "sec": 2.99,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "jack-of-all-trades": {
+  "text": "Jack of all trades",
+  "sha": "be1264f12babb1da",
+  "sec": 2.35,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cut-corners": {
+  "text": "Cut corners",
+  "sha": "35843806c9ce3337",
+  "sec": 1.63,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "crowd": {
+  "text": "Crowd",
+  "sha": "defb0a103cd9b9a1",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "packed": {
+  "text": "Packed",
+  "sha": "ab44bfe520086ebb",
+  "sec": 0.62,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bump-into": {
+  "text": "Bump into",
+  "sha": "1e38f63cf4e6d5d7",
+  "sec": 1.59,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "push-through": {
+  "text": "Push through",
+  "sha": "cc5c23d9d98678b2",
+  "sec": 1.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "announcement": {
+  "text": "Announcement",
+  "sha": "c5d983131a561aa0",
+  "sec": 1.17,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "overwhelming": {
+  "text": "Overwhelming",
+  "sha": "1639367e79d261bf",
+  "sec": 1.48,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "space": {
+  "text": "Space",
+  "sha": "f7ad85fa08d33883",
+  "sec": 1.09,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stand-out-in-a-crowd": {
+  "text": "Stand out in a crowd",
+  "sha": "0c5575d8e2895937",
+  "sec": 3.17,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "follow-the-crowd": {
+  "text": "Follow the crowd",
+  "sha": "769d0bf46470c188",
+  "sec": 2.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "packed-like-sardines": {
+  "text": "Packed like sardines",
+  "sha": "fa4cb258bea54f71",
+  "sec": 2.59,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "solitude": {
+  "text": "Solitude",
+  "sha": "4a0259944c17e770",
+  "sec": 1.29,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "lonely": {
+  "text": "Lonely",
+  "sha": "c38a815bb77747c2",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "recharge": {
+  "text": "Recharge",
+  "sha": "1292ed42556567b4",
+  "sec": 1.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "introvert": {
+  "text": "Introvert",
+  "sha": "9efcf9e00ce1f861",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "silence": {
+  "text": "Silence",
+  "sha": "f0b833a49f610e45",
+  "sec": 1.22,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "routine": {
+  "text": "Routine",
+  "sha": "82c92e3dfc4ba57a",
+  "sec": 1.16,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "miss": {
+  "text": "Miss",
+  "sha": "69d746afaf3c4202",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "independent": {
+  "text": "Independent",
+  "sha": "17730849f1ecf493",
+  "sec": 1.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "me-time": {
+  "text": "Me time",
+  "sha": "9072f1ea2e0b593f",
+  "sec": 1.23,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "lost-in-thought": {
+  "text": "Lost in thought",
+  "sha": "c7e7c8b51af61346",
+  "sec": 1.7,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "keep-your-own-company": {
+  "text": "Keep your own company",
+  "sha": "6fb2be4585e7160c",
+  "sec": 1.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "opponent": {
+  "text": "Opponent",
+  "sha": "f085793da11bdcc4",
+  "sec": 0.79,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "turn": {
+  "text": "Turn",
+  "sha": "28d6f66f747bcd16",
+  "sec": 0.65,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cheat": {
+  "text": "Cheat",
+  "sha": "ac94b423b9737e22",
+  "sec": 0.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "strategy": {
+  "text": "Strategy",
+  "sha": "dc518f8f7471575a",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "draw": {
+  "text": "Draw",
+  "sha": "5b9a40ce96af27fe",
+  "sec": 0.77,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "clue": {
+  "text": "Clue",
+  "sha": "131b72fb59c371e2",
+  "sec": 0.71,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "give-up": {
+  "text": "Give up",
+  "sha": "ceb7352767f53ef9",
+  "sec": 0.7,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "addictive": {
+  "text": "Addictive",
+  "sha": "1237e48658e6dbb6",
+  "sec": 1.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "play-your-cards-right": {
+  "text": "Play your cards right",
+  "sha": "5f96464245897ac8",
+  "sec": 1.83,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "beat-someone-at-their-own-game": {
+  "text": "Beat someone at their own game",
+  "sha": "316579fec3cd8511",
+  "sec": 3.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "poker-face": {
+  "text": "Poker face",
+  "sha": "0222fdac2e9367d5",
+  "sec": 1.45,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "generous": {
+  "text": "Generous",
+  "sha": "7f388c67f12ea42a",
+  "sec": 1.09,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "thoughtful": {
+  "text": "Thoughtful",
+  "sha": "9a61b61c8e4cb121",
+  "sec": 0.74,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "wrap": {
+  "text": "Wrap",
+  "sha": "bac488974df4a982",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "donate": {
+  "text": "Donate",
+  "sha": "da8e4f01231c59b5",
+  "sec": 0.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "charity": {
+  "text": "Charity",
+  "sha": "926b3ee8643323d1",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "owe": {
+  "text": "Owe",
+  "sha": "8bba1ff36049cbb2",
+  "sec": 0.63,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "refuse": {
+  "text": "Refuse",
+  "sha": "1032925ec50e7a26",
+  "sec": 1.1,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "gesture": {
+  "text": "Gesture",
+  "sha": "74198e457ad3fb0c",
+  "sec": 1.05,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "its-the-thought-that-counts": {
+  "text": "It's the thought that counts",
+  "sha": "6c2a93630790933a",
+  "sec": 2.65,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "give-and-take": {
+  "text": "Give and take",
+  "sha": "9c8656eec3510460",
+  "sec": 1.58,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "emergency": {
+  "text": "Emergency",
+  "sha": "dd5ec5429a459a3f",
+  "sec": 1.25,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ambulance": {
+  "text": "Ambulance",
+  "sha": "b0fece5e75ba3b60",
+  "sec": 1.18,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "first-aid": {
+  "text": "First aid",
+  "sha": "5e905cd7598851c7",
+  "sec": 1.33,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "panic": {
+  "text": "Panic",
+  "sha": "4bc4abd898193e1a",
+  "sec": 0.61,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rescue": {
+  "text": "Rescue",
+  "sha": "b8ccee679c3ad5de",
+  "sec": 0.98,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bleeding": {
+  "text": "Bleeding",
+  "sha": "249e6746e9db7d93",
+  "sec": 0.96,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "recover": {
+  "text": "Recover",
+  "sha": "0e857331671d70a8",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "a-close-call": {
+  "text": "A close call",
+  "sha": "6e308784207b6158",
+  "sec": 1.52,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "keep-a-cool-head": {
+  "text": "Keep a cool head",
+  "sha": "2331f1ce8fe940b8",
+  "sec": 1.8,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "better-safe-than-sorry": {
+  "text": "Better safe than sorry",
+  "sha": "3bf6112886d28ed2",
+  "sec": 2.33,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "polite": {
+  "text": "Polite",
+  "sha": "8c836ce7b4138e83",
+  "sec": 0.62,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rude": {
+  "text": "Rude",
+  "sha": "711aa6fd911c2a09",
+  "sec": 0.75,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "manners": {
+  "text": "Manners",
+  "sha": "f8d368f2e52cccc0",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "respect": {
+  "text": "Respect",
+  "sha": "9c0e218e7f9b3a4c",
+  "sec": 0.98,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "interrupt": {
+  "text": "Interrupt",
+  "sha": "10687ab7c3d5a8e2",
+  "sec": 1.13,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "apology": {
+  "text": "Apology",
+  "sha": "33e77cd192e7d641",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "offend": {
+  "text": "Offend",
+  "sha": "d260646f94bd6d51",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "mind-your-manners": {
+  "text": "Mind your manners",
+  "sha": "3a976e23d5f108d0",
+  "sec": 1.71,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rub-someone-up-the-wrong-way": {
+  "text": "Rub someone up the wrong way",
+  "sha": "ac8873f7a2804411",
+  "sec": 3.06,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "ceremony": {
+  "text": "Ceremony",
+  "sha": "402efed110727e8e",
+  "sec": 1.15,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "guest": {
+  "text": "Guest",
+  "sha": "8b755a8fa7b280e9",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bride": {
+  "text": "Bride",
+  "sha": "918fad89f395c7f8",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "groom": {
+  "text": "Groom",
+  "sha": "d44d17a0b7b1d927",
+  "sec": 0.92,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "toast": {
+  "text": "Toast",
+  "sha": "a58db8c599a2668d",
+  "sec": 0.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "engaged": {
+  "text": "Engaged",
+  "sha": "1bd82e977a129566",
+  "sec": 1.24,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tie-the-knot": {
+  "text": "Tie the knot",
+  "sha": "f716e78c074b7ad0",
+  "sec": 1.67,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "go-off-without-a-hitch": {
+  "text": "Go off without a hitch",
+  "sha": "a75e90af4728ccc8",
+  "sec": 2.54,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "stall": {
+  "text": "Stall",
+  "sha": "cb67504cf57c6906",
+  "sec": 0.93,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bargain": {
+  "text": "Bargain",
+  "sha": "34eb973b74e2cc50",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "vendor": {
+  "text": "Vendor",
+  "sha": "0cff4b38fee33a46",
+  "sec": 0.98,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "fresh": {
+  "text": "Fresh",
+  "sha": "7384a5281a015d42",
+  "sec": 0.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "busker": {
+  "text": "Busker",
+  "sha": "4d1c7b79c5998f14",
+  "sec": 0.95,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "crowded": {
+  "text": "Crowded",
+  "sha": "7c2440651e4bebd3",
+  "sec": 0.94,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rip-off": {
+  "text": "Rip off",
+  "sha": "1c955b721ce73283",
+  "sec": 1.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "local": {
+  "text": "Local",
+  "sha": "96204f8a087de501",
+  "sec": 0.86,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "drive-a-hard-bargain": {
+  "text": "Drive a hard bargain",
+  "sha": "02bac8ebe25774c2",
+  "sec": 2.41,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "go-for-a-song": {
+  "text": "Go for a song",
+  "sha": "055253eda3bb74a4",
+  "sec": 1.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "word-of-mouth": {
+  "text": "Word of mouth",
+  "sha": "3ebea373ea3d5803",
+  "sec": 2.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "shore": {
+  "text": "Shore",
+  "sha": "7e5c5c4d214e0b4a",
+  "sec": 0.87,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "tide": {
+  "text": "Tide",
+  "sha": "6c42f68abfa3430f",
+  "sec": 0.78,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "current": {
+  "text": "Current",
+  "sha": "42ef769b5449a034",
+  "sec": 0.59,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "harbour": {
+  "text": "Harbour",
+  "sha": "66aeb90168802d67",
+  "sec": 0.82,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "drown": {
+  "text": "Drown",
+  "sha": "eaeaa97932f4c37c",
+  "sec": 1.01,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "float": {
+  "text": "Float",
+  "sha": "e904f0548c620e5c",
+  "sec": 0.59,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "bank": {
+  "text": "Bank",
+  "sha": "1cee1316a117089c",
+  "sec": 0.79,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "catch": {
+  "text": "Catch",
+  "sha": "f88cdb4ea8d055f5",
+  "sec": 0.75,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "go-with-the-flow": {
+  "text": "Go with the flow",
+  "sha": "d4801252cacce315",
+  "sec": 1.71,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "plenty-more-fish-in-the-sea": {
+  "text": "Plenty more fish in the sea",
+  "sha": "205362870fc206b5",
+  "sec": 2.66,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "in-deep-water": {
+  "text": "In deep water",
+  "sha": "312e0baf6e6dfd70",
+  "sec": 1.71,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "shift": {
+  "text": "Shift",
+  "sha": "5528edef86a57e06",
+  "sec": 0.89,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "overtime": {
+  "text": "Overtime",
+  "sha": "ccc11dc6b6ef51bd",
+  "sec": 1.18,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "exhausted": {
+  "text": "Exhausted",
+  "sha": "281aec3e6bcc30ef",
+  "sec": 1.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "nap": {
+  "text": "Nap",
+  "sha": "d94640761985a137",
+  "sec": 0.51,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "on-call": {
+  "text": "On call",
+  "sha": "2a80c60000c94126",
+  "sec": 1.14,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "cover": {
+  "text": "Cover",
+  "sha": "05723e1f861ff16a",
+  "sec": 0.85,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "burn-the-midnight-oil": {
+  "text": "Burn the midnight oil",
+  "sha": "c9846dea7d23035e",
+  "sec": 2.46,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "call-it-a-day": {
+  "text": "Call it a day",
+  "sha": "181a1fd08ef28550",
+  "sec": 1.31,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "run-on-empty": {
+  "text": "Run on empty",
+  "sha": "80c08ac54a07a928",
+  "sec": 1.83,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "retire": {
+  "text": "Retire",
+  "sha": "32a1ae538870d90b",
+  "sec": 1.2,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "pension": {
+  "text": "Pension",
+  "sha": "d110404ac0243802",
+  "sec": 0.97,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "wrinkle": {
+  "text": "Wrinkle",
+  "sha": "2d63616f69b733b8",
+  "sec": 1.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "generation": {
+  "text": "Generation",
+  "sha": "87a2f8a254c04f47",
+  "sec": 1.45,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "wisdom": {
+  "text": "Wisdom",
+  "sha": "a267b679127936fb",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "care-home": {
+  "text": "Care home",
+  "sha": "0ad48a4a237e3bca",
+  "sec": 1.38,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "memory-loss": {
+  "text": "Memory loss",
+  "sha": "7b9fd4b2d854be96",
+  "sec": 1.63,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "respect-elders": {
+  "text": "Respect elders",
+  "sha": "1ded553fb0b77261",
+  "sec": 2.02,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "over-the-hill": {
+  "text": "Over the hill",
+  "sha": "497a4326c4511405",
+  "sec": 1.47,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "young-at-heart": {
+  "text": "Young at heart",
+  "sha": "f3f63296fad31577",
+  "sec": 1.67,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "act-your-age": {
+  "text": "Act your age",
+  "sha": "c0dde5df29f24b5e",
+  "sec": 1.9,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "move-out": {
+  "text": "Move out",
+  "sha": "dc6db52c53788dc4",
+  "sec": 1.35,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "deposit": {
+  "text": "Deposit",
+  "sha": "03d57c3143dab0e9",
+  "sec": 1.18,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "furniture": {
+  "text": "Furniture",
+  "sha": "e85a6ebc3cc2824e",
+  "sec": 1.33,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "pack": {
+  "text": "Pack",
+  "sha": "0628003ab9d4e847",
+  "sec": 0.48,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "settle-in": {
+  "text": "Settle in",
+  "sha": "714f22f9e3c9725c",
+  "sec": 1.36,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "rent": {
+  "text": "Rent",
+  "sha": "8ea4b3796c71b752",
+  "sec": 0.5,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "storage": {
+  "text": "Storage",
+  "sha": "395a1567d2101521",
+  "sec": 1.12,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "declutter": {
+  "text": "Declutter",
+  "sha": "a23fcb704c659d01",
+  "sec": 1.28,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "a-fresh-start": {
+  "text": "A fresh start",
+  "sha": "8982b92428e66bcb",
+  "sec": 1.32,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "home-sweet-home": {
+  "text": "Home sweet home",
+  "sha": "fc585f2efe7de953",
+  "sec": 1.88,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "handmade": {
+  "text": "Handmade",
+  "sha": "04fc24bf37a44f25",
+  "sec": 1.06,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "craft": {
+  "text": "Craft",
+  "sha": "4c68da514118c7fe",
+  "sec": 0.75,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "pattern": {
+  "text": "Pattern",
+  "sha": "57537342718595a0",
+  "sec": 0.74,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "workshop": {
+  "text": "Workshop",
+  "sha": "e18e863c80dd2645",
+  "sec": 0.81,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "apprentice": {
+  "text": "Apprentice",
+  "sha": "4227ea7df1bc5b7a",
+  "sec": 1.04,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "imperfect": {
+  "text": "Imperfect",
+  "sha": "4aa3baa09077aa77",
+  "sec": 1.03,
+  "model": "gemini-2.5-pro-preview-tts"
+ },
+ "patience": {
+  "text": "Patience",
+  "sha": "ec9ab77e46b83862",
+  "sec": 1.13,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "mass-produced": {
+  "text": "Mass-produced",
+  "sha": "63dd9c3790a0bc96",
+  "sec": 1.54,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "a-labour-of-love": {
+  "text": "A labour of love",
+  "sha": "c23c4ee8c25b48d2",
+  "sec": 1.71,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "made-to-last": {
+  "text": "Made to last",
+  "sha": "241def06fa9fb194",
+  "sec": 1.53,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "headline": {
+  "text": "Headline",
+  "sha": "3c0d34e623010488",
+  "sec": 0.85,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "source": {
+  "text": "Source",
+  "sha": "88ee34fef159663c",
+  "sec": 0.82,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "rumour": {
+  "text": "Rumour",
+  "sha": "6501e81e47f99c54",
+  "sec": 0.66,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "biased": {
+  "text": "Biased",
+  "sha": "fa2851710d086b8f",
+  "sec": 0.8,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "eyewitness": {
+  "text": "Eyewitness",
+  "sha": "1ae921a52de04b98",
+  "sec": 1.13,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "spread": {
+  "text": "Spread",
+  "sha": "aea69cdac729320f",
+  "sec": 0.75,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "censor": {
+  "text": "Censor",
+  "sha": "3678617ada2fc356",
+  "sec": 0.82,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "gossip": {
+  "text": "Gossip",
+  "sha": "93964b00e309750a",
+  "sec": 0.53,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "take-it-with-a-pinch-of-salt": {
+  "text": "Take it with a pinch of salt",
+  "sha": "700c4d73c6cb9b1d",
+  "sec": 2.13,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "the-talk-of-the-town": {
+  "text": "The talk of the town",
+  "sha": "a3c900e096f6b87d",
+  "sec": 1.54,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "break-the-news": {
+  "text": "Break the news",
+  "sha": "4eb6882e1f7d2ffe",
+  "sec": 1.21,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "thrill": {
+  "text": "Thrill",
+  "sha": "4e146922e4804264",
+  "sec": 0.71,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "adrenaline": {
+  "text": "Adrenaline",
+  "sha": "51b3f634ac12cb45",
+  "sec": 0.88,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "reckless": {
+  "text": "Reckless",
+  "sha": "e33e622f955e410c",
+  "sec": 0.79,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "dare": {
+  "text": "Dare",
+  "sha": "8f84b014a546c41d",
+  "sec": 0.7,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "helmet": {
+  "text": "Helmet",
+  "sha": "cedf99325a95b9f0",
+  "sec": 0.52,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "speed-limit": {
+  "text": "Speed limit",
+  "sha": "100824ecdf56409a",
+  "sec": 0.91,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "terrified": {
+  "text": "Terrified",
+  "sha": "b92ead98d4fce269",
+  "sec": 0.94,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "rush": {
+  "text": "Rush",
+  "sha": "c3dfa0cf78681f77",
+  "sec": 0.63,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "live-on-the-edge": {
+  "text": "Live on the edge",
+  "sha": "a359f68fd9dea670",
+  "sec": 1.41,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "antique": {
+  "text": "Antique",
+  "sha": "f5ace1ac97333c14",
+  "sec": 1.07,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "inherit": {
+  "text": "Inherit",
+  "sha": "71c56b5f8636765b",
+  "sec": 0.82,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "vintage": {
+  "text": "Vintage",
+  "sha": "d36dd7b037573b70",
+  "sec": 1.02,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "worth": {
+  "text": "Worth",
+  "sha": "9506c30595c03a7a",
+  "sec": 0.82,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "dusty": {
+  "text": "Dusty",
+  "sha": "674088d3cf9a025a",
+  "sec": 0.88,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "restore": {
+  "text": "Restore",
+  "sha": "618577924e6d1ac8",
+  "sec": 1.06,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "keepsake": {
+  "text": "Keepsake",
+  "sha": "816085534fb433de",
+  "sec": 0.63,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "one-mans-trash-is-another-mans-treasure": {
+  "text": "One man's trash is another man's treasure",
+  "sha": "ecd2060457c5f617",
+  "sec": 2.94,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "gather-dust": {
+  "text": "Gather dust",
+  "sha": "ce02026287ff3ca5",
+  "sec": 1.22,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "stand-the-test-of-time": {
+  "text": "Stand the test of time",
+  "sha": "f359557b3fa52133",
+  "sec": 1.74,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "exhibition": {
+  "text": "Exhibition",
+  "sha": "59f760dd5deca9f8",
+  "sec": 1.04,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "masterpiece": {
+  "text": "Masterpiece",
+  "sha": "019f4bab70f81592",
+  "sec": 1.04,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "mess": {
+  "text": "Mess",
+  "sha": "182a953f3e6b2743",
+  "sec": 0.7,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "split": {
+  "text": "Split",
+  "sha": "f59e4286c126110c",
+  "sec": 0.72,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "passive-aggressive": {
+  "text": "Passive-aggressive",
+  "sha": "1d5a266b8efd9ca2",
+  "sec": 1.38,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "pull-your-weight": {
+  "text": "Pull your weight",
+  "sha": "46f672cd37b90e03",
+  "sec": 1.04,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "get-on-someones-nerves": {
+  "text": "Get on someone's nerves",
+  "sha": "b611e31b71997219",
+  "sec": 1.58,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "clear-the-air": {
+  "text": "Clear the air",
+  "sha": "80ef4a8c96f9b430",
+  "sec": 1.06,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "farewell": {
+  "text": "Farewell",
+  "sha": "4a20b34d8671f443",
+  "sec": 0.77,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "reunion": {
+  "text": "Reunion",
+  "sha": "9dc5403de725ea0c",
+  "sec": 0.8,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "wave": {
+  "text": "Wave",
+  "sha": "8a9e50d18089b8f6",
+  "sec": 0.7,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "emigrate": {
+  "text": "Emigrate",
+  "sha": "3037f8b9eb5d2e7f",
+  "sec": 0.6,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "keep-in-touch": {
+  "text": "Keep in touch",
+  "sha": "883abfd1e74069e1",
+  "sec": 0.98,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "bittersweet": {
+  "text": "Bittersweet",
+  "sha": "451abf065e3e4792",
+  "sec": 0.66,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "say-your-goodbyes": {
+  "text": "Say your goodbyes",
+  "sha": "07dbc9abd95b09f0",
+  "sec": 1.87,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "absence-makes-the-heart-grow-fonder": {
+  "text": "Absence makes the heart grow fonder",
+  "sha": "b30180143130df5c",
+  "sec": 2.68,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "part-ways": {
+  "text": "Part ways",
+  "sha": "8305d785a3d4503f",
+  "sec": 1.06,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "made-a-plan": {
+  "text": "made a plan",
+  "sha": "dd00bdbf0e91e3c2",
+  "sec": 1.23,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "got-on-a-train": {
+  "text": "got on a train",
+  "sha": "c43a4188233a7dc6",
+  "sec": 1.28,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "got-off": {
+  "text": "got off",
+  "sha": "a8c93377931339a9",
+  "sec": 0.98,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "drew-a-map": {
+  "text": "drew a map",
+  "sha": "ad91f2f5ae745383",
+  "sec": 1.11,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "did-not-look-at-his-notebook-once": {
+  "text": "did not look at his notebook once",
+  "sha": "b8923d95c28c8c81",
+  "sec": 2.28,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "hilarious": {
+  "text": "hilarious",
+  "sha": "60fe1ff5ebb1b8d2",
+  "sec": 1.01,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "rushed-onto-a-train": {
+  "text": "rushed onto a train",
+  "sha": "7804259e052e310b",
+  "sec": 1.52,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "gestures": {
+  "text": "gestures",
+  "sha": "a3f10ce26315eddb",
+  "sec": 0.91,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "at-first": {
+  "text": "at first",
+  "sha": "813a5607c5919483",
+  "sec": 0.82,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "take-the-plunge": {
+  "text": "Take the plunge",
+  "sha": "8b6831ba74bb3dca",
+  "sec": 1.51,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "play-it-safe": {
+  "text": "Play it safe",
+  "sha": "f701bf2d97fd58f9",
+  "sec": 1.26,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "harvest": {
+  "text": "Harvest",
+  "sha": "233cf4cc10d175f7",
+  "sec": 0.89,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "crop": {
+  "text": "Crop",
+  "sha": "621cf4cde8ae81d3",
+  "sec": 0.46,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "soil": {
+  "text": "Soil",
+  "sha": "d861c345a7779555",
+  "sec": 0.89,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "livestock": {
+  "text": "Livestock",
+  "sha": "90b99997cd3f9b7f",
+  "sec": 0.98,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "organic": {
+  "text": "Organic",
+  "sha": "ba7a6afb6b67ee1c",
+  "sec": 0.85,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "drought": {
+  "text": "Drought",
+  "sha": "a959f6671b363cb1",
+  "sec": 0.8,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "supply-chain": {
+  "text": "Supply chain",
+  "sha": "4666be640849c751",
+  "sec": 1.44,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "reap-what-you-sow": {
+  "text": "Reap what you sow",
+  "sha": "4a364ee142819fa1",
+  "sec": 2.03,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "make-hay-while-the-sun-shines": {
+  "text": "Make hay while the sun shines",
+  "sha": "2c33a377c64d99bc",
+  "sec": 2.71,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "down-to-earth": {
+  "text": "Down to earth",
+  "sha": "fa445efcefa91688",
+  "sec": 1.47,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "sculpture": {
+  "text": "Sculpture",
+  "sha": "fb7012f6d28e33f5",
+  "sec": 0.97,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "canvas": {
+  "text": "Canvas",
+  "sha": "fe0e702a09a92db0",
+  "sec": 0.93,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "gallery": {
+  "text": "Gallery",
+  "sha": "971a658769933326",
+  "sec": 0.88,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "abstract": {
+  "text": "Abstract",
+  "sha": "317f710ab9e6daf4",
+  "sec": 1.13,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "inspire": {
+  "text": "Inspire",
+  "sha": "c03b39324df8d94f",
+  "sec": 1.12,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "forgery": {
+  "text": "Forgery",
+  "sha": "e7ef6d1398c469a2",
+  "sec": 1,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "worth-a-thousand-words": {
+  "text": "Worth a thousand words",
+  "sha": "798ae0ba8de62a58",
+  "sec": 2.15,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "paint-a-picture": {
+  "text": "Paint a picture",
+  "sha": "44341220c35e6688",
+  "sec": 1.56,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "in-the-eye-of-the-beholder": {
+  "text": "In the eye of the beholder",
+  "sha": "6102ca90ca43b2ed",
+  "sec": 2.36,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "roommate": {
+  "text": "Roommate",
+  "sha": "be44fd315bd4c87e",
+  "sec": 0.65,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "chore": {
+  "text": "Chore",
+  "sha": "ac8f00e9e450c81d",
+  "sec": 0.79,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "tidy": {
+  "text": "Tidy",
+  "sha": "28818515686db795",
+  "sec": 0.89,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "he-kept-telling": {
+  "text": "he kept telling",
+  "sha": "1b121a67bacac6ad",
+  "sec": 1.81,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "belonged-firmly-to": {
+  "text": "belonged firmly to",
+  "sha": "d073a663f7402230",
+  "sec": 2.42,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "ticked-off-a-list": {
+  "text": "ticked off a list",
+  "sha": "1544d506d0534d53",
+  "sec": 2.47,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "stubbornly-refusing-to-appear": {
+  "text": "stubbornly refusing to appear",
+  "sha": "2762f03f174c6f4a",
+  "sec": 3.39,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "with-a-single-glance": {
+  "text": "with a single glance",
+  "sha": "7378f593df2cbd1b",
+  "sec": 1.67,
+  "model": "gemini-2.5-flash-preview-tts"
+ },
+ "all-along": {
+  "text": "all along",
+  "sha": "730ab5987cf785a8",
+  "sec": 1.38,
+  "model": "gemini-2.5-flash-preview-tts"
+ }
+}

@@ -11,6 +11,7 @@ import ReadingView from './materials/ReadingView';
 import { readingLevelFor } from '../utils/topicMaterials';
 import { hasMaterials, loadMaterials } from '../utils/topicMaterialsLoader';
 import './materials/materials.css';
+import SayButton from './ui/SayButton';
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
@@ -255,7 +256,10 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                   onClick={() => setExpandedVocab(expandedVocab === i ? null : i)}
                 >
                   <div className="dt-vocab-row">
-                    <span className="dt-vocab-word">{v.word}</span>
+                    <span className="say-row">
+                      <SayButton text={v.word} />
+                      <span className="dt-vocab-word">{v.word}</span>
+                    </span>
                     {expandedVocab === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <p className="dt-vocab-meaning">{v.meaning}</p>
@@ -284,7 +288,10 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             <div className="dt-section dt-section--list">
               {content.idioms.map((idm, i) => (
                 <div key={i} className="dt-idiom-card">
-                  <p className="dt-idiom-phrase">"{idm.phrase}"</p>
+                  <div className="say-row">
+                    <SayButton text={idm.phrase} />
+                    <p className="dt-idiom-phrase">"{idm.phrase}"</p>
+                  </div>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
                   {localMeaning(idm) && <p className="dt-idiom-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '15px'}}>{localMeaning(idm)}</p>}
                   <p className="dt-idiom-example"> {idm.example}</p>

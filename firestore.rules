@@ -482,10 +482,10 @@ service cloud.firestore {
         // birincisi ikincidən kiçik ola bilər, amma böyük OLA BİLMƏZ.
         && request.resource.data.audioSeconds is number
         && request.resource.data.audioSeconds > 0
-        && request.resource.data.audioSeconds <= 3600
+        && request.resource.data.audioSeconds <= 5400
         && request.resource.data.callSeconds is number
         && request.resource.data.callSeconds > 0
-        && request.resource.data.callSeconds <= 3600
+        && request.resource.data.callSeconds <= 5400
         && request.resource.data.audioSeconds <= request.resource.data.callSeconds
         && request.resource.data.callDocId is string
         && request.resource.data.sessionId is string

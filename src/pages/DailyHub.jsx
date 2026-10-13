@@ -6,6 +6,7 @@ import { subscribeToCycle } from '../utils/cycle';
 import SpeakingCards from '../components/SpeakingCards';
 import { localMeaning } from '../utils/feedbackLanguage';
 import ChapterListeningView from '../components/ChapterListeningView';
+import SayButton from '../components/ui/SayButton';
 
 export default function DailyHub() {
   const navigate = useNavigate();
@@ -245,7 +246,10 @@ export default function DailyHub() {
               >
                 {!flipped[i] ? (
                   <div className="vocab-front">
-                    <h3>{v.word}</h3>
+                    <div className="say-row say-row--center">
+                      <SayButton text={v.word} />
+                      <h3>{v.word}</h3>
+                    </div>
                     <span className="tap-hint">Tap to see meaning</span>
                   </div>
                 ) : (
@@ -268,7 +272,10 @@ export default function DailyHub() {
           <div className="idioms-list">
             {content.idioms.map((idiom, i) => (
               <div key={i} className="idiom-card">
-                <h3>"{idiom.phrase}"</h3>
+                <div className="say-row">
+                  <SayButton text={idiom.phrase} />
+                  <h3>"{idiom.phrase}"</h3>
+                </div>
                 <p className="idiom-meaning"> {idiom.meaning}</p>
                 {localMeaning(idiom) && <p className="idiom-meaning idiom-meaning--l1">{localMeaning(idiom)}</p>}
                 <p className="idiom-example"> "{idiom.example}"</p>
