@@ -304,3 +304,5 @@
 }
 .act-cell.is-strong { color: var(--text-on-accent); }
 .aa-input--num { width: 72px; margin-left: var(--s-1); }
+/* Admin → Agent: the monthly budget field stays short. */
+.aa-budget { flex: 0 1 calc(var(--s-10) * 4); }

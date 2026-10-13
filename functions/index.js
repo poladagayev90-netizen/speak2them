@@ -22,6 +22,10 @@ const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
 const autoRoster = require("./autoRoster");
 const accountHealth = require("./accountHealth");
+const agentPacket = require("./agent/packet");
+const agentValidate = require("./agent/validate");
+const agentGemini = require("./agent/gemini");
+const agentPrompt = require("./agent/prompt");
 const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const callLogLib = require("./callLog");
@@ -81,6 +85,8 @@ const DEEPSEEK_API_KEY = defineSecret("DEEPSEEK_API_KEY");
 const DEEPGRAM_API_KEY = defineSecret("DEEPGRAM_API_KEY");
 const GMAIL_USER = defineSecret("GMAIL_USER");
 const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
+// The AI planning analyst (functions/agent, Mərhələ 2).
+const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
@@ -5208,6 +5214,10 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       // Said «I'm in» for this week: with appConfig/planner.directBook two
       // such people are booked straight away, nobody waits for a second yes.
       committed: !!(answer && answer.in),
+      // For the AI analyst (functions/agent): numbers only, no identity.
+      health: health.cls,
+      calls: Number(u.callCount) || 0,
+      unanswered: autoRoster.unansweredStreak(offersOf.get(uid), answer ? answer.atMs : 0),
     });
   }
   // The verdicts for Admin → Week (admin-only accountHealth/{uid}), written
@@ -5276,7 +5286,13 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
   const { dates, learners, blocked, recent, favorites, noRoster } = await loadPlannerInputs(db, monday, { nowMs, cfg });
   // Monday 10:00 at the earliest — the plan goes out on Sunday evening.
   const earliestMs = Math.max(nowMs + PLAN_NOTICE_MS, weeklyPlanner.blockStartMs(dates[0], 10));
-  const result = weeklyPlanner.buildWeekPlan({ learners, blocked, recent, favorites, dates, earliestMs, seed: monday });
+  const base = weeklyPlanner.buildWeekPlan({ learners, blocked, recent, favorites, dates, earliestMs, seed: monday });
+  // The AI analyst's pair scores (Mərhələ 2). Shadow: the plan is the
+  // deterministic one and the AI version is only recorded for the admin.
+  // Act: the AI version is used — unless it gives fewer people a practice.
+  const result = await withAgentPlan(db, monday, base, (aiBonus) => weeklyPlanner.buildWeekPlan({
+    learners, blocked, recent, favorites, aiBonus, dates, earliestMs, seed: monday,
+  }), { nowMs, names: new Map(learners.map((l) => [l.uid, l.name])) });
   const info = new Map(learners.map((l) => [l.uid, l]));
   const pairs = result.pairs.map((p) => ({
     ...p,
@@ -5494,6 +5510,203 @@ async function expireLateOffers(db, nowMs) {
   }
 }
 
+// ── The AI planning analyst (Mərhələ 2, 2026-10-14) ──────────────
+// Gemini reads anonymous numbers about each learner and each allowed pair
+// (functions/agent/packet.js) and answers with a small score per pair, «look
+// at this account» suggestions and a report for the admin. The planner keeps
+// deciding who meets when, under the hard rules and its fairness objective;
+// the scores only tip its choices (±2, the weight of one favourite star).
+// appConfig/agent: { enabled, mode: "shadow" | "act", model, monthlyBudgetUsd }.
+// Missing doc / enabled false = nothing runs and nothing changes. Any failure
+// (no key, 429, timeout, bad answer, budget spent) leaves the planner exactly
+// as it was before the agent existed.
+const AGENT_DEFAULTS = { enabled: false, mode: "shadow", model: "gemini-3.8-flash", monthlyBudgetUsd: 5 };
+async function agentConfig(db) {
+  const snap = await db.collection("appConfig").doc("agent").get().catch(() => null);
+  const c = { ...AGENT_DEFAULTS, ...((snap && snap.exists && snap.data()) || {}) };
+  c.mode = c.mode === "act" ? "act" : "shadow";
+  c.monthlyBudgetUsd = Math.max(0, Number(c.monthlyBudgetUsd) || 0);
+  return c;
+}
+const agentMonth = (ms) => bakuDateStr(ms).slice(0, 7);
+
+// The week's AI pair scores as the planner's aiBonus Map. `act`: only when
+// the agent is on and acting (the refill); otherwise whenever it is on.
+async function agentBonusFor(db, monday, { act = false } = {}) {
+  const cfg = await agentConfig(db);
+  if (!cfg.enabled || (act && cfg.mode !== "act")) return new Map();
+  const snap = await db.collection("aiAffinity").doc(monday).get().catch(() => null);
+  const list = (snap && snap.exists && snap.get("pairs")) || [];
+  return new Map(list.filter((x) => x && x.key).map((x) => [x.key, { score: x.score, why: x.why }]));
+}
+
+// Runs the planner a second time with the AI scores and records both. Returns
+// the plan to use: the AI one in act mode when it covers at least as many
+// people, else the deterministic one.
+async function withAgentPlan(db, monday, base, planWith, { nowMs, names }) {
+  const cfg = await agentConfig(db);
+  if (!cfg.enabled) return base;
+  const aiBonus = await agentBonusFor(db, monday);
+  if (!aiBonus.size) return base;
+  const ai = planWith(aiBonus);
+  const covered = (r) => new Set(r.pairs.flatMap((p) => [p.a, p.b])).size;
+  const keyOf = (p) => `${weeklyPlanner.pairKey(p.a, p.b)}@${p.slotId}`;
+  const baseKeys = new Set(base.pairs.map(keyOf));
+  const aiKeys = new Set(ai.pairs.map(keyOf));
+  const label = (p) => `${names.get(p.a) || "?"} + ${names.get(p.b) || "?"} · ${p.slotId}`;
+  const useAi = cfg.mode === "act" && covered(ai) >= covered(base);
+  await db.collection("agentRuns").doc(monday).set({
+    weekKey: monday, mode: cfg.mode, at: nowMs, used: useAi ? "ai" : "base",
+    base: { pairs: base.pairs.length, people: covered(base), unmet: base.unmet.length },
+    ai: { pairs: ai.pairs.length, people: covered(ai), unmet: ai.unmet.length },
+    onlyAi: ai.pairs.filter((p) => !baseKeys.has(keyOf(p))).slice(0, 40).map((p) => ({ label: label(p), reasons: p.reasons })),
+    onlyBase: base.pairs.filter((p) => !aiKeys.has(keyOf(p))).slice(0, 40).map((p) => ({ label: label(p) })),
+  }).catch((e) => console.warn("[agent] run record failed:", e.message));
+  return useAi ? ai : base;
+}
+
+// Counts for the packet and the report: the last 28 days of planned practice,
+// partner tags (60 days), declines.
+async function loadAgentSignals(db, learners, nowMs) {
+  const uids = new Set(learners.map((l) => l.uid));
+  const signals = new Map(learners.map((l) => [l.uid, {
+    health: l.health || null, calls: l.calls || 0, unanswered: l.unanswered || 0,
+    attended: 0, noShow: 0, lateCancel: 0, declined: 0, reliability: l.limited ? "limited" : "ok", tags: {},
+  }]));
+  const pairSignals = new Map();
+  const pairOf = (a, b) => {
+    const k = weeklyPlanner.pairKey(a, b);
+    if (!pairSignals.has(k)) pairSignals.set(k, {});
+    return { k, ps: pairSignals.get(k), aFirst: a < b };
+  };
+  const since28 = nowMs - 28 * DAY_MS;
+  const [att, fb, declinedOffers, rel] = await Promise.all([
+    db.collection("attendance").where("atMs", ">=", since28).get().catch(() => ({ docs: [] })),
+    db.collection("partnerFeedback").where("createdAt", ">=", admin.firestore.Timestamp.fromMillis(nowMs - 60 * DAY_MS)).get().catch(() => ({ docs: [] })),
+    db.collection("matchOffers").where("startMs", ">=", since28).get().catch(() => ({ docs: [] })),
+    learners.length ? db.getAll(...learners.map((l) => db.collection("reliability").doc(l.uid))) : [],
+  ]);
+  for (const d of att.docs) {
+    const a = d.data() || {};
+    const s = signals.get(a.uid);
+    if (!s || a.source === "direct") continue;
+    if (a.outcome === "attended") s.attended += 1;
+    else if (a.outcome === "no_show") s.noShow += 1;
+    else if (a.outcome === "late_cancel") s.lateCancel += 1;
+  }
+  for (const d of fb.docs) {
+    const f = d.data() || {};
+    if (!uids.has(f.ratee) || !Array.isArray(f.tags)) continue;
+    const s = signals.get(f.ratee);
+    for (const t of f.tags) s.tags[t] = (s.tags[t] || 0) + 1;
+    if (uids.has(f.rater)) {
+      const { ps, aFirst } = pairOf(f.rater, f.ratee);
+      const field = aFirst ? "tagsAB" : "tagsBA";
+      ps[field] = [...new Set([...(ps[field] || []), ...f.tags])];
+    }
+  }
+  const declined = declinedOffers.docs.filter((d) => d.get("status") === "declined");
+  const notes = declined.length ? await db.getAll(...declined.map((d) => db.collection("matchOfferNotes").doc(d.id))) : [];
+  declined.forEach((d, i) => {
+    const [x, y] = d.get("participants") || [];
+    if (!uids.has(x) || !uids.has(y)) return;
+    const { ps } = pairOf(x, y);
+    ps.declinedTogether = (ps.declinedTogether || 0) + 1;
+    const by = notes[i] && notes[i].exists ? notes[i].get("declinedBy") : null;
+    if (by && signals.has(by)) signals.get(by).declined += 1;
+  });
+  for (const r of rel) if (r.exists && signals.has(r.id)) signals.get(r.id).reliability = r.get("level") || "ok";
+  return { signals, pairSignals };
+}
+
+// One analyst run for the week starting `monday`: packet → Gemini → checked
+// answer → aiAffinity/{monday} + agentReports/{date}_{monday}. Returns a
+// summary, or { skipped } with the reason.
+async function runAgent(db, monday, { nowMs = Date.now(), by = "schedule" } = {}) {
+  const cfg = await agentConfig(db);
+  if (!cfg.enabled) return { skipped: "disabled" };
+  const month = agentMonth(nowMs);
+  const usageRef = db.collection("agentUsage").doc(month);
+  const spent = Number(((await usageRef.get().catch(() => null))?.data() || {}).usd) || 0;
+  if (spent >= cfg.monthlyBudgetUsd) {
+    if (await claimSlotRun(db, `agent_budget_${month}`)) {
+      await sendPushToUser(db, ADMIN_UID, {
+        key: "admin_agent_budget", vars: { usd: cfg.monthlyBudgetUsd.toFixed(2) }, type: "admin_plan", url: "/admin?tab=agent",
+      }).catch(() => null);
+    }
+    return { skipped: "budget" };
+  }
+  let apiKey = "";
+  try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
+  if (!apiKey) return { skipped: "no-key" };
+
+  const plannerCfg = await plannerConfig(db);
+  const { dates, learners, blocked, recent, favorites } = await loadPlannerInputs(db, monday, { nowMs, cfg: plannerCfg });
+  const today = bakuDateStr(nowMs);
+  const left = dates.filter((d) => d >= today);
+  const candidates = weeklyPlanner.candidatePairs({ learners, blocked, dates: left, earliestMs: nowMs + REFILL_DIRECT_NOTICE_MS });
+  const { signals, pairSignals } = await loadAgentSignals(db, learners, nowMs);
+  for (const c of candidates) {
+    const ps = pairSignals.get(c.key) || {};
+    ps.fav = Math.min(2, Number(favorites.get(c.key)) || 0);
+    ps.recent = recent.has(c.key);
+    pairSignals.set(c.key, ps);
+  }
+  const bookings = await db.collection("bookings").where("weekKey", "==", monday).get().catch(() => ({ docs: [] }));
+  const byStatus = {};
+  for (const d of bookings.docs) { const st = d.get("status") || "?"; byStatus[st] = (byStatus[st] || 0) + 1; }
+  const week = {
+    week_starting: monday, today,
+    planned_learners: learners.length,
+    bookings: byStatus,
+    learners_wanting_more: learners.filter((l) => l.need > 0).length,
+  };
+  const { packet, uidOf, pairIndex } = agentPacket.buildPacket({ learners, candidates, signals, pairSignals, week });
+  if (!packet.people.length) return { skipped: "nobody" };
+
+  let json; let usage;
+  try {
+    ({ json, usage } = await agentGemini.callGemini({
+      apiKey, model: cfg.model, system: agentPrompt.SYSTEM, prompt: agentPrompt.buildPrompt(packet), schema: agentPrompt.SCHEMA,
+    }));
+  } catch (e) {
+    console.warn("[agent] gemini failed:", e.message);
+    await db.collection("agentReports").doc(`${today}_${monday}`).set({
+      // A failure never hides a report that same day already gave.
+      weekKey: monday, date: today, at: nowMs, by, lastError: String(e.message).slice(0, 200), model: cfg.model,
+    }, { merge: true }).catch(() => null);
+    return { skipped: "gemini-failed", error: e.message };
+  }
+  const cost = agentGemini.costUsd(usage, cfg.model, nowMs);
+  await usageRef.set({
+    usd: admin.firestore.FieldValue.increment(cost.usd),
+    calls: admin.firestore.FieldValue.increment(1),
+    inputTokens: admin.firestore.FieldValue.increment(cost.input),
+    outputTokens: admin.firestore.FieldValue.increment(cost.output),
+  }, { merge: true }).catch(() => null);
+
+  const names = new Map(learners.map((l) => [l.uid, l.name || ""]));
+  const out = agentValidate.parseAgentOutput(json, { pairIndex, uidOf, nameOf: (u) => names.get(u) });
+  await db.collection("aiAffinity").doc(monday).set({
+    weekKey: monday, at: nowMs, model: cfg.model,
+    pairs: [...out.aiBonus].map(([key, v]) => ({ key, score: v.score, why: v.why })),
+  });
+  await db.collection("agentReports").doc(`${today}_${monday}`).set({
+    weekKey: monday, date: today, at: nowMs, by, model: cfg.model, mode: cfg.mode,
+    report: out.report,
+    flags: out.flags.map((f) => ({ ...f, name: names.get(f.uid) || "" })),
+    scored: out.aiBonus.size, people: packet.people.length, candidates: packet.pairs.length, dropped: out.dropped,
+    usd: Math.round(cost.usd * 10000) / 10000, inputTokens: cost.input, outputTokens: cost.output,
+    lastError: admin.firestore.FieldValue.delete(),
+  }, { merge: true });
+  if (out.flags.length) {
+    await sendPushToUser(db, ADMIN_UID, {
+      key: "admin_agent_report", vars: { flags: out.flags.length }, type: "admin_plan", url: "/admin?tab=agent",
+    }).catch(() => null);
+  }
+  return { scored: out.aiBonus.size, flags: out.flags.length, people: packet.people.length, candidates: packet.pairs.length, usd: cost.usd };
+}
+
 // Hourly, when enabled: new offers for this week's remaining days, for anyone
 // still short of their target — first the people the week let down.
 async function refillThisWeek(db, nowMs) {
@@ -5507,8 +5720,9 @@ async function refillThisWeek(db, nowMs) {
   // Two people who both said «in» can be booked with less notice: nobody has
   // to answer anything first. Proposals still need the 10 h.
   const direct = cfg.directBook === true;
+  const aiBonus = await agentBonusFor(db, monday, { act: true });
   const result = weeklyPlanner.buildWeekPlan({
-    learners, blocked, recent, favorites, dates: left,
+    learners, blocked, recent, favorites, aiBonus, dates: left,
     earliestMs: nowMs + (direct ? REFILL_DIRECT_NOTICE_MS : REFILL_NOTICE_MS), seed: `${monday}_${nowMs}`, restarts: 8,
   });
   const committed = new Set(learners.filter((l) => l.committed).map((l) => l.uid));
@@ -5634,6 +5848,15 @@ async function runPlannerTick(db, nowMs) {
       await sendWeekCheckins(db, nowMs, monday, 2).catch((e) => console.warn("[plan] checkin 2 failed:", e.message));
     }
   }
+  // The AI analyst: every morning for this week (the refill uses its scores,
+  // the admin reads its report), and Sunday 11:00 for next week, an hour
+  // before the draft. Claimed once; a failure leaves the planner untouched.
+  if (hour >= 7 && await claimSlotRun(db, `agent_daily_${bakuDateStr(nowMs)}`)) {
+    await runAgent(db, bakuWeekKey(nowMs), { nowMs }).catch((e) => console.warn("[agent] daily failed:", e.message));
+  }
+  if (weekday === 0 && hour >= 11 && await claimSlotRun(db, `agent_plan_${monday}`)) {
+    await runAgent(db, monday, { nowMs }).catch((e) => console.warn("[agent] plan run failed:", e.message));
+  }
   if (weekday === 0 && hour >= 12 && await claimSlotRun(db, `plan_build_${monday}`)) {
     try {
       await writePopularTimes(db, nowMs).catch((e) => console.warn("[plan] popular times failed:", e.message));
@@ -5677,6 +5900,34 @@ async function runPlannerTick(db, nowMs) {
     }
   }
 }
+
+// Admin → Agent: run the analyst now (this week, or next week from Saturday).
+exports.adminAgent = onRequest({ secrets: [GEMINI_API_KEY], invoker: "public", timeoutSeconds: 300 }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  if (!isAdminToken(decoded)) return res.status(403).json({ error: "forbidden" });
+  const db = admin.firestore();
+  try {
+    await enforceRateLimit(decoded.uid, "adminAgent", 10, 60 * 60 * 1000);
+    const action = String((req.body || {}).action || "");
+    if (action !== "run") return res.status(400).json({ error: "invalid-action" });
+    const nowMs = Date.now();
+    const weekday = new Date(nowMs + 4 * 60 * 60 * 1000).getUTCDay();
+    const monday = weekday === 6 || weekday === 0 ? nextMondayOf(nowMs) : bakuWeekKey(nowMs);
+    const r = await runAgent(db, monday, { nowMs, by: "admin" });
+    return res.status(200).json({ ok: true, weekKey: monday, ...r });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[adminAgent]", e.message);
+    return res.status(status).json({ error: e.message });
+  }
+});
 
 // Admin → Week plan. One endpoint, one action per call.
 exports.adminWeekPlan = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
@@ -6072,7 +6323,7 @@ exports.practiceSlotTick = onSchedule(
   // ~1000 learners brings the refill near a minute). Everything else here is
   // claimed in slotRuns or idempotent (the call-doc prep), so a long tick
   // overlapping the next one does nothing twice.
-  { schedule: "every 1 minutes", timeZone: "Asia/Baku", timeoutSeconds: 300 },
+  { schedule: "every 1 minutes", timeZone: "Asia/Baku", timeoutSeconds: 300, secrets: [GEMINI_API_KEY] },
   async () => {
     const db = admin.firestore();
     const now = Date.now();
@@ -9876,5 +10127,5 @@ exports.speakLine = onRequest(
 // Local simulation only (scratchpad sim20.js through the emulator functions
 // server): drive the planner with a made-up clock. Never set in production.
 if (process.env.FUNCTIONS_EMULATOR === "true") {
-  exports._sim = { runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs };
+  exports._sim = { runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs, runAgent };
 }

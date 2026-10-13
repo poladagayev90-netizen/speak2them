@@ -12,6 +12,7 @@ import AdminWeekPlan from '../components/AdminWeekPlan';
 import AdminMatching from '../components/AdminMatching';
 import AdminAttendance from '../components/AdminAttendance';
 import AdminActivity from '../components/AdminActivity';
+import AdminAgent from '../components/AdminAgent';
 import AdminAppVersion from '../components/AdminAppVersion';
 import { BillingSwitch, PackageMenu, SuspendButton, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
@@ -207,6 +208,7 @@ export default function Admin({ user }) {
           : adminTab === 'matching' ? <AdminMatching users={users} />
           : adminTab === 'week' ? <AdminWeekPlan users={users} />
           : adminTab === 'attendance' ? <AdminAttendance users={users} />
+          : adminTab === 'agent' ? <AdminAgent />
           : adminTab === 'intros' ? <AdminIntros users={users} />
           : adminTab === 'applicants' ? <AdminApplicants users={users} />
           : adminTab === 'slots' ? <AdminSlots users={users} />

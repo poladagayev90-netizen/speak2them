@@ -773,6 +773,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // The AI planning analyst (functions/agent): server-written, admin-read.
+    // aiAffinity = pair scores per week, agentReports = daily report + flag
+    // suggestions, agentRuns = the plan with and without AI, agentUsage = $.
+    match /aiAffinity/{weekKey} { allow read: if isAdmin(); allow write: if false; }
+    match /agentReports/{reportId} { allow read: if isAdmin(); allow write: if false; }
+    match /agentRuns/{weekKey} { allow read: if isAdmin(); allow write: if false; }
+    match /agentUsage/{month} { allow read: if isAdmin(); allow write: if false; }
+
     // Account health (functions/accountHealth.js): the server writes cls/why
     // on every planner run; the admin may only set or clear the flag that
     // keeps an account out of planning. Never shown to the learner.

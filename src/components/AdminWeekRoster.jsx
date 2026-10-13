@@ -35,7 +35,7 @@ const healthLabel = (h) => {
   return HEALTH[h.cls][h.why] || h.cls;
 };
 
-function useAccountHealth() {
+export function useAccountHealth() {
   const [map, setMap] = useState(new Map());
   useEffect(() => onSnapshot(collection(db, 'accountHealth'),
     (snap) => setMap(new Map(snap.docs.map((d) => [d.id, d.data()]))), () => setMap(new Map())), []);
@@ -49,7 +49,7 @@ function HealthSummary({ health }) {
   return <p className="aa-meta">Not planned: {n.sleeping} sleeping · {n.ghost} ghost · {n.suspicious} flagged. They come back by opening the app or saying «I'm in».</p>;
 }
 
-function FlagButton({ id, name, h }) {
+export function FlagButton({ id, name, h }) {
   const flagged = h?.flag === 'suspicious';
   const flip = async () => {
     if (!flagged && !window.confirm(`Keep ${name} out of planning until you unflag them?`)) return;

@@ -160,7 +160,16 @@ const harmonic = (n) => { let x = 0; for (let i = 1; i <= n; i++) x += 1 / i; re
 // recent:  Set of pairKey — met in the last 7 days (soft)
 // favorites: Map of pairKey → how many of the two starred the other (1 or 2)
 const FAVORITE_BONUS = 2;
-function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favorites = new Map(), dates, earliestMs = 0, seed = 'plan', restarts }) {
+// The AI analyst's view of a pair (functions/agent, Mərhələ 2): aiBonus is a
+// Map of pairKey → { score, why }, score clamped to ±AI_BONUS_MAX — the same
+// size as one favourite star, so it can tip a choice but never outweigh the
+// hard rules (applied before it) or fairness (the objective).
+const AI_BONUS_MAX = 2;
+const aiScoreOf = (v) => {
+  const n = Number(v && v.score);
+  return Number.isFinite(n) ? Math.max(-AI_BONUS_MAX, Math.min(AI_BONUS_MAX, n)) : 0;
+};
+function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favorites = new Map(), aiBonus = new Map(), dates, earliestMs = 0, seed = 'plan', restarts }) {
   const people = learners.map((l) => {
     const opt = slotOptions(l, dates, earliestMs);
     return {
@@ -194,7 +203,9 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
       const lvl = levelScore(a, b);
       const fav = Math.min(2, Number(favorites.get(pairKey(a.uid, b.uid))) || 0);
       const isRecent = !fav && recent.has(pairKey(a.uid, b.uid));
-      pairs.push({ i: pairs.length, a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, days, lvl, isRecent, fav });
+      const aiv = aiBonus.get(pairKey(a.uid, b.uid));
+      const ai = aiScoreOf(aiv);
+      pairs.push({ i: pairs.length, a: a.uid, b: b.uid, key: pairKey(a.uid, b.uid), shared, sharedDates, days, lvl, isRecent, fav, ai, aiWhy: ai && aiv.why ? String(aiv.why).slice(0, 80) : '' });
     }
   }
   const pairsOf = new Map();
@@ -211,7 +222,7 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
   const scoreOf = (pr, slotId, state) => {
     const date = slotId.slice(0, 10);
     const hour = Number(slotId.slice(11));
-    let s = pr.lvl.score + (pr.isRecent ? -3 : 0) + pr.fav * FAVORITE_BONUS + (HOUR_BONUS[hour] || 0);
+    let s = pr.lvl.score + (pr.isRecent ? -3 : 0) + pr.fav * FAVORITE_BONUS + pr.ai + (HOUR_BONUS[hour] || 0);
     const [before, after] = nearDays.get(date);
     for (const uid of [pr.a, pr.b]) {
       const days = state.days.get(uid);
@@ -349,6 +360,7 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
         reasons: [
           ...(pr.fav ? [pr.fav === 2 ? 'both want to practise again' : 'asked to practise again'] : []),
           pr.lvl.reason, pr.isRecent ? 'met in the last 7 days' : 'not met this week',
+          ...(pr.ai ? [`AI ${pr.ai > 0 ? '+' : ''}${pr.ai}${pr.aiWhy ? `: ${pr.aiWhy}` : ''}`] : []),
           ...[a, b].filter((u) => byUid.get(u).maybe.has(slotId)).map(() => 'a «maybe» time'),
         ],
         alternatives,
@@ -373,7 +385,24 @@ function buildWeekPlan({ learners, blocked = new Set(), recent = new Set(), favo
   };
 }
 
+// Every pair the hard rules allow and the starts both could take — the menu
+// the AI analyst scores (functions/agent). Same filters as buildWeekPlan.
+function candidatePairs({ learners, blocked = new Set(), dates, earliestMs = 0 }) {
+  const people = learners.filter((l) => Number(l.need) > 0).map((l) => ({ ...l, free: new Set(freeSlots(l, dates, earliestMs)), paired: new Set(l.pairedWith || []) }));
+  const out = [];
+  for (let i = 0; i < people.length; i++) {
+    for (let j = i + 1; j < people.length; j++) {
+      const a = people[i]; const b = people[j];
+      if (a.paired.has(b.uid) || b.paired.has(a.uid)) continue;
+      if (!pairAllowed(a, b, blocked)) continue;
+      const shared = [...a.free].filter((x) => b.free.has(x)).sort();
+      if (shared.length) out.push({ key: pairKey(a.uid, b.uid), a: a.uid, b: b.uid, shared });
+    }
+  }
+  return out;
+}
+
 module.exports = {
-  BLOCK_HOURS, GRID_HOURS, PLAN_MIN_OVERLAP_MIN, MAYBE_PENALTY, WRONG_TIME_PENALTY,
-  weekDates, weekdayOf, freeSlots, slotOptions, pairAllowed, pairKey, blockStartMs, slotIdOf, buildWeekPlan,
+  BLOCK_HOURS, GRID_HOURS, PLAN_MIN_OVERLAP_MIN, MAYBE_PENALTY, WRONG_TIME_PENALTY, AI_BONUS_MAX,
+  weekDates, weekdayOf, freeSlots, slotOptions, pairAllowed, pairKey, blockStartMs, slotIdOf, buildWeekPlan, candidatePairs,
 };

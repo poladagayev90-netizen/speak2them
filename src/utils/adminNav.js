@@ -14,6 +14,8 @@ export const TABS = [
   { id: 'activity', label: 'Activity', group: 'activity' },
   { id: 'matching', label: 'Matching', group: 'week' },
   { id: 'week', label: 'Week', group: 'week' },
+  // The AI planning analyst (functions/agent): its report, switches, budget.
+  { id: 'agent', label: 'Agent', group: 'week' },
   { id: 'premium', label: 'Students', group: 'admin' },
   { id: 'applicants', label: 'Applicants', group: 'admin' },
   { id: 'slots', label: 'Sessions', group: 'admin' },
