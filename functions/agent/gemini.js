@@ -26,12 +26,14 @@ function costUsd(usage, model, nowMs = Date.now()) {
   return { input, output, usd: (input * inP + output * outP) / 1e6 };
 }
 
-async function callGemini({ apiKey, model, system, prompt, schema, maxOutputTokens = 8192, timeoutMs = 90000, fetchImpl = fetch }) {
+// `media` = optional inline parts sent before the prompt, e.g. the call
+// recording for the analysis shadow: [{ mimeType: 'audio/webm', data: <base64> }].
+async function callGemini({ apiKey, model, system, prompt, schema, media = [], maxOutputTokens = 8192, timeoutMs = 90000, fetchImpl = fetch }) {
   if (!apiKey) throw new Error('gemini-no-key');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const body = JSON.stringify({
-    systemInstruction: { parts: [{ text: system }] },
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+    contents: [{ role: 'user', parts: [...media.map((m) => ({ inlineData: m })), { text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema: schema,

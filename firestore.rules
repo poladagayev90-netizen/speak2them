@@ -780,6 +780,10 @@ service cloud.firestore {
     match /agentReports/{reportId} { allow read: if isAdmin(); allow write: if false; }
     match /agentRuns/{weekKey} { allow read: if isAdmin(); allow write: if false; }
     match /agentUsage/{month} { allow read: if isAdmin(); allow write: if false; }
+    // Gemini shadow of a call analysis (functions/analysisShadow.js): the
+    // admin compares it with the learner's real report; the learner never
+    // reads it. appConfig/analysis (the switch) falls under appConfig below.
+    match /callAnalysisShadow/{analysisId} { allow read: if isAdmin(); allow write: if false; }
 
     // Account health (functions/accountHealth.js): the server writes cls/why
     // on every planner run; the admin may only set or clear the flag that

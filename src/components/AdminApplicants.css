@@ -306,3 +306,16 @@
 .aa-input--num { width: 72px; margin-left: var(--s-1); }
 /* Admin → Agent: the monthly budget field stays short. */
 .aa-budget { flex: 0 1 calc(var(--s-10) * 4); }
+
+/* Admin → Agent → Analysis shadow: the usual report beside Gemini's. Two
+   columns on a computer, one under the other on a phone. */
+.aa-shadow-head {
+  display: grid; gap: var(--s-1); width: 100%; min-width: 0; padding: 0;
+  background: none; border: 0; text-align: left; color: inherit; cursor: pointer;
+}
+.aa-compare { display: grid; gap: var(--s-3); grid-template-columns: minmax(0, 1fr); min-width: 0; }
+@media (min-width: 720px) { .aa-compare { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.aa-compare-col { display: grid; gap: var(--s-2); align-content: start; min-width: 0; overflow-wrap: anywhere; }
+.aa-shadow-fix { display: grid; gap: var(--s-1); padding: var(--s-2) 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); min-width: 0; }
+.aa-shadow-wrong { color: var(--danger); }
+.aa-shadow-label { margin-top: var(--s-3); }

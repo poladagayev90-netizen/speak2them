@@ -6,6 +6,7 @@ import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { Button } from './ui';
 import { FlagButton, useAccountHealth } from './AdminWeekRoster';
+import AdminAnalysisShadow from './AdminAnalysisShadow';
 import './AdminApplicants.css';
 
 // Admin → Agent: the AI planning analyst (functions/agent, Mərhələ 2).
@@ -157,6 +158,8 @@ export default function AdminAgent() {
           </article>
         ))}
       </section>
+
+      <AdminAnalysisShadow />
     </>
   );
 }

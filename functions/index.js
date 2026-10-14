@@ -26,6 +26,7 @@ const agentPacket = require("./agent/packet");
 const agentValidate = require("./agent/validate");
 const agentGemini = require("./agent/gemini");
 const agentPrompt = require("./agent/prompt");
+const analysisShadow = require("./analysisShadow");
 const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const callLogLib = require("./callLog");
@@ -8380,12 +8381,88 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang =
   return { transcript, analysis };
 }
 
+// Gemini shadow of one finished analysis (functions/analysisShadow.js has the
+// why). Runs AFTER the learner's own report is saved and pushed, BEFORE the
+// recording is deleted, and never throws: whatever happens here, the learner's
+// analysis is already done. `timeLeftMs` keeps it inside the invocation.
+async function runAnalysisShadow(db, { ticket, audioBuffer, analyzeSeconds, lang, mainAnalysis, mainTranscript, timeLeftMs }) {
+  const ref = db.collection("callAnalysisShadow").doc(ticket.id);
+  try {
+    const cfgSnap = await db.collection("appConfig").doc("analysis").get().catch(() => null);
+    const cfg = cfgSnap && cfgSnap.exists ? cfgSnap.data() : {};
+    if (cfg.shadowGemini !== true) return { skipped: "off" };
+    const nowMs = Date.now();
+    const usageRef = db.collection("agentUsage").doc(agentMonth(nowMs));
+    const spent = Number(((await usageRef.get().catch(() => null))?.data() || {}).shadowUsd) || 0;
+    if (!analysisShadow.shadowAllowed(cfg, spent)) return { skipped: "budget" };
+    if (audioBuffer.length > analysisShadow.MAX_INLINE_AUDIO_BYTES) return { skipped: "too-big" };
+    if (timeLeftMs < 60 * 1000) return { skipped: "no-time" };
+    let apiKey = "";
+    try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
+    if (!apiKey) return { skipped: "no-key" };
+
+    const model = typeof cfg.shadowModel === "string" && cfg.shadowModel ? cfg.shadowModel : analysisShadow.SHADOW_MODEL_DEFAULT;
+    const g = LANGUAGE_GUIDE[lang] || LANGUAGE_GUIDE.az;
+    const prompt = analysisShadow.buildShadowPrompt(buildAnalysisPrompt("", lang), g.name);
+    const started = Date.now();
+    const { json, usage } = await agentGemini.callGemini({
+      apiKey, model, prompt,
+      schema: analysisShadow.shadowSchema(ANALYSIS_SCHEMA),
+      media: [{ mimeType: analysisShadow.audioMimeType(ticket.storagePath), data: audioBuffer.toString("base64") }],
+      // Thinking tokens count against this; 3.8 cut its answer short at less.
+      maxOutputTokens: 12000,
+      timeoutMs: Math.min(150 * 1000, timeLeftMs - 30 * 1000),
+    });
+    const latencyMs = Date.now() - started;
+    const cost = agentGemini.costUsd(usage, model, nowMs);
+    await usageRef.set({
+      shadowUsd: admin.firestore.FieldValue.increment(cost.usd),
+      shadowCalls: admin.firestore.FieldValue.increment(1),
+    }, { merge: true }).catch(() => null);
+
+    const transcript = typeof json?.transcript === "string" ? json.transcript.trim() : "";
+    const analysis = normalizeAnalysis(json, { analyzeSeconds, transcript });
+    const extras = analysisShadow.normalizeExtras(json, transcript);
+    const compare = analysisShadow.compareAnalyses(
+      { ...mainAnalysis, transcript: mainTranscript }, { ...analysis, transcript });
+    await ref.set({
+      userId: ticket.uid, peerName: ticket.peerName || null, lang, model,
+      analyzedSeconds: analyzeSeconds,
+      at: admin.firestore.FieldValue.serverTimestamp(),
+      analysis: { ...analysis, transcript },
+      // The admin cannot read another learner's callAnalysis (rules), so the
+      // comparison screen gets the parts it shows from here.
+      main: {
+        scores: mainAnalysis.scores || null,
+        overallScore: Number.isFinite(mainAnalysis.overallScore) ? mainAnalysis.overallScore : null,
+        errorThemes: mainAnalysis.errorThemes || [],
+        strengths: mainAnalysis.strengths || [],
+        tips: mainAnalysis.tips || [],
+        speakingPace: mainAnalysis.speakingPace || null,
+        transcript: mainTranscript || "",
+      },
+      extras, compare, latencyMs,
+      usd: cost.usd, inputTokens: cost.input, outputTokens: cost.output,
+    });
+    console.log("[AnalysisShadow] done:", ticket.id, `${latencyMs}ms`, `$${cost.usd.toFixed(4)}`);
+    return { ok: true };
+  } catch (e) {
+    console.warn("[AnalysisShadow] failed:", ticket.id, e.message);
+    await ref.set({
+      userId: ticket.uid, at: admin.firestore.FieldValue.serverTimestamp(),
+      lastError: String(e.message || e).slice(0, 200),
+    }, { merge: true }).catch(() => null);
+    return { skipped: "failed", error: e.message };
+  }
+}
+
 exports.processAnalysisQueue = onSchedule({
   schedule: "every 1 minutes",
   timeZone: "Asia/Baku",
   // DEEPGRAM: nova-2 STT (əsas); DEEPSEEK: analiz LLM-i (əsas);
   // GROQ: Whisper STT + LLM fallback-ları.
-  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY, DEEPGRAM_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD],
+  // GEMINI: only the admin-only shadow (appConfig/analysis.shadowGemini).
+  secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY, DEEPGRAM_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, GEMINI_API_KEY],
   memory: "1GiB",
   timeoutSeconds: 540,
 }, async () => {
@@ -8521,7 +8598,6 @@ exports.processAnalysisQueue = onSchedule({
         status: "done",
         finishedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      await admin.storage().bucket().file(ticket.storagePath).delete().catch(() => null);
       console.log("[AnalysisQueue] Done:", ticket.id);
 
       await sendPushToUser(db, ticket.uid, {
@@ -8529,6 +8605,15 @@ exports.processAnalysisQueue = onSchedule({
         type: "analysis_ready",
         url: "/history",
       });
+
+      // The shadow needs the recording, so it runs before the delete — and
+      // after the push, so the learner never waits for it.
+      await runAnalysisShadow(db, {
+        ticket, audioBuffer: analysisBuffer, analyzeSeconds, lang,
+        mainAnalysis: analysis, mainTranscript: transcript,
+        timeLeftMs: 540 * 1000 - (Date.now() - invocationStart) - 30 * 1000,
+      });
+      await admin.storage().bucket().file(ticket.storagePath).delete().catch(() => null);
 
       // Sinif analitikası üçün roster rollup-u. Müəllim paneli 30 şagirdin
       // analizlərini bir-bir sorğulasaydı, callAnalysis rules-undakı
@@ -10127,5 +10212,5 @@ exports.speakLine = onRequest(
 // Local simulation only (scratchpad sim20.js through the emulator functions
 // server): drive the planner with a made-up clock. Never set in production.
 if (process.env.FUNCTIONS_EMULATOR === "true") {
-  exports._sim = { runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs, runAgent };
+  exports._sim = { runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs, runAgent, runAnalysisShadow, buildAnalysisPrompt, ANALYSIS_SCHEMA };
 }
