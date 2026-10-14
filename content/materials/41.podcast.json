@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is crowds and public places. Leyla, how was your trip this morning?"
+      "t": "And I'm Sam. Today's topic is crowds and public places. Leyla, how was your trip this morning?",
+      "at": 4.14
     },
     {
       "s": "Leyla",
-      "t": "Terrible. The metro was packed. We were packed like sardines."
+      "t": "Terrible. The metro was packed. We were packed like sardines.",
+      "at": 11.14
     },
     {
       "s": "Sam",
-      "t": "[laugh] At eight in the morning it's always the same. Nobody has any space."
+      "t": "[laugh] At eight in the morning it's always the same. Nobody has any space.",
+      "at": 15.16
     },
     {
       "s": "Leyla",
-      "t": "And everyone is pushing. I almost couldn't get out at my station."
+      "t": "And everyone is pushing. I almost couldn't get out at my station.",
+      "at": 20.16
     },
     {
       "s": "Sam",
-      "t": "In England people make a queue for everything. Even for the bus."
+      "t": "In England people make a queue for everything. Even for the bus.",
+      "at": 23.88
     },
     {
       "s": "Leyla",
-      "t": "Really? Here, a queue is more like… a suggestion. [chuckle]"
+      "t": "Really? Here, a queue is more like… a suggestion. [chuckle]",
+      "at": 27.44
     },
     {
       "s": "Sam",
-      "t": "I learned that in my first week in Baku. I stood politely, and ten people walked in front of me."
+      "t": "I learned that in my first week in Baku. I stood politely, and ten people walked in front of me.",
+      "at": 32.6
     },
     {
       "s": "Leyla",
-      "t": "Big crowds can be scary, too. Last New Year, we took my niece Aysu to the boulevard for the fireworks."
+      "t": "Big crowds can be scary, too. Last New Year, we took my niece Aysu to the boulevard for the fireworks.",
+      "at": 38.52
     },
     {
       "s": "Sam",
-      "t": "Oh, that's a huge crowd."
+      "t": "Oh, that's a huge crowd.",
+      "at": 44.4
     },
     {
       "s": "Leyla",
-      "t": "Thousands of people. I looked at the sky for one second, and Aysu was gone."
+      "t": "Thousands of people. I looked at the sky for one second, and Aysu was gone.",
+      "at": 46.86
     },
     {
       "s": "Sam",
-      "t": "No! What did you do?"
+      "t": "No! What did you do?",
+      "at": 51.46
     },
     {
       "s": "Leyla",
-      "t": "I ran to the information point. A minute later there was an announcement: \"A little girl in a red hat is looking for her aunt.\""
+      "t": "I ran to the information point. A minute later there was an announcement: \"A little girl in a red hat is looking for her aunt.\"",
+      "at": 53.34
     },
     {
       "s": "Sam",
-      "t": "Phew. Good thing she had a red hat. A red hat helps you stand out in a crowd."
+      "t": "Phew. Good thing she had a red hat. A red hat helps you stand out in a crowd.",
+      "at": 60.72
     },
     {
       "s": "Leyla",
-      "t": "Exactly. Now she always wears something bright."
+      "t": "Exactly. Now she always wears something bright.",
+      "at": 66.78
     },
     {
       "s": "Sam",
-      "t": "For me, the worst is a shopping centre on Saturday. The music, the lights, the people — it's overwhelming."
+      "t": "For me, the worst is a shopping centre on Saturday. The music, the lights, the people — it's overwhelming.",
+      "at": 70.32
     },
     {
       "s": "Leyla",
-      "t": "So why do you go?"
+      "t": "So why do you go?",
+      "at": 78.22
     },
     {
       "s": "Sam",
-      "t": "Because my friends go. I just follow the crowd. [laugh]"
+      "t": "Because my friends go. I just follow the crowd. [laugh]",
+      "at": 79.82
     },
     {
       "s": "Leyla",
-      "t": "And your half marathon? There will be a crowd there too."
+      "t": "And your half marathon? There will be a crowd there too.",
+      "at": 83.02
     },
     {
       "s": "Sam",
-      "t": "That's a good crowd. When people cheer, I run faster. And I always bump into friends at the finish."
+      "t": "That's a good crowd. When people cheer, I run faster. And I always bump into friends at the finish.",
+      "at": 86.14
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: do you love crowds or avoid them — and where is the most crowded place in your city?"
+      "t": "Here's your question for your next SpeakLab call: do you love crowds or avoid them — and where is the most crowded place in your city?",
+      "at": 91.8
     },
     {
       "s": "Sam",
-      "t": "Mine is the shopping centre on Saturday. See you next time!"
+      "t": "Mine is the shopping centre on Saturday. See you next time!",
+      "at": 100.12
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 103.7
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Do you love crowds or avoid them — and where is the most crowded place in your city?",
     "Tell your partner about a time you got lost, or lost someone, in a crowd."
-  ]
+  ],
+  "duration": 104.6,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is accidents and emergencies. Not the happiest topic, but a useful one."
+      "t": "And I'm Sam. Today's topic is accidents and emergencies. Not the happiest topic, but a useful one.",
+      "at": 4.08
     },
     {
       "s": "Leyla",
-      "t": "Very useful. Sam, have you ever called an ambulance?"
+      "t": "Very useful. Sam, have you ever called an ambulance?",
+      "at": 11.14
     },
     {
       "s": "Sam",
-      "t": "Once. Last spring, at running club. A woman fell on the stairs near the boulevard and hurt her leg badly."
+      "t": "Once. Last spring, at running club. A woman fell on the stairs near the boulevard and hurt her leg badly.",
+      "at": 14.68
     },
     {
       "s": "Leyla",
-      "t": "Oh no. What did you do?"
+      "t": "Oh no. What did you do?",
+      "at": 20.82
     },
     {
       "s": "Sam",
-      "t": "Luckily I did a first aid course last year. I told her not to move, and our coach called the ambulance."
+      "t": "Luckily I did a first aid course last year. I told her not to move, and our coach called the ambulance.",
+      "at": 23.1
     },
     {
       "s": "Leyla",
-      "t": "Did you panic?"
+      "t": "Did you panic?",
+      "at": 28.72
     },
     {
       "s": "Sam",
-      "t": "Inside, a little! But you have to keep a cool head. Everyone was looking at me."
+      "t": "Inside, a little! But you have to keep a cool head. Everyone was looking at me.",
+      "at": 30.06
     },
     {
       "s": "Leyla",
-      "t": "Was it a serious injury?"
+      "t": "Was it a serious injury?",
+      "at": 34.86
     },
     {
       "s": "Sam",
-      "t": "A broken ankle. But she recovered quickly — she's running again now."
+      "t": "A broken ankle. But she recovered quickly — she's running again now.",
+      "at": 36.38
     },
     {
       "s": "Leyla",
-      "t": "That's good news. I had a close call last month with my niece Aysu."
+      "t": "That's good news. I had a close call last month with my niece Aysu.",
+      "at": 40.12
     },
     {
       "s": "Sam",
-      "t": "What happened?"
+      "t": "What happened?",
+      "at": 44.32
     },
     {
       "s": "Leyla",
-      "t": "We were crossing the street, and she suddenly ran after her ball. A car stopped just in time."
+      "t": "We were crossing the street, and she suddenly ran after her ball. A car stopped just in time.",
+      "at": 45.16
     },
     {
       "s": "Sam",
-      "t": "That must have been terrifying."
+      "t": "That must have been terrifying.",
+      "at": 51.36
     },
     {
       "s": "Leyla",
-      "t": "My heart stopped. Now she holds my hand on every street, and the ball stays in the bag."
+      "t": "My heart stopped. Now she holds my hand on every street, and the ball stays in the bag.",
+      "at": 53.6
     },
     {
       "s": "Sam",
-      "t": "Better safe than sorry."
+      "t": "Better safe than sorry.",
+      "at": 61.22
     },
     {
       "s": "Leyla",
-      "t": "Exactly. Do you know the emergency number in Azerbaijan?"
+      "t": "Exactly. Do you know the emergency number in Azerbaijan?",
+      "at": 63.1
     },
     {
       "s": "Sam",
-      "t": "Is it one-one-two?"
+      "t": "Is it one-one-two?",
+      "at": 67.2
     },
     {
       "s": "Leyla",
-      "t": "Yes, one-one-two. And one-zero-three for an ambulance. Everyone should know them."
+      "t": "Yes, one-one-two. And one-zero-three for an ambulance. Everyone should know them.",
+      "at": 69.28
     },
     {
       "s": "Sam",
-      "t": "Good. I'm saving them in my phone right now. [chuckle]"
+      "t": "Good. I'm saving them in my phone right now. [chuckle]",
+      "at": 76.14
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: have you ever been in an emergency — and did you keep a cool head?"
+      "t": "Here's your question for your next SpeakLab call: have you ever been in an emergency — and did you keep a cool head?",
+      "at": 79.16
     },
     {
       "s": "Sam",
-      "t": "And maybe it's time for a first aid course! See you next time!"
+      "t": "And maybe it's time for a first aid course! See you next time!",
+      "at": 86.92
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 90.7
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Have you ever been in an emergency — and did you keep a cool head?",
     "What should everyone know about first aid? Make a short list with your partner."
-  ]
+  ],
+  "duration": 91.9,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

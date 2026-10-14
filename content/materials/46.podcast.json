@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is manners. And I have to say sorry first."
+      "t": "And I'm Sam. Today's topic is manners. And I have to say sorry first.",
+      "at": 4.72
     },
     {
       "s": "Leyla",
-      "t": "Sorry for what?"
+      "t": "Sorry for what?",
+      "at": 11.66
     },
     {
       "s": "Sam",
-      "t": "Nothing! That's the problem. British people say sorry all the time. Someone steps on my foot, and I say sorry."
+      "t": "Nothing! That's the problem. British people say sorry all the time. Someone steps on my foot, and I say sorry.",
+      "at": 13.04
     },
     {
       "s": "Leyla",
-      "t": "[laugh] That's too polite, Sam."
+      "t": "[laugh] That's too polite, Sam.",
+      "at": 21.18
     },
     {
       "s": "Sam",
-      "t": "I know. What surprised me in Baku was the respect for older people."
+      "t": "I know. What surprised me in Baku was the respect for older people.",
+      "at": 23.32
     },
     {
       "s": "Leyla",
-      "t": "Yes. On the bus, young people always stand up for an older person. Not doing it is really rude."
+      "t": "Yes. On the bus, young people always stand up for an older person. Not doing it is really rude.",
+      "at": 28.5
     },
     {
       "s": "Sam",
-      "t": "And at Mr Aliyev's house, I learned you never say no to tea."
+      "t": "And at Mr Aliyev's house, I learned you never say no to tea.",
+      "at": 35.58
     },
     {
       "s": "Leyla",
-      "t": "Never! Tea is the first thing a guest gets. Saying no is almost an insult."
+      "t": "Never! Tea is the first thing a guest gets. Saying no is almost an insult.",
+      "at": 40.12
     },
     {
       "s": "Sam",
-      "t": "Then there is small talk. Here a taxi driver asked me how much I earn — in the first minute!"
+      "t": "Then there is small talk. Here a taxi driver asked me how much I earn — in the first minute!",
+      "at": 45.38
     },
     {
       "s": "Leyla",
-      "t": "[chuckle] What did you say?"
+      "t": "[chuckle] What did you say?",
+      "at": 51.72
     },
     {
       "s": "Sam",
-      "t": "In England we say: bite your tongue. So I just smiled and talked about the weather."
+      "t": "In England we say: bite your tongue. So I just smiled and talked about the weather.",
+      "at": 53.52
     },
     {
       "s": "Leyla",
-      "t": "In my family, people interrupt each other all the time. It's not rude — it means we're interested."
+      "t": "In my family, people interrupt each other all the time. It's not rude — it means we're interested.",
+      "at": 59.14
     },
     {
       "s": "Sam",
-      "t": "At my first dinner with your family, I waited for a pause. There was no pause! [laugh]"
+      "t": "At my first dinner with your family, I waited for a pause. There was no pause! [laugh]",
+      "at": 65.4
     },
     {
       "s": "Leyla",
-      "t": "My grandmother is strict about one thing: the table. When Aysu takes food before the guests, she says, \"Mind your manners!\""
+      "t": "My grandmother is strict about one thing: the table. When Aysu takes food before the guests, she says, \"Mind your manners!\"",
+      "at": 71.24
     },
     {
       "s": "Sam",
-      "t": "My mum said exactly the same to me. In English!"
+      "t": "My mum said exactly the same to me. In English!",
+      "at": 78.8
     },
     {
       "s": "Leyla",
-      "t": "So what's the most important rule for you?"
+      "t": "So what's the most important rule for you?",
+      "at": 82.26
     },
     {
       "s": "Sam",
-      "t": "A real apology. Not my automatic \"sorry\" — a real one, when you are wrong."
+      "t": "A real apology. Not my automatic \"sorry\" — a real one, when you are wrong.",
+      "at": 84.8
     },
     {
       "s": "Leyla",
-      "t": "I agree. And showing respect to everyone, from the cleaner to the boss."
+      "t": "I agree. And showing respect to everyone, from the cleaner to the boss.",
+      "at": 90.98
     },
     {
       "s": "Sam",
-      "t": "Well said. Sorry, I mean — thank you. [chuckle]"
+      "t": "Well said. Sorry, I mean — thank you. [chuckle]",
+      "at": 95.52
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what is polite in your country but rude somewhere else?"
+      "t": "Here's your question for your next SpeakLab call: what is polite in your country but rude somewhere else?",
+      "at": 99.22
     },
     {
       "s": "Sam",
-      "t": "Tell us — and don't interrupt your partner! See you next time!"
+      "t": "Tell us — and don't interrupt your partner! See you next time!",
+      "at": 105.5
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 109.44
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What is polite in your country but rude somewhere else?",
     "Which small-talk questions are fine for you, and which ones are too personal?"
-  ]
+  ],
+  "duration": 110.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

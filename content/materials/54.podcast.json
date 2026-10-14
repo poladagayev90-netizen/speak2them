@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is news and rumours. And there's a big rumour in our street."
+      "t": "And I'm Sam. Today's topic is news and rumours. And there's a big rumour in our street.",
+      "at": 4.44
     },
     {
       "s": "Leyla",
-      "t": "Oh, I know. Mr Aliyev is selling his house."
+      "t": "Oh, I know. Mr Aliyev is selling his house.",
+      "at": 11.24
     },
     {
       "s": "Sam",
-      "t": "That is what everyone says! The woman at the bakery told me, and the taxi driver told her."
+      "t": "That is what everyone says! The woman at the bakery told me, and the taxi driver told her.",
+      "at": 14.7
     },
     {
       "s": "Leyla",
-      "t": "In two days it was the talk of the town. And do you know what's really happening?"
+      "t": "In two days it was the talk of the town. And do you know what's really happening?",
+      "at": 20.6
     },
     {
       "s": "Sam",
-      "t": "No, what?"
+      "t": "No, what?",
+      "at": 25.62
     },
     {
       "s": "Leyla",
-      "t": "He's painting it. That's all. Somebody saw the workers and the ladders."
+      "t": "He's painting it. That's all. Somebody saw the workers and the ladders.",
+      "at": 26.96
     },
     {
       "s": "Sam",
-      "t": "[laugh] So the rumour started with a ladder!"
+      "t": "[laugh] So the rumour started with a ladder!",
+      "at": 33.16
     },
     {
       "s": "Leyla",
-      "t": "That's how gossip works. It spreads faster than the truth."
+      "t": "That's how gossip works. It spreads faster than the truth.",
+      "at": 35.7
     },
     {
       "s": "Sam",
-      "t": "My mum is the same with the internet. She reads a headline and calls me straight away."
+      "t": "My mum is the same with the internet. She reads a headline and calls me straight away.",
+      "at": 39.42
     },
     {
       "s": "Leyla",
-      "t": "My grandmother too! She sends messages to the family group: \"Lemon water cures everything!\""
+      "t": "My grandmother too! She sends messages to the family group: \"Lemon water cures everything!\"",
+      "at": 44.58
     },
     {
       "s": "Sam",
-      "t": "And who says that?"
+      "t": "And who says that?",
+      "at": 51.2
     },
     {
       "s": "Leyla",
-      "t": "Exactly my question: what's the source? Usually, nobody knows."
+      "t": "Exactly my question: what's the source? Usually, nobody knows.",
+      "at": 52.56
     },
     {
       "s": "Sam",
-      "t": "I have a rule: if it's very shocking, I take it with a pinch of salt."
+      "t": "I have a rule: if it's very shocking, I take it with a pinch of salt.",
+      "at": 57.18
     },
     {
       "s": "Leyla",
-      "t": "Good rule. And I read the same story in two or three places. Some news sites are very biased."
+      "t": "Good rule. And I read the same story in two or three places. Some news sites are very biased.",
+      "at": 61.32
     },
     {
       "s": "Sam",
-      "t": "True. Each one tells you only its half of the story."
+      "t": "True. Each one tells you only its half of the story.",
+      "at": 67.7
     },
     {
       "s": "Leyla",
-      "t": "But some news is real. Who told you about your sister's engagement?"
+      "t": "But some news is real. Who told you about your sister's engagement?",
+      "at": 70.96
     },
     {
       "s": "Sam",
-      "t": "My mum! She called at six in the morning to break the news. She couldn't wait."
+      "t": "My mum! She called at six in the morning to break the news. She couldn't wait.",
+      "at": 74.96
     },
     {
       "s": "Leyla",
-      "t": "[chuckle] That's the best kind of news."
+      "t": "[chuckle] That's the best kind of news.",
+      "at": 79.22
     },
     {
       "s": "Sam",
-      "t": "And it was true — I checked with my sister. [laugh]"
+      "t": "And it was true — I checked with my sister. [laugh]",
+      "at": 80.48
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: where do you get your news — and how do you know if it's true?"
+      "t": "Here's your question for your next SpeakLab call: where do you get your news — and how do you know if it's true?",
+      "at": 83.94
     },
     {
       "s": "Sam",
-      "t": "And tell your partner the funniest rumour you ever heard. See you next time!"
+      "t": "And tell your partner the funniest rumour you ever heard. See you next time!",
+      "at": 89.92
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 93.94
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Where do you get your news — and how do you know if it's true?",
     "Tell your partner about a rumour that turned out to be false."
-  ]
+  ],
+  "duration": 94.9,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

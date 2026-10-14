@@ -1,0 +1,22 @@
+{
+  "podcast.mp3": {
+    "sha": "d6d0b8e86a1e5be7add7e7885beeaaa237927ce12fe3c8e3dcb288f1e92d240f",
+    "url": "https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F46%2Fpodcast.mp3?alt=media&token=554c2466-047e-4011-8f13-eeba3d67bacd"
+  },
+  "cover.webp": {
+    "sha": "10ab7a63d6229b1bede7966fceae150ce84b3edd25c15412c5aee6f44a08177d",
+    "url": "https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F46%2Fcover.webp?alt=media&token=7cccc0f6-4e93-4fe1-9c41-119e71ab1f3f"
+  },
+  "ch1.webp": {
+    "sha": "7a92196dc86be68eb85812479b36063415183b66e4e9b6250eddeda54e601fd1",
+    "url": "https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F46%2Fch1.webp?alt=media&token=4b496a49-6572-4d4a-b7d1-1f6609972e63"
+  },
+  "ch2.webp": {
+    "sha": "0d2a57bd4af4e5e361ede3cb4ed3026e0e6a568dc757becc1635777ae64deef8",
+    "url": "https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F46%2Fch2.webp?alt=media&token=61d66457-4486-43cf-98b2-b73b13d4acd9"
+  },
+  "ch3.webp": {
+    "sha": "1852de6bf82b4ad40fbfe779c231a73c72252f28ef1e254e4ae3e0b24fe39509",
+    "url": "https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F46%2Fch3.webp?alt=media&token=e07e43c6-ddf8-4ebf-8330-de8c6c1c9913"
+  }
+}

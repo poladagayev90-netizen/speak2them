@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is weddings. And I have big news: last Saturday I went to my first Azerbaijani wedding!"
+      "t": "And I'm Sam. Today's topic is weddings. And I have big news: last Saturday I went to my first Azerbaijani wedding!",
+      "at": 4
     },
     {
       "s": "Leyla",
-      "t": "My cousin's wedding! Tell everyone how many guests there were."
+      "t": "My cousin's wedding! Tell everyone how many guests there were.",
+      "at": 13.58
     },
     {
       "s": "Sam",
-      "t": "Five hundred! In England, a big wedding is maybe a hundred people."
+      "t": "Five hundred! In England, a big wedding is maybe a hundred people.",
+      "at": 16.42
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Five hundred is normal here. Cousins, neighbours, colleagues, neighbours of colleagues…"
+      "t": "[laugh] Five hundred is normal here. Cousins, neighbours, colleagues, neighbours of colleagues…",
+      "at": 21.14
     },
     {
       "s": "Sam",
-      "t": "And the dancing! Four hours of dancing. My legs hurt more than after a long run."
+      "t": "And the dancing! Four hours of dancing. My legs hurt more than after a long run.",
+      "at": 27.47
     },
     {
       "s": "Leyla",
-      "t": "What did you think of the bride and groom?"
+      "t": "What did you think of the bride and groom?",
+      "at": 33.54
     },
     {
       "s": "Sam",
-      "t": "They looked so happy. But the ceremony was short — the party was the main event."
+      "t": "They looked so happy. But the ceremony was short — the party was the main event.",
+      "at": 35.34
     },
     {
       "s": "Leyla",
-      "t": "That's a tradition here. The official part is often a few days before, just with the family."
+      "t": "That's a tradition here. The official part is often a few days before, just with the family.",
+      "at": 39.9
     },
     {
       "s": "Sam",
-      "t": "And someone gave a toast every ten minutes!"
+      "t": "And someone gave a toast every ten minutes!",
+      "at": 44.56
     },
     {
       "s": "Leyla",
-      "t": "Did you give one?"
+      "t": "Did you give one?",
+      "at": 47.56
     },
     {
       "s": "Sam",
-      "t": "I did! In Azerbaijani. Three sentences. Everyone clapped — I think because they were surprised."
+      "t": "I did! In Azerbaijani. Three sentences. Everyone clapped — I think because they were surprised.",
+      "at": 48.66
     },
     {
       "s": "Leyla",
-      "t": "[chuckle] They loved it. But you know who can always steal the show?"
+      "t": "[chuckle] They loved it. But you know who can always steal the show?",
+      "at": 56
     },
     {
       "s": "Sam",
-      "t": "Aysu! She danced with the groom's grandfather!"
+      "t": "Aysu! She danced with the groom's grandfather!",
+      "at": 60.3
     },
     {
       "s": "Leyla",
-      "t": "For twenty minutes! Now, what about weddings in England?"
+      "t": "For twenty minutes! Now, what about weddings in England?",
+      "at": 63.6
     },
     {
       "s": "Sam",
-      "t": "My sister just got engaged. She and her boyfriend want a small wedding — forty guests, in a garden."
+      "t": "My sister just got engaged. She and her boyfriend want a small wedding — forty guests, in a garden.",
+      "at": 68.1
     },
     {
       "s": "Leyla",
-      "t": "Forty! My mum would say that is just the family. When will they tie the knot?"
+      "t": "Forty! My mum would say that is just the family. When will they tie the knot?",
+      "at": 74.46
     },
     {
       "s": "Sam",
-      "t": "Next summer. And I'm going to give the toast — in English this time. [laugh]"
+      "t": "Next summer. And I'm going to give the toast — in English this time. [laugh]",
+      "at": 79.6
     },
     {
       "s": "Leyla",
-      "t": "Will you bring the Azerbaijani dancing to England?"
+      "t": "Will you bring the Azerbaijani dancing to England?",
+      "at": 83.96
     },
     {
       "s": "Sam",
-      "t": "Definitely. Forty English people dancing for four hours — they won't know what hit them."
+      "t": "Definitely. Forty English people dancing for four hours — they won't know what hit them.",
+      "at": 86.16
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what is a typical wedding like in your country — big or small?"
+      "t": "Here's your question for your next SpeakLab call: what is a typical wedding like in your country — big or small?",
+      "at": 92.22
     },
     {
       "s": "Sam",
-      "t": "And what's the best wedding you've ever been to? See you next time!"
+      "t": "And what's the best wedding you've ever been to? See you next time!",
+      "at": 98.42
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 101.82
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What is a typical wedding like in your country — big or small?",
     "Would you prefer a big wedding or a small one? Explain why to your partner."
-  ]
+  ],
+  "duration": 102.9,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is speed and thrills. Leyla, are you an adrenaline person?"
+      "t": "And I'm Sam. Today's topic is speed and thrills. Leyla, are you an adrenaline person?",
+      "at": 4.2
     },
     {
       "s": "Leyla",
-      "t": "Not at all. I play it safe. Even a fast lift makes me nervous."
+      "t": "Not at all. I play it safe. Even a fast lift makes me nervous.",
+      "at": 10.94
     },
     {
       "s": "Sam",
-      "t": "[laugh] Then you'll love my story. Last weekend in Gabala, I did a zipline in the mountains."
+      "t": "[laugh] Then you'll love my story. Last weekend in Gabala, I did a zipline in the mountains.",
+      "at": 16.08
     },
     {
       "s": "Leyla",
-      "t": "Over the valley? How high is it?"
+      "t": "Over the valley? How high is it?",
+      "at": 21.52
     },
     {
       "s": "Sam",
-      "t": "High enough. When I stood at the start, I was terrified. My legs were shaking."
+      "t": "High enough. When I stood at the start, I was terrified. My legs were shaking.",
+      "at": 24.26
     },
     {
       "s": "Leyla",
-      "t": "So why did you do it?"
+      "t": "So why did you do it?",
+      "at": 29.46
     },
     {
       "s": "Sam",
-      "t": "My friends from running club. One of them said, \"I dare you.\" And I can never say no to a dare."
+      "t": "My friends from running club. One of them said, \"I dare you.\" And I can never say no to a dare.",
+      "at": 31.6
     },
     {
       "s": "Leyla",
-      "t": "And how was it?"
+      "t": "And how was it?",
+      "at": 36.94
     },
     {
       "s": "Sam",
-      "t": "The first second was horrible. Then — pure thrill. I was screaming and laughing at the same time."
+      "t": "The first second was horrible. Then — pure thrill. I was screaming and laughing at the same time.",
+      "at": 38.22
     },
     {
       "s": "Leyla",
-      "t": "That's the adrenaline. My cousin Rashad loves that feeling. He rides a motorbike."
+      "t": "That's the adrenaline. My cousin Rashad loves that feeling. He rides a motorbike.",
+      "at": 45.98
     },
     {
       "s": "Sam",
-      "t": "Fast?"
+      "t": "Fast?",
+      "at": 48.95
     },
     {
       "s": "Leyla",
-      "t": "Too fast. My aunt is always worried. At least he always wears a helmet."
+      "t": "Too fast. My aunt is always worried. At least he always wears a helmet.",
+      "at": 51.92
     },
     {
       "s": "Sam",
-      "t": "And the speed limit?"
+      "t": "And the speed limit?",
+      "at": 57.02
     },
     {
       "s": "Leyla",
-      "t": "[chuckle] He says he knows it. I'm not sure he follows it."
+      "t": "[chuckle] He says he knows it. I'm not sure he follows it.",
+      "at": 58.82
     },
     {
       "s": "Sam",
-      "t": "When I run, I feel a small rush too, especially at the end of a race. That's my kind of speed."
+      "t": "When I run, I feel a small rush too, especially at the end of a race. That's my kind of speed.",
+      "at": 62.86
     },
     {
       "s": "Leyla",
-      "t": "That I understand. Okay, I have a confession. Last summer I went on the big wheel on the boulevard."
+      "t": "That I understand. Okay, I have a confession. Last summer I went on the big wheel on the boulevard.",
+      "at": 68.54
     },
     {
       "s": "Sam",
-      "t": "The big wheel is slow, Leyla."
+      "t": "The big wheel is slow, Leyla.",
+      "at": 75.18
     },
     {
       "s": "Leyla",
-      "t": "For me it was a big step! Next year maybe I'll take the plunge and try the zipline."
+      "t": "For me it was a big step! Next year maybe I'll take the plunge and try the zipline.",
+      "at": 77.58
     },
     {
       "s": "Sam",
-      "t": "I'll hold your bag. And film everything. [laugh]"
+      "t": "I'll hold your bag. And film everything. [laugh]",
+      "at": 83.44
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what is the most exciting thing you have ever done — and would you do it again?"
+      "t": "Here's your question for your next SpeakLab call: what is the most exciting thing you have ever done — and would you do it again?",
+      "at": 87.54
     },
     {
       "s": "Sam",
-      "t": "Mine is the zipline. And yes — tomorrow. See you next time!"
+      "t": "Mine is the zipline. And yes — tomorrow. See you next time!",
+      "at": 95.2
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 100.18
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What is the most exciting thing you have ever done — and would you do it again?",
     "Are you more of a risk-taker or do you play it safe? Give an example."
-  ]
+  ],
+  "duration": 101.3,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is crafts and handmade things. And look what I'm wearing!"
+      "t": "And I'm Sam. Today's topic is crafts and handmade things. And look what I'm wearing!",
+      "at": 4.08
     },
     {
       "s": "Leyla",
-      "t": "The scarf! My grandmother finished it?"
+      "t": "The scarf! My grandmother finished it?",
+      "at": 10.58
     },
     {
       "s": "Sam",
-      "t": "Last night. She gave it to me with a glass of tea. It's purple and very, very warm."
+      "t": "Last night. She gave it to me with a glass of tea. It's purple and very, very warm.",
+      "at": 13.18
     },
     {
       "s": "Leyla",
-      "t": "She worked on it for a month. For her, it's a labour of love."
+      "t": "She worked on it for a month. For her, it's a labour of love.",
+      "at": 19.46
     },
     {
       "s": "Sam",
-      "t": "I can see it. Every row is perfect. How does she do it?"
+      "t": "I can see it. Every row is perfect. How does she do it?",
+      "at": 23.66
     },
     {
       "s": "Leyla",
-      "t": "Seventy years of practice. And patience. She learned to knit when she was nine."
+      "t": "Seventy years of practice. And patience. She learned to knit when she was nine.",
+      "at": 27.92
     },
     {
       "s": "Sam",
-      "t": "Well, I tried something new too. A pottery workshop near Fountain Square."
+      "t": "Well, I tried something new too. A pottery workshop near Fountain Square.",
+      "at": 33.06
     },
     {
       "s": "Leyla",
-      "t": "Pottery! What did you make?"
+      "t": "Pottery! What did you make?",
+      "at": 37.58
     },
     {
       "s": "Sam",
-      "t": "A bowl. Well — it's supposed to be a bowl. It's a bit… imperfect. [laugh]"
+      "t": "A bowl. Well — it's supposed to be a bowl. It's a bit… imperfect. [laugh]",
+      "at": 39.9
     },
     {
       "s": "Leyla",
-      "t": "Imperfect is the beauty of handmade things. Every one is different."
+      "t": "Imperfect is the beauty of handmade things. Every one is different.",
+      "at": 46.36
     },
     {
       "s": "Sam",
-      "t": "That is what the teacher said. She says it takes a year to learn the ropes."
+      "t": "That is what the teacher said. She says it takes a year to learn the ropes.",
+      "at": 50.12
     },
     {
       "s": "Leyla",
-      "t": "Have you seen the carpet makers in the Old City?"
+      "t": "Have you seen the carpet makers in the Old City?",
+      "at": 54.42
     },
     {
       "s": "Sam",
-      "t": "Yes! A woman was weaving a carpet by hand. The pattern was so detailed."
+      "t": "Yes! A woman was weaving a carpet by hand. The pattern was so detailed.",
+      "at": 56.74
     },
     {
       "s": "Leyla",
-      "t": "Some carpets take a whole year. My family has one that's a hundred years old."
+      "t": "Some carpets take a whole year. My family has one that's a hundred years old.",
+      "at": 62.62
     },
     {
       "s": "Sam",
-      "t": "A hundred years! Things like that are made to last."
+      "t": "A hundred years! Things like that are made to last.",
+      "at": 67.86
     },
     {
       "s": "Leyla",
-      "t": "Not like the cheap carpets from big shops. They're finished in two years."
+      "t": "Not like the cheap carpets from big shops. They're finished in two years.",
+      "at": 72.2
     },
     {
       "s": "Sam",
-      "t": "And there is the copper village, Lahij. Is it true every house is a workshop?"
+      "t": "And there is the copper village, Lahij. Is it true every house is a workshop?",
+      "at": 75.96
     },
     {
       "s": "Leyla",
-      "t": "Almost. You can hear the hammers in the whole street. It's a real craft village — you should go."
+      "t": "Almost. You can hear the hammers in the whole street. It's a real craft village — you should go.",
+      "at": 80.82
     },
     {
       "s": "Sam",
-      "t": "Next month. And I'll bring my bowl to show them. [chuckle]"
+      "t": "Next month. And I'll bring my bowl to show them. [chuckle]",
+      "at": 86.88
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: have you ever made something by hand — and what is the most special handmade thing you own?"
+      "t": "Here's your question for your next SpeakLab call: have you ever made something by hand — and what is the most special handmade thing you own?",
+      "at": 89.42
     },
     {
       "s": "Sam",
-      "t": "Mine is this scarf, of course. See you next time!"
+      "t": "Mine is this scarf, of course. See you next time!",
+      "at": 97.42
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 100.3
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Have you ever made something by hand — and what is the most special handmade thing you own?",
     "Would you pay more for something handmade than for something from a factory? Why?"
-  ]
+  ],
+  "duration": 101.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

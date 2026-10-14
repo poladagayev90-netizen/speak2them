@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is old and second-hand things. And I bought something on Sunday."
+      "t": "And I'm Sam. Today's topic is old and second-hand things. And I bought something on Sunday.",
+      "at": 3.86
     },
     {
       "s": "Leyla",
-      "t": "Let me guess. Something old?"
+      "t": "Let me guess. Something old?",
+      "at": 11.24
     },
     {
       "s": "Sam",
-      "t": "A record player. Second-hand, from the flea market near the metro. Twenty manat!"
+      "t": "A record player. Second-hand, from the flea market near the metro. Twenty manat!",
+      "at": 12.34
     },
     {
       "s": "Leyla",
-      "t": "Does it work?"
+      "t": "Does it work?",
+      "at": 18.42
     },
     {
       "s": "Sam",
-      "t": "Perfectly. It's from the seventies — real vintage. And the seller gave me five old records for free."
+      "t": "Perfectly. It's from the seventies — real vintage. And the seller gave me five old records for free.",
+      "at": 19.46
     },
     {
       "s": "Leyla",
-      "t": "[laugh] You and your free gifts at markets. What music?"
+      "t": "[laugh] You and your free gifts at markets. What music?",
+      "at": 26.14
     },
     {
       "s": "Sam",
-      "t": "Azerbaijani jazz! I'd never heard it before. It's beautiful."
+      "t": "Azerbaijani jazz! I'd never heard it before. It's beautiful.",
+      "at": 29.52
     },
     {
       "s": "Leyla",
-      "t": "I have something old too. I inherited my grandfather's watch."
+      "t": "I have something old too. I inherited my grandfather's watch.",
+      "at": 33.34
     },
     {
       "s": "Sam",
-      "t": "Doesn't your grandmother want it?"
+      "t": "Doesn't your grandmother want it?",
+      "at": 37.16
     },
     {
       "s": "Leyla",
-      "t": "She gave it to me. It's not worth much money, but it's my favourite keepsake."
+      "t": "She gave it to me. It's not worth much money, but it's my favourite keepsake.",
+      "at": 38.72
     },
     {
       "s": "Sam",
-      "t": "Old things have stories. New things don't."
+      "t": "Old things have stories. New things don't.",
+      "at": 43.3
     },
     {
       "s": "Leyla",
-      "t": "Do you remember the samovar in our attic? For twenty years we let it gather dust."
+      "t": "Do you remember the samovar in our attic? For twenty years we let it gather dust.",
+      "at": 46.1
     },
     {
       "s": "Sam",
-      "t": "The big copper one?"
+      "t": "The big copper one?",
+      "at": 51.56
     },
     {
       "s": "Leyla",
-      "t": "Yes. Mr Aliyev took it to his garage and restored it. Now it shines like new, and we use it every Sunday."
+      "t": "Yes. Mr Aliyev took it to his garage and restored it. Now it shines like new, and we use it every Sunday.",
+      "at": 53.06
     },
     {
       "s": "Sam",
-      "t": "He can fix anything. That man is an antique himself! [chuckle]"
+      "t": "He can fix anything. That man is an antique himself! [chuckle]",
+      "at": 60.58
     },
     {
       "s": "Leyla",
-      "t": "Sam! I'll tell him you said that."
+      "t": "Sam! I'll tell him you said that.",
+      "at": 65.76
     },
     {
       "s": "Sam",
-      "t": "Please don't. Some things really stand the test of time — like his figs."
+      "t": "Please don't. Some things really stand the test of time — like his figs.",
+      "at": 68.16
     },
     {
       "s": "Leyla",
-      "t": "And your old leather jacket?"
+      "t": "And your old leather jacket?",
+      "at": 73.42
     },
     {
       "s": "Sam",
-      "t": "Fifteen years old, from a second-hand shop in Manchester. Still my favourite."
+      "t": "Fifteen years old, from a second-hand shop in Manchester. Still my favourite.",
+      "at": 75.78
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what is the oldest thing you own — and is there a story behind it?"
+      "t": "Here's your question for your next SpeakLab call: what is the oldest thing you own — and is there a story behind it?",
+      "at": 80.44
     },
     {
       "s": "Sam",
-      "t": "Mine is the jacket. Or maybe now the record player. See you next time!"
+      "t": "Mine is the jacket. Or maybe now the record player. See you next time!",
+      "at": 89.18
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 95.1
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What is the oldest thing you own — and is there a story behind it?",
     "Do you like buying second-hand things? What would you never buy second-hand?"
-  ]
+  ],
+  "duration": 96,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

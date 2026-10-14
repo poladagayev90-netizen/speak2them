@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is games and puzzles. Leyla, I have news: I've started playing nard."
+      "t": "And I'm Sam. Today's topic is games and puzzles. Leyla, I have news: I've started playing nard.",
+      "at": 3.98
     },
     {
       "s": "Leyla",
-      "t": "Backgammon! Who taught you?"
+      "t": "Backgammon! Who taught you?",
+      "at": 12.82
     },
     {
       "s": "Sam",
-      "t": "Mr Aliyev, your neighbour. He plays in the yard every evening."
+      "t": "Mr Aliyev, your neighbour. He plays in the yard every evening.",
+      "at": 15.08
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Then you're losing every game."
+      "t": "[laugh] Then you're losing every game.",
+      "at": 19.1
     },
     {
       "s": "Sam",
-      "t": "Every single one. He has a perfect poker face. I never know what he's thinking."
+      "t": "Every single one. He has a perfect poker face. I never know what he's thinking.",
+      "at": 21.48
     },
     {
       "s": "Leyla",
-      "t": "And he plays fast. Before you finish your turn, he's already moving."
+      "t": "And he plays fast. Before you finish your turn, he's already moving.",
+      "at": 26.12
     },
     {
       "s": "Sam",
-      "t": "Yes! And he talks about strategy the whole time — in Azerbaijani. I understand nothing."
+      "t": "Yes! And he talks about strategy the whole time — in Azerbaijani. I understand nothing.",
+      "at": 30
     },
     {
       "s": "Leyla",
-      "t": "Did you ever win?"
+      "t": "Did you ever win?",
+      "at": 36.36
     },
     {
       "s": "Sam",
-      "t": "Once it was a draw. Well, we stopped because it got dark. [chuckle]"
+      "t": "Once it was a draw. Well, we stopped because it got dark. [chuckle]",
+      "at": 38.04
     },
     {
       "s": "Leyla",
-      "t": "In my family the big game is cards at New Year. And my grandmother always cheats."
+      "t": "In my family the big game is cards at New Year. And my grandmother always cheats.",
+      "at": 42.16
     },
     {
       "s": "Sam",
-      "t": "Your grandmother? No!"
+      "t": "Your grandmother? No!",
+      "at": 47.86
     },
     {
       "s": "Leyla",
-      "t": "She hides cards in her sleeve. We all know, but nobody says anything."
+      "t": "She hides cards in her sleeve. We all know, but nobody says anything.",
+      "at": 49.8
     },
     {
       "s": "Sam",
-      "t": "[laugh] That's a clever opponent."
+      "t": "[laugh] That's a clever opponent.",
+      "at": 54.9
     },
     {
       "s": "Leyla",
-      "t": "What about puzzles? Do you like them?"
+      "t": "What about puzzles? Do you like them?",
+      "at": 56.7
     },
     {
       "s": "Sam",
-      "t": "Crosswords. Every Sunday with my coffee. But some clues are impossible."
+      "t": "Crosswords. Every Sunday with my coffee. But some clues are impossible.",
+      "at": 59.2
     },
     {
       "s": "Leyla",
-      "t": "Do you give up?"
+      "t": "Do you give up?",
+      "at": 64.02
     },
     {
       "s": "Sam",
-      "t": "Never. I put it on the fridge and finish it on Wednesday."
+      "t": "Never. I put it on the fridge and finish it on Wednesday.",
+      "at": 65.2
     },
     {
       "s": "Leyla",
-      "t": "My niece Aysu plays a puzzle game on her phone. It's so addictive — she plays it under the table at dinner."
+      "t": "My niece Aysu plays a puzzle game on her phone. It's so addictive — she plays it under the table at dinner.",
+      "at": 68.88
     },
     {
       "s": "Sam",
-      "t": "Ah, the modern way to hide cards in your sleeve."
+      "t": "Ah, the modern way to hide cards in your sleeve.",
+      "at": 75.4
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what game are you really good at — and do you play to win or just for fun?"
+      "t": "Here's your question for your next SpeakLab call: what game are you really good at — and do you play to win or just for fun?",
+      "at": 79.52
     },
     {
       "s": "Sam",
-      "t": "I play to win. I just don't win yet. See you next time!"
+      "t": "I play to win. I just don't win yet. See you next time!",
+      "at": 87.32
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 93.34
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What game are you really good at — and do you play to win or just for fun?",
     "Is there a game or app you find addictive? How much time do you spend on it?"
-  ]
+  ],
+  "duration": 94.4,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

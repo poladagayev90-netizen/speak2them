@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is art and museums. And on Saturday I finally went to the Carpet Museum."
+      "t": "And I'm Sam. Today's topic is art and museums. And on Saturday I finally went to the Carpet Museum.",
+      "at": 4.08
     },
     {
       "s": "Leyla",
-      "t": "The building that looks like a rolled carpet! What did you think?"
+      "t": "The building that looks like a rolled carpet! What did you think?",
+      "at": 12.34
     },
     {
       "s": "Sam",
-      "t": "Amazing. Some of those carpets are real masterpieces. Three hundred years old!"
+      "t": "Amazing. Some of those carpets are real masterpieces. Three hundred years old!",
+      "at": 15.82
     },
     {
       "s": "Leyla",
-      "t": "And then?"
+      "t": "And then?",
+      "at": 21.56
     },
     {
       "s": "Sam",
-      "t": "Then the Museum of Modern Art. And honestly, I didn't understand everything."
+      "t": "Then the Museum of Modern Art. And honestly, I didn't understand everything.",
+      "at": 22.5
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Abstract art?"
+      "t": "[laugh] Abstract art?",
+      "at": 28.18
     },
     {
       "s": "Sam",
-      "t": "There was one huge canvas — just a red line on white. People stood in front of it for ten minutes."
+      "t": "There was one huge canvas — just a red line on white. People stood in front of it for ten minutes.",
+      "at": 29.76
     },
     {
       "s": "Leyla",
-      "t": "Maybe it made them feel something. Beauty is in the eye of the beholder."
+      "t": "Maybe it made them feel something. Beauty is in the eye of the beholder.",
+      "at": 37.22
     },
     {
       "s": "Sam",
-      "t": "Maybe. But Aysu could paint that red line. [chuckle]"
+      "t": "Maybe. But Aysu could paint that red line. [chuckle]",
+      "at": 41.2
     },
     {
       "s": "Leyla",
-      "t": "Funny you say that. Aysu had her first exhibition last week — at school."
+      "t": "Funny you say that. Aysu had her first exhibition last week — at school.",
+      "at": 44.84
     },
     {
       "s": "Sam",
-      "t": "A real exhibition?"
+      "t": "A real exhibition?",
+      "at": 49.2
     },
     {
       "s": "Leyla",
-      "t": "In the school hall. Twenty children, two drawings each. She drew our grandmother in her garden."
+      "t": "In the school hall. Twenty children, two drawings each. She drew our grandmother in her garden.",
+      "at": 51.02
     },
     {
       "s": "Sam",
-      "t": "I'd love to see it."
+      "t": "I'd love to see it.",
+      "at": 57.46
     },
     {
       "s": "Leyla",
-      "t": "I'll send you a photo. When I saw it, I almost cried. A picture is worth a thousand words."
+      "t": "I'll send you a photo. When I saw it, I almost cried. A picture is worth a thousand words.",
+      "at": 58.94
     },
     {
       "s": "Sam",
-      "t": "Do you have a favourite place for art in Baku?"
+      "t": "Do you have a favourite place for art in Baku?",
+      "at": 65.14
     },
     {
       "s": "Leyla",
-      "t": "A small gallery in the Old City. The artists are often there, and you can talk to them."
+      "t": "A small gallery in the Old City. The artists are often there, and you can talk to them.",
+      "at": 67.92
     },
     {
       "s": "Sam",
-      "t": "That's nice. In England I loved the sculpture parks — art in the open air, with trees all around."
+      "t": "That's nice. In England I loved the sculpture parks — art in the open air, with trees all around.",
+      "at": 72.82
     },
     {
       "s": "Leyla",
-      "t": "Art doesn't have to be in a building. It can inspire you anywhere."
+      "t": "Art doesn't have to be in a building. It can inspire you anywhere.",
+      "at": 78.94
     },
     {
       "s": "Sam",
-      "t": "Even a red line on white. Okay — I'll go back and look again."
+      "t": "Even a red line on white. Okay — I'll go back and look again.",
+      "at": 82.78
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what kind of art do you like — and which museum would you love to visit?"
+      "t": "Here's your question for your next SpeakLab call: what kind of art do you like — and which museum would you love to visit?",
+      "at": 87.84
     },
     {
       "s": "Sam",
-      "t": "And would you hang a red line on your wall? See you next time!"
+      "t": "And would you hang a red line on your wall? See you next time!",
+      "at": 94.16
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 98.02
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What kind of art do you like — and which museum would you love to visit?",
     "Is abstract art real art? Discuss with your partner."
-  ]
+  ],
+  "duration": 99,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

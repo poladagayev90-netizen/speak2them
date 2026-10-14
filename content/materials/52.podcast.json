@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is moving house. My sister and her fiancé just moved in together."
+      "t": "And I'm Sam. Today's topic is moving house. My sister and her fiancé just moved in together.",
+      "at": 4.86
     },
     {
       "s": "Leyla",
-      "t": "Exciting! Was it a big move?"
+      "t": "Exciting! Was it a big move?",
+      "at": 11.5
     },
     {
       "s": "Sam",
-      "t": "Huge. She had forty boxes. I helped her pack the whole weekend — on a video call."
+      "t": "Huge. She had forty boxes. I helped her pack the whole weekend — on a video call.",
+      "at": 13.88
     },
     {
       "s": "Leyla",
-      "t": "[laugh] Very helpful, Sam."
+      "t": "[laugh] Very helpful, Sam.",
+      "at": 20.44
     },
     {
       "s": "Sam",
-      "t": "I gave advice! Mostly: \"Do you really need this?\" She had to declutter."
+      "t": "I gave advice! Mostly: \"Do you really need this?\" She had to declutter.",
+      "at": 22.14
     },
     {
       "s": "Leyla",
-      "t": "When I left my parents' flat, I learned that lesson too. I had kept every school notebook."
+      "t": "When I left my parents' flat, I learned that lesson too. I had kept every school notebook.",
+      "at": 27.98
     },
     {
       "s": "Sam",
-      "t": "When was that?"
+      "t": "When was that?",
+      "at": 33.86
     },
     {
       "s": "Leyla",
-      "t": "Three years ago. It's not so common here to move out before you marry, so my mum cried for a week."
+      "t": "Three years ago. It's not so common here to move out before you marry, so my mum cried for a week.",
+      "at": 34.98
     },
     {
       "s": "Sam",
-      "t": "Really?"
+      "t": "Really?",
+      "at": 40.52
     },
     {
       "s": "Leyla",
-      "t": "Really. But now she loves visiting me. For me it was a fresh start."
+      "t": "Really. But now she loves visiting me. For me it was a fresh start.",
+      "at": 41.44
     },
     {
       "s": "Sam",
-      "t": "When I moved to Baku, I brought only two suitcases. Everything else stayed in my mum's garage."
+      "t": "When I moved to Baku, I brought only two suitcases. Everything else stayed in my mum's garage.",
+      "at": 46.66
     },
     {
       "s": "Leyla",
-      "t": "And your first flat here?"
+      "t": "And your first flat here?",
+      "at": 51.86
     },
     {
       "s": "Sam",
-      "t": "Terrible! The rent was too high, and the furniture was older than me."
+      "t": "Terrible! The rent was too high, and the furniture was older than me.",
+      "at": 54.1
     },
     {
       "s": "Leyla",
-      "t": "And the landlord?"
+      "t": "And the landlord?",
+      "at": 58.38
     },
     {
       "s": "Sam",
-      "t": "He kept half of my deposit when I left. He said the sofa was damaged. It was damaged when I arrived!"
+      "t": "He kept half of my deposit when I left. He said the sofa was damaged. It was damaged when I arrived!",
+      "at": 60.02
     },
     {
       "s": "Leyla",
-      "t": "That happens a lot. Take photos on the first day. Always."
+      "t": "That happens a lot. Take photos on the first day. Always.",
+      "at": 66.2
     },
     {
       "s": "Sam",
-      "t": "Lesson learned. My flat now is small, but it's near the sea, and the neighbours are lovely."
+      "t": "Lesson learned. My flat now is small, but it's near the sea, and the neighbours are lovely.",
+      "at": 71.12
     },
     {
       "s": "Leyla",
-      "t": "So it was easy to settle in this time."
+      "t": "So it was easy to settle in this time.",
+      "at": 76.32
     },
     {
       "s": "Sam",
-      "t": "Very easy. When I come back from a trip and open the door, I think: home sweet home."
+      "t": "Very easy. When I come back from a trip and open the door, I think: home sweet home.",
+      "at": 78.52
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: how many times have you moved — and what was the hardest part?"
+      "t": "Here's your question for your next SpeakLab call: how many times have you moved — and what was the hardest part?",
+      "at": 84.56
     },
     {
       "s": "Sam",
-      "t": "Mine: carrying a washing machine up five floors. See you next time!"
+      "t": "Mine: carrying a washing machine up five floors. See you next time!",
+      "at": 91.12
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 95.94
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "How many times have you moved — and what was the hardest part?",
     "What makes a place feel like home to you?"
-  ]
+  ],
+  "duration": 97.2,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

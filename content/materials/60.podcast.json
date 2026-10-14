@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is goodbyes and reunions. And Leyla — this is our sixtieth episode."
+      "t": "And I'm Sam. Today's topic is goodbyes and reunions. And Leyla — this is our sixtieth episode.",
+      "at": 4.46
     },
     {
       "s": "Leyla",
-      "t": "Sixty! The last one of our season. It feels a bit bittersweet."
+      "t": "Sixty! The last one of our season. It feels a bit bittersweet.",
+      "at": 12.44
     },
     {
       "s": "Sam",
-      "t": "Happy and sad at the same time. Exactly. And I have news: I'm going home to Manchester next month."
+      "t": "Happy and sad at the same time. Exactly. And I have news: I'm going home to Manchester next month.",
+      "at": 18.48
     },
     {
       "s": "Leyla",
-      "t": "For good?"
+      "t": "For good?",
+      "at": 25.62
     },
     {
       "s": "Sam",
-      "t": "No, no! Just for two weeks. My sister's party, my mum's cooking, my old running friends."
+      "t": "No, no! Just for two weeks. My sister's party, my mum's cooking, my old running friends.",
+      "at": 26.64
     },
     {
       "s": "Leyla",
-      "t": "Will you be homesick for Baku? [laugh]"
+      "t": "Will you be homesick for Baku? [laugh]",
+      "at": 33.4
     },
     {
       "s": "Sam",
-      "t": "Honestly? Probably. I'll miss the tea, the sea… and Mr Aliyev's figs."
+      "t": "Honestly? Probably. I'll miss the tea, the sea… and Mr Aliyev's figs.",
+      "at": 35.62
     },
     {
       "s": "Leyla",
-      "t": "My school class had a reunion last month. Twenty years after we finished school."
+      "t": "My school class had a reunion last month. Twenty years after we finished school.",
+      "at": 43.06
     },
     {
       "s": "Sam",
-      "t": "How was it?"
+      "t": "How was it?",
+      "at": 47.8
     },
     {
       "s": "Leyla",
-      "t": "Strange and lovely. Some friends I see every week. With others, we started to drift apart after school."
+      "t": "Strange and lovely. Some friends I see every week. With others, we started to drift apart after school.",
+      "at": 49.12
     },
     {
       "s": "Sam",
-      "t": "That happens. Life takes people in different directions."
+      "t": "That happens. Life takes people in different directions.",
+      "at": 56.1
     },
     {
       "s": "Leyla",
-      "t": "But my best friend from school now lives in Canada. She flew in just for the reunion."
+      "t": "But my best friend from school now lives in Canada. She flew in just for the reunion.",
+      "at": 59.14
     },
     {
       "s": "Sam",
-      "t": "Wow. You must have been so happy."
+      "t": "Wow. You must have been so happy.",
+      "at": 64.6
     },
     {
       "s": "Leyla",
-      "t": "We cried and laughed all night. Absence makes the heart grow fonder, they say."
+      "t": "We cried and laughed all night. Absence makes the heart grow fonder, they say.",
+      "at": 67.06
     },
     {
       "s": "Sam",
-      "t": "When I left Manchester, my mum stood at the airport and waved until she couldn't see me."
+      "t": "When I left Manchester, my mum stood at the airport and waved until she couldn't see me.",
+      "at": 72.62
     },
     {
       "s": "Leyla",
-      "t": "And now she calls you every evening."
+      "t": "And now she calls you every evening.",
+      "at": 77.5
     },
     {
       "s": "Sam",
-      "t": "Every single evening. [chuckle] We really keep in touch."
+      "t": "Every single evening. [chuckle] We really keep in touch.",
+      "at": 79.42
     },
     {
       "s": "Leyla",
-      "t": "And that's what we hope you do too — with your SpeakLab partners."
+      "t": "And that's what we hope you do too — with your SpeakLab partners.",
+      "at": 83.26
     },
     {
       "s": "Sam",
-      "t": "Yes! Don't say farewell after one call. Call them again. Make a friend."
+      "t": "Yes! Don't say farewell after one call. Call them again. Make a friend.",
+      "at": 86.78
     },
     {
       "s": "Leyla",
-      "t": "Here's your last question for your next SpeakLab call: who do you miss — and when did you last see them?"
+      "t": "Here's your last question for your next SpeakLab call: who do you miss — and when did you last see them?",
+      "at": 92.02
     },
     {
       "s": "Sam",
-      "t": "Thank you for listening to all sixty episodes. See you next season!"
+      "t": "Thank you for listening to all sixty episodes. See you next season!",
+      "at": 98.56
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 102.54
     }
   ],
   "questions": [
@@ -212,5 +235,13 @@
   "talk": [
     "Who do you miss — and when did you last see them?",
     "How do you keep in touch with friends who live far away?"
-  ]
+  ],
+  "duration": 103.5,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

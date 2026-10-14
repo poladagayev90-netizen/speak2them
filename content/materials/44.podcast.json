@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is gifts and giving. And I need your help, Leyla."
+      "t": "And I'm Sam. Today's topic is gifts and giving. And I need your help, Leyla.",
+      "at": 3.7
     },
     {
       "s": "Leyla",
-      "t": "Why?"
+      "t": "Why?",
+      "at": 10.06
     },
     {
       "s": "Sam",
-      "t": "It's my mum's birthday next week, and I have no idea what to buy."
+      "t": "It's my mum's birthday next week, and I have no idea what to buy.",
+      "at": 10.86
     },
     {
       "s": "Leyla",
-      "t": "What does she like?"
+      "t": "What does she like?",
+      "at": 14.92
     },
     {
       "s": "Sam",
-      "t": "Gardening, tea, and calling me every evening. [laugh]"
+      "t": "Gardening, tea, and calling me every evening. [laugh]",
+      "at": 16.4
     },
     {
       "s": "Leyla",
-      "t": "Then something thoughtful. Maybe a nice tea set from Baku, with armudu glasses."
+      "t": "Then something thoughtful. Maybe a nice tea set from Baku, with armudu glasses.",
+      "at": 20.2
     },
     {
       "s": "Sam",
-      "t": "Perfect! But I'm terrible at wrapping presents. Last year my present looked like a used bag."
+      "t": "Perfect! But I'm terrible at wrapping presents. Last year my present looked like a used bag.",
+      "at": 25.72
     },
     {
       "s": "Leyla",
-      "t": "The shop can wrap it for you. And honestly, it's the thought that counts."
+      "t": "The shop can wrap it for you. And honestly, it's the thought that counts.",
+      "at": 32.8
     },
     {
       "s": "Sam",
-      "t": "You know what surprised me here? When I gave Mr Aliyev a small gift, he said no twice."
+      "t": "You know what surprised me here? When I gave Mr Aliyev a small gift, he said no twice.",
+      "at": 37.06
     },
     {
       "s": "Leyla",
-      "t": "Ah, yes. Many people refuse a gift once or twice — it's just polite. You have to insist."
+      "t": "Ah, yes. Many people refuse a gift once or twice — it's just polite. You have to insist.",
+      "at": 42.76
     },
     {
       "s": "Sam",
-      "t": "I had no idea! I almost took it back home."
+      "t": "I had no idea! I almost took it back home.",
+      "at": 48.74
     },
     {
       "s": "Leyla",
-      "t": "[chuckle] And he's very generous himself, isn't he?"
+      "t": "[chuckle] And he's very generous himself, isn't he?",
+      "at": 53
     },
     {
       "s": "Sam",
-      "t": "Very. Every week he brings me apples and figs from his garden. It's a lovely gesture."
+      "t": "Very. Every week he brings me apples and figs from his garden. It's a lovely gesture.",
+      "at": 56.5
     },
     {
       "s": "Leyla",
-      "t": "My niece Aysu made me a birthday card last month. Glitter everywhere, and a cat with six legs."
+      "t": "My niece Aysu made me a birthday card last month. Glitter everywhere, and a cat with six legs.",
+      "at": 62.1
     },
     {
       "s": "Sam",
-      "t": "That's the best kind of gift."
+      "t": "That's the best kind of gift.",
+      "at": 68.5
     },
     {
       "s": "Leyla",
-      "t": "It is. It's on my fridge. Now tell me about your half marathon — I heard it's for charity?"
+      "t": "It is. It's on my fridge. Now tell me about your half marathon — I heard it's for charity?",
+      "at": 70.46
     },
     {
       "s": "Sam",
-      "t": "Yes! Our running club is raising money for a children's hospital. People donate for every kilometre."
+      "t": "Yes! Our running club is raising money for a children's hospital. People donate for every kilometre.",
+      "at": 76.52
     },
     {
       "s": "Leyla",
-      "t": "That's wonderful. I'll donate too. You always go the extra mile, Sam."
+      "t": "That's wonderful. I'll donate too. You always go the extra mile, Sam.",
+      "at": 82.76
     },
     {
       "s": "Sam",
-      "t": "Twenty-one kilometres, actually. [laugh] Thank you!"
+      "t": "Twenty-one kilometres, actually. [laugh] Thank you!",
+      "at": 86.12
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what is the best gift you have ever received — and why was it special?"
+      "t": "Here's your question for your next SpeakLab call: what is the best gift you have ever received — and why was it special?",
+      "at": 90.36
     },
     {
       "s": "Sam",
-      "t": "Mine is a bag of figs from my neighbour. See you next time!"
+      "t": "Mine is a bag of figs from my neighbour. See you next time!",
+      "at": 97.22
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 100.66
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "What is the best gift you have ever received — and why was it special?",
     "In your country, how do people give and accept gifts? Is there anything a guest should never bring?"
-  ]
+  ],
+  "duration": 101.8,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

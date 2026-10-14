@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is farming and where our food comes from. And I spent last weekend on a farm!"
+      "t": "And I'm Sam. Today's topic is farming and where our food comes from. And I spent last weekend on a farm!",
+      "at": 3.98
     },
     {
       "s": "Leyla",
-      "t": "At my uncle's place in Guba?"
+      "t": "At my uncle's place in Guba?",
+      "at": 11.84
     },
     {
       "s": "Sam",
-      "t": "Yes! The apple harvest. Two days of picking apples from morning to evening."
+      "t": "Yes! The apple harvest. Two days of picking apples from morning to evening.",
+      "at": 13.6
     },
     {
       "s": "Leyla",
-      "t": "Guba apples are famous. Were you tired?"
+      "t": "Guba apples are famous. Were you tired?",
+      "at": 19.34
     },
     {
       "s": "Sam",
-      "t": "My arms hurt more than my legs after a race. But the apples were amazing."
+      "t": "My arms hurt more than my legs after a race. But the apples were amazing.",
+      "at": 22
     },
     {
       "s": "Leyla",
-      "t": "My uncle says it was a good year. Last year there was a drought — no rain for two months."
+      "t": "My uncle says it was a good year. Last year there was a drought — no rain for two months.",
+      "at": 27.4
     },
     {
       "s": "Sam",
-      "t": "What happened to the crop?"
+      "t": "What happened to the crop?",
+      "at": 33.22
     },
     {
       "s": "Leyla",
-      "t": "They lost almost half of it. Farmers are always fighting the weather."
+      "t": "They lost almost half of it. Farmers are always fighting the weather.",
+      "at": 34.76
     },
     {
       "s": "Sam",
-      "t": "Your uncle doesn't use chemicals, does he?"
+      "t": "Your uncle doesn't use chemicals, does he?",
+      "at": 39.12
     },
     {
       "s": "Leyla",
-      "t": "No, everything is organic. He says good soil is the most important thing on a farm."
+      "t": "No, everything is organic. He says good soil is the most important thing on a farm.",
+      "at": 41.56
     },
     {
       "s": "Sam",
-      "t": "He's so calm and kind. Very down to earth."
+      "t": "He's so calm and kind. Very down to earth.",
+      "at": 47.24
     },
     {
       "s": "Leyla",
-      "t": "That's rural life. Early to bed, early to rise. No traffic, no deadlines."
+      "t": "That's rural life. Early to bed, early to rise. No traffic, no deadlines.",
+      "at": 51.16
     },
     {
       "s": "Sam",
-      "t": "Except the weather. On Saturday it looked like rain, so we worked until dark."
+      "t": "Except the weather. On Saturday it looked like rain, so we worked until dark.",
+      "at": 56.22
     },
     {
       "s": "Leyla",
-      "t": "Make hay while the sun shines, as they say."
+      "t": "Make hay while the sun shines, as they say.",
+      "at": 60.56
     },
     {
       "s": "Sam",
-      "t": "Exactly. And now I'm trying to grow tomatoes on my balcony."
+      "t": "Exactly. And now I'm trying to grow tomatoes on my balcony.",
+      "at": 62.34
     },
     {
       "s": "Leyla",
-      "t": "How's it going?"
+      "t": "How's it going?",
+      "at": 66.54
     },
     {
       "s": "Sam",
-      "t": "Three tomatoes in two months. [laugh] Very small ones."
+      "t": "Three tomatoes in two months. [laugh] Very small ones.",
+      "at": 67.52
     },
     {
       "s": "Leyla",
-      "t": "Well, you reap what you sow. Maybe give them more water and sun."
+      "t": "Well, you reap what you sow. Maybe give them more water and sun.",
+      "at": 70.92
     },
     {
       "s": "Sam",
-      "t": "And more love. I talk to them every morning."
+      "t": "And more love. I talk to them every morning.",
+      "at": 75.7
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: do you know where your food comes from — and could you live on a farm?"
+      "t": "Here's your question for your next SpeakLab call: do you know where your food comes from — and could you live on a farm?",
+      "at": 78.22
     },
     {
       "s": "Sam",
-      "t": "I could. For two days. See you next time!"
+      "t": "I could. For two days. See you next time!",
+      "at": 84.93
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 88.5
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Do you know where your food comes from — and could you live on a farm?",
     "Have you ever grown fruit or vegetables yourself? How did it go?"
-  ]
+  ],
+  "duration": 89.4,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is the sea and rivers. And Leyla, I learned something strange about the Caspian Sea."
+      "t": "And I'm Sam. Today's topic is the sea and rivers. And Leyla, I learned something strange about the Caspian Sea.",
+      "at": 4.34
     },
     {
       "s": "Leyla",
-      "t": "What?"
+      "t": "What?",
+      "at": 12.96
     },
     {
       "s": "Sam",
-      "t": "There's almost no tide! In England the sea goes out and comes back twice a day."
+      "t": "There's almost no tide! In England the sea goes out and comes back twice a day.",
+      "at": 13.78
     },
     {
       "s": "Leyla",
-      "t": "[laugh] That's because the Caspian is really a giant lake. The water stays where it is."
+      "t": "[laugh] That's because the Caspian is really a giant lake. The water stays where it is.",
+      "at": 20.28
     },
     {
       "s": "Sam",
-      "t": "I went swimming last weekend, at a beach outside Baku. The water was warm, but the current was stronger than I expected."
+      "t": "I went swimming last weekend, at a beach outside Baku. The water was warm, but the current was stronger than I expected.",
+      "at": 25.08
     },
     {
       "s": "Leyla",
-      "t": "You have to be careful. Many people swim too far from the shore."
+      "t": "You have to be careful. Many people swim too far from the shore.",
+      "at": 32.36
     },
     {
       "s": "Sam",
-      "t": "Don't worry, I stayed close. Mostly I just lay on my back and tried to float."
+      "t": "Don't worry, I stayed close. Mostly I just lay on my back and tried to float.",
+      "at": 36.44
     },
     {
       "s": "Leyla",
-      "t": "That is what my niece Aysu learned this summer. The first day she was scared, and by the end she was floating like a little boat."
+      "t": "That is what my niece Aysu learned this summer. The first day she was scared, and by the end she was floating like a little boat.",
+      "at": 40.92
     },
     {
       "s": "Sam",
-      "t": "Good for her! When I was a child in Manchester, we didn't have the sea — just a river."
+      "t": "Good for her! When I was a child in Manchester, we didn't have the sea — just a river.",
+      "at": 48.12
     },
     {
       "s": "Leyla",
-      "t": "Did you swim in it?"
+      "t": "Did you swim in it?",
+      "at": 53.26
     },
     {
       "s": "Sam",
-      "t": "Never! It was too cold. But my grandad and I sat on the river bank every Sunday and tried to catch fish."
+      "t": "Never! It was too cold. But my grandad and I sat on the river bank every Sunday and tried to catch fish.",
+      "at": 54.48
     },
     {
       "s": "Leyla",
-      "t": "Did you catch anything?"
+      "t": "Did you catch anything?",
+      "at": 62.02
     },
     {
       "s": "Sam",
-      "t": "One small fish in five years. [chuckle] But I loved those Sundays."
+      "t": "One small fish in five years. [chuckle] But I loved those Sundays.",
+      "at": 63.72
     },
     {
       "s": "Leyla",
-      "t": "My favourite place is the old harbour in the evening. The boats, the lights, the sound of the water…"
+      "t": "My favourite place is the old harbour in the evening. The boats, the lights, the sound of the water…",
+      "at": 68.46
     },
     {
       "s": "Sam",
-      "t": "Very romantic. My friend Tom needs a place like that. His girlfriend just left him."
+      "t": "Very romantic. My friend Tom needs a place like that. His girlfriend just left him.",
+      "at": 75.04
     },
     {
       "s": "Leyla",
-      "t": "Oh, poor Tom. Tell him there are plenty more fish in the sea."
+      "t": "Oh, poor Tom. Tell him there are plenty more fish in the sea.",
+      "at": 80.54
     },
     {
       "s": "Sam",
-      "t": "[laugh] That's exactly what I told him! But he's not ready to listen."
+      "t": "[laugh] That's exactly what I told him! But he's not ready to listen.",
+      "at": 84.7
     },
     {
       "s": "Leyla",
-      "t": "Then he should just go with the flow for a while. Stay calm, like the Caspian."
+      "t": "Then he should just go with the flow for a while. Stay calm, like the Caspian.",
+      "at": 89.24
     },
     {
       "s": "Sam",
-      "t": "Good advice. I'll send him this episode."
+      "t": "Good advice. I'll send him this episode.",
+      "at": 94.76
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: do you prefer the sea, a river or a lake — and what do you love doing there?"
+      "t": "Here's your question for your next SpeakLab call: do you prefer the sea, a river or a lake — and what do you love doing there?",
+      "at": 97.62
     },
     {
       "s": "Sam",
-      "t": "Mine is floating. Just floating. See you next time!"
+      "t": "Mine is floating. Just floating. See you next time!",
+      "at": 105.58
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 109.8
     }
   ],
   "questions": [
@@ -213,5 +236,13 @@
   "talk": [
     "Do you prefer the sea, a river or a lake — and what do you love doing there?",
     "Tell your partner about a favourite memory near water."
-  ]
+  ],
+  "duration": 110.8,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }

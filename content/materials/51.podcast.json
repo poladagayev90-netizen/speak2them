@@ -34,95 +34,118 @@
   "lines": [
     {
       "s": "Leyla",
-      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla."
+      "t": "Hi everyone, and welcome to the SpeakLab Podcast. I'm Leyla.",
+      "at": 0
     },
     {
       "s": "Sam",
-      "t": "And I'm Sam. Today's topic is growing older. And my dad just retired!"
+      "t": "And I'm Sam. Today's topic is growing older. And my dad just retired!",
+      "at": 3.98
     },
     {
       "s": "Leyla",
-      "t": "Congratulations to him! What is he doing with his free time?"
+      "t": "Congratulations to him! What is he doing with his free time?",
+      "at": 10.18
     },
     {
       "s": "Sam",
-      "t": "Salsa classes. Twice a week. He's sixty-six and he dances better than me."
+      "t": "Salsa classes. Twice a week. He's sixty-six and he dances better than me.",
+      "at": 14.16
     },
     {
       "s": "Leyla",
-      "t": "[laugh] He sounds young at heart."
+      "t": "[laugh] He sounds young at heart.",
+      "at": 19.64
     },
     {
       "s": "Sam",
-      "t": "Very. My mum tells him, \"Act your age!\", but she is secretly proud."
+      "t": "Very. My mum tells him, \"Act your age!\", but she is secretly proud.",
+      "at": 21.88
     },
     {
       "s": "Leyla",
-      "t": "My grandmother is eighty, and this year she learned to make video calls."
+      "t": "My grandmother is eighty, and this year she learned to make video calls.",
+      "at": 26.4
     },
     {
       "s": "Sam",
-      "t": "Wow. Who taught her?"
+      "t": "Wow. Who taught her?",
+      "at": 31.34
     },
     {
       "s": "Leyla",
-      "t": "Aysu! A little girl teaching an eighty-year-old. Two generations apart, laughing together."
+      "t": "Aysu! A little girl teaching an eighty-year-old. Two generations apart, laughing together.",
+      "at": 33.2
     },
     {
       "s": "Sam",
-      "t": "I love that. And what does your grandmother teach Aysu?"
+      "t": "I love that. And what does your grandmother teach Aysu?",
+      "at": 39.52
     },
     {
       "s": "Leyla",
-      "t": "Patience, recipes, old songs. She has so much wisdom."
+      "t": "Patience, recipes, old songs. She has so much wisdom.",
+      "at": 42.98
     },
     {
       "s": "Sam",
-      "t": "In England, many older people live alone or in a care home. Here families seem closer."
+      "t": "In England, many older people live alone or in a care home. Here families seem closer.",
+      "at": 48.14
     },
     {
       "s": "Leyla",
-      "t": "Usually, yes. Grandparents often live with the family, or very near."
+      "t": "Usually, yes. Grandparents often live with the family, or very near.",
+      "at": 54.36
     },
     {
       "s": "Sam",
-      "t": "And Mr Aliyev? He's retired too, isn't he?"
+      "t": "And Mr Aliyev? He's retired too, isn't he?",
+      "at": 59.1
     },
     {
       "s": "Leyla",
-      "t": "For ten years. He says his pension is small, but his garden is big. [chuckle]"
+      "t": "For ten years. He says his pension is small, but his garden is big. [chuckle]",
+      "at": 62.2
     },
     {
       "s": "Sam",
-      "t": "And his nard games never end. By the way, I found my first grey hair this week."
+      "t": "And his nard games never end. By the way, I found my first grey hair this week.",
+      "at": 67.42
     },
     {
       "s": "Leyla",
-      "t": "Oh no! And wrinkles?"
+      "t": "Oh no! And wrinkles?",
+      "at": 73.4
     },
     {
       "s": "Sam",
-      "t": "A few, around the eyes. From laughing, I hope. My friends say that at forty you're over the hill."
+      "t": "A few, around the eyes. From laughing, I hope. My friends say that at forty you're over the hill.",
+      "at": 75.48
     },
     {
       "s": "Leyla",
-      "t": "Nonsense. My grandmother says life starts at forty — and again at eighty."
+      "t": "Nonsense. My grandmother says life starts at forty — and again at eighty.",
+      "at": 82.58
     },
     {
       "s": "Sam",
-      "t": "I like her more every week."
+      "t": "I like her more every week.",
+      "at": 87.86
     },
     {
       "s": "Leyla",
-      "t": "Here's your question for your next SpeakLab call: what do you want to do when you're old — and who is the oldest person you know?"
+      "t": "Here's your question for your next SpeakLab call: what do you want to do when you're old — and who is the oldest person you know?",
+      "at": 90.12
     },
     {
       "s": "Sam",
-      "t": "Me? Salsa, like my dad. See you next time!"
+      "t": "Me? Salsa, like my dad. See you next time!",
+      "at": 97.38
     },
     {
       "s": "Leyla",
-      "t": "Bye for now!"
+      "t": "Bye for now!",
+      "at": 100.8
     }
   ],
   "questions": [
@@ -212,5 +235,13 @@
   "talk": [
     "What do you want to do when you're old — and who is the oldest person you know?",
     "What can young people learn from older people, and what can older people learn from the young?"
-  ]
+  ],
+  "duration": 101.9,
+  "voices": {
+    "Leyla": "Cleo",
+    "Sam": "Puck",
+    "model": "gemini-3.8-flash-tts",
+    "post": "natural speed, loudnorm -16, mp3 128k",
+    "made": "2026-10-14"
+  }
 }
