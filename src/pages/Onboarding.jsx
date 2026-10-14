@@ -35,7 +35,9 @@ import './Onboarding.css';
 // onboarded before it existed (version 1) are brought back straight to it.
 // The WhatsApp number follows the charter (version 3): the team writes when a
 // practice needs sorting out. Version-2 learners are asked only that step.
-const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'phone', 'availability', 'target', 'topics', 'summary'];
+// The «what do you like to talk about» step was dropped (2026-10-14, Polad:
+// not needed). Topics a learner already chose are kept and saved as they are.
+const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'phone', 'availability', 'target', 'summary'];
 // Bump when the charter text changes in substance; accepting it again is then asked.
 const CHARTER_VERSION = 1;
 
@@ -234,7 +236,6 @@ export default function Onboarding({ user }) {
     phone: !!whatsapp,
     availability: cells.size > 0,
     target: weeklyTarget > 0,
-    topics: topics.length > 0,
     summary: true,
   }[id];
 
@@ -264,10 +265,6 @@ export default function Onboarding({ user }) {
       setMaybeCells((prev) => new Set([...prev].filter((k) => !keys.includes(k))));
       setNeverCells((prev) => new Set([...prev].filter((k) => !keys.includes(k))));
     }
-  };
-
-  const toggleTopic = (t) => {
-    setTopics((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : prev.length >= 3 ? prev : [...prev, t]));
   };
 
   const pickCountry = (c) => {
@@ -574,25 +571,6 @@ export default function Onboarding({ user }) {
           </Question>
         )}
 
-        {id === 'topics' && (
-          <Question icon={<MessagesSquare size={20} />} title={t('ob.topics.title')} sub={t('ob.topics.sub')}>
-            <div className="ob-chips">
-              {TOPICS.map((topic) => (
-                <button
-                  key={topic}
-                  type="button"
-                  className={`ob-chip ${topics.includes(topic) ? 'is-on' : ''}`}
-                  onClick={() => toggleTopic(topic)}
-                  aria-pressed={topics.includes(topic)}
-                  disabled={!topics.includes(topic) && topics.length >= 3}
-                >
-                  {t(`topic.${topic}`)}
-                </button>
-              ))}
-            </div>
-            <p className="ob-summary-line">{t('ob.topics.count', { n: topics.length })}</p>
-          </Question>
-        )}
 
         {id === 'summary' && (
           <Question icon={<Check size={20} />} title={t('ob.summary.title')} sub={t('ob.summary.sub')}>
@@ -623,7 +601,6 @@ export default function Onboarding({ user }) {
                 onEdit={() => jumpTo('availability')}
               />
               <Row editLabel={t('ob.edit')} label={t('row.perWeek')} value={t('row.perWeekValue', { n: labelOf(WEEKLY_TARGETS, weeklyTarget) })} onEdit={() => jumpTo('target')} />
-              <Row editLabel={t('ob.edit')} label={t('row.topics')} value={topics.map((x) => t(`topic.${x}`)).join(', ')} onEdit={() => jumpTo('topics')} />
             </dl>
             {error && <p className="ob-error" role="alert">{error}</p>}
           </Question>
