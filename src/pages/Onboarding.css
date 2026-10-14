@@ -365,6 +365,11 @@
 .ob-phone .ob-select { margin-top: 0; }
 .ob-phone-num { font-variant-numeric: tabular-nums; }
 .ob-phone-num[aria-invalid="true"] { border-color: var(--danger); }
-/* The note right under the Free / Maybe / Never switch. */
-.ob-note--tight { margin: 0 0 var(--s-3); }
+/* Shown only while Maybe / Never is picked: what it means + the way back to
+   Free, so nobody paints Maybe by accident. */
+.ob-marking {
+  display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--s-2); row-gap: var(--s-1);
+  margin: calc(-1 * var(--s-1)) 0 var(--s-3);
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary);
+}
 .ob-review-extra { color: var(--text-secondary); }

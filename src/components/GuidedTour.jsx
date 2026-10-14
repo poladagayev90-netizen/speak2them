@@ -10,6 +10,10 @@ const TARGET_RETRY_MS = 250;
 const MAX_TARGET_RETRIES = 20;
 const GUIDED_TOUR_ENABLED = true;
 
+// Button and badge words. A tour may pass its own (`labels`) — Home's first
+// tour speaks the learner's language (utils/firstRunLang.js).
+const DEFAULT_LABELS = { badge: 'Guided setup', skip: 'Skip', back: 'Back', next: 'Next', finish: 'Finish' };
+
 function getCreatedAtMillis(createdAt) {
   if (!createdAt) return 0;
   if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
@@ -38,6 +42,7 @@ function getAvailableSteps(steps) {
 }
 
 function PremiumTourTooltip({
+  labels = DEFAULT_LABELS,
   backProps,
   index,
   isLastStep,
@@ -58,7 +63,7 @@ function PremiumTourTooltip({
       <div className="guided-tour-topline">
         <span className="guided-tour-badge">
           <Sparkles size={14} />
-          Guided setup
+          {labels.badge}
         </span>
         <span className="guided-tour-count">{index + 1}/{size}</span>
       </div>
@@ -81,18 +86,18 @@ function PremiumTourTooltip({
 
       <div className="guided-tour-footer">
         <button {...skipProps} type="button" className="guided-tour-skip">
-          Skip
+          {labels.skip}
         </button>
 
         <div className="guided-tour-actions">
           {index > 0 && (
             <button {...backProps} type="button" className="guided-tour-back">
               <ChevronLeft size={16} />
-              Back
+              {labels.back}
             </button>
           )}
           <button {...primaryProps} type="button" className="guided-tour-next">
-            {isLastStep ? 'Finish' : 'Next'}
+            {isLastStep ? labels.finish : labels.next}
             <ChevronRight size={16} />
           </button>
         </div>
@@ -101,8 +106,12 @@ function PremiumTourTooltip({
   );
 }
 
-function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
+function GuidedTourImpl({ user, steps = [], tourKey, disabled = false, labels = DEFAULT_LABELS }) {
   const [activeSteps, setActiveSteps] = useState([]);
+  // A stable component per set of words, so Joyride does not remount the card.
+  const Tooltip = useMemo(() => function Tooltip(props) {
+    return <PremiumTourTooltip {...props} labels={labels} />;
+  }, [labels]);
   const [dismissed, setDismissed] = useState(false);
   const [run, setRun] = useState(false);
   const persistingRef = useRef(false);
@@ -259,14 +268,14 @@ function GuidedTourImpl({ user, steps = [], tourKey, disabled = false }) {
       run={run}
       scrollToFirstStep
       steps={activeSteps}
-      tooltipComponent={PremiumTourTooltip}
+      tooltipComponent={Tooltip}
       locale={{
-        back: 'Back',
+        back: labels.back,
         close: 'Close',
-        last: 'Finish',
-        next: 'Next',
-        nextWithProgress: 'Next',
-        skip: 'Skip',
+        last: labels.finish,
+        next: labels.next,
+        nextWithProgress: labels.next,
+        skip: labels.skip,
       }}
       options={{
         arrowColor: '#241e48',

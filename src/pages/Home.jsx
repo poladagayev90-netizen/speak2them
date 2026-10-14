@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, CalendarClock, ChevronRight, MessageCircle, FlaskConical } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
@@ -14,6 +14,8 @@ import Logo from '../components/Logo';
 import { isAdminUser } from '../constants';
 import { subscribeToUnreadTotal } from '../utils/chat';
 import GuidedTour from '../components/GuidedTour';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { isFirstDay } from '../utils/firstRunLang';
 import CourseProgressCard from '../components/CourseProgressCard';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import SlotNoticeModal from '../components/SlotNoticeModal';
@@ -51,32 +53,25 @@ import '../components/plan/plan.css';
 //   4. this week — the goal you set against what was held.
 // Home and the Plan tab never show the same long list: Today is the next step,
 // Plan is the whole week.
-const HOME_TOUR_STEPS = [
-  {
-    target: '#tour-next',
-    title: 'Your next practice',
-    text: 'Your practices are planned for you every week. This card always shows the next one, or what is happening with your plan.',
-  },
-  {
-    target: '#tour-topic',
-    title: 'Today’s topic',
-    text: 'Words, idioms and questions for today — open it before you talk.',
-  },
-  {
-    target: '#tour-plan-tab',
-    title: 'Your week',
-    text: 'Confirm proposals, change a time, or edit your free times.',
-  },
-  {
-    target: '#tour-ai-chat',
-    title: 'AInur',
-    text: 'Practise speaking any time, with or without a partner.',
-  },
+// Two cards, in the learner's own language — the tour is the end of the
+// first run (utils/firstRunLang.js). Polad 2026-10-14: four cards on top of a
+// streak pop-up and a topic pop-up was the first thing a newcomer met.
+const HOME_TOUR_KEYS = [
+  { target: '#tour-next', key: 'tour.next' },
+  { target: '#tour-plan-tab', key: 'tour.plan' },
 ];
 
 export default function Home({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t: tr } = useFirstRunCopy(user?.guideLanguage);
+  const firstDay = isFirstDay(user);
+  const tourSteps = useMemo(() => HOME_TOUR_KEYS.map(({ target, key }) => (
+    { target, title: tr(`${key}.title`), content: tr(`${key}.text`) }
+  )), [tr]);
+  const tourLabels = useMemo(() => ({
+    badge: tr('tour.badge'), skip: tr('tour.skip'), back: tr('tour.back'), next: tr('tour.next'), finish: tr('tour.finish'),
+  }), [tr]);
 
   // The week: bookings, proposals, plan status, onboarding answers.
   const plan = useMyPlan(user.uid);
@@ -132,6 +127,14 @@ export default function Home({ user }) {
     const streakKey = `streak_modal_shown_${todayDateStr}_${user.uid}`;
     const streakDue = localStorage.getItem(streakKey) !== '1';
 
+    // The first day: neither pop-up — the newcomer has just come through the
+    // wizard and gets the short tour only. Both keys are marked as shown, so
+    // neither appears later that evening either.
+    if (firstDay) {
+      localStorage.setItem(streakKey, '1');
+      return;
+    }
+
     if (streakDue) {
       setStreakModalOpen(true);
       setPendingTopicIntro(topicDue);
@@ -139,7 +142,7 @@ export default function Home({ user }) {
     } else if (topicDue) {
       setShowTopicIntro(true);
     }
-  }, [user.uid]);
+  }, [user.uid, firstDay]);
 
   const closeStreakModal = () => {
     setStreakModalOpen(false);
@@ -177,8 +180,9 @@ export default function Home({ user }) {
     <div className="home-page">
       <GuidedTour
         user={user}
-        steps={HOME_TOUR_STEPS}
-        tourKey="tourDone_home_v2"
+        steps={tourSteps}
+        labels={tourLabels}
+        tourKey="tourDone_home_v3"
         disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen}
       />
       {showTopicIntro && todayTopic && (

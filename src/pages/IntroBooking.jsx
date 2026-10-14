@@ -7,6 +7,7 @@ import { Button } from '../components/ui';
 import {
   subscribeToMyIntro, cancelIntro, introTimeLabel, introWhatsAppText, mustWriteWhatsApp, markWhatsAppOpened,
 } from '../utils/intro';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import './Onboarding.css';
 import './IntroBooking.css';
 
@@ -33,6 +34,12 @@ export default function IntroBooking({ user }) {
   // (introWhatsAppAt) arrives a beat later.
   const [wrote, setWrote] = useState(false);
   const mustWrite = mustWriteWhatsApp(user) && !wrote;
+  // The last screen of the first run — in the learner's language, and so is
+  // the WhatsApp message it types for them (the team answers in it).
+  const { lang, t } = useFirstRunCopy(user?.guideLanguage);
+  const waText = user?.name
+    ? t('intro.waText', { name: user.name, level: user.level ? ` (${user.level})` : '' })
+    : introWhatsAppText(user);
 
   useEffect(() => subscribeToMyIntro(uid, setBooking), [uid]);
 
@@ -48,20 +55,20 @@ export default function IntroBooking({ user }) {
   };
 
   const openWhatsApp = () => {
-    window.open(whatsappLink(introWhatsAppText(user)), '_blank', 'noopener');
+    window.open(whatsappLink(waText), '_blank', 'noopener');
     setWrote(true);
     markWhatsAppOpened(uid);
   };
 
   return (
-    <div className="ob-page">
+    <div className="ob-page" lang={lang}>
       <header className="ob-top">
         {!mustWrite && (
-          <button type="button" className="ob-back" onClick={() => navigate('/')} aria-label="Back to the app">
+          <button type="button" className="ob-back" onClick={() => navigate('/')} aria-label={t('intro.back')}>
             <ArrowLeft size={20} />
           </button>
         )}
-        <span className="in-top-title">Meet the team</span>
+        <span className="in-top-title">{t('intro.top')}</span>
       </header>
 
       <main className="ob-slide ob-slide--fwd">
@@ -71,8 +78,8 @@ export default function IntroBooking({ user }) {
 
             {done && (
               <>
-                <h1 className="ob-title">You have met the team</h1>
-                <p className="ob-sub">Questions any time? We are on WhatsApp.</p>
+                <h1 className="ob-title">{t('intro.doneTitle')}</h1>
+                <p className="ob-sub">{t('intro.doneSub')}</p>
               </>
             )}
 
@@ -90,20 +97,16 @@ export default function IntroBooking({ user }) {
 
             {!done && !booked && (
               <>
-                <h1 className="ob-title">Say hi to the SpeakLab team</h1>
-                <p className="ob-sub">
-                  {mustWrite
-                    ? 'Your first step: write to us on WhatsApp. Tell us your goals, ask anything, and we help you plan your practice week. Then the whole app is yours, calls included.'
-                    : 'Write to us on WhatsApp: ask anything, tell us your goals, and we help you plan your practice week. The whole app is open to you right now.'}
-                </p>
+                <h1 className="ob-title">{t('intro.title')}</h1>
+                <p className="ob-sub">{mustWrite ? t('intro.subMust') : t('intro.sub')}</p>
               </>
             )}
 
             <button type="button" className="in-wa" onClick={openWhatsApp}>
               <MessageCircle size={20} aria-hidden="true" />
               <span>
-                <b>Write to us on WhatsApp</b>
-                <small>Your name and level are already in the message</small>
+                <b>{t('intro.wa')}</b>
+                <small>{t('intro.waSub')}</small>
               </span>
             </button>
           </section>
@@ -113,10 +116,10 @@ export default function IntroBooking({ user }) {
       <footer className="ob-foot">
         {mustWrite ? (
           <Button size="lg" full onClick={openWhatsApp} icon={<MessageCircle size={20} />}>
-            Write to us on WhatsApp
+            {t('intro.wa')}
           </Button>
         ) : (
-          <Button size="lg" full onClick={() => navigate('/')}>Continue to the app</Button>
+          <Button size="lg" full onClick={() => navigate('/')}>{t('intro.continue')}</Button>
         )}
       </footer>
     </div>

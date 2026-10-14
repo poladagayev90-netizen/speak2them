@@ -1,0 +1,28 @@
+.frl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+  margin-bottom: var(--s-4);
+}
+.frl-icon { color: var(--text-muted); margin-right: var(--s-1); }
+.frl-btn {
+  min-height: 32px;
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.frl-btn:hover { border-color: var(--accent); }
+.frl-btn.is-on { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }
+/* One row on a phone: the four names fit once the icon steps aside. */
+@media (max-width: 420px) {
+  .frl-icon { display: none; }
+  .frl { gap: 4px; }
+}

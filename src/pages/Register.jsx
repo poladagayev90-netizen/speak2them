@@ -6,6 +6,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Presentation, Sparkles } from 'lucide-react';
 import Logo from '../components/Logo';
 import { getPendingJoinCode } from '../utils/teacher';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { languageFields } from '../utils/firstRunLang';
+import FirstRunLangPicker from '../components/firstRun/FirstRunLangPicker';
 
 export default function Register() {
   // Müəllimin dəvət linki ilə gəlmişiksə rol SEÇİLMİR — dəvət olunan adam
@@ -24,13 +27,16 @@ export default function Register() {
   // yalnız BİR DƏFƏ (yaradılışda/ilk yazıda) qoyulmasına icazə verir.
   const [role, setRole]         = useState(invitedByTeacher ? 'student' : null);
   const navigate = useNavigate();
+  // The first run speaks the learner's language (utils/firstRunLang.js); the
+  // pick is written on the users doc so the wizard keeps it on another device.
+  const { lang, setLang, t } = useFirstRunCopy();
 
   // Müəllim seçən üçün əlavə sahələr: teacherEligible dərhal true (3-sessiya
   // qapısı bu axında yoxdur), surveyDone true (şagird sorğusu müəllimə aid
   // deyil — əks halda Lobby onu sorğuya yönləndirərdi).
   const roleFields = role === 'teacher'
-    ? { role: 'teacher', teacherEligible: true, surveyDone: true }
-    : { role: 'student' };
+    ? { role: 'teacher', teacherEligible: true, surveyDone: true, ...languageFields(lang) }
+    : { role: 'student', ...languageFields(lang) };
 
   // Qeydiyyat bitəndə auth-state yarışı /register route-unun köhnə
   // <Navigate to="/" /> effektini bizim navigate-dən SONRA işlədə bilir və
@@ -124,11 +130,15 @@ export default function Register() {
         // Rules rolun yalnız İLK yazılışına icazə verir, ona görə yalnız rol
         // hələ yoxdursa merge edirik — mövcud user rolunu dəyişə bilməz.
         await setDoc(userRef, roleFields, { merge: true });
+      } else {
+        // An existing account signing up again keeps its role; only the
+        // language just picked is written.
+        await setDoc(userRef, languageFields(lang), { merge: true });
       }
       navigate(role === 'teacher' ? '/teacher' : (invitedByTeacher ? '/join' : '/onboarding'));
     } catch (err) {
       console.error('[GoogleRegister]', err);
-      setError('Google auth error: ' + (err.message || 'Unknown error'));
+      setError(t('reg.googleError', { msg: err.message || 'Unknown error' }));
     }
     setLoading(false);
   };
@@ -141,18 +151,23 @@ export default function Register() {
           button carried white ink on a white fill, so its label was invisible
           on the light theme; and the fields shared the card's own background.
           Everything below is the same flow, given an edge. */}
-      <div className="auth-card">
+      <div className="auth-card" lang={lang}>
         <div className="auth-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--s-4)' }}>
           <Logo width={150} />
         </div>
 
-        {/* The interface is English throughout; see feedbackLanguage.js for the
-            one thing that is not. */}
-        <h2 style={{ textAlign: 'center', fontSize: 'var(--fs-h1)', marginBottom: '6px' }}>
-          Start <span style={{ color: 'var(--accent)' }}>speaking</span>
+        <FirstRunLangPicker lang={lang} onChange={setLang} label={t('lang.pick')} />
+
+        {/* The first run (this screen → onboarding → /intro) is in the
+            learner's language; the app after it is English — see
+            utils/firstRunLang.js and feedbackLanguage.js. */}
+        <h2 lang={lang} style={{ textAlign: 'center', fontSize: 'var(--fs-h1)', marginBottom: '6px' }}>
+          {t('reg.title').split(/[{}]/).map((part, i) => (i % 2
+            ? <span key={i} style={{ color: 'var(--accent)' }}>{part}</span>
+            : part))}
         </h2>
         <p className="auth-sub" style={{ textAlign: 'center', marginBottom: 'var(--s-5)' }}>
-          Speak every day — with a real partner or with AInur.
+          {t('reg.sub')}
         </p>
 
         {error && <div className="error-box">{error}</div>}
@@ -167,7 +182,7 @@ export default function Register() {
             fontSize: 'var(--fs-sm)', color: 'var(--text-primary)', lineHeight: 'var(--lh-body)',
           }}>
             <Sparkles size={18} strokeWidth={1.75} style={{ color: 'var(--accent)', flexShrink: 0 }} aria-hidden="true" />
-            <span>You are joining through a teacher invitation — you will be connected right after you sign up.</span>
+            <span>{t('reg.invite')}</span>
           </div>
         )}
 
@@ -177,8 +192,8 @@ export default function Register() {
           <>
             <div className="auth-role-row">
               {[
-                { key: 'student', Icon: GraduationCap, label: 'I am a Student', sub: 'Practice speaking' },
-                { key: 'teacher', Icon: Presentation, label: 'I am a Teacher', sub: 'Track my students' },
+                { key: 'student', Icon: GraduationCap, label: t('reg.student'), sub: t('reg.studentSub') },
+                { key: 'teacher', Icon: Presentation, label: t('reg.teacher'), sub: t('reg.teacherSub') },
               ].map(({ key, Icon, label, sub }) => (
                 <button
                   key={key}
@@ -193,7 +208,7 @@ export default function Register() {
                 </button>
               ))}
             </div>
-            {!role && <p className="auth-hint">Choose your role to continue</p>}
+            {!role && <p className="auth-hint">{t('reg.chooseRole')}</p>}
           </>
         )}
 
@@ -214,22 +229,22 @@ export default function Register() {
             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           </svg>
-          Sign up with Google
+          {t('reg.google')}
         </button>
 
-        <div className="auth-divider">or</div>
+        <div className="auth-divider">{t('reg.or')}</div>
 
         <form onSubmit={handleRegister}>
-          <label style={{ marginTop: 0 }}>Full Name</label>
+          <label style={{ marginTop: 0 }}>{t('reg.name')}</label>
           <input
             type="text"
-            placeholder="Your name"
+            placeholder={t('reg.namePh')}
             value={name}
             onChange={e => setName(e.target.value)}
             required
           />
 
-          <label>Email</label>
+          <label>{t('reg.email')}</label>
           <input
             type="email"
             placeholder="you@email.com"
@@ -238,10 +253,10 @@ export default function Register() {
             required
           />
 
-          <label>Password</label>
+          <label>{t('reg.password')}</label>
           <input
             type="password"
-            placeholder="At least 6 characters"
+            placeholder={t('reg.passwordPh')}
             value={password}
             onChange={e => setPassword(e.target.value)}
             minLength={6}
@@ -249,12 +264,12 @@ export default function Register() {
           />
 
           <button type="submit" className="btn-primary" disabled={loading || !role}>
-            {loading ? 'Creating account...' : 'Get Started'}
+            {loading ? t('reg.creating') : t('reg.submit')}
           </button>
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          {t('reg.haveAccount')} <Link to="/login">{t('reg.signIn')}</Link>
         </p>
       </div>
     </div>

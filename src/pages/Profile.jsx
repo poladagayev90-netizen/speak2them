@@ -604,7 +604,7 @@ export default function Profile({ user }) {
           onClick: async () => {
             if (!docId) return;
             try {
-              await updateDoc(doc(db, 'users', docId), { tourDone_home: false, tourDone_chat: false, tourDone_profile: false });
+              await updateDoc(doc(db, 'users', docId), { tourDone_home_v3: false, tourDone_chat: false, tourDone_profile: false });
               alert('Tours reset. Visit the pages again to see them.');
             } catch (e) { console.error(e); }
           },

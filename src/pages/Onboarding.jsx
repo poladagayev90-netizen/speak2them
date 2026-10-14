@@ -22,6 +22,7 @@ import {
 import { PROFILE_MODES, paintCell } from '../utils/weekProfile';
 import { needsIntro } from '../utils/intro';
 import TimeGrid, { PaintModes } from '../components/plan/TimeGrid';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import './Onboarding.css';
 
 // One question per screen. The order is deliberate: the easy, identity
@@ -41,10 +42,11 @@ const CHARTER_VERSION = 1;
 // Grid rows: whole hours 07:00–24:00 in the learner's own time.
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 7);
 
+// Labels come from firstRunCopy (`preset.<id>`).
 const PRESETS = [
-  { id: 'weekday-evenings', label: 'Weekday evenings', days: [1, 2, 3, 4, 5], hours: [19, 20, 21] },
-  { id: 'weekend-days', label: 'Weekend daytime', days: [6, 0], hours: [11, 12, 13, 14] },
-  { id: 'late', label: 'Late evenings', days: [1, 2, 3, 4, 5, 6, 0], hours: [22, 23] },
+  { id: 'weekday-evenings', days: [1, 2, 3, 4, 5], hours: [19, 20, 21] },
+  { id: 'weekend-days', days: [6, 0], hours: [11, 12, 13, 14] },
+  { id: 'late', days: [1, 2, 3, 4, 5, 6, 0], hours: [22, 23] },
 ];
 
 const draftKey = (uid) => `slk_onboarding_draft_${uid}`;
@@ -76,6 +78,15 @@ export default function Onboarding({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const uid = auth.currentUser?.uid || user?.uid;
+  // The whole wizard speaks the learner's language (utils/firstRunLang.js) —
+  // also when Plan opens one step of it to edit, so the two never disagree.
+  // The VALUES saved stay English ('Speaking', 'Movies', 'B1 – Intermediate').
+  const { lang, t } = useFirstRunCopy(user?.guideLanguage);
+  const levelShort = (v) => LEVELS.find((l) => l.value === v)?.short;
+  const levelName = (v) => (levelShort(v) ? `${levelShort(v)} – ${t(`level.${levelShort(v)}`)}` : v || '—');
+  const goalLabel = (v) => (v ? t(`goal.${v}`) : '—');
+  const ageLabel = (v) => (!v ? '—' : v === 'under18' || v === '35+' ? t(`age.${v}`) : labelOf(AGE_BANDS, v));
+  const modes = PROFILE_MODES.map((m) => ({ ...m, label: t(`mode.${m.id}`), hint: t(`mode.${m.id}.hint`) }));
 
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(0);
@@ -270,7 +281,7 @@ export default function Onboarding({ user }) {
     if (!uid) { navigate('/login'); return; }
     // The number is required (version 3). Someone who came in through
     // another step's edit link and has none yet is sent to that step.
-    if (!whatsapp) { jumpTo('phone'); setError('Add your WhatsApp number to save.'); return; }
+    if (!whatsapp) { jumpTo('phone'); setError(t('ob.phone.required')); return; }
     setSaving(true);
     setError('');
     try {
@@ -318,7 +329,7 @@ export default function Onboarding({ user }) {
       // exempt (already practising, have a teacher) go straight home.
       navigate(location.state?.returnTo || (needsIntro(user) ? '/intro' : '/'), { replace: true });
     } catch (e) {
-      setError('Your answers were not saved. Check your connection and try again.');
+      setError(t('ob.errSave'));
       setSaving(false);
     }
   };
@@ -330,14 +341,14 @@ export default function Onboarding({ user }) {
   const progress = step / (STEPS.length - 1);
 
   return (
-    <div className="ob-page">
+    <div className="ob-page" lang={lang}>
       <header className="ob-top">
         <button
           type="button"
           className="ob-back"
           onClick={() => go(-1)}
           disabled={step === 0}
-          aria-label="Back"
+          aria-label={t('ob.back')}
         >
           <ArrowLeft size={20} />
         </button>
@@ -351,61 +362,58 @@ export default function Onboarding({ user }) {
         {id === 'welcome' && (
           <div className="ob-welcome">
             <Logo width={170} />
-            <h1 className="ob-title">A place to speak English, every week</h1>
-            <p className="ob-sub">
-              You practise with real partners at times that suit you, and every
-              conversation turns into a report of what to work on next.
-            </p>
+            <h1 className="ob-title">{t('ob.welcome.title')}</h1>
+            <p className="ob-sub">{t('ob.welcome.sub')}</p>
             <ul className="ob-points">
-              <li><MessagesSquare size={18} /> Real conversations with learners at your level</li>
-              <li><CalendarDays size={18} /> A weekly plan built around your free time</li>
-              <li><GraduationCap size={18} /> Feedback after each practice</li>
+              <li><MessagesSquare size={18} /> {t('ob.welcome.p1')}</li>
+              <li><CalendarDays size={18} /> {t('ob.welcome.p2')}</li>
+              <li><GraduationCap size={18} /> {t('ob.welcome.p3')}</li>
             </ul>
-            <p className="ob-note">A few questions help us find the right partners for you. It takes about two minutes.</p>
+            <p className="ob-note">{t('ob.welcome.note')}</p>
           </div>
         )}
 
         {id === 'goal' && (
-          <Question icon={<Target size={20} />} title="What brings you here?" sub="Pick the one that matters most right now.">
+          <Question icon={<Target size={20} />} title={t('ob.goal.title')} sub={t('ob.goal.sub')}>
             <div className="ob-options">
               {GOALS.map((g) => (
-                <Option key={g.value} active={goal === g.value} onClick={() => setGoal(g.value)} label={g.label} hint={g.hint} />
+                <Option key={g.value} active={goal === g.value} onClick={() => setGoal(g.value)} label={t(`goal.${g.value}`)} hint={t(`goal.${g.value}.hint`)} />
               ))}
             </div>
           </Question>
         )}
 
         {id === 'level' && (
-          <Question icon={<GraduationCap size={20} />} title="How do you speak today?" sub="Your level decides who you practise with. You can change it later.">
+          <Question icon={<GraduationCap size={20} />} title={t('ob.level.title')} sub={t('ob.level.sub')}>
             <div className="ob-options">
               {LEVELS.map((l) => (
                 <Option
                   key={l.value}
                   active={level === l.value}
                   onClick={() => setLevel(l.value)}
-                  label={<><b className="ob-tag">{l.short}</b>{l.value.split('– ')[1]}</>}
-                  hint={l.hint}
+                  label={<><b className="ob-tag">{l.short}</b>{t(`level.${l.short}`)}</>}
+                  hint={t(`level.${l.short}.hint`)}
                 />
               ))}
             </div>
             <button type="button" className="ob-link" onClick={() => navigate('/placement')}>
-              Not sure? Take the 3-minute level test
+              {t('ob.level.test')}
             </button>
           </Question>
         )}
 
         {id === 'age' && (
-          <Question icon={<UserRound size={20} />} title="How old are you?" sub="We use this to match you with suitable partners. Only the SpeakLab team sees it.">
+          <Question icon={<UserRound size={20} />} title={t('ob.age.title')} sub={t('ob.age.sub')}>
             <div className="ob-grid2">
               {AGE_BANDS.map((a) => (
-                <Option key={a.value} active={ageBand === a.value} onClick={() => setAgeBand(a.value)} label={a.label} center />
+                <Option key={a.value} active={ageBand === a.value} onClick={() => setAgeBand(a.value)} label={ageLabel(a.value)} center />
               ))}
             </div>
           </Question>
         )}
 
         {id === 'place' && (
-          <Question icon={<Globe2 size={20} />} title="Where are you?" sub="Your partners may be in another country, so we plan every practice in your own time.">
+          <Question icon={<Globe2 size={20} />} title={t('ob.place.title')} sub={t('ob.place.sub')}>
             <div className="ob-chips">
               {COUNTRIES.map((c) => (
                 <button
@@ -415,18 +423,18 @@ export default function Onboarding({ user }) {
                   onClick={() => pickCountry(c)}
                   aria-pressed={country === c.value}
                 >
-                  {c.value}
+                  {t(`country.${c.value}`)}
                 </button>
               ))}
             </div>
             <div className="ob-tz">
               <Clock size={18} />
               <div className="ob-tz-text">
-                <span className="ob-tz-now">Your time now: <b>{formatLocalNow(timeZone)}</b></span>
+                <span className="ob-tz-now">{t('ob.place.now')} <b>{formatLocalNow(timeZone)}</b></span>
                 <span className="ob-tz-zone">{cityOf(timeZone)} · {formatOffsetVsBaku(timeZone)}</span>
               </div>
               <button type="button" className="ob-link ob-link--sm" onClick={() => setTzPicker((v) => !v)}>
-                {tzPicker ? 'Done' : 'Change'}
+                {tzPicker ? t('ob.place.done') : t('ob.place.change')}
               </button>
             </div>
             {tzPicker && (
@@ -434,17 +442,17 @@ export default function Onboarding({ user }) {
                 {allTimeZones().map((z) => <option key={z} value={z}>{z.replace(/_/g, ' ')}</option>)}
               </select>
             )}
-            <p className="ob-note">If the time above is not your clock right now, tap Change.</p>
+            <p className="ob-note">{t('ob.place.note')}</p>
           </Question>
         )}
 
         {id === 'charter' && (
-          <Question icon={<Handshake size={20} />} title="How practice works here" sub="Every practice at SpeakLab is planned ahead, with a real partner.">
+          <Question icon={<Handshake size={20} />} title={t('ob.charter.title')} sub={t('ob.charter.sub')}>
             <ul className="ob-points ob-charter">
-              <li><CalendarDays size={18} /> <span>You tell us the hours you can really attend, and how many practices a week you want.</span></li>
-              <li><CalendarCheck size={18} /> <span>Every Sunday evening, next week’s practices arrive. Confirm each with one tap — it is booked when your partner says yes too.</span></li>
-              <li><Clock size={18} /> <span>Your partner keeps that hour for you, and you keep it for them. Plans change? Cancel at least 2 hours ahead, so the time can go to someone else.</span></li>
-              <li><Phone size={18} /> <span>Anyone you have practised with is one message or call away, any time.</span></li>
+              <li><CalendarDays size={18} /> <span>{t('ob.charter.c1')}</span></li>
+              <li><CalendarCheck size={18} /> <span>{t('ob.charter.c2')}</span></li>
+              <li><Clock size={18} /> <span>{t('ob.charter.c3')}</span></li>
+              <li><Phone size={18} /> <span>{t('ob.charter.c4')}</span></li>
             </ul>
           </Question>
         )}
@@ -452,8 +460,8 @@ export default function Onboarding({ user }) {
         {id === 'phone' && (
           <Question
             icon={<MessageCircle size={20} />}
-            title="Your WhatsApp number"
-            sub="Only the SpeakLab team sees it — we write when a practice needs sorting out. Partners talk in the app chat."
+            title={t('ob.phone.title')}
+            sub={t('ob.phone.sub')}
           >
             <div className="ob-phone">
               <select className="ob-select ob-phone-code" value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)} aria-label="Country code">
@@ -472,7 +480,7 @@ export default function Onboarding({ user }) {
               />
             </div>
             <p className="ob-summary-line">
-              {whatsapp ? `We will write to ${whatsapp}` : phoneRaw.trim() ? 'This does not look like a full number yet.' : 'The number you use on WhatsApp.'}
+              {whatsapp ? t('ob.phone.ok', { n: whatsapp }) : phoneRaw.trim() ? t('ob.phone.short') : t('ob.phone.hint')}
             </p>
             {error && <p className="ob-error" role="alert">{error}</p>}
           </Question>
@@ -481,23 +489,34 @@ export default function Onboarding({ user }) {
         {id === 'availability' && (
           <Question
             icon={<CalendarDays size={20} />}
-            title="When are you usually free?"
-            sub={`Tap the hours you could speak for 20–30 minutes. Times are in your time (${cityOf(timeZone)}).`}
+            title={t('ob.avail.title')}
+            sub={t('ob.avail.sub', { city: cityOf(timeZone) })}
           >
-            <PaintModes modes={PROFILE_MODES} value={mode} onChange={setMode} />
-            <p className="ob-note ob-note--tight">General info so we can plan better. We never book a call without your yes.</p>
+            {/* Learners read Maybe / Never as two more things they had to fill
+                in. The switch itself says it: Free «is enough», the other two
+                «optional». What Maybe / Never mean shows only while one of them
+                is picked — a longer explanation up front went unread. */}
+            <PaintModes modes={modes} value={mode} onChange={setMode} />
+            {mode !== 'free' && (
+              <p className="ob-marking" aria-live="polite">
+                <span>{t(mode === 'maybe' ? 'ob.avail.howMaybe' : 'ob.avail.howNever')}</span>
+                <button type="button" className="ob-link ob-link--inline" onClick={() => setMode('free')}>
+                  {t('ob.avail.backFree')}
+                </button>
+              </p>
+            )}
             <div className="ob-presets">
               {PRESETS.map((p) => (
-                <button key={p.id} type="button" className="ob-chip ob-chip--sm" onClick={() => applyPreset(p)}>{p.label}</button>
+                <button key={p.id} type="button" className="ob-chip ob-chip--sm" onClick={() => applyPreset(p)}>{t(`preset.${p.id}`)}</button>
               ))}
               {(cells.size > 0 || maybeCells.size > 0 || neverCells.size > 0) && (
                 <button type="button" className="ob-chip ob-chip--sm ob-chip--ghost"
-                  onClick={() => { setCells(new Set()); setMaybeCells(new Set()); setNeverCells(new Set()); }}>Clear</button>
+                  onClick={() => { setCells(new Set()); setMaybeCells(new Set()); setNeverCells(new Set()); }}>{t('ob.avail.clear')}</button>
               )}
             </div>
             <TimeGrid
               ariaLabel="Weekly availability"
-              columns={WEEK_DAYS.map((d) => ({ key: d.day, label: d.short }))}
+              columns={WEEK_DAYS.map((d) => ({ key: d.day, label: t(`day.${d.day}`) }))}
               hours={HOURS}
               cell={(day, h) => {
                 const key = `${day}-${h}`;
@@ -505,88 +524,87 @@ export default function Onboarding({ user }) {
                 const kind = cells.has(key) ? 'free' : maybeCells.has(key) ? 'maybe' : neverCells.has(key) ? 'never' : null;
                 return {
                   on: kind === 'free', maybe: kind === 'maybe', never: kind === 'never', popular,
-                  label: `${WEEK_DAYS.find((d) => d.day === day).short} ${formatMinutes(h * 60)}${kind ? `, ${kind}` : ''}${popular ? ', popular' : ''}`,
+                  label: `${t(`day.${day}`)} ${formatMinutes(h * 60)}${kind ? `, ${kind}` : ''}${popular ? ', popular' : ''}`,
                 };
               }}
               onToggle={(day, h) => toggleCell(`${day}-${h}`)}
             />
             {popularCells.size > 0 && (
-              <p className="ob-legend"><span className="ob-legend-dot" aria-hidden="true" /> Popular — more people are free then</p>
+              <p className="ob-legend"><span className="ob-legend-dot" aria-hidden="true" /> {t('ob.avail.popular')}</p>
             )}
             {editing && (
-              <p className="ob-note">
-                Changes count from your next weekly plan (Sunday). Practices you have already confirmed stay as they are.
-              </p>
+              <p className="ob-note">{t('ob.avail.editing')}</p>
             )}
             <p className="ob-summary-line">
               {cells.size === 0
-                ? 'Choose at least one free hour.'
-                : `${totalHours(ranges)} h free across ${dayCount} ${dayCount === 1 ? 'day' : 'days'}`
-                  + (maybeCells.size ? ` · ${maybeCells.size} h maybe` : '')
-                  + (neverCells.size ? ` · ${neverCells.size} h never` : '')}
+                ? t('ob.avail.none')
+                : t(`ob.avail.summary.${dayCount === 1 ? 'one' : 'other'}`, { h: totalHours(ranges), d: dayCount })
+                  + (maybeCells.size ? ` · ${t('ob.avail.maybe', { n: maybeCells.size })}` : '')
+                  + (neverCells.size ? ` · ${t('ob.avail.never', { n: neverCells.size })}` : '')}
             </p>
           </Question>
         )}
 
         {id === 'target' && (
-          <Question icon={<Target size={20} />} title="How many practices a week will you keep?" sub="Being free is not the same as committing. Choose the number you can really keep — every booked practice has a partner waiting for you.">
+          <Question icon={<Target size={20} />} title={t('ob.target.title')} sub={t('ob.target.sub')}>
             <div className="ob-grid4">
-              {WEEKLY_TARGETS.map((t) => {
-                const disabled = t.value > dayCount;
+              {WEEKLY_TARGETS.map((o) => {
+                const disabled = o.value > dayCount;
                 return (
                   <button
-                    key={t.value}
+                    key={o.value}
                     type="button"
-                    className={`ob-target ${weeklyTarget === t.value ? 'is-on' : ''}`}
-                    onClick={() => setWeeklyTarget(t.value)}
+                    className={`ob-target ${weeklyTarget === o.value ? 'is-on' : ''}`}
+                    onClick={() => setWeeklyTarget(o.value)}
                     disabled={disabled}
-                    aria-pressed={weeklyTarget === t.value}
+                    aria-pressed={weeklyTarget === o.value}
                   >
-                    <b>{t.label}</b>
-                    <span>{t.hint}</span>
+                    <b>{o.label}</b>
+                    <span>{t(`target.${o.value}`)}</span>
                   </button>
                 );
               })}
             </div>
             {dayCount < 4 && (
               <p className="ob-note">
-                You are free on {dayCount} {dayCount === 1 ? 'day' : 'days'}, so you can plan up to {dayCount} {dayCount === 1 ? 'practice' : 'practices'} a week.{' '}
-                <button type="button" className="ob-link ob-link--inline" onClick={() => jumpTo('availability')}>Add more free time</button>
+                {t(`ob.target.limit.${dayCount === 1 ? 'one' : 'other'}`, { d: dayCount })}{' '}
+                <button type="button" className="ob-link ob-link--inline" onClick={() => jumpTo('availability')}>{t('ob.target.addMore')}</button>
               </p>
             )}
           </Question>
         )}
 
         {id === 'topics' && (
-          <Question icon={<MessagesSquare size={20} />} title="What do you like to talk about?" sub="Up to three. Shared interests make a first conversation easier.">
+          <Question icon={<MessagesSquare size={20} />} title={t('ob.topics.title')} sub={t('ob.topics.sub')}>
             <div className="ob-chips">
-              {TOPICS.map((t) => (
+              {TOPICS.map((topic) => (
                 <button
-                  key={t}
+                  key={topic}
                   type="button"
-                  className={`ob-chip ${topics.includes(t) ? 'is-on' : ''}`}
-                  onClick={() => toggleTopic(t)}
-                  aria-pressed={topics.includes(t)}
-                  disabled={!topics.includes(t) && topics.length >= 3}
+                  className={`ob-chip ${topics.includes(topic) ? 'is-on' : ''}`}
+                  onClick={() => toggleTopic(topic)}
+                  aria-pressed={topics.includes(topic)}
+                  disabled={!topics.includes(topic) && topics.length >= 3}
                 >
-                  {t}
+                  {t(`topic.${topic}`)}
                 </button>
               ))}
             </div>
-            <p className="ob-summary-line">{topics.length}/3 selected</p>
+            <p className="ob-summary-line">{t('ob.topics.count', { n: topics.length })}</p>
           </Question>
         )}
 
         {id === 'summary' && (
-          <Question icon={<Check size={20} />} title="Your practice profile" sub="Check it once. The SpeakLab team uses it to plan your partners and practice times.">
+          <Question icon={<Check size={20} />} title={t('ob.summary.title')} sub={t('ob.summary.sub')}>
             <dl className="ob-review">
-              <Row label="Goal" value={labelOf(GOALS, goal)} onEdit={() => jumpTo('goal')} />
-              <Row label="Level" value={level} onEdit={() => jumpTo('level')} />
-              <Row label="Age" value={labelOf(AGE_BANDS, ageBand)} onEdit={() => jumpTo('age')} />
-              <Row label="Location" value={`${country} · ${cityOf(timeZone)}`} onEdit={() => jumpTo('place')} />
-              <Row label="WhatsApp" value={whatsapp || '—'} onEdit={() => jumpTo('phone')} />
+              <Row editLabel={t('ob.edit')} label={t('row.goal')} value={goalLabel(goal)} onEdit={() => jumpTo('goal')} />
+              <Row editLabel={t('ob.edit')} label={t('row.level')} value={levelName(level)} onEdit={() => jumpTo('level')} />
+              <Row editLabel={t('ob.edit')} label={t('row.age')} value={ageLabel(ageBand)} onEdit={() => jumpTo('age')} />
+              <Row editLabel={t('ob.edit')} label={t('row.location')} value={`${country ? t(`country.${country}`) : '—'} · ${cityOf(timeZone)}`} onEdit={() => jumpTo('place')} />
+              <Row editLabel={t('ob.edit')} label={t('row.whatsapp')} value={whatsapp || '—'} onEdit={() => jumpTo('phone')} />
               <Row
-                label="Free time"
+                editLabel={t('ob.edit')}
+                label={t('row.free')}
                 value={(
                   <span className="ob-review-ranges">
                     {WEEK_DAYS.map((d) => {
@@ -594,18 +612,18 @@ export default function Onboarding({ user }) {
                       if (!rs.length) return null;
                       return (
                         <span key={d.day}>
-                          <b>{d.short}</b> {rs.map((r) => `${formatMinutes(r.startMin)}–${formatMinutes(r.endMin)}`).join(', ')}
+                          <b>{t(`day.${d.day}`)}</b> {rs.map((r) => `${formatMinutes(r.startMin)}–${formatMinutes(r.endMin)}`).join(', ')}
                         </span>
                       );
                     })}
-                    {maybeCells.size > 0 && <span className="ob-review-extra">Maybe: {maybeCells.size} h</span>}
-                    {neverCells.size > 0 && <span className="ob-review-extra">Never: {neverCells.size} h</span>}
+                    {maybeCells.size > 0 && <span className="ob-review-extra">{t('row.maybe', { n: maybeCells.size })}</span>}
+                    {neverCells.size > 0 && <span className="ob-review-extra">{t('row.never', { n: neverCells.size })}</span>}
                   </span>
                 )}
                 onEdit={() => jumpTo('availability')}
               />
-              <Row label="Per week" value={`${labelOf(WEEKLY_TARGETS, weeklyTarget)} ${weeklyTarget === 1 ? 'practice' : 'practices'}`} onEdit={() => jumpTo('target')} />
-              <Row label="Topics" value={topics.join(', ')} onEdit={() => jumpTo('topics')} />
+              <Row editLabel={t('ob.edit')} label={t('row.perWeek')} value={t('row.perWeekValue', { n: labelOf(WEEKLY_TARGETS, weeklyTarget) })} onEdit={() => jumpTo('target')} />
+              <Row editLabel={t('ob.edit')} label={t('row.topics')} value={topics.map((x) => t(`topic.${x}`)).join(', ')} onEdit={() => jumpTo('topics')} />
             </dl>
             {error && <p className="ob-error" role="alert">{error}</p>}
           </Question>
@@ -618,25 +636,25 @@ export default function Onboarding({ user }) {
           // above), so that one case goes through the target step first.
           id === 'availability' && weeklyTarget === 0 ? (
             <Button size="lg" full onClick={() => go(1)} disabled={!canNext} iconRight={<ArrowRight size={20} />}>
-              Continue — pick your weekly target
+              {t('ob.continueTarget')}
             </Button>
           ) : (
             <>
               <Button size="lg" full onClick={submit} disabled={saving || !canNext} icon={<Check size={20} />}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? t('ob.saving') : t('ob.save')}
               </Button>
               <button type="button" className="ob-link ob-link--sm" onClick={() => { setEditing(false); jumpTo('summary'); }}>
-                Review all my answers
+                {t('ob.reviewAll')}
               </button>
             </>
           )
         ) : id === 'summary' ? (
           <Button size="lg" full onClick={submit} disabled={saving} icon={<Check size={20} />}>
-            {saving ? 'Saving…' : 'Confirm and plan my week'}
+            {saving ? t('ob.saving') : t('ob.confirm')}
           </Button>
         ) : (
           <Button size="lg" full onClick={() => go(1)} disabled={!canNext} iconRight={<ArrowRight size={20} />}>
-            {id === 'welcome' ? 'Get started' : id === 'charter' ? 'I’m in' : 'Continue'}
+            {id === 'welcome' ? t('ob.getStarted') : id === 'charter' ? t('ob.imIn') : t('ob.continue')}
           </Button>
         )}
       </footer>
@@ -672,12 +690,12 @@ function Option({ active, onClick, label, hint, center = false }) {
   );
 }
 
-function Row({ label, value, onEdit }) {
+function Row({ label, value, onEdit, editLabel = 'Edit' }) {
   return (
     <div className="ob-review-row">
       <dt>{label}</dt>
       <dd>{value}</dd>
-      <button type="button" className="ob-edit" onClick={onEdit} aria-label={`Edit ${label}`}>
+      <button type="button" className="ob-edit" onClick={onEdit} aria-label={`${editLabel} ${label}`}>
         <Pencil size={16} />
       </button>
     </div>
