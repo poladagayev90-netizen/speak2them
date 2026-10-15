@@ -123,3 +123,10 @@ test('config defaults: switched off, 6/8/10/12 AZN', () => {
 test('summary drops Infinity and unknown keys', () => {
   assert.deepStrictEqual(P.accessSummary({ kind: 'unlimited', remaining: Infinity, junk: 1 }), { kind: 'unlimited', remaining: null });
 });
+
+test('a first practice with the team never counts as one of theirs', () => {
+  const v = (x) => P.bookingVerdict(x, 'me');
+  assert.strictEqual(v(b(NOW, 'done', { source: 'team_intro', outcome: { me: 'attended' } })), null);
+  assert.strictEqual(v(b(NOW, 'confirmed', { source: 'team_intro' })), null);
+  assert.strictEqual(v(b(NOW, 'done', { source: 'weekly_plan', outcome: { me: 'attended' } })), 'used');
+});

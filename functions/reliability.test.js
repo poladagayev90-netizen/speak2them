@@ -67,3 +67,8 @@ test('the learner notice carries reason and way back, never points', () => {
   assert.ok(!('points' in n));
   assert.strictEqual(limitNotice(computeReliability([], { nowMs: NOW }), 3), null);
 });
+
+test('a no-show at a first practice with the team never counts', () => {
+  const r = computeReliability([{ ...at(30, 'no_show'), team: true }, { ...at(20, 'no_show'), team: true }, { ...at(10, 'no_show'), team: true }], { nowMs: NOW });
+  assert.strictEqual(r.level, 'ok');
+});

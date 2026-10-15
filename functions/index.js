@@ -22,6 +22,7 @@ const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
 const autoRoster = require("./autoRoster");
 const accountHealth = require("./accountHealth");
+const newcomersLib = require("./newcomers");
 const agentPacket = require("./agent/packet");
 const agentValidate = require("./agent/validate");
 const agentGemini = require("./agent/gemini");
@@ -1104,6 +1105,10 @@ exports.notifyAdminOnboarding = onDocumentCreated({ document: "onboarding/{uid}"
     console.warn("[notifyAdminOnboarding] user read failed:", e.message);
   }
   const d = snap.data() || {};
+  // A newcomer is «in» from this moment (newcomers.js): the refill runs on
+  // the next tick (within its hours) so a partner — or a host — is booked
+  // while they may still have the app open, not at the top of the hour.
+  if (d.charterAcceptedAt) await requestRefill(db).catch(() => null);
   await sendPushToUser(db, ADMIN_UID, {
     key: "admin_new_applicant",
     vars: { name, country: d.country || "", target: d.weeklyTarget || "" },
@@ -3194,7 +3199,7 @@ async function refreshReliability(db, uid, nowMs = Date.now()) {
     const resetAtMs = Number(prev.exists && prev.get("resetAtMs")) || 0;
     const events = evSnap.docs.map((d) => {
       const e = d.data() || {};
-      return { outcome: e.outcome, atMs: Number(e.atMs) || 0, slotId: e.slotId || null };
+      return { outcome: e.outcome, atMs: Number(e.atMs) || 0, slotId: e.slotId || null, team: e.team === true || e.source === "team_intro" };
     });
     const rel = reliabilityLib.computeReliability(events, { nowMs, resetAtMs });
     const was = prev.exists ? prev.get("level") : "ok";
@@ -5040,10 +5045,16 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   const healthSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("accountHealth").doc(u))) : [];
   const healthDocs = new Map(healthSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
   const healths = new Map();
+  // The newest yes each person gave to any proposal (newcomers.responsive).
+  const lastYes = new Map();
   if (uids.length) {
     const recentOffers = await db.collection("matchOffers").where("startMs", ">=", nowMs - 28 * DAY_MS).get().catch(() => ({ docs: [] }));
     for (const d of recentOffers.docs) {
       const o = d.data() || {};
+      const at = o.sentAtMs || o.createdAt?.toMillis?.() || 0;
+      for (const [u, r] of Object.entries(o.responses || {})) {
+        if (r === "accepted" && at > (lastYes.get(u) || 0)) lastYes.set(u, at);
+      }
       if (!["weekly_plan", "refill"].includes(o.source)) continue;
       for (const u of o.participants || []) {
         if (!offersOf.has(u)) offersOf.set(u, []);
@@ -5137,7 +5148,12 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     }
     // The learner's own answer for this week (Plan tab calendar / check-in):
     // the days they picked narrow their times and set the number.
-    const answer = autoRoster.weekAnswer(ob, monday);
+    // A newcomer who finished the wizard in the last three days and has not
+    // answered the week is «in» (newcomers.js): finishing it is the yes.
+    const joinedAtMs = ob.charterAcceptedAt?.toMillis?.() || 0;
+    const answer = autoRoster.weekAnswer(ob, monday)
+      || (newcomersLib.committedFor({ answer: null, calls: u.callCount, joinedAtMs, nowMs })
+        ? { in: true, days: [], atMs: joinedAtMs, implicit: true } : null);
     // «Never» hours of the general week profile are taken out even of hours
     // picked for this week; «Maybe» hours are a fallback the score marks down.
     const never = Array.isArray(ob.busyAvailability) ? ob.busyAvailability : [];
@@ -5212,6 +5228,14 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       priority: h.letDown ? 1 : 0,
       limited,
       newcomer: !(Number(u.callCount) > 0),
+      // For newcomersLib.newcomerOk, decided once the push tokens are read.
+      lastSeenMs: seen,
+      lastPracticeMs: u.lastPracticeAt?.toMillis?.() || 0,
+      lastYesMs: lastYes.get(uid) || 0,
+      legacyToken: !!u.fcmToken,
+      joinedAtMs,
+      teacherId: u.teacherId || null,
+      has: h.count,
       // Said «I'm in» for this week: with appConfig/planner.directBook two
       // such people are booked straight away, nobody waits for a second yes.
       committed: !!(answer && answer.in),
@@ -5237,10 +5261,16 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   const favorites = new Map();
   await Promise.all(learners.map(async (l) => {
     const ref = db.collection("users").doc(l.uid);
-    const [bl, av, fv] = await Promise.all([
+    const [bl, av, fv, tk] = await Promise.all([
       ref.collection("blocked").get(), ref.collection("avoid").get(),
       ref.collection("favorites").get().catch(() => ({ docs: [] })),
+      ref.collection("fcmTokens").limit(1).get().catch(() => ({ empty: true })),
     ]);
+    // Who may be a newcomer's partner (newcomers.js): reachable, lately active.
+    l.newcomerOk = newcomersLib.newcomerOk({
+      calls: l.calls, lastSeenMs: l.lastSeenMs, lastPracticeMs: l.lastPracticeMs, lastYesMs: l.lastYesMs,
+      hasPush: !tk.empty || l.legacyToken,
+    }, nowMs);
     for (const d of [...bl.docs, ...av.docs]) blocked.add(weeklyPlanner.pairKey(l.uid, d.id));
     for (const d of fv.docs) {
       const k = weeklyPlanner.pairKey(l.uid, d.id);
@@ -5275,7 +5305,33 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       return ps.ref.set({ auto: { week: monday, in: v.in, why: v.why } }, { merge: true }).catch(() => null);
     }));
   }
-  return { dates, learners, blocked, recent, favorites, noRoster: !auto && !roster };
+  // Hosts for newcomers no partner fits (appConfig/planner.newcomerHosts):
+  // their times from the config (Baku hours) or their own onboarding grid,
+  // the days they already practise this week taken out.
+  const hostCfg = newcomersLib.parseHosts(cfg.newcomerHosts);
+  const hosts = [];
+  if (hostCfg.length) {
+    const [hu, ho] = await Promise.all([
+      db.getAll(...hostCfg.map((h) => db.collection("users").doc(h.uid))),
+      db.getAll(...hostCfg.map((h) => db.collection("onboarding").doc(h.uid))),
+    ]);
+    hostCfg.forEach((h, i) => {
+      if (!hu[i].exists || hu[i].get("suspended")) return;
+      const ob = ho[i].exists ? (ho[i].data() || {}) : {};
+      const own = !h.hours;
+      const availability = own ? (Array.isArray(ob.availability) ? ob.availability : []) : newcomersLib.hoursToRanges(h.hours);
+      if (!availability.length) return;
+      const mine = have.get(h.uid);
+      hosts.push({
+        uid: h.uid, host: true, level: hu[i].get("level") || ob.level || null,
+        minor: ob.ageBand === "under18", availability,
+        busyAvailability: own && Array.isArray(ob.busyAvailability) ? ob.busyAvailability : [],
+        timeZone: own ? (ob.timeZone || "Asia/Baku") : "Asia/Baku",
+        busyDates: mine ? [...mine.dates] : [],
+      });
+    });
+  }
+  return { dates, learners, blocked, recent, favorites, hosts, noRoster: !auto && !roster };
 }
 
 // Draft (or redraft) the plan for the week starting `monday`.
@@ -5326,7 +5382,9 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
 // week IS the yes; a practice that does not suit can be cancelled free up to
 // 2 h before (leavePracticeSlot). Re-checked here: still «in», not paused,
 // practices left; then bookPairTx (pairVerdict, one a day, no overlap).
-async function directBookTx(db, { pair, planWeek, source }) {
+// hostUid: a newcomer's host (newcomers.js) — booked as the config says,
+// without a week answer of their own.
+async function directBookTx(db, { pair, planWeek, source, hostUid = null }) {
   const slot = parseSlotId(pair.slotId);
   if (!slot) return { skip: "invalid-slot" };
   return db.runTransaction(async (tx) => {
@@ -5336,10 +5394,15 @@ async function directBookTx(db, { pair, planWeek, source }) {
       tx.get(usersCol.doc(pair.a)), tx.get(usersCol.doc(pair.b)), tx.get(obCol.doc(pair.a)), tx.get(obCol.doc(pair.b)),
     ]);
     if (!aSnap.exists || !bSnap.exists) return { skip: "user-gone" };
-    for (const ob of [aOb, bOb]) {
+    const nowMs = Date.now();
+    for (const [uid, us, ob] of [[pair.a, aSnap, aOb], [pair.b, bSnap, bOb]]) {
+      if (uid === hostUid) continue;
       const o = ob.exists ? (ob.data() || {}) : {};
-      const answer = autoRoster.weekAnswer(o, planWeek);
-      if (!(answer && answer.in) || o.planPaused === true) return { skip: "not-committed" };
+      const committed = newcomersLib.committedFor({
+        answer: autoRoster.weekAnswer(o, planWeek), calls: us.get("callCount"),
+        joinedAtMs: o.charterAcceptedAt?.toMillis?.() || 0, nowMs,
+      });
+      if (!committed || o.planPaused === true) return { skip: "not-committed" };
     }
     const a = aSnap.data() || {};
     const b = bSnap.data() || {};
@@ -5348,7 +5411,7 @@ async function directBookTx(db, { pair, planWeek, source }) {
       || !await practiceAllowedTx(db, tx, pair.b, b, slot, billing)) return { skip: "no-practices-left" };
     const booked = await bookPairTx(db, tx, {
       uidA: pair.a, uidB: pair.b, a, b, slot, now: Date.now(),
-      marker: { planWeek, planned: true }, source, oneADay: true, replaceInBlock: false,
+      marker: { planWeek, planned: true, ...(hostUid ? { host: hostUid, team: true } : {}) }, source, oneADay: true, replaceInBlock: false,
     });
     if (booked.alreadyPaired) return { skip: "already-booked" };
     return { booked: true, slot, released: booked.released || [], nameA: a.name || "", nameB: b.name || "" };
@@ -5713,11 +5776,11 @@ async function runAgent(db, monday, { nowMs = Date.now(), by = "schedule" } = {}
 async function refillThisWeek(db, nowMs) {
   const monday = bakuWeekKey(nowMs);
   const cfg = await plannerConfig(db);
-  const { dates, learners, blocked, recent, favorites } = await loadPlannerInputs(db, monday, { nowMs, cfg });
+  const { dates, learners, blocked, recent, favorites, hosts } = await loadPlannerInputs(db, monday, { nowMs, cfg });
   const today = bakuDateStr(nowMs);
   const left = dates.filter((d) => d >= today);
   const wanting = learners.filter((l) => l.need > 0);
-  if (wanting.length < 2 || !left.length) return { offers: 0 };
+  if (!left.length || !wanting.length || (wanting.length < 2 && !hosts.length)) return { offers: 0 };
   // Two people who both said «in» can be booked with less notice: nobody has
   // to answer anything first. Proposals still need the 10 h.
   const direct = cfg.directBook === true;
@@ -5753,6 +5816,27 @@ async function refillThisWeek(db, nowMs) {
       key: "match_offer", vars: { at: p.startMs, peerName: names.get(peer) || "" }, type: "match_offer", url: "/",
     }).catch(() => null)));
   }
+  // Newcomers still without a practice this week, no partner found above:
+  // a host within the next 72 h (newcomers.js). Only someone in the app in
+  // the last two days — a host must not wait for an account that is gone.
+  const hostWaiting = learners.filter((l) => l.newcomer && l.committed && l.has === 0
+    && !bookedNow.has(l.uid) && !offered.has(l.uid) && newcomersLib.fresh(l.lastSeenMs, nowMs));
+  let hosted = 0;
+  if (hosts.length && hostWaiting.length) {
+    const hp = newcomersLib.hostPairs({
+      newcomers: hostWaiting, hosts, dates: left, blocked,
+      earliestMs: nowMs + REFILL_DIRECT_NOTICE_MS, latestMs: nowMs + newcomersLib.HOST_WINDOW_MS,
+    });
+    for (const p of hp) {
+      const r = await directBookTx(db, { pair: p, planWeek: monday, source: "team_intro", hostUid: p.b });
+      if (!r.booked) { console.warn("[plan] host booking skipped:", r.skip); continue; }
+      hosted += 1;
+      bookedNow.add(p.a);
+      await afterDirectBook(db, p, r);
+      await writePlanStatus(db, p.a, monday, { state: "booked", reason: null });
+    }
+  }
+  booked += hosted;
   // The people the week let down hear where things stand: a new offer, or —
   // honestly — that no other time has turned up yet (Phase 5).
   for (const l of wanting) {
@@ -5765,10 +5849,10 @@ async function refillThisWeek(db, nowMs) {
   }
   if (offers || booked) {
     await db.collection("weeklyPlans").doc(monday).set({
-      refillLog: admin.firestore.FieldValue.arrayUnion({ at: nowMs, offers, booked }),
+      refillLog: admin.firestore.FieldValue.arrayUnion({ at: nowMs, offers, booked, hosted }),
     }, { merge: true }).catch(() => null);
   }
-  return { offers, booked };
+  return { offers, booked, hosted };
 }
 
 // Called from practiceSlotTick every minute.
@@ -6581,7 +6665,7 @@ exports.practiceSlotTick = onSchedule(
               outcomes[m.id] = outcome || "arrived";
               if (outcome) {
                 await recordAttendance(db, `${doc.id}_${m.id}`, m.id, outcome, slot.startMs,
-                  { slotId: doc.id, peerUid: m.pairedWith || null, callId: m.callId || null });
+                  { slotId: doc.id, peerUid: m.pairedWith || null, callId: m.callId || null, ...(m.team ? { team: true } : {}) });
               }
             }
             // The booking closes with how each side did. Writing it also

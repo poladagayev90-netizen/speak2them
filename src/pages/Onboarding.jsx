@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import {
   ArrowLeft, ArrowRight, Check, CalendarDays, CalendarCheck, Globe2, GraduationCap,
-  MessagesSquare, Target, UserRound, Clock, Pencil, Handshake, Phone, MessageCircle,
+  MessagesSquare, Target, UserRound, Clock, Pencil, Handshake, Phone, MessageCircle, Bell,
 } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { Button } from '../components/ui';
@@ -21,6 +21,7 @@ import {
 } from '../utils/onboarding';
 import { PROFILE_MODES, paintCell } from '../utils/weekProfile';
 import { needsIntro } from '../utils/intro';
+import { pushPermission, askPush } from '../utils/pushOptIn';
 import TimeGrid, { PaintModes } from '../components/plan/TimeGrid';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import './Onboarding.css';
@@ -37,7 +38,11 @@ import './Onboarding.css';
 // practice needs sorting out. Version-2 learners are asked only that step.
 // The «what do you like to talk about» step was dropped (2026-10-14, Polad:
 // not needed). Topics a learner already chose are kept and saved as they are.
-const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'phone', 'availability', 'target', 'summary'];
+// Notifications follow the number (2026-10-15): a practice is booked for a
+// newcomer right after the wizard, and 9 of 14 newcomers had no way to hear
+// about it. The step is passed over where nothing can be asked (already on,
+// blocked, or a browser without push).
+const STEPS = ['welcome', 'goal', 'level', 'age', 'place', 'charter', 'phone', 'notify', 'availability', 'target', 'summary'];
 // Bump when the charter text changes in substance; accepting it again is then asked.
 const CHARTER_VERSION = 1;
 
@@ -132,6 +137,16 @@ export default function Onboarding({ user }) {
   // more screens before anything saved, which read as "enter it all again".
   // In edit mode the step you came to edit saves on its own.
   const [editing, setEditing] = useState(false);
+  // 'default' = can be asked; anything else (or not known yet) skips the step.
+  const [push, setPush] = useState(null);
+  const [pushBusy, setPushBusy] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    pushPermission().then((p) => { if (alive) setPush(p); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  // The answer given on the step itself keeps it on screen (with Continue).
+  const [pushAnswered, setPushAnswered] = useState(false);
 
   // Load: a draft in this tab wins (the learner may have gone to the placement
   // test and come back); otherwise start from whatever they answered before.
@@ -234,6 +249,7 @@ export default function Onboarding({ user }) {
     place: !!country && !!timeZone,
     charter: true,
     phone: !!whatsapp,
+    notify: true,
     availability: cells.size > 0,
     target: weeklyTarget > 0,
     summary: true,
@@ -243,8 +259,22 @@ export default function Onboarding({ user }) {
     setDir(delta);
     setError('');
     setTzPicker(false);
-    setStep((s) => Math.max(0, Math.min(STEPS.length - 1, s + delta)));
+    setStep((s) => {
+      let next = Math.max(0, Math.min(STEPS.length - 1, s + delta));
+      if (STEPS[next] === 'notify' && push !== 'default' && !pushAnswered) next += delta;
+      return Math.max(0, Math.min(STEPS.length - 1, next));
+    });
     window.scrollTo(0, 0);
+  };
+
+  const turnOnPush = async () => {
+    if (pushBusy || !uid) return;
+    setPushBusy(true);
+    const status = await askPush(uid);
+    setPushBusy(false);
+    setPushAnswered(true);
+    setPush(status);
+    if (status === 'granted') go(1);
   };
   const jumpTo = (name) => { setDir(-1); setStep(STEPS.indexOf(name)); window.scrollTo(0, 0); };
 
@@ -483,6 +513,17 @@ export default function Onboarding({ user }) {
           </Question>
         )}
 
+        {id === 'notify' && (
+          <Question
+            icon={<Bell size={20} />}
+            title={t('ob.notify.title')}
+            sub={t('ob.notify.sub')}
+          >
+            {push === 'granted' && <p className="ob-summary-line">{t('ob.notify.done')}</p>}
+            {pushAnswered && push === 'denied' && <p className="ob-summary-line">{t('ob.notify.blocked')}</p>}
+          </Question>
+        )}
+
         {id === 'availability' && (
           <Question
             icon={<CalendarDays size={20} />}
@@ -625,6 +666,15 @@ export default function Onboarding({ user }) {
               </button>
             </>
           )
+        ) : id === 'notify' && push === 'default' ? (
+          <>
+            <Button size="lg" full onClick={turnOnPush} disabled={pushBusy} icon={<Bell size={20} />}>
+              {t('ob.notify.on')}
+            </Button>
+            <button type="button" className="ob-link ob-link--sm" onClick={() => { setPushAnswered(true); go(1); }}>
+              {t('ob.notify.later')}
+            </button>
+          </>
         ) : id === 'summary' ? (
           <Button size="lg" full onClick={submit} disabled={saving} icon={<Check size={20} />}>
             {saving ? t('ob.saving') : t('ob.confirm')}

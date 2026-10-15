@@ -68,6 +68,9 @@ function weekStartMs(ms) {
 //   null      — not theirs, or moved (the booking it moved to counts instead)
 function bookingVerdict(b, uid) {
   if (!b || !(b.participants || []).includes(uid)) return null;
+  // A first practice with the team (newcomers.js host) is the platform's
+  // welcome, not one of their practices.
+  if (b.source === 'team_intro') return null;
   if (b.status === 'confirmed') return 'reserved';
   if (b.status === 'done') {
     const o = (b.outcome || {})[uid];

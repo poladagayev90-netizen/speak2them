@@ -116,6 +116,10 @@ function pairAllowed(a, b, blocked) {
   // Reliability (Phase 5): someone who keeps missing confirmed practices is
   // never a newcomer's first experience of the app.
   if ((a.limited && b.newcomer) || (b.limited && a.newcomer)) return false;
+  // A newcomer's first partner must be someone who shows up (newcomers.js
+  // newcomerOk: a recently active older learner, or a newcomer in the app in
+  // the last two days). Missing = not judged (old callers, tests).
+  if ((a.newcomer && b.newcomerOk === false) || (b.newcomer && a.newcomerOk === false)) return false;
   if (a.partnerLevel === 'close' || b.partnerLevel === 'close') {
     const ra = levelRank(a.level); const rb = levelRank(b.level);
     if (ra !== null && rb !== null && Math.abs(ra - rb) > 1) return false;

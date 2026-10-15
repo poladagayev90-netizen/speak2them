@@ -1,20 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getMessaging, isSupported } from 'firebase/messaging';
 import { Bell, X } from 'lucide-react';
-import { enableNotifications } from '../firebase';
-import app from '../firebase';
-import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
-
-// Keeps getMessaging from throwing on browsers where it half-exists.
-async function messagingSupported() {
-  try {
-    if (!(await isSupported())) return false;
-    getMessaging(app);
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { pushPermission, askPush } from '../utils/pushOptIn';
 
 const DISMISS_KEY = 'notifPromptDismissed';
 
@@ -32,20 +18,8 @@ export default function NotificationPrompt({ user }) {
     (async () => {
       if (!user?.uid) return;
       if (localStorage.getItem(DISMISS_KEY) === '1') return;
-      // Native has no Web Notification API at all — the checks below would bail
-      // and the banner would never appear, which is why APK users were never
-      // even asked. Ask the plugin for the real permission state instead.
-      if (isNativePush()) {
-        if ((await getNativePushPermission()) !== 'default') return;
-        if (cancelled) return;
-        setMode('ask');
-        return;
-      }
-      // No Web Notifications here (e.g. an iOS browser tab) — InstallGate nudges
-      // those users to install first, so there is nothing to ask yet.
-      if (typeof Notification === 'undefined') return;
-      if (Notification.permission !== 'default') return;
-      if (!(await messagingSupported())) return;
+      // Native included (utils/pushOptIn): APK users were once never asked.
+      if ((await pushPermission()) !== 'default') return;
       if (cancelled) return;
       setMode('ask');
     })();
@@ -60,9 +34,7 @@ export default function NotificationPrompt({ user }) {
   const handleEnable = async () => {
     if (busy) return;
     setBusy(true);
-    const status = isNativePush()
-      ? await enableNativePush(user.uid)
-      : await enableNotifications(user.uid);
+    const status = await askPush(user.uid);
     setBusy(false);
     // Granted or hard-denied: either way there's nothing more to ask.
     if (status !== 'default') {

@@ -36,6 +36,8 @@ function computeReliability(events, { nowMs = Date.now(), resetAtMs = 0 } = {}) 
   const since = Math.max(nowMs - RELIABILITY_WINDOW_MS, Number(resetAtMs) || 0);
   const counted = (events || [])
     .filter((e) => Number(e.atMs) >= since && Number(e.atMs) <= nowMs)
+    // A first practice with the team (newcomers.js) never counts either way.
+    .filter((e) => !e.team)
     .filter((e) => (e.outcome === 'attended' ? !!e.slotId : e.outcome in WEIGHT))
     .sort((a, b) => a.atMs - b.atMs);
 
