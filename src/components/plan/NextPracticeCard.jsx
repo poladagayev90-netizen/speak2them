@@ -19,7 +19,7 @@ import './plan.css';
 // on Sunday, why no partner fits yet) and offers the one useful next step.
 // The wording is planHeadline's (utils/planState.js); nothing here promises a
 // partner the platform may not have.
-export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false, onboarding = null }) {
+export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false, onboarding = null, hasPartners = true }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   // Phase from the clock, fixed for this mount (see HeroFx).
@@ -79,6 +79,12 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
     return <NoMatchCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} />;
   }
 
+  // «Message someone you have practised with» only for someone who has —
+  // a newcomer's Partners tab is empty, so the line and the button were a
+  // dead end on their very first Today (pre-release walk 2026-10-17).
+  const sooner = hasPartners ? ' Want to talk sooner? Message someone you have practised with.' : '';
+  const partnersAction = hasPartners ? { label: 'Partners', onClick: () => navigate('/chats') } : null;
+
   const simple = {
     answer: {
       icon: CalendarClock,
@@ -116,16 +122,27 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
     looking: {
       icon: Sparkles,
       title: h.days ? `Looking for partners · ${h.days}` : 'Looking for partners this week',
-      text: 'When someone fits your times, a practice comes here to confirm. Want to talk sooner? Message someone you have practised with.',
-      action: { label: 'Partners', onClick: () => navigate('/chats') },
+      text: `When someone fits your times, a practice comes here to confirm.${sooner}`,
+      action: partnersAction,
     },
     waiting: {
       icon: Sparkles,
       title: 'Your next plan arrives on Sunday evening',
-      text: 'You will get your practices for the week to confirm. Want to talk sooner? Message someone you have practised with.',
-      action: { label: 'Partners', onClick: () => navigate('/chats') },
+      text: `You will get your practices for the week to confirm.${sooner}`,
+      action: partnersAction,
     },
   }[h.kind] || null;
+  // Out of planned practices (only while the packages switch is on): the
+  // planner leaves them out (autoRoster `no_practices_left`), so «looking for
+  // partners» / «your plan arrives on Sunday» was a promise nobody keeps. The
+  // quiet line below still carries «See packages» — no bigger sell than that.
+  if (noPractices && (h.kind === 'looking' || h.kind === 'waiting')) {
+    Object.assign(simple, {
+      title: 'Your free practices are used',
+      text: 'AInur and calls with friends stay free.',
+      action: null,
+    });
+  }
   if (!simple) return null;
   const Icon = simple.icon;
 
@@ -142,15 +159,17 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
           <p className="pl-text">{simple.text}</p>
         </div>
       </div>
-      <div className="pl-actions">
-        <Button
-          variant="primary"
-          onClick={simple.action.onClick}
-          disabled={busy}
-        >
-          {simple.action.label}
-        </Button>
-      </div>
+      {simple.action && (
+        <div className="pl-actions">
+          <Button
+            variant="primary"
+            onClick={simple.action.onClick}
+            disabled={busy}
+          >
+            {simple.action.label}
+          </Button>
+        </div>
+      )}
       {limitLine}
     </section>
   );

@@ -239,7 +239,7 @@ export default function Home({ user }) {
 
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
-        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
+        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} />}
 
         {/* «What happened?» after the learner's own miss or cancel, and —
             once — the general week profile for those already practising. */}
