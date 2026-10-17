@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, CalendarClock, ChevronRight, MessageCircle, FlaskConical } from 'lucide-react';
+import { BookOpen, CalendarClock, ChevronRight, MessageCircle, FlaskConical, Trophy } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -56,9 +56,16 @@ import '../components/plan/plan.css';
 // Two cards, in the learner's own language — the tour is the end of the
 // first run (utils/firstRunLang.js). Polad 2026-10-14: four cards on top of a
 // streak pop-up and a topic pop-up was the first thing a newcomer met.
+// Polad 2026-10-17 (ads start the next day): only the essentials, and the
+// leaderboard must be seen — six stops, all on Today or its tab bar, so the
+// tour never has to change page.
 const HOME_TOUR_KEYS = [
   { target: '#tour-next', key: 'tour.next' },
-  { target: '#tour-plan-tab', key: 'tour.plan' },
+  { target: '#tour-topic', key: 'tour.topic' },
+  { target: '#tour-ai-chat', key: 'tour.ai' },
+  { target: '#tour-lab-tab', key: 'tour.lab' },
+  { target: '#tour-leaderboard', key: 'tour.board' },
+  { target: '#tour-partners-tab', key: 'tour.partners' },
 ];
 
 export default function Home({ user }) {
@@ -182,7 +189,7 @@ export default function Home({ user }) {
         user={user}
         steps={tourSteps}
         labels={tourLabels}
-        tourKey="tourDone_home_v3"
+        tourKey="tourDone_home_v4"
         disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen}
       />
       {showTopicIntro && todayTopic && (
@@ -239,7 +246,7 @@ export default function Home({ user }) {
 
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
-        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} />}
+        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} />}
 
         {/* «What happened?» after the learner's own miss or cancel, and —
             once — the general week profile for those already practising. */}
@@ -324,6 +331,19 @@ export default function Home({ user }) {
             now={plan.now}
           />
         )}
+
+        {/* The leaderboard, one tap from Today (it used to live only inside
+            Profile, where a newcomer never found it). */}
+        <section id="tour-leaderboard" className="pl-card">
+          <button type="button" className="pl-row" onClick={() => navigate('/ranking')}>
+            <span className="pl-row-icon" aria-hidden="true"><Trophy size={18} /></span>
+            <span className="pl-row-main">
+              <p className="pl-row-title">Leaderboard</p>
+              <p className="pl-row-sub">Who practised most this week</p>
+            </span>
+            <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
+          </button>
+        </section>
 
         <NotificationPrompt user={user} />
 

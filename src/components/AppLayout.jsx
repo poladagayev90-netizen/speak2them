@@ -93,7 +93,7 @@ export default function AppLayout({ children, user }) {
           {children}
           <UpdateBanner />
           <BottomNav user={user} />
-          <InstallGate />
+          <InstallGate user={user} />
         </div>
       </div>
     );

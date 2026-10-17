@@ -57,7 +57,8 @@ export default function Plan({ user }) {
   const thisWeek = booked.filter((b) => b.weekKey === plan.weekKey);
   // Individual lessons share the schedule with the booked practices.
   const myLessons = useMyLessons(uid);
-  const teaching = useTeachingLessons(uid, user?.role === 'teacher' || isAdminUser(user));
+  const teacherDesk = user?.role === 'teacher' || isAdminUser(user);
+  const teaching = useTeachingLessons(uid, teacherDesk);
   const schedule = mergeSchedule(booked, mergeSchedule(
     myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
     teachingItems(teaching, plan.now),
@@ -113,8 +114,19 @@ export default function Plan({ user }) {
 
         {/* The status card only when there is nothing booked or to answer —
             otherwise the lists below ARE the status. */}
-        {!booked.length && !open.length && !plan.loading && (PLAN_CARD_KINDS.has(headline.kind) || plan.planStatus?.limit?.active || noPractices) && (
-          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} />
+        {/* A teacher (or the admin) is not a learner: no "set up your plan" —
+            Today already hides it; here it was the only card a new teacher saw. */}
+        {teacherDesk && headline.kind === 'setup' && !schedule.length && !plan.loading && (
+          <section className="pl-card" aria-label="Your lessons">
+            <p className="pl-title">Lessons you teach appear here</p>
+            <p className="pl-text">Plan a student's lessons from your dashboard and they show up in this schedule.</p>
+            <div className="pl-actions">
+              <Button variant="secondary" onClick={() => navigate(isAdminUser(user) ? '/admin' : '/teacher')}>Open the dashboard</Button>
+            </div>
+          </section>
+        )}
+        {!booked.length && !open.length && !plan.loading && !(teacherDesk && headline.kind === 'setup') && (PLAN_CARD_KINDS.has(headline.kind) || plan.planStatus?.limit?.active || noPractices) && (
+          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} hasPartners={(user?.callCount || 0) > 0} />
         )}
 
         {open.length > 0 && (
@@ -209,7 +221,8 @@ export default function Plan({ user }) {
           </section>
         )}
 
-        <section className="pl-card">
+        {/* Only for someone who has a past partner — a newcomer's Partners tab is empty. */}
+        {(user?.callCount || 0) > 0 && <section className="pl-card">
           <button type="button" className="pl-row" onClick={() => navigate('/chats')}>
             <span className="pl-row-icon" aria-hidden="true"><UsersRound size={18} /></span>
             <span className="pl-row-main">
@@ -218,7 +231,7 @@ export default function Plan({ user }) {
             </span>
             <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
           </button>
-        </section>
+        </section>}
       </div>
     </div>
   );

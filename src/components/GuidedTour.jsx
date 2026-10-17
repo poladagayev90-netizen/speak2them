@@ -309,9 +309,9 @@ function GuidedTourImpl({ user, steps = [], tourKey, disabled = false, labels = 
         floater: {
           filter: 'drop-shadow(0 24px 50px rgba(0, 0, 0, 0.45))',
         },
-        overlay: {
-          backdropFilter: 'blur(5px)',
-        },
+        // No backdrop blur: it covers the overlay's whole box, spotlight
+        // included, so the card the tour points at was blurred too and a
+        // newcomer could not read what the step explains (walk 2026-10-17).
         spotlight: {
           stroke: 'rgba(201, 184, 255, 0.72)',
           strokeWidth: 2,
