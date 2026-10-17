@@ -6,7 +6,7 @@ import { db, auth, enableNotifications, signOutEverywhere } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, Radio, BookMarked, Flame, BarChart3,
-  GraduationCap, Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
+  Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
   LineChart, Smartphone, ArrowLeft, Fish,
 } from 'lucide-react';
 import Card from '../components/ui/Card';
@@ -367,31 +367,8 @@ export default function Profile({ user }) {
         </div>
       </Card>
 
-      {/* KURSA QOŞUL — kohorta yeganə girişdir. Əvvəl eyni /redeem düyməsi həm
-          burada, həm ana səhifədə vardı; ana səhifədəki silindi, mətn isə
-          oradakı kimi izahlı hala gətirildi ki, məna itməsin. */}
-      {mode !== 'course' && !user.cohortStatus && (
-        <button
-          onClick={() => navigate('/redeem')}
-          style={{
-            width: '100%',
-            background: 'var(--accent-soft)',
-            border: '1px solid var(--border)', color: 'var(--text-primary)',
-            padding: 'var(--s-4)', borderRadius: 'var(--r-lg)', marginBottom: 'var(--s-4)',
-            display: 'flex', alignItems: 'center', gap: '12px',
-            cursor: 'pointer', textAlign: 'left',
-          }}
-        >
-          <GraduationCap size={22} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--accent)' }} />
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: 'block', fontSize: '16px', fontWeight: 700 }}>Join the course</span>
-            <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
-              Have a code? Apply to a cohort
-            </span>
-          </span>
-          <ChevronRight size={18} strokeWidth={1.75} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />
-        </button>
-      )}
+      {/* «Join the course» (→ /redeem) was removed on 2026-10-17: cohorts are
+          no longer run, so the row was a dead end on every profile. */}
 
       {/* MÜƏLLİM — kilid açılan kimi görünür. Kilidli halda göstərmirik:
           funnel-in mənası odur ki, təklif məhz 3 sessiyadan sonra gəlsin. */}
@@ -606,7 +583,7 @@ export default function Profile({ user }) {
           onClick: async () => {
             if (!docId) return;
             try {
-              await updateDoc(doc(db, 'users', docId), { tourDone_home_v3: false, tourDone_chat: false, tourDone_profile: false });
+              await updateDoc(doc(db, 'users', docId), { tourDone_home_v4: false, tourDone_chat: false, tourDone_profile: false });
               alert('Tours reset. Visit the pages again to see them.');
             } catch (e) { console.error(e); }
           },
