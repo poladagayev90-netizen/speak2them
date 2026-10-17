@@ -51,8 +51,8 @@ export default function BottomNav({ user }) {
   ] : [
     { icon: Home,          label: 'Today',    route: '/' },
     { icon: CalendarDays,  label: 'Plan',     route: '/plan', badge: toAnswer, invite: true, tourId: 'tour-plan-tab' },
-    { icon: MessageCircle, label: 'Partners', route: '/chats', badge: unread },
-    { icon: FlaskConical,  label: 'Lab',      route: '/lab' },
+    { icon: MessageCircle, label: 'Partners', route: '/chats', badge: unread, tourId: 'tour-partners-tab' },
+    { icon: FlaskConical,  label: 'Lab',      route: '/lab', tourId: 'tour-lab-tab' },
     isTeacher
       ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
       // The lighter purple, not the deep one: colour says who you are talking

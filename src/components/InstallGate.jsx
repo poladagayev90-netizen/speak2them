@@ -5,6 +5,7 @@ import {
   ExternalLink, Copy, Globe, MessageCircle, ArrowDown, ArrowUp, ChevronDown, Bell, Phone,
 } from 'lucide-react';
 import { whatsappLink } from '../constants';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { detectBrowser, guideFor, PICKABLE, PLAY_STORE_FROM_WEB, wantsPlayStore } from '../utils/installGuide';
 import './InstallGate.css';
 
@@ -27,7 +28,11 @@ const isStandalone = () =>
 //
 // Android is the exception: SpeakLab is on Google Play, so an Android phone
 // is sent there (one button) instead of being taught to add a web app.
-export default function InstallGate() {
+// The gate meets most people during the first run, so its own words follow
+// the first-run language (utils/firstRunLang.js); the per-browser steps quote
+// the browser's menu items and stay English.
+export default function InstallGate({ user = null }) {
+  const { t } = useFirstRunCopy(user?.guideLanguage);
   const [visible, setVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -84,21 +89,21 @@ export default function InstallGate() {
       <div className="ig" role="dialog" aria-modal="true" aria-labelledby="ig-title">
         <div className="ig-inner">
           <img className="ig-icon" src="/logo192.png" alt="" width="64" height="64" />
-          <h2 id="ig-title" className="ig-title">Get the SpeakLab app</h2>
-          <p className="ig-sub">It is on Google Play. Your partner&apos;s calls ring even with the screen off, and practice reminders reach you.</p>
+          <h2 id="ig-title" className="ig-title">{t('gate.play.title')}</h2>
+          <p className="ig-sub">{t('gate.play.sub')}</p>
 
           <ul className="ig-perks" aria-label="What you get">
-            <li><Phone size={14} aria-hidden="true" /> Calls ring</li>
-            <li><Bell size={14} aria-hidden="true" /> Reminders</li>
-            <li><Smartphone size={14} aria-hidden="true" /> Updates itself</li>
+            <li><Phone size={14} aria-hidden="true" /> {t('gate.perk.calls')}</li>
+            <li><Bell size={14} aria-hidden="true" /> {t('gate.perk.reminders')}</li>
+            <li><Smartphone size={14} aria-hidden="true" /> {t('gate.perk.updates')}</li>
           </ul>
 
           <a className="ig-primary" href={PLAY_STORE_FROM_WEB} target="_blank" rel="noopener noreferrer">
-            <Download size={18} aria-hidden="true" /> Get it on Google Play
+            <Download size={18} aria-hidden="true" /> {t('gate.play.button')}
           </a>
-          <p className="ig-after">Then sign in the same way as here — your account and practices are already there.</p>
+          <p className="ig-after">{t('gate.play.after')}</p>
 
-          <button type="button" className="ig-skip" onClick={handleBypass}>Continue in the browser</button>
+          <button type="button" className="ig-skip" onClick={handleBypass}>{t('gate.skip')}</button>
         </div>
       </div>
     );
@@ -127,28 +132,28 @@ export default function InstallGate() {
       <div className="ig-inner">
         <img className="ig-icon" src="/logo192.png" alt="" width="64" height="64" />
         <h2 id="ig-title" className="ig-title">
-          {browser === 'inapp' ? 'Open SpeakLab in your browser' : 'Add SpeakLab to your home screen'}
+          {browser === 'inapp' ? t('gate.inapp.title') : t('gate.a2hs.title')}
         </h2>
-        <p className="ig-sub">It opens full screen like an app, and your partner&apos;s calls and practice reminders reach you.</p>
+        <p className="ig-sub">{t('gate.a2hs.sub')}</p>
 
         <ul className="ig-perks" aria-label="What you get">
-          <li><Phone size={14} aria-hidden="true" /> Calls ring</li>
-          <li><Bell size={14} aria-hidden="true" /> Reminders</li>
-          <li><Smartphone size={14} aria-hidden="true" /> Full screen</li>
+          <li><Phone size={14} aria-hidden="true" /> {t('gate.perk.calls')}</li>
+          <li><Bell size={14} aria-hidden="true" /> {t('gate.perk.reminders')}</li>
+          <li><Smartphone size={14} aria-hidden="true" /> {t('gate.perk.full')}</li>
         </ul>
 
         {deferredPrompt && (
           <button type="button" className="ig-primary" onClick={handleInstall}>
-            <Download size={18} aria-hidden="true" /> Install SpeakLab
+            <Download size={18} aria-hidden="true" /> {t('gate.install')}
           </button>
         )}
 
         <section className="ig-card" aria-label={`Steps for ${guide.name}`}>
           <div className="ig-card-head">
-            <span>{deferredPrompt ? 'Or by hand' : 'In'} <b>{guide.name}</b></span>
+            <span>{deferredPrompt ? t('gate.byhand') : t('gate.in')} <b>{guide.name}</b></span>
             {options.length > 1 && (
               <button type="button" className="ig-switch" aria-expanded={picking} onClick={() => setPicking((v) => !v)}>
-                Other browser <ChevronDown size={14} aria-hidden="true" />
+                {t('gate.other')} <ChevronDown size={14} aria-hidden="true" />
               </button>
             )}
           </div>
@@ -180,16 +185,16 @@ export default function InstallGate() {
           </ol>
           {showCopy && (
             <button type="button" className="ig-primary ig-primary--soft" onClick={copyLink}>
-              {copied ? <><Check size={16} aria-hidden="true" /> Copied</> : <><Copy size={16} aria-hidden="true" /> Copy the link</>}
+              {copied ? <><Check size={16} aria-hidden="true" /> {t('gate.copied')}</> : <><Copy size={16} aria-hidden="true" /> {t('gate.copy')}</>}
             </button>
           )}
-          <p className="ig-after">Then open SpeakLab from your home screen and allow notifications.</p>
+          <p className="ig-after">{t('gate.after')}</p>
         </section>
 
         <button type="button" className="ig-secondary" onClick={openHelp}>
-          <MessageCircle size={16} aria-hidden="true" /> Need help? Write to us
+          <MessageCircle size={16} aria-hidden="true" /> {t('gate.help')}
         </button>
-        <button type="button" className="ig-skip" onClick={handleBypass}>Continue in the browser</button>
+        <button type="button" className="ig-skip" onClick={handleBypass}>{t('gate.skip')}</button>
       </div>
 
       {/* Points at where this browser keeps its button. */}
