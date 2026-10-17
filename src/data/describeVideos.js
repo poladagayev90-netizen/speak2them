@@ -38,6 +38,12 @@
 // that show a recognisable person stay web-only — above all children and
 // anyone who may be from Azerbaijan or Turkey, whose friends would know them.
 // scripts/strip-native-videos.js keeps exactly these files in the APK/AAB.
+// Audit 2026-10-17 (Polad chose «licensed + clean animals»): playOk was taken
+// off clips with an owner's watermark (leopard-road), visible people
+// (gorilla-meet), or that look like someone else's AI / VFX work shown without
+// our «AI video» label (dream-fall, dog-closes-curtain, fairy-door-cats,
+// bear-apple-tree, cat-merry-go-round, cat-by-the-pot, dog-wizard,
+// round-blue-bird). They stay web-only.
 //
 // IDS ARE STORAGE KEYS (aiSessions itemId, lesson-style rule): add, never
 // rename.
@@ -108,7 +114,6 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-21-56.mp4
     id: 'gorilla-meet',
-    playOk: true,
     src: '/videos/gorilla-meet.mp4',
     poster: '/videos/gorilla-meet.jpg',
     seconds: 22,
@@ -167,7 +172,6 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-22-11.mp4
     id: 'leopard-road',
-    playOk: true,
     src: '/videos/leopard-road.mp4',
     poster: '/videos/leopard-road.jpg',
     seconds: 22,
@@ -210,7 +214,6 @@ export const describeVideos = [
   {
     // source: video_2026-09-22_00-22-23.mp4
     id: 'dream-fall',
-    playOk: true,
     src: '/videos/dream-fall.mp4',
     poster: '/videos/dream-fall.jpg',
     seconds: 14,
@@ -553,7 +556,6 @@ export const describeVideos = [
   {
     // source: dog-wizard.mp4
     id: 'dog-wizard',
-    playOk: true,
     src: '/videos/dog-wizard.mp4',
     poster: '/videos/dog-wizard.jpg',
     seconds: 14,
@@ -656,7 +658,6 @@ export const describeVideos = [
   {
     // source: round-blue-bird.mp4
     id: 'round-blue-bird',
-    playOk: true,
     src: '/videos/round-blue-bird.mp4',
     poster: '/videos/round-blue-bird.jpg',
     seconds: 13,
@@ -759,7 +760,7 @@ export const describeVideos = [
     playOk: true,
     src: '/videos/cat-dump-truck.mp4',
     poster: '/videos/cat-dump-truck.jpg',
-    seconds: 12,
+    seconds: 7,
     sound: true,
     alt: 'A ginger cat rides in the back of a toy dump truck across a shiny floor and straight into a cardboard box.',
     keywords: ['ginger cat', 'toy truck', 'cardboard box', 'shiny floor', 'riding'],
@@ -771,7 +772,6 @@ export const describeVideos = [
   {
     // source: video_2026-09-30_21-09-40.mp4
     id: 'fairy-door-cats',
-    playOk: true,
     src: '/videos/fairy-door-cats.mp4',
     poster: '/videos/fairy-door-cats.jpg',
     seconds: 12,
@@ -788,7 +788,7 @@ export const describeVideos = [
     id: 'snow-slip',
     src: '/videos/snow-slip.mp4',
     poster: '/videos/snow-slip.jpg',
-    seconds: 16,
+    seconds: 12,
     sound: true,
     alt: 'On a bright street at night, a woman slips on the icy path and falls into a pile of snow while people walk past.',
     keywords: ['icy street', 'snow pile', 'slipping', 'lights', 'winter coat'],
@@ -933,7 +933,6 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-29.mp4
     id: 'dog-closes-curtain',
-    playOk: true,
     src: '/videos/dog-closes-curtain.mp4',
     poster: '/videos/dog-closes-curtain.jpg',
     seconds: 10,
@@ -948,7 +947,6 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-31.mp4
     id: 'cat-by-the-pot',
-    playOk: true,
     src: '/videos/cat-by-the-pot.mp4',
     poster: '/videos/cat-by-the-pot.jpg',
     seconds: 16,
@@ -1006,7 +1004,6 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-49.mp4
     id: 'cat-merry-go-round',
-    playOk: true,
     src: '/videos/cat-merry-go-round.mp4',
     poster: '/videos/cat-merry-go-round.jpg',
     seconds: 9,
@@ -1021,7 +1018,6 @@ export const describeVideos = [
   {
     // source: video_2026-10-13_11-06-51.mp4
     id: 'bear-apple-tree',
-    playOk: true,
     src: '/videos/bear-apple-tree.mp4',
     poster: '/videos/bear-apple-tree.jpg',
     seconds: 9,

@@ -25,6 +25,8 @@ import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '..
 import { isAdminUser } from '../utils/courseProgress';
 import usePackages from '../hooks/usePackages';
 import { showPlanEntry } from '../utils/packages';
+import { Capacitor } from '@capacitor/core';
+import { APP_VERSION } from '../version';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
@@ -619,6 +621,9 @@ export default function Profile({ user }) {
         {row({ icon: Trash2, label: deleting ? 'Deleting…' : 'Delete account', onClick: deleting ? undefined : handleDeleteAccount, danger: true, right: null, notLast: true })}
         {row({ icon: LogOut, label: 'Sign out', onClick: () => { if (window.confirm('Sign out?')) handleLogout(); }, right: null })}
       </div>
+      <p style={{ textAlign: 'center', fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', margin: 'var(--s-3) 0 0' }}>
+        SpeakLab {APP_VERSION} · {Capacitor.isNativePlatform() ? 'Android app' : 'web'}
+      </p>
 
       {showWordHistory && (
         <WordHistoryPanel userId={user.uid} onClose={() => setShowWordHistory(false)} />
