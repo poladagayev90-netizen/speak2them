@@ -3340,11 +3340,22 @@ const ONLINE_NOW_MAX = 12;
 // adds the switch and their own three lookups. A list up to 30 s old is fine: «online»
 // already means «seen in the last 150 s», and Call still goes through
 // canPair({direct:true}), which reads the blocks live.
-const ONLINE_NOW_CACHE_MS = 30000;
+// 20 s, and the client asks every 30 s (src/hooks/useOnlineNow.js): someone
+// who opens the app shows up for the others within about half a minute.
+// With 30 s here and a 60 s poll it took up to 90 s, and the first person
+// stared at «Nobody else is online» long enough to leave (Polad 2026-10-17).
+const ONLINE_NOW_CACHE_MS = 20000;
+// A caller who should be on the list but is not has just arrived: the roster
+// predates them, and so does every other caller's view. Rebuilt once — at most
+// every 5 s per instance, so callers who are never listed (teachers, «hide
+// me») cannot make each call a full rebuild.
+const ONLINE_NOW_MIN_REBUILD_MS = 5000;
 let onlineRosterCache = { at: 0, promise: null };
-function onlineRoster(db) {
+function onlineRoster(db, { fresh: wantFresh = false } = {}) {
   const now = Date.now();
-  if (onlineRosterCache.promise && now - onlineRosterCache.at < ONLINE_NOW_CACHE_MS) return onlineRosterCache.promise;
+  const age = now - onlineRosterCache.at;
+  if (onlineRosterCache.promise && age < ONLINE_NOW_CACHE_MS
+    && !(wantFresh && age >= ONLINE_NOW_MIN_REBUILD_MS)) return onlineRosterCache.promise;
   const promise = (async () => {
     const since = admin.firestore.Timestamp.fromMillis(now - ONLINE_NOW_WINDOW_MS);
     const snap = await db.collection("users").where("lastSeen", ">=", since).limit(60).get();
@@ -3386,11 +3397,14 @@ exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, re
   const me = decoded.uid;
   const db = admin.firestore();
   try {
-    await enforceRateLimit(me, "onlineNow", 120, 60 * 60 * 1000);
+    // The client asks every 30 s while visible (120 an hour) plus on every
+    // return to the app; 240 leaves room for that.
+    await enforceRateLimit(me, "onlineNow", 240, 60 * 60 * 1000);
     // The admin's switch is read live, so turning it off takes effect at once.
     const features = await db.collection("appConfig").doc("features").get().catch(() => null);
     if (features && features.exists && features.get("onlineNow") === false) return res.status(200).json({ on: false, people: [] });
-    const roster = await onlineRoster(db);
+    let roster = await onlineRoster(db);
+    if (!roster.people.some((u) => u.id === me)) roster = await onlineRoster(db, { fresh: true });
     const others = roster.people.filter((u) => u.id !== me);
     if (!others.length) return res.status(200).json({ on: true, people: [] });
 

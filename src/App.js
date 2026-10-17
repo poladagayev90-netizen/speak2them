@@ -353,16 +353,15 @@ function App() {
     let heartbeatInterval = null;
     let visibilityHandler = null;
     let unloadHandler = null;
+    let pageShowHandler = null;
     let stopTokenWatch = null;
     let stopLiveUserSync = null;
 
     const cleanupPresence = () => {
       if (heartbeatInterval) clearInterval(heartbeatInterval);
       if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
-      if (unloadHandler) {
-        window.removeEventListener('beforeunload', unloadHandler);
-        window.removeEventListener('pagehide', unloadHandler);
-      }
+      if (unloadHandler) window.removeEventListener('pagehide', unloadHandler);
+      if (pageShowHandler) window.removeEventListener('pageshow', pageShowHandler);
       if (stopTokenWatch) { stopTokenWatch(); stopTokenWatch = null; }
       if (stopLiveUserSync) { stopLiveUserSync(); stopLiveUserSync = null; }
     };
@@ -411,9 +410,19 @@ function App() {
 
         heartbeatInterval = setInterval(async () => {
           try {
+            // While the app is on screen the heartbeat also restates «online»,
+            // so a stale «offline» repairs itself within a minute. It used to
+            // write lastSeen only, and an «offline» left by an exit that never
+            // happened (see pagehide below) stuck for the whole visit: lastSeen
+            // stayed fresh, but onlineNow skips status «offline», so two
+            // learners in the app could not see each other (Polad 2026-10-17).
+            // During a call Chat.jsx owns the status («busy»); a hidden tab
+            // leaves it alone too, so a second, visible tab is not undone.
+            const restate = document.visibilityState === 'visible' && !isInCall();
             await setDoc(doc(db, 'users', uid), {
               online: true,
               lastSeen: serverTimestamp(),
+              ...(restate ? { status: 'online' } : {}),
             }, { merge: true });
           } catch (e) {}
           // The hour-by-hour record (a write only when the hour changes), and
@@ -433,11 +442,21 @@ function App() {
         };
 
         // A tab closed mid-call must still stop looking busy to everyone else.
-        // pagehide fires far more reliably than beforeunload on mobile
-        // browsers/installed PWAs, so register the same handler on both.
+        // pagehide only: beforeunload also fires for navigations that never
+        // leave the page (a cancelled one, a download, an app link), and its
+        // «offline» then outlived the visit. A page kept in the back/forward
+        // cache fires pagehide and returns with pageshow, which says «online».
         unloadHandler = goOffline;
-        window.addEventListener('beforeunload', unloadHandler);
         window.addEventListener('pagehide', unloadHandler);
+        pageShowHandler = (e) => {
+          if (!e.persisted || isInCall()) return;
+          setDoc(doc(db, 'users', uid), {
+            online: true,
+            status: 'online',
+            lastSeen: serverTimestamp(),
+          }, { merge: true }).catch(() => {});
+        };
+        window.addEventListener('pageshow', pageShowHandler);
 
         visibilityHandler = async () => {
           try {

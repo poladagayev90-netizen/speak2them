@@ -52,6 +52,7 @@ import { guessQuestions } from '../data/guessQuestions';
 import { GUESS_ROUND_SECONDS } from '../utils/guessGame';
 import PostCallQuizModal from '../components/PostCallQuizModal';
 import CallRoadmap from '../components/CallRoadmap';
+import CallConnecting, { CONNECT_SLOW_AFTER_MS } from '../components/CallConnecting';
 import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
 import SayButton from '../components/ui/SayButton';
@@ -134,6 +135,16 @@ export default function Chat({ user }) {
   // Qarşı tərəf mikrofonu bağlayıb. Agora bunu ayrılma kimi deyil, ayrıca
   // vəziyyət kimi göstərməlidir — aşağıdakı `user-unpublished`-ə bax.
   const [peerMuted, setPeerMuted] = useState(false);
+  // When a call was accepted (either side) and we are still waiting for Agora
+  // to show the partner in the channel: the «Connecting…» state
+  // (CallConnecting). Null = not connecting. Booked calls never set it — there
+  // the channel is the waiting room and says «Waiting for your partner…».
+  const [connectingSince, setConnectingSince] = useState(null);
+  const [connectSlow, setConnectSlow] = useState(false);
+  // Latched the first time the partner is in the channel during this call, so
+  // the stopwatch starts at the real start of the talk and a brief reconnect
+  // (user-left → user-joined) does not restart it. Reset by endCall.
+  const [talkStarted, setTalkStarted] = useState(false);
   // The message being edited in the composer (ChatComposer), if any.
   const [editing, setEditing] = useState(null);
   const [callSeconds, setCallSeconds] = useState(0);
@@ -245,6 +256,16 @@ export default function Chat({ user }) {
   const callSecondsRef = useRef(0);
   // Zəngin divar-saatı başlanğıcı — müddət bundan hesablanır (bax timer effekti).
   const callStartedAtRef = useRef(0);
+  // This call's recording is running. A «Try again» rejoin calls joinCall a
+  // second time, and a second startLocalRecording would open a new
+  // AudioContext and drop what was recorded so far.
+  const recordingOnRef = useRef(false);
+  // Which joinCall is current. «Try again» can start a second one while the
+  // first is still waiting for its token or the join; the older one then
+  // stops at its next step instead of putting a second client in the channel.
+  const joinGenRef = useRef(0);
+  // Mirrors `connecting` for joinCall's catch (a callback with stale state).
+  const connectingRef = useRef(false);
   const warnedRef = useRef(false);
   const endCallRef = useRef(null);
   // Rədd edilmiş zəngin təmizliyi. Ref-dir, çünki onu iki yerdən — sənədin
@@ -426,6 +447,8 @@ export default function Chat({ user }) {
   // ─────────────────────────────────────────────────────────────
   const joinCall = useCallback(async () => {
     const cId = chatIdRef.current;
+    const gen = ++joinGenRef.current;
+    const superseded = () => gen !== joinGenRef.current;
 
     ringtoneRef.current?.pause();
 
@@ -455,10 +478,12 @@ export default function Chat({ user }) {
       }
       const tokenData = await tokenRes.json();
       if (!tokenData.token) throw new Error('No token');
+      if (superseded()) return;
 
       const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
       clientRef.current = client;
       peerSeenRef.current = false;
+      setPeerJoined(false);
 
       client.on('user-published', async (remoteUser, mediaType) => {
         peerSeenRef.current = true;
@@ -471,6 +496,7 @@ export default function Chat({ user }) {
             addRemoteStream(remoteUser.audioTrack);
             setCallStatus('connected');
             setPeerJoined(true);
+            setTalkStarted(true);
             // Unmute də bu hadisəni doğurur, ona görə nişanı burada silirik.
             setPeerMuted(false);
           }
@@ -499,14 +525,22 @@ export default function Chat({ user }) {
       // Both of us are in the channel — the talk starts now. Fires for a
       // peer who was already there when we joined, too.
       const callIdAtJoin = callDocIdRef.current;
+      // It also ends «Connecting…»: the partner is in, even before their
+      // audio track is published (a slow mic, or they joined muted).
       client.on('user-joined', () => {
         peerSeenRef.current = true;
+        setPeerJoined(true);
+        setTalkStarted(true);
         markCallConnected(callIdAtJoin);
       });
 
       // Reverting to null. Do NOT use string uid because the backend token is generated for integers (0).
       // Agora will auto-generate unique IDs for both users automatically.
       await safeJoin(client, APP_ID, cId, tokenData.token, null);
+      if (superseded()) {
+        try { await client.leave(); } catch (e) {}
+        return;
+      }
 
       // If mic track was pre-created on user gesture, use it.
       // If not (matched call / receiver path), create it now.
@@ -516,8 +550,11 @@ export default function Chat({ user }) {
 
       await client.publish(localTrackRef.current);
 
-      // Start recording both sides
-      startLocalRecording(localTrackRef.current);
+      // Start recording both sides (once per call — see recordingOnRef)
+      if (!recordingOnRef.current) {
+        startLocalRecording(localTrackRef.current);
+        recordingOnRef.current = true;
+      }
 
       setInCall(true);
       inCallRef.current = true;
@@ -616,6 +653,7 @@ export default function Chat({ user }) {
       } catch (e) {}
 
     } catch (err) {
+      if (superseded()) return;
       setInCallFlag(false);
       console.error('[Chat] joinCall error:', err);
       joinedRef.current = false;
@@ -627,7 +665,15 @@ export default function Chat({ user }) {
         try { await safeLeave(clientRef.current); } catch (e) {}
         clientRef.current = null;
       }
-      setCallStatus('error');
+      // After an accept a failed join is not a dead end: the screen stays on
+      // «Connecting…» with «keep the app open» and «Try again» at once.
+      // Before, the call screen closed and the person who had just tapped
+      // Accept was back in the chat with nothing said.
+      if (connectingRef.current) {
+        setConnectSlow(true);
+      } else {
+        setCallStatus('error');
+      }
       
       try {
         await updateDoc(doc(db, 'users', userUidRef.current), { status: 'online' });
@@ -650,6 +696,7 @@ export default function Chat({ user }) {
   useEffect(() => {
     if (location.state?.acceptedCall && !joinedRef.current) {
       joinedRef.current = true;
+      setConnectingSince(Date.now());
       const delay = isMatchedCall ? (user.uid < peerId ? 0 : 1200) : 0;
       const timer = setTimeout(() => {
         joinCall();
@@ -833,6 +880,14 @@ export default function Chat({ user }) {
         && ringingOutRef.current) {
         if (!joinedRef.current) {
           joinedRef.current = true;
+          setConnectingSince(Date.now());
+          // Answered: the 30 s «No answer» timer is over. Left running, it
+          // fired on a join that failed (joinedRef false again) and ended a
+          // call the partner had just accepted.
+          if (callTimeoutRef.current) {
+            clearTimeout(callTimeoutRef.current);
+            callTimeoutRef.current = null;
+          }
           setIncomingCallData(null);
           ringtoneRef.current?.pause();
           joinCall();
@@ -861,8 +916,11 @@ export default function Chat({ user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callDocId, user.uid, peerId]);
 
+  // The stopwatch starts when the partner is in the channel, not when we
+  // are: «Connecting…» and the booked-call waiting room are not talk time.
+  const talking = inCall && talkStarted;
   useEffect(() => {
-    if (inCall) {
+    if (talking) {
       // KRİTİK: müddət tick SAYMAQLA hesablanmır, divar saatından çıxarılır.
       //
       // Əvvəl `callSecondsRef.current += 1` idi. Brauzer arxa fonda
@@ -906,7 +964,29 @@ export default function Chat({ user }) {
       setCallSeconds(0);
     }
     return () => clearInterval(timerRef.current);
-  }, [inCall]);
+  }, [talking]);
+
+  // «Connecting…» ends when the partner is in the channel; after
+  // CONNECT_SLOW_AFTER_MS it adds «keep the app open» and «Try again».
+  useEffect(() => {
+    if (peerJoined) setConnectingSince(null);
+  }, [peerJoined]);
+  useEffect(() => {
+    setConnectSlow(false);
+    if (!connectingSince) return undefined;
+    const t = setTimeout(() => setConnectSlow(true), CONNECT_SLOW_AFTER_MS);
+    return () => clearTimeout(t);
+  }, [connectingSince]);
+  const connecting = !!connectingSince && !peerJoined
+    && callStatus !== 'left' && callStatus !== 'error';
+  connectingRef.current = connecting;
+  // Rejoins our side of the channel: joinCall leaves the old client first and
+  // keeps the mic track and the recording. The partner's side is theirs.
+  const retryConnect = () => {
+    setConnectingSince(Date.now());
+    joinedRef.current = true;
+    joinCall();
+  };
 
   const formatTime = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -1054,6 +1134,10 @@ export default function Chat({ user }) {
     const secondsTalked = callStartedAtRef.current
       ? Math.max(0, Math.floor((Date.now() - callStartedAtRef.current) / 1000))
       : callSecondsRef.current;
+    // Per call: a partner who never came must not inherit the previous
+    // call's start (the stopwatch now waits for them, so it never set one).
+    callStartedAtRef.current = 0;
+    callSecondsRef.current = 0;
     // Read before the resets below. False = nobody else was ever in the room:
     // a partner who never came, or a ring that went unanswered.
     const peerWasHere = peerSeenRef.current;
@@ -1119,6 +1203,10 @@ export default function Chat({ user }) {
     setCallStatus('');
     setMuted(false);
     setPeerMuted(false);
+    setPeerJoined(false);
+    setTalkStarted(false);
+    setConnectingSince(null);
+    recordingOnRef.current = false;
     setShowRoadmap(false);
     joinedRef.current = false;
     ringtoneRef.current?.pause();
@@ -1420,6 +1508,9 @@ export default function Chat({ user }) {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
               <button className="btn-accept" onClick={async () => {
                 setIncomingCallData(null);
+                // The call screen opens on this tap («Connecting…»), not after
+                // the token + join, which left the chat on screen for seconds.
+                setConnectingSince(Date.now());
                 // Receiver: get mic on button tap (user gesture) then join
                 if (!localTrackRef.current) {
                   try {
@@ -1451,7 +1542,7 @@ export default function Chat({ user }) {
         </div>
       )}
 
-      {(inCall || callStatus === 'calling') && (
+      {(inCall || callStatus === 'calling' || connecting) && (
         <div className="fullscreen-call">
           <div className="call-avatar-big">
             {peer?.name?.charAt(0).toUpperCase()}
@@ -1462,6 +1553,11 @@ export default function Chat({ user }) {
             {peer?.teacherVerified && <TutorBadge />}
             {peer?.isPremium && <PremiumBadge />}
           </h2>
+          {connecting ? (
+            <div className="call-status-text">
+              <CallConnecting slow={connectSlow} onRetry={retryConnect} />
+            </div>
+          ) : (
           <p className="call-status-text">
             {callStatus === 'calling' && 'Calling...'}
             {/* Kanaldayıq, amma qarşı tərəf hələ qoşulmayıb — gözləmə otağı. */}
@@ -1486,7 +1582,8 @@ export default function Chat({ user }) {
             {callStatus === 'rejected' && 'Declined'}
             {callStatus === 'error' && 'Error'}
           </p>
-          {inCall && (
+          )}
+          {talking && (
             <>
               <div style={{
                 background: timeWarning ? 'var(--warning-bg)' : 'var(--bg-secondary)',
@@ -1513,7 +1610,7 @@ export default function Chat({ user }) {
               )}
             </>
           )}
-          {inCall && !activityOpen && (
+          {talking && !activityOpen && (
             <button type="button" className="call-topic-chip" onClick={() => setTopicPickerOpen(true)}>
               <span className="call-topic-chip-k">Topic</span>
               <span className="call-topic-chip-t">{plainTopic(content?.topic)}</span>
@@ -1522,7 +1619,7 @@ export default function Chat({ user }) {
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
             <div className="fullscreen-call-buttons">
-              {inCall && (
+              {talking && (
                 <>
                   <button className="call-btn-big act-vocab" onClick={() => setShowDaily(true)}>
                     <BookOpen size={26} strokeWidth={2.25} aria-hidden="true" /><span>Vocabulary</span>
@@ -1652,7 +1749,11 @@ export default function Chat({ user }) {
                   {muted ? <MicOff size={26} strokeWidth={2.25} aria-hidden="true" /> : <Mic size={26} strokeWidth={2.25} aria-hidden="true" />}<span>{muted ? 'Unmute' : 'Mute'}</span>
                 </button>
               )}
-              <button className="call-btn-big end" onClick={endCall}><PhoneOff size={26} strokeWidth={2.25} aria-hidden="true" /><span>End</span></button>
+              {connecting ? (
+                <button type="button" className="call-connecting-cancel" onClick={endCall}>Cancel call</button>
+              ) : (
+                <button className="call-btn-big end" onClick={endCall}><PhoneOff size={26} strokeWidth={2.25} aria-hidden="true" /><span>End</span></button>
+              )}
             </div>
           </div>
         </div>
@@ -1864,7 +1965,7 @@ export default function Chat({ user }) {
         />
       )}
 
-      {inCall && showRoadmap && !activityOpen && (
+      {inCall && !connecting && showRoadmap && !activityOpen && (
         <CallRoadmap
           content={content}
           onStart={() => setShowRoadmap(false)}
