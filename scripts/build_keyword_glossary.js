@@ -261,6 +261,13 @@ const OVERRIDES = {
   'walk away': { az: 'uzaqlaşmaq', tr: 'uzaklaşmak' },
   'merry-go-round': { az: 'karusel', tr: 'atlıkarınca' },
   'upside down': { az: 'tərsinə, başıaşağı', tr: 'baş aşağı' },
+  // Omni clips (2026-10-17).
+  'slice of bread': { az: 'bir dilim çörək', tr: 'bir dilim ekmek' },
+  'plastic bag': { az: 'sellofan torba', tr: 'naylon poşet' },
+  'white goat': { az: 'ağ keçi', tr: 'beyaz keçi' },
+  'village yard': { az: 'kənd həyəti', tr: 'köy avlusu' },
+  'garden hose': { az: 'su şlanqı', tr: 'bahçe hortumu' },
+  'flip-flops': { az: 'barmaqarası tapoçka', tr: 'parmak arası terlik' },
   spin: { az: 'fırlanmaq', tr: 'dönmek' },
   bear: { az: 'ayı', tr: 'ayı' },
 };

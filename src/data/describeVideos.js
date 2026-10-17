@@ -1157,6 +1157,54 @@ export const describeVideos = [
       'Have you ever dropped something in public? What happened?',
     ],
   },
+  {
+    // source: Cat_steals_bread_from_counter_20261017172729.mp4
+    id: 'cat-bread-thief',
+    licensed: true,
+    ai: true,
+    src: '/videos/cat-bread-thief.mp4',
+    poster: '/videos/cat-bread-thief.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'A ginger cat on a messy kitchen counter pulls a slice of bread out of the bag, jumps down and runs out of the kitchen with it.',
+    keywords: ['ginger cat', 'slice of bread', 'plastic bag', 'kitchen counter', 'fridge'],
+    prompts: [
+      'What did the cat do, step by step, and where do you think it was going?',
+      'Has an animal ever stolen food from you? What happened?',
+    ],
+  },
+  {
+    // source: Goat_chewing_shirt_with_woman_20261017172701.mp4
+    id: 'goat-shirt-tug',
+    licensed: true,
+    ai: true,
+    src: '/videos/goat-shirt-tug.mp4',
+    poster: '/videos/goat-shirt-tug.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'In a village yard a white goat pulls a blue shirt off the washing line, and a woman in an apron comes and tries to pull it back.',
+    keywords: ['white goat', 'washing line', 'blue shirt', 'apron', 'village yard'],
+    prompts: [
+      'Tell the story from the goat\'s point of view. What was it thinking?',
+      'Who do you think will win, the goat or the woman? Why?',
+    ],
+  },
+  {
+    // source: Man_catches_slipping_watermelon_20261017172739.mp4
+    id: 'watermelon-save',
+    licensed: true,
+    ai: true,
+    src: '/videos/watermelon-save.mp4',
+    poster: '/videos/watermelon-save.jpg',
+    seconds: 8,
+    sound: true,
+    alt: 'In a courtyard between old apartment blocks a man carrying a big watermelon trips over a garden hose, drops it, and catches it again just in time.',
+    keywords: ['watermelon', 'garden hose', 'courtyard', 'apartment block', 'flip-flops'],
+    prompts: [
+      'What made him drop the watermelon, and how did he save it?',
+      'Describe a time you almost dropped or broke something important.',
+    ],
+  },
 ];
 
 // Which clips a topic gets lives in topicVideos.js, which
