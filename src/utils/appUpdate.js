@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { PLAY_STORE_URL as PLAY_URL } from './installGuide';
 
 // "There is a new version" (Polad 2026-10-07, plan #7).
 //
@@ -17,8 +18,6 @@ import { db } from '../firebase';
 // (Play's full-screen update) for a version that must not be used any more;
 // .latest is the fallback for an APK not installed from Play, which the API
 // cannot see.
-
-const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.speaklab.app';
 
 let ready = false;
 const listeners = new Set();

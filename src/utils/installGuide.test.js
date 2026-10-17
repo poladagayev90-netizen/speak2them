@@ -1,4 +1,4 @@
-import { detectBrowser, guideFor, iosNeedsSafari, iosVersion } from './installGuide';
+import { detectBrowser, guideFor, iosNeedsSafari, iosVersion, wantsPlayStore } from './installGuide';
 
 const UA = {
   iosSafari: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
@@ -41,4 +41,9 @@ test('every guide has steps and a button position', () => {
     expect(g.steps.length).toBeGreaterThan(1);
     expect(['top-right', 'bottom', 'bottom-right']).toContain(g.where);
   }
+});
+
+test('Android goes to Google Play, iOS adds to the home screen', () => {
+  for (const ua of [UA.chrome, UA.samsung, UA.firefox, UA.edge, UA.opera, UA.instagram]) expect(wantsPlayStore(ua)).toBe(true);
+  for (const ua of [UA.iosSafari, UA.iosChrome, UA.ipadAsMac]) expect(wantsPlayStore(ua)).toBe(false);
 });

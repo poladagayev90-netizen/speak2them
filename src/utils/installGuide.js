@@ -193,3 +193,12 @@ export function guideFor(browser, ua = '') {
   }
   return GUIDES[browser] || GUIDES['android-other'];
 }
+
+// Android phones get the Play Store app, not the home-screen web app
+// (Polad, 2026-10-17): the Play build is the one that rings for calls with
+// the screen off and is updated by Play. iOS has no store build yet, so it
+// keeps «Add to Home Screen». An in-app browser (Instagram, Facebook) on
+// Android goes to Play too — a play.google.com link leaves the webview.
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.speaklab.app';
+export const PLAY_STORE_FROM_WEB = `${PLAY_STORE_URL}&referrer=utm_source%3Dweb%26utm_medium%3Dinstall_gate`;
+export const wantsPlayStore = (ua = '') => /Android/i.test(ua);

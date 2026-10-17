@@ -58,6 +58,8 @@
   font-size: var(--fs-body);
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none; /* also an <a> (the Play Store link) */
+  box-sizing: border-box;
 }
 .ig-primary--soft { margin: var(--s-3) 0 0; padding: 12px; background: rgba(182, 166, 255, 0.22); color: #f4f2fc; }
 

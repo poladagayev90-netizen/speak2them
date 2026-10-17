@@ -35,8 +35,10 @@ android {
         applicationId "com.speaklab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 33
-        versionName "1.23"
+        versionCode 34
+        // One version number for web and Android: read from src/version.js
+        // (APP_VERSION), which Profile shows on both.
+        versionName((file("../../src/version.js").text =~ /APP_VERSION = '([^']+)'/)[0][1])
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

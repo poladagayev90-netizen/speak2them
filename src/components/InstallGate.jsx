@@ -5,7 +5,7 @@ import {
   ExternalLink, Copy, Globe, MessageCircle, ArrowDown, ArrowUp, ChevronDown, Bell, Phone,
 } from 'lucide-react';
 import { whatsappLink } from '../constants';
-import { detectBrowser, guideFor, PICKABLE } from '../utils/installGuide';
+import { detectBrowser, guideFor, PICKABLE, PLAY_STORE_FROM_WEB, wantsPlayStore } from '../utils/installGuide';
 import './InstallGate.css';
 
 const BYPASS_KEY = 'installGateBypass';
@@ -24,6 +24,9 @@ const isStandalone = () =>
 // Home Screen» in a different menu, so the gate names that browser's own
 // buttons, points at where its button is, and lets the person pick another
 // browser when the guess is wrong.
+//
+// Android is the exception: SpeakLab is on Google Play, so an Android phone
+// is sent there (one button) instead of being taught to add a web app.
 export default function InstallGate() {
   const [visible, setVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -75,6 +78,31 @@ export default function InstallGate() {
     try { sessionStorage.setItem(BYPASS_KEY, '1'); } catch { /* private mode */ }
     setVisible(false);
   };
+
+  if (wantsPlayStore(ua)) {
+    return (
+      <div className="ig" role="dialog" aria-modal="true" aria-labelledby="ig-title">
+        <div className="ig-inner">
+          <img className="ig-icon" src="/logo192.png" alt="" width="64" height="64" />
+          <h2 id="ig-title" className="ig-title">Get the SpeakLab app</h2>
+          <p className="ig-sub">It is on Google Play. Your partner&apos;s calls ring even with the screen off, and practice reminders reach you.</p>
+
+          <ul className="ig-perks" aria-label="What you get">
+            <li><Phone size={14} aria-hidden="true" /> Calls ring</li>
+            <li><Bell size={14} aria-hidden="true" /> Reminders</li>
+            <li><Smartphone size={14} aria-hidden="true" /> Updates itself</li>
+          </ul>
+
+          <a className="ig-primary" href={PLAY_STORE_FROM_WEB} target="_blank" rel="noopener noreferrer">
+            <Download size={18} aria-hidden="true" /> Get it on Google Play
+          </a>
+          <p className="ig-after">Then sign in the same way as here — your account and practices are already there.</p>
+
+          <button type="button" className="ig-skip" onClick={handleBypass}>Continue in the browser</button>
+        </div>
+      </div>
+    );
+  }
 
   const openHelp = () => {
     const msg = `Hi! I need help adding the SpeakLab app to my home screen (${guide.name}).`;
