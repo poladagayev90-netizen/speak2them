@@ -24,6 +24,17 @@ test('a clip with a recognisable person never reaches the Play build', () => {
     .forEach((id) => expect(appIds.has(id)).toBe(false));
 });
 
+test('clips dropped in the 2026-10-17 audit stay out of the Play build', () => {
+  // Watermark, visible people, or another creator's unlabelled AI / VFX clip.
+  ['leopard-road', 'gorilla-meet', 'dream-fall', 'dog-closes-curtain', 'fairy-door-cats',
+    'bear-apple-tree', 'cat-merry-go-round', 'cat-by-the-pot', 'dog-wizard', 'round-blue-bird']
+    .forEach((id) => expect(appIds.has(id)).toBe(false));
+});
+
+test('every topic has at least four clips in the app', () => {
+  for (let day = 1; day <= 60; day += 1) expect(appVideosForTopic(day).length).toBeGreaterThanOrEqual(4);
+});
+
 test('the web keeps its six-clip topics', () => {
   expect(videosForTopic(1)).toHaveLength(6);
 });
