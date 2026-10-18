@@ -2,16 +2,23 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc, where,
 } from 'firebase/firestore';
-import { ArrowLeftRight, CalendarClock, Check, Clock, Plus, RotateCcw, Search, Send, Trash2, UserPlus, X } from 'lucide-react';
+import {
+  ArrowLeftRight, CalendarCheck, CalendarClock, Check, ChevronDown, Clock, MessageCircle, Plus, RotateCcw, Search, Send, Sparkles, Trash2, UserPlus, X,
+} from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
-import { LEVELS } from '../utils/onboarding';
+import { LEVELS, whatsAppLink } from '../utils/onboarding';
 import { toBakuIntervals, overlapAll, offsetVsBaku, formatMinutes, cityOf } from '../utils/timezone';
 import { proposeMatch, cancelOffer, subscribeToWeekPlan, weekPlanAction } from '../utils/matchOffers';
 import { cancelSlotMatch } from '../utils/teacher';
 import {
-  PROPOSE_HORIZON_DAYS, closedOffers, weekBlocks, weekStarts, startFitMin, busyAround, fitsBlock, weekPairs, plannedCount, candidatesFor, levelGap, addDays, START_FIT_MIN,
+  PROPOSE_HORIZON_DAYS, closedOffers, weekStarts, startFitMin, busyAround, weekPairs, plannedCount, candidatesFor, levelGap, addDays, START_FIT_MIN,
+  freeGrid, attentionOf, ATTENTION,
 } from '../utils/matching';
+import { isUnlimited } from '../utils/packages';
+import { ApplicantDetail } from './AdminApplicants';
+import { useAccountHealth } from './AdminWeekRoster';
+import { usePackageSummaries } from './AdminPackages';
 import { stableOrder } from '../utils/stableOrder';
 import { Button, Sheet } from './ui';
 import './AdminApplicants.css';
@@ -22,8 +29,12 @@ import './AdminMatching.css';
 // join mid-week; everyone's free time should be easy to see").
 //
 // Left: everyone, with how many practices they have this week against what
-// they asked for, and their free time as a 7×8 grid of the Baku practice
-// blocks. Right: the week's pairs as they really stand — open proposals and
+// they asked for, and their free time as an hourly grid (7 days × 07–23 Baku
+// starts, the week the planner really sees). Since 2026-10-18 it is the
+// people console: the week's verdict, health, reliability, WhatsApp, the
+// Applicants answers on a tap, a «Needs attention» box whose counts filter
+// the list, and «Plan selected» — the planner run for the ticked people only,
+// previewed, then booked. Right: the week's pairs as they really stand — open proposals and
 // booked practices, whoever made them (the Sunday plan, a refill, the admin).
 //
 // Every change goes through the endpoints that already exist, so nothing here
@@ -36,6 +47,8 @@ import './AdminMatching.css';
 // switches stay on the Week tab.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// adminWeekPlan planSelected takes at most this many people.
+const PICK_MAX = 40;
 const toMs = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : Number(t) || 0);
 const levelShort = (lv) => LEVELS.find((l) => l.value === lv)?.short || String(lv || '').slice(0, 2) || '—';
 const firstName = (n) => String(n || '').split(' ')[0] || '—';
@@ -80,6 +93,10 @@ export default function AdminMatching({ users = [] }) {
   const [week, setWeek] = useState(() => (new Date(Date.now() + 4 * 3600000).getUTCDay() === 0 ? weeks[1].key : weeks[0].key));
   const [onboarding, setOnboarding] = useState([]);
   const [roster, setRoster] = useState(undefined);
+  const [rosterDoc, setRosterDoc] = useState({});
+  const [autoMode, setAutoMode] = useState(false);
+  const [reliability, setReliability] = useState(new Map());
+  const [planning, setPlanning] = useState(false); // «Plan selected» bar for two people
   const [prevRoster, setPrevRoster] = useState(null);
   const [offers, setOffers] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -97,8 +114,10 @@ export default function AdminMatching({ users = [] }) {
     (snap) => setOnboarding(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), () => setOnboarding([])), []);
   useEffect(() => {
     setRoster(undefined);
-    return onSnapshot(doc(db, 'weekRoster', week),
-      (snap) => setRoster(snap.exists() ? (snap.get('uids') || []) : null), () => setRoster(null));
+    return onSnapshot(doc(db, 'weekRoster', week), (snap) => {
+      setRoster(snap.exists() ? (snap.get('uids') || []) : null);
+      setRosterDoc(snap.exists() ? snap.data() : {});
+    }, () => { setRoster(null); setRosterDoc({}); });
   }, [week]);
   // With no list saved for the week the server carries last week's forward
   // (functions rosterOf), so the desk shows that one.
@@ -116,9 +135,14 @@ export default function AdminMatching({ users = [] }) {
   useEffect(() => subscribeToWeekPlan(week, setPlan), [week]);
   useEffect(() => onSnapshot(doc(db, 'appConfig', 'features'),
     (snap) => setFeatures(snap.exists() ? snap.data() : {}), () => setFeatures({})), []);
-  useEffect(() => { setSelected([]); setMsg(null); }, [week]);
+  useEffect(() => onSnapshot(doc(db, 'appConfig', 'planner'),
+    (snap) => setAutoMode(snap.exists() && snap.get('rosterMode') === 'auto'), () => setAutoMode(false)), []);
+  useEffect(() => onSnapshot(collection(db, 'reliability'),
+    (snap) => setReliability(new Map(snap.docs.map((d) => [d.id, d.get('level') || null]))), () => setReliability(new Map())), []);
+  const health = useAccountHealth();
+  const packages = usePackageSummaries();
+  useEffect(() => { setSelected([]); setMsg(null); setPlanning(false); }, [week]);
 
-  const blocks = useMemo(() => weekBlocks(week, now), [week, now]);
   // What a practice can be proposed or moved to: any whole hour (2026-10-07).
   const starts = useMemo(() => weekStarts(week, now), [week, now]);
   const pairs = useMemo(() => weekPairs(offers, bookings), [offers, bookings]);
@@ -134,27 +158,44 @@ export default function AdminMatching({ users = [] }) {
     })), [plan]);
   const inList = useMemo(() => new Set(effectiveRoster || []), [effectiveRoster]);
 
+  // Autopilot: the server's verdict for the week (weekRoster autoIn/autoWhy);
+  // manual: the admin's list.
+  const autoIn = useMemo(() => new Set(rosterDoc.autoIn || []), [rosterDoc]);
+  const autoWhy = useMemo(() => rosterDoc.autoWhy || {}, [rosterDoc]);
   const people = useMemo(() => {
     const byUid = new Map(users.map((u) => [u.uid || u.id, u]));
     return onboarding
       .map((o) => {
         const u = byUid.get(o.id) || {};
         const joined = Math.max(toMs(o.submittedAt), toMs(u.createdAt));
-        return {
+        const availability = Array.isArray(o.availability) ? o.availability : [];
+        const pkg = packages[o.id];
+        const p = {
+          ...o,
           id: o.id,
+          ob: o,
           name: u.name || u.email || o.id.slice(0, 6),
           email: u.email || '',
           level: u.level || o.level,
           timeZone: o.timeZone,
           wants: Number(o.weeklyTarget) || 0,
-          baku: toBakuIntervals(Array.isArray(o.availability) ? o.availability : [], o.timeZone),
+          availability,
+          baku: toBakuIntervals(availability, o.timeZone),
           inList: inList.has(o.id),
           isNew: joined > now - 7 * DAY_MS,
+          joinedMs: joined,
+          calls: Number(u.callCount) || 0,
           role: u.role,
+          inWeek: autoMode ? autoIn.has(o.id) : inList.has(o.id),
+          why: autoMode ? (autoWhy[o.id] || null) : null,
+          health: health.get(o.id) || null,
+          reliability: reliability.get(o.id) || null,
+          paid: isUnlimited({ ...u, uid: o.id }, now) || (pkg?.kind === 'package' && pkg.periodEndMs > now),
         };
+        return p;
       })
       .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher');
-  }, [onboarding, users, inList, now]);
+  }, [onboarding, users, inList, now, autoMode, autoIn, autoWhy, health, reliability, packages]);
   const personById = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
 
   const say = (ok, text) => setMsg({ ok, text });
@@ -265,9 +306,10 @@ export default function AdminMatching({ users = [] }) {
     }
   };
 
+  // Two ticked = a proposal for one time; more = «Plan selected» (planner).
   const toggleSelect = (id) => setSelected((cur) => (cur.includes(id)
     ? cur.filter((x) => x !== id)
-    : [...cur, id].slice(-2)));
+    : [...cur, id].slice(-PICK_MAX)));
 
   const byDay = useMemo(() => {
     const m = new Map();
@@ -326,7 +368,7 @@ export default function AdminMatching({ users = [] }) {
 
       <div className={`mt-grid is-${view}`}>
         <PeoplePanel
-          week={week} people={people} pairs={pairs} blocks={blocks} selected={selected}
+          week={week} people={people} pairs={pairs} selected={selected} autoMode={autoMode} now={now}
           onToggle={toggleSelect} onAdd={addToList} busy={busy}
         />
         <section className="mt-pairs" aria-label="Pairs">
@@ -353,8 +395,17 @@ export default function AdminMatching({ users = [] }) {
         </section>
       </div>
 
-      {selected.length > 0 && (
+      {(selected.length > 2 || (selected.length === 2 && planning)) && (
+        <PlanBar
+          week={week} chosen={selected.map((id) => personById.get(id)).filter(Boolean)}
+          onClear={() => { setSelected([]); setPlanning(false); }}
+          onBack={selected.length === 2 ? () => setPlanning(false) : null}
+          onBooked={(text) => { say(true, text); setSelected([]); setPlanning(false); }}
+        />
+      )}
+      {selected.length > 0 && selected.length <= 2 && !planning && (
         <NewPairBar
+          onPlan={() => setPlanning(true)}
           chosen={selected.map((id) => personById.get(id)).filter(Boolean)}
           blocks={starts} pairs={pairs}
           onClear={() => setSelected([])}
@@ -385,20 +436,37 @@ export default function AdminMatching({ users = [] }) {
 }
 
 // ── People ───────────────────────────────────────────────────────
-function PeoplePanel({ week, people, pairs, blocks, selected, onToggle, onAdd, busy }) {
+// Verdict words for the week (functions/autoRoster.js eligible + health).
+const WHY = {
+  said_in: 'said «in»', package: 'package', new: 'new this week', included: 'always (you)', regular: 'said yes lately',
+  usual_times: 'usual times', excluded: 'never (you)', asleep: 'not seen 7+ days', not_confirmed: 'did not say «in»',
+  skipped: 'week off', snoozed: '2 proposals ignored', no_practices_left: 'no practices left', not_set_up: 'not set up',
+  paused: 'paused', sleeping: 'sleeping', ghost: 'ghost', suspicious: 'flagged',
+};
+const HEALTH = { sleeping: 'sleeping', ghost: 'ghost', suspicious: 'flagged' };
+
+function PeoplePanel({ week, people, pairs, selected, onToggle, onAdd, busy, autoMode, now }) {
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('All');
   const [only, setOnly] = useState('list'); // list | short | all
+  const [flag, setFlag] = useState(null); // a «Needs attention» key
+  const [open, setOpen] = useState(null);
   const rankRef = useRef({ key: '', rank: new Map() });
 
-  const shown = people
-    .map((p) => ({ ...p, planned: plannedCount(pairs, p.id) }))
+  const all = people.map((p) => {
+    const planned = plannedCount(pairs, p.id);
+    return { ...p, planned, attention: attentionOf({ ...p, planned, health: p.health?.cls }, now) };
+  });
+  const counts = Object.fromEntries(ATTENTION.map(([k]) => [k, all.filter((p) => p.attention[k]).length]));
+  const shown = all
     .filter((p) => level === 'All' || levelShort(p.level) === level)
-    .filter((p) => only === 'all' || (only === 'list' ? p.inList : p.inList && p.planned < p.wants) || selected.includes(p.id))
+    // A «Needs attention» count shows everyone with that flag, in the week or not.
+    .filter((p) => (flag ? p.attention[flag]
+      : only === 'all' || (only === 'list' ? p.inWeek : p.inWeek && p.planned < p.wants)) || selected.includes(p.id))
     .filter((p) => !search.trim() || `${p.name} ${p.email}`.toLowerCase().includes(search.trim().toLowerCase()));
   // New people first, then whoever is furthest below their target; each row
   // then keeps its place until a filter changes (stableOrder).
-  const key = `${week}|${level}|${only}|${search}`;
+  const key = `${week}|${level}|${only}|${flag}|${search}`;
   if (rankRef.current.key !== key) rankRef.current = { key, rank: new Map() };
   const ordered = stableOrder(shown,
     (a, b) => (b.isNew - a.isNew) || ((b.wants - b.planned) - (a.wants - a.planned)) || a.name.localeCompare(b.name),
@@ -407,7 +475,23 @@ function PeoplePanel({ week, people, pairs, blocks, selected, onToggle, onAdd, b
   return (
     <section className="aa-panel mt-people" aria-label="People">
       <h3 className="aa-h">People</h3>
-      <p className="aa-meta">Tick two people to propose a time. The grid is their free time in Baku blocks (08–22), Monday at the top.</p>
+      {ATTENTION.some(([k]) => counts[k] > 0) && (
+        <div className="mt-attn" role="group" aria-label="Needs attention">
+          <span className="aa-sub">Needs attention</span>
+          <div className="mt-attn-list">
+            {ATTENTION.filter(([k]) => counts[k] > 0).map(([k, label]) => (
+              <button key={k} type="button" className={`mt-attn-item ${flag === k ? 'is-on' : ''}`} aria-pressed={flag === k}
+                onClick={() => setFlag((f) => (f === k ? null : k))}>
+                <b>{counts[k]}</b> {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="aa-meta">
+        Tick two to propose one time, or more to let the planner pair them. Each grid is the week in Baku
+        hours 07–23, Monday at the top: dark = picked for this week, light = usual time, outline = maybe, solid = a practice.
+      </p>
       <div className="aa-filters">
         <label className="aa-search">
           <Search size={16} aria-hidden="true" />
@@ -415,56 +499,167 @@ function PeoplePanel({ week, people, pairs, blocks, selected, onToggle, onAdd, b
         </label>
       </div>
       <div className="aa-filters">
-        {[['list', 'In the list'], ['short', 'Need more'], ['all', 'Everyone']].map(([id, label]) => (
-          <button key={id} type="button" className={`aa-chip ${only === id ? 'is-on' : ''}`} onClick={() => setOnly(id)}>{label}</button>
+        {[['list', autoMode ? 'In this week' : 'In the list'], ['short', 'Need more'], ['all', 'Everyone']].map(([id, label]) => (
+          <button key={id} type="button" className={`aa-chip ${!flag && only === id ? 'is-on' : ''}`}
+            onClick={() => { setOnly(id); setFlag(null); }}>{label}</button>
         ))}
         {['All', ...LEVELS.slice(0, 5).map((l) => l.short)].map((l) => (
           <button key={l} type="button" className={`aa-chip ${level === l ? 'is-on' : ''}`} onClick={() => setLevel(l)}>{l}</button>
         ))}
       </div>
       <ul className="mt-people-list">
-        {ordered.map((p) => {
-          const on = selected.includes(p.id);
-          return (
-            <li key={p.id} className={`mt-person ${on ? 'is-on' : ''}`}>
-              <label className="mt-person-main">
-                <input type="checkbox" className="aa-check" checked={on} onChange={() => onToggle(p.id)} />
-                <span className="mt-person-text">
-                  <span className="aa-name">
-                    {p.name} <span className="aa-level">{levelShort(p.level)}</span>
-                    {p.isNew && <span className="aa-badge aa-badge--soft">new</span>}
-                  </span>
-                  <span className={`aa-meta ${p.planned < p.wants ? 'mt-short' : ''}`}>
-                    {p.planned} of {p.wants || '—'} this week{p.timeZone && p.timeZone !== 'Asia/Baku' ? ` · ${cityOf(p.timeZone)}` : ''}
-                  </span>
-                </span>
-              </label>
-              <FreeGrid person={p} pairs={pairs} blocks={blocks} />
-              {!p.inList && (
-                <button type="button" className="aa-linkbtn mt-add" disabled={busy === `list:${p.id}`} onClick={() => onAdd(p)}>
-                  <UserPlus size={14} aria-hidden="true" /> Add to this week's list
-                </button>
-              )}
-            </li>
-          );
-        })}
+        {ordered.map((p) => (
+          <PersonRow key={p.id} p={p} week={week} pairs={pairs} autoMode={autoMode}
+            on={selected.includes(p.id)} expanded={open === p.id}
+            onToggle={() => onToggle(p.id)} onExpand={() => setOpen((x) => (x === p.id ? null : p.id))}
+            onAdd={() => onAdd(p)} adding={busy === `list:${p.id}`} />
+        ))}
         {ordered.length === 0 && <li className="aa-empty">Nobody matches.</li>}
       </ul>
     </section>
   );
 }
 
-// 7 days × 8 Baku blocks: free (light), in a pair (solid).
-function FreeGrid({ person, pairs, blocks }) {
-  const mine = new Set(pairs.filter((x) => x.a === person.id || x.b === person.id).map((x) => x.slotId));
-  const free = blocks.filter((b) => fitsBlock(person.baku, b)).length;
+function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand, onAdd, adding }) {
+  const wa = whatsAppLink(p.whatsapp, p.name);
+  const verdict = autoMode
+    ? (p.why ? `${p.inWeek ? 'in' : 'out'} · ${WHY[p.why] || p.why}` : 'not checked yet')
+    : (p.inList ? 'in the list' : 'not in the list');
+  const healthWord = HEALTH[p.health?.cls];
+  const rel = p.reliability && p.reliability !== 'ok' ? p.reliability : null;
   return (
-    <div className="mt-free" role="img" aria-label={`${free} free blocks this week, ${mine.size} with a partner`}>
-      {blocks.map((b) => (
-        <span key={b.slotId}
-          className={`mt-cell ${mine.has(b.slotId) ? 'is-pair' : fitsBlock(person.baku, b) ? 'is-free' : ''}`}
-          title={`${blockLabel(b.slotId)}${mine.has(b.slotId) ? ' · has a partner' : ''}`} />
-      ))}
+    <li className={`mt-person ${on ? 'is-on' : ''} ${expanded ? 'is-open' : ''}`}>
+      <label className="mt-person-main">
+        <input type="checkbox" className="aa-check" checked={on} onChange={onToggle} aria-label={`Select ${p.name}`} />
+        <span className="mt-person-text">
+          <span className="aa-name">
+            {p.name} <span className="aa-level">{levelShort(p.level)}</span>
+            {p.isNew && <span className="aa-badge aa-badge--soft">new</span>}
+          </span>
+          <span className={`aa-meta ${p.planned < p.wants ? 'mt-short' : ''}`}>
+            {p.planned} of {p.wants || '—'} this week · {verdict}
+            {p.timeZone && p.timeZone !== 'Asia/Baku' ? ` · ${cityOf(p.timeZone)}` : ''}
+          </span>
+          {(p.paid || healthWord || rel) && (
+            <span className="mt-tags">
+              {p.paid && <span className="aa-badge aa-badge--soft">paid</span>}
+              {healthWord && <span className="aa-badge">{healthWord}</span>}
+              {rel && <span className="aa-badge">reliability {rel}</span>}
+            </span>
+          )}
+        </span>
+      </label>
+      <span className="mt-person-tools">
+        {wa && (
+          <a className="aa-icon-btn" href={wa} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${p.name}`}>
+            <MessageCircle size={16} aria-hidden="true" />
+          </a>
+        )}
+        <button type="button" className="aa-icon-btn" aria-expanded={expanded}
+          aria-label={expanded ? `Hide ${p.name}'s answers` : `Show ${p.name}'s answers`} onClick={onExpand}>
+          <ChevronDown size={16} className="aa-chev" aria-hidden="true" />
+        </button>
+      </span>
+      <FreeGrid person={p} week={week} pairs={pairs} />
+      {!autoMode && !p.inList && (
+        <button type="button" className="aa-linkbtn mt-add" disabled={adding} onClick={onAdd}>
+          <UserPlus size={14} aria-hidden="true" /> Add to this week's list
+        </button>
+      )}
+      {expanded && <div className="mt-person-detail"><ApplicantDetail p={p} /></div>}
+    </li>
+  );
+}
+
+// 7 days × hourly Baku starts 07–23 (utils/matching freeGrid).
+function FreeGrid({ person, week, pairs }) {
+  const g = useMemo(() => freeGrid({ onboarding: person.ob, monday: week, uid: person.id, pairs }), [person.ob, week, person.id, pairs]);
+  const label = g.skip ? 'Week off'
+    : `${g.free} free hours this week${g.picked ? ' (picked for this week)' : ''}, ${g.practices} with a partner`;
+  return (
+    <div className="mt-free" role="img" aria-label={label} title={label}>
+      {g.rows.flatMap((row) => row.cells.map((c) => {
+        const note = c.state === 'pair' ? ` · ${KIND[c.kind] || 'practice'}`
+          : c.state === 'off' ? ' · usual time, not this week' : c.maybe ? ' · maybe' : '';
+        return (
+          <span key={c.slotId} className={`mt-cell ${c.state ? `is-${c.state}` : ''} ${c.maybe ? 'is-maybe' : ''}`}
+            title={`${blockLabel(c.slotId)}${note}`} />
+        );
+      }))}
+    </div>
+  );
+}
+
+// More than two ticked (or «Let the planner choose» for two): the planner for
+// these people only, over what is left of the week (adminWeekPlan
+// planSelected — writes nothing), then «Book these» (bookSelected): each pair
+// through the same checks as any booking; only counts come back.
+function PlanBar({ week, chosen, onClear, onBack, onBooked }) {
+  const [state, setState] = useState('idle'); // idle | planning | booking
+  const [plan, setPlan] = useState(null);
+  const [error, setError] = useState('');
+  const ids = chosen.map((p) => p.id);
+  const idKey = ids.join('|');
+  useEffect(() => { setPlan(null); setError(''); setState('idle'); }, [idKey, week]);
+  const nameOf = (uid, fallback) => firstName(chosen.find((p) => p.id === uid)?.name || fallback);
+
+  const run = async () => {
+    setState('planning'); setError('');
+    const res = await weekPlanAction('planSelected', week, { uids: ids });
+    setState('idle');
+    if (!res.ok) { setError(res.errorText || 'Could not plan.'); return; }
+    setPlan(res.data);
+  };
+  const book = async () => {
+    const pairs = plan.pairs.map(({ a, b, slotId }) => ({ a, b, slotId }));
+    if (!window.confirm(`Book ${pairs.length} practices now? Each person gets a notification; no one has to confirm.`)) return;
+    setState('booking'); setError('');
+    const res = await weekPlanAction('bookSelected', week, { uids: ids, pairs });
+    setState('idle');
+    if (!res.ok) { setError(res.errorText || 'Could not book.'); return; }
+    const { booked = 0, refused = 0 } = res.data || {};
+    onBooked(`Booked ${booked} of ${pairs.length}${refused ? ` · ${refused} could not be booked (someone is busy then or the pair is not allowed)` : ''}.`);
+  };
+  const left = plan ? [...new Set([...(plan.unmet || []).map((u) => u.uid), ...(plan.skipped || [])])] : [];
+
+  return (
+    <div className="aa-sticky-bar mt-bar mt-bar--open">
+      <div className="mt-bar-head">
+        <b><Sparkles size={16} aria-hidden="true" /> Plan {chosen.length}: {chosen.map((p) => firstName(p.name)).join(', ')}</b>
+        <span className="mt-actions">
+          {onBack && <Button size="sm" variant="ghost" onClick={onBack}>One time</Button>}
+          <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
+        </span>
+      </div>
+      {!plan && (
+        <p className="aa-meta">The planner pairs only these people over the rest of the week — their times, numbers and the pairing rules. Nothing is sent until you book.</p>
+      )}
+      {plan && plan.pairs.length === 0 && <p className="aa-empty">The planner found no pair for these people this week.</p>}
+      {plan && plan.pairs.length > 0 && (
+        <ul className="mt-plan-list">
+          {plan.pairs.map((p) => (
+            <li key={`${p.slotId}|${p.a}|${p.b}`} className="mt-plan-row">
+              <b>{blockLabel(p.slotId)}</b>
+              <span>{nameOf(p.a, p.nameA)} + {nameOf(p.b, p.nameB)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {plan && left.length > 0 && (
+        <p className="aa-meta">Nothing more for: {left.map((u) => nameOf(u, u.slice(0, 6))).join(', ')}.</p>
+      )}
+      <div className="mt-actions">
+        <Button size="sm" variant={plan ? 'secondary' : 'primary'} icon={<Sparkles size={16} aria-hidden="true" />}
+          disabled={state !== 'idle'} onClick={run}>
+          {state === 'planning' ? 'Planning…' : plan ? 'Plan again' : `Plan these ${chosen.length}`}
+        </Button>
+        {plan && plan.pairs.length > 0 && (
+          <Button size="sm" icon={<CalendarCheck size={16} aria-hidden="true" />} disabled={state !== 'idle'} onClick={book}>
+            {state === 'booking' ? 'Booking…' : `Book these (${plan.pairs.length})`}
+          </Button>
+        )}
+      </div>
+      {error && <p className="aa-error" role="status">{error}</p>}
     </div>
   );
 }
@@ -629,23 +824,38 @@ function ChangeSheet({ change, people, pairs, busy, onClose, onPick }) {
 }
 
 // Two people ticked: the week's blocks that fit both, then send.
-function NewPairBar({ chosen, blocks, pairs, onClear, onSend }) {
+function NewPairBar({ chosen, blocks, pairs, onClear, onSend, onPlan }) {
   const [slotId, setSlotId] = useState('');
   const [note, setNote] = useState('');
   const [all, setAll] = useState(false);
   const [state, setState] = useState(null);
+  // Closed until asked for: an open time list covers the People column, and
+  // the admin may still be ticking a third person for the planner.
+  const [open, setOpen] = useState(false);
   const ids = chosen.map((p) => p.id).join('|');
   useEffect(() => { setSlotId(''); setState(null); setAll(false); }, [ids]);
 
   if (chosen.length < 2) {
     return (
       <div className="aa-sticky-bar mt-bar">
-        <span className="aa-sticky-count">{firstName(chosen[0]?.name)} — tick a second person</span>
+        <span className="aa-sticky-count">{firstName(chosen[0]?.name)} — tick one more for a time, or several for the planner</span>
         <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
       </div>
     );
   }
   const [a, b] = chosen;
+  if (!open) {
+    return (
+      <div className="aa-sticky-bar mt-bar">
+        <span className="aa-sticky-count">{firstName(a.name)} + {firstName(b.name)}</span>
+        <span className="mt-actions">
+          <Button size="sm" icon={<CalendarClock size={16} aria-hidden="true" />} onClick={() => setOpen(true)}>Pick a time</Button>
+          <Button size="sm" variant="secondary" icon={<Sparkles size={16} aria-hidden="true" />} onClick={onPlan}>Let the planner choose</Button>
+          <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
+        </span>
+      </div>
+    );
+  }
   const common = overlapAll([a.baku, b.baku]);
   const busyBlock = (blk) => { const s = busyAround(pairs, blk.startMs); return s.has(a.id) || s.has(b.id); };
   const options = blocks
@@ -661,7 +871,10 @@ function NewPairBar({ chosen, blocks, pairs, onClear, onSend }) {
     <div className="aa-sticky-bar mt-bar mt-bar--open">
       <div className="mt-bar-head">
         <b><Plus size={16} aria-hidden="true" /> {firstName(a.name)} + {firstName(b.name)}</b>
-        <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
+        <span className="mt-actions">
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Hide times</Button>
+          <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
+        </span>
       </div>
       {options.length === 0 ? (
         <p className="aa-empty">{all ? 'No bookable time left this week.' : 'No time this week fits both.'}</p>

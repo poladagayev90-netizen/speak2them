@@ -89,6 +89,9 @@ const GMAIL_USER = defineSecret("GMAIL_USER");
 const GMAIL_APP_PASSWORD = defineSecret("GMAIL_APP_PASSWORD");
 // The AI planning analyst (functions/agent, Mərhələ 2).
 const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
+// Composio consumer key (ck_…) for the daily Instagram post — Secret Manager,
+// never in the source: `firebase functions:secrets:set COMPOSIO_CONSUMER_KEY`.
+const COMPOSIO_CONSUMER_KEY = defineSecret("COMPOSIO_CONSUMER_KEY");
 
 const AGORA_APP_ID = defineString("AGORA_APP_ID", {
   default: "98299e33a32f4137a94daacc5422c92e",
@@ -5027,7 +5030,12 @@ const shiftDate = (date, days) => new Date(Date.parse(`${date}T12:00:00Z`) + day
 const nextMondayOf = (ms) => shiftDate(bakuWeekKey(ms), 7);
 
 // Everything the planner needs for one week, from Firestore.
-async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CONFIG_DEFAULTS } = {}) {
+// `only` (Admin → Matching «Plan selected»): plan exactly these uids — the
+// admin's pick stands in for the list / autopilot verdict / account health /
+// activity gates (like «Always»); billing, pause and the pairing rules still
+// apply. `dryRun`: nothing is written (no health or roster verdicts).
+async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CONFIG_DEFAULTS, only = null, dryRun = false } = {}) {
+  const pick = only ? new Set(only) : null;
   const dates = weeklyPlanner.weekDates(monday);
   const weekStart = weeklyPlanner.blockStartMs(dates[0], 0);
   const weekEnd = weekStart + 7 * DAY_MS;
@@ -5036,12 +5044,14 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   // no list means nobody is planned. Auto: everyone set up is looked at and
   // autoRoster.eligible decides; the week's list doc holds only the admin's
   // exclude/include override (and the verdicts, written below).
-  const auto = cfg.rosterMode === "auto";
+  const auto = !pick && cfg.rosterMode === "auto";
   const rosterRef = db.collection("weekRoster").doc(monday);
   const override = auto ? ((await rosterRef.get().catch(() => null))?.data() || {}) : null;
-  const roster = auto ? null : await rosterOf(db, monday);
+  const roster = auto || pick ? null : await rosterOf(db, monday);
   const obSnap = await db.collection("onboarding").get();
-  const obs = new Map(obSnap.docs.filter((d) => auto || weekRoster.inRoster(roster, d.id)).map((d) => [d.id, d.data() || {}]));
+  const obs = new Map(obSnap.docs
+    .filter((d) => (pick ? pick.has(d.id) : auto || weekRoster.inRoster(roster, d.id)))
+    .map((d) => [d.id, d.data() || {}]));
   const uids = [...obs.keys()];
   const userSnaps = uids.length ? await db.getAll(...uids.map((u) => db.collection("users").doc(u))) : [];
   const users = new Map(userSnaps.filter((s) => s.exists).map((s) => [s.id, s.data() || {}]));
@@ -5202,7 +5212,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       flag: healthDocs.get(uid)?.flag || null,
     }, { nowMs });
     healths.set(uid, health);
-    if (!accountHealth.planned(health) && !(auto && (override.include || []).includes(uid))) {
+    if (!pick && !accountHealth.planned(health) && !(auto && (override.include || []).includes(uid))) {
       if (auto) verdicts.set(uid, { in: false, why: health.cls });
       continue;
     }
@@ -5212,7 +5222,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
     const target = limited ? Math.min(asked, reliabilityLib.LIMITED_TARGET) : asked;
     if (!target || ob.planPaused === true) continue;
     if (cfg.requireCharter && !ob.charterAcceptedAt) continue;
-    if (!auto && nowMs - seen > PLAN_ACTIVE_WINDOW_MS) continue;
+    if (!pick && !auto && nowMs - seen > PLAN_ACTIVE_WINDOW_MS) continue;
     const h = have.get(uid) || { count: 0, dates: new Set(), partners: new Set(), letDown: 0 };
     let need = Math.max(0, target - h.count);
     if (billing.enforce) {
@@ -5261,7 +5271,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
   }
   // The verdicts for Admin → Week (admin-only accountHealth/{uid}), written
   // only when they change; the flag field belongs to the admin and stays.
-  await Promise.all([...healths].map(([uid, h]) => {
+  if (!dryRun) await Promise.all([...healths].map(([uid, h]) => {
     const cur = healthDocs.get(uid) || {};
     if (cur.cls === h.cls && cur.why === h.why) return null;
     return db.collection("accountHealth").doc(uid).set({
@@ -5345,7 +5355,7 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       });
     });
   }
-  return { dates, learners, blocked, recent, favorites, hosts, noRoster: !auto && !roster };
+  return { dates, learners, blocked, recent, favorites, hosts, noRoster: !auto && !pick && !roster };
 }
 
 // Draft (or redraft) the plan for the week starting `monday`.
@@ -5398,7 +5408,9 @@ async function buildWeeklyPlan(db, monday, { nowMs = Date.now(), by = "schedule"
 // practices left; then bookPairTx (pairVerdict, one a day, no overlap).
 // hostUid: a newcomer's host (newcomers.js) — booked as the config says,
 // without a week answer of their own.
-async function directBookTx(db, { pair, planWeek, source, hostUid = null }) {
+// adminPick: the admin booked this pair from Matching «Plan selected» — their
+// choice is the yes, so no week answer is needed from either side.
+async function directBookTx(db, { pair, planWeek, source, hostUid = null, adminPick = false }) {
   const slot = parseSlotId(pair.slotId);
   if (!slot) return { skip: "invalid-slot" };
   return db.runTransaction(async (tx) => {
@@ -5412,6 +5424,10 @@ async function directBookTx(db, { pair, planWeek, source, hostUid = null }) {
     for (const [uid, us, ob] of [[pair.a, aSnap, aOb], [pair.b, bSnap, bOb]]) {
       if (uid === hostUid) continue;
       const o = ob.exists ? (ob.data() || {}) : {};
+      if (adminPick) {
+        if (o.planPaused === true) return { skip: "paused" };
+        continue;
+      }
       const committed = newcomersLib.committedFor({
         answer: autoRoster.weekAnswer(o, planWeek), calls: us.get("callCount"),
         joinedAtMs: o.charterAcceptedAt?.toMillis?.() || 0, nowMs,
@@ -5425,7 +5441,8 @@ async function directBookTx(db, { pair, planWeek, source, hostUid = null }) {
       || !await practiceAllowedTx(db, tx, pair.b, b, slot, billing)) return { skip: "no-practices-left" };
     const booked = await bookPairTx(db, tx, {
       uidA: pair.a, uidB: pair.b, a, b, slot, now: Date.now(),
-      marker: { planWeek, planned: true, ...(hostUid ? { host: hostUid, team: true } : {}) }, source, oneADay: true, replaceInBlock: false,
+      marker: { planWeek, planned: true, ...(hostUid ? { host: hostUid, team: true } : {}), ...(adminPick ? { adminPick: true } : {}) },
+      source, oneADay: true, replaceInBlock: false,
     });
     if (booked.alreadyPaired) return { skip: "already-booked" };
     return { booked: true, slot, released: booked.released || [], nameA: a.name || "", nameB: b.name || "" };
@@ -5872,8 +5889,10 @@ async function refillThisWeek(db, nowMs) {
 // Called from practiceSlotTick every minute.
 // Autopilot weekend check-in (autoRoster.js): Saturday 12:00 everyone set
 // up, seen in the last three weeks, with no package and no answer for next
-// week is asked «practising next week?»; Sunday 10:00 one reminder to whoever
-// has still not answered, and package learners hear their plan comes tonight.
+// week hears «next week on your usual times — other hours or a week off in
+// the Plan tab» (default «in», 2026-10-18: it tells, it does not ask); Sunday
+// 10:00 one more to whoever has changed nothing, and package learners hear
+// their plan comes tonight.
 async function sendWeekCheckins(db, nowMs, monday, round) {
   const obSnap = await db.collection("onboarding").get();
   const set = obSnap.docs.filter((d) => {
@@ -6028,6 +6047,73 @@ exports.adminAgent = onRequest({ secrets: [GEMINI_API_KEY], invoker: "public", t
   }
 });
 
+// «Plan selected» (Admin → Matching). 2–40 distinct uids, else null.
+const PICK_MAX = 40;
+const PICK_NOTICE_MS = REFILL_DIRECT_NOTICE_MS;
+function pickedUids(raw) {
+  if (!Array.isArray(raw)) return null;
+  const uids = [...new Set(raw.map(String))];
+  if (uids.length < 2 || uids.length > PICK_MAX || raw.length > PICK_MAX) return null;
+  return uids.every((u) => /^[A-Za-z0-9_-]{1,128}$/.test(u) && u !== ADMIN_UID) ? uids : null;
+}
+// The pairs to book: both sides among the picked uids, a valid start in that
+// week, at least PICK_NOTICE_MS ahead and inside the booking horizon.
+function bookablePicks(raw, uids, week, nowMs) {
+  if (!Array.isArray(raw) || !raw.length || raw.length > PICK_MAX) return null;
+  const pick = new Set(uids);
+  const weekStart = weeklyPlanner.blockStartMs(week, 0);
+  const out = [];
+  for (const p of raw) {
+    const a = String((p && p.a) || "");
+    const b = String((p && p.b) || "");
+    const slot = parseSlotId(p && p.slotId);
+    if (!slot || a === b || !pick.has(a) || !pick.has(b)) return null;
+    if (slot.startMs < weekStart || slot.startMs >= weekStart + 7 * DAY_MS) return null;
+    if (slot.startMs < nowMs + PICK_NOTICE_MS - 5 * 60 * 1000 || slot.startMs > nowMs + BOOKING_HORIZON_DAYS * DAY_MS) return null;
+    out.push({ a, b, slotId: slot.slotId, startMs: slot.startMs });
+  }
+  return out;
+}
+async function planSelected(db, week, uids, nowMs = Date.now()) {
+  const cfg = await plannerConfig(db);
+  const { dates, learners, blocked, recent, favorites } = await loadPlannerInputs(db, week, { nowMs, cfg, only: uids, dryRun: true });
+  const today = bakuDateStr(nowMs);
+  const left = dates.filter((d) => d >= today);
+  const planned = new Set(learners.map((l) => l.uid));
+  const result = left.length && learners.length >= 2
+    ? weeklyPlanner.buildWeekPlan({
+      learners, blocked, recent, favorites, dates: left,
+      earliestMs: nowMs + PICK_NOTICE_MS, seed: `pick_${week}_${[...uids].sort().join(",")}`, restarts: 8,
+    })
+    : { pairs: [], unmet: learners.map((l) => ({ uid: l.uid, wanted: l.need, got: 0, reason: left.length ? "no_partner_left" : "week_over" })) };
+  const info = new Map(learners.map((l) => [l.uid, l]));
+  return {
+    pairs: result.pairs.map((p) => ({
+      a: p.a, b: p.b, slotId: p.slotId, startMs: p.startMs,
+      nameA: info.get(p.a)?.name || "", nameB: info.get(p.b)?.name || "",
+      levelA: info.get(p.a)?.level || null, levelB: info.get(p.b)?.level || null,
+    })),
+    unmet: result.unmet.map((u) => ({ uid: u.uid, wanted: u.wanted, got: u.got, reason: u.reason })),
+    // Not planned at all: no times left this week, paused, already at their
+    // number, no practices left — the planner does not look at them.
+    skipped: uids.filter((u) => !planned.has(u)),
+  };
+}
+async function bookSelected(db, week, pairs) {
+  let booked = 0;
+  let refused = 0;
+  const bookedFor = new Map();
+  for (const p of pairs) {
+    const r = await directBookTx(db, { pair: p, planWeek: week, source: "weekly_plan", adminPick: true });
+    if (!r.booked) { refused += 1; continue; }
+    booked += 1;
+    for (const u of [p.a, p.b]) bookedFor.set(u, (bookedFor.get(u) || 0) + 1);
+    await afterDirectBook(db, p, r);
+  }
+  for (const [uid, count] of bookedFor) await writePlanStatus(db, uid, week, { state: "booked", booked: count, reason: null });
+  return { booked, refused };
+}
+
 // Admin → Week plan. One endpoint, one action per call.
 exports.adminWeekPlan = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
@@ -6048,6 +6134,23 @@ exports.adminWeekPlan = onRequest({ secrets: [], invoker: "public" }, async (req
     await enforceRateLimit(decoded.uid, "adminWeekPlan", 200, 24 * 60 * 60 * 1000);
     if (action === "build") return res.status(200).json({ ok: true, ...(await buildWeeklyPlan(db, week, { by: "admin" })) });
     if (action === "send") return res.status(200).json({ ok: true, ...(await sendWeeklyPlan(db, week, { by: "admin" })) });
+    // Admin → Matching «Plan selected»: the planner for the people the admin
+    // ticked only, over what is left of the week. Writes nothing.
+    if (action === "planSelected") {
+      const uids = pickedUids(body.uids);
+      if (!uids) return res.status(400).json({ error: "bad-uids" });
+      return res.status(200).json({ ok: true, ...(await planSelected(db, week, uids)) });
+    }
+    // …and «Book these»: each previewed pair through directBookTx →
+    // bookPairTx (pairVerdict, one a day, no overlap, practices left). Only
+    // counts come back — never which rule refused a pair.
+    if (action === "bookSelected") {
+      const uids = pickedUids(body.uids);
+      if (!uids) return res.status(400).json({ error: "bad-uids" });
+      const pairs = bookablePicks(body.pairs, uids, week, Date.now());
+      if (!pairs) return res.status(400).json({ error: "bad-pairs" });
+      return res.status(200).json({ ok: true, ...(await bookSelected(db, week, pairs)) });
+    }
     // Admin → Attendance "Reset": forget this learner's misses up to now
     // (after a conversation, a phone that broke, …) and lift any limit.
     if (action === "resetReliability") {
@@ -10306,6 +10409,142 @@ exports.speakLine = onRequest(
     }
   },
 );
+
+// ─── Autonomous Daily Instagram Post & Story (@speaklab.az) ──────────────
+// Runs every day at 13:00 Baku time via Cloud Scheduler in us-central1.
+// Picks the next pending post from Firestore 'marketingCalendar', calls Composio
+// to publish Reel to feed + Story to status, and updates status to 'published'.
+const COMPOSIO_MCP_URL_MARKETING = "https://connect.composio.dev/mcp";
+const DEFAULT_IG_USER_ID_MARKETING = "27519093421115404";
+
+async function callComposioToolInCloud(toolSlug, args) {
+  const resp = await fetch(COMPOSIO_MCP_URL_MARKETING, {
+    method: "POST",
+    headers: {
+      "x-consumer-api-key": COMPOSIO_CONSUMER_KEY.value(),
+      "Content-Type": "application/json",
+      Accept: "application/json, text/event-stream",
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: Date.now(),
+      method: "tools/call",
+      params: {
+        name: "COMPOSIO_MULTI_EXECUTE_TOOL",
+        arguments: { tools: [{ tool_slug: toolSlug, arguments: args }] },
+      },
+    }),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Composio MCP HTTP ${resp.status}: ${err}`);
+  }
+
+  const text = await resp.text();
+  for (const line of text.split("\n")) {
+    if (line.startsWith("data: ")) {
+      const data = JSON.parse(line.slice(6));
+      const content = data.result?.content?.[0]?.text;
+      if (content) {
+        const parsed = JSON.parse(content);
+        if (!parsed.successful) {
+          throw new Error(`Composio failed: ${parsed.error || JSON.stringify(parsed)}`);
+        }
+        const toolResult = parsed.data?.results?.[0]?.response;
+        return toolResult?.data || toolResult;
+      }
+    }
+  }
+  throw new Error(`Empty response from Composio MCP: ${text}`);
+}
+
+exports.dailyInstagramPoster = onSchedule(
+  {
+    schedule: "0 13 * * *",
+    timeZone: "Asia/Baku",
+    region: "us-central1",
+    timeoutSeconds: 300,
+    secrets: [COMPOSIO_CONSUMER_KEY],
+  },
+  async () => {
+    const db = admin.firestore();
+    const snap = await db.collection("marketingCalendar")
+      .where("status", "==", "pending")
+      .orderBy("order", "asc")
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      console.log("[dailyInstagramPoster] No pending posts found in marketingCalendar.");
+      return;
+    }
+
+    const postDoc = snap.docs[0];
+    const post = postDoc.data();
+    console.log(`[dailyInstagramPoster] Starting post [${postDoc.id}]: "${post.title}"`);
+
+    // 1. Create Media Container for Reel
+    const containerArgs = {
+      ig_user_id: DEFAULT_IG_USER_ID_MARKETING,
+      caption: post.caption,
+      video_url: post.videoUrl,
+      media_type: "REELS",
+      share_to_feed: true,
+    };
+    const container = await callComposioToolInCloud("INSTAGRAM_POST_IG_USER_MEDIA", containerArgs);
+    const creationId = container?.id;
+    if (!creationId) throw new Error("No creationId returned for Reel container");
+
+    // 2. Publish Reel
+    console.log(`[dailyInstagramPoster] Publishing Reel container ${creationId}...`);
+    const publishResp = await callComposioToolInCloud("INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH", {
+      ig_user_id: DEFAULT_IG_USER_ID_MARKETING,
+      creation_id: creationId,
+      max_wait_seconds: 180,
+      poll_interval_seconds: 5,
+    });
+    const publishedId = publishResp?.id;
+    console.log(`[dailyInstagramPoster] Reel published! Post ID: ${publishedId}`);
+
+    // 3. Optional Story (Status)
+    let publishedStoryId = null;
+    if (post.withStory !== false) {
+      try {
+        console.log(`[dailyInstagramPoster] Creating Story container...`);
+        const storyContainer = await callComposioToolInCloud("INSTAGRAM_POST_IG_USER_MEDIA", {
+          ig_user_id: DEFAULT_IG_USER_ID_MARKETING,
+          media_type: "STORIES",
+          video_url: post.videoUrl,
+        });
+        const storyCreationId = storyContainer?.id;
+        if (storyCreationId) {
+          console.log(`[dailyInstagramPoster] Publishing Story container ${storyCreationId}...`);
+          const storyPublishResp = await callComposioToolInCloud("INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH", {
+            ig_user_id: DEFAULT_IG_USER_ID_MARKETING,
+            creation_id: storyCreationId,
+            max_wait_seconds: 180,
+            poll_interval_seconds: 5,
+          });
+          publishedStoryId = storyPublishResp?.id;
+          console.log(`[dailyInstagramPoster] Story published! Story ID: ${publishedStoryId}`);
+        }
+      } catch (err) {
+        console.warn(`[dailyInstagramPoster] Story publishing failed:`, err.message);
+      }
+    }
+
+    // 4. Update Firestore doc
+    await postDoc.ref.update({
+      status: "published",
+      publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+      instagramPostId: publishedId,
+      instagramStoryId: publishedStoryId,
+    });
+    console.log(`[dailyInstagramPoster] Completed successfully for [${postDoc.id}]!`);
+  }
+);
+
 
 // Local simulation only (scratchpad sim20.js through the emulator functions
 // server): drive the planner with a made-up clock. Never set in production.

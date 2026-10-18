@@ -5,6 +5,8 @@
 
 import { SLOT_BLOCK_HOURS, SLOT_START_HOURS, slotIdOf, slotStartMs, SLOT_BLOCK_MS } from './practiceSlots';
 import { LEVELS } from './onboarding';
+import { toBakuIntervals } from './timezone';
+import { weekAnswer } from './myWeek';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 // adminProposeMatch refuses blocks further than this (BOOKING_HORIZON_DAYS).
@@ -186,4 +188,114 @@ export function candidatesFor({ keepId, block, people, pairs, all = false }) {
       || ((x.gap ?? 9) - (y.gap ?? 9))
       || (y.short - x.short)
       || x.name.localeCompare(y.name));
+}
+
+// ── Free-time grid and People console (2026-10-18) ─────────────────
+// The grid used to be 7×8 two-hour blocks lit at ≥ 60 free minutes, so a
+// learner free 19–22 showed 18 and 20 — not what Applicants showed, and not
+// what the planner uses. Now it is hourly starts (SLOT_START_HOURS) lit at
+// START_FIT_MIN from the start, like the pickers, over the week the planner
+// really sees: picked hours for that week (onboarding.weeks.{monday}), else
+// the usual times on the picked days, else the usual times — minus «Never».
+// Mirrors functions/autoRoster.js weekAvailability / weekMaybe.
+
+// [[a, b]] minus [[c, d]] (sorted, merged week-minute intervals).
+export function subtractIntervals(list, cut) {
+  let out = (list || []).map(([a, b]) => [a, b]);
+  for (const [c, d] of cut || []) {
+    const next = [];
+    for (const [a, b] of out) {
+      if (d <= a || c >= b) { next.push([a, b]); continue; }
+      if (c > a) next.push([a, c]);
+      if (d < b) next.push([d, b]);
+    }
+    out = next;
+  }
+  return out;
+}
+
+function hoursToRanges(hours) {
+  const out = [];
+  for (const [wd, hs] of Object.entries(hours || {})) {
+    let start = hs[0];
+    for (let i = 1; i <= hs.length; i += 1) {
+      if (hs[i] === hs[i - 1] + 1) continue;
+      out.push({ day: Number(wd), startMin: start * 60, endMin: (hs[i - 1] + 1) * 60 });
+      start = hs[i];
+    }
+  }
+  return out;
+}
+
+// Someone's ranges for one week, in their own clock.
+export function weekRanges(onboarding, monday) {
+  const ob = onboarding || {};
+  const answer = weekAnswer(ob, monday);
+  const usual = Array.isArray(ob.availability) ? ob.availability : [];
+  const maybeAll = Array.isArray(ob.maybeAvailability) ? ob.maybeAvailability : [];
+  const never = Array.isArray(ob.busyAvailability) ? ob.busyAvailability : [];
+  const days = answer && answer.in && answer.days && answer.days.length ? new Set(answer.days) : null;
+  let week = usual;
+  let maybe = maybeAll;
+  if (answer && !answer.in) { week = []; maybe = []; }
+  else if (answer && answer.hours) { week = hoursToRanges(answer.hours); maybe = []; }
+  else if (days) { week = usual.filter((r) => days.has(r.day)); maybe = maybeAll.filter((r) => days.has(r.day)); }
+  return { answer, picked: !!(answer && answer.in && (answer.hours || days)), skip: !!(answer && !answer.in), usual, week, maybe, never };
+}
+
+// Rows Mon→Sun × SLOT_START_HOURS. A cell's `state`: 'pair' (a practice of
+// theirs starts then), 'picked' (free that week by their own pick), 'free'
+// (free by their usual times), 'off' (usually free, not this week), ''.
+// `maybe`: a «Maybe» hour (drawn as an outline).
+export function freeGrid({ onboarding, monday, uid, pairs = [] }) {
+  const ob = onboarding || {};
+  const tz = ob.timeZone;
+  const r = weekRanges(ob, monday);
+  const nev = toBakuIntervals(r.never, tz);
+  const usualB = subtractIntervals(toBakuIntervals(r.usual, tz), nev);
+  const weekB = subtractIntervals(toBakuIntervals(r.week, tz), nev);
+  const maybeB = subtractIntervals(toBakuIntervals(r.maybe, tz), nev);
+  const mine = new Map();
+  for (const p of pairs) if (p.a === uid || p.b === uid) mine.set(p.slotId, p.kind);
+  let free = 0;
+  const rows = [];
+  for (let i = 0; i < 7; i += 1) {
+    const date = addDays(monday, i);
+    const day = weekdayOf(date);
+    const cells = SLOT_START_HOURS.map((hour) => {
+      const blk = { day, hour };
+      const slotId = slotIdOf(date, hour);
+      let state = '';
+      if (mine.has(slotId)) state = 'pair';
+      else if (startFitMin(weekB, blk) >= START_FIT_MIN) state = r.picked ? 'picked' : 'free';
+      else if (startFitMin(usualB, blk) >= START_FIT_MIN) state = 'off';
+      const maybe = !state && startFitMin(maybeB, blk) >= START_FIT_MIN;
+      return { slotId, date, hour, state, maybe, kind: mine.get(slotId) || null };
+    });
+    free += cells.filter((c) => c.state === 'picked' || c.state === 'free').length;
+    rows.push({ date, day, cells });
+  }
+  return { rows, free, picked: r.picked, skip: r.skip, practices: mine.size };
+}
+
+// What the «Needs attention» box counts. `p`: inWeek, planned, calls,
+// joinedMs, paid, why (autopilot verdict), health (accountHealth cls),
+// reliability (level), whatsapp.
+export const ATTENTION = [
+  ['noPlan', 'In this week, nothing planned'],
+  ['newNoFirst', 'New, no first practice'],
+  ['paidAsleep', 'Paid but snoozed or asleep'],
+  ['limited', 'Reliability limited'],
+  ['noWhatsApp', 'No WhatsApp'],
+];
+const NEW_WINDOW_MS = 14 * DAY_MS;
+export function attentionOf(p, nowMs = Date.now()) {
+  const asleep = ['snoozed', 'asleep'].includes(p.why) || ['sleeping', 'ghost'].includes(p.health);
+  return {
+    noPlan: !!p.inWeek && !p.planned,
+    newNoFirst: !(Number(p.calls) > 0) && (p.joinedMs || 0) > nowMs - NEW_WINDOW_MS,
+    paidAsleep: !!p.paid && asleep,
+    limited: p.reliability === 'limited',
+    noWhatsApp: !String(p.whatsapp || '').trim(),
+  };
 }

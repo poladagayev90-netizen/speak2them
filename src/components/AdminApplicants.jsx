@@ -210,49 +210,7 @@ export default function AdminApplicants({ users }) {
                 <ChevronDown size={18} className="aa-chev" aria-hidden="true" />
               </div>
 
-              {expanded && (
-                <div className="aa-detail">
-                  <p className="aa-line"><span className="aa-muted">Goal</span> {labelOf(GOALS, p.goal)}</p>
-                  <p className="aa-line"><span className="aa-muted">Topics</span> {(p.topics || []).join(', ') || '—'}</p>
-                  {p.email && <p className="aa-line"><span className="aa-muted">Email</span> {p.email}</p>}
-                  <p className="aa-line">
-                    <span className="aa-muted">WhatsApp</span>{' '}
-                    {p.whatsapp ? (
-                      <a className="adm-btn adm-btn--soft adm-btn--link" href={whatsAppLink(p.whatsapp, p.name)} target="_blank" rel="noopener noreferrer">
-                        <MessageCircle size={14} aria-hidden="true" /> {p.whatsapp}
-                      </a>
-                    ) : 'not added yet'}
-                  </p>
-                  <p className="aa-line">
-                    <span className="aa-muted">Free</span> {totalHours(p.availability)} h/week, wants {p.weeklyTarget || '?'} practices
-                  </p>
-                  <div className="aa-cols">
-                    <div>
-                      <h4 className="aa-sub">Their time ({cityOf(p.timeZone)})</h4>
-                      {daysOf(p.availability).map((d) => (
-                        <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
-                      ))}
-                      {/* The general week profile: maybe = only if nothing else works, never = never planned. */}
-                      {[['Maybe', p.maybeAvailability], ['Never', p.busyAvailability]].map(([label, list]) => (Array.isArray(list) && list.length > 0 ? (
-                        <React.Fragment key={label}>
-                          <h4 className="aa-sub">{label}</h4>
-                          {daysOf(list).map((d) => (
-                            <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
-                          ))}
-                        </React.Fragment>
-                      ) : null))}
-                    </div>
-                    {offsetVsBaku(p.timeZone) !== 0 && (
-                      <div>
-                        <h4 className="aa-sub">Baku time</h4>
-                        {daysOf(intervalsByDay(p.baku)).map((d) => (
-                          <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              {expanded && <ApplicantDetail p={p} />}
             </li>
           );
         })}
@@ -300,6 +258,54 @@ export default function AdminApplicants({ users }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// One learner's onboarding answers — also opened from Admin → Matching rows.
+// `p`: the onboarding doc + name, email, availability, baku (Baku intervals).
+export function ApplicantDetail({ p }) {
+  return (
+    <div className="aa-detail">
+      <p className="aa-line"><span className="aa-muted">Goal</span> {labelOf(GOALS, p.goal)}</p>
+      <p className="aa-line"><span className="aa-muted">Topics</span> {(p.topics || []).join(', ') || '—'}</p>
+      {p.email && <p className="aa-line"><span className="aa-muted">Email</span> {p.email}</p>}
+      <p className="aa-line">
+        <span className="aa-muted">WhatsApp</span>{' '}
+        {p.whatsapp ? (
+          <a className="adm-btn adm-btn--soft adm-btn--link" href={whatsAppLink(p.whatsapp, p.name)} target="_blank" rel="noopener noreferrer">
+            <MessageCircle size={14} aria-hidden="true" /> {p.whatsapp}
+          </a>
+        ) : 'not added yet'}
+      </p>
+      <p className="aa-line">
+        <span className="aa-muted">Free</span> {totalHours(p.availability)} h/week, wants {p.weeklyTarget || '?'} practices
+      </p>
+      <div className="aa-cols">
+        <div>
+          <h4 className="aa-sub">Their time ({cityOf(p.timeZone)})</h4>
+          {daysOf(p.availability).map((d) => (
+            <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
+          ))}
+          {/* The general week profile: maybe = only if nothing else works, never = never planned. */}
+          {[['Maybe', p.maybeAvailability], ['Never', p.busyAvailability]].map(([label, list]) => (Array.isArray(list) && list.length > 0 ? (
+            <React.Fragment key={label}>
+              <h4 className="aa-sub">{label}</h4>
+              {daysOf(list).map((d) => (
+                <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
+              ))}
+            </React.Fragment>
+          ) : null))}
+        </div>
+        {offsetVsBaku(p.timeZone) !== 0 && (
+          <div>
+            <h4 className="aa-sub">Baku time</h4>
+            {daysOf(intervalsByDay(p.baku)).map((d) => (
+              <p key={d.day} className="aa-range"><span className="aa-day">{d.short}</span> {d.rs.map(fmtRange).join(', ')}</p>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

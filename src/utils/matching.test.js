@@ -117,3 +117,74 @@ test('parseSlotId takes any whole hour 07–23 and nothing else', () => {
   expect(parseSlotId('2026-10-14-06')).toBeNull();
   expect(parseSlotId('2026-10-14-20').hour).toBe(20);
 });
+
+// ── Hourly free grid (2026-10-18) ──
+const { freeGrid, subtractIntervals, weekRanges, attentionOf } = require('./matching');
+const eveningsMonFri = [1, 2, 3, 4, 5].map((day) => ({ day, startMin: 19 * 60, endMin: 22 * 60 }));
+const cellOf = (g, i, hour) => g.rows[i].cells.find((c) => c.hour === hour);
+
+test('freeGrid: Mon–Fri 19–22 lights 19, 20, 21 — not 18, not 22', () => {
+  const g = freeGrid({ onboarding: { availability: eveningsMonFri, timeZone: 'Asia/Baku' }, monday: MON, uid: 'u' });
+  expect(g.rows).toHaveLength(7);
+  expect(g.rows[0].cells.map((c) => c.hour)).toEqual(Array.from({ length: 17 }, (_, i) => i + 7));
+  for (const i of [0, 1, 2, 3, 4]) {
+    expect([18, 19, 20, 21, 22].map((h) => cellOf(g, i, h).state)).toEqual(['', 'free', 'free', 'free', '']);
+  }
+  expect(g.rows[5].cells.every((c) => !c.state)).toBe(true); // Saturday
+  expect(g.free).toBe(15);
+});
+
+test('freeGrid: another time zone is shown on the Baku clock', () => {
+  // Istanbul is Baku − 1 h: 19–22 there is 20–23 Baku.
+  const g = freeGrid({ onboarding: { availability: eveningsMonFri, timeZone: 'Europe/Istanbul' }, monday: MON, uid: 'u' });
+  expect([19, 20, 22, 23].map((h) => cellOf(g, 0, h).state)).toEqual(['', 'free', 'free', '']);
+});
+
+test('freeGrid: this week\'s picked hours replace the usual ones, minus Never', () => {
+  const ob = {
+    availability: eveningsMonFri, timeZone: 'Asia/Baku',
+    busyAvailability: [{ day: 3, startMin: 20 * 60, endMin: 21 * 60 }],
+    weeks: { [MON]: { hours: { 3: [20, 21], 6: [10] } } },
+  };
+  const g = freeGrid({ onboarding: ob, monday: MON, uid: 'u' });
+  expect(g.picked).toBe(true);
+  expect(cellOf(g, 2, 20).state).toBe('');        // picked, but «Never»
+  expect(cellOf(g, 2, 21).state).toBe('picked');
+  expect(cellOf(g, 5, 10).state).toBe('picked');  // Saturday, not a usual day
+  expect(cellOf(g, 0, 19).state).toBe('off');     // usual Monday, not picked
+});
+
+test('freeGrid: a week off lights nothing; Maybe is an outline; a practice shows at its own hour', () => {
+  const off = freeGrid({ onboarding: { availability: eveningsMonFri, weeks: { [MON]: { skip: true } } }, monday: MON, uid: 'u' });
+  expect(off.skip).toBe(true);
+  expect(off.free).toBe(0);
+  const ob = { availability: eveningsMonFri, maybeAvailability: [{ day: 6, startMin: 600, endMin: 720 }] };
+  const pairs = [{ a: 'u', b: 'v', slotId: '2026-10-07-19', kind: 'booked' }];
+  const g = freeGrid({ onboarding: ob, monday: MON, uid: 'u', pairs });
+  expect(cellOf(g, 5, 10).maybe).toBe(true);
+  expect(cellOf(g, 5, 10).state).toBe('');
+  expect(cellOf(g, 2, 19).state).toBe('pair');
+  expect(cellOf(g, 2, 19).kind).toBe('booked');
+  expect(cellOf(g, 1, 19).state).toBe('free');
+});
+
+test('weekRanges: picked days narrow the usual times', () => {
+  const r = weekRanges({ availability: eveningsMonFri, weeks: { [MON]: { days: [2, 4] } } }, MON);
+  expect(r.week.map((x) => x.day)).toEqual([2, 4]);
+  expect(r.picked).toBe(true);
+});
+
+test('subtractIntervals cuts holes', () => {
+  expect(subtractIntervals([[0, 100]], [[10, 20], [50, 200]])).toEqual([[0, 10], [20, 50]]);
+  expect(subtractIntervals([[0, 10]], [])).toEqual([[0, 10]]);
+});
+
+test('attentionOf: the five flags', () => {
+  const now = Date.parse('2026-10-08T12:00:00Z');
+  const a = attentionOf({ inWeek: true, planned: 0, calls: 0, joinedMs: now - 86400000, paid: true, why: 'snoozed', reliability: 'limited', whatsapp: '' }, now);
+  expect(a).toEqual({ noPlan: true, newNoFirst: true, paidAsleep: true, limited: true, noWhatsApp: true });
+  const b = attentionOf({ inWeek: true, planned: 1, calls: 3, joinedMs: 0, paid: true, why: 'package', health: 'active', reliability: 'ok', whatsapp: '+99450' }, now);
+  expect(Object.values(b).some(Boolean)).toBe(false);
+  // An old account that never practised is not «new».
+  expect(attentionOf({ calls: 0, joinedMs: now - 40 * 86400000, whatsapp: 'x' }, now).newNoFirst).toBe(false);
+});
