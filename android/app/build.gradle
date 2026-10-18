@@ -35,7 +35,7 @@ android {
         applicationId "com.speaklab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 34
+        versionCode 35
         // One version number for web and Android: read from src/version.js
         // (APP_VERSION), which Profile shows on both.
         versionName((file("../../src/version.js").text =~ /APP_VERSION = '([^']+)'/)[0][1])

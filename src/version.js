@@ -4,4 +4,4 @@
 // here together with versionCode when a new AAB is built — the web gets the
 // same number on its next deploy. Profile shows it, so a learner and the team
 // can tell which build a phone is running.
-export const APP_VERSION = '1.24';
+export const APP_VERSION = '1.25';
