@@ -46,7 +46,7 @@ function HealthSummary({ health }) {
   const n = { sleeping: 0, ghost: 0, suspicious: 0 };
   for (const h of health.values()) if (h.flag === 'suspicious') n.suspicious += 1; else if (h.cls === 'sleeping' || h.cls === 'ghost') n[h.cls] += 1;
   if (!n.sleeping && !n.ghost && !n.suspicious) return null;
-  return <p className="aa-meta">Not planned: {n.sleeping} sleeping · {n.ghost} ghost · {n.suspicious} flagged. They come back by opening the app or saying «I'm in».</p>;
+  return <p className="aa-meta">Not planned: {n.sleeping} sleeping · {n.ghost} ghost · {n.suspicious} flagged. They come back by opening the app or picking hours for the week.</p>;
 }
 
 export function FlagButton({ id, name, h }) {
@@ -105,7 +105,8 @@ function ModeSwitch({ auto }) {
 }
 
 const WHY = {
-  said_in: 'said "in"', package: 'package', new: 'new this week', included: 'always (you)',
+  said_in: 'said "in"', package: 'package', new: 'new this week', included: 'always (you)', regular: 'said yes lately',
+  usual_times: 'usual times',
   excluded: 'never (you)', asleep: 'not seen 7+ days', not_confirmed: 'did not say "in"', skipped: 'week off',
   snoozed: '2 proposals ignored', no_practices_left: 'no practices left', not_set_up: 'not set up', paused: 'paused',
   sleeping: 'sleeping', ghost: 'ghost', suspicious: 'flagged',
@@ -160,7 +161,7 @@ function AutoRoster({ week, users }) {
       setState('saved');
     } catch (e) { setState(`Not saved: ${e.code || e.message}`); }
   };
-  const reasons = sum ? Object.entries(sum.why || {}).filter(([k]) => !['said_in', 'package', 'new', 'included'].includes(k)) : [];
+  const reasons = sum ? Object.entries(sum.why || {}).filter(([k]) => !['said_in', 'package', 'new', 'included', 'regular', 'usual_times'].includes(k)) : [];
   return (
     <section className="aa-panel aa-roster">
       <h3 className="aa-h"><UsersRound size={16} /> Who practises · week of {dayMonth(week)}</h3>

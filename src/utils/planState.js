@@ -57,7 +57,8 @@ export function limitText(limit) {
 
 // kind: setup | paused | next | answer | checkin | done | no_match | waiting
 // `autoMode`: the autopilot is on (appConfig/planner.rosterMode "auto"), so
-// a learner who has not said «in» for the week is asked (myWeek.checkinFor).
+// a learner with no answer for next week gets the weekend heads-up — next
+// week on their usual times (myWeek.checkinFor, default «in» 2026-10-18).
 // This week's goal: the days they picked for it (one practice a day, at most
 // four), else the usual weekly number; under a reliability limit, never more
 // than the limit allows.
@@ -99,8 +100,12 @@ export function planHeadline({
   // In for this week on the autopilot: the hourly refill is searching now,
   // not on Sunday (Polad 2026-10-07: the card said «Sunday» under «You're in»).
   const answer = weekAnswer(ob, weekKey);
-  const inNow = (answer && answer.in) || (planStatus?.auto && planStatus.auto.week === weekKey && planStatus.auto.in)
-    || autoIn({ onboarding: ob, access: planStatus?.access, monday: weekKey });
+  // With no answer everyone is in (default «in», 2026-10-18) — but at the
+  // weekend the week's search is over and the next plan is what comes.
+  const bakuWd = new Date(now + 4 * 3600000).getUTCDay();
+  const inNow = (answer && answer.in)
+    || (bakuWd !== 6 && bakuWd !== 0
+      && autoIn({ onboarding: ob, access: planStatus?.access, monday: weekKey, auto: planStatus?.auto }));
   if (autoMode && inNow && !(answer && !answer.in)) {
     return { kind: 'looking', days: answer && answer.in ? dayNames(answer.days) : '' };
   }

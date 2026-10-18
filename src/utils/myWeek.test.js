@@ -38,24 +38,23 @@ test('suggested days: free days still ahead, spread, as many as usual', () => {
   expect(suggestDays({ monday: '2026-10-12', onboarding: { ...ob, weeklyTarget: 3 }, now: at('2026-10-12T09:00:00') })).toEqual([1, 2, 4]);
 });
 
-test('who is in without answering', () => {
+test('who is in without answering: everyone (default «in»), unless the server says out', () => {
   expect(autoIn({ onboarding: ob, access: { kind: 'package' }, monday: '2026-10-12' })).toBe(true);
-  expect(autoIn({ onboarding: ob, access: { kind: 'trial' }, monday: '2026-10-12' })).toBe(false);
-  const fresh = { ...ob, charterAcceptedAt: { seconds: at('2026-10-11T10:00:00+04:00') / 1000 } };
-  expect(autoIn({ onboarding: fresh, monday: '2026-10-12' })).toBe(true);
+  expect(autoIn({ onboarding: ob, access: { kind: 'trial' }, monday: '2026-10-12' })).toBe(true);
+  expect(autoIn({ onboarding: ob, monday: '2026-10-12', auto: { week: '2026-10-12', in: false, why: 'snoozed' } })).toBe(false);
+  expect(autoIn({ onboarding: ob, monday: '2026-10-19', auto: { week: '2026-10-12', in: false, why: 'snoozed' } })).toBe(true);
 });
 
-test('the check-in: weekend → next week, weekday → this week, never twice', () => {
+test('the weekend heads-up: next week on the usual times, never on a weekday, never twice', () => {
   const sat = at('2026-10-17T12:00:00+04:00');
-  expect(checkinFor({ onboarding: ob, now: sat })).toMatchObject({ monday: '2026-10-19', next: true, days: [1, 3] });
+  expect(checkinFor({ onboarding: ob, now: sat })).toMatchObject({ monday: '2026-10-19', next: true, days: [1, 2, 3, 4, 5], target: 2 });
+  expect(checkinFor({ onboarding: ob, access: { kind: 'package' }, now: sat })).not.toBeNull();
+  expect(checkinFor({ onboarding: { ...ob, weeks: { '2026-10-19': { skip: true } } }, now: sat })).toBeNull();
+  expect(checkinFor({ onboarding: { ...ob, weeks: { '2026-10-19': { days: [1] } } }, now: sat })).toBeNull();
+  expect(checkinFor({ onboarding: ob, auto: { week: '2026-10-19', in: false, why: 'snoozed' }, now: sat })).toBeNull();
+  expect(checkinFor({ onboarding: { ...ob, planPaused: true }, now: sat })).toBeNull();
   const wed = at('2026-10-14T12:00:00+04:00');
-  expect(checkinFor({ onboarding: ob, now: wed })).toMatchObject({ monday: '2026-10-12', next: false });
-  expect(checkinFor({ onboarding: { ...ob, weeks: { '2026-10-12': { skip: true } } }, now: wed })).toBeNull();
-  expect(checkinFor({ onboarding: ob, access: { kind: 'package' }, now: wed })).toBeNull();
-  expect(checkinFor({ onboarding: ob, auto: { week: '2026-10-12', in: true, why: 'regular' }, now: wed })).toBeNull();
-  expect(checkinFor({ onboarding: ob, auto: { week: '2026-10-12', in: false, why: 'not_confirmed' }, now: wed })).not.toBeNull();
-  expect(checkinFor({ onboarding: { ...ob, planPaused: true }, now: wed })).toBeNull();
-  expect(checkinFor({ onboarding: ob, now: at('2026-10-16T19:00:00+04:00') })).toBeNull(); // Friday evening
+  expect(checkinFor({ onboarding: ob, now: wed })).toBeNull();
   expect(dayNames([0, 3, 1])).toBe('Mon, Wed, Sun');
 });
 
@@ -82,6 +81,8 @@ test('picked hours: parsed, shown on the grid, and a day counts only while an ho
   // An answer from before the grid: their usual hours on those days.
   const old = { ...ob, weeks: { '2026-10-12': { days: [2] } } };
   expect([...weekCells({ monday: '2026-10-12', onboarding: old })].sort()).toEqual(['2-20', '2-21']);
+  // No answer: all the usual hours (the planner's default «in»).
+  expect(weekCells({ monday: '2026-10-12', onboarding: ob }).size).toBe(10);
   // Wednesday 20:20: 20:00 has gone (a start needs 30 min ahead), 21:00 is still open.
   const late = at('2026-10-14T20:20:00');
   expect(hourAhead('2026-10-14', 21, late)).toBe(true);

@@ -88,12 +88,20 @@ test('coming-up label names today and tomorrow', () => {
   expect(comingUpLabel(now + 26 * H, now)).toMatch(/^Tomorrow, /);
 });
 
-test('autopilot: a learner who has not said «in» is asked, others are not', () => {
+test('autopilot: no answer for next week → the weekend heads-up (usual times), not a question', () => {
   const ob = { availability: [{ day: 1, startMin: 1200, endMin: 1320 }, { day: 3, startMin: 1200, endMin: 1320 }],
     weeklyTarget: 2, charterAcceptedAt: { seconds: Date.parse('2026-09-01T12:00:00+04:00') / 1000 } };
   const sat = Date.parse('2026-10-17T12:00:00+04:00');
   const base = { uid: 'me', bookings: [], offers: [], planStatus: null, onboarding: ob, weekKey: '2026-10-12', now: sat };
-  expect(planHeadline({ ...base, autoMode: true })).toMatchObject({ kind: 'checkin', monday: '2026-10-19', next: true, days: [1, 3] });
+  expect(planHeadline({ ...base, autoMode: true })).toMatchObject({ kind: 'checkin', monday: '2026-10-19', next: true, days: [1, 3], target: 2 });
+  // The server counts them out for next week (snoozed): no heads-up.
+  const out = { ...base, planStatus: { auto: { week: '2026-10-19', in: false, why: 'snoozed' } } };
+  expect(planHeadline({ ...out, autoMode: true }).kind).toBe('waiting');
+  // On a weekday a learner with no answer is in for this week: «looking».
+  const wed = Date.parse('2026-10-14T12:00:00+04:00');
+  expect(planHeadline({ ...base, now: wed, autoMode: true }).kind).toBe('looking');
+  const asleep = { ...base, now: wed, planStatus: { auto: { week: '2026-10-12', in: false, why: 'asleep' } } };
+  expect(planHeadline({ ...asleep, autoMode: true }).kind).toBe('waiting');
   expect(planHeadline({ ...base, autoMode: false }).kind).toBe('waiting');
   const answered = { ...ob, weeks: { '2026-10-19': { days: [1] } } };
   expect(planHeadline({ ...base, onboarding: answered, autoMode: true }).kind).toBe('waiting');

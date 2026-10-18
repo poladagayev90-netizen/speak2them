@@ -8,8 +8,8 @@ const NOW = WEEK + 2 * DAY;
 const base = { hasTimes: true, charter: true, lastSeenMs: NOW - DAY, joinedAtMs: WEEK - 30 * DAY, unanswered: 0 };
 const v = (p) => A.eligible({ ...base, ...p }, { weekStartMs: WEEK, nowMs: NOW });
 
-test('silence means not planned; saying «in» or a package means planned', () => {
-  assert.deepStrictEqual(v({}), { in: false, why: 'not_confirmed' });
+test('no answer means planned on the usual times; saying «in» or a package too', () => {
+  assert.deepStrictEqual(v({}), { in: true, why: 'usual_times' });
   assert.deepStrictEqual(v({ answer: { in: true, days: [] } }), { in: true, why: 'said_in' });
   assert.deepStrictEqual(v({ paid: true }), { in: true, why: 'package' });
   assert.deepStrictEqual(v({ paid: true, answer: { in: false } }), { in: false, why: 'skipped' });
@@ -24,7 +24,23 @@ test('a week without opening the app = asleep, even with a package', () => {
 test('newcomers are in for the week they join (or join at the weekend before)', () => {
   assert.strictEqual(v({ joinedAtMs: NOW - 3600e3 }).why, 'new');
   assert.strictEqual(v({ joinedAtMs: WEEK - DAY }).why, 'new');
-  assert.strictEqual(v({ joinedAtMs: WEEK - 5 * DAY }).why, 'not_confirmed');
+  assert.strictEqual(v({ joinedAtMs: WEEK - 5 * DAY }).why, 'usual_times');
+});
+
+test('default «in» (2026-10-18): a free learner seen this week with no answer is in; skip, snooze, asleep are out', () => {
+  const free = { paid: false, proven: false, answer: null };
+  assert.deepStrictEqual(v(free), { in: true, why: 'usual_times' });
+  assert.deepStrictEqual(v({ ...free, lastSeenMs: NOW - 6 * DAY }), { in: true, why: 'usual_times' });
+  assert.deepStrictEqual(v({ ...free, answer: { in: false } }), { in: false, why: 'skipped' });
+  assert.deepStrictEqual(v({ ...free, unanswered: 2 }), { in: false, why: 'snoozed' });
+  assert.deepStrictEqual(v({ ...free, lastSeenMs: NOW - 8 * DAY }), { in: false, why: 'asleep' });
+  assert.deepStrictEqual(v({ ...free, paused: true }), { in: false, why: 'paused' });
+  assert.deepStrictEqual(v({ ...free, practicesLeft: false }), { in: false, why: 'no_practices_left' });
+  assert.deepStrictEqual(v({ ...free, hasTimes: false }), { in: false, why: 'not_set_up' });
+  // No answer: the usual free times and the usual weekly number.
+  const usual = [{ day: 2, startMin: 1200, endMin: 1320 }];
+  assert.deepStrictEqual(A.weekAvailability(usual, null), usual);
+  assert.strictEqual(A.weekTarget(2, null), 2);
 });
 
 test('two unanswered proposals in a row snooze; any answer wakes them', () => {

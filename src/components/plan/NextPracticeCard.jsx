@@ -175,16 +175,17 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
   );
 }
 
-// Autopilot check-in (utils/myWeek.checkinFor): «practising next week?» at
-// the weekend, «practise this week?» on a weekday for someone not in yet —
-// the days are already suggested, so «yes» is one tap.
+// Autopilot weekend heads-up (utils/myWeek.checkinFor): next week is planned
+// on the usual times without a word from the learner (default «in»,
+// 2026-10-18). It tells, it does not ask: other hours live on the Plan grid,
+// the week off is one tap here (onboarding.weeks.{monday}.skip).
 function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const n = h.days.length;
-  const yes = async () => {
+  const n = h.target;
+  const off = async () => {
     setBusy(true); setErr('');
-    try { await saveWeek(uid, onboarding, h.monday, h.days); } catch { setErr('Could not save. Check your connection.'); }
+    try { await saveWeek(uid, onboarding, h.monday, null); } catch { setErr('Could not save. Check your connection.'); }
     setBusy(false);
   };
   return (
@@ -193,13 +194,13 @@ function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine }) {
       <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
         <span className="pl-row-icon" aria-hidden="true"><CalendarDays size={20} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="pl-title">{h.next ? 'Practising next week?' : 'Practise this week?'}</p>
-          <p className="pl-text">{dayNames(h.days)} · {n} {n === 1 ? 'practice' : 'practices'} at your free times, each with a real partner.</p>
+          <p className="pl-title">Next week on your usual times</p>
+          <p className="pl-text">{dayNames(h.days)} · {n} {n === 1 ? 'practice' : 'practices'}, each with a real partner. Your plan comes on Sunday evening.</p>
         </div>
       </div>
       <div className="pl-actions">
-        <Button onClick={yes} disabled={busy}>{busy ? 'Saving…' : "Yes, I'm in"}</Button>
-        <Button variant="ghost" onClick={() => navigate('/plan')}>Choose days</Button>
+        <Button onClick={() => navigate('/plan')}>Change hours</Button>
+        <Button variant="ghost" onClick={off} disabled={busy}>{busy ? 'Saving…' : 'Take the week off'}</Button>
       </div>
       {err && <p className="pl-hint">{err}</p>}
       {limitLine}

@@ -15,10 +15,11 @@ import './plan.css';
 //
 // Seven dates, then the hours of that week. It starts from the learner's
 // usual free times; a tap changes ONLY this week (a day without usual time
-// can be added, a usual one left out). Saving is «I'm in this week» — the
-// autopilot plans people who did (or have a package), one practice a day,
-// at most four a week (functions/autoRoster.js). Booked and proposed days are
-// fixed and always count.
+// can be added, a usual one left out). With no change the autopilot plans
+// the usual times (default «in», 2026-10-18); saving keeps other hours for
+// this week, «Take the week off» skips it — one practice a day, at most four
+// a week (functions/autoRoster.js). Booked and proposed days are fixed and
+// always count.
 const hhmm = (ms) => new Date(Number(ms)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 const hh = (h) => `${String(h).padStart(2, '0')}:00`;
 const span = (hs) => (hs.length === 1 ? hh(hs[0]) : `${String(hs[0]).padStart(2, '0')}–${String(hs[hs.length - 1] + 1).padStart(2, '0')}`);
@@ -33,9 +34,9 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   });
   const monday = which === 'next' ? addDaysKey(weekKey, 7) : weekKey;
   const answer = weekAnswer(onboarding, monday);
-  // In without answering: a package, new this week, or the server counts
-  // them as a regular (planStatus.auto).
-  const auto = autoIn({ onboarding, access, monday }) || !!(verdict && verdict.week === monday && verdict.in);
+  // In without answering: everyone, unless the server's verdict for this
+  // week (planStatus.auto) counts them out.
+  const auto = autoIn({ onboarding, access, monday, auto: verdict });
   const saved = answer && answer.in;
   const base = useMemo(() => weekCells({ monday, onboarding, now }), [monday, onboarding, now]);
   // «Never» hours of the general week profile (own clock, "wd-h"): shown with
@@ -59,7 +60,9 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   const fixed = days.filter((d) => d.state === 'booked' || d.state === 'offered');
   const picked = days.filter((d) => d.state === 'picked');
   const total = picked.length + fixed.length;
-  const count = Math.min(MAX_A_WEEK, total);
+  // Untouched usual times: the planner picks the usual number among them.
+  const usualOnly = !answer && cells === null;
+  const count = Math.min(MAX_A_WEEK, total, usualOnly ? Math.max(fixed.length, Number(onboarding.weeklyTarget) || 1) : MAX_A_WEEK);
   const dirty = cells !== null && !sameSet(cells, base);
   const open = days.some((d) => d.state === 'picked' || d.state === 'free' || d.state === 'none');
 
@@ -128,9 +131,10 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   let status;
   if (answer && !answer.in && !dirty) status = 'You are taking this week off.';
   else if (!total) status = open ? 'Tap a day or the hours you are free this week.' : 'No time left this week.';
-  else if ((saved || auto) && !dirty) status = `You're in · ${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
+  else if (saved && !dirty) status = `You're in · ${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
+  else if (auto && !dirty) status = `Your usual times · ${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
   else status = `${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
-  const capped = total > MAX_A_WEEK;
+  const capped = total > MAX_A_WEEK && !usualOnly;
   // Picked hours that are Never in the usual week: said plainly, not refused.
   const neverPicked = [...shown].filter((k) => never.has(k) && byWd.get(Number(k.split('-')[0]))?.state === 'picked')
     .map((k) => { const [wd, h] = k.split('-').map(Number); return `${byWd.get(wd).dow} ${hh(h)}`; });
@@ -229,11 +233,11 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
       <div className="wk-actions">
         {(dirty || (!saved && !auto)) && open && count > 0 && (
           <Button onClick={() => save(false)} disabled={busy || picked.length === 0}>
-            {busy ? 'Saving…' : saved && !dirty ? 'Save this week' : `I'm in · ${count} ${count === 1 ? 'practice' : 'practices'}`}
+            {busy ? 'Saving…' : `${!saved && !auto && !dirty ? "I'm in" : 'Save this week'} · ${count} ${count === 1 ? 'practice' : 'practices'}`}
           </Button>
         )}
         {!(answer && !answer.in) && (saved || auto) && !dirty && (
-          <Button variant="ghost" onClick={() => save(true)} disabled={busy}>Not this week</Button>
+          <Button variant="ghost" onClick={() => save(true)} disabled={busy}>Take the week off</Button>
         )}
       </div>
     </section>

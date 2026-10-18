@@ -2,8 +2,9 @@
 // Pure (tests in myWeek.test.js). Mirrors functions/autoRoster.js — keep the
 // «who is in» rules the same on both sides.
 //
-// The learner answers per week: the days they want to practise
-// (onboarding.weeks.{monday} = { days, at }) or «not this week» ({ skip }).
+// No answer = their usual times (default «in», 2026-10-18). A learner may
+// change one week: the hours for it (onboarding.weeks.{monday} = { days,
+// hours, at }) or the week off ({ skip }).
 // Days are weekdays in the learner's OWN clock (0 = Sunday), the same as
 // their saved free times.
 
@@ -11,7 +12,6 @@ import { rangesToCells } from './timezone';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BAKU_MS = 4 * 60 * 60 * 1000;
-export const NEW_GRACE_MS = 2 * DAY_MS;
 
 export const addDaysKey = (key, n) => new Date(Date.parse(`${key}T12:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);
 export const bakuWeekKey = (ms) => {
@@ -73,13 +73,15 @@ export function cellsToHours(cells) {
 const hoursToCells = (hours) => new Set(Object.entries(hours || {}).flatMap(([wd, hs]) => hs.map((h) => `${wd}-${h}`)));
 
 // The hours shown for a week: what they picked, else their usual hours on
-// the days they picked (an answer from before the grid), else their usual
-// hours on the suggested days.
+// the days they picked (an answer from before the grid), else all their
+// usual hours — what the planner uses with no answer (default «in»,
+// 2026-10-18; it picks the usual number of practices among them).
 export function weekCells({ monday, onboarding, now = Date.now() }) {
   const answer = weekAnswer(onboarding, monday);
   if (answer && answer.in && answer.hours) return hoursToCells(answer.hours);
   const usual = rangesToCells((onboarding && onboarding.availability) || []);
-  const days = answer ? (answer.in ? answer.days : []) : suggestDays({ monday, onboarding, now });
+  if (!answer) return usual;
+  const days = answer.in ? answer.days : [];
   if (answer && answer.in && !days.length) return usual;
   return new Set([...usual].filter((k) => days.includes(Number(k.split('-')[0]))));
 }
@@ -138,34 +140,32 @@ export function suggestDays({ monday, onboarding, now = Date.now() }) {
 }
 
 // Is this learner in for the week starting `monday` without answering?
-// (A package, or they joined that week / the weekend before.)
-export function autoIn({ onboarding, access, monday }) {
-  if (access && (access.kind === 'package' || access.kind === 'unlimited')) return true;
-  const joined = Number(onboarding && onboarding.charterAcceptedAt && (onboarding.charterAcceptedAt.toMillis
-    ? onboarding.charterAcceptedAt.toMillis() : onboarding.charterAcceptedAt.seconds * 1000)) || 0;
-  const weekStart = Date.parse(`${monday}T00:00:00+04:00`);
-  return joined >= weekStart - NEW_GRACE_MS;
+// Default «in», opt-out (Polad 2026-10-18): everyone set up is planned on
+// their usual times unless they change the week or pause — the server's own
+// verdict for that week (planStatus.auto: asleep, snoozed, no practices
+// left…) wins when it has one. `access` is kept for callers; the package no
+// longer changes the answer.
+export function autoIn({ onboarding, access, monday, auto = null }) {
+  if (auto && auto.week === monday) return !!auto.in;
+  return true;
 }
 
-// Today's question, when the autopilot needs one: on Saturday/Sunday about
-// next week, on a weekday about this week (someone back after a while, or who
-// did not answer at the weekend). null = nothing to ask.
+// Today's weekend heads-up about next week, when the autopilot will plan
+// them on their usual times: it tells, it does not ask (2026-10-18) — the
+// card offers other hours or the week off. null = nothing to say (a weekday,
+// an answer already saved, paused, or the server counts them out).
+// `days`: their usual free weekdays.
 export function checkinFor({ onboarding, access, auto = null, now = Date.now() }) {
   if (!onboarding || onboarding.planPaused === true) return null;
-  if (!freeWeekdays(onboarding.availability).size) return null;
+  const free = freeWeekdays(onboarding.availability);
+  if (!free.size) return null;
   const wd = new Date(now + BAKU_MS).getUTCDay();
-  const thisWeek = bakuWeekKey(now);
-  const weekend = wd === 6 || wd === 0;
-  const monday = weekend ? addDaysKey(thisWeek, 7) : thisWeek;
+  if (wd !== 6 && wd !== 0) return null;
+  const monday = addDaysKey(bakuWeekKey(now), 7);
   if (weekAnswer(onboarding, monday)) return null;
-  if (autoIn({ onboarding, access, monday })) return null;
-  // The server already counts them in for this week (a regular, say).
-  if (auto && auto.week === monday && auto.in) return null;
-  // Friday evening or later in the week, a «this week» question is too late.
-  if (!weekend && wd === 5 && new Date(now + BAKU_MS).getUTCHours() >= 18) return null;
-  const days = suggestDays({ monday, onboarding, now });
-  if (!days.length) return null;
-  return { monday, next: weekend, days };
+  if (!autoIn({ onboarding, access, monday, auto })) return null;
+  const target = Math.max(1, Math.min(MAX_A_WEEK, Number(onboarding.weeklyTarget) || 1));
+  return { monday, next: true, days: [...free], target };
 }
 
 export const dayNames = (days) => {

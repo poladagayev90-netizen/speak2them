@@ -1,13 +1,15 @@
 // ── Autopilot: who is planned in a week without the admin ticking names ──
 // (Polad 2026-10-06: "matching must run fully on its own; the admin may step
 // in"). The admin's weekly list kept dead and fake accounts out, but nobody
-// new got in without him. What tells a real learner from a dead account best
-// is the learner saying so: «I'm in this week» (Plan tab calendar, the
-// weekend check-in, the welcome-back card, finishing the wizard). A package
-// learner who is still opening the app is in without being asked — they paid.
+// new got in without him.
 //
-// Silence is never punished: someone who did not answer is simply not
-// planned that week, and one tap brings them back.
+// Default «in», opt-out (Polad 2026-10-18): anyone set up, seen in the last
+// 7 days, with practices left is planned on their usual times unless they
+// say otherwise for the week (Plan tab: other hours, or the week off) or
+// pause. Asking «are you in?» every weekend left out the free learners who
+// simply forgot to answer. Dead accounts still drop out — through `asleep`
+// here, the snooze after unanswered proposals, and account health
+// (accountHealth.js) / reliability limits in the planner.
 //
 // Pure: index.js reads the docs and passes plain values.
 
@@ -105,7 +107,8 @@ function eligible(person, { weekStartMs, nowMs }) {
   if (p.paid) return { in: true, why: 'package' };
   if (p.proven) return { in: true, why: 'regular' };
   if ((p.joinedAtMs || 0) >= weekStartMs - NEW_GRACE_MS) return { in: true, why: 'new' };
-  return { in: false, why: 'not_confirmed' };
+  // No answer for the week: planned on their usual times (2026-10-18).
+  return { in: true, why: 'usual_times' };
 }
 
 // The availability the planner uses for a week: the learner's free times,
