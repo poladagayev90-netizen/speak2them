@@ -21,6 +21,7 @@ import {
 } from '../utils/onboarding';
 import { PROFILE_MODES, paintCell } from '../utils/weekProfile';
 import { needsIntro } from '../utils/intro';
+import useBackButton from '../hooks/useBackButton';
 import { pushPermission, askPush } from '../utils/pushOptIn';
 import TimeGrid, { PaintModes } from '../components/plan/TimeGrid';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
@@ -278,6 +279,33 @@ export default function Onboarding({ user }) {
   };
   const jumpTo = (name) => { setDir(-1); setStep(STEPS.indexOf(name)); window.scrollTo(0, 0); };
 
+  // Polad (2026-10-18): opening the wizard to change one answer and pressing
+  // back landed on the step before it (6/11) — he only came to change the
+  // number. Someone who came here to edit one answer leaves the way they came,
+  // unsaved changes dropped; a pencil on the review returns to the review.
+  const [fromReview, setFromReview] = useState(false);
+  const cameToEdit = editing && STEPS.includes(location.state?.jumpTo);
+  const leave = () => {
+    try { sessionStorage.removeItem(draftKey(uid)); } catch { /* ignore */ }
+    if (location.state?.returnTo) navigate(location.state.returnTo, { replace: true });
+    else navigate(-1);
+  };
+  const editFromReview = (name) => { setFromReview(true); jumpTo(name); };
+  const backToReview = () => { setFromReview(false); jumpTo('summary'); };
+  const canBack = step > 0 || cameToEdit;
+  const back = () => {
+    if (fromReview && id !== 'summary') backToReview();
+    else if (cameToEdit) leave();
+    else go(-1);
+  };
+  // Android back does the same as the arrow; on the first step it falls
+  // through to the app's own handling.
+  useBackButton(() => {
+    if (!canBack) return false;
+    back();
+    return true;
+  });
+
   // A tap paints the chosen kind (or clears a cell already of that kind).
   const toggleCell = (key) => {
     const next = paintCell({ free: cells, maybe: maybeCells, never: neverCells }, key, mode);
@@ -373,8 +401,8 @@ export default function Onboarding({ user }) {
         <button
           type="button"
           className="ob-back"
-          onClick={() => go(-1)}
-          disabled={step === 0}
+          onClick={back}
+          disabled={!canBack}
           aria-label={t('ob.back')}
         >
           <ArrowLeft size={20} />
@@ -616,11 +644,11 @@ export default function Onboarding({ user }) {
         {id === 'summary' && (
           <Question icon={<Check size={20} />} title={t('ob.summary.title')} sub={t('ob.summary.sub')}>
             <dl className="ob-review">
-              <Row editLabel={t('ob.edit')} label={t('row.goal')} value={goalLabel(goal)} onEdit={() => jumpTo('goal')} />
-              <Row editLabel={t('ob.edit')} label={t('row.level')} value={levelName(level)} onEdit={() => jumpTo('level')} />
-              <Row editLabel={t('ob.edit')} label={t('row.age')} value={ageLabel(ageBand)} onEdit={() => jumpTo('age')} />
-              <Row editLabel={t('ob.edit')} label={t('row.location')} value={`${country ? t(`country.${country}`) : '—'} · ${cityOf(timeZone)}`} onEdit={() => jumpTo('place')} />
-              <Row editLabel={t('ob.edit')} label={t('row.whatsapp')} value={whatsapp || '—'} onEdit={() => jumpTo('phone')} />
+              <Row editLabel={t('ob.edit')} label={t('row.goal')} value={goalLabel(goal)} onEdit={() => editFromReview('goal')} />
+              <Row editLabel={t('ob.edit')} label={t('row.level')} value={levelName(level)} onEdit={() => editFromReview('level')} />
+              <Row editLabel={t('ob.edit')} label={t('row.age')} value={ageLabel(ageBand)} onEdit={() => editFromReview('age')} />
+              <Row editLabel={t('ob.edit')} label={t('row.location')} value={`${country ? t(`country.${country}`) : '—'} · ${cityOf(timeZone)}`} onEdit={() => editFromReview('place')} />
+              <Row editLabel={t('ob.edit')} label={t('row.whatsapp')} value={whatsapp || '—'} onEdit={() => editFromReview('phone')} />
               <Row
                 editLabel={t('ob.edit')}
                 label={t('row.free')}
@@ -639,9 +667,9 @@ export default function Onboarding({ user }) {
                     {neverCells.size > 0 && <span className="ob-review-extra">{t('row.never', { n: neverCells.size })}</span>}
                   </span>
                 )}
-                onEdit={() => jumpTo('availability')}
+                onEdit={() => editFromReview('availability')}
               />
-              <Row editLabel={t('ob.edit')} label={t('row.perWeek')} value={t('row.perWeekValue', { n: labelOf(WEEKLY_TARGETS, weeklyTarget) })} onEdit={() => jumpTo('target')} />
+              <Row editLabel={t('ob.edit')} label={t('row.perWeek')} value={t('row.perWeekValue', { n: labelOf(WEEKLY_TARGETS, weeklyTarget) })} onEdit={() => editFromReview('target')} />
             </dl>
             {error && <p className="ob-error" role="alert">{error}</p>}
           </Question>
@@ -666,6 +694,19 @@ export default function Onboarding({ user }) {
               </button>
             </>
           )
+        ) : fromReview && id !== 'summary' ? (
+          // A pencil on the review edits that one answer and goes back to the
+          // review — not on through every later step. Fewer free days than the
+          // target resets it, so that case passes the target step first.
+          <Button
+            size="lg"
+            full
+            onClick={() => (id === 'availability' && weeklyTarget === 0 ? go(1) : backToReview())}
+            disabled={!canNext}
+            iconRight={<ArrowRight size={20} />}
+          >
+            {t('ob.continue')}
+          </Button>
         ) : id === 'notify' && push === 'default' ? (
           <>
             <Button size="lg" full onClick={turnOnPush} disabled={pushBusy} icon={<Bell size={20} />}>
