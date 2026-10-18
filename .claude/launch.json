@@ -4,20 +4,51 @@
     {
       "name": "web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["start"],
+      "runtimeArgs": [
+        "start"
+      ],
       "port": 3000
     },
     {
       "name": "functions-emulator",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["firebase-tools", "emulators:start", "--only", "functions"],
+      "runtimeArgs": [
+        "firebase-tools",
+        "emulators:start",
+        "--only",
+        "functions"
+      ],
       "port": 5001
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "const h=require('http'),f=require('fs');h.createServer((q,s)=>{s.setHeader('content-type','text/html;charset=utf-8');s.end(f.readFileSync('landing/index.html'))}).listen(3398)"
+      ],
+      "port": 3398
     },
     {
       "name": "build-preview",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-s", "build", "-l", "3399"],
+      "runtimeArgs": [
+        "serve",
+        "-s",
+        "build",
+        "-l",
+        "3399"
+      ],
       "port": 3399
+    },
+    {
+      "name": "build-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "const h=require('http'),f=require('fs'),p=require('path');const T={'.js':'text/javascript','.css':'text/css','.html':'text/html','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon','.webmanifest':'application/manifest+json'};h.createServer((q,s)=>{let u=decodeURIComponent(q.url.split('?')[0]);let fp=p.join('build',u);if(!f.existsSync(fp)||f.statSync(fp).isDirectory())fp='build/index.html';s.setHeader('content-type',T[p.extname(fp)]||'application/octet-stream');s.end(f.readFileSync(fp))}).listen(3400)"
+      ],
+      "port": 3400
     }
   ]
 }
