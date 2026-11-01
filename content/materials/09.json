@@ -1,0 +1,316 @@
+{
+  "index": 8,
+  "topic": "Money & Finances",
+  "reading": {
+    "title": "Kamran's first salary",
+    "A2": {
+      "text": "Kamran is twenty-three. He lives in Baku with his parents and his grandfather, Tofig. In September, Kamran started his first job in an office. At the end of the month, he got his first salary.\n\nKamran wanted a new phone. It was beautiful, but it cost three months of money. “It will break the bank,” his mother said. His friend Murad laughed. “Take a loan! A good phone is an investment.”\n\nGrandfather Tofig did not say anything. He often did not answer, and Kamran thought he was not interested.\n\n“Make a budget,” his mother said. “Tighten your belt for a few months.” So Kamran took lunch from home and walked to the metro. He lived on a shoestring, and every month his savings grew.\n\nOne day at the bazaar, the tomatoes were more expensive. “Inflation,” the seller said. “Everything costs more this year.” Kamran thought of his grandfather. His pension was very small.\n\nThat evening, Kamran found Tofig's hearing aid in a drawer. It was broken. Tofig could not afford a new one, and he did not want to ask. “No debt at my age,” he always said.\n\nIn December, Kamran had enough money. He did not buy the phone. He bought a new hearing aid. Tofig put it in and smiled. “Now I can hear you,” he said. “So, tell me about this phone.”",
+      "words": [
+        {
+          "phrase": "first job",
+          "az": "ilk iş",
+          "tr": "ilk iş"
+        },
+        {
+          "phrase": "took lunch from home",
+          "az": "naharı evdən götürdü",
+          "tr": "öğle yemeğini evden götürdü"
+        },
+        {
+          "phrase": "every month",
+          "az": "hər ay",
+          "tr": "her ay"
+        },
+        {
+          "phrase": "hearing aid",
+          "az": "eşitmə cihazı",
+          "tr": "işitme cihazı"
+        },
+        {
+          "phrase": "did not want to ask",
+          "az": "xahiş etmək istəmədi",
+          "tr": "istemek istemedi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What did Kamran finally do with his savings?",
+          "options": [
+            "He bought a new phone",
+            "He gave the money to Murad",
+            "He bought his grandfather a hearing aid",
+            "He paid back a loan"
+          ],
+          "answer": 2,
+          "why": "“He did not buy the phone. He bought a new hearing aid.”"
+        },
+        {
+          "type": "detail",
+          "q": "Who said the phone was an investment?",
+          "options": [
+            "His mother",
+            "Murad",
+            "Tofig",
+            "The seller"
+          ],
+          "answer": 1,
+          "why": "Murad laughed: “Take a loan! A good phone is an investment.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why were the tomatoes more expensive?",
+          "options": [
+            "Because of inflation",
+            "Because it was winter",
+            "Because the seller was greedy",
+            "Because of bad weather"
+          ],
+          "answer": 0,
+          "why": "“Inflation,” the seller said. “Everything costs more this year.”"
+        },
+        {
+          "type": "tf",
+          "q": "Kamran walked to the metro to save money.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“So Kamran took lunch from home and walked to the metro.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Kamran lived “on a shoestring”. What does this mean?",
+          "options": [
+            "He bought new shoes",
+            "He lived far from work",
+            "He lived with his friend",
+            "He lived with very little money"
+          ],
+          "answer": 3,
+          "why": "He took lunch from home and walked, so “every month his savings grew”."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Tofig often not answer Kamran?",
+          "options": [
+            "He was angry with him",
+            "He was not interested",
+            "His hearing aid was broken",
+            "He was always asleep"
+          ],
+          "answer": 2,
+          "why": "The hearing aid “was broken”, and with the new one he says: “Now I can hear you.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "When Kamran got his first salary, he already knew what he was going to buy. He was twenty-three, he had just started work as a junior accountant in a Baku office, and he had been looking at the same phone online for months. There was only one problem: it cost almost three times what he earned.\n\n“That will break the bank,” said his mother, Sevinj.\n\nHis friend Murad had a simpler answer. “Take a loan. Everyone does. Think of it as an investment — clients trust a man with a good phone.”\n\nKamran's grandfather, Tofig, sat in his usual chair and said nothing. Lately he hardly joined any conversation, and Kamran had decided he simply didn't care about young people's money problems.\n\nIn the end, his mother won. “Make a budget,” she said, “and tighten your belt for six months. If you still want the phone then, you'll have the money and no debt.”\n\nSo Kamran started living on a shoestring. He brought lunch from home, gave up taxis and stopped ordering coffee he didn't really want. Slowly, his savings grew.\n\nAt the Yashil bazaar one Saturday, he noticed that the price of tomatoes had nearly doubled. “Inflation,” the seller shrugged. “My customers buy half what they used to.” Kamran thought of his grandfather's pension, which hadn't changed in years.\n\nThat night, looking for a charger, he found Tofig's hearing aid at the back of a drawer, cracked and silent. Suddenly the quiet chair made sense. His grandfather couldn't afford a new one, and he was far too proud to ask.\n\nIn March, Kamran counted his savings. There was enough for the phone. Instead, he went to a clinic in Nasimi.\n\nWhen Tofig put the new hearing aid in, he blinked and listened to the kettle, the traffic and the neighbours' radio. Then he turned to his grandson.\n\n“Right,” he said. “Now tell me about this famous phone.”",
+      "words": [
+        {
+          "phrase": "junior accountant",
+          "az": "kiçik mühasib",
+          "tr": "stajyer muhasebeci"
+        },
+        {
+          "phrase": "in the end",
+          "az": "sonda, nəticədə",
+          "tr": "sonunda"
+        },
+        {
+          "phrase": "gave up taxis",
+          "az": "taksidən imtina etdi",
+          "tr": "taksiden vazgeçti"
+        },
+        {
+          "phrase": "made sense",
+          "az": "anlaşıldı, məna kəsb etdi",
+          "tr": "anlam kazandı"
+        },
+        {
+          "phrase": "far too proud to ask",
+          "az": "xahiş etmək üçün çox qürurlu",
+          "tr": "istemek için fazlasıyla gururlu"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main story?",
+          "options": [
+            "A young man takes a loan for a phone",
+            "A grandfather teaches his grandson to cook",
+            "A young man saves for a phone but spends the money on his grandfather",
+            "A seller at the bazaar loses his customers"
+          ],
+          "answer": 2,
+          "why": "He saved for months, but “instead, he went to a clinic” for Tofig's hearing aid."
+        },
+        {
+          "type": "detail",
+          "q": "What did Murad advise?",
+          "options": [
+            "Make a budget",
+            "Take a loan",
+            "Ask his grandfather",
+            "Buy a cheaper phone"
+          ],
+          "answer": 1,
+          "why": "“Take a loan. Everyone does.”"
+        },
+        {
+          "type": "detail",
+          "q": "How did Kamran save money?",
+          "options": [
+            "He worked at night",
+            "He sold his old phone",
+            "He borrowed from Murad",
+            "He brought lunch from home and gave up taxis"
+          ],
+          "answer": 3,
+          "why": "“He brought lunch from home, gave up taxis and stopped ordering coffee.”"
+        },
+        {
+          "type": "tf",
+          "q": "Murad bought the same phone with a loan.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "Murad gives advice, but the text says nothing about what he bought."
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj says the phone “will break the bank”. What does she mean?",
+          "options": [
+            "It will cost too much money",
+            "It will break easily",
+            "The bank will close",
+            "It will be hard to use"
+          ],
+          "answer": 0,
+          "why": "The phone “cost almost three times what he earned”."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Tofig hardly join conversations?",
+          "options": [
+            "He didn't care about money",
+            "He couldn't hear well",
+            "He was angry with Kamran",
+            "He was always tired"
+          ],
+          "answer": 1,
+          "why": "His hearing aid was “cracked and silent” — “suddenly the quiet chair made sense”."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Kamran had planned the purchase long before his first salary arrived. At twenty-three, newly hired as a junior accountant at a firm overlooking the Baku boulevard, he spent his days checking other people's figures and his evenings staring at a phone that cost roughly three months of his wages. He had watched every review. He had chosen the colour. All that remained was the small matter of paying for it.\n\n“That would break the bank,” his mother, Sevinj, said, without looking up from the dolma.\n\nMurad, who considered himself the family's financial genius, disagreed. “Take a loan. It's not spending, it's an investment. Nobody signs a contract with a man holding a cracked screen.” Murad, it should be said, was still paying for a car he had already crashed.\n\nFrom his armchair by the window, Kamran's grandfather Tofig said nothing at all. For months he had drifted out of family conversations, nodding at the wrong moments, and Kamran had quietly concluded that the old man had lost interest in anything invented after 1985.\n\nSevinj won the argument, as she usually did. “Write a budget,” she said. “Tighten your belt for six months. If you still want the thing after that, buy it with your own savings and no debt.”\n\nSo Kamran, who professionally advised clients to cut costs, finally tried it himself. He lived on a shoestring: lunch in a plastic box, the metro instead of taxis, no more overpriced coffee. It was humbling how fast the numbers improved.\n\nWhat he hadn't planned for was the Yashil bazaar. One Saturday, tomatoes cost nearly double. “Inflation,” the seller sighed, as though naming a bad-tempered relative. Walking home, Kamran did a calculation he had never bothered with before: his grandfather's pension against those prices.\n\nThat evening, hunting for a charger, he found Tofig's hearing aid buried in a drawer — cracked, silent, clearly broken for months. The nodding, the wrong moments, the silence by the window: it all rearranged itself. Tofig couldn't afford a replacement and, being Tofig, would rather go deaf than ask.\n\nIn March the savings were finally enough. Kamran took them to a clinic in Nasimi instead of a phone shop.\n\nHis grandfather fitted the new device, winced at the kettle, listened to the traffic for a long moment, then turned to Kamran with great seriousness.\n\n“So,” he said. “I hear there's a phone.”",
+      "words": [
+        {
+          "phrase": "the small matter of",
+          "az": "kiçik bir məsələ",
+          "tr": "ufak bir mesele"
+        },
+        {
+          "phrase": "drifted out of",
+          "az": "yavaş-yavaş uzaqlaşdı",
+          "tr": "yavaş yavaş uzaklaştı"
+        },
+        {
+          "phrase": "cut costs",
+          "az": "xərcləri azaltmaq",
+          "tr": "masrafları kısmak"
+        },
+        {
+          "phrase": "rearranged itself",
+          "az": "öz yerinə oturdu",
+          "tr": "yerli yerine oturdu"
+        },
+        {
+          "phrase": "would rather go deaf than ask",
+          "az": "xahiş etməkdənsə kar olmağa razıdır",
+          "tr": "istemektense sağır olmayı tercih eder"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the twist of the story?",
+          "options": [
+            "Kamran takes a loan after all",
+            "Kamran spends his savings on his grandfather's hearing aid",
+            "Murad buys the phone for Kamran",
+            "Tofig gives Kamran money"
+          ],
+          "answer": 1,
+          "why": "“Kamran took them to a clinic in Nasimi instead of a phone shop.”"
+        },
+        {
+          "type": "detail",
+          "q": "What do we learn about Murad?",
+          "options": [
+            "He is still paying for a car he crashed",
+            "He is a qualified accountant",
+            "He works with Kamran",
+            "He agrees with Sevinj"
+          ],
+          "answer": 0,
+          "why": "He “was still paying for a car he had already crashed”."
+        },
+        {
+          "type": "detail",
+          "q": "What made Kamran think about his grandfather's pension?",
+          "options": [
+            "A news report",
+            "A talk with Murad",
+            "His work at the firm",
+            "Rising prices at the Yashil bazaar"
+          ],
+          "answer": 3,
+          "why": "After the tomato prices, he compared “his grandfather's pension against those prices”."
+        },
+        {
+          "type": "tf",
+          "q": "Tofig asked the family to buy him a new hearing aid.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "Tofig “would rather go deaf than ask”."
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj tells Kamran to “tighten your belt”. What does she mean?",
+          "options": [
+            "Lose weight",
+            "Work longer hours",
+            "Spend less money",
+            "Dress more smartly"
+          ],
+          "answer": 2,
+          "why": "He then cuts costs: lunch in a box, the metro, no overpriced coffee."
+        },
+        {
+          "type": "inference",
+          "q": "What does Tofig's last line, “I hear there's a phone”, suggest?",
+          "options": [
+            "He has a sense of humour and understands what Kamran gave up",
+            "He is angry about the hearing aid",
+            "He still cannot hear well",
+            "He wants a phone for himself"
+          ],
+          "answer": 0,
+          "why": "The joke works because he can finally hear — and he knows the phone was the price."
+        }
+      ]
+    }
+  }
+}
