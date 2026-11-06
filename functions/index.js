@@ -2012,6 +2012,12 @@ exports.teacherStudentBrief = onRequest({ secrets: [] }, async (req, res) => {
     const lessons = await studentLessons(db, uid);
     const last = lessons.filter((l) => l.status === "held").pop() || null;
     const sinceMs = last ? tutorLessons.atMs(last) : Date.now() - HOMEWORK_FIRST_WINDOW_MS;
+    // The coming lesson, for the printable sheet's plan: the first planned one
+    // from now on, numbered like the timetable does (earlier lessons that were
+    // not cancelled + 1).
+    const nowMs = Date.now();
+    const nextIdx = lessons.findIndex((l) => l.status === "planned" && tutorLessons.atMs(l) >= nowMs);
+    const next = nextIdx >= 0 ? lessons[nextIdx] : null;
     const [analyses, hwSnap] = await Promise.all([
       recentAnalyses(db, uid, sinceMs),
       last ? db.collection("homework").doc(last.id).get() : Promise.resolve(null),
@@ -2020,6 +2026,14 @@ exports.teacherStudentBrief = onRequest({ secrets: [] }, async (req, res) => {
       ok: true,
       sinceMs,
       lastLesson: last ? { n: last.n, topicIndex: last.topicIndex } : null,
+      nextLesson: next ? {
+        n: lessons.slice(0, nextIdx).filter((l) => l.status !== "cancelled").length + 1,
+        topicIndex: Number.isInteger(next.topicIndex) ? next.topicIndex : null,
+        atMs: tutorLessons.atMs(next),
+      } : null,
+      // The same personal half a held lesson's homework gets (same window),
+      // so the printed sheet and the in-app homework ask the same things.
+      personal: homeworkBuilder.buildPersonal(analyses),
       ...classBrief.buildStudentBrief({
         uid,
         name: studentSnap.get("name") || studentSnap.get("displayName") || "",
