@@ -22,6 +22,34 @@
 // countdown and the deadline must never drift apart.
 export const GUESS_ROUND_SECONDS = 45;
 
+// WHY A WINNER COULD COME OUT WRONG (fixed 2026-11-06)
+// The round "opens" on each phone when ITS clock passes deadlineMs. Phone
+// clocks drift by seconds, so one player saw the answer — and banked a point
+// for being the only one who had answered — while the other still had time on
+// the clock, typed a closer number and banked a point too. The board then
+// flipped the winner and both scores went up.
+//
+// Two rules close it, and both phones apply them to the same synced data, so
+// they always agree:
+//  1. A guess counts only if the SERVER stamped it within the round
+//     (answeredAt - startedAt, both serverTimestamp, so no phone clock is
+//     involved) plus a small grace for network time.
+//  2. The point is written only once the result is final: both guesses are
+//     in, or GUESS_SETTLE_MS has passed after the local deadline — long enough
+//     for a guess made in time to arrive.
+export const GUESS_GRACE_MS = 3000;
+export const GUESS_SETTLE_MS = 3000;
+
+// The guess as it counts for scoring, or null when it was stamped after the
+// round closed. A missing stamp (old app versions, or my own write still on
+// its way to the server) is trusted: the input box closes at the local
+// deadline, so it can only be late by clock drift, never by a whole round.
+export function countedGuess(guess, answeredAtMs, startedAtMs) {
+  if (typeof guess !== 'number') return null;
+  if (!Number.isFinite(answeredAtMs) || !Number.isFinite(startedAtMs)) return guess;
+  return answeredAtMs - startedAtMs <= GUESS_ROUND_SECONDS * 1000 + GUESS_GRACE_MS ? guess : null;
+}
+
 // How far off a guess is, as a log-ratio. Bigger = worse. A guess that is
 // missing, zero or negative gets Infinity, so it always loses to a real one
 // but never crashes the comparison.
@@ -82,8 +110,13 @@ const SUFFIXES = {
 
 export function parseGuess(raw) {
   if (typeof raw !== 'string') return null;
-  const cleaned = raw.trim().toLowerCase().replace(/[\s,]/g, '');
+  let cleaned = raw.trim().toLowerCase().replace(/[\s,]/g, '');
   if (!cleaned) return null;
+  // Azerbaijani, Turkish and Russian group thousands with a dot: "1.400" is
+  // one thousand four hundred, not 1.4 — read the other way it lost rounds by
+  // 1000x. Only the exact grouping shape (1–3 digits, then dot + 3 digits, no
+  // suffix) is read so; "1.5", "2.25" and "1.4k" stay decimals.
+  if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) cleaned = cleaned.replace(/\./g, '');
 
   const match = cleaned.match(/^(\d+(?:\.\d+)?)([a-zəğışçöü]*)$/);
   if (!match) return null;

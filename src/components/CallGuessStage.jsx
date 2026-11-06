@@ -3,7 +3,7 @@ import { X, Target, Timer, Trophy, Languages, Volume2, VolumeX } from 'lucide-re
 import { guessQuestions } from '../data/guessQuestions';
 import {
   parseGuess, formatNumber, describeNumber, accuracyLabel, pickWinners,
-  GUESS_ROUND_SECONDS,
+  countedGuess, GUESS_ROUND_SECONDS, GUESS_SETTLE_MS,
 } from '../utils/guessGame';
 import { getFeedbackLanguage, FEEDBACK_LANGUAGES } from '../utils/feedbackLanguage';
 import {
@@ -94,7 +94,7 @@ const TONE_COLOR = {
 
 export default function CallGuessStage({
   cardIndex, deadlineMs, myUid, peerUid, peerName,
-  answers = {}, scores = {},
+  answers = {}, scores = {}, startedAtMs = null, answeredAtMs = {},
   onSubmit, onWin, onNext, onClose,
 }) {
   const card = guessQuestions[cardIndex % guessQuestions.length];
@@ -102,9 +102,20 @@ export default function CallGuessStage({
   const peerGuess = answers[peerUid];
   const hasMine = typeof myGuess === 'number';
   const hasTheirs = typeof peerGuess === 'number';
+  // What actually scores: a guess the server stamped after the round closed
+  // is shown but does not count (see "WHY A WINNER COULD COME OUT WRONG" in
+  // guessGame.js).
+  const myCounted = countedGuess(myGuess, answeredAtMs[myUid], startedAtMs);
+  const peerCounted = countedGuess(peerGuess, answeredAtMs[peerUid], startedAtMs);
+  const stampsKnown = !Number.isFinite(startedAtMs)
+    || [hasMine && myUid, hasTheirs && peerUid].filter(Boolean)
+      .every((uid) => Number.isFinite(answeredAtMs[uid]));
 
   const [draft, setDraft] = useState('');
   const [timeUp, setTimeUp] = useState(false);
+  // True a few seconds after the deadline: any guess made in time has reached
+  // us by then, so the result can no longer change.
+  const [settled, setSettled] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(GUESS_ROUND_SECONDS);
   // Kept separate from secondsLeft: the bar should drain smoothly, but the
@@ -132,6 +143,7 @@ export default function CallGuessStage({
   useEffect(() => {
     setDraft('');
     setTimeUp(false);
+    setSettled(false);
     setShowTranslation(false);
     setRolled(null);
   }, [cardIndex]);
@@ -141,37 +153,43 @@ export default function CallGuessStage({
   // The countdown is derived from a shared deadline rather than counted down
   // locally, so a player who opens the panel late still sees the real time
   // remaining instead of a fresh 45 seconds.
+  // Keeps ticking past the deadline until the round is settled — `settled` is
+  // what lets a point be written when a stamp never arrives (old app).
   useEffect(() => {
-    if (bothAnswered) return undefined;
+    if (settled || (bothAnswered && stampsKnown)) return undefined;
     const tick = () => {
       const msLeft = Math.max(0, deadlineMs - Date.now());
       setSecondsLeft(Math.ceil(msLeft / 1000));
       setFraction(Math.min(1, msLeft / (GUESS_ROUND_SECONDS * 1000)));
       if (msLeft <= 0) setTimeUp(true);
+      if (Date.now() >= deadlineMs + GUESS_SETTLE_MS) setSettled(true);
     };
     tick();
     const id = setInterval(tick, 250);
     return () => clearInterval(id);
-  }, [deadlineMs, bothAnswered, cardIndex]);
+  }, [deadlineMs, bothAnswered, stampsKnown, settled, cardIndex]);
 
   const revealed = bothAnswered || timeUp;
 
   const winners = useMemo(
     () => (revealed
-      ? pickWinners([{ uid: myUid, guess: myGuess }, { uid: peerUid, guess: peerGuess }], card.a)
+      ? pickWinners([{ uid: myUid, guess: myCounted }, { uid: peerUid, guess: peerCounted }], card.a)
       : []),
-    [revealed, myUid, peerUid, myGuess, peerGuess, card.a],
+    [revealed, myUid, peerUid, myCounted, peerCounted, card.a],
   );
   const iWon = winners.includes(myUid);
+  const final = (bothAnswered && stampsKnown) || settled;
 
-  // Record my own point, once per card. The ref stops React's re-renders from
-  // firing a second write before the new score arrives back from Firestore.
+  // Record my own point, once per card, and only once the result is FINAL —
+  // scoring at the first reveal is what let both players bank a point. The ref
+  // stops React's re-renders from firing a second write before the new score
+  // arrives back from Firestore.
   useEffect(() => {
-    if (!revealed || !iWon) return;
+    if (!final || !iWon) return;
     if (scoredRef.current === cardIndex) return;
     scoredRef.current = cardIndex;
     onWin();
-  }, [revealed, iWon, cardIndex, onWin]);
+  }, [final, iWon, cardIndex, onWin]);
 
   // ── Sound ─────────────────────────────────────────────────────────────────
   // sfx.js normally refuses to play anything during a call; these game cues are

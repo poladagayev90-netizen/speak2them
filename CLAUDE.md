@@ -41,10 +41,10 @@ Each file holds the full rules, field names and the reasons behind them. Read it
 - **`users.upcomingCall` is derived** (`syncUpcomingCall`) — never write it directly.
 - **Call ids are per PAIR** (`call_<a>_<b>`): server code creating a call overwrites, never merges. **Call minutes come from server timestamps** (`trustedCallSeconds`), never the client stopwatch.
 - **Push payloads differ by platform** (`functions/pushTokens.js`): web = data-only, Android = `notification` block. A notification block on web doubles every notification.
-- **Time is Baku (UTC+4, no DST)**; weekdays are **0 = Sunday**. Use `sessionSchedule.js` / `timezone.js` helpers — no hand-rolled time math. One session hour only (21:00); never re-add a daytime reminder.
+- **Time is Baku (UTC+4, no DST)**; weekdays are **0 = Sunday**. Use `sessionSchedule.js` / `timezone.js` helpers — no hand-rolled time math. **There is no fixed session hour** — the 21:00 evening session was removed (2026-11-06); practice is on-demand. Never re-add a session-time reminder, countdown or copy naming an hour.
 - **Private data stays off `users`** (world-readable): age band, country, time zone, availability, WhatsApp live in `onboarding/{uid}`. The AI planning analyst sees aliases and numbers only.
 - **Unlimited practice comes only from rules-protected fields** — never the client-writable `mode`. The package balance is never stored; it is derived from `bookings`.
-- **Keep in step** (change both or neither): `SLOT_BLOCK_HOURS` ↔ `SLOT_START_HOURS`; `functions/availability.js` ↔ `src/utils/timezone.js`; `homeworkStepKeys` ↔ `functions/classBrief.js`; `functions/dailyQuestions.json` ↔ `src/data/weeklyContent.js` (same length); admin lists in rules (`isAdmin`) ↔ functions (`isAdminToken`) ↔ `src/constants.js` (`isAdminUser`); `appConfig/session.sessions` overrides the code defaults.
+- **Keep in step** (change both or neither): `SLOT_BLOCK_HOURS` ↔ `SLOT_START_HOURS`; `functions/availability.js` ↔ `src/utils/timezone.js`; `homeworkStepKeys` ↔ `functions/classBrief.js`; `functions/dailyQuestions.json` ↔ `src/data/weeklyContent.js` (same length); admin lists in rules (`isAdmin`) ↔ functions (`isAdminToken`) ↔ `src/constants.js` (`isAdminUser`); `appConfig/session.sessionDays/bonusDays` override the code defaults.
 - **Lesson ids are storage keys** — add, never rename. `lessonProgress` is client-written, so it must never unlock anything.
 - **CSS chunk order**: import `cohort.css` before `story.css`, and `ui.css` before `plan.css`, or the CI build fails.
 

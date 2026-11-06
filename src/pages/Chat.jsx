@@ -1727,10 +1727,14 @@ export default function Chat({ user }) {
                             active: true,
                             cardIndex: Math.floor(Math.random() * guessQuestions.length),
                             deadlineMs: Date.now() + GUESS_ROUND_SECONDS * 1000,
+                            // Server clock, not this phone's: late guesses are
+                            // judged against it (countedGuess in guessGame.js).
+                            startedAt: serverTimestamp(),
                             // Cleared explicitly rather than left over: a second
                             // Guess It round in the same call would otherwise
                             // open with both players already "locked in".
                             answers: {},
+                            answeredAt: {},
                             scores: {},
                           },
                         }).catch((e) => console.error('[Chat] guessStage start failed:', e));
@@ -1934,11 +1938,18 @@ export default function Chat({ user }) {
           peerName={peer?.name}
           answers={guessStage.answers || {}}
           scores={guessStage.scores || {}}
+          // Pending serverTimestamps read as null until the server confirms
+          // them; the stage treats a missing stamp as "in time".
+          startedAtMs={guessStage.startedAt?.toMillis?.() ?? null}
+          answeredAtMs={Object.fromEntries(Object.entries(guessStage.answeredAt || {})
+            .map(([uid, t]) => [uid, t?.toMillis?.() ?? null]))}
           // Each peer writes only their own guess, so the two submits can never
-          // collide — and neither can overwrite the other's number.
+          // collide — and neither can overwrite the other's number. The server
+          // stamp next to it is what decides whether it came in time.
           onSubmit={(value) => {
             updateDoc(doc(db, 'calls', callDocId), {
               [`guessStage.answers.${user.uid}`]: value,
+              [`guessStage.answeredAt.${user.uid}`]: serverTimestamp(),
             }).catch((e) => console.error('[Chat] guessStage submit failed:', e));
           }}
           // Same reasoning for the point: I only ever touch my own score.
@@ -1954,7 +1965,9 @@ export default function Chat({ user }) {
             updateDoc(doc(db, 'calls', callDocId), {
               'guessStage.cardIndex': (guessStage.cardIndex || 0) + 1,
               'guessStage.deadlineMs': Date.now() + GUESS_ROUND_SECONDS * 1000,
+              'guessStage.startedAt': serverTimestamp(),
               'guessStage.answers': {},
+              'guessStage.answeredAt': {},
             }).catch((e) => console.error('[Chat] guessStage next failed:', e));
           }}
           onClose={() => {

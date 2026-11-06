@@ -5,7 +5,7 @@ importScripts('/firebase-sw-config.js');
 firebase.initializeApp(self.FIREBASE_SW_CONFIG);
 const messaging = firebase.messaging();
 
-// Data-only pushes (analysis_ready, session_reminder) are displayed here.
+// Data-only pushes (analysis_ready, daily_reminder) are displayed here.
 // Messages that carry a notification payload (legacy topicReminder) are
 // auto-displayed by the SDK — skip them to avoid duplicate notifications.
 messaging.onBackgroundMessage((payload) => {

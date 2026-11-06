@@ -9,8 +9,8 @@
 // COST NOTE: resolving the language costs ZERO extra Firestore reads.
 // sendPushToUser already fetches users/{uid} on every send (it needs the legacy
 // fcmToken field), so the language comes off a document that was loaded anyway.
-// Callers that already hold the user document (streakReminder, topicReminder,
-// broadcastSessionReminder) pass the resolved language in instead.
+// Callers that already hold the user document (streakReminder, topicReminder)
+// pass the resolved language in instead.
 
 const SUPPORTED = ["az", "tr", "en"];
 const DEFAULT_LANG = "az";
@@ -115,7 +115,6 @@ const STRINGS = {
     slot_day_cleared: (v) => ({ title: "Bugünkü digər bloklarınız boşaldıldı", body: `Zənginiz ${v.time} vaxtına təsdiqləndi, ona görə bugünkü qalan bloklarınız axtarışdan çıxarıldı. Sabahkı seçimləriniz olduğu kimi qalır.` }),
     slot_match_cancelled: (v, f) => ({ title: "Zənginiz ləğv edildi", body: `${v.byName || f.teacher} ${v.time} zəngini ləğv etdi. Blokda qalırsınız — yeni partnyor tapıla bilər.` }),
     slot_missed: (v) => ({ title: "🔕 Praktika keçmədi", body: `${v.time} zənginə heç kim qoşulmadı. Növbəti dəfə vaxtında qoşulmağa çalış!` }),
-    session_reminder: (v) => ({ title: "Axşam sessiyasına az qaldı! 🌙", body: `Sessiya ${v.time}-da başlayır — günün mövzusuna bax və hazır ol.` }),
     search_ping: (v, f) => ({ title: "Kimsə praktika axtarır 🎙️", body: `${v.searcherName || f.someone} partnyor gözləyir — indi qoşul!` }),
     analysis_ready: () => ({ title: "Analiziniz hazırdır 🎓", body: "Zəng analizin hazır oldu — nəticəyə bax!" }),
     analysis_failed: (v) => ({ title: "Analiz alınmadı", body: v.noSpeech ? "Danışıq eşidilmədi — mikrofonu yoxlayıb yenidən cəhd et." : "Zəngin analizi tamamlana bilmədi. Növbəti zəngdə yenidən cəhd edəcəyik." }),
@@ -177,7 +176,6 @@ const STRINGS = {
     slot_day_cleared: (v) => ({ title: "Bugünkü diğer bloklarınız boşaltıldı", body: `Görüşmeniz ${v.time} için onaylandı, bu yüzden bugünkü diğer bloklarınız eşleşmeden çıkarıldı. Yarınki seçimleriniz olduğu gibi kalıyor.` }),
     slot_match_cancelled: (v, f) => ({ title: "Görüşmeniz iptal edildi", body: `${v.byName || f.teacher} ${v.time} görüşmesini iptal etti. Blokta kalıyorsunuz — yeni bir partner bulunabilir.` }),
     slot_missed: (v) => ({ title: "🔕 Pratik gerçekleşmedi", body: `${v.time} görüşmesine kimse katılmadı. Bir dahaki sefere zamanında katılmayı dene!` }),
-    session_reminder: (v) => ({ title: "Akşam seansına az kaldı! 🌙", body: `Seans ${v.time} itibarıyla başlıyor — günün konusuna bak ve hazır ol.` }),
     search_ping: (v, f) => ({ title: "Biri pratik arıyor 🎙️", body: `${v.searcherName || f.someone} partner bekliyor — hemen katıl!` }),
     analysis_ready: () => ({ title: "Analiziniz hazır 🎓", body: "Görüşme analizin hazır — sonuca göz at!" }),
     analysis_failed: (v) => ({ title: "Analiz alınamadı", body: v.noSpeech ? "Konuşma duyulmadı — mikrofonu kontrol edip tekrar dene." : "Görüşmenin analizi tamamlanamadı. Bir sonraki görüşmede tekrar deneyeceğiz." }),
@@ -239,7 +237,6 @@ const STRINGS = {
     slot_day_cleared: (v) => ({ title: "Your other blocks today were released", body: `Your call is confirmed for ${v.time}, so the rest of today's blocks were taken out of matching. Your choices for the other days are untouched.` }),
     slot_match_cancelled: (v, f) => ({ title: "Your call was cancelled", body: `${v.byName || f.teacher} cancelled the ${v.time} call. You are still in that block — a new partner can be found.` }),
     slot_missed: (v) => ({ title: "🔕 The practice didn't happen", body: `Nobody joined your call (${v.time}). Try to be there on time next round!` }),
-    session_reminder: (v) => ({ title: "The evening session starts soon! 🌙", body: `The session starts at ${v.time} — check today's topic and get ready.` }),
     search_ping: (v, f) => ({ title: "Someone is looking for practice 🎙️", body: `${v.searcherName || f.someone} is waiting for a partner — join now!` }),
     analysis_ready: () => ({ title: "Your analysis is ready 🎓", body: "Your call analysis is done — go and see the result!" }),
     analysis_failed: (v) => ({ title: "The analysis failed", body: v.noSpeech ? "We heard no speech — check your microphone and try again." : "We could not finish the analysis of your call. We'll try again on your next one." }),
