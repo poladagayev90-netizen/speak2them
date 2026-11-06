@@ -45,16 +45,21 @@ test('name: only letters reach the prompt', () => {
 test('token body: one use, config locked, expiry is the hard cap', () => {
   const now = Date.parse('2026-11-06T10:00:00Z');
   const b = w.tokenRequestBody({ model: 'gemini-3.8-live', config: { a: 1 }, nowMs: now });
-  assert.equal(b.uses, 1);
-  assert.equal(b.liveConnectConstraints.model, 'models/gemini-3.8-live');
+  // REST names — the SDK's liveConnectConstraints is a 400 on the wire.
+  assert.equal(b.liveConnectConstraints, undefined);
+  assert.equal(b.uses, undefined); // one-of with the setup; unset = one use
+  assert.equal(b.bidiGenerateContentSetup.model, 'models/gemini-3.8-live');
+  assert.equal(b.bidiGenerateContentSetup.a, 1);
   assert.equal(b.newSessionExpireTime, '2026-11-06T10:01:00Z');
   assert.equal(Date.parse(b.expireTime) - now, (w.MAX_SECONDS + 60 + 45) * 1000);
 });
 
 test('live config: audio out, both transcriptions, patient turn-taking', () => {
   const c = w.liveConfig({ prompt: 'P', voice: 'Kore' });
-  assert.deepEqual(c.responseModalities, ['AUDIO']);
-  assert.equal(c.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Kore');
+  assert.deepEqual(c.generationConfig.responseModalities, ['AUDIO']);
+  assert.equal(c.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName, 'Kore');
+  assert.equal(c.responseModalities, undefined);
+  assert.equal(c.contextWindowCompression.triggerTokens, undefined);
   assert.ok(c.inputAudioTranscription && c.outputAudioTranscription);
   assert.ok(c.realtimeInputConfig.automaticActivityDetection.silenceDurationMs >= 1000);
 });

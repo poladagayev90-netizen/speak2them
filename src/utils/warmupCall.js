@@ -10,9 +10,12 @@ export const WARMUP_MAX_ATTEMPTS = 2;
 
 // `config` = appConfig/warmupCall (null while loading or missing = on),
 // `record` = warmupCalls/{uid} (null = never tried).
-export function showWarmupCard({ user, record, config, loading = false }) {
+// `admin` = the server's isAdminToken: admins test the warm-up as often as
+// they like (Polad 2026-11-07), so only the kill switch hides it from them.
+export function showWarmupCard({ user, record, config, loading = false, admin = false }) {
   if (loading || !user) return false;
   if (config && config.enabled === false) return false;
+  if (admin) return true;
   if (user.role === 'teacher') return false;
   // A real call already happened: the warm-up's job is done.
   if (Number(user.callCount) > 0) return false;

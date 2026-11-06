@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { Mic } from 'lucide-react';
 import { db } from '../firebase';
+import { isAdminUser } from '../constants';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
@@ -10,12 +11,13 @@ import { showWarmupCard } from '../utils/warmupCall';
 import '../pages/WarmupCall.css';
 
 // Today's offer of the one warm-up call (docs/domain/calls.md). Only a
-// learner who has never had a real call reads anything here; everyone else
-// costs no Firestore read.
+// learner who has never had a real call (or an admin, who can always test it)
+// reads anything here; everyone else costs no Firestore read.
 export default function WarmupCard({ user }) {
   const navigate = useNavigate();
   const { t } = useFirstRunCopy(user?.guideLanguage);
-  const candidate = !!user && !(Number(user.callCount) > 0) && user.role !== 'teacher';
+  const admin = isAdminUser(user);
+  const candidate = !!user && (admin || (!(Number(user.callCount) > 0) && user.role !== 'teacher'));
   const [config, setConfig] = useState(undefined);
   const [record, setRecord] = useState(undefined);
 
@@ -29,7 +31,7 @@ export default function WarmupCard({ user }) {
   }, [candidate, user?.uid]);
 
   const loading = config === undefined || record === undefined;
-  if (!candidate || !showWarmupCard({ user, record, config, loading })) return null;
+  if (!candidate || !showWarmupCard({ user, record, config, loading, admin })) return null;
 
   return (
     <Card tone="ai" className="wu-card">
