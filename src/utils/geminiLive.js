@@ -230,7 +230,10 @@ export async function openLiveSession({ token, model, on }) {
       try { msg = JSON.parse(text); } catch { return; }
       handle(msg).catch((e) => { emit('error', e); fail(e); });
     };
-    ws.onerror = () => fail(new Error('live-connect-failed'));
+    // An error event carries no detail; the close that always follows it has
+    // the code and Google's reason text (e.g. 1008 «invalid token»), which is
+    // what the admin needs to see — so the close reports, not the error.
+    ws.onerror = () => {};
     ws.onclose = (ev) => {
       // Keep any half-spoken lines.
       if (meText) finishLine('me');

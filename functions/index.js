@@ -10219,9 +10219,13 @@ exports.warmupCallStart = onRequest(
     // Admins test the warm-up repeatedly (they bypass eligibility too); the
     // monthly budget in warmupEligibility still caps their spend.
     const counted = !isAdminToken(decoded);
+    // "…V2": every "warmupStart" count was spent on the 2026-11-06 token bug
+    // (no start had ever succeeded), so a fresh key frees those learners at
+    // once. Bump it only for the same reason.
+    const RL_KEY = "warmupStartV2";
     if (counted) {
       try {
-        await enforceRateLimit(uid, "warmupStart", 4, 24 * 60 * 60 * 1000);
+        await enforceRateLimit(uid, RL_KEY, 4, 24 * 60 * 60 * 1000);
       } catch {
         return res.status(429).json({ error: "rate", reason: "rate" });
       }
@@ -10234,7 +10238,7 @@ exports.warmupCallStart = onRequest(
     // a test learner's four starts and locked them out for a day.
     const failed = async (status, body) => {
       if (counted) {
-        await db.collection("rateLimits").doc(`${uid}_warmupStart`)
+        await db.collection("rateLimits").doc(`${uid}_${RL_KEY}`)
           .update({ count: admin.firestore.FieldValue.increment(-1) }).catch(() => {});
       }
       return res.status(status).json(body);
@@ -10370,7 +10374,13 @@ exports.warmupCallEnd = onRequest(
 
       const u = b.usage && typeof b.usage === "object" ? b.usage : {};
       const num = (x) => Math.max(0, Math.min(1e7, Math.round(Number(x) || 0)));
+      // The browser's view of a failure (Live socket close code + Google's
+      // reason). Plain text, bounded; the only place a Live-side error shows
+      // up on the server, since the socket never touches our functions.
+      const detail = String(b.detail || "").replace(/\s+/g, " ").trim().slice(0, 200);
+      if (detail) console.warn("[warmupCallEnd] client detail:", b.reason, detail);
       await ref.set({
+        errorDetail: detail || null,
         endedSessionId: rec.sessionId,
         endedAt: admin.firestore.FieldValue.serverTimestamp(),
         seconds,

@@ -38,6 +38,11 @@ export default function WarmupCall({ user }) {
   const [hint, setHint] = useState(false);
   const [best, setBest] = useState(null);
   const [attempts, setAttempts] = useState(0);
+  // Why the last try failed, in plain technical words. Shown to admins only
+  // (Polad tests on his phone and must see the real cause) and sent to
+  // warmupCallEnd, which logs it.
+  const [why, setWhy] = useState('');
+  const admin = isAdminUser(user);
 
   const sessionRef = useRef(null);
   const metaRef = useRef(null); // { sessionId, wrapAtSeconds, maxSeconds }
@@ -52,7 +57,7 @@ export default function WarmupCall({ user }) {
   useEffect(() => onSnapshot(doc(db, 'warmupCalls', user.uid),
     (s) => setAttempts(Number(s.exists() && s.data().attempts) || 0), () => {}), [user.uid]);
 
-  const finish = useCallback(async (reason) => {
+  const finish = useCallback(async (reason, detail = '') => {
     if (finishingRef.current) return;
     finishingRef.current = true;
     const session = sessionRef.current;
@@ -67,6 +72,7 @@ export default function WarmupCall({ user }) {
         lines: linesRef.current,
         usage: usageRef.current,
         reason,
+        detail,
       });
       setBest(r.best || null);
       setPhase(r.completed ? 'done' : 'short');
@@ -115,7 +121,10 @@ export default function WarmupCall({ user }) {
         usageRef.current = payload;
         break;
       case 'closed':
-        if (!finishingRef.current) finish(wrapDoneRef.current ? 'done' : 'error');
+        if (!finishingRef.current) {
+          if (!wrapDoneRef.current) setWhy(`live closed ${payload?.code ?? ''} ${payload?.reason || ''}`.trim());
+          finish(wrapDoneRef.current ? 'done' : 'error', payload ? `closed ${payload.code} ${payload.reason || ''}` : '');
+        }
         break;
       default:
     }
@@ -159,10 +168,12 @@ export default function WarmupCall({ user }) {
     usageRef.current = null;
     setAiCaption(''); setMeCaption(''); setHint(false); setBest(null); setElapsed(0);
 
+    setWhy('');
     let meta;
     try {
       meta = await startWarmup();
-    } catch {
+    } catch (e) {
+      setWhy(`start ${e?.status || ''} ${e?.reason || e?.message || ''}`.trim());
       setPhase('direct');
       return;
     }
@@ -179,8 +190,10 @@ export default function WarmupCall({ user }) {
     } catch (e) {
       if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) setPhase('mic');
       else {
+        const detail = String((e && (e.message || e.name)) || 'connect failed').slice(0, 200);
+        setWhy(detail);
         finishingRef.current = true; // nothing to hang up
-        endWarmup({ sessionId: meta.sessionId, lines: [], reason: 'error' }).catch(() => {});
+        endWarmup({ sessionId: meta.sessionId, lines: [], reason: 'error', detail }).catch(() => {});
         setPhase('short');
       }
     }
@@ -262,6 +275,7 @@ export default function WarmupCall({ user }) {
         <img src="/ainur_avatar.png" alt="" className="wu-end-avatar" />
         <h1 className="wu-title">{t(`${key}.title`)}</h1>
         <p className="wu-sub">{t(`${key}.sub`)}</p>
+        {admin && why && <p className="wu-why">Admin · {why}</p>}
         <div className="wu-actions">
           {retry && (
             <Button full variant="ai" icon={<Mic size={18} aria-hidden="true" />} onClick={begin}>

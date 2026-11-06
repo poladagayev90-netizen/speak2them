@@ -28,6 +28,8 @@
 }
 .wu-title { font-size: var(--fs-h1); margin: var(--s-4) 0 var(--s-2); text-align: center; line-height: 1.25; }
 .wu-sub { font-size: var(--fs-body); color: var(--text-secondary); text-align: center; max-width: 34ch; line-height: 1.5; margin: 0; }
+/* Admin-only failure cause (code + reason) — plain, small, selectable. */
+.wu-why { font-size: var(--fs-sm); color: var(--text-secondary); text-align: center; max-width: 34ch; overflow-wrap: anywhere; user-select: text; margin: 0; }
 .wu-sub--small { font-size: var(--fs-sm); font-weight: 600; margin-top: var(--s-3); }
 .wu-actions { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: var(--s-2); margin-top: auto; padding-top: var(--s-6); }
 

@@ -41,4 +41,5 @@ async function post(path, body) {
 export const startWarmup = () => post('warmupCallStart');
 
 // → { completed, best: { quote, note } | null, seconds }
-export const endWarmup = ({ sessionId, lines, usage, reason }) => post('warmupCallEnd', { sessionId, lines, usage, reason });
+// `detail` = why it failed as the browser saw it (socket close code/reason).
+export const endWarmup = ({ sessionId, lines, usage, reason, detail }) => post('warmupCallEnd', { sessionId, lines, usage, reason, detail });
