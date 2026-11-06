@@ -10202,10 +10202,14 @@ exports.warmupCallStart = onRequest(
     let decoded;
     try { decoded = await verifyAuth(req); } catch { return res.status(401).json({ error: "Unauthorized" }); }
     const uid = decoded.uid;
-    try {
-      await enforceRateLimit(uid, "warmupStart", 4, 24 * 60 * 60 * 1000);
-    } catch {
-      return res.status(429).json({ error: "rate", reason: "rate" });
+    // Admins test the warm-up repeatedly (they bypass eligibility too); the
+    // monthly budget in warmupEligibility still caps their spend.
+    if (!isAdminToken(decoded)) {
+      try {
+        await enforceRateLimit(uid, "warmupStart", 4, 24 * 60 * 60 * 1000);
+      } catch {
+        return res.status(429).json({ error: "rate", reason: "rate" });
+      }
     }
 
     const db = admin.firestore();
@@ -10278,10 +10282,12 @@ exports.warmupCallEnd = onRequest(
     let decoded;
     try { decoded = await verifyAuth(req); } catch { return res.status(401).json({ error: "Unauthorized" }); }
     const uid = decoded.uid;
-    try {
-      await enforceRateLimit(uid, "warmupEnd", 6, 24 * 60 * 60 * 1000);
-    } catch {
-      return res.status(429).json({ error: "rate" });
+    if (!isAdminToken(decoded)) { // admins start without a cap (see warmupCallStart)
+      try {
+        await enforceRateLimit(uid, "warmupEnd", 6, 24 * 60 * 60 * 1000);
+      } catch {
+        return res.status(429).json({ error: "rate" });
+      }
     }
 
     const db = admin.firestore();

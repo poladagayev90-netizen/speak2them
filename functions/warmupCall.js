@@ -120,11 +120,15 @@ YOUR ROLE
 }
 
 // The Live session config, fixed inside the ephemeral token
-// (liveConnectConstraints.config, the SDK's LiveConnectConfig shape).
+// (AuthToken.bidiGenerateContentSetup). The REST/WebSocket shape (BidiGenerateContentSetup), NOT the SDK's
+// LiveConnectConfig: modalities and voice live inside generationConfig. The
+// SDK-style flat shape was rejected live on 2026-11-06 (400, unknown field).
 function liveConfig({ prompt, voice }) {
   return {
-    responseModalities: ['AUDIO'],
-    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice || VOICE_DEFAULT } } },
+    generationConfig: {
+      responseModalities: ['AUDIO'],
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice || VOICE_DEFAULT } } },
+    },
     systemInstruction: { parts: [{ text: prompt }] },
     realtimeInputConfig: {
       automaticActivityDetection: {
@@ -138,19 +142,25 @@ function liveConfig({ prompt, voice }) {
     },
     inputAudioTranscription: {},
     outputAudioTranscription: {},
-    // A safety net for cost: a four-minute call stays well under the trigger,
-    // but a stuck session cannot grow its re-billed context without bound.
-    contextWindowCompression: { triggerTokens: 16000, slidingWindow: { targetTokens: 8000 } },
+    // A safety net for cost: a stuck session cannot grow its re-billed
+    // context without bound. Only slidingWindow — the API reference lists
+    // triggerTokens in the same one-of union, so sending both risks a 400.
+    // The real cap on a four-minute call is the token expiry anyway.
+    contextWindowCompression: { slidingWindow: { targetTokens: 8000 } },
   };
 }
 
 function tokenRequestBody({ model, config, nowMs = Date.now() }) {
   const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  // REST field names (AuthToken): bidiGenerateContentSetup, not the SDK's
+  // liveConnectConstraints. `uses` is left out: the reference puts it in a
+  // one-of with the setup, and an unset `uses` already means one session.
+  // An empty fieldMask with a setup present = the connection's own setup
+  // message is ignored, so the client cannot swap the prompt or the model.
   return {
-    uses: 1,
     expireTime: iso(nowMs + (MAX_SECONDS + CONNECT_WINDOW_SECONDS + TOKEN_GRACE_SECONDS) * 1000),
     newSessionExpireTime: iso(nowMs + CONNECT_WINDOW_SECONDS * 1000),
-    liveConnectConstraints: { model: `models/${model}`, config },
+    bidiGenerateContentSetup: { model: `models/${model}`, ...config },
   };
 }
 
