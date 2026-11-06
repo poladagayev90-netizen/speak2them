@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { ChevronLeft, Loader2, Mic, PhoneOff, Users, CalendarDays, Quote } from 'lucide-react';
 import { db } from '../firebase';
+import { isAdminUser } from '../constants';
 import Button from '../components/ui/Button';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { openLiveSession } from '../utils/geminiLive';
@@ -187,7 +188,7 @@ export default function WarmupCall({ user }) {
 
   const toPartners = () => navigate('/chats', { replace: true });
   const toWeek = () => navigate('/plan', { replace: true });
-  const canRetry = attempts < WARMUP_MAX_ATTEMPTS;
+  const canRetry = isAdminUser(user) || attempts < WARMUP_MAX_ATTEMPTS;
   const left = Math.max(0, maxSeconds - elapsed);
   const progress = Math.min(1, elapsed / maxSeconds);
 

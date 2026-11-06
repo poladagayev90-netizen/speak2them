@@ -21,3 +21,9 @@ test('no card while loading, when switched off, or for a teacher', () => {
   expect(showWarmupCard({ user: { ...user, role: 'teacher' } })).toBe(false);
   expect(showWarmupCard({ user: null })).toBe(false);
 });
+
+test('an admin always sees it (testing), except when switched off', () => {
+  const vet = { ...user, callCount: 40 };
+  expect(showWarmupCard({ user: vet, record: { completedAt: {}, attempts: 9 }, admin: true })).toBe(true);
+  expect(showWarmupCard({ user: vet, config: { enabled: false }, admin: true })).toBe(false);
+});
