@@ -199,3 +199,26 @@ describe('warmupVsSelf', () => {
     expect(warmupVsSelf('B1', undefined)).toBe(null);
   });
 });
+
+describe('warmupFunnel', () => {
+  const { warmupFunnel } = require('./matching');
+  const D = 24 * 60 * 60 * 1000;
+  const T = Date.parse('2026-11-10T12:00:00Z');
+  it('is null before the first warm-up', () => {
+    expect(warmupFunnel([{ joinedMs: T, calls: 0 }])).toBe(null);
+  });
+  it('counts newcomers since the first warm-up and compares first practices', () => {
+    const f = warmupFunnel([
+      { joinedMs: T - 30 * D, calls: 5 },                                   // before launch: not counted
+      { joinedMs: T, calls: 1, warmup: { atMs: T + 1000, completed: true } },
+      { joinedMs: T, calls: 0, warmup: { atMs: T + 2000, completed: true } },
+      { joinedMs: T + D, calls: 0, warmup: { atMs: T + D, completed: false } }, // tried, too short
+      { joinedMs: T + D, calls: 1 },
+    ]);
+    expect(f.newcomers).toBe(4);
+    expect(f.did).toBe(2);
+    expect(f.didPct).toBe(50);
+    expect(f.withWarmup).toEqual({ reached: 1, of: 2 });
+    expect(f.withoutWarmup).toEqual({ reached: 1, of: 2 });
+  });
+});

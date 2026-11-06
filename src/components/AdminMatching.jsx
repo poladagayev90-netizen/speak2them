@@ -17,7 +17,7 @@ import {
 } from '../utils/matching';
 import { isUnlimited } from '../utils/packages';
 import { ApplicantDetail } from './AdminApplicants';
-import { WarmupTag } from './WarmupInsight';
+import { WarmupTag, WarmupFunnel } from './WarmupInsight';
 import { useAccountHealth } from './AdminWeekRoster';
 import { usePackageSummaries } from './AdminPackages';
 import { stableOrder } from '../utils/stableOrder';
@@ -481,6 +481,7 @@ function PeoplePanel({ week, people, pairs, selected, onToggle, onAdd, busy, aut
   return (
     <section className="aa-panel mt-people" aria-label="People">
       <h3 className="aa-h">People</h3>
+      <WarmupFunnel people={people} />
       {ATTENTION.some(([k]) => counts[k] > 0) && (
         <div className="mt-attn" role="group" aria-label="Needs attention">
           <span className="aa-sub">Needs attention</span>

@@ -176,6 +176,30 @@ export function warmupVsSelf(selfLevel, warmupLevel) {
   return b > a ? 'higher' : b < a ? 'lower' : 'same';
 }
 
+// The warm-up measurement (Polad 2026-11-06: «default addım, ölç» — the
+// warm-up is the first step, NOT a lock, and after ~2 weeks we decide). Counts
+// learners who joined since the first warm-up ever recorded (≈ the launch day,
+// so nobody from before it dilutes the numbers):
+//   did        — finished a warm-up (warmupInsights.completed)
+//   with/without — of those who did / did not, how many reached a real call.
+export function warmupFunnel(people) {
+  const starts = people.map((p) => p.warmup && p.warmup.atMs).filter(Boolean);
+  if (!starts.length) return null;
+  const since = Math.min(...starts);
+  const fresh = people.filter((p) => (p.joinedMs || 0) >= since - DAY_MS);
+  const did = fresh.filter((p) => p.warmup && p.warmup.completed);
+  const not = fresh.filter((p) => !(p.warmup && p.warmup.completed));
+  const reached = (list) => list.filter((p) => Number(p.calls) > 0).length;
+  return {
+    since,
+    newcomers: fresh.length,
+    did: did.length,
+    didPct: fresh.length ? Math.round((did.length / fresh.length) * 100) : 0,
+    withWarmup: { reached: reached(did), of: did.length },
+    withoutWarmup: { reached: reached(not), of: not.length },
+  };
+}
+
 // Who could take `keepId`'s practice in `block` instead of their partner —
 // best first: free then, close in level, furthest below their weekly target.
 // People free that hour come first; the rest follow when `all` is set, so the

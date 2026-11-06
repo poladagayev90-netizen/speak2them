@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mic } from 'lucide-react';
-import { warmupVsSelf } from '../utils/matching';
+import { warmupVsSelf, warmupFunnel } from '../utils/matching';
 
 // ADMIN ONLY — what a learner's warm-up call says about them (warmupInsights/
 // {uid}, written by warmupCallEnd). A model's reading of a 3-minute transcript:
@@ -22,6 +22,28 @@ export function WarmupTag({ warmup }) {
     <span className={`aa-badge ${vs ? '' : 'aa-badge--soft'}`} title={ins.summary || ''}>
       warm-up {ins.level}{vs ? ` · ${vs}` : ''}
     </span>
+  );
+}
+
+// The measurement behind «default step, not a lock» (Polad 2026-11-06): how
+// many newcomers do the warm-up, and whether those who do reach a real call
+// more often. Decide on making it required from these numbers, not before.
+export function WarmupFunnel({ people }) {
+  const f = warmupFunnel(people);
+  if (!f) return null;
+  const pct = (x) => (x.of ? `${Math.round((x.reached / x.of) * 100)}%` : '—');
+  const since = new Date(f.since).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return (
+    <div className="wi-funnel" role="group" aria-label="Warm-up">
+      <span className="aa-sub"><Mic size={12} aria-hidden="true" /> Warm-up since {since}</span>
+      <p className="aa-line">
+        <b>{f.did}</b> of {f.newcomers} newcomers did it ({f.didPct}%)
+      </p>
+      <p className="aa-line">
+        First real practice: <b>{pct(f.withWarmup)}</b> with warm-up ({f.withWarmup.reached}/{f.withWarmup.of})
+        {' · '}<b>{pct(f.withoutWarmup)}</b> without ({f.withoutWarmup.reached}/{f.withoutWarmup.of})
+      </p>
+    </div>
   );
 }
 

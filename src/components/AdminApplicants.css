@@ -330,3 +330,8 @@
 .wi-box .aa-sub { display: flex; align-items: center; gap: var(--s-1); color: var(--ai); }
 .wi-summary { color: var(--text-secondary); }
 .wi-stats { font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+.wi-funnel {
+  display: grid; gap: 2px; margin-bottom: var(--s-3); padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--ai-ring); border-radius: var(--r-md); background: var(--ai-soft);
+}
+.wi-funnel .aa-sub { display: flex; align-items: center; gap: var(--s-1); color: var(--ai); }
