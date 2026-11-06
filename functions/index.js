@@ -10204,7 +10204,8 @@ exports.warmupCallStart = onRequest(
     const uid = decoded.uid;
     // Admins test the warm-up repeatedly (they bypass eligibility too); the
     // monthly budget in warmupEligibility still caps their spend.
-    if (!isAdminToken(decoded)) {
+    const counted = !isAdminToken(decoded);
+    if (counted) {
       try {
         await enforceRateLimit(uid, "warmupStart", 4, 24 * 60 * 60 * 1000);
       } catch {
@@ -10214,6 +10215,16 @@ exports.warmupCallStart = onRequest(
 
     const db = admin.firestore();
     const nowMs = Date.now();
+    // A start that fails on OUR side (no key, Google refused the token, a
+    // crash) gives the try back. Without it, the 2026-11-06 token bug used up
+    // a test learner's four starts and locked them out for a day.
+    const failed = async (status, body) => {
+      if (counted) {
+        await db.collection("rateLimits").doc(`${uid}_warmupStart`)
+          .update({ count: admin.firestore.FieldValue.increment(-1) }).catch(() => {});
+      }
+      return res.status(status).json(body);
+    };
     try {
       const { cfg, user, record, spentUsd } = await warmupState(db, uid, nowMs);
       const verdict = warmupCall.warmupEligibility({ user, record, cfg, spentUsd, isAdmin: isAdminToken(decoded) });
@@ -10221,7 +10232,7 @@ exports.warmupCallStart = onRequest(
 
       let apiKey = "";
       try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
-      if (!apiKey) return res.status(503).json({ error: "unavailable", reason: "no-key" });
+      if (!apiKey) return failed(503, { error: "unavailable", reason: "no-key" });
 
       const l1 = ["az", "tr", "ru", "en"].includes(user.guideLanguage) ? user.guideLanguage
         : (["az", "tr"].includes(user.preferredLanguage) ? user.preferredLanguage : "en");
@@ -10236,10 +10247,10 @@ exports.warmupCallStart = onRequest(
       });
       if (!tr.ok) {
         console.error("[warmupCallStart] token failed:", tr.status, (await tr.text()).slice(0, 500));
-        return res.status(502).json({ error: "unavailable", reason: "token" });
+        return failed(502, { error: "unavailable", reason: "token" });
       }
       const token = (await tr.json()).name;
-      if (!token) return res.status(502).json({ error: "unavailable", reason: "token" });
+      if (!token) return failed(502, { error: "unavailable", reason: "token" });
 
       const sessionId = `${nowMs.toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       const inc = admin.firestore.FieldValue.increment;
@@ -10267,7 +10278,7 @@ exports.warmupCallStart = onRequest(
       });
     } catch (e) {
       console.error("[warmupCallStart]", e);
-      return res.status(500).json({ error: "server" });
+      return failed(500, { error: "server" });
     }
   }
 );
