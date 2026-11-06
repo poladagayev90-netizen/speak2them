@@ -166,6 +166,16 @@ export function levelGap(x, y) {
   return a === null || b === null ? null : Math.abs(a - b);
 }
 
+// The warm-up call's estimated spoken level against the self-declared one:
+// 'higher' | 'lower' | 'same', or null when either is unknown. The People
+// console flags a difference — the admin decides, nothing changes on its own.
+export function warmupVsSelf(selfLevel, warmupLevel) {
+  const a = levelIndex(selfLevel);
+  const b = levelIndex(warmupLevel);
+  if (a === null || b === null) return null;
+  return b > a ? 'higher' : b < a ? 'lower' : 'same';
+}
+
 // Who could take `keepId`'s practice in `block` instead of their partner —
 // best first: free then, close in level, furthest below their weekly target.
 // People free that hour come first; the rest follow when `all` is set, so the

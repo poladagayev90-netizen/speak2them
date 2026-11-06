@@ -181,23 +181,101 @@ function fallbackBest(lines) {
   return best ? best.slice(0, 160) : null;
 }
 
-const BEST_SCHEMA = {
+// ── The end of the call: ONE model call gives both ────────────────────────
+//   quote + note  → the learner's closing screen (their L1, never a mistake)
+//   insight       → ADMIN ONLY (warmupInsights/{uid}), data for matching:
+//                   Polad 2026-11-06 «bu bizim üçün önəmli datadır».
+// The insight is the model's reading of a 3-minute transcript — a first
+// estimate next to the self-declared level, never a replacement for it. It is
+// not fed to pairVerdict or the planning agent; the admin sees it and decides.
+
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
+const SURE = ['low', 'medium', 'high'];
+const UNDERSTOOD = ['well', 'mostly', 'struggled'];
+const TALK = ['quiet', 'balanced', 'talkative'];
+// Below this the transcript says too little for an estimate.
+const INSIGHT_MIN_WORDS = 15;
+
+const END_SCHEMA = {
   type: 'OBJECT',
   properties: {
     quote: { type: 'STRING' },
     note: { type: 'STRING' },
+    insight: {
+      type: 'OBJECT',
+      properties: {
+        level: { type: 'STRING', enum: LEVELS },
+        levelSure: { type: 'STRING', enum: SURE },
+        understood: { type: 'STRING', enum: UNDERSTOOD },
+        talk: { type: 'STRING', enum: TALK },
+        usedL1: { type: 'BOOLEAN' },
+        interests: { type: 'ARRAY', items: { type: 'STRING' } },
+        about: { type: 'STRING' },
+        partnerTip: { type: 'STRING' },
+        summary: { type: 'STRING' },
+      },
+      required: ['level', 'levelSure', 'understood', 'talk', 'usedL1', 'interests', 'about', 'partnerTip', 'summary'],
+    },
   },
-  required: ['quote', 'note'],
+  required: ['quote', 'note', 'insight'],
 };
 
-function bestPrompt(lines, l1) {
+function endPrompt(lines, { l1, selfLevel } = {}) {
   const lang = L1_NAMES[l1] || 'English';
-  const said = lines.filter((l) => l.who === 'me').map((l) => `- ${l.text}`).join('\n');
-  return `A learner of English just finished a three-minute warm-up chat. These are the learner's own lines (speech-to-text, so small transcription slips are possible):
-${said}
+  const dialogue = lines.map((l) => `${l.who === 'me' ? 'LEARNER' : 'AINUR'}: ${l.text}`).join('\n');
+  return `A learner of English just finished a three-minute spoken warm-up chat with AInur, an AI voice, before meeting their first real practice partner. Both sides were transcribed by speech-to-text, so small transcription slips are possible; the learner's first language is ${lang}. Their self-declared level is ${selfLevel || 'unknown'}.
 
-Pick ONE thing they said well: a complete sentence, a good word choice, or a clear answer. Copy it exactly as written above into "quote" (you may cut it to its best part, at most 20 words; do not fix it).
-In "note", write ONE short, warm sentence in ${lang} (max 18 words) saying what was good about it, specifically. Never mention a mistake.`;
+DIALOGUE:
+${dialogue}
+
+1. For the LEARNER's closing screen:
+- "quote": ONE thing the learner said well — a complete sentence, a good word choice, or a clear answer. Copy it exactly from a LEARNER line (you may cut it to its best part, at most 20 words; never fix it, never take AInur's words).
+- "note": ONE short, warm sentence in ${lang} (max 18 words) saying specifically what was good about it. Never mention a mistake.
+
+2. "insight" — for the team that matches learners with partners (the learner never sees it). Judge only from the LEARNER lines; do not guess what is not there.
+- level: their SPOKEN English level from these lines (CEFR A1–C1). levelSure: low when they said very little.
+- understood: did they understand AInur's questions (well / mostly / struggled — struggled = asked to repeat, answered something else, or fell back to their own language).
+- talk: quiet (one or few words per answer), balanced, or talkative.
+- usedL1: true if they spoke ${lang} or another non-English language at any point.
+- interests: up to 5 short English tags for things they said they do or like (e.g. "football", "nursing"). Empty if none.
+- about: one short English line about who they are, only from what they said (e.g. "Teacher from Ganja, learns for work"). Empty if they said nothing about themselves.
+- partnerTip: one English sentence on what kind of first partner would suit them (patience, level, shared interests).
+- summary: at most two English sentences on how they spoke.`;
+}
+
+function pick(v, list, dflt) { return list.includes(v) ? v : dflt; }
+function clip(s, n) { return String(s || '').replace(/\s+/g, ' ').trim().slice(0, n); }
+
+function normalizeInsight(raw) {
+  if (!raw || typeof raw !== 'object' || !LEVELS.includes(raw.level)) return null;
+  const interests = Array.isArray(raw.interests)
+    ? [...new Set(raw.interests.map((x) => clip(x, 30).toLowerCase()).filter(Boolean))].slice(0, 5)
+    : [];
+  return {
+    level: raw.level,
+    levelSure: pick(raw.levelSure, SURE, 'low'),
+    understood: pick(raw.understood, UNDERSTOOD, 'mostly'),
+    talk: pick(raw.talk, TALK, 'balanced'),
+    usedL1: raw.usedL1 === true,
+    interests,
+    about: clip(raw.about, 140),
+    partnerTip: clip(raw.partnerTip, 200),
+    summary: clip(raw.summary, 320),
+  };
+}
+
+// Counted, not judged — the numbers the admin can trust as they are.
+function learnerStats(lines) {
+  const mine = lines.filter((l) => l.who === 'me');
+  const counts = mine.map((l) => words(l.text).length);
+  const total = counts.reduce((a, b) => a + b, 0);
+  return {
+    turns: mine.length,
+    words: total,
+    avgWords: mine.length ? Math.round((total / mine.length) * 10) / 10 : 0,
+    longest: counts.length ? Math.max(...counts) : 0,
+    aiTurns: lines.filter((l) => l.who === 'ai').length,
+  };
 }
 
 // The model's quote must really be the learner's words.
@@ -215,5 +293,6 @@ module.exports = {
   MODEL_DEFAULT, VOICE_DEFAULT, MONTHLY_USD_DEFAULT, RESERVE_USD,
   MAX_SECONDS, WRAP_AT_SECONDS, COMPLETE_MIN_SECONDS, MAX_ATTEMPTS, L1_NAMES,
   warmupConfig, warmupEligibility, buildWarmupPrompt, liveConfig, tokenRequestBody,
-  cleanLines, fallbackBest, BEST_SCHEMA, bestPrompt, validBest, cleanName,
+  cleanLines, fallbackBest, END_SCHEMA, endPrompt, validBest, cleanName,
+  normalizeInsight, learnerStats, INSIGHT_MIN_WORDS,
 };

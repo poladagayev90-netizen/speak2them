@@ -9,6 +9,7 @@ import {
 import { AGE_BANDS, GOALS, LEVELS, labelOf, whatsAppLink } from '../utils/onboarding';
 import { ProposePanel } from './AdminOffers';
 import { stableOrder } from '../utils/stableOrder';
+import WarmupInsight from './WarmupInsight';
 import './AdminApplicants.css';
 
 // Admin "Applicants": every learner's onboarding answers in one place, with
@@ -306,6 +307,8 @@ export function ApplicantDetail({ p }) {
           </div>
         )}
       </div>
+      {/* The People console passes the warm-up reading (warmupInsights). */}
+      {p.warmup && <WarmupInsight warmup={p.warmup} />}
     </div>
   );
 }

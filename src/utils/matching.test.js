@@ -188,3 +188,14 @@ test('attentionOf: the five flags', () => {
   // An old account that never practised is not «new».
   expect(attentionOf({ calls: 0, joinedMs: now - 40 * 86400000, whatsapp: 'x' }, now).newNoFirst).toBe(false);
 });
+
+describe('warmupVsSelf', () => {
+  const { warmupVsSelf } = require('./matching');
+  it('compares the warm-up estimate with the self-declared level', () => {
+    expect(warmupVsSelf('B1 – Intermediate', 'A2')).toBe('lower');
+    expect(warmupVsSelf('A2 – Elementary', 'B1')).toBe('higher');
+    expect(warmupVsSelf('A2', 'A2')).toBe('same');
+    expect(warmupVsSelf(null, 'A2')).toBe(null);
+    expect(warmupVsSelf('B1', undefined)).toBe(null);
+  });
+});

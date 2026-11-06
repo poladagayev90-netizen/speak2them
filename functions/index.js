@@ -10301,11 +10301,16 @@ exports.warmupCallEnd = onRequest(
         warmupCall.MAX_SECONDS + 60,
       ));
       const lines = warmupCall.cleanLines(b.lines);
-      const learnerWords = lines.filter((l) => l.who === "me").reduce((n, l) => n + l.text.split(/\s+/).length, 0);
+      const stats = warmupCall.learnerStats(lines);
+      const learnerWords = stats.words;
       const completed = seconds >= warmupCall.COMPLETE_MIN_SECONDS && learnerWords >= 3;
 
+      // One model call: the learner's best line (closing screen) AND the
+      // admin-only insight for matching (functions/warmupCall.js).
       let best = null;
+      let insight = null;
       let bestUsd = 0;
+      let insightError = null;
       if (learnerWords >= 6) {
         let apiKey = "";
         try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
@@ -10313,14 +10318,18 @@ exports.warmupCallEnd = onRequest(
           try {
             const { json, usage } = await agentGemini.callGemini({
               apiKey, model: "gemini-3.8-flash",
-              prompt: warmupCall.bestPrompt(lines, rec.l1 || "en"),
-              schema: warmupCall.BEST_SCHEMA, maxOutputTokens: 3000, timeoutMs: 20000,
+              prompt: warmupCall.endPrompt(lines, { l1: rec.l1 || "en", selfLevel: rec.level }),
+              schema: warmupCall.END_SCHEMA, maxOutputTokens: 4000, timeoutMs: 25000,
             });
             best = warmupCall.validBest(json, lines);
+            if (learnerWords >= warmupCall.INSIGHT_MIN_WORDS) insight = warmupCall.normalizeInsight(json && json.insight);
             bestUsd = agentGemini.costUsd(usage, "gemini-3.8-flash", nowMs).usd;
           } catch (e) {
-            console.warn("[warmupCallEnd] best line failed:", e.message);
+            insightError = String(e.message).slice(0, 120);
+            console.warn("[warmupCallEnd] end analysis failed:", e.message);
           }
+        } else {
+          insightError = "no-key";
         }
         if (!best) {
           const quote = warmupCall.fallbackBest(lines);
@@ -10342,6 +10351,27 @@ exports.warmupCallEnd = onRequest(
         reportedTokens: { prompt: num(u.promptTokenCount), response: num(u.responseTokenCount), total: num(u.totalTokenCount) },
         ...(completed ? { completedAt: admin.firestore.FieldValue.serverTimestamp() } : {}),
       }, { merge: true });
+      // ADMIN-ONLY matching data (rules: isAdmin read, no client write). The
+      // latest attempt with something to say wins; a shorter retry never
+      // overwrites a fuller reading.
+      const insRef = db.collection("warmupInsights").doc(uid);
+      const prevIns = (await insRef.get().catch(() => null))?.data() || null;
+      if (!prevIns || !prevIns.insight || insight) {
+        await insRef.set({
+          uid,
+          sessionId: rec.sessionId,
+          at: admin.firestore.FieldValue.serverTimestamp(),
+          atMs: nowMs,
+          seconds,
+          completed,
+          selfLevel: rec.level || null,
+          l1: rec.l1 || null,
+          stats,
+          insight: insight || null,
+          ...(insight ? {} : { why: learnerWords < warmupCall.INSIGHT_MIN_WORDS ? "too-little-speech" : (insightError || "model-failed") }),
+          model: insight ? "gemini-3.8-flash" : null,
+        }).catch((e) => console.warn("[warmupCallEnd] insight write failed:", e.message));
+      }
       if (bestUsd > 0) {
         await db.collection("agentUsage").doc(agentMonth(nowMs)).set({
           warmupUsd: admin.firestore.FieldValue.increment(bestUsd),

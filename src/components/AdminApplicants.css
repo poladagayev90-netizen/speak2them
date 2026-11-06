@@ -319,3 +319,14 @@
 .aa-shadow-fix { display: grid; gap: var(--s-1); padding: var(--s-2) 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); min-width: 0; }
 .aa-shadow-wrong { color: var(--danger); }
 .aa-shadow-label { margin-top: var(--s-3); }
+
+/* ---------------------------------------- warm-up insight (WarmupInsight) -- */
+.wi-box {
+  display: grid; gap: var(--s-1);
+  margin-top: var(--s-2); padding: var(--s-3);
+  border: 1px solid var(--ai-ring); border-radius: var(--r-md);
+  background: var(--ai-soft);
+}
+.wi-box .aa-sub { display: flex; align-items: center; gap: var(--s-1); color: var(--ai); }
+.wi-summary { color: var(--text-secondary); }
+.wi-stats { font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }

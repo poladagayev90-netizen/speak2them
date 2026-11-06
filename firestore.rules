@@ -576,6 +576,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // What the warm-up says about a learner, for MATCHING (estimated spoken
+    // level, interests, a partner tip). Admin only — the learner never reads a
+    // model's verdict about them; written by warmupCallEnd.
+    match /warmupInsights/{uid} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // NOTE: aiUsage has NO match block on purpose. It is the per-user daily AI
     // cost meter (STT seconds, TTS characters, tokens) and only the server
     // writes it, exactly like analysisBudget. The catch-all below denies it.

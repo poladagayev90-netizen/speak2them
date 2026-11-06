@@ -71,6 +71,34 @@ test('best: fallback is the longest learner line of 4+ words', () => {
   assert.equal(w.fallbackBest([{ who: 'me', text: 'yes' }]), null);
 });
 
+test('insight: only known values pass, text is clipped, bad level = none', () => {
+  const ok = w.normalizeInsight({
+    level: 'A2', levelSure: 'very', understood: 'well', talk: 'quiet', usedL1: 'yes',
+    interests: ['Football', 'football', ' Nursing ', '', 'a', 'b', 'c', 'd'],
+    about: 'Nurse from Baku', partnerTip: 'x'.repeat(500), summary: 'Short answers.',
+  });
+  assert.equal(ok.level, 'A2');
+  assert.equal(ok.levelSure, 'low');
+  assert.equal(ok.usedL1, false);
+  assert.deepEqual(ok.interests, ['football', 'nursing', 'a', 'b', 'c']);
+  assert.equal(ok.partnerTip.length, 200);
+  assert.equal(w.normalizeInsight({ level: 'Z9' }), null);
+  assert.equal(w.normalizeInsight(null), null);
+});
+
+test('stats: counted from learner lines only', () => {
+  const s = w.learnerStats([{ who: 'ai', text: 'one two three' }, { who: 'me', text: 'I am Leyla' }, { who: 'me', text: 'I work in a school' }]);
+  assert.deepEqual(s, { turns: 2, words: 8, avgWords: 4, longest: 5, aiTurns: 1 });
+  assert.equal(w.learnerStats([]).avgWords, 0);
+});
+
+test('end prompt: dialogue labelled, L1 for the note, self level given', () => {
+  const p = w.endPrompt([{ who: 'ai', text: 'Hi' }, { who: 'me', text: 'Hello there' }], { l1: 'tr', selfLevel: 'B1' });
+  assert.match(p, /AINUR: Hi\nLEARNER: Hello there/);
+  assert.match(p, /sentence in Turkish/);
+  assert.match(p, /self-declared level is B1/);
+});
+
 test('best: the model quote must be the learner\'s own words', () => {
   const lines = [{ who: 'me', text: 'I work in a hospital, in Baku.' }, { who: 'ai', text: 'Wonderful city' }];
   assert.deepEqual(w.validBest({ quote: '“I work in a hospital”', note: 'Aydın cümlə.' }, lines), { quote: 'I work in a hospital', note: 'Aydın cümlə.' });

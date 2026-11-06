@@ -17,6 +17,7 @@ import {
 } from '../utils/matching';
 import { isUnlimited } from '../utils/packages';
 import { ApplicantDetail } from './AdminApplicants';
+import { WarmupTag } from './WarmupInsight';
 import { useAccountHealth } from './AdminWeekRoster';
 import { usePackageSummaries } from './AdminPackages';
 import { stableOrder } from '../utils/stableOrder';
@@ -139,6 +140,10 @@ export default function AdminMatching({ users = [] }) {
     (snap) => setAutoMode(snap.exists() && snap.get('rosterMode') === 'auto'), () => setAutoMode(false)), []);
   useEffect(() => onSnapshot(collection(db, 'reliability'),
     (snap) => setReliability(new Map(snap.docs.map((d) => [d.id, d.get('level') || null]))), () => setReliability(new Map())), []);
+  // The warm-up call's reading of each learner (admin-only, warmupInsights).
+  const [warmups, setWarmups] = useState(() => new Map());
+  useEffect(() => onSnapshot(collection(db, 'warmupInsights'),
+    (snap) => setWarmups(new Map(snap.docs.map((d) => [d.id, d.data()]))), () => setWarmups(new Map())), []);
   const health = useAccountHealth();
   const packages = usePackageSummaries();
   useEffect(() => { setSelected([]); setMsg(null); setPlanning(false); }, [week]);
@@ -190,12 +195,13 @@ export default function AdminMatching({ users = [] }) {
           why: autoMode ? (autoWhy[o.id] || null) : null,
           health: health.get(o.id) || null,
           reliability: reliability.get(o.id) || null,
+          warmup: warmups.get(o.id) || null,
           paid: isUnlimited({ ...u, uid: o.id }, now) || (pkg?.kind === 'package' && pkg.periodEndMs > now),
         };
         return p;
       })
       .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher');
-  }, [onboarding, users, inList, now, autoMode, autoIn, autoWhy, health, reliability, packages]);
+  }, [onboarding, users, inList, now, autoMode, autoIn, autoWhy, health, reliability, packages, warmups]);
   const personById = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
 
   const say = (ok, text) => setMsg({ ok, text });
@@ -540,8 +546,9 @@ function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand,
             {p.planned} of {p.wants || '—'} this week · {verdict}
             {p.timeZone && p.timeZone !== 'Asia/Baku' ? ` · ${cityOf(p.timeZone)}` : ''}
           </span>
-          {(p.paid || healthWord || rel) && (
+          {(p.paid || healthWord || rel || p.warmup) && (
             <span className="mt-tags">
+              <WarmupTag warmup={p.warmup} />
               {p.paid && <span className="aa-badge aa-badge--soft">paid</span>}
               {healthWord && <span className="aa-badge">{healthWord}</span>}
               {rel && <span className="aa-badge">reliability {rel}</span>}
