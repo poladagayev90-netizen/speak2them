@@ -20,6 +20,7 @@ import CourseProgressCard from '../components/CourseProgressCard';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import IntroCard from '../components/IntroCard';
+import WarmupCard from '../components/WarmupCard';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
@@ -243,6 +244,9 @@ export default function Home({ user }) {
         {/* An unanswered question belongs at the top of the screen. */}
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
         <IntroCard user={user} />
+        {/* The one warm-up call before the first real partner — shown only
+            until the learner's first real call (docs/domain/calls.md). */}
+        <WarmupCard user={user} />
 
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan". */}

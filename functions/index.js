@@ -28,6 +28,7 @@ const agentValidate = require("./agent/validate");
 const agentGemini = require("./agent/gemini");
 const agentPrompt = require("./agent/prompt");
 const analysisShadow = require("./analysisShadow");
+const warmupCall = require("./warmupCall");
 const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
 const callLogLib = require("./callLog");
@@ -10169,6 +10170,190 @@ exports.dailyInstagramPoster = onSchedule(
   }
 );
 
+
+// ─── Warm-up call (2026-11-06) ─────────────────────────────────
+// A newcomer's one spoken warm-up with AInur over the Gemini Live API, right
+// before their first real partner. Rules and reasons: functions/warmupCall.js
+// and docs/domain/calls.md. State per learner: warmupCalls/{uid} (the learner
+// reads it, only these two functions write it). Spend: agentUsage/{month}.warmupUsd.
+
+async function warmupState(db, uid, nowMs) {
+  const [cfgSnap, userSnap, recSnap, usageSnap] = await Promise.all([
+    db.collection("appConfig").doc("warmupCall").get().catch(() => null),
+    db.collection("users").doc(uid).get(),
+    db.collection("warmupCalls").doc(uid).get(),
+    db.collection("agentUsage").doc(agentMonth(nowMs)).get().catch(() => null),
+  ]);
+  return {
+    cfg: warmupCall.warmupConfig(cfgSnap && cfgSnap.exists ? cfgSnap.data() : {}),
+    user: userSnap.exists ? userSnap.data() : {},
+    record: recSnap.exists ? recSnap.data() : null,
+    spentUsd: Number(((usageSnap && usageSnap.data()) || {}).warmupUsd) || 0,
+  };
+}
+
+exports.warmupCallStart = onRequest(
+  { secrets: [GEMINI_API_KEY], invoker: "public" },
+  async (req, res) => {
+    setCors(res);
+    if (req.method === "OPTIONS") return res.status(204).send("");
+    if (req.method !== "POST") return res.status(405).json({ error: "method" });
+
+    let decoded;
+    try { decoded = await verifyAuth(req); } catch { return res.status(401).json({ error: "Unauthorized" }); }
+    const uid = decoded.uid;
+    try {
+      await enforceRateLimit(uid, "warmupStart", 4, 24 * 60 * 60 * 1000);
+    } catch {
+      return res.status(429).json({ error: "rate", reason: "rate" });
+    }
+
+    const db = admin.firestore();
+    const nowMs = Date.now();
+    try {
+      const { cfg, user, record, spentUsd } = await warmupState(db, uid, nowMs);
+      const verdict = warmupCall.warmupEligibility({ user, record, cfg, spentUsd, isAdmin: isAdminToken(decoded) });
+      if (!verdict.ok) return res.status(409).json({ error: "not_eligible", reason: verdict.reason });
+
+      let apiKey = "";
+      try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
+      if (!apiKey) return res.status(503).json({ error: "unavailable", reason: "no-key" });
+
+      const l1 = ["az", "tr", "ru", "en"].includes(user.guideLanguage) ? user.guideLanguage
+        : (["az", "tr"].includes(user.preferredLanguage) ? user.preferredLanguage : "en");
+      const prompt = warmupCall.buildWarmupPrompt({ name: user.name, level: user.level, l1, guide: levelGuide(user.level) });
+      const body = warmupCall.tokenRequestBody({
+        model: cfg.model, config: warmupCall.liveConfig({ prompt, voice: cfg.voice }), nowMs,
+      });
+      const tr = await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify(body),
+      });
+      if (!tr.ok) {
+        console.error("[warmupCallStart] token failed:", tr.status, (await tr.text()).slice(0, 500));
+        return res.status(502).json({ error: "unavailable", reason: "token" });
+      }
+      const token = (await tr.json()).name;
+      if (!token) return res.status(502).json({ error: "unavailable", reason: "token" });
+
+      const sessionId = `${nowMs.toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+      const inc = admin.firestore.FieldValue.increment;
+      await Promise.all([
+        db.collection("warmupCalls").doc(uid).set({
+          uid,
+          attempts: inc(1),
+          sessionId,
+          startedAt: admin.firestore.FieldValue.serverTimestamp(),
+          startedAtMs: nowMs,
+          model: cfg.model,
+          l1,
+          level: user.level || null,
+        }, { merge: true }),
+        db.collection("agentUsage").doc(agentMonth(nowMs)).set({
+          warmupUsd: inc(warmupCall.RESERVE_USD),
+          warmupCalls: inc(1),
+        }, { merge: true }),
+      ]);
+
+      return res.json({
+        token, model: cfg.model, sessionId,
+        maxSeconds: warmupCall.MAX_SECONDS,
+        wrapAtSeconds: warmupCall.WRAP_AT_SECONDS,
+      });
+    } catch (e) {
+      console.error("[warmupCallStart]", e);
+      return res.status(500).json({ error: "server" });
+    }
+  }
+);
+
+exports.warmupCallEnd = onRequest(
+  { secrets: [GEMINI_API_KEY], invoker: "public" },
+  async (req, res) => {
+    setCors(res);
+    if (req.method === "OPTIONS") return res.status(204).send("");
+    if (req.method !== "POST") return res.status(405).json({ error: "method" });
+
+    let decoded;
+    try { decoded = await verifyAuth(req); } catch { return res.status(401).json({ error: "Unauthorized" }); }
+    const uid = decoded.uid;
+    try {
+      await enforceRateLimit(uid, "warmupEnd", 6, 24 * 60 * 60 * 1000);
+    } catch {
+      return res.status(429).json({ error: "rate" });
+    }
+
+    const db = admin.firestore();
+    const ref = db.collection("warmupCalls").doc(uid);
+    const nowMs = Date.now();
+    try {
+      const snap = await ref.get();
+      const rec = snap.exists ? snap.data() : null;
+      const b = req.body || {};
+      if (!rec || !rec.sessionId || rec.sessionId !== b.sessionId) return res.status(409).json({ error: "no_session" });
+      if (rec.endedSessionId === rec.sessionId) return res.json({ completed: !!rec.completedAt, best: rec.best || null });
+
+      // The length is the SERVER's: from minting the token to now, capped by
+      // what the token allowed. The client's own stopwatch is never trusted.
+      const seconds = Math.max(0, Math.min(
+        Math.round((nowMs - (Number(rec.startedAtMs) || nowMs)) / 1000),
+        warmupCall.MAX_SECONDS + 60,
+      ));
+      const lines = warmupCall.cleanLines(b.lines);
+      const learnerWords = lines.filter((l) => l.who === "me").reduce((n, l) => n + l.text.split(/\s+/).length, 0);
+      const completed = seconds >= warmupCall.COMPLETE_MIN_SECONDS && learnerWords >= 3;
+
+      let best = null;
+      let bestUsd = 0;
+      if (learnerWords >= 6) {
+        let apiKey = "";
+        try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
+        if (apiKey) {
+          try {
+            const { json, usage } = await agentGemini.callGemini({
+              apiKey, model: "gemini-3.8-flash",
+              prompt: warmupCall.bestPrompt(lines, rec.l1 || "en"),
+              schema: warmupCall.BEST_SCHEMA, maxOutputTokens: 3000, timeoutMs: 20000,
+            });
+            best = warmupCall.validBest(json, lines);
+            bestUsd = agentGemini.costUsd(usage, "gemini-3.8-flash", nowMs).usd;
+          } catch (e) {
+            console.warn("[warmupCallEnd] best line failed:", e.message);
+          }
+        }
+        if (!best) {
+          const quote = warmupCall.fallbackBest(lines);
+          if (quote) best = { quote, note: null };
+        }
+      }
+
+      const u = b.usage && typeof b.usage === "object" ? b.usage : {};
+      const num = (x) => Math.max(0, Math.min(1e7, Math.round(Number(x) || 0)));
+      await ref.set({
+        endedSessionId: rec.sessionId,
+        endedAt: admin.firestore.FieldValue.serverTimestamp(),
+        seconds,
+        lines,
+        best,
+        endReason: ["done", "hangup", "error", "timeout"].includes(b.reason) ? b.reason : "other",
+        // As the client saw them (Live usageMetadata) — for checking the real
+        // cost against the reserve, never for billing decisions.
+        reportedTokens: { prompt: num(u.promptTokenCount), response: num(u.responseTokenCount), total: num(u.totalTokenCount) },
+        ...(completed ? { completedAt: admin.firestore.FieldValue.serverTimestamp() } : {}),
+      }, { merge: true });
+      if (bestUsd > 0) {
+        await db.collection("agentUsage").doc(agentMonth(nowMs)).set({
+          warmupUsd: admin.firestore.FieldValue.increment(bestUsd),
+        }, { merge: true }).catch(() => null);
+      }
+      return res.json({ completed, best, seconds });
+    } catch (e) {
+      console.error("[warmupCallEnd]", e);
+      return res.status(500).json({ error: "server" });
+    }
+  }
+);
 
 // Local simulation only (scratchpad sim20.js through the emulator functions
 // server): drive the planner with a made-up clock. Never set in production.

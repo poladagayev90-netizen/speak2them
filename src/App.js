@@ -44,6 +44,7 @@ const Chat = React.lazy(() => import('./pages/Chat'));
 const AinurChat = React.lazy(() => import('./pages/AinurChat'));
 const AinurHub = React.lazy(importAIChat);
 const AiActivity = React.lazy(() => import('./pages/AiActivity'));
+const WarmupCall = React.lazy(() => import('./pages/WarmupCall'));
 const Homework = React.lazy(() => import('./pages/Homework'));
 const ClassLesson = React.lazy(() => import('./pages/ClassLesson'));
 const Profile = React.lazy(importProfile);
@@ -230,6 +231,7 @@ function AppShell({ user }) {
           {/* A guided AInur session. Full-screen like a call, so it sits
               outside the tab set rather than inside it. */}
           <Route path="/practice" element={user ? <AiActivity user={user} /> : <Navigate to="/login" />} />
+          <Route path="/warmup" element={user ? <WarmupCall user={user} /> : <Navigate to="/login" />} />
           <Route path="/homework/:id" element={user ? <Homework user={user} /> : <Navigate to="/login" />} />
           <Route path="/class/:lessonId" element={user ? <ClassLesson user={user} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />

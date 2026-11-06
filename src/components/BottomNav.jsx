@@ -63,7 +63,8 @@ export default function BottomNav({ user }) {
   // Joining is a full-screen layer: the wizard, then the WhatsApp step. The nav
   // peeking out under it offered a way round "write to us first".
   // A conversation takes the whole screen (WhatsApp-style, chat.css).
-  if (path === '/onboarding' || path === '/intro' || path.startsWith('/chat/')) return null;
+  // The warm-up call is a call: full screen too.
+  if (path === '/onboarding' || path === '/intro' || path === '/warmup' || path.startsWith('/chat/')) return null;
 
   return (
     // No safe-area padding here any more. The bar floats now — .bottom-nav sits

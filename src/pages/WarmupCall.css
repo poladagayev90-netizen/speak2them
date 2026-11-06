@@ -1,0 +1,118 @@
+/* The warm-up call (/warmup) and its card on Today. Plum tokens only —
+   AInur's own colour is --ai (text/borders) and --ai-fill (filled). */
+
+/* ── Today card ───────────────────────────────────────── */
+.wu-card { display: flex; flex-direction: column; gap: var(--s-3); }
+.wu-card-head { display: flex; gap: var(--s-3); align-items: flex-start; }
+.wu-card-avatar {
+  width: 44px; height: 44px; border-radius: var(--r-pill); flex-shrink: 0;
+  border: 2px solid var(--ai-ring); object-fit: cover;
+}
+.wu-card-title { margin: 0; font-size: var(--fs-h2); color: var(--text-primary); line-height: 1.25; }
+.wu-card-sub { margin: var(--s-1) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: 1.45; }
+
+/* ── Page ─────────────────────────────────────────────── */
+.wu-page {
+  min-height: 100dvh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex; flex-direction: column; align-items: center;
+  padding: calc(var(--s-6) + env(safe-area-inset-top, 0px)) var(--s-4) calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  position: relative;
+}
+.wu-back {
+  position: absolute; top: calc(var(--s-3) + env(safe-area-inset-top, 0px)); left: var(--s-3);
+  background: transparent; border: 0; color: var(--text-secondary);
+  padding: var(--s-2); border-radius: var(--r-pill); cursor: pointer;
+}
+.wu-title { font-size: var(--fs-h1); margin: var(--s-4) 0 var(--s-2); text-align: center; line-height: 1.25; }
+.wu-sub { font-size: var(--fs-body); color: var(--text-secondary); text-align: center; max-width: 34ch; line-height: 1.5; margin: 0; }
+.wu-sub--small { font-size: var(--fs-sm); font-weight: 600; margin-top: var(--s-3); }
+.wu-actions { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: var(--s-2); margin-top: auto; padding-top: var(--s-6); }
+
+.wu-intro, .wu-end { justify-content: flex-start; padding-top: calc(var(--s-10) + env(safe-area-inset-top, 0px)); }
+.wu-end-avatar {
+  width: 88px; height: 88px; border-radius: var(--r-pill); object-fit: cover;
+  border: 3px solid var(--ai-ring);
+}
+.wu-steps {
+  list-style: none; counter-reset: wu; padding: 0; margin: var(--s-4) 0 0;
+  width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: var(--s-3);
+}
+.wu-steps li {
+  counter-increment: wu; display: flex; gap: var(--s-3); align-items: flex-start;
+  font-size: var(--fs-body); line-height: 1.45; color: var(--text-primary);
+}
+.wu-steps li::before {
+  content: counter(wu); flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: var(--r-pill);
+  background: var(--ai-soft); color: var(--ai);
+  font-size: var(--fs-sm); font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* ── In the call ──────────────────────────────────────── */
+.wu-call { justify-content: space-between; }
+.wu-badge {
+  font-size: var(--fs-sm); font-weight: 700; color: var(--ai);
+  background: var(--ai-soft); border-radius: var(--r-pill);
+  padding: var(--s-1) var(--s-3); text-align: center;
+}
+.wu-progress {
+  width: 100%; max-width: 380px; height: 4px; border-radius: var(--r-pill);
+  background: var(--bg-secondary); overflow: hidden; margin-top: var(--s-3);
+}
+.wu-progress span {
+  display: block; height: 100%; width: 100%; background: var(--coral);
+  transform-origin: left center; transition: transform 0.25s linear;
+}
+.wu-stage { flex: 1; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-3); }
+.wu-avatar {
+  --wu-level: 0;
+  width: 140px; height: 140px; border-radius: var(--r-pill);
+  border: 3px solid var(--ai-ring);
+  box-shadow: 0 0 0 calc(var(--wu-level) * 18px) var(--ai-soft);
+  transition: box-shadow 0.12s ease-out, border-color 0.2s;
+}
+.wu-avatar img { width: 100%; height: 100%; border-radius: var(--r-pill); object-fit: cover; display: block; }
+.wu-avatar.is-speaking { border-color: var(--ai); animation: wu-breathe 1.4s ease-in-out infinite; }
+.wu-avatar.is-listening { border-color: var(--accent); }
+@keyframes wu-breathe {
+  0%, 100% { box-shadow: 0 0 0 4px var(--ai-soft); }
+  50% { box-shadow: 0 0 0 14px var(--ai-soft); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wu-avatar.is-speaking { animation: none; box-shadow: 0 0 0 8px var(--ai-soft); }
+}
+.wu-status { font-size: var(--fs-body); font-weight: 700; color: var(--text-secondary); margin: var(--s-2) 0 0; display: flex; align-items: center; gap: var(--s-2); }
+.wu-spin { animation: wu-rot 1s linear infinite; }
+@keyframes wu-rot { to { transform: rotate(360deg); } }
+.wu-caption {
+  margin: 0; text-align: center; font-size: var(--fs-h2); line-height: 1.45;
+  color: var(--text-primary); max-width: 32ch;
+}
+.wu-caption--me { font-size: var(--fs-body); color: var(--text-muted); font-weight: 600; }
+.wu-hint {
+  margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; line-height: 1.45;
+  color: var(--text-secondary); background: var(--bg-card);
+  border: 1px solid var(--ai-ring); border-radius: var(--r-md);
+  padding: var(--s-2) var(--s-3); max-width: 36ch; text-align: center;
+}
+.wu-foot { width: 100%; max-width: 380px; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.wu-time { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text-secondary); font-size: var(--fs-body); }
+
+/* ── Closing screen ───────────────────────────────────── */
+.wu-best {
+  width: 100%; max-width: 380px; margin-top: var(--s-4);
+  background: var(--bg-card); border: 1px solid var(--ai-ring); border-radius: var(--r-lg);
+  padding: var(--s-4); box-sizing: border-box;
+}
+/* No text-transform: uppercase — with lang="en" it turns Azerbaijani «i» into
+   «I» instead of «İ» (docs/domain/onboarding.md). */
+.wu-best-label { margin: 0; font-size: var(--fs-sm); font-weight: 700; color: var(--ai); display: flex; align-items: center; gap: var(--s-1); }
+.wu-best-quote { margin: var(--s-2) 0 0; font-size: var(--fs-h2); line-height: 1.4; }
+.wu-best-note { margin: var(--s-2) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: 1.45; }
+.wu-next { width: 100%; max-width: 380px; margin-top: var(--s-5); text-align: center; }
+.wu-next-title { margin: 0; font-size: var(--fs-h2); }
+.wu-next-sub { margin: var(--s-1) 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: 1.5; }

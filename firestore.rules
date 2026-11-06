@@ -568,6 +568,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // The newcomer's one warm-up call with AInur (warmupCallStart/End). The
+    // learner reads their own (Today decides whether to offer it); only the
+    // server writes, because attempts and completedAt decide eligibility.
+    match /warmupCalls/{uid} {
+      allow read: if isOwnDoc(uid) || isAdmin();
+      allow write: if false;
+    }
+
     // NOTE: aiUsage has NO match block on purpose. It is the per-user daily AI
     // cost meter (STT seconds, TTS characters, tokens) and only the server
     // writes it, exactly like analysisBudget. The catch-all below denies it.
