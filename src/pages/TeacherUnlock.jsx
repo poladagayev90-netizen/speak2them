@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GraduationCap, MessageCircle, BarChart3, BellRing, Check, Clapperboard, ChevronRight } from 'lucide-react';
 import { doc, getDoc, collection, getDocs, query, limit, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
+// ui.css BEFORE any component that pulls in cohort.css (TeacherWeek,
+// AddStudent) — the other order fails the CI build on CSS chunk order.
+import '../components/ui/ui.css';
 import {
   createInviteCode,
   buildJoinLink,
@@ -26,6 +29,16 @@ import { bakuDateStr } from '../utils/sessionSchedule';
 import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
 import { getPresence, lastSeenLabel } from '../utils/presence';
 
+// The dashboard used to be one long page of ten blocks (Polad 2026-10-23, item
+// 7: "qarışıqlıq itsin"). Three tabs, each with one job: Today — lessons this
+// week, students, calls, the video library; Class — the analytics; Invite &
+// profile — what is set up once. `?tab=` keeps the choice across reloads.
+const DASH_TABS = [
+  { id: 'today', label: 'Today' },
+  { id: 'class', label: 'Class' },
+  { id: 'setup', label: 'Invite & profile' },
+];
+
 // Təsdiq vəziyyəti → müəllimə göstərilən mətn. Ton qəsdən yalnız izahedici və
 // müsbətdir: müdafiə cümləsi ("şagirdinizi almırıq") qorxunu adlandırıb yaradır.
 const VERIFICATION_TEXT = {
@@ -42,6 +55,8 @@ const VERIFICATION_TEXT = {
 // Kod yaradılana qədər kod formu, sonra tam dashboard: dəvət linki + roster.
 export default function TeacherUnlock({ user }) {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const dashTab = DASH_TABS.some((t) => t.id === params.get('tab')) ? params.get('tab') : 'today';
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -513,13 +528,26 @@ export default function TeacherUnlock({ user }) {
       {/* PC-də mərkəzlənmiş dar sütun, telefonda tam en. */}
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
 
+        <div className="ui-seg" role="tablist" aria-label="Teacher panel" style={{ marginBottom: 'var(--s-4)' }}>
+          {DASH_TABS.map((t) => (
+            <button key={t.id} type="button" role="tab" aria-selected={dashTab === t.id}
+              className={`ui-seg-btn ${dashTab === t.id ? 'is-on' : ''}`}
+              onClick={() => setParams(t.id === 'today' ? {} : { tab: t.id }, { replace: true })}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {rosterError && <p role="alert">{rosterError}</p>}
+
         {/* Individual lessons from today to a week ahead, every student. */}
-        {isAdminUser(user) && <AddStudent />}
-        <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />
+        {dashTab === 'today' && isAdminUser(user) && <AddStudent />}
+        {dashTab === 'today' && <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />}
 
         {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
-        {rosterError && <p role="alert">{rosterError}</p>}
-        {students.length > 0 && (
+        {dashTab === 'class' && students.length === 0 && roster !== null && (
+          <p style={{ color: 'var(--text-secondary)' }}>When students join your class, their progress appears here.</p>
+        )}
+        {dashTab === 'class' && students.length > 0 && (
           <div style={{
             background: 'var(--bg-secondary)', border: '1px solid var(--border)',
             borderRadius: '16px', padding: '16px', marginBottom: '16px',
@@ -582,6 +610,7 @@ export default function TeacherUnlock({ user }) {
 
 
         {/* Roster */}
+        {dashTab === 'today' && (<>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           margin: '4px 2px 8px',
@@ -749,6 +778,7 @@ export default function TeacherUnlock({ user }) {
           error={rosterError}
         />
         <TeacherScheduler students={students} />
+        </>)}
 
         {/* Təyin ediləni geri almaq da təyin etmək qədər vacibdir: səhv cüt
             qurulanda teacherSetMatch onun üstünə yaza bilmir (hər ikisi boş
@@ -756,8 +786,8 @@ export default function TeacherUnlock({ user }) {
 
 
         {/* Invites and the tutor profile are set up once; the daily work
-            (who practised, who to remind) comes first. Polad 2026-09-30. */}
-        <p className="ui-section-label" style={{ margin: '28px 2px 8px' }}>Invite students · your profile</p>
+            (who practised, who to remind) lives on Today. Polad 2026-09-30. */}
+        {dashTab === 'setup' && (<>
         {/* Tutor profili — nişanın arxasındakı məzmun. Yığcam status sətri +
             açılan forma: gündəlik işi (dəvət, roster) yuxarıdan itələməsin. */}
         <div style={{
@@ -897,7 +927,8 @@ export default function TeacherUnlock({ user }) {
         {/* Video library — the whole describe-video deck, not a topic's six.
             A single row, not a section: it is a tool the teacher reaches for
             mid-lesson, and it must not push invites and the roster down. */}
-        {canBrowseAllVideos(user) && (
+        </>)}
+        {dashTab === 'today' && canBrowseAllVideos(user) && (
           <button
             type="button"
             onClick={() => navigate('/teacher/videos')}
@@ -928,6 +959,7 @@ export default function TeacherUnlock({ user }) {
         )}
 
         {/* Dəvət bölməsi */}
+        {dashTab === 'setup' && (<>
         <div style={{
           background: 'var(--accent-soft)',
           border: '1px solid var(--border)', borderRadius: '16px',
@@ -1134,6 +1166,7 @@ export default function TeacherUnlock({ user }) {
             </div>
           )}
         </div>
+        </>)}
       </div>
     </div>
   );
