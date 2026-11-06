@@ -2,6 +2,8 @@
 
 English speaking-practice app: React PWA + Firebase + Agora voice calls, wrapped as an Android APK with Capacitor. Business model: **3 free planned practices, then monthly packages of planned practice** — no popups or upsell screens; the packages page is reached only from Profile.
 
+**This month's priorities, communication style and video rules:** `docs/MONTHLY_DIRECTIVE_2026-11.md` — read it at session start. It never replaces the rules below.
+
 ## Stack
 - **Frontend**: React 19, CRA (`react-scripts`), PWA. `src/pages`, `src/components`, `src/utils`, `src/hooks`.
 - **Backend**: Firebase Cloud Functions **v2** — almost everything in `functions/index.js` (~7,500 lines) plus small modules beside it (`pushTokens.js`, `practiceStats.js`, …). Native `fetch`, no AI SDKs.
