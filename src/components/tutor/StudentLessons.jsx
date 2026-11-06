@@ -13,6 +13,7 @@ import Button from '../ui/Button';
 import '../cohort/cohort.css';
 import StoryButton from '../cohort/StoryButton';
 import StudentBrief from './StudentBrief';
+import HomeworkSheet from './HomeworkSheet';
 
 // Monday first, as a teacher reads a week; values are Baku weekdays (0 = Sun).
 const DAYS = [[1, 'Mon'], [2, 'Tue'], [3, 'Wed'], [4, 'Thu'], [5, 'Fri'], [6, 'Sat'], [0, 'Sun']];
@@ -290,7 +291,10 @@ export default function StudentLessons({ uid, name = '', viewerUid, viewerIsAdmi
             <span className="cc-next">{next ? `Next: ${lessonWhen(atMs(next), BAKU)}` : 'Nothing planned'}</span>
           </div>
           {enrolment.active === false && <p className="cc-hint">Lessons are paused. Open the settings above to start again.</p>}
-          <StudentBrief uid={uid} name={name} />
+          <div className="tl-btns">
+            <StudentBrief uid={uid} name={name} />
+            <HomeworkSheet uid={uid} name={name} />
+          </div>
           <div className="tl-btns">
             <Button size="sm" variant="secondary" onClick={() => setSheet('plan')}><CalendarPlus size={16} aria-hidden="true" /> Plan lessons</Button>
             <Button size="sm" variant="secondary" onClick={() => setSheet('add')}><Plus size={16} aria-hidden="true" /> Add one</Button>

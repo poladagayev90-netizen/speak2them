@@ -1,0 +1,66 @@
+/* Printable homework sheet + lesson plan (HomeworkSheet.jsx). On screen it is
+   a full-page layer over the app; in print only this layer is printed. */
+
+.cb-open--soft { color: var(--accent); background: var(--accent-soft); }
+
+.hs-root {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  overflow-y: auto; background: var(--bg-primary);
+  padding: calc(var(--safe-area-top, 0px) + var(--s-3)) var(--s-4) var(--s-8);
+}
+.hs-bar {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap;
+  max-width: 760px; margin: 0 auto var(--s-4); padding: var(--s-2) 0;
+  background: var(--bg-primary);
+}
+.hs-seg { flex: 1 1 220px; min-width: 0; }
+.hs-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; margin-left: auto;
+  color: var(--text-primary); background: var(--bg-secondary);
+  border: none; border-radius: var(--r-pill); cursor: pointer;
+}
+.hs-note { max-width: 760px; margin: 0 auto var(--s-3); font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
+
+.hs-doc {
+  max-width: 760px; margin: 0 auto; padding: var(--s-6) var(--s-5);
+  color: var(--text-primary); background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+}
+.hs-head { margin-bottom: var(--s-5); padding-bottom: var(--s-3); border-bottom: 2px solid var(--accent); }
+.hs-brand { margin: 0; font-size: var(--fs-xs); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.hs-title { margin: var(--s-1) 0 0; font-size: var(--fs-display); font-weight: 800; line-height: 1.2; }
+.hs-meta { margin: var(--s-1) 0 0; font-size: var(--fs-sm); color: var(--text-secondary); }
+
+.hs-sec { margin-bottom: var(--s-5); break-inside: avoid; }
+.hs-h { margin: 0 0 var(--s-1); font-size: var(--fs-body); font-weight: 800; }
+.hs-h3 { margin: var(--s-3) 0 var(--s-1); font-size: var(--fs-sm); font-weight: 800; }
+.hs-hint { margin: 0 0 var(--s-2); font-size: var(--fs-sm); color: var(--text-secondary); }
+.hs-list { margin: 0; padding-left: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); }
+.hs-list--tight { gap: var(--s-1); font-size: var(--fs-sm); }
+.hs-list li { break-inside: avoid; }
+.hs-q { display: block; font-size: var(--fs-body); line-height: 1.5; }
+.hs-opts { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); margin-top: var(--s-1); font-size: var(--fs-sm); }
+.hs-line { display: block; height: 28px; border-bottom: 1px solid var(--border); }
+.hs-rule { color: var(--text-secondary); }
+.hs-answers { margin-top: var(--s-6); padding-top: var(--s-4); border-top: 1px dashed var(--border); }
+
+.hs-plan { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-3); }
+.hs-plan li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--s-3); break-inside: avoid; }
+.hs-plan p { margin: var(--s-1) 0 0; font-size: var(--fs-sm); line-height: 1.5; color: var(--text-secondary); }
+.hs-min { font-size: var(--fs-sm); font-weight: 800; color: var(--accent); }
+
+@media print {
+  /* Only the sheet is printed; the app behind it and the toolbar are not.
+     Paper is always black on white whatever the app's theme — the one place
+     the tokens are not used, because a dark-mode token would print as ink. */
+  body.hs-printing > *:not(.hs-root) { display: none !important; }
+  .hs-root { position: static; overflow: visible; padding: 0; background: #fff; }
+  .hs-bar, .hs-note { display: none !important; }
+  .hs-doc { max-width: none; padding: 0; border: none; border-radius: 0; background: #fff; color: #000; }
+  .hs-meta, .hs-hint, .hs-rule, .hs-plan p { color: #333; }
+  .hs-line { border-bottom-color: #999; }
+  .hs-answers { break-before: page; border-top: none; margin-top: 0; padding-top: 0; }
+  @page { margin: 16mm; }
+}
