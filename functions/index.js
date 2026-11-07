@@ -10254,7 +10254,10 @@ exports.warmupCallStart = onRequest(
 
       const l1 = ["az", "tr", "ru", "en"].includes(user.guideLanguage) ? user.guideLanguage
         : (["az", "tr"].includes(user.preferredLanguage) ? user.preferredLanguage : "en");
-      const prompt = warmupCall.buildWarmupPrompt({ name: user.name, level: user.level, l1, guide: levelGuide(user.level) });
+      // AInur speaks one step below the learner's own pick (A2 when none).
+      const prompt = warmupCall.buildWarmupPrompt({
+        name: user.name, level: user.level, l1, guide: levelGuide(warmupCall.warmupLevel(user.level)),
+      });
       const body = warmupCall.tokenRequestBody({
         model: cfg.model, config: warmupCall.liveConfig({ prompt, voice: cfg.voice }), nowMs,
       });
