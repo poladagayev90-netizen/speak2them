@@ -30,11 +30,25 @@ test('eligibility: switch and budget stop even the admin', () => {
 test('prompt: names the learner, the level, the L1, the real partner', () => {
   const p = w.buildWarmupPrompt({ name: 'Leyla Məmmədova', level: 'a2', l1: 'az', guide: { words: '6-10', grammar: 'g', vocab: 'v', extra: '' } });
   assert.match(p, /Leyla's warm-up/);
-  assert.match(p, /level is A2/);
-  assert.match(p, /in Azerbaijani/);
+  assert.match(p, /at level A2/);
+  assert.match(p, /answer in Azerbaijani/);
   assert.match(p, /real partner/);
+  assert.match(p, /SLOWLY/);
   assert.doesNotMatch(p, /Məmmədova/);
+  // Help with a word is welcome; only big tasks are declined.
+  assert.doesNotMatch(p, /anything else \(translations/);
   assert.match(w.buildWarmupPrompt({ name: '', l1: 'en' }), /the learner's warm-up/);
+  assert.match(w.buildWarmupPrompt({ name: '', l1: 'en' }), /their own language/);
+});
+
+test('warm-up level: one step easier from B1, A2 when unknown (Polad 2026-11-07)', () => {
+  assert.equal(w.warmupLevel(undefined), 'A2');
+  assert.equal(w.warmupLevel('a1'), 'A1');
+  assert.equal(w.warmupLevel('A2'), 'A2');
+  assert.equal(w.warmupLevel('B1'), 'A2');
+  assert.equal(w.warmupLevel('b2'), 'B1');
+  assert.equal(w.warmupLevel('C1'), 'B1');
+  assert.match(w.buildWarmupPrompt({ name: 'X', level: 'B2' }), /at level B1/);
 });
 
 test('name: only letters reach the prompt', () => {

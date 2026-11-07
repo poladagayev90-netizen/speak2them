@@ -10218,9 +10218,14 @@ exports.warmupCallStart = onRequest(
     const uid = decoded.uid;
     // Admins test the warm-up repeatedly (they bypass eligibility too); the
     // monthly budget in warmupEligibility still caps their spend.
-    if (!isAdminToken(decoded)) {
+    const counted = !isAdminToken(decoded);
+    // "…V2": every "warmupStart" count was spent on the 2026-11-06 token bug
+    // (no start had ever succeeded), so a fresh key frees those learners at
+    // once. Bump it only for the same reason.
+    const RL_KEY = "warmupStartV2";
+    if (counted) {
       try {
-        await enforceRateLimit(uid, "warmupStart", 4, 24 * 60 * 60 * 1000);
+        await enforceRateLimit(uid, RL_KEY, 4, 24 * 60 * 60 * 1000);
       } catch {
         return res.status(429).json({ error: "rate", reason: "rate" });
       }
@@ -10228,6 +10233,16 @@ exports.warmupCallStart = onRequest(
 
     const db = admin.firestore();
     const nowMs = Date.now();
+    // A start that fails on OUR side (no key, Google refused the token, a
+    // crash) gives the try back. Without it, the 2026-11-06 token bug used up
+    // a test learner's four starts and locked them out for a day.
+    const failed = async (status, body) => {
+      if (counted) {
+        await db.collection("rateLimits").doc(`${uid}_${RL_KEY}`)
+          .update({ count: admin.firestore.FieldValue.increment(-1) }).catch(() => {});
+      }
+      return res.status(status).json(body);
+    };
     try {
       const { cfg, user, record, spentUsd } = await warmupState(db, uid, nowMs);
       const verdict = warmupCall.warmupEligibility({ user, record, cfg, spentUsd, isAdmin: isAdminToken(decoded) });
@@ -10235,11 +10250,14 @@ exports.warmupCallStart = onRequest(
 
       let apiKey = "";
       try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
-      if (!apiKey) return res.status(503).json({ error: "unavailable", reason: "no-key" });
+      if (!apiKey) return failed(503, { error: "unavailable", reason: "no-key" });
 
       const l1 = ["az", "tr", "ru", "en"].includes(user.guideLanguage) ? user.guideLanguage
         : (["az", "tr"].includes(user.preferredLanguage) ? user.preferredLanguage : "en");
-      const prompt = warmupCall.buildWarmupPrompt({ name: user.name, level: user.level, l1, guide: levelGuide(user.level) });
+      // AInur speaks one step below the learner's own pick (A2 when none).
+      const prompt = warmupCall.buildWarmupPrompt({
+        name: user.name, level: user.level, l1, guide: levelGuide(warmupCall.warmupLevel(user.level)),
+      });
       const body = warmupCall.tokenRequestBody({
         model: cfg.model, config: warmupCall.liveConfig({ prompt, voice: cfg.voice }), nowMs,
       });
@@ -10250,10 +10268,10 @@ exports.warmupCallStart = onRequest(
       });
       if (!tr.ok) {
         console.error("[warmupCallStart] token failed:", tr.status, (await tr.text()).slice(0, 500));
-        return res.status(502).json({ error: "unavailable", reason: "token" });
+        return failed(502, { error: "unavailable", reason: "token" });
       }
       const token = (await tr.json()).name;
-      if (!token) return res.status(502).json({ error: "unavailable", reason: "token" });
+      if (!token) return failed(502, { error: "unavailable", reason: "token" });
 
       const sessionId = `${nowMs.toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       const inc = admin.firestore.FieldValue.increment;
@@ -10281,7 +10299,7 @@ exports.warmupCallStart = onRequest(
       });
     } catch (e) {
       console.error("[warmupCallStart]", e);
-      return res.status(500).json({ error: "server" });
+      return failed(500, { error: "server" });
     }
   }
 );
@@ -10359,7 +10377,13 @@ exports.warmupCallEnd = onRequest(
 
       const u = b.usage && typeof b.usage === "object" ? b.usage : {};
       const num = (x) => Math.max(0, Math.min(1e7, Math.round(Number(x) || 0)));
+      // The browser's view of a failure (Live socket close code + Google's
+      // reason). Plain text, bounded; the only place a Live-side error shows
+      // up on the server, since the socket never touches our functions.
+      const detail = String(b.detail || "").replace(/\s+/g, " ").trim().slice(0, 200);
+      if (detail) console.warn("[warmupCallEnd] client detail:", b.reason, detail);
       await ref.set({
+        errorDetail: detail || null,
         endedSessionId: rec.sessionId,
         endedAt: admin.firestore.FieldValue.serverTimestamp(),
         seconds,
