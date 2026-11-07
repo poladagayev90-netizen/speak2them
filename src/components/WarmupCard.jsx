@@ -7,7 +7,7 @@ import { isAdminUser } from '../constants';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
-import { showWarmupCard } from '../utils/warmupCall';
+import { showWarmupCard, WARMUP_AVATAR } from '../utils/warmupCall';
 import '../pages/WarmupCall.css';
 
 // Today's offer of the one warm-up call (docs/domain/calls.md). Only a
@@ -36,7 +36,7 @@ export default function WarmupCard({ user }) {
   return (
     <Card tone="ai" className="wu-card">
       <div className="wu-card-head">
-        <img src="/ainur_avatar.png" alt="" className="wu-card-avatar" />
+        <img src={WARMUP_AVATAR} alt="" className="wu-card-avatar" />
         <div>
           <h2 className="wu-card-title">{t('warm.card.title')}</h2>
           <p className="wu-card-sub">{t('warm.card.sub')}</p>

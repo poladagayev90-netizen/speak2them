@@ -46,6 +46,18 @@ const MAX_ATTEMPTS = 2;
 
 const L1_NAMES = { az: 'Azerbaijani', tr: 'Turkish', ru: 'Russian', en: 'English' };
 
+// The language AInur greets in and helps in. First the language the warm-up
+// page itself is showing (`sent` — the first-run language, which may live
+// only on this device), then what the account recorded, then English. Only
+// the four known codes pass: the value goes into the prompt.
+function warmupL1({ sent, user } = {}) {
+  const u = user || {};
+  for (const v of [sent, u.guideLanguage, u.appLanguage, u.preferredLanguage]) {
+    if (typeof v === 'string' && Object.prototype.hasOwnProperty.call(L1_NAMES, v)) return v;
+  }
+  return 'en';
+}
+
 function warmupConfig(raw) {
   const c = raw || {};
   const usd = Number(c.monthlyUsd);
@@ -103,6 +115,12 @@ function buildWarmupPrompt({ name, level, l1, guide }) {
   const l1Rule = `- ${who} may speak ${helpLang} (or Azerbaijani, Turkish or Russian) when they get stuck — you understand all of them. That is welcome, never a problem.
 - When they say something in ${helpLang}, or ask how to say a word: answer in ${helpLang} in one or two short, kind sentences, give them the simple English words, and ask them to try saying it in English. When they try, react warmly to the English and carry on in English.
 - If they keep speaking ${helpLang}, keep helping the same way: a little ${helpLang}, then the English words, then an easy question in English. Never refuse, never ignore it, and never hold a whole conversation in ${helpLang}.`;
+  // The first words are in their own language (Polad 2026-11-07: opening
+  // straight in fast native English is a shock). One or two sentences only —
+  // then English for the rest of the call.
+  const greet = l1Name
+    ? `1. When you receive [start]: greet ${who} by name IN ${l1Name.toUpperCase()}, in one or two short, warm sentences: welcome them, and say that now you will talk a little in English, slowly, together. Then switch to English and stay in English: say in one short sentence that this is a short warm-up before they meet a real partner, and ask an easy question about them (where they are from, or what they do).`
+    : `1. When you receive [start]: greet ${who} by name, say in one short sentence that this is a short warm-up before they meet a real partner, and ask an easy question about them (where they are from, or what they do).`;
 
   return `You are AInur, a warm English speaking partner in the SpeakLab app. SpeakLab is where people practise English with REAL partners. This call is ${who}'s warm-up: a short, relaxed chat right before they meet their first real partner.
 
@@ -122,7 +140,7 @@ HOW YOU SPEAK
 - When you praise, name the real thing they said, briefly. Do not say "great job" after every answer.
 
 THE CALL
-1. When you receive [start]: greet ${who} by name, say in one sentence that this is a short warm-up before they meet a real partner, and ask an easy question about them (where they are from, or what they do).
+${greet}
 2. Then about three simple questions in total, each one building on what they just told you: their day, work or studies, something they enjoy, why English matters to them. Follow up on specific things they mention.
 3. When you receive [wrap-up]: finish your sentence, name one specific thing they said well, tell them that next they will talk with a real partner at their level, and say a warm goodbye. Under 25 seconds. Do not ask another question.
 
@@ -321,7 +339,7 @@ function validBest(best, lines) {
 module.exports = {
   MODEL_DEFAULT, VOICE_DEFAULT, MONTHLY_USD_DEFAULT, RESERVE_USD,
   MAX_SECONDS, WRAP_AT_SECONDS, COMPLETE_MIN_SECONDS, MAX_ATTEMPTS, L1_NAMES,
-  warmupConfig, warmupEligibility, buildWarmupPrompt, warmupLevel, liveConfig, tokenRequestBody,
+  warmupConfig, warmupEligibility, buildWarmupPrompt, warmupLevel, warmupL1, liveConfig, tokenRequestBody,
   cleanLines, fallbackBest, END_SCHEMA, endPrompt, validBest, cleanName,
   normalizeInsight, learnerStats, INSIGHT_MIN_WORDS,
 };

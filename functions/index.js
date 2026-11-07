@@ -10252,8 +10252,9 @@ exports.warmupCallStart = onRequest(
       try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
       if (!apiKey) return failed(503, { error: "unavailable", reason: "no-key" });
 
-      const l1 = ["az", "tr", "ru", "en"].includes(user.guideLanguage) ? user.guideLanguage
-        : (["az", "tr"].includes(user.preferredLanguage) ? user.preferredLanguage : "en");
+      // The language the page is showing first (she greets in it), then the
+      // account's; only az/tr/ru/en pass.
+      const l1 = warmupCall.warmupL1({ sent: (req.body || {}).lang, user });
       // AInur speaks one step below the learner's own pick (A2 when none).
       const prompt = warmupCall.buildWarmupPrompt({
         name: user.name, level: user.level, l1, guide: levelGuide(warmupCall.warmupLevel(user.level)),
