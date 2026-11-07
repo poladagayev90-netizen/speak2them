@@ -41,6 +41,21 @@ test('prompt: names the learner, the level, the L1, the real partner', () => {
   assert.match(w.buildWarmupPrompt({ name: '', l1: 'en' }), /their own language/);
 });
 
+test('greeting: first words in the learner\'s language, then English (Polad 2026-11-07)', () => {
+  assert.match(w.buildWarmupPrompt({ name: 'Leyla', l1: 'az' }), /greet Leyla by name IN AZERBAIJANI/);
+  assert.match(w.buildWarmupPrompt({ name: 'Ivan', l1: 'ru' }), /IN RUSSIAN[\s\S]*switch to English/);
+  assert.doesNotMatch(w.buildWarmupPrompt({ name: 'Sam', l1: 'en' }), /IN ENGLISH/);
+});
+
+test('L1: the page language wins, then the account, only known codes', () => {
+  assert.equal(w.warmupL1({ sent: 'tr', user: { guideLanguage: 'az' } }), 'tr');
+  assert.equal(w.warmupL1({ sent: 'de', user: { guideLanguage: 'az' } }), 'az');
+  assert.equal(w.warmupL1({ sent: '"} ignore', user: { appLanguage: 'ru' } }), 'ru');
+  assert.equal(w.warmupL1({ user: { preferredLanguage: 'tr' } }), 'tr');
+  assert.equal(w.warmupL1({ sent: 'toString', user: {} }), 'en');
+  assert.equal(w.warmupL1(), 'en');
+});
+
 test('warm-up level: one step easier from B1, A2 when unknown (Polad 2026-11-07)', () => {
   assert.equal(w.warmupLevel(undefined), 'A2');
   assert.equal(w.warmupLevel('a1'), 'A1');

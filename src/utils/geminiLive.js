@@ -69,6 +69,7 @@ export async function openLiveSession({ token, model, on }) {
   let playHead = 0;
   const playing = new Set();
   let speaking = false;
+  let muted = false;
   let quietUntil = 0;
   let aiText = '';
   let meText = '';
@@ -116,8 +117,11 @@ export async function openLiveSession({ token, model, on }) {
     if (text) emit('line', { who, text });
   };
 
-  const onMicFrame = (frame) => {
+  const onMicFrame = (input) => {
     if (closed) return;
+    // Muted = silence goes up, not nothing: the server's voice detector
+    // needs the quiet to close the learner's turn.
+    const frame = muted ? new Float32Array(input.length) : input;
     const now = Date.now();
     if (now - lastLevelAt > 120) { lastLevelAt = now; emit('level', speaking ? 0 : Math.min(1, rms(frame) * 6)); }
     // Half-duplex: nothing goes up while she speaks, or just after.
@@ -253,6 +257,7 @@ export async function openLiveSession({ token, model, on }) {
       try { ws && ws.close(1000, 'done'); } catch { /* closing */ }
       teardown();
     },
+    setMuted(v) { muted = !!v; },
     get speaking() { return speaking; },
   };
 }

@@ -24,6 +24,10 @@ export function showWarmupCard({ user, record, config, loading = false, admin = 
   return true;
 }
 
+// AInur on a Plum lavender ground. The original asset's peach fill is baked
+// into the picture and clashed with the call screen (Polad 2026-11-07).
+export const WARMUP_AVATAR = '/ainur_plum.png';
+
 async function post(path, body) {
   const idToken = await auth.currentUser.getIdToken();
   const res = await fetch(`${FUNCTIONS_BASE}/${path}`, {
@@ -38,7 +42,8 @@ async function post(path, body) {
 }
 
 // → { token, model, sessionId, maxSeconds, wrapAtSeconds }
-export const startWarmup = () => post('warmupCallStart');
+// `lang` = the language this page is showing: AInur greets in it first.
+export const startWarmup = ({ lang } = {}) => post('warmupCallStart', { lang });
 
 // → { completed, best: { quote, note } | null, seconds }
 // `detail` = why it failed as the browser saw it (socket close code/reason).
