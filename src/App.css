@@ -1921,6 +1921,17 @@ body {
   margin: 0 0 8px;
 }
 
+/* The learner's own-language line under a word or idiom (was an inline style,
+   which a wide-screen rule could not resize). Two classes so it wins over the
+   base meaning rule wherever the files land in the bundle. */
+.dt-vocab-meaning.dt-meaning-l1,
+.dt-idiom-meaning.dt-meaning-l1 {
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-top: 4px;
+  font-size: 15px;
+}
+
 .dt-idiom-example {
   font-size: 15px;
   font-weight: 600;
@@ -2970,6 +2981,19 @@ body {
   }
   /* Quiz and the pictures button do not need 1280px of line length. */
   .dt-section--narrow { max-width: 760px; margin: 0 auto; width: 100%; }
+
+  /* Reading size on a computer (Polad 2026-11-07: he zoomed the shared sheet
+     in to read it). Words and idioms are what the class reads off the shared
+     screen, so they get the biggest step; the two-column grid stays. */
+  .dt-title { font-size: 32px; }
+  .dt-tab { font-size: 17px; padding: 12px 10px; }
+  .dt-content { padding: 24px 28px; }
+  .dt-section--list { gap: 16px; }
+  .dt-vocab-card, .dt-idiom-card { padding: 20px 24px; border-radius: var(--r-lg); }
+  .dt-vocab-word, .dt-idiom-phrase { font-size: 24px; }
+  .dt-vocab-meaning, .dt-idiom-meaning { font-size: 18px; line-height: 1.45; }
+  .dt-vocab-meaning.dt-meaning-l1, .dt-idiom-meaning.dt-meaning-l1 { font-size: 17px; }
+  .dt-vocab-example, .dt-idiom-example { font-size: 17px; }
 
   /* Describe the picture, the same way as the videos (Polad, 2026-10-03):
      picture left, words + starters + questions right, ‹ 1 / 12 › below. */

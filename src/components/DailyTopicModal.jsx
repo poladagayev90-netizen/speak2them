@@ -263,7 +263,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                     {expandedVocab === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <p className="dt-vocab-meaning">{v.meaning}</p>
-                  {localMeaning(v) && <p className="dt-vocab-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '15px'}}>{localMeaning(v)}</p>}
+                  {localMeaning(v) && <p className="dt-vocab-meaning dt-meaning-l1">{localMeaning(v)}</p>}
                   {expandedVocab === i && (
                     <p className="dt-vocab-example">"{v.example}"</p>
                   )}
@@ -293,7 +293,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                     <p className="dt-idiom-phrase">"{idm.phrase}"</p>
                   </div>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
-                  {localMeaning(idm) && <p className="dt-idiom-meaning" style={{color: 'var(--text-secondary)', fontWeight: 600, marginTop: '4px', fontSize: '15px'}}>{localMeaning(idm)}</p>}
+                  {localMeaning(idm) && <p className="dt-idiom-meaning dt-meaning-l1">{localMeaning(idm)}</p>}
                   <p className="dt-idiom-example"> {idm.example}</p>
                 </div>
               ))}
