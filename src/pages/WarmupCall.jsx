@@ -7,6 +7,7 @@ import { isAdminUser } from '../constants';
 import Button from '../components/ui/Button';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { openLiveSession } from '../utils/geminiLive';
+import { dismissWarmup } from '../hooks/useWarmupOffer';
 import { startWarmup, endWarmup, WARMUP_MAX_ATTEMPTS, WARMUP_AVATAR as AVATAR } from '../utils/warmupCall';
 import './WarmupCall.css';
 
@@ -208,6 +209,9 @@ export default function WarmupCall({ user }) {
 
   const toPartners = () => navigate('/chats', { replace: true });
   const toWeek = () => navigate('/plan', { replace: true });
+  // Skipping from the intro is a «not now»: the Today card steps aside and the
+  // warm-up waits as a row in Get ready (useWarmupOffer).
+  const skipToPartners = () => { dismissWarmup(user?.uid); toPartners(); };
   const canRetry = isAdminUser(user) || attempts < WARMUP_MAX_ATTEMPTS;
   const left = Math.max(0, maxSeconds - elapsed);
   const toggleMute = () => {
@@ -349,7 +353,7 @@ export default function WarmupCall({ user }) {
       <p className="wu-sub wu-sub--small">{t('warm.intro.mic')}</p>
       <div className="wu-actions">
         <Button full variant="ai" icon={<Mic size={18} aria-hidden="true" />} onClick={begin}>{t('warm.intro.start')}</Button>
-        <Button full variant="ghost" onClick={toPartners}>{t('warm.intro.skip')}</Button>
+        <Button full variant="ghost" onClick={skipToPartners}>{t('warm.intro.skip')}</Button>
       </div>
     </div>
   );

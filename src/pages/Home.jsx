@@ -21,6 +21,7 @@ import CourseCompletionCelebration from '../components/CourseCompletionCelebrati
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import IntroCard from '../components/IntroCard';
 import WarmupCard from '../components/WarmupCard';
+import useWarmupOffer from '../hooks/useWarmupOffer';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
@@ -74,6 +75,8 @@ export default function Home({ user }) {
   const location = useLocation();
   const { t: tr } = useFirstRunCopy(user?.guideLanguage);
   const firstDay = isFirstDay(user);
+  // Where the warm-up call is offered: the top card, a Get ready row, or nowhere.
+  const warmupOffer = useWarmupOffer(user);
   const tourSteps = useMemo(() => HOME_TOUR_KEYS.map(({ target, key }) => (
     { target, title: tr(`${key}.title`), content: tr(`${key}.text`) }
   )), [tr]);
@@ -244,9 +247,10 @@ export default function Home({ user }) {
         {/* An unanswered question belongs at the top of the screen. */}
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
         <IntroCard user={user} />
-        {/* The one warm-up call before the first real partner — shown only
-            until the learner's first real call (docs/domain/calls.md). */}
-        <WarmupCard user={user} />
+        {/* The one warm-up call before the first real partner — the card
+            only for a newcomer who has not put it aside; after «Not now» it
+            is a row in Get ready instead (docs/domain/calls.md). */}
+        <WarmupCard user={user} offer={warmupOffer} />
 
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
@@ -322,7 +326,7 @@ export default function Home({ user }) {
 
         {/* 3. Preparation — below the practice it prepares you for. The
             topic is a picture card so Today is not only text. */}
-        <GetReadyCard user={user} />
+        <GetReadyCard user={user} warmupOffer={warmupOffer} />
 
         {/* 4. The week in one line. */}
         {target > 0 && (
