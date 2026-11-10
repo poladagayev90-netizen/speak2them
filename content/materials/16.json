@@ -1,0 +1,316 @@
+{
+  "index": 15,
+  "topic": "Fear & Phobias",
+  "reading": {
+    "title": "The Mountain Spider",
+    "A2": {
+      "text": "Rashad and his friend Aysel are on a trip to Shahdag. The mountains are beautiful, but Rashad has a big problem. He is afraid of heights. For him, high places are a nightmare.\n\nAysel wants to ride the cable car to the top. “Come on, Rashad!” she says. “It is very safe.”\n\nRashad agrees, but when he sees the glass cabin, he gets cold feet. He does not want to go in. Aysel holds his hand. “I am here with you,” she says.\n\nThey sit in the cable car. It goes up, up, up. Rashad looks down at the trees. He is scared stiff. He closes his eyes and holds the seat. Aysel talks to him about funny stories to make him smile.\n\nFinally, they arrive at the top of the mountain. Rashad opens his eyes. The view is amazing. He is very happy. He did it!\n\nThey walk to a small café to drink tea. Suddenly, Aysel jumps up and screams.\n\n“What is it?” Rashad asks.\n\nAysel points at the table. “A spider!” she cries.\n\nRashad laughs. He takes a napkin, picks up the tiny spider, and puts it outside. “Do not worry,” he says. “I can protect you from spiders, and you can protect me from heights.”",
+      "words": [
+        {
+          "phrase": "afraid of heights",
+          "az": "hündürlükdən qorxur",
+          "tr": "yüksekten korkuyor"
+        },
+        {
+          "phrase": "ride the cable car",
+          "az": "kanat yoluna minmək",
+          "tr": "teleferiğe binmek"
+        },
+        {
+          "phrase": "holds his hand",
+          "az": "onun əlindən tutur",
+          "tr": "onun elini tutuyor"
+        },
+        {
+          "phrase": "jumps up and screams",
+          "az": "sıçrayıb qışqırır",
+          "tr": "zıplayıp çığlık atıyor"
+        },
+        {
+          "phrase": "picks up the tiny spider",
+          "az": "kiçik hörümçəyi götürür",
+          "tr": "küçük örümceği alıyor"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Rashad and Aysel hate the mountains",
+            "A spider bites Aysel in the cable car",
+            "Rashad leaves his friend and goes home",
+            "Rashad is afraid of heights but helps his friend who is afraid of spiders"
+          ],
+          "answer": 3,
+          "why": "The story is about Rashad facing his fear of heights and then rescuing Aysel from her fear of a spider."
+        },
+        {
+          "type": "detail",
+          "q": "Where are Rashad and Aysel?",
+          "options": [
+            "In Baku",
+            "At Shahdag",
+            "At the beach",
+            "In a forest"
+          ],
+          "answer": 1,
+          "why": "“Rashad and his friend Aysel are on a trip to Shahdag.”"
+        },
+        {
+          "type": "detail",
+          "q": "What does Aysel do in the cable car to help Rashad?",
+          "options": [
+            "She gives him tea",
+            "She tells him to look down",
+            "She talks to him about funny stories",
+            "She plays music"
+          ],
+          "answer": 2,
+          "why": "“Aysel talks to him about funny stories to make him smile.”"
+        },
+        {
+          "type": "tf",
+          "q": "Rashad runs away and does not get in the cable car.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "False because the text says, “They sit in the cable car.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Rashad is “scared stiff”. What does this mean?",
+          "options": [
+            "He is extremely frightened",
+            "He is very tired",
+            "He is hungry",
+            "He is very cold"
+          ],
+          "answer": 0,
+          "why": "He is on a high cable car and he is afraid of heights, so he closes his eyes and holds the seat."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Rashad say, “I can protect you from spiders, and you can protect me from heights”?",
+          "options": [
+            "Because he wants to be a policeman",
+            "Because Aysel is very strong",
+            "Because he brought a lot of napkins",
+            "Because they both have different fears and can help each other"
+          ],
+          "answer": 3,
+          "why": "He realizes they both have things they are afraid of, and they can support each other."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Rashad has always loved the fresh air of the mountains, but he hides one difficult secret: a terrible phobia of heights. Last weekend, he travelled to the beautiful Shahdag resort with his good friend Aysel. The snowy peaks looked absolutely amazing in the morning sun, but Rashad felt a deep anxiety when Aysel pointed at the long cable car.\n\n“Let’s go to the highest restaurant on the mountain!” she said excitedly.\n\nRashad agreed because he wanted to be brave, but as they stood in the ticket queue, he started to get cold feet. When the doors of the glass cabin finally opened, his heart beat so fast that he thought he was going to have a panic attack.\n\n“I really can’t do this,” he said, stepping back.\n\nAysel quickly held his arm to reassure him. “You are completely safe, Rashad,” she smiled. “Just look at my face, not out of the window.”\n\nThey sat down, and the cable car pulled them high up into the sky. Rashad was scared stiff, but he kept his eyes fixed on Aysel. She told funny stories about their university days and made him laugh. Slowly, his breathing returned to normal. By the time they reached the top, he felt proud. He managed to overcome his fear.\n\nThey walked into the mountain café and sat at a wooden table. Suddenly, Aysel jumped out of her chair with a loud scream.\n\n“What happened?” Rashad asked in surprise.\n\nAysel pointed a shaking finger at the sugar bowl. “Spider!” she cried.\n\nRashad looked down and saw a tiny, harmless spider. He laughed, picked it up with a napkin, and carried it outside. “Well,” he smiled, returning to his tea. “I guess we all have our own nightmares.”",
+      "words": [
+        {
+          "phrase": "in the morning sun",
+          "az": "səhər günəşində",
+          "tr": "sabah güneşinde"
+        },
+        {
+          "phrase": "heart beat so fast",
+          "az": "ürəyi çox sürətlə döyünürdü",
+          "tr": "kalbi çok hızlı çarpıyordu"
+        },
+        {
+          "phrase": "stepping back",
+          "az": "geri çəkilərək",
+          "tr": "geri adım atarak"
+        },
+        {
+          "phrase": "jumped out of her chair",
+          "az": "stulundan sıçradı",
+          "tr": "sandalyesinden fırladı"
+        },
+        {
+          "phrase": "returning to his tea",
+          "az": "çayına qayıdaraq",
+          "tr": "çayına dönerek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens during their trip to Shahdag?",
+          "options": [
+            "They get lost in the mountains",
+            "They refuse to ride the cable car",
+            "Rashad faces his fear of heights, and then discovers Aysel's fear of spiders",
+            "Aysel helps Rashad become a professional mountain climber"
+          ],
+          "answer": 2,
+          "why": "The story shows Rashad overcoming his phobia with Aysel's help, and then he helps her when she panics over a spider."
+        },
+        {
+          "type": "detail",
+          "q": "Why does Rashad agree to go on the cable car at first?",
+          "options": [
+            "He likes the view",
+            "He wants to be brave",
+            "Aysel pays for him",
+            "He wants to drink tea"
+          ],
+          "answer": 1,
+          "why": "“Rashad agreed because he wanted to be brave...”"
+        },
+        {
+          "type": "detail",
+          "q": "Where was the spider hiding?",
+          "options": [
+            "Near the sugar bowl",
+            "On the window",
+            "In his tea",
+            "On Aysel's coat"
+          ],
+          "answer": 0,
+          "why": "“Aysel pointed a shaking finger at the sugar bowl.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel knew about Rashad's phobia before they went to Shahdag.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text says he “hides one difficult secret,” but it does not explicitly state if Aysel knew about it before he panicked at the cable car."
+        },
+        {
+          "type": "vocab",
+          "q": "Rashad started to “get cold feet”. What does this mean?",
+          "options": [
+            "To need warm winter boots",
+            "To get angry at a friend",
+            "To feel very confident",
+            "To suddenly become too nervous to do something you planned"
+          ],
+          "answer": 3,
+          "why": "He stood in the queue but got so nervous he wanted to step back and not go in."
+        },
+        {
+          "type": "inference",
+          "q": "How does Rashad probably feel when he sees Aysel screaming at the spider?",
+          "options": [
+            "Angry that she ruined his tea",
+            "Amused because everyone has their own fears",
+            "Sad that the spider is hurt",
+            "Terrified because he hates spiders too"
+          ],
+          "answer": 1,
+          "why": "He laughs and says, “I guess we all have our own nightmares,” showing he finds it slightly funny and relatable."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Despite being an adventurous guy who loved hiking, Rashad suffered from acrophobia—an intense and completely irrational fear of heights. Last Saturday, he and his closest friend, Aysel, drove up to the spectacular Shahdag Mountain Resort. The crisp winter air was refreshing, but Rashad’s anxiety spiked the moment Aysel pointed toward the summit.\n\n“We have to ride the gondola to the peak café!” she insisted, her eyes shining with excitement.\n\nRashad knew he had to face his fears eventually, so he forced a smile and bought a ticket. However, waiting on the platform proved to be a powerful trigger. As the transparent glass cabin swung into the station, his palms began to sweat. He was ready to get cold feet, convinced a full-blown panic attack was only seconds away.\n\n“I don’t think I can go through with this,” he muttered, backing away from the doors.\n\nSensing his distress, Aysel gently grabbed his elbow to reassure him. “Hey, look at me. The engineering is flawless. Just focus on our conversation, and whatever you do, don’t look down.”\n\nHe stepped inside, feeling scared stiff as the cabin lurched upward, leaving the solid ground far below. Aysel instantly launched into an entertaining story about her crazy office manager in Baku. Her chatter was a perfect distraction. By the time they docked at the mountain station, Rashad’s racing heart had steadied. He stepped out into the snow, genuinely thrilled that he had managed to overcome his phobia.\n\nThey found a cosy table inside the timber-framed café. Rashad was just pouring them both a cup of hot black tea when Aysel suddenly shrieked and leapt away from the table, nearly knocking over her chair.\n\nRashad jumped up. “What’s wrong? Are you hurt?”\n\nTrembling, she pointed at the edge of the sugar bowl. “Spider!” she gasped.\n\nRashad leaned in and spotted a spider no bigger than a breadcrumb. Amused by the irony, he scooped the tiny creature onto a napkin and released it out the window.\n\n“Don’t worry,” he chuckled, sitting back down. “It seems we both have our own irrational triggers.”",
+      "words": [
+        {
+          "phrase": "spiked the moment",
+          "az": "o an qəfil artdı",
+          "tr": "o an aniden yükseldi"
+        },
+        {
+          "phrase": "go through with this",
+          "az": "bunu axıra çatdırmaq",
+          "tr": "bunu sonuna kadar yapmak"
+        },
+        {
+          "phrase": "leaving the solid ground far below",
+          "az": "bərk zəmini çox aşağıda qoyaraq",
+          "tr": "sağlam zemini çok aşağıda bırakarak"
+        },
+        {
+          "phrase": "nearly knocking over her chair",
+          "az": "stulunu az qala aşıraraq",
+          "tr": "sandalyesini neredeyse devirerek"
+        },
+        {
+          "phrase": "amused by the irony",
+          "az": "ironiyadan əylənərək",
+          "tr": "ironiyle eğlenerek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the central theme of the story?",
+          "options": [
+            "Both friends discovering they have their own specific anxieties to overcome",
+            "A mountain hike that goes completely wrong",
+            "Why spiders are a dangerous threat in winter",
+            "The brilliant engineering of modern cable cars"
+          ],
+          "answer": 0,
+          "why": "Rashad faces his acrophobia, and Aysel immediately after exhibits arachnophobia, showing they both have irrational fears."
+        },
+        {
+          "type": "detail",
+          "q": "What specific method did Aysel use to distract Rashad on the gondola?",
+          "options": [
+            "She played a game on her phone",
+            "She told an entertaining story about her office manager",
+            "She pointed out the beautiful snowy peaks",
+            "She gave him a cup of hot black tea"
+          ],
+          "answer": 1,
+          "why": "“Aysel instantly launched into an entertaining story about her crazy office manager in Baku.”"
+        },
+        {
+          "type": "detail",
+          "q": "How big was the spider that terrified Aysel?",
+          "options": [
+            "As big as a tea cup",
+            "Too small to see",
+            "The size of a napkin",
+            "No bigger than a breadcrumb"
+          ],
+          "answer": 3,
+          "why": "“Rashad leaned in and spotted a spider no bigger than a breadcrumb.”"
+        },
+        {
+          "type": "tf",
+          "q": "Rashad refused to ride the gondola and waited for Aysel at the bottom.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "False because the text states, “He stepped inside, feeling scared stiff...” and made it to the top."
+        },
+        {
+          "type": "vocab",
+          "q": "Waiting on the platform proved to be a powerful “trigger”. What is a trigger in this context?",
+          "options": [
+            "A mechanical part of the cable car door",
+            "Something that causes a strong emotional or physical reaction",
+            "A tool used to buy tickets",
+            "A person who works at the mountain resort"
+          ],
+          "answer": 1,
+          "why": "The platform made his palms sweat and caused his anxiety to spike, initiating a near panic attack."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Rashad chuckle at the end of the story?",
+          "options": [
+            "He finds it funny that his brave friend is terrified of something so small",
+            "He thinks Aysel's story about the office manager is funny",
+            "He is happy that the tea is still hot",
+            "He wants to scare her with the spider again"
+          ],
+          "answer": 0,
+          "why": "He is “amused by the irony” that Aysel, who fearlessly guided him through the sky, is terrified of a tiny spider."
+        }
+      ]
+    }
+  }
+}
