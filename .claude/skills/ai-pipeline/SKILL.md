@@ -13,7 +13,7 @@ Providers are chosen per task on a cost/latency basis (see the `cost-optimizer` 
 | Real-time STT (AInur voice bot) | **Groq** Whisper-large-v3-turbo | Groq LPU = ms-latency; live loop can't tolerate slow STT |
 | Conversational LLM (AInur) | **Groq** Llama-3.1 | Fast enough for voice back-and-forth |
 | TTS (AInur voice out) | **Deepgram** Aura (Asteria) | Real-time voice synthesis |
-| Post-call grammar/vocab analysis | **DeepSeek** (or Gemini 2.0 Flash) | Best price/perf for structured JSON grammar analysis |
+| Post-call analysis | **Gemini 3.8 Flash on the audio** (fallback: Deepgram STT → DeepSeek) | Polad 2026-11-10: judge pronunciation/fluency from the sound — details in docs/domain/calls.md |
 | Quiz generation | **Groq** (`generateQuiz`) | — |
 
 Rejected: NVIDIA Parakeet ASR (latency too high for live), Firestore-trigger audio analysis (Storage cost — audio is assembled in RAM and posted directly, Storage cost ≈ 0).

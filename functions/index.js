@@ -30,6 +30,7 @@ const agentValidate = require("./agent/validate");
 const agentGemini = require("./agent/gemini");
 const agentPrompt = require("./agent/prompt");
 const analysisShadow = require("./analysisShadow");
+const geminiAnalysis = require("./geminiAnalysis");
 const warmupCall = require("./warmupCall");
 const { toBakuIntervals: availToBaku, covers: availCovers } = require("./availability");
 const { syncAiPractice, recordCallPractice, trustedCallSeconds, callStartMs, attendanceDoc, ATTENDED_MIN_SECONDS } = require("./practiceStats");
@@ -8678,7 +8679,18 @@ async function transcribeWithGroqWhisper(audioBuffer, ext) {
 const { reportLanguageFor } = reportLanguage;
 
 // `lang` = istifadəçinin ana dili ('az' | 'tr') — hesabat həmin dildə yazılır.
-async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az", db = null) {
+async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az", db = null, timeLeftMs = 0) {
+  // 1. MAIN: Gemini hears the recording itself and transcribes it (geminiAnalysis.js).
+  // null = any reason to fall back; the text path below then runs as before.
+  if (db) {
+    const g = await runGeminiAnalysis(db, {
+      audioParts: [{ mimeType: ext === "mp4" ? "audio/mp4" : "audio/webm", data: audioBuffer }],
+      lang, analyzeSeconds, source: "call", timeLeftMs,
+    });
+    if (g) return g;
+  }
+
+  // 2. FALLBACK: Deepgram (Whisper fallback) → DeepSeek (Groq fallback) on the text.
   let transcript = "";
   try {
     transcript = await transcribeWithDeepgram(audioBuffer, ext);
@@ -8695,13 +8707,83 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang =
     throw err;
   }
 
-  // 2. Analysis via DeepSeek (Groq fallback) — strict JSON, self-healing retries.
   const promptTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
     ? transcript.slice(0, MAX_TRANSCRIPT_CHARS)
     : transcript;
+
   const raw = await callAnalysisLLM(buildAnalysisPrompt(promptTranscript, lang), db, lang);
   const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
-  return { transcript, analysis };
+  return { transcript, analysis, engine: "deepseek" };
+}
+
+// The main analysis on Gemini: the recording alone in (Gemini transcribes it),
+// the usual report plus delivery / pronunciation / bestMoment out. Returns null
+// (never throws) whenever the text path should run instead — switched off, over
+// the monthly cap, recording too big, too little time left, no English heard,
+// a foreign script, or any Gemini failure. `audioParts` = [{ mimeType, data: Buffer }].
+async function runGeminiAnalysis(db, { audioParts, lang, analyzeSeconds, source, timeLeftMs }) {
+  try {
+    const cfgSnap = await db.collection("appConfig").doc("analysis").get().catch(() => null);
+    const cfg = cfgSnap && cfgSnap.exists ? cfgSnap.data() : {};
+    const nowMs = Date.now();
+    const usageRef = db.collection("agentUsage").doc(agentMonth(nowMs));
+    const spent = Number(((await usageRef.get().catch(() => null))?.data() || {}).analysisUsd) || 0;
+    if (!geminiAnalysis.geminiAllowed(cfg, spent)) {
+      if (cfg.gemini !== false) console.warn("[GeminiAnalysis] monthly cap reached — text path");
+      return null;
+    }
+    const parts = (audioParts || []).filter((p) => p && p.data && p.data.length > 100);
+    const bytes = parts.reduce((s, p) => s + p.data.length, 0);
+    if (!parts.length || bytes > analysisShadow.MAX_INLINE_AUDIO_BYTES) return null;
+    if (timeLeftMs < 90 * 1000) return null;
+    let apiKey = "";
+    try { apiKey = GEMINI_API_KEY.value(); } catch { apiKey = process.env.GEMINI_API_KEY || ""; }
+    if (!apiKey) return null;
+
+    const model = geminiAnalysis.geminiModel(cfg);
+    const g = LANGUAGE_GUIDE[lang] || LANGUAGE_GUIDE.az;
+    // Audio only — Gemini writes its own transcript (the shadow-test prompt).
+    const prompt = analysisShadow.buildShadowPrompt(buildAnalysisPrompt("", lang), g.name);
+    const started = Date.now();
+    const { json, usage } = await agentGemini.callGemini({
+      apiKey, model, prompt,
+      schema: analysisShadow.shadowSchema(ANALYSIS_SCHEMA),
+      media: parts.map((p) => ({ mimeType: p.mimeType, data: p.data.toString("base64") })),
+      // Thinking tokens count against this; 3.8 cut its answer short at less.
+      maxOutputTokens: 12000,
+      // Leaves room for the DeepSeek fallback if Gemini does not answer.
+      timeoutMs: Math.min(150 * 1000, timeLeftMs - 75 * 1000),
+    });
+    const cost = agentGemini.costUsd(usage, model, nowMs);
+    await usageRef.set({
+      analysisUsd: admin.firestore.FieldValue.increment(cost.usd),
+      analysisCalls: admin.firestore.FieldValue.increment(1),
+    }, { merge: true }).catch(() => null);
+
+    const heard = typeof json?.transcript === "string" ? json.transcript.trim().slice(0, MAX_TRANSCRIPT_CHARS) : "";
+    if (!heard) {
+      console.warn("[GeminiAnalysis] empty transcript — text path", `$${cost.usd.toFixed(4)}`);
+      return null;
+    }
+    // A report in the wrong script goes to the text path, which has its own repair.
+    if (reportLanguage.hasForeignScript(JSON.stringify(json), lang)) {
+      console.warn("[GeminiAnalysis] foreign script in report — text path");
+      return null;
+    }
+    const analysis = normalizeAnalysis(json, { analyzeSeconds, transcript: heard });
+    // Gemini's transcript keeps every "um"; pace counts real words only.
+    analysis.speakingPace = computeSpeakingPace(geminiAnalysis.withoutFillers(heard), analyzeSeconds);
+    const extras = analysisShadow.normalizeExtras(json, heard);
+    console.log("[GeminiAnalysis] done:", source, `${Date.now() - started}ms`, `$${cost.usd.toFixed(4)}`);
+    return {
+      transcript: heard,
+      analysis: { ...analysis, ...extras, engine: "gemini", engineModel: model },
+      engine: "gemini",
+    };
+  } catch (e) {
+    console.warn("[GeminiAnalysis] failed, text path instead:", source, e.message);
+    return null;
+  }
 }
 
 // Gemini shadow of one finished analysis (functions/analysisShadow.js has the
@@ -8784,7 +8866,7 @@ exports.processAnalysisQueue = onSchedule({
   timeZone: "Asia/Baku",
   // DEEPGRAM: nova-2 STT (əsas); DEEPSEEK: analiz LLM-i (əsas);
   // GROQ: Whisper STT + LLM fallback-ları.
-  // GEMINI: only the admin-only shadow (appConfig/analysis.shadowGemini).
+  // GEMINI: the MAIN analysis on the audio (geminiAnalysis.js) + the admin shadow.
   secrets: [GROQ_API_KEY, DEEPSEEK_API_KEY, DEEPGRAM_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD, GEMINI_API_KEY],
   memory: "1GiB",
   timeoutSeconds: 540,
@@ -8893,7 +8975,9 @@ exports.processAnalysisQueue = onSchedule({
         console.warn("[AnalysisQueue] lang lookup failed, defaulting to az:", e.message);
       }
 
-      const { transcript, analysis } = await runGroqAnalysis(analysisBuffer, analyzeSeconds, ext, lang, db);
+      const { transcript, analysis, engine } = await runGroqAnalysis(
+        analysisBuffer, analyzeSeconds, ext, lang, db,
+        ANALYSIS_INVOCATION_BUDGET_MS + 300 * 1000 - (Date.now() - invocationStart));
 
       await analysisRef.set({
         ...analysis,
@@ -8930,8 +9014,9 @@ exports.processAnalysisQueue = onSchedule({
       });
 
       // The shadow needs the recording, so it runs before the delete — and
-      // after the push, so the learner never waits for it.
-      await runAnalysisShadow(db, {
+      // after the push, so the learner never waits for it. When Gemini already
+      // wrote the main report there is nothing to compare it with.
+      if (engine !== "gemini") await runAnalysisShadow(db, {
         ticket, audioBuffer: analysisBuffer, analyzeSeconds, lang,
         mainAnalysis: analysis, mainTranscript: transcript,
         timeLeftMs: 540 * 1000 - (Date.now() - invocationStart) - 30 * 1000,

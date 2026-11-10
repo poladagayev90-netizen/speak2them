@@ -96,6 +96,18 @@ export function toAnalysisView(analysis) {
     vocabulary: vocabulary.filter((v) => v && v.word),
     speakingPace: analysis.speakingPace,
     transcript: analysis.transcript,
+    // Only reports Gemini wrote (it hears the voice — functions/geminiAnalysis.js).
+    // Older and text-only reports have none of these, and the UI skips them.
+    pronunciation: arr(analysis.pronunciation).filter((p) => p && p.word && p.heard && p.tip),
+    delivery: analysis.delivery && typeof analysis.delivery === 'object'
+      ? {
+        fillers: arr(analysis.delivery.fillers).filter((f) => f && f.word && Number(f.count) > 0),
+        hesitation: arr(analysis.delivery.hesitation).filter((h) => typeof h === 'string' && h),
+        smoothest: typeof analysis.delivery.smoothest === 'string' ? analysis.delivery.smoothest : '',
+        intonation: typeof analysis.delivery.intonation === 'string' ? analysis.delivery.intonation : '',
+      }
+      : null,
+    bestMoment: analysis.bestMoment && analysis.bestMoment.quote ? analysis.bestMoment : null,
     // Fields only old documents have; the UI shows them when present.
     legacyVocabularyUsed: arr(analysis.vocabularyUsed),
     legacyExamples: arr(analysis.exampleSentences),

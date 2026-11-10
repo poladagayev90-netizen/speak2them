@@ -4,6 +4,7 @@ import { Clock, ChevronLeft, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
+import SayButton from '../components/ui/SayButton';
 import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 import { fetchAnalyses } from '../utils/insights';
@@ -274,6 +275,58 @@ export function AnalysisDetail({ analysis, onClose, lang, embedded = false }) {
           <p className="rep-clean-title">No grammar mistakes found</p>
           <p className="rep-why">Nothing to correct in what you said this time.</p>
         </div>
+      )}
+
+      {/* Only a report that HEARD the learner has these (Gemini). Pronunciation
+          sits with the fixes: it is one more thing to say differently. */}
+      {view.pronunciation.length > 0 && (
+        <>
+          <p className="rep-label">Say it right · {view.pronunciation.length}</p>
+          {view.pronunciation.map((p, i) => (
+            <div className="rep-fix" key={i}>
+              <p className="rep-wrong"><span className="rep-mark">✗</span>{p.heard}</p>
+              <p className="rep-right">
+                <span className="rep-mark">✓</span>{p.word}
+                {p.should && <span className="rep-why"> · {p.should}</span>}
+                <SayButton text={p.word} size={16} label={`Hear ${p.word}`} />
+              </p>
+              <p className="rep-why">{p.tip}</p>
+            </div>
+          ))}
+        </>
+      )}
+
+      {view.bestMoment && (
+        <>
+          <p className="rep-label">Your best moment</p>
+          <div className="rep-notes">
+            <p className="rep-note"><span className="rep-note-mark good">+</span>«{view.bestMoment.quote}»</p>
+            {view.bestMoment.why && <p className="rep-why">{view.bestMoment.why}</p>}
+          </div>
+        </>
+      )}
+
+      {view.delivery && (view.delivery.fillers.length > 0 || view.delivery.hesitation.length > 0 || view.delivery.smoothest || view.delivery.intonation) && (
+        <>
+          <p className="rep-label">How you sounded</p>
+          <div className="rep-notes">
+            {view.delivery.fillers.length > 0 && (
+              <p className="rep-note">
+                <span className="rep-note-mark">→</span>
+                Fillers: {view.delivery.fillers.map((f) => `«${f.word}» ×${f.count}`).join(', ')}
+              </p>
+            )}
+            {view.delivery.hesitation.map((h, i) => (
+              <p key={`h${i}`} className="rep-note"><span className="rep-note-mark">→</span>{h}</p>
+            ))}
+            {view.delivery.intonation && (
+              <p className="rep-note"><span className="rep-note-mark">→</span>{view.delivery.intonation}</p>
+            )}
+            {view.delivery.smoothest && (
+              <p className="rep-note"><span className="rep-note-mark good">+</span>{view.delivery.smoothest}</p>
+            )}
+          </div>
+        </>
       )}
 
       {/* Practice outranks reading. This is the part that changes anything. */}

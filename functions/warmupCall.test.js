@@ -46,7 +46,10 @@ test('opening: a consultant\'s tour of the call room in the learner\'s language,
   assert.match(az, /speak AZERBAIJANI first\. Greet Leyla by name/);
   assert.match(az, /spoken Azerbaijani at a relaxed normal speed/);
   // The room: clock, topic sheet, Mute, End, how to start, the report after.
-  for (const part of [/clock/, /topic sheet/, /Mute/, /red button ends the call/, /how to start/, /short report/]) assert.match(az, part);
+  // The mute button is named as the warm-up room labels it in the learner's
+  // language (firstRunCopy 'warm.mute': «Səssiz»), English only for en.
+  for (const part of [/clock/, /topic sheet/, /«Səssiz» button/, /red button ends the call/, /how to start/, /short report/]) assert.match(az, part);
+  assert.match(w.buildWarmupPrompt({ name: 'Sam', l1: 'en' }), /«Mute» button/);
   // She waits for their yes before switching to English.
   assert.match(az, /WAIT for their answer[\s\S]*2\. When they answer: switch to English/);
   assert.match(w.buildWarmupPrompt({ name: 'Ivan', l1: 'ru' }), /RUSSIAN first[\s\S]*switch to English/);

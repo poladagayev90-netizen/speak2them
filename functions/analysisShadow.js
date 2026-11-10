@@ -38,7 +38,8 @@ EXTRA FIELDS (you can hear the voice — use it):
 - delivery.fillers: up to 5 filler words or sounds they used more than twice, with how many times. Empty if none.
 - delivery.hesitation: up to 3 short {{LANGUAGE}} notes on HOW they hesitated inside sentences (restarting a sentence, repeating a word while searching, stopping mid-phrase) — each with a short English quote of where. Empty if they spoke smoothly.
 - delivery.smoothest: one {{LANGUAGE}} sentence naming the part where they spoke most freely, quoting a few of their English words.
-- pronunciation: up to 3 English words that clearly sounded wrong. word = the English word; heard = a simple respelling of how it sounded (e.g. "com-FOR-ta-ble", "tink"); tip = {{LANGUAGE}}, one sentence on how to say it; times = how many times it happened. Empty array if nothing clearly wrong — never pad.
+- delivery.intonation: one {{LANGUAGE}} sentence on their intonation and rhythm, judged from the sound — e.g. questions said with a flat tune, every word stressed the same, a sentence that rose where it should fall — with a short English quote of where. Empty string if it sounded natural.
+- pronunciation: up to 3 English words that clearly sounded wrong. word = the English word; heard = a simple respelling of how it sounded (e.g. "com-FOR-ta-ble", "tink"); should = a simple respelling of how it should sound, stressed syllable in capitals (e.g. "KUMF-ter-bul", "think"); tip = {{LANGUAGE}}, one sentence on how to say it; times = how many times it happened. Empty array if nothing clearly wrong — never pad.
 - best_moment: the single best English sentence they said (near-verbatim quote) and why = {{LANGUAGE}}, one sentence on what made it good.`;
 
 // The text prompt carries its transcript in a """…""" block. For the shadow
@@ -58,7 +59,7 @@ const EXTRA_PROPERTIES = {
   transcript: { type: 'string' },
   delivery: {
     type: 'object',
-    required: ['fillers', 'hesitation', 'smoothest'],
+    required: ['fillers', 'hesitation', 'smoothest', 'intonation'],
     properties: {
       fillers: {
         type: 'array', maxItems: 5,
@@ -69,14 +70,15 @@ const EXTRA_PROPERTIES = {
       },
       hesitation: { type: 'array', maxItems: 3, items: { type: 'string' } },
       smoothest: { type: 'string' },
+      intonation: { type: 'string' },
     },
   },
   pronunciation: {
     type: 'array', maxItems: 3,
     items: {
-      type: 'object', required: ['word', 'heard', 'tip', 'times'],
+      type: 'object', required: ['word', 'heard', 'should', 'tip', 'times'],
       properties: {
-        word: { type: 'string' }, heard: { type: 'string' }, tip: { type: 'string' },
+        word: { type: 'string' }, heard: { type: 'string' }, should: { type: 'string' }, tip: { type: 'string' },
         times: { type: 'integer', minimum: 1, maximum: 100 },
       },
     },
@@ -156,9 +158,10 @@ function normalizeExtras(raw, transcript) {
   const hesitation = (Array.isArray(d.hesitation) ? d.hesitation : [])
     .map(asStr).filter((s) => s && !SECONDS_TALK.test(s)).slice(0, 3);
   const smoothest = SECONDS_TALK.test(asStr(d.smoothest)) ? '' : asStr(d.smoothest);
+  const intonation = SECONDS_TALK.test(asStr(d.intonation)) ? '' : asStr(d.intonation);
   const pronunciation = (Array.isArray(obj.pronunciation) ? obj.pronunciation : [])
     .map((p) => ({
-      word: asStr(p?.word), heard: asStr(p?.heard), tip: asStr(p?.tip),
+      word: asStr(p?.word), heard: asStr(p?.heard), should: asStr(p?.should), tip: asStr(p?.tip),
       times: Math.max(1, Math.round(Number(p?.times)) || 1),
     }))
     // The word must be one they actually said.
@@ -169,7 +172,9 @@ function normalizeExtras(raw, transcript) {
     ? { quote: asStr(bm.quote), why: asStr(bm.why) }
     : null;
   return {
-    delivery: (fillers.length || hesitation.length || smoothest) ? { fillers, hesitation, smoothest } : null,
+    delivery: (fillers.length || hesitation.length || smoothest || intonation)
+      ? { fillers, hesitation, smoothest, intonation }
+      : null,
     pronunciation,
     bestMoment: best,
   };
@@ -212,6 +217,7 @@ module.exports = {
   SHADOW_MODEL_DEFAULT,
   SHADOW_MONTHLY_USD_DEFAULT,
   MAX_INLINE_AUDIO_BYTES,
+  AUDIO_EXTRA_RULES,
   buildShadowPrompt,
   toGeminiSchema,
   shadowSchema,
