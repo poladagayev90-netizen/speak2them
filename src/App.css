@@ -229,6 +229,36 @@ body {
   font-weight: 600;
 }
 
+/* Sign-in / sign-up on a computer (Polad 2026-11-10: "/register still looks
+   zoomed in, the bottom is cut off"). The ≥1024px reading sizes in index.css
+   (body 18) are for Today and the topic sheet; a form wants the phone sizes
+   back, and the rhythm tightened so the whole card fits a 1366×768 laptop
+   without scrolling — it was 866px tall at 1440×800. */
+@media (min-width: 1024px) {
+  .auth-page {
+    --fs-display: 30px; --fs-h1: 23px; --fs-h2: 18px;
+    --fs-body: 15px;    --fs-sm: 13px; --fs-xs: 11px;
+    padding-top: var(--s-4);
+    padding-bottom: var(--s-4);
+  }
+  .auth-card {
+    /* The inline margins on the logo and subtitle use --s-4 / --s-5. */
+    --s-4: 12px; --s-5: 14px;
+    max-width: 460px;
+    padding: var(--s-5) var(--s-6);
+  }
+  .auth-card h2 { font-size: 24px; margin-bottom: 4px; }
+  .auth-card label { margin-top: 10px; margin-bottom: 4px; }
+  .auth-card input,
+  .auth-card select,
+  .auth-card textarea { padding: 9px 14px; font-size: 14px; }
+  .auth-role { padding: var(--s-2); gap: 2px; }
+  .auth-google { height: 40px; }
+  .auth-footer { margin-top: var(--s-3); }
+  .auth-card .btn-primary { margin-top: var(--s-4); }
+  .auth-card .frl { flex-wrap: nowrap; }
+}
+
 .btn-primary {
   width: 100%;
   padding: 14px;
@@ -3085,6 +3115,40 @@ body {
 .partners-invite-actions .ui-btn { text-decoration: none; gap: var(--s-2); }
 
 /* A student's Activity tab (TeacherStudent.jsx). */
+/* Student page → PDF (TeacherStudent "Download PDF"). The print head shows on
+   paper only; buttons, tabs, the app header and the nav do not print. */
+.ts-print-head { display: none; }
+@media print {
+  body.ts-printing .home-header,
+  body.ts-printing .bottom-nav,
+  body.ts-printing .ts-noprint,
+  body.ts-printing .update-banner { display: none !important; }
+  body.ts-printing .ts-print-head {
+    display: block;
+    margin-bottom: var(--s-4);
+    padding-bottom: var(--s-2);
+    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+  }
+  body.ts-printing .home-body { padding: 0 !important; max-width: none !important; }
+  /* The app shell scrolls inside fixed-height boxes (body, .desktop-layout,
+     .main-content); on paper that cut the report after one page. */
+  html:has(body.ts-printing),
+  body.ts-printing,
+  body.ts-printing #root,
+  body.ts-printing .desktop-layout,
+  body.ts-printing .main-content,
+  body.ts-printing .home-page {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  body.ts-printing .progress-section,
+  body.ts-printing .progress-verdict { break-inside: avoid; }
+  @page { margin: 14mm; }
+}
+
 .ts-activity { display: grid; gap: var(--s-2); }
 .ts-activity-now { margin: 0; font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); }
 .ts-activity-sub { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }

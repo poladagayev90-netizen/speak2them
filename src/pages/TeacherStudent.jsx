@@ -4,7 +4,9 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { isAdminUser } from '../constants';
 import { totalPracticeMinutes } from '../utils/practiceStats';
-import { ChevronLeft, BellRing, Check, User } from 'lucide-react';
+import { ChevronLeft, BellRing, Check, User, Download } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import Button from '../components/ui/Button';
 import { nudgeStudent, NUDGE_RESULT_TEXT, removeStudent } from '../utils/teacher';
 import { getPresence, lastSeenLabel } from '../utils/presence';
 import { fetchPresenceDays, hoursLabel } from '../utils/presenceLog';
@@ -39,6 +41,36 @@ export default function TeacherStudent({ user }) {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState('');
+  // "Download PDF" (Polad 2026-11-10): the Progress tab printed through the
+  // browser's own dialog, which saves a PDF — the same route as the homework
+  // sheet, no PDF library. The Android WebView has no print dialog, so there
+  // the button explains instead. 0 = idle, otherwise the delay before print.
+  const native = Capacitor.isNativePlatform();
+  const [printDelay, setPrintDelay] = useState(0);
+  const [pdfNote, setPdfNote] = useState('');
+  const downloadPdf = () => {
+    if (native) { setPdfNote('Open this page on a computer to save the report as a PDF.'); return; }
+    // From another tab, give the Progress tab time to load its analyses.
+    setPrintDelay(tab === 'progress' ? 300 : 1500);
+    setTab('progress');
+  };
+  useEffect(() => {
+    if (!printDelay) return undefined;
+    // Paper is light whatever the app theme: a dark theme would print as ink.
+    const root = document.documentElement;
+    const theme = root.getAttribute('data-theme');
+    root.setAttribute('data-theme', 'light');
+    document.body.classList.add('ts-printing');
+    const finish = () => setPrintDelay(0);
+    window.addEventListener('afterprint', finish);
+    const t = setTimeout(() => { window.print(); }, printDelay);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('afterprint', finish);
+      document.body.classList.remove('ts-printing');
+      if (theme) root.setAttribute('data-theme', theme); else root.removeAttribute('data-theme');
+    };
+  }, [printDelay]);
 
   useEffect(() => {
     setStudent(null); setLoadError('');
@@ -77,7 +109,8 @@ export default function TeacherStudent({ user }) {
         </div>
         {student && (
           <span style={{ fontSize: 'var(--fs-xs)', fontWeight: 700, color: presence !== 'offline' ? 'var(--accent)' : 'var(--text-secondary)', flexShrink: 0 }}>
-            {presence === 'busy' ? 'In a call' : presence === 'online' ? 'Online now' : `Seen ${lastSeenLabel(seenMs, now)}`}
+            {presence === 'busy' ? 'In a call' : presence === 'online' ? 'Online now'
+              : seenMs ? `Seen ${lastSeenLabel(seenMs, now)}` : 'Not seen yet'}
           </span>
         )}
       </div>
@@ -86,7 +119,23 @@ export default function TeacherStudent({ user }) {
       <div className="home-body" style={{ paddingBottom: '90px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
         {loadError && <p role="alert">{loadError}</p>}
 
-        <div className="ui-seg" role="tablist" aria-label="Student" style={{ marginBottom: 'var(--s-4)' }}>
+        {/* On paper only: whose report this is and when it was printed. */}
+        <div className="ts-print-head">
+          <strong>{student?.name || 'Student'}</strong> · SpeakLab progress report ·{' '}
+          {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </div>
+
+        {canSee && (
+          <div className="ts-noprint" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--s-3)', flexWrap: 'wrap', marginBottom: 'var(--s-3)' }}>
+            {pdfNote && <span style={{ fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--text-secondary)' }}>{pdfNote}</span>}
+            <Button variant="primary" size="sm" icon={<Download size={16} aria-hidden="true" />} onClick={downloadPdf}
+              disabled={!!printDelay}>
+              Download PDF
+            </Button>
+          </div>
+        )}
+
+        <div className="ui-seg ts-noprint" role="tablist" aria-label="Student" style={{ marginBottom: 'var(--s-4)' }}>
           {TABS.map((t) => (
             <button key={t.id} type="button" role="tab" aria-selected={tab === t.id}
               className={`ui-seg-btn ${tab === t.id ? 'is-on' : ''}`} onClick={() => setTab(t.id)}>
@@ -119,6 +168,7 @@ export default function TeacherStudent({ user }) {
                 cannot turn into nagging someone who did the work. */}
             <button
               type="button"
+              className="ts-noprint"
               onClick={async () => {
                 if (nudge === 'sending') return;
                 setNudge('sending');
@@ -160,7 +210,7 @@ export default function TeacherStudent({ user }) {
         {tab === 'activity' && <StudentActivity uid={studentId} canSee={canSee} presence={presence} seenMs={seenMs} />}
 
         {linked && (
-          <section style={{ ...panel, marginTop: 24 }} aria-label="Class membership">
+          <section className="ts-noprint" style={{ ...panel, marginTop: 24 }} aria-label="Class membership">
             {confirmRemove ? <>
               <p style={{ fontWeight: 700 }}>Remove {student.name || 'this student'} from your class?</p>
               <p style={{ margin: '8px 0 14px', fontSize: 13, color: 'var(--text-secondary)' }}>Their account, practice history and messages will stay. You will lose access to their analyses. They can join a teacher again with a new invitation.</p>

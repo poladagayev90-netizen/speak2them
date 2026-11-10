@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GraduationCap, MessageCircle, BarChart3, BellRing, Check, Clapperboard, ChevronRight } from 'lucide-react';
+import { GraduationCap, MessageCircle, BarChart3, BellRing, Check, Pencil } from 'lucide-react';
 import { doc, getDoc, collection, getDocs, query, limit, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 // ui.css BEFORE any component that pulls in cohort.css (TeacherWeek,
@@ -9,7 +9,6 @@ import '../components/ui/ui.css';
 import {
   createInviteCode,
   buildJoinLink,
-  inviteStudentByEmail,
   inviteStudentByUid,
   nudgeStudent,
   NUDGE_RESULT_TEXT,
@@ -18,8 +17,6 @@ import {
   TUTOR_SPECIALTIES,
 } from '../utils/teacher';
 import TutorBadge from '../components/TutorBadge';
-import { describeVideos } from '../data/describeVideos';
-import { canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import TeacherScheduler from '../components/TeacherScheduler';
 import TeacherUpcoming from '../components/TeacherUpcoming';
 import TeacherWeek from '../components/tutor/TeacherWeek';
@@ -28,14 +25,15 @@ import { isAdminUser } from '../constants';
 import { bakuDateStr } from '../utils/sessionSchedule';
 import { latestPracticeMs, timestampMs, weeklyPracticeMinutes, practiceWeekKey } from '../utils/practiceStats';
 import { getPresence, lastSeenLabel } from '../utils/presence';
+import { suggestTeacherCode } from '../utils/teacherCode';
 
 // The dashboard used to be one long page of ten blocks (Polad 2026-10-23, item
-// 7: "qarışıqlıq itsin"). Three tabs, each with one job: Today — lessons this
-// week, students, calls, the video library; Class — the analytics; Invite &
-// profile — what is set up once. `?tab=` keeps the choice across reloads.
+// 7: "qarışıqlıq itsin"). Two tabs, each with one job: Today — a compact class
+// summary, lessons this week, students, calls; Invite & profile — what is set
+// up once. The Class tab became the summary card on Today (2026-11-10); an old
+// `?tab=class` link simply lands on Today. `?tab=` keeps the choice.
 const DASH_TABS = [
   { id: 'today', label: 'Today' },
-  { id: 'class', label: 'Class' },
   { id: 'setup', label: 'Invite & profile' },
 ];
 
@@ -69,9 +67,13 @@ export default function TeacherUnlock({ user }) {
   const [studentProfiles, setStudentProfiles] = useState({});
   const [profilesLoading, setProfilesLoading] = useState(true);
   const [rosterError, setRosterError] = useState('');
-  // Birbaşa dəvət: kod paylaşmaq həmişə işləmir (link itir, kod səhv yazılır).
-  const [inviteEmail, setInviteEmail] = useState('');
+  // Invites go by link, WhatsApp or "Pick from users" — the email form was
+  // removed (Polad 2026-11-10). `inviting` = the uid being invited.
   const [inviting, setInviting] = useState(false);
+  // The code is made from the teacher's name on first open (no "create a code"
+  // step): 'idle' → 'working' → done, or 'failed' → the manual form below.
+  const [autoCode, setAutoCode] = useState('idle');
+  const [editingCode, setEditingCode] = useState(false);
   const [inviteMsg, setInviteMsg] = useState(null); // {ok, text}
   // Tutor profili. Başlanğıc dəyər user-dən bir dəfə (lazy initializer) götürülür
   // ki, effect-in asılılıq siyahısına user.name/bio girməsin və redaktə zamanı
@@ -146,6 +148,26 @@ export default function TeacherUnlock({ user }) {
     return () => { stopRoster(); stopProfiles(); };
   }, [user?.uid, eligible]);
 
+  // No code yet → make one from the name and go straight to the cabinet. A
+  // taken code gets a new number (up to four tries); any other answer — not
+  // eligible, rate limit, offline — falls back to the old manual form.
+  useEffect(() => {
+    if (checking || !eligible || myCode || autoCode !== 'idle') return undefined;
+    let alive = true;
+    setAutoCode('working');
+    (async () => {
+      const name = user?.name || user?.displayName || '';
+      for (let i = 0; i < 4; i += 1) {
+        const res = await createInviteCode(suggestTeacherCode(name));
+        if (!alive) return;
+        if (res.ok) { setMyCode(res.data.code); setRoster((r) => r || []); setAutoCode('done'); return; }
+        if (res.error !== 'code-taken') break;
+      }
+      if (alive) setAutoCode('failed');
+    })();
+    return () => { alive = false; };
+  }, [checking, eligible, myCode, autoCode, user?.name, user?.displayName]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmed = code.trim().toUpperCase();
@@ -161,25 +183,8 @@ export default function TeacherUnlock({ user }) {
     setMyCode(result.data.code);
     setRoster((r) => r || []);
     setLoading(false);
-  };
-
-  const sendInvite = async (e) => {
-    e.preventDefault();
-    const email = inviteEmail.trim();
-    if (!email) return;
-    setInviting(true);
-    setInviteMsg(null);
-    const res = await inviteStudentByEmail(email);
-    if (!res.ok) {
-      setInviteMsg({ ok: false, text: res.errorText });
-    } else {
-      setInviteMsg({
-        ok: true,
-        text: `Invitation sent to ${res.data.studentName || email} — they will get a notification in the app.`,
-      });
-      setInviteEmail('');
-    }
-    setInviting(false);
+    setEditingCode(false);
+    setCode('');
   };
 
   // Kataloq yalnız açılanda yüklənir — panelin ilk açılışını ağırlaşdırmasın.
@@ -327,7 +332,7 @@ export default function TeacherUnlock({ user }) {
   // myCode Firestore-dan asinxron gəlir, ilk render-də isə hələ null olur və
   // aşağıdakı "kod yarat" ekranı göstərilir. Kodu olan müəllim üçün bu ekran
   // heç vaxt görünməməlidir.
-  if (checking) {
+  if (checking || (!myCode && autoCode !== 'failed')) {
     return (
       <div className="auth-page" style={{ alignItems: 'center', justifyContent: 'center', padding: '40px 16px' }}>
         <div className="auth-card" style={{ ...cardStyle, textAlign: 'center' }}>
@@ -436,13 +441,11 @@ export default function TeacherUnlock({ user }) {
       lastActiveAt: Math.max(timestampMs(s.lastActiveAt), timestampMs(p.lastPracticeAt), timestampMs(p.lastCallDate)),
     };
   })
-    // Who is in the app right now first (Polad 2026-10-07: "online ones on the
-    // first lines — the list doesn't move"), then whoever was seen most
-    // recently, then by practice; never seen = newest joiner first. The
-    // profiles are live, so a student who opens the app rises on their own.
-    .sort((a, b) => ((b.presence !== 'offline') - (a.presence !== 'offline'))
-      || (b.seenMs - a.seenMs)
-      || (latestPracticeMs(b) - latestPracticeMs(a))
+    // Most recent practice first (Polad 2026-11-10 — replaces "online first"
+    // from 2026-10-07: the teacher reads the list as "who worked lately");
+    // never practised = newest joiner first. The green dot still marks who is
+    // in the app right now.
+    .sort((a, b) => (latestPracticeMs(b) - latestPracticeMs(a))
       || (timestampMs(b.joinedAt) - timestampMs(a.joinedAt)));
   // toLocaleDateString bəzi WebView-lərdə ay adını "M07" kimi verir —
   // ay adları əl ilə yazılıb.
@@ -539,74 +542,62 @@ export default function TeacherUnlock({ user }) {
         </div>
         {rosterError && <p role="alert">{rosterError}</p>}
 
-        {/* Individual lessons from today to a week ahead, every student. */}
-        {dashTab === 'today' && isAdminUser(user) && <AddStudent />}
-        {dashTab === 'today' && <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />}
-
-        {/* Sinif analitikası — panelin əsas faydası: müəllim hazır dərs planı alır */}
-        {dashTab === 'class' && students.length === 0 && roster !== null && (
-          <p style={{ color: 'var(--text-secondary)' }}>When students join your class, their progress appears here.</p>
-        )}
-        {dashTab === 'class' && students.length > 0 && (
+        {/* Class summary — what the old Class tab held, as one compact card at
+            the top of Today (2026-11-10): who is active, the average, and the
+            errors the class repeats. Hidden until someone has joined. */}
+        {dashTab === 'today' && students.length > 0 && (
           <div style={{
             background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-            borderRadius: '16px', padding: '16px', marginBottom: '16px',
+            borderRadius: '16px', padding: '14px 16px', marginBottom: '16px',
           }}>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BarChart3 size={16} strokeWidth={1.75} aria-hidden="true" /> Class overview
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BarChart3 size={16} strokeWidth={1.75} aria-hidden="true" /> Class summary
             </div>
 
             <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))',
-              gap: '10px',
+              display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gap: '8px',
             }}>
               {[
                 { label: 'Active this week', value: `${activeThisWeek}/${students.length}` },
-                { label: 'All-time class average', value: classAvg ?? '—' },
-                { label: 'Students with reports', value: scored.length },
+                { label: 'Class average', value: classAvg ?? '—' },
+                { label: 'With reports', value: scored.length },
               ].map((tile) => (
                 <div key={tile.label} style={{
                   background: 'var(--bg-card)', borderRadius: '12px',
-                  padding: '12px 8px', textAlign: 'center',
+                  padding: '8px 6px', textAlign: 'center', minWidth: 0,
                 }}>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text-primary)' }}>{tile.value}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary)' }}>{tile.value}</div>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>{tile.label}</div>
                 </div>
               ))}
             </div>
 
-            {topThemes.length > 0 ? (
-              <>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: '16px 2px 8px' }}>
-                  Most repeated error themes
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {topThemes.map((th, i) => (
-                    <div key={th.title} style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      background: 'var(--bg-card)', borderRadius: '10px', padding: '10px 12px',
-                    }}>
-                      <span style={{ fontSize: '13px', fontWeight: 900, color: 'var(--accent)', minWidth: '16px' }}>{i + 1}</span>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', flex: 1, minWidth: 0 }}>
-                        {th.title}
-                      </span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                        {th.count}×
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '10px 2px 0' }}>
-                  Cover these in your next lesson and you address the whole class at once.
-                </p>
-              </>
-            ) : (
-              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '14px 2px 0' }}>
-                As your students speak, the errors your class repeats most will appear here.
-              </p>
+            {/* The class's most repeated error themes, one line of chips —
+                cover them in the next lesson and the whole class is addressed. */}
+            {topThemes.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', marginTop: '10px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginRight: '2px' }}>
+                  Most repeated errors
+                </span>
+                {topThemes.map((th) => (
+                  <span key={th.title} style={{
+                    display: 'inline-flex', alignItems: 'baseline', gap: '4px',
+                    padding: '3px 9px', borderRadius: '99px', background: 'var(--accent-soft)',
+                    fontSize: '12px', fontWeight: 700, color: 'var(--accent)',
+                  }}>
+                    {th.title}
+                    <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{th.count}×</span>
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         )}
+
+        {/* Individual lessons from today to a week ahead, every student. */}
+        {dashTab === 'today' && isAdminUser(user) && <AddStudent />}
+        {dashTab === 'today' && <TeacherWeek uid={user?.uid} names={Object.fromEntries(students.map((s) => [s.id, s.name || s.displayName || 'Student']))} />}
 
 
         {/* Roster */}
@@ -724,7 +715,8 @@ export default function TeacherUnlock({ user }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                           <span style={{ flex: 1, minWidth: 0, fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
                             <b style={{ fontWeight: 800, color: s.presence !== 'offline' ? 'var(--accent)' : 'var(--text-secondary)' }}>
-                              {s.presence === 'busy' ? 'In a call' : s.presence === 'online' ? 'Online' : `Seen ${lastSeenLabel(s.seenMs, nowMs)}`}
+                              {s.presence === 'busy' ? 'In a call' : s.presence === 'online' ? 'Online'
+                                : s.seenMs ? `Seen ${lastSeenLabel(s.seenMs, nowMs)}` : 'Not seen yet'}
                             </b>
                             {' · '}{r.when}
                           </span>
@@ -924,56 +916,60 @@ export default function TeacherUnlock({ user }) {
           )}
         </div>
 
-        {/* Video library — the whole describe-video deck, not a topic's six.
-            A single row, not a section: it is a tool the teacher reaches for
-            mid-lesson, and it must not push invites and the roster down. */}
-        </>)}
-        {dashTab === 'today' && canBrowseAllVideos(user) && (
-          <button
-            type="button"
-            onClick={() => navigate('/teacher/videos')}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-              background: 'var(--bg-card)', border: '1px solid var(--border)',
-              borderRadius: '16px', padding: '14px 16px', marginBottom: '16px',
-              textAlign: 'left', cursor: 'pointer', color: 'var(--text-primary)',
-              // A <button> does not inherit the page font on its own.
-              font: 'inherit',
-            }}
-          >
-            <span style={{
-              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-              display: 'grid', placeItems: 'center',
-              background: 'var(--accent-soft)', color: 'var(--accent)',
-            }}>
-              <Clapperboard size={20} aria-hidden="true" />
-            </span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ display: 'block', fontSize: '15px', fontWeight: 800 }}>Video library</span>
-              <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
-                All {describeVideos.length} clips to describe — pick one and share your screen
-              </span>
-            </span>
-            <ChevronRight size={20} aria-hidden="true" style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-          </button>
-        )}
+        {/* The Video library card is gone from the panel (Polad 2026-11-10);
+            /teacher/videos still opens for anyone who has the link. */}
 
         {/* Dəvət bölməsi */}
-        {dashTab === 'setup' && (<>
         <div style={{
           background: 'var(--accent-soft)',
           border: '1px solid var(--border)', borderRadius: '16px',
           padding: '18px', marginBottom: '16px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700 }}>{'Your invite code'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 700, flex: 1 }}>{'Your invite code'}</span>
             <span style={{
               fontSize: '22px', fontWeight: 900, letterSpacing: '2px',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
             }}>
               {myCode}
             </span>
+            {/* The code was made from the name; this is where it is changed.
+                The old code keeps working — links already sent do not die. */}
+            <button type="button" aria-label="Change code"
+              onClick={() => { setEditingCode((o) => !o); setCode(''); setError(''); }}
+              style={{
+                display: 'inline-flex', padding: '6px', borderRadius: '10px', cursor: 'pointer',
+                border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)',
+              }}>
+              <Pencil size={15} aria-hidden="true" />
+            </button>
           </div>
+          {editingCode && (
+            <form onSubmit={handleSubmit} style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text" value={code} maxLength={12} placeholder="NEW CODE"
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                  autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+                  aria-label="New invite code"
+                  style={{ ...fieldStyle, flex: 1, fontWeight: 700, letterSpacing: '2px' }}
+                />
+                <button type="submit" disabled={loading || code.trim().length < 4}
+                  style={{
+                    padding: '0 16px', borderRadius: '12px', border: 'none', fontSize: '14px', fontWeight: 800,
+                    background: code.trim().length < 4 ? 'var(--bg-card)' : 'var(--accent)',
+                    color: code.trim().length < 4 ? 'var(--text-muted)' : 'var(--text-on-accent)',
+                    cursor: code.trim().length < 4 ? 'default' : 'pointer',
+                  }}>
+                  {loading ? '…' : 'Save'}
+                </button>
+              </div>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', margin: '6px 2px 0', lineHeight: 1.5 }}>
+                4–12 letters or digits. Your current code keeps working.
+              </p>
+              {error && <p role="alert" style={{ fontSize: '13px', color: 'var(--danger)', margin: '6px 2px 0' }}>{error}</p>}
+            </form>
+          )}
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               type="button"
@@ -1002,59 +998,6 @@ export default function TeacherUnlock({ user }) {
             </a>
           </div>
         </div>
-
-        {/* Birbaşa dəvət — linkin çatmadığı hallar üçün */}
-        <form onSubmit={sendInvite} style={{
-          background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-          borderRadius: '16px', padding: '16px', marginBottom: '16px',
-        }}>
-          <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
-            ✉️ Invite a student directly
-          </div>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px', lineHeight: 1.5 }}>
-            Enter the email your student signed up with — the invitation appears on their screen.
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="student@gmail.com"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              style={{
-                flex: 1, padding: '11px 12px', borderRadius: '12px',
-                border: '1px solid var(--border)', background: 'var(--bg-input)',
-                color: 'var(--text-primary)', fontSize: '14px', outline: 'none',
-              }}
-            />
-            <button
-              type="submit"
-              disabled={inviting || !inviteEmail.trim()}
-              style={{
-                padding: '11px 16px', borderRadius: '12px', border: 'none',
-                background: (inviting || !inviteEmail.trim())
-                  ? 'var(--bg-card)'
-                  : 'var(--accent)',
-                color: (inviting || !inviteEmail.trim()) ? 'var(--text-muted)' : '#fff',
-                fontSize: '14px', fontWeight: 800,
-                cursor: (inviting || !inviteEmail.trim()) ? 'default' : 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {inviting ? '...' : 'Invite'}
-            </button>
-          </div>
-          {inviteMsg && (
-            <div style={{
-              marginTop: '10px', fontSize: '13px', lineHeight: 1.5,
-              color: inviteMsg.ok ? 'var(--success)' : 'var(--danger)',
-            }}>
-              {inviteMsg.ok ? ' ' : ' '}{inviteMsg.text}
-            </div>
-          )}
-        </form>
 
         {/* İstifadəçi kataloqu — e-poçt yazmadan bir toxunuşla dəvət.
             Müəllimin şikayəti: "link atıram çatmır, e-poçtu tapa bilmirəm".
@@ -1164,6 +1107,14 @@ export default function TeacherUnlock({ user }) {
                 </div>
               )}
             </div>
+          )}
+          {inviteMsg && (
+            <p role="status" style={{
+              margin: '10px 2px 0', fontSize: '13px', lineHeight: 1.5,
+              color: inviteMsg.ok ? 'var(--text-secondary)' : 'var(--danger)',
+            }}>
+              {inviteMsg.text}
+            </p>
           )}
         </div>
         </>)}

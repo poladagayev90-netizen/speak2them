@@ -461,8 +461,11 @@ function VerdictCard({ item }) {
       <div className="progress-verdict-head">
         <span className="progress-verdict-icon"><Icon size={16} strokeWidth={2.2} /></span>
         <p className="progress-verdict-name">{item.label}</p>
-        <span className="progress-verdict-tag">{meta.title}</span>
       </div>
+      {/* The status sits on its own line: beside the title it took the room
+          the title needed, and a long concept ("Fiildən sonra -ing / to")
+          broke letter by letter (Polad 2026-11-10). */}
+      <span className="progress-verdict-tag">{meta.title}</span>
       <p className="progress-verdict-line">{verdictLine(item)}</p>
       {item.examples[0] && <Example example={item.examples[0]} />}
     </div>
