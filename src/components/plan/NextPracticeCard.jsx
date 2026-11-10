@@ -9,6 +9,7 @@ import { setPlanPaused, saveWeek, addFreeBlock, usePopularTimes } from '../../ho
 import { dayNames, popularSuggestion } from '../../utils/myWeek';
 import { offsetVsBaku } from '../../utils/timezone';
 import HeroParade, { heroClockStyle } from './HeroFx';
+import AddToCalendar from './AddToCalendar';
 import './plan.css';
 
 // The first thing on Today: the answer to "what should I do now?".
@@ -69,6 +70,7 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
           <Button variant="ghost" onClick={() => navigate('/plan')}>My week</Button>
         </div>
         {!h.joinable && <p className="pl-hint">The Join button appears here five minutes before the start.</p>}
+        {!live && <AddToCalendar booking={b} peerName={h.peerName} />}
         {limitLine}
       </section>
     );

@@ -20,6 +20,7 @@ const classBrief = require("./classBrief");
 const tutorLessons = require("./tutorLessons");
 const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
+const callReminders = require("./callReminders");
 const autoRoster = require("./autoRoster");
 const accountHealth = require("./accountHealth");
 const newcomersLib = require("./newcomers");
@@ -1346,6 +1347,14 @@ exports.syncUpcomingCall = onDocumentWritten({ document: "bookings/{bookingId}",
   // partner on the next minute tick instead of waiting for the hourly run.
   const before = event.data?.before?.exists ? (event.data.before.data() || {}) : {};
   const after = event.data?.after?.exists ? (event.data.after.data() || {}) : {};
+  // A reminder stamp (sendCallReminders) changes nothing upcomingCall or the
+  // package balance depend on — skip the recompute for those writes.
+  if (event.data?.before?.exists && event.data?.after?.exists) {
+    const { reminded: rb, ...restBefore } = before;
+    const { reminded: ra, ...restAfter } = after;
+    if (JSON.stringify(rb || {}) !== JSON.stringify(ra || {})
+      && JSON.stringify(restBefore) === JSON.stringify(restAfter)) return;
+  }
   const strandedNow = (before.status === "confirmed" && after.status === "cancelled")
     || (after.status === "done" && Object.values(after.outcome || {}).includes("partner_no_show")
       && !Object.values(before.outcome || {}).includes("partner_no_show"));
@@ -3148,7 +3157,6 @@ const SLOT_HORIZON_DAYS = 5;
 // Pairs made ahead (admin offers, teacher pairs, the weekly plan) reach
 // further than the board: a plan sent on Sunday covers the whole next week.
 const BOOKING_HORIZON_DAYS = 9;
-const SLOT_REMINDER_MS = 10 * 60 * 1000;
 const SLOT_NOSHOW_GRACE_MS = 10 * 60 * 1000;
 const SLOT_MAX_MEMBERS = 60;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -6518,6 +6526,87 @@ async function sendOfferReminders(db, nowMs) {
 
 // Bir dəfə iddia edilən marker — eyni push hər dəqiqə təkrarlanmasın deyə.
 // (Köhnə matchSessionQueue-dakı sessionRuns pattern-i.)
+// ─── Booked-call reminder ladder (callReminders.js) ───────────────
+// 24 h / 1 h / 10 min before every confirmed booking, to both people, naming
+// the call's time (in each reader's zone) and the partner's first name. The
+// step is claimed on the booking (`reminded.<step>`) in a transaction before
+// anything is sent, so overlapping ticks never send twice; syncUpcomingCall
+// ignores writes that only touch `reminded`.
+//
+// Reads: the next hour every minute, the next 24 h every 15 min. A range on
+// startMs alone (single-field index) and the status filtered here — bookings
+// in a window are few, and no composite index is needed.
+async function sendCallReminders(db, now) {
+  const far = new Date(now).getUTCMinutes() % 15 === 0;
+  const horizon = now + (far ? callReminders.FAR_WINDOW_MS : callReminders.NEAR_WINDOW_MS);
+  const snap = await db.collection("bookings")
+    .where("startMs", ">", now).where("startMs", "<=", horizon).get();
+  for (const d of snap.docs) {
+    if (!callReminders.dueReminderStep(d.data(), now)) continue;
+    const claimed = await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(d.ref);
+      const b = fresh.exists ? (fresh.data() || {}) : null;
+      const step = b && callReminders.dueReminderStep(b, Date.now());
+      if (!step) return null;
+      tx.update(d.ref, { [`reminded.${step}`]: admin.firestore.Timestamp.now() });
+      return { step, b };
+    }).catch((e) => { console.warn("[CallReminder] claim failed:", d.id, e.message); return null; });
+    if (!claimed) continue;
+    const { step, b } = claimed;
+    const [a, c] = b.participants || [];
+    const names = b.names || {};
+    for (const [uid, peer] of [[a, c], [c, a]]) {
+      if (!uid) continue;
+      const res = await sendPushToUser(db, uid, {
+        key: `call_reminder_${step}`,
+        vars: { at: Number(b.startMs), peerName: callReminders.firstName(names[peer]) },
+        type: "call_reminder", url: "/",
+        tag: callReminders.reminderTag(d.id),
+        ttl: callReminders.reminderTtlSeconds(b.startMs, Date.now()),
+      }).catch((e) => { console.warn("[CallReminder] push failed:", d.id, uid, e.message); return null; });
+      // Web push is the unreliable channel (iOS tabs have none; browsers drop
+      // tokens). Anyone without the Android app also gets the 1 h step by
+      // e-mail, through the Gmail account the ops alerts already use.
+      const platforms = (res && res.platforms) || [];
+      if (step === "1h" && !platforms.includes("android")) {
+        await sendCallReminderEmail(db, uid, b, names[peer], res && res.userData)
+          .catch((e) => console.warn("[CallReminder] e-mail failed:", d.id, uid, e.message));
+      }
+    }
+    console.log("[CallReminder] sent", { bookingId: d.id, step });
+  }
+}
+
+// The e-mail address lives only in Firebase Auth (never on users/). Copy comes
+// from pushText, so it reads exactly like the push in the user's language.
+async function sendCallReminderEmail(db, uid, booking, peerFullName, userData) {
+  const gmailUser = GMAIL_USER.value();
+  const gmailPass = GMAIL_APP_PASSWORD.value();
+  if (!gmailUser || !gmailPass) return;
+  const authUser = await admin.auth().getUser(uid).catch(() => null);
+  const to = authUser && authUser.email;
+  if (!to) return;
+  const data = userData || (await db.collection("users").doc(uid).get()).data() || {};
+  const lang = pushLang(data);
+  const time = slotTimeLabel(Number(booking.startMs), lang, data.timeZone);
+  const { title, body } = pushText(lang, "call_reminder_1h",
+    { time, peerName: callReminders.firstName(peerFullName) });
+  const appUrl = "https://speaklab-app.vercel.app/";
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const transporter = nodemailer.createTransport({ service: "gmail", auth: { user: gmailUser, pass: gmailPass } });
+  await transporter.sendMail({
+    from: `"SpeakLab" <${gmailUser}>`,
+    to,
+    subject: title,
+    text: `${body}\n\n${appUrl}`,
+    html: `<div style="font-family:system-ui,sans-serif;font-size:16px;line-height:1.5;color:#1f1640">`
+      + `<p style="font-size:18px;font-weight:600;margin:0 0 8px">${esc(title)}</p>`
+      + `<p style="margin:0 0 20px">${esc(body)}</p>`
+      + `<a href="${appUrl}" style="display:inline-block;background:#6C3EF4;color:#fff;text-decoration:none;padding:12px 20px;border-radius:12px;font-weight:600">Open SpeakLab</a>`
+      + `</div>`,
+  });
+}
+
 async function claimSlotRun(db, id) {
   const ref = db.collection("slotRuns").doc(id);
   return db.runTransaction(async (tx) => {
@@ -6535,7 +6624,8 @@ exports.practiceSlotTick = onSchedule(
   // ~1000 learners brings the refill near a minute). Everything else here is
   // claimed in slotRuns or idempotent (the call-doc prep), so a long tick
   // overlapping the next one does nothing twice.
-  { schedule: "every 1 minutes", timeZone: "Asia/Baku", timeoutSeconds: 300, secrets: [GEMINI_API_KEY] },
+  // GMAIL_*: the 1 h call-reminder e-mail for people without the Android app.
+  { schedule: "every 1 minutes", timeZone: "Asia/Baku", timeoutSeconds: 300, secrets: [GEMINI_API_KEY, GMAIL_USER, GMAIL_APP_PASSWORD] },
   async () => {
     const db = admin.firestore();
     const now = Date.now();
@@ -6547,6 +6637,9 @@ exports.practiceSlotTick = onSchedule(
     // their own (one small query per minute).
     await sendIntroReminders(db, now).catch((e) => console.warn("[SlotTick] intro reminders failed:", e.message));
     await sendLessonReminders(db, now).catch((e) => console.warn("[SlotTick] lesson reminders failed:", e.message));
+    // 24 h / 1 h / 10 min before every booked call (replaced the single
+    // per-slot 10-min push, which named neither the partner nor the call).
+    await sendCallReminders(db, now).catch((e) => console.warn("[SlotTick] call reminders failed:", e.message));
 
     // Weekly plan: Sunday draft/send, offer deadlines, refill (see runPlannerTick).
     await runPlannerTick(db, now).catch((e) => console.warn("[SlotTick] planner failed:", e.message));
@@ -6684,19 +6777,9 @@ exports.practiceSlotTick = onSchedule(
       };
 
       try {
-        // 10 dəqiqə qalmış xatırlatma. Yalnız EŞLƏŞMİŞ üzvlərə — tək gözləyənə
-        // "hələ təksən" yazmaq ruhdan salır və spam kimi oxunur.
-        if (untilStart <= SLOT_REMINDER_MS && untilStart > SLOT_REMINDER_MS - 60000) {
-          if (await claimSlotRun(db, `${doc.id}_reminder`)) {
-            for (const m of await matchedMembers()) {
-              await sendPushToUser(db, m.id, {
-                key: "slot_reminder",
-                vars: { at: slot.startMs },
-                type: "slot_reminder", url: "/",
-              }).catch(() => null);
-            }
-          }
-        }
+        // The 10-min reminder that lived here is now the last step of the
+        // per-booking ladder (sendCallReminders) — every matched pair has a
+        // booking, and that push names the partner.
 
         // The pair's call doc is written now, not at booking time (see
         // bookings.js planCallDocTx). Every minute in the window, but it is a
@@ -8264,7 +8347,10 @@ async function sendPushToUser(db, uid, opts) {
   const userSnap = await db.collection("users").doc(uid).get();
   const data = userSnap.exists ? userSnap.data() : {};
   const entries = await getTokensForUser(db, uid, data.fcmToken, data.fcmTokenFailCount);
-  if (!entries.length) return;
+  // Callers that need a fallback (the call-reminder e-mail) read which kinds
+  // of device this person has; every other caller ignores the result.
+  const result = { platforms: entries.map((e) => e.platform), userData: data };
+  if (!entries.length) return result;
 
   let { title, body } = opts;
   if (opts.key) {
@@ -8276,10 +8362,16 @@ async function sendPushToUser(db, uid, opts) {
 
   try {
     // `extra`: more string fields for the device (the incoming call's caller).
-    await sendPush(entries, { ...(opts.extra || {}), title, body, type: opts.type, url: opts.url });
+    // `tag` / `ttl` (strings): see pushTokens.buildMessage and the web SW.
+    await sendPush(entries, {
+      ...(opts.extra || {}), title, body, type: opts.type, url: opts.url,
+      ...(opts.tag ? { tag: String(opts.tag) } : {}),
+      ...(opts.ttl ? { ttl: String(opts.ttl) } : {}),
+    });
   } catch (error) {
     console.warn("[Push] send failed:", uid, error.message);
   }
+  return result;
 }
 
 // Multicast that respects each recipient's language. One sendPush per language

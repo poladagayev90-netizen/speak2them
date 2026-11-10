@@ -63,4 +63,4 @@ Each file holds the full rules, field names and the reasons behind them. Read it
 
 ## Known open debt
 - ~~`src/utils/analyzeWithOpenAI.js`~~ — the file no longer exists; the analysis is server-side. If those `REACT_APP_*` keys were ever real they are still in old build artifacts and should be rotated.
-- Web SW notifications share a `tag` per type, so same-type notifications replace each other.
+- Web SW notifications share a `tag` per type, so same-type notifications replace each other (now re-alerting, `renotify`) — except pushes that carry `data.tag` (call reminders: one per booking).

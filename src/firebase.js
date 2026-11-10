@@ -51,6 +51,8 @@ if (process.env.REACT_APP_USE_EMULATORS === 'true') {
 // stop arriving. Give messaging its own scope (the same one the SDK uses by
 // default) so both workers coexist.
 const FCM_SW_SCOPE = '/firebase-cloud-messaging-push-scope';
+// The foreground onMessage listener is wired once per page (see below).
+let foregroundListenerOn = false;
 
 // Each device keeps its own token doc under users/{uid}/fcmTokens so a second
 // device never overwrites the first (the old single users/{uid}.fcmToken field
@@ -112,17 +114,25 @@ async function registerTokenAndListener(uid) {
 
   // Data-only pushes that arrive while a tab is open never reach the SW's
   // onBackgroundMessage — display them here or they are lost entirely.
-  onMessage(messaging, (payload) => {
-    const data = payload?.data;
-    if (!data?.title) return;
-    registration.showNotification(data.title, {
-      body: data.body || '',
-      icon: '/logo192.png',
-      badge: '/logo192.png',
-      tag: data.type || 'speaklab',
-      data: { url: data.url || '/' },
+  // Once per page: this function re-runs on every foreground return and every
+  // 6 h (watchFcmToken), and each run used to stack one more listener, so a
+  // push in an open tab was shown once per refresh.
+  if (!foregroundListenerOn) {
+    foregroundListenerOn = true;
+    onMessage(messaging, (payload) => {
+      const data = payload?.data;
+      if (!data?.title) return;
+      // Same tag rules as public/firebase-messaging-sw.js.
+      registration.showNotification(data.title, {
+        body: data.body || '',
+        icon: '/logo192.png',
+        badge: '/logo192.png',
+        tag: data.type === 'missed_call' ? 'incoming_call' : (data.tag || data.type || 'speaklab'),
+        renotify: true,
+        data: { url: data.url || '/' },
+      });
     });
-  });
+  }
 
   return Boolean(token);
 }

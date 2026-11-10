@@ -119,8 +119,12 @@ function buildMessage(platform, tokens, data) {
   // hung up, and a ring arriving 20 minutes later just says "you missed it"
   // (Rümeysa 2026-09-30: "I see calls later"). Other pushes keep an hour.
   const isCall = data.type === "incoming_call";
+  // `data.ttl` (seconds, a string like every data field) lets a time-bound
+  // push expire with its moment — a call reminder is worthless once the call
+  // has started (callReminders.reminderTtlSeconds).
+  const ttlSec = Number(data.ttl) > 0 ? Math.floor(Number(data.ttl)) : (isCall ? 60 : 3600);
   if (platform !== "android" && platform !== "android-ring") {
-    return { tokens, data, webpush: { headers: { Urgency: "high", TTL: isCall ? "60" : "3600" } } };
+    return { tokens, data, webpush: { headers: { Urgency: "high", TTL: String(ttlSec) } } };
   }
   // The app draws the call itself: data only, so Android shows nothing on
   // its own and hands the message to CallMessagingService even when the app
@@ -137,7 +141,7 @@ function buildMessage(platform, tokens, data) {
     },
     android: {
       priority: "high",
-      ...(isCall ? { ttl: 60 * 1000 } : {}),
+      ...(isCall || Number(data.ttl) > 0 ? { ttl: ttlSec * 1000 } : {}),
       // icon = alpha-only tray silhouette (drawable/ic_stat_speaklab);
       // explicit here as well as in the manifest meta-data so the brand mark
       // shows regardless of which default the device honours.
@@ -145,7 +149,9 @@ function buildMessage(platform, tokens, data) {
       // sitting under it (the web SW does the same with its tag).
       notification: {
         sound: "default", icon: "ic_stat_speaklab", color: "#6C3EF4",
-        ...(isCall || data.type === "missed_call" ? { tag: "call" } : {}),
+        // `data.tag`: a push that should replace its own earlier steps (the
+        // reminder ladder of one booking) — the web SW reads the same field.
+        ...(isCall || data.type === "missed_call" ? { tag: "call" } : (data.tag ? { tag: data.tag } : {})),
       },
     },
   };

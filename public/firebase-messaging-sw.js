@@ -15,14 +15,22 @@ messaging.onBackgroundMessage((payload) => {
   // A call must not slip by as a quiet tray item: it stays up until tapped,
   // vibrates like a ring, and re-alerts even if an older call used the tag.
   const isCall = data.type === 'incoming_call';
-  self.registration.showNotification(data.title, {
+  // event.waitUntil-equivalent: returning the promise keeps the worker alive
+  // until the notification is actually shown (a killed worker shows nothing).
+  return self.registration.showNotification(data.title, {
     body: data.body || '',
     icon: '/logo192.png',
     badge: '/logo192.png',
-    // A missed call takes the place of the ring it follows.
-    tag: data.type === 'missed_call' ? 'incoming_call' : (data.type || 'speaklab'),
+    // A missed call takes the place of the ring it follows. `data.tag` (the
+    // call-reminder ladder: one tag per booking) keeps two different calls'
+    // reminders from replacing each other — a tag per TYPE did exactly that.
+    tag: data.type === 'missed_call' ? 'incoming_call' : (data.tag || data.type || 'speaklab'),
+    // A notification that replaces one under the same tag is SILENT unless
+    // renotify is set — the 1 h reminder used to slide in over the 24 h one
+    // without a sound. Every push here is worth hearing.
+    renotify: true,
     data: { url: data.url || '/' },
-    ...(isCall ? { requireInteraction: true, renotify: true, vibrate: [400, 200, 400, 200, 400] } : {}),
+    ...(isCall ? { requireInteraction: true, vibrate: [400, 200, 400, 200, 400] } : {}),
   });
 });
 

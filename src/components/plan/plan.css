@@ -391,6 +391,17 @@
 .pl-ticket-link--danger { color: var(--danger); }
 .pl-ticket-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm); }
 
+/* «Add to calendar» (AddToCalendar.jsx): one quiet link, two choices under it. */
+.pl-cal { margin-top: var(--s-2); }
+.pl-cal-options { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-1); }
+.pl-cal-option {
+  display: inline-flex; align-items: center; gap: var(--s-1);
+  min-height: 36px; padding: 0 var(--s-3); cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--r-pill); background: var(--bg-card);
+  font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary); text-decoration: none;
+}
+.pl-cal-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* Next topics under today's card: a quiet row to prepare ahead. */
 .pl-next-topics { display: grid; gap: var(--s-2); margin: 0 0 var(--s-4); }
 .pl-next-topics-k { margin: 0; padding: 0 var(--s-1); font-size: var(--fs-xs); font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--text-secondary); }

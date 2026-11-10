@@ -109,6 +109,10 @@ const STRINGS = {
     slot_change_declined: () => ({ title: "Vaxt dəyişikliyi baş tutmadı", body: "Partnyorunuz üçün bu vaxt uyğun deyil — köhnə vaxt qüvvədə qalır." }),
     slot_reminder: (v) => ({ title: "⏰ 10 dəqiqəyə praktika", body: `${v.time} — zənginiz başlamaq üzrədir.` }),
     slot_start: () => ({ title: "🎙️ Praktika vaxtıdır", body: "Partnyorunuz sizi gözləyir — tətbiqi açın." }),
+    // Reminder ladder (callReminders.js). The call's own time, in the reader's zone.
+    call_reminder_24h: (v, f) => ({ title: `${v.peerName || f.peer} ilə praktika — ${v.time}`, body: "Zənginiz rezerv olunub. Təqvimə əlavə edin ki, vaxt yadınızda qalsın." }),
+    call_reminder_1h: (v, f) => ({ title: `Bir saata praktika — ${v.time}`, body: `${v.peerName || f.peer} sizinlə danışmağa hazırlaşır.` }),
+    call_reminder_10m: (v, f) => ({ title: `10 dəqiqəyə praktika — ${v.time}`, body: `${v.peerName || f.peer} ilə zənginiz başlayır. Tətbiqi açıb qoşulun.` }),
     // Eşləşmədən sonra həmin günün qalan blokları buraxılır — bir gündə iki
     // yerdə gözlənilməyəsən deyə. Bunu bildirmək VACİBDİR: bloklar lövhədən
     // özbaşına yox olsaydı, istifadəçi seçiminin itdiyini düşünərdi.
@@ -173,6 +177,9 @@ const STRINGS = {
     slot_change_declined: () => ({ title: "Saat değişikliği olmadı", body: "Partneriniz için bu saat uygun değil — eski saat geçerli kalıyor." }),
     slot_reminder: (v) => ({ title: "⏰ Pratiğe 10 dakika", body: `${v.time} — görüşmeniz başlamak üzere.` }),
     slot_start: () => ({ title: "🎙️ Pratik zamanı", body: "Partneriniz sizi bekliyor — uygulamayı açın." }),
+    call_reminder_24h: (v, f) => ({ title: `${v.peerName || f.peer} ile pratik — ${v.time}`, body: "Görüşmeniz ayrıldı. Saatini hatırlamak için takviminize ekleyin." }),
+    call_reminder_1h: (v, f) => ({ title: `Bir saat sonra pratik — ${v.time}`, body: `${v.peerName || f.peer} sizinle konuşmaya hazırlanıyor.` }),
+    call_reminder_10m: (v, f) => ({ title: `10 dakika sonra pratik — ${v.time}`, body: `${v.peerName || f.peer} ile görüşmeniz başlıyor. Uygulamayı açıp katılın.` }),
     slot_day_cleared: (v) => ({ title: "Bugünkü diğer bloklarınız boşaltıldı", body: `Görüşmeniz ${v.time} için onaylandı, bu yüzden bugünkü diğer bloklarınız eşleşmeden çıkarıldı. Yarınki seçimleriniz olduğu gibi kalıyor.` }),
     slot_match_cancelled: (v, f) => ({ title: "Görüşmeniz iptal edildi", body: `${v.byName || f.teacher} ${v.time} görüşmesini iptal etti. Blokta kalıyorsunuz — yeni bir partner bulunabilir.` }),
     slot_missed: (v) => ({ title: "🔕 Pratik gerçekleşmedi", body: `${v.time} görüşmesine kimse katılmadı. Bir dahaki sefere zamanında katılmayı dene!` }),
@@ -234,6 +241,9 @@ const STRINGS = {
     slot_change_declined: () => ({ title: "The time change didn't happen", body: "That time doesn't work for your partner — the original time stands." }),
     slot_reminder: (v) => ({ title: "⏰ Practice in 10 minutes", body: `${v.time} — your call is about to start.` }),
     slot_start: () => ({ title: "🎙️ Time to practise", body: "Your partner is waiting — open the app." }),
+    call_reminder_24h: (v, f) => ({ title: `Practice with ${v.peerName || f.peer} — ${v.time}`, body: "Your call is booked. Add it to your calendar to keep the time in view." }),
+    call_reminder_1h: (v, f) => ({ title: `Practice in an hour — ${v.time}`, body: `${v.peerName || "Your partner"} is getting ready to talk with you.` }),
+    call_reminder_10m: (v, f) => ({ title: `Practice in 10 minutes — ${v.time}`, body: `Your call with ${v.peerName || f.peer} is starting. Open the app and join.` }),
     slot_day_cleared: (v) => ({ title: "Your other blocks today were released", body: `Your call is confirmed for ${v.time}, so the rest of today's blocks were taken out of matching. Your choices for the other days are untouched.` }),
     slot_match_cancelled: (v, f) => ({ title: "Your call was cancelled", body: `${v.byName || f.teacher} cancelled the ${v.time} call. You are still in that block — a new partner can be found.` }),
     slot_missed: (v) => ({ title: "🔕 The practice didn't happen", body: `Nobody joined your call (${v.time}). Try to be there on time next round!` }),

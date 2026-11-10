@@ -26,3 +26,16 @@ test('other pushes to a ringing-capable app are unchanged', () => {
   assert.strictEqual(m.android.notification.tag, 'call');
   assert.ok(buildMessage('web', ['t'], call).webpush);
 });
+
+test('a reminder carries its own TTL and tag; web stays data-only', () => {
+  const r = { type: 'call_reminder', title: 'Practice', body: '', ttl: '600', tag: 'call_b1' };
+  const web = buildMessage('web', ['t'], r);
+  assert.strictEqual(web.webpush.headers.TTL, '600');
+  assert.strictEqual(web.notification, undefined);
+  const android = buildMessage('android', ['t'], r);
+  assert.strictEqual(android.android.ttl, 600000);
+  assert.strictEqual(android.android.notification.tag, 'call_b1');
+  // Without a ttl the old defaults stand.
+  assert.strictEqual(buildMessage('web', ['t'], { type: 'x' }).webpush.headers.TTL, '3600');
+  assert.strictEqual(buildMessage('android', ['t'], { type: 'x' }).android.ttl, undefined);
+});

@@ -5,6 +5,7 @@ import { Button } from '../ui';
 import { countdownLabel, canJoin, peerOf, joinState } from '../../utils/planState';
 import { leavePracticeSlot, proposeSlotChange } from '../../utils/practiceSlots';
 import SlotPicker from './SlotPicker';
+import AddToCalendar from './AddToCalendar';
 import { ReasonPicker } from './MissReason';
 import './plan.css';
 
@@ -97,6 +98,7 @@ export default function BookingRow({ booking, uid, now, autoOpen = null, onboard
               <Clock size={15} aria-hidden="true" /> Change the time
             </button>
           )}
+          {!joinable && <AddToCalendar booking={booking} peerName={peerName} />}
           <button type="button" className="pl-ticket-link pl-ticket-link--danger" onClick={cancel} disabled={!!busy}>
             <X size={15} aria-hidden="true" /> {busy === 'cancel' ? 'Cancelling…' : 'Cancel this practice'}
           </button>
