@@ -52,20 +52,22 @@ export function storeFirstRunLang(lang) {
   if (!FIRST_RUN_LANGS.includes(lang)) return;
   try {
     localStorage.setItem(FIRST_RUN_LANG_KEY, lang);
-    // az/tr are also the feedback language on this device (the key
+    // az/tr/ru are also the report language on this device (the key
     // feedbackLanguage.js and appLanguage.js read), as languageFields() writes.
-    if (lang === 'az' || lang === 'tr') localStorage.setItem(LANG_STORAGE_KEY, lang);
+    if (lang === 'az' || lang === 'tr' || lang === 'ru') localStorage.setItem(LANG_STORAGE_KEY, lang);
   } catch { /* private mode */ }
 }
 
 // What the sign-up writes on the users doc. az/tr also become the feedback
 // language (the same two fields Profile → Language writes), so the first
-// report and the word meanings already speak it; ru and en leave that alone.
+// report and the word meanings already speak it. ru becomes the REPORT
+// language only (2026-11-10): notifications have no Russian copy, so
+// appLanguage is left to the device. en leaves all of it alone.
 export function languageFields(lang) {
   if (!FIRST_RUN_LANGS.includes(lang)) return {};
-  return lang === 'az' || lang === 'tr'
-    ? { guideLanguage: lang, preferredLanguage: lang, appLanguage: lang }
-    : { guideLanguage: lang };
+  if (lang === 'az' || lang === 'tr') return { guideLanguage: lang, preferredLanguage: lang, appLanguage: lang };
+  if (lang === 'ru') return { guideLanguage: lang, preferredLanguage: lang };
+  return { guideLanguage: lang };
 }
 
 // The first day in the app: no streak celebration and no «Today's topic»

@@ -13,12 +13,20 @@
 
 export const LANG_STORAGE_KEY = 'speaklab_lang';
 
+// The languages a REPORT can be written in (Profile → Feedback language).
+// ru was added 2026-11-10. It is a report language only: word meanings, concept
+// names and glossaries exist in az and tr alone, so everything that LOOKS UP
+// content by language keeps using getFeedbackLanguage() (az | tr), and only
+// the language picker and the report itself read getReportLanguage().
 export const FEEDBACK_LANGUAGES = [
-  { code: 'az', label: 'Azərbaycan', flag: '🇦🇿' },
-  { code: 'tr', label: 'Türkçe', flag: '🇹🇷' },
+  { code: 'az', label: 'Azərbaycan' },
+  { code: 'tr', label: 'Türkçe' },
+  { code: 'ru', label: 'Русский' },
 ];
 
-const SUPPORTED = FEEDBACK_LANGUAGES.map((l) => l.code);
+const REPORT_LANGUAGES = FEEDBACK_LANGUAGES.map((l) => l.code);
+// Languages the in-app content (meanings, concept names) is written in.
+const SUPPORTED = ['az', 'tr'];
 
 // The device's own language, when it is one we can write feedback in. Kept
 // local rather than imported from appLanguage.js: that module imports THIS one
@@ -56,8 +64,21 @@ export function getFeedbackLanguage() {
   return deviceFeedbackLanguage() || 'az';
 }
 
+// The report language the learner chose (az | tr | ru). Someone who chose ru
+// still reads word meanings through getFeedbackLanguage(), which falls back to
+// their device language or az.
+export function getReportLanguage() {
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY);
+    if (REPORT_LANGUAGES.includes(stored)) return stored;
+  } catch {
+    // private mode / storage disabled -- fall through
+  }
+  return getFeedbackLanguage();
+}
+
 export function setFeedbackLanguage(code) {
-  const next = SUPPORTED.includes(code) ? code : 'az';
+  const next = REPORT_LANGUAGES.includes(code) ? code : 'az';
   try { localStorage.setItem(LANG_STORAGE_KEY, next); } catch { /* ignore */ }
   return next;
 }

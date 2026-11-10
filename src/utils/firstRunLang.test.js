@@ -17,8 +17,10 @@ describe('languageFields', () => {
   it('makes az/tr the feedback language too', () => {
     expect(languageFields('az')).toEqual({ guideLanguage: 'az', preferredLanguage: 'az', appLanguage: 'az' });
   });
-  it('leaves the feedback language alone for ru/en', () => {
-    expect(languageFields('ru')).toEqual({ guideLanguage: 'ru' });
+  it('makes ru the report language, but not the notification language', () => {
+    expect(languageFields('ru')).toEqual({ guideLanguage: 'ru', preferredLanguage: 'ru' });
+  });
+  it('leaves the feedback language alone for en', () => {
     expect(languageFields('en')).toEqual({ guideLanguage: 'en' });
   });
   it('ignores anything else', () => {

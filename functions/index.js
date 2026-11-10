@@ -21,6 +21,7 @@ const tutorLessons = require("./tutorLessons");
 const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
 const callReminders = require("./callReminders");
+const reportLanguage = require("./reportLanguage");
 const autoRoster = require("./autoRoster");
 const accountHealth = require("./accountHealth");
 const newcomersLib = require("./newcomers");
@@ -7312,15 +7313,43 @@ const LANGUAGE_GUIDE = {
     badTitles: '"Zaman biçimleri", "Söz varlığı", "Cümle yapısı"',
     goodRule: '"Cümlede eylem varsa am/is/are KULLANILMAZ: I am go ✗ → I go ✓"',
   },
+  // Rusca (2026-11-10). Fərq az/tr-dən iki yerdədir: (1) yazı kirildir, ona
+  // görə SCRIPT LOCK və xarici-hərf yoxlaması (reportLanguage.js) kirili
+  // qadağan ETMİR; (2) rus dilində keçmiş zaman feli cinsə görə dəyişir
+  // ("забыл/забыла"), istifadəçinin cinsini isə bilmirik — note bunu deyir.
+  ru: {
+    name: "Russian",
+    greeting: "Привет",
+    strengths: "Твои сильные стороны",
+    growth: "Над чем поработать",
+    address: "ты",
+    letters: "а–я, ё, й, ъ, ь",
+    l1: 'В русском языке нет артиклей, поэтому "a/the" выпадает: "I went to bazaar" ✗ → "I went to the bazaar" ✓',
+    sample: "Здесь пропущена форма прошедшего времени — нужно сказать 'went', а не 'go'.",
+    goodTitles: '"Am/Is/Are вместе с основным глаголом", "Пропуск второй формы глагола в прошедшем времени", "Путаница too much / too many с исчисляемыми существительными"',
+    badTitles: '"Времена", "Словарный запас", "Структура предложения"',
+    goodRule: '"Если в предложении есть смысловой глагол, am/is/are НЕ нужны: I am go ✗ → I go ✓"',
+    scriptLock: "SCRIPT LOCK: write using ONLY the Russian (Cyrillic) alphabet and plain English words. NEVER output Chinese, Japanese, Korean or Arabic characters, and never Azerbaijani or Turkish words — not even a single word. If a concept is easier in another language, express it in Russian instead.",
+    note: "- You do not know the learner's gender. Never use gendered past-tense forms about them (\"ты забыл/забыла\"); use the present tense or an impersonal phrasing (\"здесь пропущено…\", \"нужно сказать…\").",
+    tips: '"Детокс от am/is/are — если в предложении есть действие, говори без am/is/are." or "Шэдоуинг (Shadowing) — останови видео и повтори ту же фразу вслух с той же интонацией."',
+  },
 };
 
-// Geriyə uyğunluq: bəzi yerlərdə yalnız ad lazımdır.
-const LANGUAGE_NAMES = { az: "Azerbaijani", tr: "Turkish" };
+// az/tr share these; a language overrides them in its guide entry.
+const DEFAULT_SCRIPT_LOCK = "SCRIPT LOCK: write using ONLY the {{LANGUAGE}} alphabet and plain English words. NEVER output Chinese, Japanese, Korean, Arabic or Cyrillic characters anywhere — not even a single word. If a concept is easier in another language, express it in {{LANGUAGE}} instead.";
+const DEFAULT_TIPS = '"Am/Is/Are detoksu — danışarkən cümlədə hərəkət varsa, am/is/are demədən keç." or "Kölgələmə (Shadowing) — videonu dayandır, eyni cümləni eyni ahənglə səsli təkrarla."';
 
-// Prompt-a dilə aid bütün lövbərləri yeridir.
+// Geriyə uyğunluq: bəzi yerlərdə yalnız ad lazımdır.
+const LANGUAGE_NAMES = { az: "Azerbaijani", tr: "Turkish", ru: "Russian" };
+
+// Prompt-a dilə aid bütün lövbərləri yeridir. SCRIPT_LOCK/NOTE/TIPS əvvəl
+// qoyulur, çünki standart SCRIPT LOCK mətninin içində {{LANGUAGE}} var.
 function buildAnalysisPrompt(transcript, lang) {
   const g = LANGUAGE_GUIDE[lang] || LANGUAGE_GUIDE.az;
   return ANALYSIS_PROMPT
+    .replace(/\{\{SCRIPT_LOCK\}\}/g, () => g.scriptLock || DEFAULT_SCRIPT_LOCK)
+    .replace(/\{\{LANG_NOTE\}\}\n/g, () => (g.note ? g.note + "\n" : ""))
+    .replace(/\{\{TIP_EXAMPLES\}\}/g, () => g.tips || DEFAULT_TIPS)
     .replace("{{TRANSCRIPT}}", transcript)
     .replace(/\{\{LANGUAGE\}\}/g, g.name)
     .replace(/\{\{GREETING\}\}/g, g.greeting)
@@ -7347,7 +7376,8 @@ VOICE ({{LANGUAGE}} text fields):
 - ORTHOGRAPHY IS CRITICAL. Use correct {{LANGUAGE}} letters ({{LETTERS}}) and correct native spelling. Never invent word forms, never substitute look-alike accented letters, never output half-{{LANGUAGE}} gibberish. If unsure of a word, choose a simpler word you are certain about.
 - This is the quality bar for every {{LANGUAGE}} sentence you write: "{{SAMPLE}}"
 - The learner reads only {{LANGUAGE}}. Never mix in another language.
-- SCRIPT LOCK: write using ONLY the {{LANGUAGE}} alphabet and plain English words. NEVER output Chinese, Japanese, Korean, Arabic or Cyrillic characters anywhere — not even a single word. If a concept is easier in another language, express it in {{LANGUAGE}} instead.
+- {{SCRIPT_LOCK}}
+{{LANG_NOTE}}
 - Never address them as "teacher" or "pupil". Encourage like a brilliant mentor, never lecture, never sound clinical or robotic.
 
 IGNORE MICROPHONE NOISE:
@@ -7382,7 +7412,7 @@ Rules:
 - scores: fluency = flow and natural delivery; grammar = correctness; vocabulary = range and level. Integers 0-100.
 - recap: 1-2 sentences on what the learner talked about.
 - strengths: 1-2 concrete things they genuinely did well in this conversation.
-- tips: 2-3 NAMED practice techniques, each tied to a theme above. Give each one a short memorable name the learner can repeat to themselves, then one sentence on how to do it. Model them on: "Am/Is/Are detoksu — danışarkən cümlədə hərəkət varsa, am/is/are demədən keç." or "Kölgələmə (Shadowing) — videonu dayandır, eyni cümləni eyni ahənglə səsli təkrarla." No generic filler such as "qorxma" or "daha çox danış".
+- tips: 2-3 NAMED practice techniques, each tied to a theme above. Give each one a short memorable name the learner can repeat to themselves, then one sentence on how to do it. Model them on: {{TIP_EXAMPLES}} No generic filler such as "qorxma" or "daha çox danış".
 - vocabulary: 3-5 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words. For each also give cefr = its CEFR level (A1, A2, B1, B2, C1 or C2) and meaning = a short gloss in {{LANGUAGE}} (1-6 words, the sense used here).
 - homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
   - multiple_choice: up to 5 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
@@ -8200,21 +8230,18 @@ async function callDeepSeekWithRepair(userContent) {
   }
 }
 
-// DeepSeek bəzən Azərbaycan/Türk mətninin ortasına Çin ieroqlifi qoyur
-// (istehsalatda görüldü: "否定 cümleleri 'doesn't' şeklinde..."). Prompt-dakı
-// qadağa bunu azaldır, amma zəmanət vermir — ona görə çıxış BURADA yoxlanılır.
-const CJK_OR_FOREIGN = /[぀-ヿ㐀-䶿一-鿿가-힯؀-ۿЀ-ӿ]/;
-
-function hasForeignScript(value) {
-  return CJK_OR_FOREIGN.test(JSON.stringify(value || ""));
-}
+// DeepSeek bəzən mətnin ortasına Çin ieroqlifi qoyur (istehsalatda görüldü:
+// "否定 cümleleri 'doesn't' şeklinde..."). Prompt-dakı qadağa bunu azaldır, amma
+// zəmanət vermir — ona görə çıxış BURADA yoxlanılır. Hansı yazının "xarici"
+// olduğu dilə bağlıdır (ru hesabatında kiril normaldır) — reportLanguage.js.
+const { hasForeignScript, foreignScriptNames } = reportLanguage;
 
 // Əsas: DeepSeek. O yıxılsa (açar/limit/timeout) — Groq strict-schema yolu.
 // Analiz asinxron növbədədir, latency fərqi istifadəçiyə görünmür.
-async function callAnalysisLLM(userContent, db) {
+async function callAnalysisLLM(userContent, db, lang = "az") {
   try {
     const first = await callDeepSeekWithRepair(userContent);
-    if (!hasForeignScript(first)) return first;
+    if (!hasForeignScript(first, lang)) return first;
 
     // Bir dəfə təkrar cəhd — analiz ~$0.005-dir, sınıq hesabat isə istifadəçiyə
     // birbaşa görünür. Təkrar da uğursuz olsa, heç nədənsə bu yaxşıdır.
@@ -8222,10 +8249,10 @@ async function callAnalysisLLM(userContent, db) {
     const second = await callDeepSeekWithRepair(
       userContent
       + "\n\nCRITICAL: your previous answer contained characters from another"
-      + " writing system (Chinese/Japanese/Korean/Arabic/Cyrillic). Rewrite it"
+      + ` writing system (${foreignScriptNames(lang)}). Rewrite it`
       + " using ONLY the target language alphabet and plain English words."
     );
-    if (hasForeignScript(second)) {
+    if (hasForeignScript(second, lang)) {
       console.warn("[Analysis] foreign script persisted after retry");
     }
     return second;
@@ -8645,17 +8672,10 @@ async function transcribeWithGroqWhisper(audioBuffer, ext) {
 // tətbiq eyni adama iki fərqli dildə yazırdı.
 //
 // `appLanguage` boşluğu doldurur: onu resolveAppLanguage() cihazın öz dilindən
-// çıxarır və hər girişdə yazır. Hesabat yalnız az/tr ola bilər (prompt-un
-// orfoqrafiya dayaqları yalnız bu ikisi üçün var), ona görə 'en' cihaz hələ də
-// azərbaycancaya düşür — bu, ayrıca iş.
-function reportLanguageFor(userData) {
-  const u = userData || {};
-  // Açıq seçim həmişə üstündür: türk telefonunda azərbaycanca seçən adam
-  // azərbaycanca istəyir.
-  if (u.preferredLanguage === "tr" || u.preferredLanguage === "az") return u.preferredLanguage;
-  if (u.appLanguage === "tr") return "tr";
-  return "az";
-}
+// çıxarır və hər girişdə yazır. Hesabat az/tr/ru ola bilər (prompt-un
+// orfoqrafiya dayaqları yalnız bunlar üçün var); ru yalnız AÇIQ seçimdən gəlir,
+// 'en' cihaz hələ də azərbaycancaya düşür. Qayda: functions/reportLanguage.js.
+const { reportLanguageFor } = reportLanguage;
 
 // `lang` = istifadəçinin ana dili ('az' | 'tr') — hesabat həmin dildə yazılır.
 async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang = "az", db = null) {
@@ -8679,7 +8699,7 @@ async function runGroqAnalysis(audioBuffer, analyzeSeconds, ext = "webm", lang =
   const promptTranscript = transcript.length > MAX_TRANSCRIPT_CHARS
     ? transcript.slice(0, MAX_TRANSCRIPT_CHARS)
     : transcript;
-  const raw = await callAnalysisLLM(buildAnalysisPrompt(promptTranscript, lang), db);
+  const raw = await callAnalysisLLM(buildAnalysisPrompt(promptTranscript, lang), db, lang);
   const analysis = normalizeAnalysis(raw, { analyzeSeconds, transcript });
   return { transcript, analysis };
 }
@@ -9317,7 +9337,7 @@ Never mention that you are an AI, never break character, never use markdown, emo
 - If you did not understand, say so plainly and ask them to say it another way.`;
 
   const learner = `THE LEARNER
-Their English level is ${level}. Their first language is ${l1 === "tr" ? "Turkish" : "Azerbaijani"}.
+Their English level is ${level}. Their first language is ${LANGUAGE_NAMES[l1] || "Azerbaijani"}.
 Speak so they understand you easily:
 - Sentences of about ${g.words} words.
 - Grammar: ${g.grammar}.
@@ -9985,7 +10005,7 @@ exports.analyzeAiSession = onRequest(
       const spokenSeconds = measured > 0 ? measured : Math.round((words / 120) * 60);
 
       const prompt = buildAnalysisPrompt(studentText.slice(0, MAX_TRANSCRIPT_CHARS), lang);
-      const raw = await callAnalysisLLM(prompt, db);
+      const raw = await callAnalysisLLM(prompt, db, lang);
       const analysis = normalizeAnalysis(raw, { analyzeSeconds: spokenSeconds, transcript: studentText });
 
       await analysisRef.set({

@@ -542,7 +542,7 @@ function App() {
         // da tətbiq olunsun). localStorage yalnız ilk render-in flash-ını
         // önləyən keş rolundadır.
         const docLang = freshUserData.preferredLanguage;
-        if (docLang === 'az' || docLang === 'tr') {
+        if (docLang === 'az' || docLang === 'tr' || docLang === 'ru') {
           setFeedbackLanguage(docLang);
           try { localStorage.setItem(LANG_STORAGE_KEY, docLang); } catch { /* private mode */ }
         }

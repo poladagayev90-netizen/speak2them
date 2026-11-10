@@ -19,7 +19,7 @@ import {
   focusReview,
   currentFocus,
 } from '../utils/insights';
-import { getFeedbackLanguage } from '../utils/feedbackLanguage';
+import { getReportLanguage } from '../utils/feedbackLanguage';
 import { minutesPerSession, wpmPerSession, wordsOverTime, cefrIndex, defaultSession } from '../utils/labCharts';
 import { Tile, Bars, Line, Ladder, ScoreRing } from '../components/lab/LabBits';
 import LabSession from '../components/lab/LabSession';
@@ -52,7 +52,8 @@ export default function Progress({ user, learnerUid }) {
   const uid = learnerUid || user?.uid;
   const viewing = !!learnerUid && learnerUid !== user?.uid;
   const pageClass = viewing ? 'progress-page progress-page--embedded' : 'progress-page';
-  const lang = getFeedbackLanguage();
+  // Concept names exist in az/tr/en; a ru report reader gets the English names.
+  const lang = getReportLanguage();
   const [loading, setLoading] = useState(true);
   const [grammar, setGrammar] = useState(null);
   const [progress, setProgress] = useState(null);

@@ -21,7 +21,8 @@ import { getStreakInfo } from '../utils/streak';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
-import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getFeedbackLanguage } from '../utils/feedbackLanguage';
+import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getReportLanguage } from '../utils/feedbackLanguage';
+import { resolveAppLanguage } from '../utils/appLanguage';
 import { isAdminUser } from '../utils/courseProgress';
 import usePackages from '../hooks/usePackages';
 import { showPlanEntry } from '../utils/packages';
@@ -50,7 +51,7 @@ export default function Profile({ user }) {
   // "Online now" (temporary): whether others see me in their list. Owner-written
   // users.showOnline; the server (functions onlineNow) leaves out anyone at false.
   const [showOnline, setShowOnline] = useState(user?.showOnline !== false);
-  const [feedbackLang, setFeedbackLang] = useState(getFeedbackLanguage);
+  const [feedbackLang, setFeedbackLang] = useState(getReportLanguage);
   const navigate = useNavigate();
 
   // Dil dəyişimi: dərhal UI + localStorage (i18n modulu), sonra Firestore-a
@@ -77,11 +78,13 @@ export default function Profile({ user }) {
       const targetId = docId || user.uid;
       // appLanguage birlikdə yazılır: seçim həm hesabatın dilidir, həm də
       // bildirişlərin. Ayrı-ayrı yazılsaydı, dili dəyişən istifadəçi növbəti
-      // girişə qədər köhnə dildə push almağa davam edərdi.
+      // girişə qədər köhnə dildə push almağa davam edərdi. ru-da bildiriş
+      // mətni yoxdur (pushText.js az/tr/en), ona görə ru seçəndə bildiriş dili
+      // cihazdan gəlir — resolveAppLanguage() saxlanmış ru-nu keçib cihaza baxır.
       if (targetId) {
         await updateDoc(doc(db, 'users', targetId), {
           preferredLanguage: code,
-          appLanguage: code,
+          appLanguage: code === 'ru' ? resolveAppLanguage() : code,
         });
       }
     } catch (e) {
@@ -409,7 +412,6 @@ export default function Profile({ user }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               }}
             >
-              <span style={{ fontSize: '20px' }}>{lng.flag}</span>
               {lng.label}
               {active && <span style={{ color: 'var(--accent)' }}>✓</span>}
             </button>
