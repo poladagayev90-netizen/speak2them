@@ -3335,57 +3335,75 @@ async function choosePartnerTx(db, tx, uid, candidates, known) {
 // call still goes through canPair({direct:true}).
 const ONLINE_NOW_WINDOW_MS = 150000; // src/utils/presence.js ONLINE_WINDOW_MS
 const ONLINE_NOW_MAX = 12;
-// Everyone who is in the app polls this every minute. Built per caller, one
-// call read ~245 documents with 100 people online — 24,000 reads a minute
-// (load test 2026-10-08). The roster — who is online, whether each is a
-// minor, whom each has blocked or asked to avoid — is the same for every
-// caller, so each instance builds it once per 30 s and every caller only
-// adds the switch and their own three lookups. A list up to 30 s old is fine: «online»
-// already means «seen in the last 150 s», and Call still goes through
-// canPair({direct:true}), which reads the blocks live.
-// 20 s, and the client asks every 30 s (src/hooks/useOnlineNow.js): someone
-// who opens the app shows up for the others within about half a minute.
-// With 30 s here and a 60 s poll it took up to 90 s, and the first person
-// stared at «Nobody else is online» long enough to leave (Polad 2026-10-17).
-const ONLINE_NOW_CACHE_MS = 20000;
-// A caller who should be on the list but is not has just arrived: the roster
-// predates them, and so does every other caller's view. Rebuilt once — at most
-// every 5 s per instance, so callers who are never listed (teachers, «hide
-// me») cannot make each call a full rebuild.
-const ONLINE_NOW_MIN_REBUILD_MS = 5000;
-let onlineRosterCache = { at: 0, promise: null };
-function onlineRoster(db, { fresh: wantFresh = false } = {}) {
+// Everyone on Partners polls this (src/hooks/useOnlineNow.js). Built per
+// caller, one call read ~245 documents with 100 people online — 24,000 reads
+// a minute (load test 2026-10-08) — so the roster is shared by every caller of
+// an instance and only the switch is read per call.
+//
+// «Two people online sometimes don't see each other, or see each other late»
+// (Polad 2026-11-09). Measured on emulators with two instances behind a
+// round-robin (Cloud Run runs more than one): median 23 s, worst 32 s, up to
+// 50 s in theory. The 20 s roster cache was per INSTANCE, and the «I'm not on
+// it, rebuild» shortcut only refreshed the newcomer's own instance — someone
+// already waiting kept reading a roster from before the newcomer arrived.
+// Now the two halves are cached apart: WHO is online (one cheap query, ~1 read
+// per person online) is at most 5 s old; the costly part — each person's age
+// band, blocks and avoids (3 reads each) — is kept per person for a minute,
+// which is fine because Call still goes through canPair, which reads the
+// blocks live.
+const ONLINE_NOW_PRESENCE_MS = 5000;
+const ONLINE_NOW_RELATIONS_MS = 60000;
+let onlinePresenceCache = { at: 0, promise: null };
+const onlineRelationsCache = new Map(); // uid -> { at, promise }
+
+function onlineRelations(db, uid) {
   const now = Date.now();
-  const age = now - onlineRosterCache.at;
-  if (onlineRosterCache.promise && age < ONLINE_NOW_CACHE_MS
-    && !(wantFresh && age >= ONLINE_NOW_MIN_REBUILD_MS)) return onlineRosterCache.promise;
+  const hit = onlineRelationsCache.get(uid);
+  if (hit && now - hit.at < ONLINE_NOW_RELATIONS_MS) return hit.promise;
+  const users = db.collection("users");
+  const promise = Promise.all([
+    db.collection("onboarding").doc(uid).get(),
+    users.doc(uid).collection("blocked").get(),
+    users.doc(uid).collection("avoid").get(),
+  ]).then(([ob, blocked, avoid]) => ({
+    minor: !!(ob.exists && ob.get("ageBand") === "under18"),
+    blocks: new Set(blocked.docs.map((d) => d.id)),
+    avoids: new Set(avoid.docs.map((d) => d.id)),
+  }));
+  onlineRelationsCache.set(uid, { at: now, promise });
+  promise.catch(() => { if (onlineRelationsCache.get(uid)?.promise === promise) onlineRelationsCache.delete(uid); });
+  // Keep the map from growing without bound on a long-lived instance.
+  if (onlineRelationsCache.size > 2000) {
+    for (const [k, v] of onlineRelationsCache) if (now - v.at >= ONLINE_NOW_RELATIONS_MS) onlineRelationsCache.delete(k);
+  }
+  return promise;
+}
+
+function onlinePresence(db) {
+  const now = Date.now();
+  if (onlinePresenceCache.promise && now - onlinePresenceCache.at < ONLINE_NOW_PRESENCE_MS) return onlinePresenceCache.promise;
   const promise = (async () => {
     const since = admin.firestore.Timestamp.fromMillis(now - ONLINE_NOW_WINDOW_MS);
-    const snap = await db.collection("users").where("lastSeen", ">=", since).limit(60).get();
-    const fresh = snap.docs
+    // NEWEST first: without the order Firestore returns the window ascending,
+    // so with more than 60 people seen in it the limit kept the oldest and
+    // dropped whoever had just arrived.
+    const snap = await db.collection("users").where("lastSeen", ">=", since)
+      .orderBy("lastSeen", "desc").limit(60).get();
+    return snap.docs
       .map((d) => ({ id: d.id, ...(d.data() || {}) }))
       .filter((u) => u.id !== ADMIN_UID && u.role !== "teacher"
         && u.status !== "offline" && u.showOnline !== false && !u.deleted && !u.suspended);
-    if (!fresh.length) return { people: [] };
-    const users = db.collection("users");
-    const [obs, blocked, avoid] = await Promise.all([
-      db.getAll(...fresh.map((u) => db.collection("onboarding").doc(u.id))),
-      Promise.all(fresh.map((u) => users.doc(u.id).collection("blocked").get())),
-      Promise.all(fresh.map((u) => users.doc(u.id).collection("avoid").get())),
-    ]);
-    return {
-      people: fresh.map((u, i) => ({
-        ...u,
-        minor: !!(obs[i].exists && obs[i].get("ageBand") === "under18"),
-        blocks: new Set(blocked[i].docs.map((d) => d.id)),
-        avoids: new Set(avoid[i].docs.map((d) => d.id)),
-      })),
-    };
   })();
-  onlineRosterCache = { at: now, promise };
-  // A failed build is not kept: the next caller tries again.
-  promise.catch(() => { if (onlineRosterCache.promise === promise) onlineRosterCache = { at: 0, promise: null }; });
+  onlinePresenceCache = { at: now, promise };
+  // A failed read is not kept: the next caller tries again.
+  promise.catch(() => { if (onlinePresenceCache.promise === promise) onlinePresenceCache = { at: 0, promise: null }; });
   return promise;
+}
+
+async function onlineRoster(db) {
+  const fresh = await onlinePresence(db);
+  const rel = await Promise.all(fresh.map((u) => onlineRelations(db, u.id)));
+  return { people: fresh.map((u, i) => ({ ...u, ...rel[i] })) };
 }
 
 exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
@@ -3400,29 +3418,21 @@ exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, re
   const me = decoded.uid;
   const db = admin.firestore();
   try {
-    // The client asks every 30 s while visible (120 an hour) plus on every
-    // return to the app; 240 leaves room for that.
-    await enforceRateLimit(me, "onlineNow", 240, 60 * 60 * 1000);
+    // The client asks every 15 s while visible (240 an hour) plus on every
+    // return to the app; 480 leaves room for that.
+    await enforceRateLimit(me, "onlineNow", 480, 60 * 60 * 1000);
     // The admin's switch is read live, so turning it off takes effect at once.
     const features = await db.collection("appConfig").doc("features").get().catch(() => null);
     if (features && features.exists && features.get("onlineNow") === false) return res.status(200).json({ on: false, people: [] });
-    let roster = await onlineRoster(db);
-    if (!roster.people.some((u) => u.id === me)) roster = await onlineRoster(db, { fresh: true });
+    const roster = await onlineRoster(db);
     const others = roster.people.filter((u) => u.id !== me);
     if (!others.length) return res.status(200).json({ on: true, people: [] });
 
-    const users = db.collection("users");
-    const [myOb, myBlocked, myAvoid] = await Promise.all([
-      db.collection("onboarding").doc(me).get(),
-      users.doc(me).collection("blocked").get(),
-      users.doc(me).collection("avoid").get(),
-    ]);
-    const iAmMinor = !!(myOb.exists && myOb.get("ageBand") === "under18");
-    const blockedByMe = new Set(myBlocked.docs.map((d) => d.id));
-    const avoidedByMe = new Set(myAvoid.docs.map((d) => d.id));
+    // My own side comes from the same per-person cache as everyone else's.
+    const mine = await onlineRelations(db, me);
     const people = others
-      .filter((u) => !blockedByMe.has(u.id) && !avoidedByMe.has(u.id)
-        && !u.blocks.has(me) && !u.avoids.has(me) && u.minor === iAmMinor)
+      .filter((u) => !mine.blocks.has(u.id) && !mine.avoids.has(u.id)
+        && !u.blocks.has(me) && !u.avoids.has(me) && u.minor === mine.minor)
       // Free before busy, then whoever was seen most recently.
       .sort((a, b) => (a.status === "busy") - (b.status === "busy")
         || (b.lastSeen?.toMillis?.() || 0) - (a.lastSeen?.toMillis?.() || 0))

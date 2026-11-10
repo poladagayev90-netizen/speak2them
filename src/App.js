@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard } from '@capacitor/keyboard';
@@ -358,8 +359,10 @@ function App() {
     let pageShowHandler = null;
     let stopTokenWatch = null;
     let stopLiveUserSync = null;
+    let stopNativePresence = null;
 
     const cleanupPresence = () => {
+      if (stopNativePresence) { stopNativePresence(); stopNativePresence = null; }
       if (heartbeatInterval) clearInterval(heartbeatInterval);
       if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
       if (unloadHandler) window.removeEventListener('pagehide', unloadHandler);
@@ -483,6 +486,31 @@ function App() {
           } catch (e) {}
         };
         document.addEventListener('visibilitychange', visibilityHandler);
+
+        // The Android WebView does not reliably fire visibilitychange when the
+        // app goes to the background and back, so a learner who reopened the
+        // app waited for the next 60 s heartbeat before the others saw them
+        // (Polad 2026-11-09: «iki onlayn tərəf bir-birini gec görür»). The
+        // native pause/resume says it for sure; the writes are the same ones.
+        if (Capacitor.isNativePlatform()) {
+          const onNative = (active) => {
+            if (isInCall()) return;
+            if (!active) { goOffline(); return; }
+            logPresence(uid);
+            setDoc(doc(db, 'users', uid), {
+              online: true,
+              status: 'online',
+              lastSeen: serverTimestamp(),
+            }, { merge: true }).catch(() => {});
+          };
+          const handles = [];
+          let live = true;
+          Promise.all([
+            CapApp.addListener('pause', () => onNative(false)),
+            CapApp.addListener('resume', () => onNative(true)),
+          ]).then((hs) => { if (live) handles.push(...hs); else hs.forEach((h) => h.remove()); }).catch(() => {});
+          stopNativePresence = () => { live = false; handles.forEach((h) => h.remove()); };
+        }
 
         // Ensure user is online and available on initial load
         logPresence(uid);
