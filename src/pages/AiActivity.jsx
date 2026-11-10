@@ -588,7 +588,7 @@ export default function AiActivity({ user }) {
         />
         {/* Her face in the header too, so the person you are speaking to is on
             screen for the whole session and not only inside the bubbles. */}
-        <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
+        <img src="/ainur_plum.png" alt="" className="ai-avatar" />
         <h1 className="ai-activity-title">
           {isFree ? 'Free talk' : isVideo ? 'Describe videos' : 'Describe pictures'}
         </h1>
@@ -612,7 +612,7 @@ export default function AiActivity({ user }) {
         {isFree ? (
           <>
             <div className="ai-bubble">
-              <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
+              <img src="/ainur_plum.png" alt="" className="ai-avatar" />
               <div className="ai-bubble-body">
                 <p className="ai-bubble-name">AInur</p>
                 <p className="ai-bubble-text">{opener}</p>
@@ -622,7 +622,7 @@ export default function AiActivity({ user }) {
               <React.Fragment key={i}>
                 <p className="ai-heard">“{x.you}”</p>
                 <div className="ai-bubble">
-                  <img src="/ainur_avatar.png" alt="" className="ai-avatar" />
+                  <img src="/ainur_plum.png" alt="" className="ai-avatar" />
                   <div className="ai-bubble-body">
                     <p className="ai-bubble-name">AInur</p>
                     <p className="ai-bubble-text">{x.ainur}</p>
@@ -632,7 +632,7 @@ export default function AiActivity({ user }) {
             ))}
             {status === 'sending' && (
               <div className="ai-bubble">
-                <img src="/ainur_avatar.png" alt="" className="ai-avatar ai-avatar--pulse" />
+                <img src="/ainur_plum.png" alt="" className="ai-avatar ai-avatar--pulse" />
                 <div className="ai-bubble-body">
                   <p className="ai-bubble-name">AInur</p>
                   <p className="ai-bubble-text">One moment…</p>
@@ -651,7 +651,7 @@ export default function AiActivity({ user }) {
                 mid-sentence had nothing to look back at. */}
             <div className={`ai-bubble${fresh ? ' ai-bubble--new' : ''}`}>
               <img
-                src="/ainur_avatar.png"
+                src="/ainur_plum.png"
                 alt=""
                 className={`ai-avatar${status === 'sending' ? ' ai-avatar--pulse' : ''}`}
               />

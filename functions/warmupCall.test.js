@@ -41,10 +41,18 @@ test('prompt: names the learner, the level, the L1, the real partner', () => {
   assert.match(w.buildWarmupPrompt({ name: '', l1: 'en' }), /their own language/);
 });
 
-test('greeting: first words in the learner\'s language, then English (Polad 2026-11-07)', () => {
-  assert.match(w.buildWarmupPrompt({ name: 'Leyla', l1: 'az' }), /greet Leyla by name IN AZERBAIJANI/);
-  assert.match(w.buildWarmupPrompt({ name: 'Ivan', l1: 'ru' }), /IN RUSSIAN[\s\S]*switch to English/);
-  assert.doesNotMatch(w.buildWarmupPrompt({ name: 'Sam', l1: 'en' }), /IN ENGLISH/);
+test('opening: a consultant\'s tour of the call room in the learner\'s language, then English (Polad 2026-11-07/-10)', () => {
+  const az = w.buildWarmupPrompt({ name: 'Leyla', l1: 'az' });
+  assert.match(az, /speak AZERBAIJANI first\. Greet Leyla by name/);
+  assert.match(az, /spoken Azerbaijani at a relaxed normal speed/);
+  // The room: clock, topic sheet, Mute, End, how to start, the report after.
+  for (const part of [/clock/, /topic sheet/, /Mute/, /red button ends the call/, /how to start/, /short report/]) assert.match(az, part);
+  // She waits for their yes before switching to English.
+  assert.match(az, /WAIT for their answer[\s\S]*2\. When they answer: switch to English/);
+  assert.match(w.buildWarmupPrompt({ name: 'Ivan', l1: 'ru' }), /RUSSIAN first[\s\S]*switch to English/);
+  const en = w.buildWarmupPrompt({ name: 'Sam', l1: 'en' });
+  assert.doesNotMatch(en, /ENGLISH first/);
+  assert.match(en, /simple, slow English/);
 });
 
 test('L1: the page language wins, then the account, only known codes', () => {

@@ -249,7 +249,7 @@ export default function Home({ user }) {
         <IntroCard user={user} />
         {/* The one warm-up call before the first real partner — the card
             only for a newcomer who has not put it aside; after «Not now» it
-            is a row in Get ready instead (docs/domain/calls.md). */}
+            waits at the top of the AInur tab instead (docs/domain/calls.md). */}
         <WarmupCard user={user} offer={warmupOffer} />
 
         {/* 0. A proposal waiting for this learner's yes, as the answer card
@@ -321,7 +321,7 @@ export default function Home({ user }) {
 
         {/* 3. Preparation — below the practice it prepares you for. The
             topic is a picture card so Today is not only text. */}
-        <GetReadyCard user={user} warmupOffer={warmupOffer} />
+        <GetReadyCard user={user} />
 
         {/* 4. The week in one line. */}
         {target > 0 && (

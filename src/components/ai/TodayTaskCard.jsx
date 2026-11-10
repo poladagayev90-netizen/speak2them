@@ -29,7 +29,7 @@ export default function TodayTaskCard({ topic, hasTeacher }) {
           who that is does more than any label. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)', marginBottom: 'var(--s-3)' }}>
         <img
-          src="/ainur_avatar.png"
+          src="/ainur_plum.png"
           alt=""
           className="ai-avatar"
           style={{ width: 60, height: 60 }}

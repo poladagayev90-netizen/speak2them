@@ -21,7 +21,9 @@ export const chatIdFor = (a, b) => [a, b].sort().join('_');
 export const AINUR_UID = 'ainur';
 export const isAinurId = (id) => id === AINUR_UID;
 // Stands in for the user document she does not have.
-export const AINUR_PEER = { name: 'AInur', photo: '/ainur_avatar.png' };
+// The Plum picture (2026-11-10): the original's peach ground is baked into the
+// PNG and clashed with the palette everywhere AInur appears.
+export const AINUR_PEER = { name: 'AInur', photo: '/ainur_plum.png' };
 
 export const chatPeerId = (chatId, myUid) => {
   const parts = String(chatId || '').split('_');

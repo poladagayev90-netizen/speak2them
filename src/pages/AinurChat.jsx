@@ -68,7 +68,7 @@ export default function AinurChat({ user }) {
           <ChevronLeft size={22} strokeWidth={1.75} />
         </button>
         <img
-          src="/ainur_avatar.png"
+          src="/ainur_plum.png"
           alt=""
           style={{ width: 34, height: 34, borderRadius: '50%' }}
         />

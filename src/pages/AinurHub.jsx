@@ -1,11 +1,16 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image as ImageIcon, Video as VideoIcon, MessageSquare, ChevronRight, Lock } from 'lucide-react';
+import { Image as ImageIcon, Video as VideoIcon, ChevronRight, Lock, Mic } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
 import { plainTopic } from '../utils/topicLabel';
 import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
 import LessonHint from '../components/LessonHint';
+import useWarmupOffer from '../hooks/useWarmupOffer';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { WARMUP_AVATAR } from '../utils/warmupCall';
 import '../components/ai/ai.css';
+import './WarmupCall.css';
 import { VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
 
 // The AInur tab. It used to be a single push-to-talk screen with a hardcoded
@@ -37,14 +42,10 @@ const ACTIVITIES = [
     minutes: 8,
     to: '/practice?mode=video',
   },
-  {
-    id: 'free',
-    icon: MessageSquare,
-    title: 'Free talk',
-    blurb: 'Just talk. About today’s topic or anything you like.',
-    minutes: 10,
-    to: '/practice?mode=free',
-  },
+  // «Free talk» (/practice?mode=free) is no longer listed (Polad 2026-11-10:
+  // it made no sense here — open-ended talk is what real partners are for, and
+  // it ran on the old text-to-speech voice, not a call). The route still works
+  // for old links.
 ];
 
 const SOON = [
@@ -55,11 +56,16 @@ const SOON = [
 export default function AinurHub({ user }) {
   const navigate = useNavigate();
   const content = useMemo(() => getTodayContent(), []);
+  // The one warm-up CALL (Gemini Live, in a call room) — this tab is where it
+  // waits once the newcomer pressed «Not now» on Today (Polad 2026-11-08:
+  // «sonra AInur panelində yer ala bilər»). Gone after the first real call.
+  const warmupOffer = useWarmupOffer(user);
+  const { t } = useFirstRunCopy(user?.guideLanguage);
 
   return (
     <div style={{ padding: 'var(--s-4)', paddingBottom: '120px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)', marginBottom: 'var(--s-5)' }}>
-        <img src="/ainur_avatar.png" alt="" className="ai-avatar" style={{ width: 52, height: 52 }} />
+        <img src={WARMUP_AVATAR} alt="" className="ai-avatar" style={{ width: 52, height: 52 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{
             margin: 0, fontSize: 'var(--fs-h1)', fontWeight: 700,
@@ -75,6 +81,21 @@ export default function AinurHub({ user }) {
           </p>
         </div>
       </div>
+
+      {warmupOffer && (
+        <Card tone="ai" className="wu-card" style={{ marginBottom: 'var(--s-5)' }}>
+          <div className="wu-card-head">
+            <img src={WARMUP_AVATAR} alt="" className="wu-card-avatar" />
+            <div>
+              <h2 className="wu-card-title">{t('warm.card.title')}</h2>
+              <p className="wu-card-sub">{t('warm.card.sub')}</p>
+            </div>
+          </div>
+          <Button variant="ai" full icon={<Mic size={18} aria-hidden="true" />} onClick={() => navigate('/warmup')}>
+            {t('warm.card.start')}
+          </Button>
+        </Card>
+      )}
 
       <p className="ui-section-label">Practice · {plainTopic(content.topic)}</p>
 
