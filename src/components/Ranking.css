@@ -29,25 +29,30 @@
   --silver: #9992ad;
   --bronze: #887994;
 }
-.leaderboard-page .leaderboard-content { width: 100%; max-width: 1000px; margin: 0 auto; padding: 40px 28px 120px; }
-.leaderboard-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-bottom: 32px; }
-.leaderboard-eyebrow { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: 2.4px; margin-bottom: 14px; }
-.leaderboard-header h1 { font-size: clamp(30px, 4vw, 44px); line-height: 1.14; letter-spacing: -1.5px; margin: 0 0 14px; }
-.leaderboard-header h1 span { color: var(--accent); }
-.leaderboard-header p:last-child { font-size: 13px; color: var(--text-secondary); }
-.leaderboard-emblem { width: 88px; height: 88px; border-radius: 28px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; transform: rotate(-8deg); flex-shrink: 0; }
-.leaderboard-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--border); padding: 24px 0 14px; }
-.leaderboard-toolbar h2 { font-size: 19px; letter-spacing: -.5px; }
+.leaderboard-page .leaderboard-content { width: 100%; max-width: 1000px; margin: 0 auto; padding: var(--s-5) 28px 120px; }
+/* One compact header row: title + period tabs (the old two-line hero pushed
+   the board below the fold on a phone — Polad 2026-11-10). */
+.leaderboard-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: 0 0 var(--s-2); }
+.leaderboard-toolbar h1 { display: flex; align-items: center; gap: var(--s-2); margin: 0; font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; letter-spacing: -0.02em; }
+.leaderboard-toolbar h1 svg { color: var(--accent); flex-shrink: 0; }
+.leaderboard-note { margin: 0 0 var(--s-3); font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
 .leaderboard-tabs { display: flex; padding: 4px; border-radius: 12px; background: var(--bg-secondary); }
 .leaderboard-tabs button { background: transparent; border: 0; border-radius: 9px; padding: 9px 16px; color: var(--text-secondary); font-size: 12px; font-weight: 700; cursor: pointer; }
 .leaderboard-tabs button[aria-pressed="true"] { color: var(--text-primary); background: var(--bg-card); box-shadow: 0 2px 6px #00000012; }
 .ranking-board { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 8px 0; }
-.ranking-you-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 16px; padding: 18px 24px; background: var(--bg-card); }
-.ranking-you-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); }
-.ranking-you-rank { font-size: 34px; font-weight: 800; letter-spacing: -1px; margin: 3px 0 0; color: var(--text-primary); }
-.ranking-you-stats { display: flex; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
-.ranking-you-stats span { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
-.ranking-you-stats .streak-pill { color: var(--accent); }
+/* «Your position» wears the Today hero: the drifting purple + sea parade
+   come from plan.css (.pl-card--hero, HeroFx). Only layout lives here — no
+   background or border, or this file (loaded later) would cover the drift. */
+.ranking-you-card { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); border-radius: var(--r-xl); padding: var(--s-4) var(--s-5); color: var(--text-on-accent); }
+.ranking-you-card > div:not(.pl-parade) { position: relative; }
+.ranking-you-label { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-on-accent); opacity: .85; }
+.ranking-you-rank { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); margin: 2px 0 0; color: var(--text-on-accent); }
+.ranking-you-num { display: inline-block; font-family: var(--font-display); font-size: 44px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; animation: rk-pop .55s cubic-bezier(.3, 1.5, .5, 1) both; }
+.ranking-climb { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, currentColor 20%, transparent); font-size: var(--fs-xs); font-weight: 800; animation: rk-climb .6s .25s ease-out both; }
+.ranking-you-stats { display: flex; gap: var(--s-2); flex-wrap: wrap; justify-content: flex-end; }
+.ranking-you-stats span { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, currentColor 14%, transparent); color: var(--text-on-accent); font-size: var(--fs-xs); font-weight: 700; }
+@keyframes rk-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes rk-climb { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .ranking-leaders, .ranking-list { border: 1px solid var(--border); background: var(--bg-card); border-radius: 20px; overflow: hidden; }
 .ranking-list:empty { display: none; }
 .ranking-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 20px 24px; }
@@ -60,14 +65,22 @@
 .rank-3 .ranking-podium-avatar { border-color: var(--bronze); }
 .ranking-podium-initial { font-size: 24px; font-weight: 700; color: var(--text-primary); }
 .ranking-podium-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.ranking-crown { position: absolute; top: -23px; left: 50%; transform: translateX(-50%); color: var(--accent); }
+.ranking-crown { position: absolute; top: -23px; left: 50%; translate: -50% 0; color: var(--accent); animation: rk-crown 2.8s ease-in-out infinite alternate; }
+@keyframes rk-crown { from { transform: translateY(0) rotate(-8deg); } to { transform: translateY(-4px) rotate(8deg); } }
+/* The podium builds itself: avatars drop in, bars rise from the floor —
+   third, then second, then first (--rise-order from HomeRanking). Keyed on
+   the period, so switching This week / All time plays it again. */
+.ranking-podium-avatar { animation: rk-pop .5s cubic-bezier(.3, 1.5, .5, 1) calc(var(--rise-order, 0) * 140ms + 260ms) both; }
+.ranking-podium-bar { transform-origin: bottom; animation: rk-rise .6s cubic-bezier(.2, .9, .3, 1.15) calc(var(--rise-order, 0) * 140ms) both; }
+@keyframes rk-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 .ranking-podium-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 5px; }
 .ranking-podium-minutes { color: var(--text-secondary); font-size: 10px; margin-bottom: 14px; }
 .ranking-podium-minutes strong { color: var(--text-primary); font-size: 14px; font-variant-numeric: tabular-nums; }
 .ranking-podium-bar { width: 100%; border-radius: 14px 14px 0 0; padding-top: 14px; text-align: center; background: var(--bg-secondary); border: 1px solid var(--border); border-bottom: 0; }
-.rank-1 .ranking-podium-bar { background: var(--accent-soft); border-color: var(--accent); }
+/* First place gets the hero's drifting purple (plan.css keyframes). */
+.rank-1 .ranking-podium-bar { background: linear-gradient(115deg, var(--hero-1), var(--hero-2), var(--hero-3), var(--hero-4), var(--hero-5), var(--hero-1)); background-size: 400% 400%; border-color: transparent; animation: rk-rise .6s cubic-bezier(.2, .9, .3, 1.15) calc(var(--rise-order, 0) * 140ms) both, pl-hero-drift 18s ease-in-out infinite alternate; }
 .ranking-podium-place { color: var(--text-secondary); font-size: 24px; font-weight: 800; }
-.rank-1 .ranking-podium-place { color: var(--accent); }
+.rank-1 .ranking-podium-place { color: var(--text-on-accent); }
 .ranking-row { width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px 24px; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--text-primary); text-align: left; cursor: pointer; font: inherit; }
 .ranking-row:hover { background: var(--bg-secondary); }
 .ranking-row.is-you { background: var(--accent-soft); }
@@ -86,14 +99,10 @@
   .ranking-podium { gap: 10px; padding: 34px 16px 0; }
 }
 @media (max-width: 480px) {
-  .leaderboard-page .leaderboard-content { padding: 24px 16px 110px; }
-  .leaderboard-header { gap: 12px; padding-bottom: 24px; }
-  .leaderboard-header h1 { font-size: 29px; letter-spacing: -1px; }
-  .leaderboard-emblem { width: 54px; height: 64px; border-radius: 18px; }
-  .leaderboard-toolbar h2 { font-size: 16px; }
+  .leaderboard-page .leaderboard-content { padding: var(--s-4) var(--s-4) 110px; }
   .leaderboard-tabs button { padding: 8px 10px; font-size: 11px; }
-  .ranking-you-card { padding: 16px; }
-  .ranking-you-stats { flex-direction: column; gap: 7px; }
+  .ranking-you-card { padding: var(--s-4); align-items: flex-end; }
+  .ranking-you-stats { flex-direction: column; align-items: flex-end; gap: 6px; }
   .ranking-section-heading { padding: 18px 16px; }
   .ranking-row { padding: 16px 12px; gap: 9px; }
   .ranking-row-score { flex-direction: column; gap: 0; align-items: flex-end; }
@@ -110,3 +119,8 @@
   color: var(--text-secondary);
 }
 .empty-icon { margin-bottom: 16px; color: var(--text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ranking-you-num, .ranking-climb, .ranking-crown,
+  .ranking-podium-avatar, .ranking-podium-bar, .rank-1 .ranking-podium-bar { animation: none; }
+}
