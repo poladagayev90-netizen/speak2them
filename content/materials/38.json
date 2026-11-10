@@ -1,0 +1,316 @@
+{
+  "index": 37,
+  "topic": "Luck & Superstitions",
+  "reading": {
+    "title": "Not just luck",
+    "A2": {
+      "text": "Leyla is nineteen. Her grandfather, Akif, is the nard champion of the tea house on their street. Every year, there is a small tournament there. Only men play.\n\nThis year, Leyla wanted to play too. She practised nard on her phone every night for six months.\n\n“Women never play here,” the old men said. But Akif said, “My granddaughter can play.”\n\nAkif has many superstitions. He always sits on the same chair. Before every game, he touches the table and says, “Touch wood.” He also wears a blue charm against the evil eye.\n\nIn the first game, Leyla won. “Beginner's luck,” the men laughed. She won the second game, and the third. “It's a coincidence,” they said.\n\nLeyla got to the final. Her opponent was her grandfather! The odds were against her, because Akif never loses.\n\nSuddenly, Akif dropped the salt on the table. “That is a bad omen,” a man said. “Akif will lose.”\n\n“Don't jinx me!” Akif laughed.\n\nThe game was long and difficult. Against all odds, Leyla won.\n\nEverybody was quiet. Then Akif stood up and hugged her.\n\n“It was not luck,” he said to the men. “She practised for six months. Luck is for people who don't practise.”\n\nThen he smiled at Leyla. “Next year, touch wood, I will win.”",
+      "words": [
+        {
+          "phrase": "the nard champion of the tea house",
+          "az": "çayxananın nərd çempionu",
+          "tr": "çay ocağının tavla şampiyonu"
+        },
+        {
+          "phrase": "against the evil eye",
+          "az": "göz dəyməsinə qarşı",
+          "tr": "nazara karşı"
+        },
+        {
+          "phrase": "The game was long and difficult",
+          "az": "Oyun uzun və çətin idi",
+          "tr": "Oyun uzun ve zordu"
+        },
+        {
+          "phrase": "Everybody was quiet",
+          "az": "Hamı susdu",
+          "tr": "Herkes sessizdi"
+        },
+        {
+          "phrase": "Luck is for people who don't practise",
+          "az": "Bəxt məşq etməyənlər üçündür",
+          "tr": "Şans pratik yapmayanlar içindir"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Leyla wins a nard tournament because she practised",
+            "Akif buys a new charm",
+            "Leyla loses to her grandfather",
+            "The tea house closes"
+          ],
+          "answer": 0,
+          "why": "“It was not luck... She practised for six months.”"
+        },
+        {
+          "type": "detail",
+          "q": "How did Leyla practise nard?",
+          "options": [
+            "With her grandfather every day",
+            "On her phone every night",
+            "At the tea house",
+            "With her friends at school"
+          ],
+          "answer": 1,
+          "why": "“She practised nard on her phone every night for six months.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Akif drop on the table?",
+          "options": [
+            "His charm",
+            "The dice",
+            "The salt",
+            "His tea"
+          ],
+          "answer": 2,
+          "why": "“Suddenly, Akif dropped the salt on the table.”"
+        },
+        {
+          "type": "tf",
+          "q": "Akif sits on a different chair every game.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He always sits on the same chair.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The men say Leyla's first win is “beginner's luck”. What do they mean?",
+          "options": [
+            "She is a very good player",
+            "New players sometimes win by chance",
+            "She cheated",
+            "She is lucky every day"
+          ],
+          "answer": 1,
+          "why": "They think she won only by chance because she is new."
+        },
+        {
+          "type": "inference",
+          "q": "What does Akif believe at the end?",
+          "options": [
+            "Leyla won because of the bad omen",
+            "Hard work, not luck, made Leyla win",
+            "The salt was magic",
+            "Women should not play"
+          ],
+          "answer": 1,
+          "why": "“It was not luck... Luck is for people who don't practise.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Leyla's grandfather Akif had been the nard champion of the tea house on Samed Vurgun Street for eleven years. The yearly tournament was an all-male affair, played under a vine with endless glasses of tea, and Leyla had watched it from the doorway since she was six.\n\nThis year, at nineteen, she signed up. For six months she had played every night on an app, studying the moves of the best online players.\n\nThe old men smiled politely. “It's not a place for girls,” one of them said. Akif just put his name next to hers on the board.\n\nHer grandfather was a deeply superstitious man. He always sat in the same corner chair, never shook the dice with his left hand, and touched the wooden table before every game. “Touch wood,” he would say. A small blue charm against the evil eye hung from his keys.\n\nLeyla won her first match easily. “Beginner's luck,” someone said. She won the second. “Coincidence.” By the time she reached the semi-final, nobody was laughing any more.\n\nThe final was Leyla against Akif. Everybody agreed the odds were impossible: he had not lost a game there in three years. Just before they started, Akif knocked over the salt. A murmur went round the tables. “A bad omen,” whispered his old friend Rauf.\n\n“Don't jinx me, you fool,” Akif said, grinning.\n\nThey played for nearly an hour. It wasn't a gamble — every move Leyla made was a calculation. And against all odds, she won by a single piece.\n\nFor a moment there was total silence. Then Akif stood up and kissed her forehead.\n\n“Some of you will call it fate,” he told the room. “I call it six months of practice while you were all asleep.”\n\nHe sat back down and started setting up the board again. “Now, one more. Touch wood, this time I'll be ready.”",
+      "words": [
+        {
+          "phrase": "an all-male affair",
+          "az": "yalnız kişilərin tədbiri",
+          "tr": "sadece erkeklerin katıldığı bir etkinlik"
+        },
+        {
+          "phrase": "signed up",
+          "az": "adını yazdırdı",
+          "tr": "kaydoldu"
+        },
+        {
+          "phrase": "nobody was laughing any more",
+          "az": "artıq heç kim gülmürdü",
+          "tr": "artık kimse gülmüyordu"
+        },
+        {
+          "phrase": "A murmur went round the tables",
+          "az": "Masalar arasında pıçıltı yayıldı",
+          "tr": "Masalarda bir mırıltı dolaştı"
+        },
+        {
+          "phrase": "by a single piece",
+          "az": "bircə daşla",
+          "tr": "tek bir taşla"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main message of the story?",
+          "options": [
+            "Superstitions are always true",
+            "Leyla's success comes from hard work, not luck",
+            "Tea houses should be closed to women",
+            "Akif is a bad player"
+          ],
+          "answer": 1,
+          "why": "“I call it six months of practice.”"
+        },
+        {
+          "type": "detail",
+          "q": "How long had Akif been the champion?",
+          "options": [
+            "Three years",
+            "Six months",
+            "Eleven years",
+            "Nineteen years"
+          ],
+          "answer": 2,
+          "why": "“...the nard champion... for eleven years.”"
+        },
+        {
+          "type": "detail",
+          "q": "Who said the salt was a bad omen?",
+          "options": [
+            "Leyla",
+            "Akif",
+            "Rauf",
+            "The tea house owner"
+          ],
+          "answer": 2,
+          "why": "“'A bad omen,' whispered his old friend Rauf.”"
+        },
+        {
+          "type": "tf",
+          "q": "Akif wanted to stop playing after the final.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "He set up the board again: “Now, one more.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Leyla won “against all odds”. What does this mean?",
+          "options": [
+            "She won easily",
+            "She won although it seemed almost impossible",
+            "She won because of luck",
+            "She won by cheating"
+          ],
+          "answer": 1,
+          "why": "Everyone thought the odds were impossible because Akif never lost."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Akif mention “while you were all asleep”?",
+          "options": [
+            "The men sleep at the tea house",
+            "Leyla practised at night while others did not",
+            "The game was very late",
+            "He is angry with his friends"
+          ],
+          "answer": 1,
+          "why": "She played every night for six months on an app."
+        }
+      ]
+    },
+    "B2": {
+      "text": "For eleven consecutive years, the nard tournament at the tea house on Samed Vurgun Street had ended the same way: with Leyla's grandfather Akif sweeping the pieces into their box and accepting the congratulations of men who had long since stopped expecting to beat him. It was an exclusively male institution, conducted beneath a sagging vine to the clatter of dice and the endless refilling of pear-shaped glasses, and Leyla had observed it from the doorway since she was old enough to walk.\n\nAt nineteen, she put her name on the board. She had spent the previous six months playing nightly on an app, dissecting the strategies of players from Istanbul to Tehran.\n\nThe regulars received the news with exaggerated courtesy. “Not really a place for young ladies,” one remarked. Akif said nothing; he simply wrote his own name beneath hers.\n\nHer grandfather's superstitions were the stuff of family legend. He occupied the same corner chair without exception, refused to shake the dice left-handed and rapped his knuckles on the wooden table before each game. “Touch wood,” he would mutter. Dangling from his keys was a blue glass charm to deflect the evil eye.\n\nLeyla dispatched her first opponent briskly. “Beginner's luck,” someone concluded. She won again. “Pure coincidence.” By the semi-final, the commentary had stopped altogether.\n\nThe final, inevitably, was granddaughter against grandfather, and the odds were considered absurd — Akif had not dropped a single game on those premises in three years. As they sat down, his sleeve caught the salt cellar and sent it skidding across the table. A ripple went through the room. “That's an omen,” breathed his oldest friend Rauf.\n\n“Don't jinx me, you old crow,” Akif replied cheerfully.\n\nThe match lasted almost an hour. Nothing about it resembled a gamble: every move Leyla made had been rehearsed a thousand times on a glowing screen at two in the morning. And against all odds, she took the game by a single piece.\n\nThe silence was absolute. Then Akif rose, cupped her face in his hands and kissed her forehead.\n\n“Some of you will say it was fate,” he announced. “I'd say it was six months of discipline while the rest of you slept.”\n\nThen he sat down and began laying out the pieces again. “Another,” he said. “Touch wood, this time I'll be paying attention.”",
+      "words": [
+        {
+          "phrase": "long since stopped expecting",
+          "az": "çoxdan gözləməyi dayandırmışdılar",
+          "tr": "çoktan beklemeyi bırakmışlardı"
+        },
+        {
+          "phrase": "the stuff of family legend",
+          "az": "ailə əfsanəsi mövzusu",
+          "tr": "aile efsanesi konusu"
+        },
+        {
+          "phrase": "the commentary had stopped altogether",
+          "az": "şərhlər tamamilə kəsilmişdi",
+          "tr": "yorumlar tamamen kesilmişti"
+        },
+        {
+          "phrase": "A ripple went through the room",
+          "az": "Otaqda dalğalanma yarandı",
+          "tr": "Odada bir dalgalanma oldu"
+        },
+        {
+          "phrase": "The silence was absolute",
+          "az": "Sükut tam idi",
+          "tr": "Sessizlik mutlaktı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story's central contrast?",
+          "options": [
+            "City life versus village life",
+            "Superstition and luck versus preparation and discipline",
+            "Young players versus computers",
+            "Tea versus coffee"
+          ],
+          "answer": 1,
+          "why": "Everyone talks about luck and omens, but Leyla wins through practice."
+        },
+        {
+          "type": "detail",
+          "q": "How did Leyla prepare for the tournament?",
+          "options": [
+            "By playing nightly on an app and studying strong players",
+            "By watching her grandfather every day",
+            "By taking lessons in Istanbul",
+            "By reading books about luck"
+          ],
+          "answer": 0,
+          "why": "“...playing nightly on an app, dissecting the strategies of players.”"
+        },
+        {
+          "type": "detail",
+          "q": "What happened to the salt cellar?",
+          "options": [
+            "Leyla threw it",
+            "Akif's sleeve knocked it across the table",
+            "Rauf dropped it",
+            "It broke"
+          ],
+          "answer": 1,
+          "why": "“...his sleeve caught the salt cellar and sent it skidding across the table.”"
+        },
+        {
+          "type": "tf",
+          "q": "Akif reacted angrily to Rauf's comment about the omen.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "He replied “cheerfully”."
+        },
+        {
+          "type": "vocab",
+          "q": "The narrator says the match was not “a gamble”. What does this mean?",
+          "options": [
+            "Nobody was betting money, and Leyla relied on skill, not chance",
+            "The match was very short",
+            "The match was illegal",
+            "Leyla did not want to play"
+          ],
+          "answer": 0,
+          "why": "“Every move Leyla made had been rehearsed a thousand times.”"
+        },
+        {
+          "type": "inference",
+          "q": "How does Akif feel about losing?",
+          "options": [
+            "Humiliated and angry",
+            "Proud of Leyla and eager to play again",
+            "Afraid of the omen",
+            "Ready to retire"
+          ],
+          "answer": 1,
+          "why": "He kisses her forehead and immediately asks for another game."
+        }
+      ]
+    }
+  }
+}

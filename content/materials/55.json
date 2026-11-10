@@ -1,0 +1,316 @@
+{
+  "index": 54,
+  "topic": "Speed & Thrills",
+  "reading": {
+    "title": "The girl who played it safe",
+    "A2": {
+      "text": "Nigar is an accountant. She is very careful. She always plays it safe. She never drives over the speed limit, and she does not like surprises.\n\nHer friends are different. They love thrills and adrenaline. In May, they went to the mountains in Gabala. There was a long zipline over a deep valley.\n\n“Come on, Nigar!” her friend Aysel said. “I dare you to try it.”\n\nNigar looked down. The valley was very deep. She was terrified. “No,” she said. “That is reckless.”\n\nThe instructor smiled. “It is safe. You have a helmet and strong ropes,” he said.\n\nNigar watched her friends. They screamed and laughed. Nigar thought, “I always play it safe. Maybe I can live on the edge, just for one minute.”\n\nShe decided to take the plunge. She put on the helmet. Her legs were shaking. Then she jumped.\n\nThe wind was in her face. The valley was green and beautiful. She felt a big rush of happiness. She screamed, but it was a happy scream.\n\nAt the bottom, her friends clapped. “How was it?” Aysel asked.\n\nNigar's face was red, and her eyes were bright. “Again!” she said. “I want to do it again!”\n\nHer friends laughed. The careful accountant had a new hobby.",
+      "words": [
+        {
+          "phrase": "does not like surprises",
+          "az": "sürprizləri sevmir",
+          "tr": "sürprizlerden hoşlanmaz"
+        },
+        {
+          "phrase": "over a deep valley",
+          "az": "dərin dərənin üzərindən",
+          "tr": "derin bir vadinin üzerinden"
+        },
+        {
+          "phrase": "Her legs were shaking",
+          "az": "Ayaqları titrəyirdi",
+          "tr": "Bacakları titriyordu"
+        },
+        {
+          "phrase": "The wind was in her face",
+          "az": "Külək üzünə vururdu",
+          "tr": "Rüzgâr yüzüne çarpıyordu"
+        },
+        {
+          "phrase": "a new hobby",
+          "az": "yeni hobbi",
+          "tr": "yeni bir hobi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A careful woman tries a zipline and loves it",
+            "Nigar has an accident",
+            "Nigar's friends stop doing sports",
+            "Nigar buys a fast car"
+          ],
+          "answer": 0,
+          "why": "She is terrified but jumps and wants to go again."
+        },
+        {
+          "type": "detail",
+          "q": "What is Nigar's job?",
+          "options": [
+            "A teacher",
+            "An accountant",
+            "An instructor",
+            "A driver"
+          ],
+          "answer": 1,
+          "why": "“Nigar is an accountant.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did the instructor say?",
+          "options": [
+            "It is dangerous",
+            "It is safe — you have a helmet and strong ropes",
+            "Only experts can do it",
+            "It is closed today"
+          ],
+          "answer": 1,
+          "why": "“It is safe. You have a helmet and strong ropes.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar often drives over the speed limit.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“She never drives over the speed limit.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar decided to “take the plunge”. What does this mean?",
+          "options": [
+            "Jump into water",
+            "Decide to do something difficult or scary",
+            "Go home",
+            "Take a photo"
+          ],
+          "answer": 1,
+          "why": "She put on the helmet and jumped."
+        },
+        {
+          "type": "inference",
+          "q": "How does Nigar feel at the end?",
+          "options": [
+            "Excited and happy",
+            "Sick",
+            "Angry with her friends",
+            "Bored"
+          ],
+          "answer": 0,
+          "why": "“Again! I want to do it again!”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Nigar was famous among her friends for one thing: she always played it safe. She was an accountant who checked every receipt twice, drove ten kilometres below the speed limit and booked holidays a year in advance. Her friends, on the other hand, collected thrills the way other people collect stamps.\n\nIn May, they persuaded her to join them on a weekend in Gabala. On Saturday morning, they took the cable car up the mountain to the start of a zipline — a thin steel cable stretching nearly a kilometre across a green valley.\n\n“Come on, Nigar,” said her friend Aysel, already wearing her helmet. “I dare you.”\n\nNigar walked to the edge and looked down. The trees below looked like broccoli. She was absolutely terrified. “This isn't brave,” she said. “It's reckless.”\n\nThe instructor, a calm young man from Gabala, showed her the double harness and the helmet. “Three thousand people did this last year,” he said. “Not one accident. The only risk is that you'll like it.”\n\nOne by one, her friends flew off the platform, screaming with joy. Nigar stood alone, her heart pounding. All her life she had watched other people live on the edge. She had never once found out what it felt like.\n\n“Just once,” she told herself. “Take the plunge.”\n\nShe clipped in, closed her eyes and stepped off.\n\nFor the first second, there was nothing but fear. Then she opened her eyes. The valley opened beneath her like a map, the wind rushed past her ears, and something she had never felt before filled her chest — pure adrenaline. She heard someone screaming with laughter and realised it was her.\n\nAt the bottom, her friends were waiting. Aysel took one look at her red cheeks and wild hair and started laughing. “Well? Never again?”\n\nNigar was already unclipping her harness. “How long,” she asked breathlessly, “is the queue to go back up?”",
+      "words": [
+        {
+          "phrase": "checked every receipt twice",
+          "az": "hər qəbzi iki dəfə yoxlayırdı",
+          "tr": "her fişi iki kez kontrol ediyordu"
+        },
+        {
+          "phrase": "the way other people collect stamps",
+          "az": "başqalarının marka topladığı kimi",
+          "tr": "başkalarının pul biriktirdiği gibi"
+        },
+        {
+          "phrase": "The trees below looked like broccoli",
+          "az": "Aşağıdakı ağaclar brokkoliyə bənzəyirdi",
+          "tr": "Aşağıdaki ağaçlar brokoliye benziyordu"
+        },
+        {
+          "phrase": "her heart pounding",
+          "az": "ürəyi çırpınaraq",
+          "tr": "kalbi küt küt atarak"
+        },
+        {
+          "phrase": "opened beneath her like a map",
+          "az": "xəritə kimi altında açıldı",
+          "tr": "altında bir harita gibi açıldı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Ziplines are dangerous",
+            "A very careful person discovers she enjoys a thrill",
+            "Nigar's friends are reckless",
+            "Gabala is beautiful"
+          ],
+          "answer": 1,
+          "why": "She is terrified, jumps, and wants to go again."
+        },
+        {
+          "type": "detail",
+          "q": "How long was the zipline?",
+          "options": [
+            "Nearly a kilometre",
+            "Ten kilometres",
+            "One hundred metres",
+            "Three kilometres"
+          ],
+          "answer": 0,
+          "why": "“...a thin steel cable stretching nearly a kilometre.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did the instructor say was “the only risk”?",
+          "options": [
+            "Falling",
+            "Bad weather",
+            "That you'll like it",
+            "Losing your helmet"
+          ],
+          "answer": 2,
+          "why": "“The only risk is that you'll like it.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar went first.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“One by one, her friends flew off... Nigar stood alone.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar had always watched other people “live on the edge”. What does this mean?",
+          "options": [
+            "Live near a cliff",
+            "Live in an exciting, risky way",
+            "Live alone",
+            "Live in the mountains"
+          ],
+          "answer": 1,
+          "why": "Her friends love thrills, unlike her."
+        },
+        {
+          "type": "inference",
+          "q": "What does Nigar's last question show?",
+          "options": [
+            "She wants to go home",
+            "She wants to do the zipline again",
+            "She is angry",
+            "She is tired of queues"
+          ],
+          "answer": 1,
+          "why": "She asks how long the queue is to go back up."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Among her friends, Nigar was renowned for a single quality: she always played it safe. An accountant by profession and by temperament, she checked every receipt twice, drove a disciplined ten kilometres under the speed limit and booked her holidays eleven months ahead. Her friends, by contrast, collected thrills the way other people collect fridge magnets.\n\nThat May, after weeks of persuasion, they lured her to Gabala for the weekend. On Saturday morning they rode the cable car up the mountain to the launch platform of a zipline — a slender steel cable strung almost a kilometre across a plunging green valley.\n\n“Come on, Nigar,” said her friend Aysel, already fastening her helmet. “I dare you.”\n\nNigar approached the edge and peered over. The forest below resembled a tray of broccoli. She was, in the most literal sense, terrified. “This isn't courage,” she said. “It's simply reckless.”\n\nThe instructor, an unhurried young man from a nearby village, demonstrated the double harness and tapped her helmet. “Three thousand people last season,” he said. “Not a single accident. The only real danger is that you'll enjoy it.”\n\nOne after another, her friends launched themselves off the platform, whooping as they vanished into the valley. Nigar remained, heart hammering against her ribs. All her life she had watched other people live on the edge, observing from a sensible distance. She had never once discovered what it actually felt like.\n\n“Once,” she said under her breath. “Just once. Take the plunge.”\n\nShe clipped in, shut her eyes and stepped into nothing.\n\nFor one endless second there was only fear. Then she opened her eyes, and the valley unfurled beneath her like a living map, the wind roaring past her ears, and a sensation she had never known flooded her chest — a pure, electric rush of adrenaline. Somewhere, someone was shrieking with laughter. It took her a moment to realise it was her.\n\nHer friends were waiting at the landing platform. Aysel took one look at her flushed cheeks and wind-wrecked hair and dissolved into giggles. “Well? Never again?”\n\nNigar was already wrestling with her harness buckle. “How long,” she gasped, “is the queue to go back up?”",
+      "words": [
+        {
+          "phrase": "by profession and by temperament",
+          "az": "peşəsinə və xasiyyətinə görə",
+          "tr": "mesleği ve mizacı gereği"
+        },
+        {
+          "phrase": "after weeks of persuasion",
+          "az": "həftələrlə dilə tutduqdan sonra",
+          "tr": "haftalarca ikna çabasından sonra"
+        },
+        {
+          "phrase": "in the most literal sense",
+          "az": "ən hərfi mənada",
+          "tr": "kelimenin tam anlamıyla"
+        },
+        {
+          "phrase": "stepped into nothing",
+          "az": "boşluğa addım atdı",
+          "tr": "boşluğa adım attı"
+        },
+        {
+          "phrase": "dissolved into giggles",
+          "az": "kıkıltıya boğuldu",
+          "tr": "kıkırdamaya başladı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What change does Nigar go through?",
+          "options": [
+            "From adventurous to careful",
+            "From always playing it safe to discovering the joy of a thrill",
+            "From happy to frightened",
+            "From accountant to instructor"
+          ],
+          "answer": 1,
+          "why": "She steps off the platform and immediately wants to go again."
+        },
+        {
+          "type": "detail",
+          "q": "How far in advance does Nigar book holidays?",
+          "options": [
+            "A week",
+            "Eleven months",
+            "Two years",
+            "She never books"
+          ],
+          "answer": 1,
+          "why": "“...booked her holidays eleven months ahead.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did the instructor say about safety?",
+          "options": [
+            "Three thousand people, not a single accident",
+            "It was dangerous in the rain",
+            "Only experts should try",
+            "Helmets were optional"
+          ],
+          "answer": 0,
+          "why": "“Three thousand people last season. Not a single accident.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar realised at once that the laughter was hers.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“It took her a moment to realise it was her.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar tells herself to “take the plunge”. What does she mean?",
+          "options": [
+            "Jump into a lake",
+            "Commit to something frightening despite her fear",
+            "Give up and go home",
+            "Ask for help"
+          ],
+          "answer": 1,
+          "why": "She decides to step off the platform."
+        },
+        {
+          "type": "inference",
+          "q": "What is ironic about the instructor's warning?",
+          "options": [
+            "It comes true: Nigar does enjoy it",
+            "There is an accident",
+            "Nobody listens",
+            "He is afraid of heights"
+          ],
+          "answer": 0,
+          "why": "“The only real danger is that you'll enjoy it.”"
+        }
+      ]
+    }
+  }
+}

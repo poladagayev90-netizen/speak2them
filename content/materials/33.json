@@ -1,0 +1,316 @@
+{
+  "index": 32,
+  "topic": "Traffic & Commuting",
+  "reading": {
+    "title": "The back seat driver",
+    "A2": {
+      "text": "Kamran's sister, Lala, has a graduation ceremony today at four o'clock. Kamran is driving his mother there. It is half past two, so they have a lot of time.\n\nBut Kamran's mother is a back seat driver. “Slow down! Go left! Don't overtake that bus!” she says again and again.\n\nAt three o'clock, it is rush hour. There is a big traffic jam on the main road. Nobody can move. Drivers honk, but it does not help. Even the cars in the fast lane are not moving.\n\n“Take a detour,” his mother says. “Go through the small streets.”\n\nKamran turns into a small street. But after five minutes, they hit a roadblock. Workers are fixing the road, and a sign says “Closed”.\n\nNow it is twenty past three. Kamran's mother looks at the map on her phone. “The metro station is very close,” she says. “Park the car. Let's go!”\n\nThey walk quickly to the station. The fare is cheap, and the train comes in two minutes. Kamran usually drives on his commute, so he has not been on the metro for years.\n\nThey arrive at the university at ten to four. Lala is waiting at the door.\n\n“How was the drive?” she asks.\n\nKamran's mother smiles. “Great. Next time, I am the driver.”",
+      "words": [
+        {
+          "phrase": "a graduation ceremony",
+          "az": "məzun olma mərasimi",
+          "tr": "mezuniyet töreni"
+        },
+        {
+          "phrase": "again and again",
+          "az": "təkrar-təkrar",
+          "tr": "tekrar tekrar"
+        },
+        {
+          "phrase": "it does not help",
+          "az": "bunun faydası yoxdur",
+          "tr": "bir faydası yok"
+        },
+        {
+          "phrase": "Park the car",
+          "az": "Maşını park et",
+          "tr": "Arabayı park et"
+        },
+        {
+          "phrase": "has not been on the metro for years",
+          "az": "illərdir metroya minməyib",
+          "tr": "yıllardır metroya binmedi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "How do Kamran and his mother finally get to the ceremony?",
+          "options": [
+            "By taxi",
+            "By car, on the main road",
+            "By metro",
+            "On foot all the way"
+          ],
+          "answer": 2,
+          "why": "They park the car and take the metro."
+        },
+        {
+          "type": "detail",
+          "q": "What time is Lala's ceremony?",
+          "options": [
+            "At half past two",
+            "At three o'clock",
+            "At four o'clock",
+            "At ten to four"
+          ],
+          "answer": 2,
+          "why": "“...a graduation ceremony today at four o'clock.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why can't they use the small street?",
+          "options": [
+            "Workers are fixing the road",
+            "There is an accident",
+            "It is a one-way street",
+            "It is full of pedestrians"
+          ],
+          "answer": 0,
+          "why": "“Workers are fixing the road, and a sign says 'Closed'.”"
+        },
+        {
+          "type": "tf",
+          "q": "Kamran takes the metro to work every day.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Kamran usually drives on his commute.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Kamran's mother is a “back seat driver”. What does this mean?",
+          "options": [
+            "She sits in the back of the car",
+            "She is a taxi driver",
+            "She gives the driver advice he did not ask for",
+            "She cannot drive"
+          ],
+          "answer": 2,
+          "why": "“Slow down! Go left! Don't overtake that bus!” she says again and again."
+        },
+        {
+          "type": "inference",
+          "q": "What does Kamran's mother mean by “Next time, I am the driver”?",
+          "options": [
+            "She is joking that she has better ideas",
+            "She is angry with Lala",
+            "She bought a new car",
+            "She wants to take the metro again"
+          ],
+          "answer": 0,
+          "why": "Her metro idea worked, so she makes a happy joke."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Kamran had promised his sister Lala that he would bring their mother to her graduation ceremony at four o'clock. He left home at half past two, sure that ninety minutes was more than enough to cross Baku.\n\nUnfortunately, his mother was a classic back seat driver. Before they had even left the street, she was giving instructions. “Don't overtake him, he looks dangerous. Why are you in this lane? You're too close to that Prius!”\n\nBy three o'clock they had joined the rush hour on Tbilisi Avenue, and soon they were stuck in a traffic jam that stretched to the horizon. Drivers honked as if the noise could push the cars forward. Even the people in the fast lane were sitting still, reading their phones.\n\n“Take a detour through the old streets behind the market,” his mother said.\n\nKamran didn't want to admit it was a good idea, so he waited a full minute before turning. The narrow streets were moving nicely — until they hit a roadblock. A team of workers was digging up the road, and a fence covered the whole street.\n\nIt was now twenty past three. Kamran was beginning to sweat.\n\nHis mother was already studying the map on her phone. “The metro is three hundred metres away. Leave the car here. We'll walk.”\n\nThey hurried past slow pedestrians, paid the fare and jumped onto a train just as the doors were closing. Kamran had driven on his daily commute for so long that he had forgotten how quick the metro could be. Twelve minutes later, they were climbing the steps towards the university.\n\nThey reached the hall at ten to four. Lala ran out to hug them. “How was the traffic?” she asked.\n\n“Terrible,” said their mother. “Fortunately, your brother had me.”\n\nKamran opened his mouth to argue, then closed it again. She was right, and they both knew it.",
+      "words": [
+        {
+          "phrase": "more than enough",
+          "az": "kifayət qədərindən çox",
+          "tr": "fazlasıyla yeterli"
+        },
+        {
+          "phrase": "stretched to the horizon",
+          "az": "üfüqə qədər uzanırdı",
+          "tr": "ufka kadar uzanıyordu"
+        },
+        {
+          "phrase": "didn't want to admit",
+          "az": "etiraf etmək istəmirdi",
+          "tr": "kabul etmek istemiyordu"
+        },
+        {
+          "phrase": "just as the doors were closing",
+          "az": "qapılar bağlanan anda",
+          "tr": "kapılar kapanırken"
+        },
+        {
+          "phrase": "opened his mouth to argue",
+          "az": "mübahisə etmək üçün ağzını açdı",
+          "tr": "tartışmak için ağzını açtı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main point of the story?",
+          "options": [
+            "Kamran is a terrible driver",
+            "The annoying back seat driver actually saves the day",
+            "Lala misses her graduation",
+            "The metro is always closed"
+          ],
+          "answer": 1,
+          "why": "His mother's metro plan gets them there on time."
+        },
+        {
+          "type": "detail",
+          "q": "Where did they get stuck in a traffic jam?",
+          "options": [
+            "Behind the market",
+            "On Tbilisi Avenue",
+            "Near the university",
+            "At the metro station"
+          ],
+          "answer": 1,
+          "why": "“...the rush hour on Tbilisi Avenue.”"
+        },
+        {
+          "type": "detail",
+          "q": "How long did the metro journey take?",
+          "options": [
+            "Twelve minutes",
+            "Twenty minutes",
+            "Ninety minutes",
+            "Three minutes"
+          ],
+          "answer": 0,
+          "why": "“Twelve minutes later, they were climbing the steps.”"
+        },
+        {
+          "type": "tf",
+          "q": "Kamran turned into the old streets immediately.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He waited a full minute before turning.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The narrow streets moved well “until they hit a roadblock”. What does this mean here?",
+          "options": [
+            "They crashed into another car",
+            "They found the road closed and could not continue",
+            "They found a shortcut",
+            "They met a police officer"
+          ],
+          "answer": 1,
+          "why": "“A fence covered the whole street.”"
+        },
+        {
+          "type": "inference",
+          "q": "Why does Kamran close his mouth without arguing?",
+          "options": [
+            "He is too tired to speak",
+            "He knows his mother is right",
+            "Lala asks him to be quiet",
+            "He is angry with his sister"
+          ],
+          "answer": 1,
+          "why": "“She was right, and they both knew it.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Kamran had sworn on everything he owned that he would deliver their mother to Lala's graduation ceremony by four o'clock. He set off at half past two with the confidence of a man who had driven in Baku for a decade and believed he understood its moods.\n\nHe had not, however, factored in his passenger. His mother was a back seat driver of near-professional standard, and she was in excellent form. “Don't overtake him — look at his tyres. Why are you hugging the kerb? Indicate! Nobody will know what you're doing!”\n\nBy three, they had merged into the rush hour on Tbilisi Avenue and were swallowed by a traffic jam so complete it seemed architectural. Drivers honked in long, furious bursts, as though volume could dissolve metal. Even the cars in the fast lane were frozen, their owners scrolling patiently through their phones.\n\n“Take a detour behind the Yashil Bazaar,” his mother advised. “The old streets will be empty.”\n\nSince admitting she was right would set a dangerous precedent, Kamran waited a full minute before turning, purely as a matter of principle. Annoyingly, the lanes were clear — right up to the moment they hit a roadblock: a crew in orange vests digging a trench across the entire street, behind a fence that left no room even for a motorbike.\n\nIt was twenty past three. A bead of sweat made its way down Kamran's neck.\n\nHis mother had already zoomed in on the map. “Metro, three hundred metres. Leave the car. We walk.”\n\nThey wove between strolling pedestrians, paid the fare and slipped through the closing doors of a train with seconds to spare. Kamran's daily commute was a fixed ritual of radio, coffee and congestion; he had genuinely forgotten that underground the city moved at a completely different speed. Twelve minutes later they were climbing the steps towards the university, his mother barely out of breath.\n\nThey walked into the hall at ten to four. Lala threw her arms around them. “How was the drive?”\n\n“A disaster,” their mother said serenely. “Luckily, your brother brought his navigator.”\n\nKamran drew breath to object, considered the evidence and, for once in his life, said nothing at all.",
+      "words": [
+        {
+          "phrase": "sworn on everything he owned",
+          "az": "nəyi varsa ona and içmişdi",
+          "tr": "nesi varsa üzerine yemin etmişti"
+        },
+        {
+          "phrase": "in excellent form",
+          "az": "əla formada",
+          "tr": "harika formda"
+        },
+        {
+          "phrase": "set a dangerous precedent",
+          "az": "təhlükəli presedent yaratmaq",
+          "tr": "tehlikeli bir emsal oluşturmak"
+        },
+        {
+          "phrase": "with seconds to spare",
+          "az": "saniyələr qalmış",
+          "tr": "son saniyelerde"
+        },
+        {
+          "phrase": "for once in his life",
+          "az": "həyatında bir dəfə olsun",
+          "tr": "hayatında bir kez olsun"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main irony of the story?",
+          "options": [
+            "Kamran is late because of the metro",
+            "The passenger Kamran finds annoying turns out to have the best plan",
+            "Lala forgets her own graduation",
+            "The roadblock is Kamran's fault"
+          ],
+          "answer": 1,
+          "why": "His mother's advice gets them there on time."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Kamran wait a minute before taking the detour?",
+          "options": [
+            "The light was red",
+            "He did not know the way",
+            "He didn't want to admit his mother was right",
+            "A pedestrian was crossing"
+          ],
+          "answer": 2,
+          "why": "“Admitting she was right would set a dangerous precedent.”"
+        },
+        {
+          "type": "detail",
+          "q": "What blocked the old street?",
+          "options": [
+            "A crew digging a trench behind a fence",
+            "A wedding party",
+            "A broken-down bus",
+            "Market stalls"
+          ],
+          "answer": 0,
+          "why": "“...a crew in orange vests digging a trench across the entire street.”"
+        },
+        {
+          "type": "tf",
+          "q": "Kamran's mother was very tired after walking to the university.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "She was “barely out of breath”."
+        },
+        {
+          "type": "vocab",
+          "q": "The narrator says that “even the cars in the fast lane were frozen”. Why is this detail funny?",
+          "options": [
+            "The fast lane is supposed to be the quickest, but nothing moves",
+            "The cars were covered in ice",
+            "The drivers were asleep",
+            "The fast lane was closed"
+          ],
+          "answer": 0,
+          "why": "It shows the traffic jam was total."
+        },
+        {
+          "type": "inference",
+          "q": "What does Kamran's silence at the end show?",
+          "options": [
+            "He is angry with Lala",
+            "He accepts, unusually, that his mother was right",
+            "He has lost his voice",
+            "He is planning to drive home alone"
+          ],
+          "answer": 1,
+          "why": "He “considered the evidence” and said nothing “for once in his life”."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "index": 35,
+  "topic": "Job Interviews",
+  "reading": {
+    "title": "The interview in the dark",
+    "A2": {
+      "text": "Rashad is twenty-four. He finished university last year, but he does not have a job. Two companies decided to turn down his CV. He was very sad.\n\nThen a big hotel in Baku invited him to an interview. There were five candidates for the job. The night before, Rashad practised with his sister, Leyla.\n\n“What is your greatest strength?” Leyla asked.\n\n“I am calm,” Rashad said.\n\n“And your weakness?”\n\n“I talk too fast when I am nervous.”\n\n“Put your best foot forward,” Leyla said. “If something goes wrong, think on your feet. You can land a job this time.”\n\nThe next morning, Rashad put on his best suit. In the interview room, there were three managers. They asked about his qualification and his English. Then Rashad began his presentation on the computer.\n\nSuddenly, the lights went off. There was no electricity! The computer screen was black.\n\nThe managers looked at each other. Rashad was nervous, but he had to think on his feet. He took a pen and a big piece of paper. He drew his ideas and explained them slowly and calmly.\n\nWhen the lights came back, the managers were smiling.\n\n“You stayed calm,” the director said. “In a hotel, that is very important.”\n\nTwo days later, the hotel called. The salary was good. First, there was a probation of three months. Rashad was very happy.",
+      "words": [
+        {
+          "phrase": "does not have a job",
+          "az": "işi yoxdur",
+          "tr": "işi yok"
+        },
+        {
+          "phrase": "put on his best suit",
+          "az": "ən yaxşı kostyumunu geydi",
+          "tr": "en iyi takım elbisesini giydi"
+        },
+        {
+          "phrase": "the lights went off",
+          "az": "işıqlar söndü",
+          "tr": "ışıklar söndü"
+        },
+        {
+          "phrase": "looked at each other",
+          "az": "bir-birinə baxdılar",
+          "tr": "birbirlerine baktılar"
+        },
+        {
+          "phrase": "the lights came back",
+          "az": "işıqlar qayıtdı",
+          "tr": "ışıklar geri geldi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What helps Rashad get the job?",
+          "options": [
+            "His expensive suit",
+            "Staying calm when the electricity goes off",
+            "His sister's help in the interview",
+            "A perfect computer presentation"
+          ],
+          "answer": 1,
+          "why": "“You stayed calm. In a hotel, that is very important.”"
+        },
+        {
+          "type": "detail",
+          "q": "How many candidates were there for the job?",
+          "options": [
+            "Two",
+            "Three",
+            "Five",
+            "Ten"
+          ],
+          "answer": 2,
+          "why": "“There were five candidates for the job.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Rashad say his weakness was?",
+          "options": [
+            "He is often late",
+            "He talks too fast when he is nervous",
+            "His English is weak",
+            "He cannot use computers"
+          ],
+          "answer": 1,
+          "why": "“I talk too fast when I am nervous.”"
+        },
+        {
+          "type": "tf",
+          "q": "Rashad's presentation worked perfectly on the computer.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Suddenly, the lights went off... The computer screen was black.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Rashad had to “think on his feet”. What does this mean?",
+          "options": [
+            "Stand up for a long time",
+            "Walk around the room",
+            "Think and act quickly in a surprise situation",
+            "Go home and think"
+          ],
+          "answer": 2,
+          "why": "He quickly drew his ideas on paper when the computer stopped."
+        },
+        {
+          "type": "inference",
+          "q": "Why were the managers smiling at the end?",
+          "options": [
+            "They liked his drawings and his calm",
+            "They wanted to go home",
+            "The electricity was cheap",
+            "They knew his sister"
+          ],
+          "answer": 0,
+          "why": "He explained his ideas “slowly and calmly” on paper."
+        }
+      ]
+    },
+    "B1": {
+      "text": "After graduating in tourism, Rashad spent six months sending out his CV. Two hotels decided to turn down his application without even meeting him, and a third never replied. So when the Caspian Grand invited him to interview for a guest relations job, he treated it like a final exam.\n\nThe night before, his sister Leyla played the role of a strict manager. “What's your biggest strength?”\n\n“I stay calm under pressure.”\n\n“Your biggest weakness?”\n\n“When I'm nervous, I speak too quickly.”\n\n“Then slow down,” Leyla said. “Put your best foot forward, smile, and you'll land a job this time. I can feel it.”\n\nThere were five candidates waiting in the lobby the next morning, all in dark suits, all pretending to read their phones. When Rashad's turn came, three managers asked about his qualification, his languages and a difficult guest he had once dealt with during his internship in Gabala. It was going well. Then he connected his laptop to start the presentation he had practised twenty times.\n\nAt the exact moment the first slide appeared, the building lost power. The screen died, the air conditioning stopped and the room went dark except for the grey light from the window.\n\nSomebody laughed nervously. Rashad felt his heart racing, but he knew he had to think on his feet. He asked for a marker, walked to the whiteboard by the window and drew his ideas by hand — a simple map of a guest's first day at the hotel, with every moment where staff could make it special. He spoke slowly, exactly as Leyla had told him.\n\nWhen the lights came back ten minutes later, nobody reached for the laptop.\n\n“Most people would panic,” said the director. “You made a power cut look like part of the plan.”\n\nThe call came two days later. The salary was better than he had expected, with a three-month probation period. Rashad's first call was to Leyla.",
+      "words": [
+        {
+          "phrase": "spent six months sending out his CV",
+          "az": "altı ay CV göndərməklə keçirdi",
+          "tr": "altı ay CV göndererek geçirdi"
+        },
+        {
+          "phrase": "treated it like a final exam",
+          "az": "ona buraxılış imtahanı kimi yanaşdı",
+          "tr": "ona final sınavı gibi davrandı"
+        },
+        {
+          "phrase": "I stay calm under pressure",
+          "az": "Təzyiq altında sakit qalıram",
+          "tr": "Baskı altında sakin kalırım"
+        },
+        {
+          "phrase": "the building lost power",
+          "az": "binada işıq kəsildi",
+          "tr": "binanın elektriği kesildi"
+        },
+        {
+          "phrase": "felt his heart racing",
+          "az": "ürəyinin döyüntüsünü hiss etdi",
+          "tr": "kalbinin hızla attığını hissetti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story mainly about?",
+          "options": [
+            "A power cut gives Rashad the chance to show his real strength",
+            "Rashad's sister gets a job at a hotel",
+            "A hotel loses electricity for a week",
+            "Rashad decides to work in Gabala"
+          ],
+          "answer": 0,
+          "why": "He stays calm in the dark and gets the job."
+        },
+        {
+          "type": "detail",
+          "q": "What job did Rashad apply for?",
+          "options": [
+            "Hotel director",
+            "Tour guide",
+            "Guest relations",
+            "Receptionist in Gabala"
+          ],
+          "answer": 2,
+          "why": "“...to interview for a guest relations job.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Rashad draw on the whiteboard?",
+          "options": [
+            "A map of Baku",
+            "A guest's first day at the hotel",
+            "The hotel's floor plan",
+            "His CV"
+          ],
+          "answer": 1,
+          "why": "“...a simple map of a guest's first day at the hotel.”"
+        },
+        {
+          "type": "tf",
+          "q": "The other candidates were reading books in the lobby.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "They were “all pretending to read their phones”."
+        },
+        {
+          "type": "vocab",
+          "q": "Leyla tells him to “put your best foot forward”. What does she mean?",
+          "options": [
+            "Walk into the room first",
+            "Show your best qualities and make a good impression",
+            "Wear your best shoes",
+            "Talk about your feet"
+          ],
+          "answer": 1,
+          "why": "She wants him to smile and show his strengths."
+        },
+        {
+          "type": "inference",
+          "q": "Why didn't anybody reach for the laptop when the lights came back?",
+          "options": [
+            "The laptop was broken",
+            "They were already convinced by his whiteboard presentation",
+            "The power was still off",
+            "They wanted to go to lunch"
+          ],
+          "answer": 1,
+          "why": "“You made a power cut look like part of the plan.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "By the time the Caspian Grand invited him for an interview, Rashad had been unemployed for six months and had developed a complicated relationship with his inbox. Two hotels had decided to turn down his CV without meeting him; a third had simply vanished into silence. A tourism degree, an internship in Gabala and fluent English, it seemed, were no longer remarkable — merely the minimum.\n\nThe evening before, his sister Leyla appointed herself his interviewer and adopted the expression of a woman who had rejected hundreds of applicants. “Your greatest strength?”\n\n“I stay calm under pressure.”\n\n“Your greatest weakness — and don't say perfectionism.”\n\n“When I'm nervous, I talk far too fast.”\n\n“Then breathe between sentences,” she said. “Put your best foot forward and stop apologising for existing. You will land a job this time.”\n\nIn the lobby next morning, five candidates in near-identical dark suits sat in rigid silence, pretending to read their phones. When his name was called, three managers worked steadily through his qualification, his languages and an awkward complaint he had once defused during his internship. He was beginning to relax. Then he plugged in his laptop to begin the presentation he had rehearsed until he could recite it in his sleep.\n\nThe first slide appeared — and the entire building lost power. The screen went black, the air conditioning sighed into silence, and the room was left in the dull grey light of a cloudy window.\n\nSomeone gave a nervous laugh. Rashad's pulse was pounding, but some calmer part of his brain observed that this was precisely the kind of moment a hotel employee is hired for. He would have to think on his feet. He asked for a marker, moved to the whiteboard nearest the window and sketched, freehand, a guest's first twenty-four hours at the Caspian Grand, marking every point at which a small gesture could turn a stay into a story. He spoke slowly, pausing exactly where Leyla had told him to.\n\nWhen the electricity returned ten minutes later, nobody so much as glanced at the laptop.\n\n“Most candidates would have frozen,” the director remarked. “You managed to make a power cut look intentional.”\n\nThe offer arrived two days later: a salary comfortably above his expectations, subject to a three-month probation. He dialled Leyla before he had finished reading the email.",
+      "words": [
+        {
+          "phrase": "a complicated relationship with his inbox",
+          "az": "poçt qutusu ilə mürəkkəb münasibət",
+          "tr": "gelen kutusuyla karmaşık bir ilişki"
+        },
+        {
+          "phrase": "merely the minimum",
+          "az": "sadəcə minimum",
+          "tr": "sadece asgari"
+        },
+        {
+          "phrase": "stop apologising for existing",
+          "az": "mövcud olduğun üçün üzr istəməyi dayandır",
+          "tr": "var olduğun için özür dilemeyi bırak"
+        },
+        {
+          "phrase": "recite it in his sleep",
+          "az": "yuxuda belə əzbər deyə bilmək",
+          "tr": "uykusunda bile ezbere söyleyebilmek"
+        },
+        {
+          "phrase": "nobody so much as glanced at",
+          "az": "heç kim heç baxmadı belə",
+          "tr": "kimse göz ucuyla bile bakmadı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the key turning point in the interview?",
+          "options": [
+            "The director arrives late",
+            "A power cut forces Rashad to present without his laptop",
+            "Rashad forgets his CV",
+            "Leyla joins the interview"
+          ],
+          "answer": 1,
+          "why": "He sketches on the whiteboard when the building loses power."
+        },
+        {
+          "type": "detail",
+          "q": "What does the narrator suggest about Rashad's degree and experience?",
+          "options": [
+            "They are no longer enough to stand out",
+            "They are very rare",
+            "They are useless",
+            "They impress every hotel"
+          ],
+          "answer": 0,
+          "why": "They were “no longer remarkable — merely the minimum”."
+        },
+        {
+          "type": "detail",
+          "q": "What did Rashad mark on his sketch?",
+          "options": [
+            "The cheapest rooms",
+            "Where the managers sit",
+            "Points where a small gesture could make a stay special",
+            "The emergency exits"
+          ],
+          "answer": 2,
+          "why": "“...every point at which a small gesture could turn a stay into a story.”"
+        },
+        {
+          "type": "tf",
+          "q": "Leyla told Rashad to say his weakness was perfectionism.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Don't say perfectionism.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Rashad realised he would have to “think on his feet”. What does this mean?",
+          "options": [
+            "Stand during the interview",
+            "React and decide quickly without preparation",
+            "Leave the room",
+            "Wait for the electricity"
+          ],
+          "answer": 1,
+          "why": "With no slides, he quickly found another way to present."
+        },
+        {
+          "type": "inference",
+          "q": "Why does the director say Rashad made the power cut “look intentional”?",
+          "options": [
+            "Rashad caused the power cut",
+            "His calm reaction made it seem planned",
+            "The hotel planned the power cut as a test",
+            "The director did not notice the power cut"
+          ],
+          "answer": 1,
+          "why": "He handled it so smoothly it looked like part of the plan."
+        }
+      ]
+    }
+  }
+}

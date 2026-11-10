@@ -1,0 +1,316 @@
+{
+  "index": 40,
+  "topic": "Crowds & Public Places",
+  "reading": {
+    "title": "The yellow hat",
+    "A2": {
+      "text": "Nigar is twenty. On Saturday night, she took her little brother, Ali, to a big concert on the Boulevard. Ali is eight. He wore his favourite yellow hat.\n\nThere were thousands of people. The crowd was very big, and it was overwhelming. There was no space to walk. They waited in a long queue for ice cream.\n\nAfter the concert, everybody walked to the metro. Nigar held Ali's hand, but people started to bump into her. When she looked down, Ali was not there!\n\nNigar was very scared. She tried to push through the people. “Ali! Ali!” she shouted. But the music was loud.\n\nThen she remembered the yellow hat. “He will stand out in a crowd,” she thought. She climbed on a bench and looked around. There! A small yellow hat was near the information tent.\n\nShe ran there. Ali was eating his ice cream with a police officer.\n\n“I did not follow the crowd,” Ali said. “You told me: if you are lost, go to the tent.”\n\nAt that moment, there was an announcement: “Nigar, your brother Ali is at the information tent.”\n\nNigar laughed and hugged him. Then they took the metro home. The train was packed. They were packed like sardines, but Nigar did not care. She held Ali's hand all the way.",
+      "words": [
+        {
+          "phrase": "his favourite yellow hat",
+          "az": "sevimli sarı papağı",
+          "tr": "en sevdiği sarı şapkası"
+        },
+        {
+          "phrase": "a long queue for ice cream",
+          "az": "dondurma üçün uzun növbə",
+          "tr": "dondurma için uzun bir kuyruk"
+        },
+        {
+          "phrase": "the music was loud",
+          "az": "musiqi bərk idi",
+          "tr": "müzik yüksekti"
+        },
+        {
+          "phrase": "climbed on a bench",
+          "az": "skamyaya çıxdı",
+          "tr": "bir bankın üstüne çıktı"
+        },
+        {
+          "phrase": "all the way",
+          "az": "bütün yol boyu",
+          "tr": "bütün yol boyunca"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens in the story?",
+          "options": [
+            "Nigar loses her brother in a crowd and finds him",
+            "Ali loses his hat",
+            "Nigar goes to a concert alone",
+            "The metro is closed"
+          ],
+          "answer": 0,
+          "why": "Ali gets lost after the concert, and Nigar finds him at the tent."
+        },
+        {
+          "type": "detail",
+          "q": "How old is Ali?",
+          "options": [
+            "Five",
+            "Eight",
+            "Ten",
+            "Twenty"
+          ],
+          "answer": 1,
+          "why": "“Ali is eight.”"
+        },
+        {
+          "type": "detail",
+          "q": "How did Nigar find Ali?",
+          "options": [
+            "A police officer called her",
+            "She saw his yellow hat from a bench",
+            "He called her on the phone",
+            "He came back to her"
+          ],
+          "answer": 1,
+          "why": "“She climbed on a bench... A small yellow hat was near the information tent.”"
+        },
+        {
+          "type": "tf",
+          "q": "Ali was crying when Nigar found him.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Ali was eating his ice cream with a police officer.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The train was “packed like sardines”. What does this mean?",
+          "options": [
+            "It was full of fish",
+            "It was very full of people",
+            "It smelled bad",
+            "It was empty"
+          ],
+          "answer": 1,
+          "why": "Many people from the concert took the same train."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Ali go to the information tent?",
+          "options": [
+            "He wanted more ice cream",
+            "His sister told him to go there if he was lost",
+            "He saw his friend there",
+            "The police called him"
+          ],
+          "answer": 1,
+          "why": "“You told me: if you are lost, go to the tent.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "When Nigar promised to take her eight-year-old brother Ali to the free summer concert on the Boulevard, she had no idea that half of Baku would have the same plan. By eight o'clock, the crowd stretched from the Puppet Theatre to the Carpet Museum, and the noise and lights were almost overwhelming. Ali, in his bright yellow bucket hat, loved every minute.\n\nThey spent forty minutes in a queue for ice cream, then found a small space near a palm tree to watch the show. Before they left the house, Nigar had made Ali repeat one rule: “If we get separated, go to the information tent and wait.”\n\nThe trouble started when the concert ended and thousands of people moved towards the metro at the same time. Nigar was holding Ali's hand tightly until someone bumped into her from behind. She lost her balance for a second, and when she looked down, her hand was empty.\n\nPanic hit her like cold water. She tried to push through the wall of people, calling his name, but nobody could hear her over the music still coming from the speakers.\n\nThen she thought of the hat. If anything could stand out in a crowd, it was that ridiculous yellow hat. She climbed onto a bench and searched the sea of heads. There — a small yellow dot, moving steadily in the opposite direction from everyone else.\n\nShe jumped down and fought her way towards it. When she reached the information tent, Ali was sitting on a plastic chair, finishing his ice cream next to a police officer.\n\n“Everyone was going to the metro,” he explained calmly. “But you said don't follow the crowd. You said go to the tent.”\n\nJust then, an announcement came over the speakers: “Would Nigar please come to the information tent? Ali is waiting for her.”\n\nOn the way home, the train was packed like sardines. Nigar didn't mind. She didn't let go of Ali's hand once.",
+      "words": [
+        {
+          "phrase": "half of Baku would have the same plan",
+          "az": "Bakının yarısının eyni planı olacaq",
+          "tr": "Bakü'nün yarısı aynı planı yapacak"
+        },
+        {
+          "phrase": "If we get separated",
+          "az": "Bir-birimizi itirsək",
+          "tr": "Birbirimizden ayrılırsak"
+        },
+        {
+          "phrase": "lost her balance",
+          "az": "müvazinətini itirdi",
+          "tr": "dengesini kaybetti"
+        },
+        {
+          "phrase": "Panic hit her like cold water",
+          "az": "Panika onu soyuq su kimi vurdu",
+          "tr": "Panik onu soğuk su gibi çarptı"
+        },
+        {
+          "phrase": "fought her way towards it",
+          "az": "ona doğru yol açdı",
+          "tr": "ona doğru yolunu açtı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Concerts on the Boulevard are dangerous",
+            "A simple rule and a bright hat help Nigar find her lost brother",
+            "Ali wants to become a police officer",
+            "The metro should be bigger"
+          ],
+          "answer": 1,
+          "why": "Ali remembered the rule, and the hat helped Nigar see him."
+        },
+        {
+          "type": "detail",
+          "q": "How long did they wait for ice cream?",
+          "options": [
+            "Ten minutes",
+            "Forty minutes",
+            "An hour",
+            "They didn't buy any"
+          ],
+          "answer": 1,
+          "why": "“They spent forty minutes in a queue for ice cream.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did Nigar lose Ali's hand?",
+          "options": [
+            "Ali ran away",
+            "Someone bumped into her from behind",
+            "She stopped to buy a drink",
+            "A police officer took him"
+          ],
+          "answer": 1,
+          "why": "“...until someone bumped into her from behind.”"
+        },
+        {
+          "type": "tf",
+          "q": "Ali walked to the metro with everyone else.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "He moved “in the opposite direction from everyone else”."
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar thinks the hat would “stand out in a crowd”. What does this mean?",
+          "options": [
+            "Be easy to see among many people",
+            "Be too big",
+            "Fall off easily",
+            "Make people angry"
+          ],
+          "answer": 0,
+          "why": "She found Ali by looking for the yellow dot."
+        },
+        {
+          "type": "inference",
+          "q": "What do we learn about Ali's character?",
+          "options": [
+            "He is calm and follows instructions",
+            "He is very shy",
+            "He never listens to his sister",
+            "He is afraid of crowds"
+          ],
+          "answer": 0,
+          "why": "He calmly went to the tent, as Nigar had told him."
+        }
+      ]
+    },
+    "B2": {
+      "text": "When Nigar agreed to take her eight-year-old brother Ali to the free summer concert on the Boulevard, she had pictured a pleasant evening by the sea. She had not pictured the other two hundred thousand residents of Baku who had evidently formed the same plan. By eight o'clock the crowd extended from the Puppet Theatre all the way to the Carpet Museum, and the combination of noise, heat and flashing stage lights was close to overwhelming. Ali, who had refused to leave home without his luminous yellow bucket hat, thought it was the greatest night of his life.\n\nThey queued for forty minutes for ice cream and then claimed a scrap of space beside a palm tree. Before setting out, Nigar had drilled him on one rule until he could recite it with his eyes closed: “If we get separated, go to the information tent and stay there.”\n\nThe real test came at the end, when the entire audience surged towards the metro at once. Nigar kept a firm grip on Ali's hand right up to the moment someone bumped into her from behind. She stumbled for a split second, and when she regained her footing, her hand was holding nothing at all.\n\nFear flooded through her. She tried to push through the solid wall of bodies, shouting his name, but her voice vanished beneath the music still pounding from the speakers.\n\nThen a thought surfaced through the panic: the hat. If there was a single object in Baku designed to stand out in a crowd, it was that absurd, glowing yellow hat. She scrambled onto a bench and scanned the moving sea of heads — and there it was, a small bright dot travelling steadily against the current.\n\nShe clambered down and battled her way after it. At the information tent she found Ali perched on a plastic chair, finishing his ice cream under the supervision of a police officer, as composed as a businessman waiting for a meeting.\n\n“Everyone else was going to the metro,” he informed her. “But you said never follow the crowd. You said go to the tent.”\n\nAt that moment an announcement crackled across the Boulevard: “Would Nigar please come to the information tent, where her brother Ali is waiting.”\n\nThe train home was packed like sardines, every passenger pressed against three others. Nigar didn't notice. She didn't loosen her grip on Ali's hand once.",
+      "words": [
+        {
+          "phrase": "evidently formed the same plan",
+          "az": "görünür, eyni planı qurmuşdular",
+          "tr": "belli ki aynı planı yapmışlardı"
+        },
+        {
+          "phrase": "claimed a scrap of space",
+          "az": "kiçik bir yer tutdular",
+          "tr": "küçücük bir yer kaptılar"
+        },
+        {
+          "phrase": "regained her footing",
+          "az": "ayaq üstə möhkəm durdu",
+          "tr": "dengesini yeniden buldu"
+        },
+        {
+          "phrase": "against the current",
+          "az": "axına qarşı",
+          "tr": "akıntıya karşı"
+        },
+        {
+          "phrase": "as composed as a businessman",
+          "az": "iş adamı kimi sakit",
+          "tr": "bir iş adamı kadar sakin"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What saves the situation in the story?",
+          "options": [
+            "A police officer finds Nigar",
+            "Ali's bright hat and the rule Nigar taught him",
+            "Nigar's phone",
+            "The metro staff"
+          ],
+          "answer": 1,
+          "why": "Nigar sees the hat, and Ali waits at the tent as he was told."
+        },
+        {
+          "type": "detail",
+          "q": "How had Nigar prepared Ali before the concert?",
+          "options": [
+            "She bought him a phone",
+            "She made him repeat a rule about the information tent",
+            "She wrote her number on his hand",
+            "She told him to stay at home"
+          ],
+          "answer": 1,
+          "why": "“Nigar had drilled him on one rule until he could recite it.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where did Nigar stand to look for Ali?",
+          "options": [
+            "On a bench",
+            "On the stage",
+            "On a palm tree",
+            "At the metro entrance"
+          ],
+          "answer": 0,
+          "why": "“She scrambled onto a bench and scanned the moving sea of heads.”"
+        },
+        {
+          "type": "tf",
+          "q": "Ali was upset and crying at the tent.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "He was “as composed as a businessman waiting for a meeting”."
+        },
+        {
+          "type": "vocab",
+          "q": "Ali says Nigar told him “never follow the crowd”. What does this mean here?",
+          "options": [
+            "Never go to concerts",
+            "Don't just do what everyone else is doing",
+            "Don't walk behind people",
+            "Don't make friends"
+          ],
+          "answer": 1,
+          "why": "Everyone went to the metro, but Ali went to the tent."
+        },
+        {
+          "type": "inference",
+          "q": "What does the final sentence suggest about Nigar?",
+          "options": [
+            "She is angry with Ali",
+            "She is still shaken and determined not to lose him again",
+            "She is too tired to notice anything",
+            "She wants to go to another concert"
+          ],
+          "answer": 1,
+          "why": "She “didn't loosen her grip on Ali's hand once”."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "index": 48,
+  "topic": "The Sea & Rivers",
+  "reading": {
+    "title": "Plenty more fish",
+    "A2": {
+      "text": "Murad is twenty-three. Last month, his girlfriend left him. He was very sad and stayed at home every day.\n\nHis grandfather, Hasan, is a fisherman. He has a small boat in the harbour near Shikhov. One Sunday, he said, “Come fishing with me.”\n\nThey went out on the Caspian Sea early in the morning. The water was calm. Grandfather Hasan told Murad, “Don't be sad. There are plenty more fish in the sea.”\n\nMurad laughed a little. They waited, but they did not catch anything.\n\nSuddenly, the engine stopped. Grandfather tried to start it, but it did not work. A strong current started to push the boat away from the shore.\n\n“Are we in deep water?” Murad asked. He was scared. He could not swim well, and he was afraid to drown.\n\n“Put on your life jacket,” Grandfather said calmly. “With it, you can float. Don't fight the sea. Go with the flow.”\n\nGrandfather called his friend on the phone. One hour later, his friend came in another boat and pulled them back to the harbour.\n\nOn the way back, Murad's line moved. He caught a big fish!\n\nGrandfather smiled. “You see? I told you. Plenty more fish in the sea.”\n\nThat evening, Murad felt happy for the first time in a month.",
+      "words": [
+        {
+          "phrase": "stayed at home every day",
+          "az": "hər gün evdə qalırdı",
+          "tr": "her gün evde kalıyordu"
+        },
+        {
+          "phrase": "early in the morning",
+          "az": "səhər tezdən",
+          "tr": "sabah erkenden"
+        },
+        {
+          "phrase": "The water was calm",
+          "az": "Su sakit idi",
+          "tr": "Su sakindi"
+        },
+        {
+          "phrase": "Put on your life jacket",
+          "az": "Xilasedici jiletini gey",
+          "tr": "Can yeleğini giy"
+        },
+        {
+          "phrase": "for the first time in a month",
+          "az": "bir ayda ilk dəfə",
+          "tr": "bir ayda ilk kez"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A fishing trip helps Murad feel better after a breakup",
+            "Murad buys a boat",
+            "Grandfather Hasan stops fishing",
+            "Murad learns to swim"
+          ],
+          "answer": 0,
+          "why": "After the adventure, Murad feels happy again."
+        },
+        {
+          "type": "detail",
+          "q": "Where is Grandfather Hasan's boat?",
+          "options": [
+            "In a river",
+            "In the harbour near Shikhov",
+            "On the Boulevard",
+            "In Lankaran"
+          ],
+          "answer": 1,
+          "why": "“He has a small boat in the harbour near Shikhov.”"
+        },
+        {
+          "type": "detail",
+          "q": "Who brought them back to the harbour?",
+          "options": [
+            "The police",
+            "Grandfather's friend",
+            "Murad's girlfriend",
+            "A big ship"
+          ],
+          "answer": 1,
+          "why": "“...his friend came in another boat and pulled them back.”"
+        },
+        {
+          "type": "tf",
+          "q": "Murad can swim very well.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He could not swim well.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Grandfather says, “There are plenty more fish in the sea.” What does he mean about Murad's life?",
+          "options": [
+            "Murad should eat more fish",
+            "Murad will meet other people to love",
+            "The sea is full of fish",
+            "Murad should become a fisherman"
+          ],
+          "answer": 1,
+          "why": "He is talking about Murad's girlfriend leaving him."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Grandfather smile at the end?",
+          "options": [
+            "The engine works again",
+            "Murad's fish makes his words come true",
+            "He wants to go home",
+            "Murad's girlfriend called"
+          ],
+          "answer": 1,
+          "why": "“You see? I told you. Plenty more fish in the sea.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "For a month after Aysel ended their relationship, Murad barely left his room. He stopped answering his friends, gave up going to the gym and spent his evenings looking at old photos on his phone.\n\nHis grandfather Hasan, who had fished the Caspian for fifty years, finally lost patience. “Tomorrow, five o'clock, the harbour at Shikhov,” he said on the phone. “Bring a jacket.”\n\nThe sea was flat and silver when they left. Hasan's little wooden boat moved slowly away from the shore. For an hour, neither of them said much. Then Hasan handed Murad a fishing rod and said, without looking at him, “I know about Aysel. Listen to an old fisherman: there are plenty more fish in the sea.”\n\n“Grandpa, that's the oldest line in the world.”\n\n“It's old because it's true.”\n\nThey didn't catch a single thing all morning. Around eleven, the engine coughed twice and died. Hasan tried everything — the fuel, the cable, a few words Murad had never heard him use — but it wouldn't start. Meanwhile, a strong current was carrying them steadily away from land.\n\nMurad's stomach turned. He had never been a strong swimmer, and the shore was getting smaller. “Grandpa, are we in deep water? I mean — are we in trouble?”\n\n“Put on your life jacket,” Hasan said calmly. “It'll keep you floating whatever happens. And stop fighting the sea. When you can't change the current, you go with the flow and wait. People drown because they panic, not because of the water.”\n\nHe phoned his old friend Kamil, who had a boat in the same harbour. Kamil arrived an hour later and towed them back to the harbour wall.\n\nThey were nearly at the dock when Murad's line suddenly pulled tight. Five minutes later, he lifted a large, shining mullet into the boat.\n\nHasan laughed until he had to sit down. “What did I tell you? Plenty more fish.”\n\nThat night, for the first time in a month, Murad called his friends back.",
+      "words": [
+        {
+          "phrase": "barely left his room",
+          "az": "otağından demək olar ki, çıxmırdı",
+          "tr": "odasından neredeyse hiç çıkmıyordu"
+        },
+        {
+          "phrase": "finally lost patience",
+          "az": "nəhayət səbri tükəndi",
+          "tr": "sonunda sabrı tükendi"
+        },
+        {
+          "phrase": "the oldest line in the world",
+          "az": "dünyanın ən köhnə sözü",
+          "tr": "dünyanın en eski lafı"
+        },
+        {
+          "phrase": "Murad's stomach turned",
+          "az": "Muradın ürəyi bulandı",
+          "tr": "Murad'ın midesi bulandı"
+        },
+        {
+          "phrase": "pulled tight",
+          "az": "bərk dartıldı",
+          "tr": "gerildi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Fishing is dangerous",
+            "A difficult day at sea helps Murad recover from his breakup",
+            "Murad wants to work on an oil platform",
+            "Kamil is a better fisherman than Hasan"
+          ],
+          "answer": 1,
+          "why": "After the trip, Murad finally calls his friends back."
+        },
+        {
+          "type": "detail",
+          "q": "How long has Hasan fished the Caspian?",
+          "options": [
+            "Five years",
+            "Twenty years",
+            "Fifty years",
+            "All his life since 1990"
+          ],
+          "answer": 2,
+          "why": "“...who had fished the Caspian for fifty years.”"
+        },
+        {
+          "type": "detail",
+          "q": "According to Hasan, why do people drown?",
+          "options": [
+            "Because the water is cold",
+            "Because they panic",
+            "Because they have no boat",
+            "Because of the current"
+          ],
+          "answer": 1,
+          "why": "“People drown because they panic, not because of the water.”"
+        },
+        {
+          "type": "tf",
+          "q": "They caught many fish in the morning.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“They didn't catch a single thing all morning.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Hasan says “go with the flow”. What does he mean?",
+          "options": [
+            "Swim fast towards the shore",
+            "Accept the situation calmly instead of fighting it",
+            "Follow other boats",
+            "Drink more water"
+          ],
+          "answer": 1,
+          "why": "“When you can't change the current, you go with the flow and wait.”"
+        },
+        {
+          "type": "inference",
+          "q": "What does Murad's final action show?",
+          "options": [
+            "He is still very sad",
+            "He is starting to return to normal life",
+            "He wants to go fishing again",
+            "He is angry with Aysel"
+          ],
+          "answer": 1,
+          "why": "“For the first time in a month, Murad called his friends back.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "In the month after Aysel ended things, Murad withdrew from the world almost entirely. He ignored his friends' messages, abandoned the gym and passed his evenings scrolling through photographs he would have been wiser to delete.\n\nHis grandfather Hasan, who had fished the Caspian for half a century and regarded self-pity as a waste of daylight, eventually ran out of patience. “Five o'clock tomorrow, Shikhov harbour,” he said. “Bring something warm.”\n\nThe sea lay flat and pewter-grey as the little wooden boat slipped away from the shore, oil platforms floating like distant castles on the horizon. For an hour neither man spoke. Then Hasan passed him a rod and remarked, eyes fixed on the water, “I've heard about Aysel. Take it from an old fisherman: there are plenty more fish in the sea.”\n\n“Grandpa, that has to be the oldest line in existence.”\n\n“Things get old by being true.”\n\nThey caught nothing all morning. Shortly before eleven, the engine spluttered twice and fell silent. Hasan tried everything in his repertoire — the fuel line, the starter cable, and a vocabulary Murad had never suspected him of possessing — but the motor refused to respond. Meanwhile, a strong current was drawing them steadily away from land. In the Caspian there is almost no tide to bring a boat back; what the current takes, it keeps.\n\nMurad felt his stomach tighten. He had never been a confident swimmer, and the shore was shrinking. “Grandpa — are we in deep water? Figuratively, I mean.”\n\n“Put on the life jacket,” Hasan said, unhurried. “It'll keep you afloat whatever happens. And stop fighting the sea. When the current is stronger than you, you go with the flow and wait for help. People drown because they panic, not because of the water. Your grandmother taught me that on the bank of the Kura, sixty years ago.”\n\nHe rang his old friend Kamil, who moored a boat in the same harbour and arrived an hour later, roaring with laughter, to tow them back.\n\nThey were almost alongside the harbour wall when Murad's line snapped taut. After five minutes of struggle, he hauled a large, glittering mullet over the side — the only catch of the day.\n\nHasan laughed until he had to grip the gunwale for support. “Well? What did I say? Plenty more fish.”\n\nThat evening, for the first time in a month, Murad answered his friends.",
+      "words": [
+        {
+          "phrase": "a waste of daylight",
+          "az": "gün işığının boşa getməsi",
+          "tr": "gün ışığını boşa harcamak"
+        },
+        {
+          "phrase": "Take it from an old fisherman",
+          "az": "Qoca balıqçıdan eşit",
+          "tr": "Yaşlı bir balıkçıdan duy"
+        },
+        {
+          "phrase": "Things get old by being true",
+          "az": "Şeylər doğru olduqları üçün köhnəlir",
+          "tr": "Şeyler doğru oldukları için eskir"
+        },
+        {
+          "phrase": "what the current takes, it keeps",
+          "az": "axın nəyi aparsa, saxlayır",
+          "tr": "akıntı neyi alırsa, tutar"
+        },
+        {
+          "phrase": "snapped taut",
+          "az": "birdən gərildi",
+          "tr": "aniden gerildi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What does the fishing trip achieve for Murad?",
+          "options": [
+            "It makes him decide to become a fisherman",
+            "It pulls him out of his month of withdrawal",
+            "It helps him win Aysel back",
+            "It makes him afraid of the sea"
+          ],
+          "answer": 1,
+          "why": "“That evening, for the first time in a month, Murad answered his friends.”"
+        },
+        {
+          "type": "detail",
+          "q": "How does Hasan view self-pity?",
+          "options": [
+            "As natural and healthy",
+            "As a waste of daylight",
+            "As something young people need",
+            "As dangerous at sea"
+          ],
+          "answer": 1,
+          "why": "“...regarded self-pity as a waste of daylight.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why is the current especially dangerous in the Caspian, according to the text?",
+          "options": [
+            "There is almost no tide to bring a boat back",
+            "The water is very cold",
+            "There are many oil platforms",
+            "The waves are huge"
+          ],
+          "answer": 0,
+          "why": "“In the Caspian there is almost no tide to bring a boat back.”"
+        },
+        {
+          "type": "tf",
+          "q": "Hasan learned his lesson about panicking from his grandmother.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Your grandmother taught me that” — Murad's grandmother, Hasan's wife."
+        },
+        {
+          "type": "vocab",
+          "q": "Murad asks if they are “in deep water”, adding “Figuratively, I mean.” What is he really asking?",
+          "options": [
+            "How deep the sea is there",
+            "Whether they are in serious trouble",
+            "Whether he can swim",
+            "Whether there are fish"
+          ],
+          "answer": 1,
+          "why": "“In deep water” is an idiom for being in a difficult situation."
+        },
+        {
+          "type": "inference",
+          "q": "Why is the mullet a meaningful ending?",
+          "options": [
+            "It proves Hasan's saying about “plenty more fish”",
+            "It is very expensive",
+            "It means the engine works",
+            "It shows Kamil is a bad fisherman"
+          ],
+          "answer": 0,
+          "why": "The only catch of the day makes Hasan's line come true."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "index": 47,
+  "topic": "Street Life & Markets",
+  "reading": {
+    "title": "Pomegranates for a song",
+    "A2": {
+      "text": "Elif is from Istanbul. Last month, she visited her friend Nigar in Baku. On Saturday, Nigar took her to the Green Market.\n\nThe market was very crowded. There were hundreds of stalls with fresh fruit, vegetables, cheese and spices. A busker played the tar near the door.\n\nElif loved it. “In Istanbul, I always bargain at the market,” she said. “Let me try here.”\n\nShe stopped at a fruit stall. The vendor was an old man with a big smile. Elif asked about the pomegranates.\n\n“Ten manats a kilo,” he said.\n\n“That is a rip off!” Elif said in Turkish. “Five manats.”\n\nThe old man laughed. “Nine,” he said. He liked to drive a hard bargain. They talked for ten minutes. Elif could not win.\n\nThen Nigar said, “My friend came from Istanbul to see Baku. She wants to try local pomegranates.”\n\nThe old man's face changed. “From Istanbul? My son lives there!” He put four big pomegranates in a bag. “This is a gift,” he said. “Today, my pomegranates go for a song.”\n\nElif was very happy. She thanked him many times.\n\nBack in Istanbul, she told all her friends about the old man. Now, because of word of mouth, every Turkish tourist in Baku visits his stall.",
+      "words": [
+        {
+          "phrase": "hundreds of stalls",
+          "az": "yüzlərlə piştaxta",
+          "tr": "yüzlerce tezgâh"
+        },
+        {
+          "phrase": "Let me try here",
+          "az": "Qoy burada yoxlayım",
+          "tr": "Bırak burada deneyeyim"
+        },
+        {
+          "phrase": "with a big smile",
+          "az": "geniş təbəssümlə",
+          "tr": "kocaman bir gülümsemeyle"
+        },
+        {
+          "phrase": "The old man's face changed",
+          "az": "Qocanın üzü dəyişdi",
+          "tr": "Yaşlı adamın yüzü değişti"
+        },
+        {
+          "phrase": "thanked him many times",
+          "az": "ona dəfələrlə təşəkkür etdi",
+          "tr": "ona defalarca teşekkür etti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Elif tries to bargain at a market and gets a gift",
+            "Nigar sells fruit at the market",
+            "A busker loses his tar",
+            "Elif moves to Baku"
+          ],
+          "answer": 0,
+          "why": "She bargains, loses, then the vendor gives her pomegranates."
+        },
+        {
+          "type": "detail",
+          "q": "What instrument did the busker play?",
+          "options": [
+            "The guitar",
+            "The tar",
+            "The piano",
+            "The drums"
+          ],
+          "answer": 1,
+          "why": "“A busker played the tar near the door.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did the old man give Elif the pomegranates?",
+          "options": [
+            "She paid five manats",
+            "His son lives in Istanbul",
+            "They were old",
+            "Nigar is his daughter"
+          ],
+          "answer": 1,
+          "why": "“From Istanbul? My son lives there!”"
+        },
+        {
+          "type": "tf",
+          "q": "Elif won the bargaining in ten minutes.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“They talked for ten minutes. Elif could not win.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The old man liked to “drive a hard bargain”. What does this mean?",
+          "options": [
+            "He drives a car to the market",
+            "He does not lower his price easily",
+            "He sells very cheap fruit",
+            "He is unfriendly"
+          ],
+          "answer": 1,
+          "why": "He only went from ten to nine manats."
+        },
+        {
+          "type": "inference",
+          "q": "What happened because of “word of mouth”?",
+          "options": [
+            "The old man closed his stall",
+            "Turkish tourists heard about him and visit his stall",
+            "Elif opened a stall in Istanbul",
+            "Nigar wrote a book"
+          ],
+          "answer": 1,
+          "why": "Elif told her friends, and they told others."
+        }
+      ]
+    },
+    "B1": {
+      "text": "When Elif came from Istanbul to spend a week with her university friend Nigar, the first place she wanted to see in Baku wasn't the Flame Towers or the Old City. It was a market. “You learn more about a city from its markets than from its museums,” she said.\n\nSo on Saturday morning, Nigar took her to the Green Market. It was crowded with shoppers carrying bags of herbs. There were stalls piled high with tomatoes, mountains of white cheese and sacks of saffron.\n\nElif was delighted. “In Istanbul, nobody pays the first price,” she said, rolling up her sleeves. “Watch and learn.”\n\nShe chose a fruit stall run by an elderly vendor with a grey moustache and a pile of enormous red pomegranates.\n\n“How much?” she asked in Turkish.\n\n“Ten manats a kilo.”\n\nElif gasped dramatically. “Ten? That's a complete rip off! I'll give you five.”\n\nThe vendor smiled the smile of a man who had been selling fruit for forty years. “Nine.” He clearly enjoyed driving a hard bargain. For ten minutes they went back and forth — eight and a half, six, eight, six and a half — and the old man wouldn't move another coin.\n\nFinally, Nigar stepped in. “My friend came all the way from Istanbul,” she explained in Azerbaijani. “She wanted to taste local pomegranates.”\n\nThe vendor's eyebrows went up. “Istanbul? My son has lived in Kadıköy for twelve years!” He started filling a bag with the best fruit on the stall. “Put your money away. For guests from Istanbul, pomegranates go for a song today — in fact, they go for nothing.”\n\nElif tried to pay three times. He refused three times.\n\nWhen she returned home, she told the story to everyone she knew, wrote down the exact location of his stall. Word of mouth did the rest. These days, the old man says, at least two Turkish tourists a week arrive at his stall asking for “the pomegranates from the story”.",
+      "words": [
+        {
+          "phrase": "You learn more about a city from its markets",
+          "az": "Bir şəhər haqqında bazarlarından daha çox öyrənirsən",
+          "tr": "Bir şehri en iyi pazarlarından tanırsın"
+        },
+        {
+          "phrase": "piled high with tomatoes",
+          "az": "qalaq-qalaq pomidorla dolu",
+          "tr": "yığın yığın domatesle dolu"
+        },
+        {
+          "phrase": "Watch and learn",
+          "az": "Bax və öyrən",
+          "tr": "İzle ve öğren"
+        },
+        {
+          "phrase": "went back and forth",
+          "az": "qarşılıqlı danışdılar (o tərəf-bu tərəf)",
+          "tr": "karşılıklı pazarlık ettiler"
+        },
+        {
+          "phrase": "did the rest",
+          "az": "qalanını etdi",
+          "tr": "gerisini halletti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Bargaining is rude in Baku",
+            "A friendly connection, not bargaining, wins Elif the pomegranates",
+            "Markets are better than museums",
+            "Nigar is a good bargainer"
+          ],
+          "answer": 1,
+          "why": "When the vendor hears she's from Istanbul, he gives her the fruit."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Elif want to visit a market first?",
+          "options": [
+            "She needed food",
+            "She thinks you learn more about a city from its markets",
+            "Nigar works there",
+            "The museums were closed"
+          ],
+          "answer": 1,
+          "why": "“You learn more about a city from its markets than from its museums.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where does the vendor's son live?",
+          "options": [
+            "In Baku",
+            "In Kadıköy, Istanbul",
+            "In Ganja",
+            "In London"
+          ],
+          "answer": 1,
+          "why": "“My son has lived in Kadıköy for twelve years!”"
+        },
+        {
+          "type": "tf",
+          "q": "The vendor accepted Elif's money in the end.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He refused three times.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The vendor says pomegranates “go for a song” today. What does this mean?",
+          "options": [
+            "He sings while selling",
+            "They are sold very cheaply",
+            "They are very expensive",
+            "They are sold out"
+          ],
+          "answer": 1,
+          "why": "He means they are almost free — in fact, free."
+        },
+        {
+          "type": "inference",
+          "q": "How did “word of mouth” help the vendor?",
+          "options": [
+            "Elif's story made Turkish tourists come to his stall",
+            "He learned Turkish",
+            "He moved to Istanbul",
+            "He started a website"
+          ],
+          "answer": 0,
+          "why": "Tourists arrive asking for “the pomegranates from the story”."
+        }
+      ]
+    },
+    "B2": {
+      "text": "When Elif flew in from Istanbul to spend a week with her old university friend Nigar, she skipped the Flame Towers entirely on her first morning. “Museums tell you what a city wants you to think,” she announced. “Markets tell you what it actually is.”\n\nSo Nigar took her to the Green Market, which on a Saturday morning was crowded to the point of choreography — shoppers weaving between handcarts, arms full of coriander and tarragon, the air thick with the scent of warm bread and dried apricots. Stalls groaned under pyramids of tomatoes, wheels of white cheese and burlap sacks of saffron. By the entrance, a busker coaxed a melancholy tune from his tar while a small boy danced with great seriousness in front of him.\n\nElif was in her element. “In Istanbul,” she said, cracking her knuckles, “only tourists pay the first price. Prepare to be impressed.”\n\nShe selected a fruit stall presided over by an elderly vendor with a magnificent grey moustache and a heap of pomegranates the size of grapefruits.\n\n“How much?” she asked in Turkish.\n\n“Ten manats a kilo.”\n\nElif clutched her heart. “Ten? That's daylight robbery — a total rip off! Five.”\n\nThe old man smiled with the serenity of four decades behind a counter. “Nine.” It was obvious that he enjoyed driving a hard bargain as much as she did. For ten minutes the figures flew back and forth — eight and a half, six, eight, six and a half — but he remained as immovable as the Maiden Tower.\n\nEventually Nigar intervened. “My friend has come all the way from Istanbul,” she told him in Azerbaijani. “Above all, she wanted to taste local pomegranates.”\n\nThe vendor's eyebrows shot up. “Istanbul? My son has lived in Kadıköy for twelve years!” He began filling a bag with the finest fruit on the stall. “Put that purse away. For guests from Istanbul, pomegranates go for a song today — or rather, for no song at all.”\n\nElif attempted to pay three times; three times she was refused with growing indignation.\n\nBack home, she told the story to anyone who would listen, posted a photo of the vendor beside his pyramid and shared the precise location of his stall. Word of mouth handled the rest. According to the old man, scarcely a week now passes without some Turkish visitor appearing at his counter and asking, a little shyly, for “the pomegranates from the story”.",
+      "words": [
+        {
+          "phrase": "crowded to the point of choreography",
+          "az": "xoreoqrafiya həddində izdihamlı",
+          "tr": "koreografi derecesinde kalabalık"
+        },
+        {
+          "phrase": "in her element",
+          "az": "öz ab-havasında",
+          "tr": "tam kendi ortamında"
+        },
+        {
+          "phrase": "daylight robbery",
+          "az": "gün işığında soyğunçuluq",
+          "tr": "güpegündüz soygun"
+        },
+        {
+          "phrase": "as immovable as the Maiden Tower",
+          "az": "Qız qalası kimi yerindən tərpənməz",
+          "tr": "Kız Kulesi kadar kıpırdamaz"
+        },
+        {
+          "phrase": "with growing indignation",
+          "az": "artan hiddətlə",
+          "tr": "artan bir öfkeyle"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What finally makes the vendor give up his price?",
+          "options": [
+            "Elif's clever bargaining",
+            "A personal connection to Istanbul",
+            "Nigar paying him secretly",
+            "The busker's music"
+          ],
+          "answer": 1,
+          "why": "He hears she's from Istanbul, where his son lives."
+        },
+        {
+          "type": "detail",
+          "q": "What does Elif believe markets show?",
+          "options": [
+            "What a city wants you to think",
+            "What a city actually is",
+            "Where tourists spend money",
+            "What food is expensive"
+          ],
+          "answer": 1,
+          "why": "“Markets tell you what it actually is.”"
+        },
+        {
+          "type": "detail",
+          "q": "What was the vendor compared to?",
+          "options": [
+            "The Flame Towers",
+            "The Maiden Tower",
+            "A busker",
+            "A grapefruit"
+          ],
+          "answer": 1,
+          "why": "“...as immovable as the Maiden Tower.”"
+        },
+        {
+          "type": "tf",
+          "q": "The vendor was annoyed when Elif kept trying to pay.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "He refused “with growing indignation”."
+        },
+        {
+          "type": "vocab",
+          "q": "Elif calls the price “a total rip off”. What does she mean?",
+          "options": [
+            "The price is fair",
+            "The price is far too high",
+            "The fruit is damaged",
+            "The vendor is cheating at cards"
+          ],
+          "answer": 1,
+          "why": "She pretends to be shocked to start bargaining."
+        },
+        {
+          "type": "inference",
+          "q": "What is ironic about the ending?",
+          "options": [
+            "Elif's bargaining failed, but her story brings the vendor many new customers",
+            "The vendor goes out of business",
+            "Elif never returns to Istanbul",
+            "The pomegranates were not local"
+          ],
+          "answer": 0,
+          "why": "Word of mouth sends Turkish visitors to his stall."
+        }
+      ]
+    }
+  }
+}

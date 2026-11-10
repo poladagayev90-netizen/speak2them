@@ -1,0 +1,316 @@
+{
+  "index": 45,
+  "topic": "Manners & Politeness",
+  "reading": {
+    "title": "The painting on the wall",
+    "A2": {
+      "text": "Tural is twenty-seven. On Friday, he met his girlfriend Nigar's parents for the first time. He was very nervous.\n\n“My father is very strict about manners,” Nigar told him. “Be polite, and please mind your manners.”\n\nAt dinner, Tural tried hard. He made small talk about the weather and the traffic. But then his phone rang. He answered it at the table. Nigar's father looked at him. That was rude.\n\nLater, Nigar's father was telling a long story about his work. Tural wanted to say something funny, so he started to interrupt. Nigar kicked his foot under the table. “Bite your tongue,” she whispered.\n\nAfter dinner, they went to the living room. There was a big, strange painting on the wall.\n\n“What an ugly painting,” Tural laughed. “Who painted that?”\n\nThe room was quiet. “I did,” said Nigar's father.\n\nTural wanted to disappear. He did not want to offend anyone. He made an apology. “I'm very sorry. I don't understand art.”\n\nNigar's father looked at him for a long time. Then he started to laugh.\n\n“You are the first honest person in this house,” he said. “Everybody says it is beautiful. I know it is terrible!”\n\nTural still had a lot to learn about respect and manners. But Nigar's father liked him.",
+      "words": [
+        {
+          "phrase": "for the first time",
+          "az": "ilk dəfə",
+          "tr": "ilk kez"
+        },
+        {
+          "phrase": "tried hard",
+          "az": "çox çalışdı",
+          "tr": "çok uğraştı"
+        },
+        {
+          "phrase": "kicked his foot under the table",
+          "az": "masanın altında onun ayağına təpik vurdu",
+          "tr": "masanın altında ayağına tekme attı"
+        },
+        {
+          "phrase": "wanted to disappear",
+          "az": "yox olmaq istədi",
+          "tr": "yok olmak istedi"
+        },
+        {
+          "phrase": "had a lot to learn",
+          "az": "öyrənməli çox şeyi var idi",
+          "tr": "öğrenecek çok şeyi vardı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Tural makes mistakes when he meets Nigar's parents, but her father likes him",
+            "Nigar's father sells a painting",
+            "Tural learns to paint",
+            "Nigar's parents do not like Tural at all"
+          ],
+          "answer": 0,
+          "why": "He is rude by accident, but the father laughs and likes his honesty."
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural do when his phone rang?",
+          "options": [
+            "He turned it off",
+            "He answered it at the table",
+            "He went outside",
+            "He gave it to Nigar"
+          ],
+          "answer": 1,
+          "why": "“He answered it at the table.”"
+        },
+        {
+          "type": "detail",
+          "q": "Who painted the picture on the wall?",
+          "options": [
+            "Nigar",
+            "Nigar's mother",
+            "A famous artist",
+            "Nigar's father"
+          ],
+          "answer": 3,
+          "why": "“'I did,' said Nigar's father.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar's father thinks his painting is beautiful.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“I know it is terrible!”"
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar whispers “bite your tongue”. What does she want Tural to do?",
+          "options": [
+            "Eat his food",
+            "Stop and not say anything",
+            "Tell a joke",
+            "Speak louder"
+          ],
+          "answer": 1,
+          "why": "He was going to interrupt her father."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Nigar's father like Tural in the end?",
+          "options": [
+            "Tural is very rich",
+            "Tural is honest",
+            "Tural paints well",
+            "Tural is quiet"
+          ],
+          "answer": 1,
+          "why": "“You are the first honest person in this house.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Tural had been dating Nigar for a year when she finally invited him to dinner with her parents. On the metro, she gave him a list of rules. “My father is a retired school director. He cares about manners more than anything. Be polite, don't interrupt, and please — mind your manners.”\n\nFor the first hour, Tural did well. He brought flowers for her mother, stood up when her father entered the room and made polite small talk about the new metro station and the price of tomatoes. Then his phone rang. Without thinking, he answered it and spent two minutes discussing a football match with his brother. When he hung up, Nigar's father was watching him over his glasses. Tural could see he had rubbed him up the wrong way.\n\nThings got worse during dessert. Her father was describing, in great detail, his first year as a teacher in Lankaran. Tural thought of a funny story of his own and opened his mouth to interrupt. Under the table, Nigar pressed his foot hard. “Bite your tongue,” she whispered through a smile.\n\nAfterwards, they moved to the living room for tea. On the wall hung a large painting of what seemed to be a green horse eating the moon.\n\n“Wow,” said Tural, trying to be relaxed. “Somebody really didn't know how to paint horses.”\n\nThe silence that followed was terrible.\n\n“I painted that,” said Nigar's father quietly.\n\nTural felt his face burn. He hadn't meant to offend anyone. “I'm so sorry,” he said. “That was rude of me. Please accept my apology — I know nothing about art.”\n\nHer father studied him for a long moment. Then, to everyone's surprise, he began to laugh until tears ran down his cheeks.\n\n“Thirty years,” he said, wiping his eyes. “Thirty years of guests telling me it's a masterpiece. Finally, someone with the respect to tell me the truth.”\n\nNigar's mother poured more tea. Tural decided not to answer his phone for the rest of the year.",
+      "words": [
+        {
+          "phrase": "gave him a list of rules",
+          "az": "ona qaydalar siyahısı verdi",
+          "tr": "ona bir kurallar listesi verdi"
+        },
+        {
+          "phrase": "Without thinking",
+          "az": "Fikirləşmədən",
+          "tr": "Düşünmeden"
+        },
+        {
+          "phrase": "in great detail",
+          "az": "ətraflı şəkildə",
+          "tr": "en ince ayrıntısıyla"
+        },
+        {
+          "phrase": "Tural felt his face burn",
+          "az": "Tural üzünün yandığını hiss etdi",
+          "tr": "Tural yüzünün yandığını hissetti"
+        },
+        {
+          "phrase": "to everyone's surprise",
+          "az": "hamını təəccübləndirərək",
+          "tr": "herkesi şaşırtarak"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main point of the story?",
+          "options": [
+            "Tural is an excellent guest",
+            "Tural's honest mistake turns out well because Nigar's father values truth",
+            "Nigar's father wants to sell his painting",
+            "Nigar decides to leave Tural"
+          ],
+          "answer": 1,
+          "why": "“Finally, someone with the respect to tell me the truth.”"
+        },
+        {
+          "type": "detail",
+          "q": "What was Nigar's father's job?",
+          "options": [
+            "An artist",
+            "A retired school director",
+            "A football coach",
+            "A metro driver"
+          ],
+          "answer": 1,
+          "why": "“My father is a retired school director.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did the painting show?",
+          "options": [
+            "A green horse eating the moon",
+            "The Lankaran coast",
+            "Nigar as a child",
+            "A metro station"
+          ],
+          "answer": 0,
+          "why": "“...a green horse eating the moon.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural talked on the phone with his father.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "He talked “with his brother”."
+        },
+        {
+          "type": "vocab",
+          "q": "Tural “had rubbed him up the wrong way”. What does this mean?",
+          "options": [
+            "He had annoyed him",
+            "He had helped him",
+            "He had cleaned his glasses",
+            "He had made him laugh"
+          ],
+          "answer": 0,
+          "why": "Answering the phone at the table annoyed the strict father."
+        },
+        {
+          "type": "inference",
+          "q": "What does Tural's decision at the end show?",
+          "options": [
+            "He has learned a lesson about manners",
+            "His phone is broken",
+            "He is angry with Nigar",
+            "He wants a new phone"
+          ],
+          "answer": 0,
+          "why": "The phone call had annoyed her father, so he decides to be more careful."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Tural and Nigar had been together for a year before she judged him ready to meet her parents. On the metro to their flat in Narimanov, she briefed him like a diplomat before a summit. “My father was a school director for thirty years. He judges people by their manners. Be polite, don't interrupt him, and for heaven's sake, mind your manners.”\n\nThe first hour went remarkably well. Tural presented flowers to her mother and a box of pakhlava for the table, rose to his feet when her father came in, and sustained twenty minutes of polite small talk about road works and the price of tomatoes. Then his phone rang, and on autopilot he answered it, discussing last night's derby with his brother for a full two minutes. When he looked up, Nigar's father was regarding him over the top of his glasses with an expression Tural recognised from his own school days. It is remarkably easy, he reflected, to rub someone up the wrong way in two minutes.\n\nDessert brought fresh danger. Her father was recounting, at considerable length, his first year teaching in a village near Lankaran. An anecdote of his own began to form in Tural's mind, and he drew breath to interrupt. Beneath the table, Nigar's heel came down on his toes. “Bite your tongue,” she murmured, without losing her smile.\n\nAfterwards, they withdrew to the living room for tea. Above the sofa hung a large canvas depicting what appeared to be a green horse devouring the moon.\n\n“Well,” said Tural, aiming for relaxed sophistication, “somebody clearly never saw a real horse.”\n\nThe silence that followed had texture.\n\n“I painted it,” said Nigar's father evenly.\n\nTural felt the blood rush to his face. Offending his host had been the one thing he had sworn to avoid. “That was unforgivably rude,” he said. “I offer you my sincere apology. I'm afraid I know absolutely nothing about art.”\n\nHer father considered him at length. Then, to universal astonishment, he threw back his head and laughed until he had to remove his glasses.\n\n“Thirty years,” he gasped. “Thirty years of guests calling it a masterpiece. At last, a young man with enough respect for me to tell the truth.”\n\nNigar's mother refilled the glasses. Tural silently resolved to switch off his phone for the remainder of the decade.",
+      "words": [
+        {
+          "phrase": "judged him ready",
+          "az": "onu hazır hesab etdi",
+          "tr": "onu hazır buldu"
+        },
+        {
+          "phrase": "on autopilot",
+          "az": "avtomatik olaraq (fikirləşmədən)",
+          "tr": "otomatik pilotta"
+        },
+        {
+          "phrase": "at considerable length",
+          "az": "xeyli uzun",
+          "tr": "epey uzun uzun"
+        },
+        {
+          "phrase": "The silence that followed had texture",
+          "az": "Ardınca gələn sükut sanki toxunulası idi",
+          "tr": "Ardından gelen sessizlik neredeyse elle tutulurdu"
+        },
+        {
+          "phrase": "to universal astonishment",
+          "az": "hamının heyrətinə səbəb olaraq",
+          "tr": "herkesin şaşkınlığı içinde"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the central irony of the story?",
+          "options": [
+            "Tural's rudest moment is the one that wins the father's approval",
+            "Nigar's father is not strict at all",
+            "Tural is a famous painter",
+            "Nigar's mother hates the painting"
+          ],
+          "answer": 0,
+          "why": "His honest insult earns the father's respect."
+        },
+        {
+          "type": "detail",
+          "q": "How did Nigar prepare Tural?",
+          "options": [
+            "She sent him a text",
+            "She briefed him like a diplomat on the metro",
+            "She asked her mother to help",
+            "She didn't prepare him"
+          ],
+          "answer": 1,
+          "why": "“She briefed him like a diplomat before a summit.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where had Nigar's father first taught?",
+          "options": [
+            "In Narimanov",
+            "In a village near Lankaran",
+            "In Baku city centre",
+            "Abroad"
+          ],
+          "answer": 1,
+          "why": "“...his first year teaching in a village near Lankaran.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural brought pakhlava to the dinner.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“...a box of pakhlava for the table.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural reflects how easy it is “to rub someone up the wrong way”. What does this mean?",
+          "options": [
+            "To make someone feel relaxed",
+            "To irritate or annoy someone",
+            "To give someone a massage",
+            "To agree with someone"
+          ],
+          "answer": 1,
+          "why": "Answering his phone clearly annoyed the father."
+        },
+        {
+          "type": "inference",
+          "q": "What does Tural's final resolution suggest?",
+          "options": [
+            "He is joking about how seriously he takes the lesson",
+            "He plans to sell his phone",
+            "He will never visit again",
+            "He wants to study art"
+          ],
+          "answer": 0,
+          "why": "“For the remainder of the decade” is a humorous exaggeration."
+        }
+      ]
+    }
+  }
+}

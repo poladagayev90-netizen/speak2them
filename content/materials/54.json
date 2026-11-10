@@ -1,0 +1,316 @@
+{
+  "index": 53,
+  "topic": "News & Rumours",
+  "reading": {
+    "title": "The bakery rumour",
+    "A2": {
+      "text": "Leyla is sixteen. She writes for her school newspaper in Sheki. She wants to be a journalist.\n\nOne Monday, there was a rumour in her street. “Uncle Rauf's bakery is closing!” people said. The gossip spread very fast on WhatsApp. Soon, it was the talk of the town. Everybody loves Uncle Rauf's bread, and people were very sad.\n\nLeyla wanted the truth. Her teacher always said, “Take it with a pinch of salt. Check your source.”\n\nFirst, Leyla asked who started the rumour. It was Mrs Zohra. But Mrs Zohra has a bakery too! Her story was biased.\n\nThen Leyla found an eyewitness. Old Mr Javid lives next to the bakery. “I saw builders there yesterday,” he said. “They were not closing the shop. They were making it bigger!”\n\nFinally, Leyla talked to Uncle Rauf. He laughed. “Closing? No! I am opening a café inside the bakery. People can drink tea with fresh bread.”\n\nLeyla wrote an article. Her headline was: “Uncle Rauf's bakery is not closing — it's growing!” Her teacher did not censor anything.\n\nLeyla was happy to break the news. The next morning, there was a long queue at the bakery. Uncle Rauf gave Leyla a free loaf of bread.\n\n“Thank you,” he said. “Good journalists are better than gossip.”",
+      "words": [
+        {
+          "phrase": "writes for her school newspaper",
+          "az": "məktəb qəzeti üçün yazır",
+          "tr": "okul gazetesi için yazıyor"
+        },
+        {
+          "phrase": "spread very fast",
+          "az": "çox sürətlə yayıldı",
+          "tr": "çok hızlı yayıldı"
+        },
+        {
+          "phrase": "wanted the truth",
+          "az": "həqiqəti istəyirdi",
+          "tr": "gerçeği istiyordu"
+        },
+        {
+          "phrase": "making it bigger",
+          "az": "onu böyüdürdülər",
+          "tr": "onu büyütüyorlardı"
+        },
+        {
+          "phrase": "a free loaf of bread",
+          "az": "pulsuz bir çörək",
+          "tr": "bedava bir somun ekmek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A student journalist finds the truth behind a rumour",
+            "A bakery closes in Sheki",
+            "Leyla opens a café",
+            "Mrs Zohra writes a newspaper"
+          ],
+          "answer": 0,
+          "why": "Leyla checks her sources and finds the bakery is growing."
+        },
+        {
+          "type": "detail",
+          "q": "Who started the rumour?",
+          "options": [
+            "Uncle Rauf",
+            "Mr Javid",
+            "Mrs Zohra",
+            "Leyla's teacher"
+          ],
+          "answer": 2,
+          "why": "“It was Mrs Zohra.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Mr Javid see?",
+          "options": [
+            "The bakery was empty",
+            "Builders at the bakery",
+            "Mrs Zohra at the bakery",
+            "A queue"
+          ],
+          "answer": 1,
+          "why": "“I saw builders there yesterday.”"
+        },
+        {
+          "type": "tf",
+          "q": "Leyla's teacher changed her article.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Her teacher did not censor anything.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The teacher says, “Take it with a pinch of salt.” What does she mean?",
+          "options": [
+            "Add salt to your food",
+            "Don't believe everything you hear immediately",
+            "Write short articles",
+            "Buy bread"
+          ],
+          "answer": 1,
+          "why": "“Check your source.”"
+        },
+        {
+          "type": "inference",
+          "q": "Why was Mrs Zohra's story biased?",
+          "options": [
+            "She has a bakery too",
+            "She is Leyla's teacher",
+            "She lives far away",
+            "She doesn't like bread"
+          ],
+          "answer": 0,
+          "why": "“Mrs Zohra has a bakery too! Her story was biased.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Leyla, sixteen, was the youngest writer on her school newspaper in Sheki, and she took the job seriously. So when a rumour exploded on the neighbourhood WhatsApp group one Monday morning, she was more curious than worried.\n\n“Rauf's bakery is closing at the end of the month!” the message said. By lunchtime, the gossip had spread to every family on the street. By the evening, it was the talk of the town. People who had bought Uncle Rauf's bread for thirty years were posting sad photos of his famous round loaves.\n\nLeyla remembered her teacher's favourite advice: “Take everything with a pinch of salt until you've checked the source.”\n\nSo she started with the source. After three phone calls, she traced the first message to Mrs Zohra, who — interestingly — had opened a rival bakery two streets away last spring. Not exactly an unbiased witness.\n\nNext, she looked for an eyewitness. Mr Javid, who had lived next to the bakery for forty years and noticed everything, was happy to help. “Closing? Nonsense. I saw builders going in yesterday with bags of cement and a new window.”\n\nFinally, she went straight to Uncle Rauf himself. He was so surprised he dropped a tray of bread. “Closing? I'm expanding! I'm turning the back room into a tea house, so people can eat my bread while it's still warm.”\n\nThat night Leyla wrote her article. The headline read: “Sheki's favourite bakery isn't closing — it's growing.” She was worried the school director might censor the part about Mrs Zohra, but he didn't change a single word.\n\nThe next morning, she was proud to break the news to the whole street. By eight o'clock, the queue outside Uncle Rauf's bakery went round the corner.\n\nWhen Leyla arrived, Uncle Rauf handed her a warm loaf wrapped in paper. “On the house,” he said. “For the girl who killed a rumour.”",
+      "words": [
+        {
+          "phrase": "took the job seriously",
+          "az": "işə ciddi yanaşırdı",
+          "tr": "işi ciddiye alıyordu"
+        },
+        {
+          "phrase": "more curious than worried",
+          "az": "narahat olmaqdan çox maraqlı",
+          "tr": "endişeliden çok meraklı"
+        },
+        {
+          "phrase": "traced the first message",
+          "az": "ilk mesajın izinə düşdü",
+          "tr": "ilk mesajın izini sürdü"
+        },
+        {
+          "phrase": "Not exactly an unbiased witness",
+          "az": "Heç də qərəzsiz şahid deyil",
+          "tr": "Pek de tarafsız bir tanık değil"
+        },
+        {
+          "phrase": "On the house",
+          "az": "Müəssisə hesabına (pulsuz)",
+          "tr": "İkramımız"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Bakeries in Sheki are closing",
+            "Checking sources helps Leyla prove a rumour false",
+            "Leyla wants to become a baker",
+            "WhatsApp groups are always right"
+          ],
+          "answer": 1,
+          "why": "She checks the source, an eyewitness and Rauf himself."
+        },
+        {
+          "type": "detail",
+          "q": "Why was Mrs Zohra not an unbiased witness?",
+          "options": [
+            "She had opened a rival bakery",
+            "She was Leyla's teacher",
+            "She worked for Uncle Rauf",
+            "She didn't live in Sheki"
+          ],
+          "answer": 0,
+          "why": "“...had opened a rival bakery two streets away.”"
+        },
+        {
+          "type": "detail",
+          "q": "What is Uncle Rauf turning the back room into?",
+          "options": [
+            "A shop",
+            "A tea house",
+            "His home",
+            "A newspaper office"
+          ],
+          "answer": 1,
+          "why": "“I'm turning the back room into a tea house.”"
+        },
+        {
+          "type": "tf",
+          "q": "The school director changed Leyla's article.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He didn't change a single word.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The rumour became “the talk of the town”. What does this mean?",
+          "options": [
+            "Everyone in town was discussing it",
+            "The town made an announcement",
+            "It was on the radio",
+            "Nobody believed it"
+          ],
+          "answer": 0,
+          "why": "It spread to every family on the street and beyond."
+        },
+        {
+          "type": "inference",
+          "q": "What does Uncle Rauf mean by “the girl who killed a rumour”?",
+          "options": [
+            "Leyla stopped a false story with the truth",
+            "Leyla was angry",
+            "Leyla broke something",
+            "Leyla started the rumour"
+          ],
+          "answer": 0,
+          "why": "Her article showed the rumour was false."
+        }
+      ]
+    },
+    "B2": {
+      "text": "At sixteen, Leyla was the youngest contributor to her school newspaper in Sheki, and she treated the position with the gravity of a foreign correspondent. So when a rumour detonated on the neighbourhood WhatsApp group one Monday morning, her reaction was less alarm than professional interest.\n\n“Rauf's bakery is shutting down at the end of the month!” the message announced. By lunchtime, the gossip had spread to every household on the street; by evening, it was the talk of the town. Customers who had bought Uncle Rauf's bread for three decades were posting mournful photographs of his famous round loaves, as if composing an obituary.\n\nLeyla recalled her teacher's favourite maxim: “Take everything with a pinch of salt until you know the source.”\n\nSo she began with the source. Three phone calls later, she had traced the original message to Mrs Zohra — who, as it happened, had opened a rival bakery two streets away the previous spring. Hardly the most impartial of witnesses; if anything, her account was spectacularly biased.\n\nNext, Leyla sought an eyewitness. Mr Javid, who had lived beside the bakery for forty years and missed nothing, was delighted to be consulted. “Closing? Rubbish. Yesterday I watched builders carry in sacks of cement and an enormous new window frame.”\n\nFinally, she went straight to Uncle Rauf. The question startled him so badly that he nearly dropped a tray of loaves. “Closing? I'm expanding! I'm converting the back room into a tea house, so people can eat my bread while it's still warm.”\n\nThat night Leyla wrote her article under the headline “Sheki's favourite bakery isn't closing — it's growing.” She half expected the school director to censor the paragraph naming the origin of the rumour, but he approved it without altering a word.\n\nThe next morning, she had the considerable satisfaction of being the one to break the news to the whole street. By eight o'clock, the queue outside the bakery stretched round the corner.\n\nWhen Leyla arrived, Uncle Rauf pressed a warm loaf, wrapped in paper, into her hands. “On the house,” he said. “For the young lady who killed a rumour with three phone calls and a question.”",
+      "words": [
+        {
+          "phrase": "with the gravity of a foreign correspondent",
+          "az": "xarici müxbir ciddiliyi ilə",
+          "tr": "bir yabancı muhabirin ciddiyetiyle"
+        },
+        {
+          "phrase": "less alarm than professional interest",
+          "az": "həyəcandan çox peşəkar maraq",
+          "tr": "endişeden çok mesleki ilgi"
+        },
+        {
+          "phrase": "as if composing an obituary",
+          "az": "sanki nekroloq yazırmış kimi",
+          "tr": "sanki bir ölüm ilanı yazar gibi"
+        },
+        {
+          "phrase": "missed nothing",
+          "az": "heç nəyi gözdən qaçırmırdı",
+          "tr": "hiçbir şeyi kaçırmıyordu"
+        },
+        {
+          "phrase": "without altering a word",
+          "az": "bir söz belə dəyişmədən",
+          "tr": "tek kelime değiştirmeden"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What method does Leyla use to find the truth?",
+          "options": [
+            "She waits for the bakery to close",
+            "She checks the original source, an eyewitness, and the person involved",
+            "She asks her classmates",
+            "She trusts the WhatsApp group"
+          ],
+          "answer": 1,
+          "why": "Source → eyewitness → Uncle Rauf himself."
+        },
+        {
+          "type": "detail",
+          "q": "Why does the text describe customers' posts as “an obituary”?",
+          "options": [
+            "They wrote as if the bakery had already died",
+            "Someone had died",
+            "They were writing for the newspaper",
+            "They were angry"
+          ],
+          "answer": 0,
+          "why": "Their mournful posts treated the bakery as gone."
+        },
+        {
+          "type": "detail",
+          "q": "What had Mr Javid seen?",
+          "options": [
+            "Mrs Zohra at the door",
+            "Builders with cement and a window frame",
+            "A closing sign",
+            "Uncle Rauf crying"
+          ],
+          "answer": 1,
+          "why": "“...builders carry in sacks of cement and an enormous new window frame.”"
+        },
+        {
+          "type": "tf",
+          "q": "The school director removed the paragraph about the origin of the rumour.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“...he approved it without altering a word.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The teacher's maxim is “Take everything with a pinch of salt”. What does it mean?",
+          "options": [
+            "Be careful and slightly doubtful about what you hear",
+            "Add salt to bread",
+            "Ignore all news",
+            "Believe your friends"
+          ],
+          "answer": 0,
+          "why": "“...until you know the source.”"
+        },
+        {
+          "type": "inference",
+          "q": "What does Uncle Rauf's final line suggest about rumours?",
+          "options": [
+            "They are hard to stop",
+            "Simple checking can defeat them",
+            "Journalists start them",
+            "They are harmless"
+          ],
+          "answer": 1,
+          "why": "“...killed a rumour with three phone calls and a question.”"
+        }
+      ]
+    }
+  }
+}

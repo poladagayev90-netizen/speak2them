@@ -1,0 +1,316 @@
+{
+  "index": 33,
+  "topic": "Cooking at Home",
+  "reading": {
+    "title": "Soup for Mum",
+    "A2": {
+      "text": "Orkhan is a student. He lives in a flat with his friends Elvin and Tural. On Sunday, his mother is coming to visit for the first time.\n\n“Let's cook dinner for her,” Orkhan said. “Dushbara soup, from scratch!”\n\nThey found a recipe online. They bought all the ingredients: meat, onions, flour and herbs. Elvin made the small dumplings. Tural began to chop the onions and cried a lot. Orkhan put the soup on the cooker to simmer.\n\nBut there was a problem. Every boy wanted to help. Elvin added salt. Ten minutes later, Tural added more seasoning. Then Orkhan added salt too. Nobody watched the pot, and the bottom of the soup was burnt.\n\nAt six o'clock, Orkhan's mother arrived. She tasted the soup and her eyes opened wide.\n\n“Too many cooks spoil the broth,” she laughed. “Who made this?”\n\n“All of us,” said Orkhan sadly.\n\nHis mother looked in the fridge. There were some leftovers: rice, eggs and tomatoes. In twenty minutes, she made a delicious dinner. The boys ate everything.\n\n“I know you have a lot on your plate with exams,” she said. “Next time, just call me.”\n\nAfter dinner, the three boys did all the washing-up. Orkhan's mother sat and drank tea.",
+      "words": [
+        {
+          "phrase": "for the first time",
+          "az": "ilk dəfə",
+          "tr": "ilk kez"
+        },
+        {
+          "phrase": "cried a lot",
+          "az": "çox ağladı",
+          "tr": "çok ağladı"
+        },
+        {
+          "phrase": "Nobody watched the pot",
+          "az": "Heç kim qazana baxmadı",
+          "tr": "Kimse tencereye bakmadı"
+        },
+        {
+          "phrase": "her eyes opened wide",
+          "az": "gözləri bərəldi",
+          "tr": "gözleri kocaman açıldı"
+        },
+        {
+          "phrase": "just call me",
+          "az": "sadəcə mənə zəng et",
+          "tr": "sadece beni ara"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Three friends try to cook for a mother, and she saves dinner",
+            "A mother teaches a cooking class",
+            "Orkhan opens a restaurant",
+            "Three friends buy food in a café"
+          ],
+          "answer": 0,
+          "why": "Their soup goes wrong, and his mother makes dinner from leftovers."
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural do?",
+          "options": [
+            "He made the dumplings",
+            "He chopped the onions",
+            "He bought the meat",
+            "He watched the pot"
+          ],
+          "answer": 1,
+          "why": "“Tural began to chop the onions and cried a lot.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did the mother cook with?",
+          "options": [
+            "New meat from the shop",
+            "The burnt soup",
+            "Leftovers from the fridge",
+            "Food from a restaurant"
+          ],
+          "answer": 2,
+          "why": "“There were some leftovers: rice, eggs and tomatoes.”"
+        },
+        {
+          "type": "tf",
+          "q": "Orkhan's mother did the washing-up.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“The three boys did all the washing-up. Orkhan's mother sat and drank tea.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The mother says, “Too many cooks spoil the broth.” What does she mean?",
+          "options": [
+            "The soup needs more cooks",
+            "When too many people do one job, the result is bad",
+            "Cooks should not make soup",
+            "The broth is too cold"
+          ],
+          "answer": 1,
+          "why": "Each boy added salt, so the soup was ruined."
+        },
+        {
+          "type": "inference",
+          "q": "Why does the mother say “Next time, just call me”?",
+          "options": [
+            "She wants to cook for them because they are busy students",
+            "She is angry and will not visit again",
+            "She wants them to buy her a phone",
+            "She does not like dushbara"
+          ],
+          "answer": 0,
+          "why": "“I know you have a lot on your plate with exams.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Orkhan shared a small flat in Yasamal with two friends from university, Elvin and Tural. When his mother announced she was coming from Shamakhi for Sunday dinner, the three of them decided to impress her. “No takeaway,” Orkhan said. “We'll make dushbara from scratch, like my grandmother does.”\n\nThey found a recipe on a cooking channel and wrote a long shopping list. On Saturday they bought every ingredient: lamb, onions, flour, dried mint, saffron. Elvin, who had the most patient fingers, folded more than a hundred tiny dumplings. Tural agreed to chop the onions and spent twenty minutes crying over the cutting board. Orkhan was in charge of the broth, which had to simmer gently for two hours.\n\nThe trouble was that nobody trusted anybody else. Elvin tasted the broth and added salt. Tural tasted it later and added more seasoning, plus a spoonful of pepper “for character”. Orkhan, without asking, added salt for the third time. Then they all went to watch football, and nobody noticed the smell until the bottom of the pot was burnt black.\n\nHis mother arrived at six. She lifted the lid, tasted a spoonful and coughed politely.\n\n“Well,” she said, “too many cooks spoil the broth. How many of you salted it?”\n\nThree hands went up.\n\nShe laughed so hard she had to sit down. Then she rolled up her sleeves and opened the fridge. Within half an hour, she had turned some leftovers — yesterday's rice, four eggs, a few tomatoes and Elvin's beautiful dumplings — into a meal the boys still talk about.\n\n“You three have a lot on your plate with exams,” she said, kissing her son's head. “Cooking can wait.”\n\n“At least let us do the washing-up,” said Orkhan.\n\n“Oh, that was never a question,” his mother replied.",
+      "words": [
+        {
+          "phrase": "decided to impress her",
+          "az": "onu heyran etməyə qərar verdilər",
+          "tr": "onu etkilemeye karar verdiler"
+        },
+        {
+          "phrase": "was in charge of the broth",
+          "az": "bulyona cavabdeh idi",
+          "tr": "et suyundan sorumluydu"
+        },
+        {
+          "phrase": "nobody trusted anybody else",
+          "az": "heç kim bir-birinə güvənmirdi",
+          "tr": "kimse kimseye güvenmiyordu"
+        },
+        {
+          "phrase": "rolled up her sleeves",
+          "az": "qollarını çirmələdi",
+          "tr": "kollarını sıvadı"
+        },
+        {
+          "phrase": "that was never a question",
+          "az": "bu heç vaxt sual deyildi",
+          "tr": "bu hiç soru değildi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "The boys become great cooks",
+            "Too many helpers ruin the soup, but the mother saves the evening",
+            "Orkhan's mother hates his flat",
+            "The boys order takeaway"
+          ],
+          "answer": 1,
+          "why": "The soup is too salty and burnt; she makes dinner from leftovers."
+        },
+        {
+          "type": "detail",
+          "q": "How long did the broth need to simmer?",
+          "options": [
+            "Twenty minutes",
+            "Half an hour",
+            "Two hours",
+            "All night"
+          ],
+          "answer": 2,
+          "why": "“...the broth, which had to simmer gently for two hours.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why didn't anyone notice the soup burning?",
+          "options": [
+            "They were watching football",
+            "They were shopping",
+            "They were asleep",
+            "They were at the metro"
+          ],
+          "answer": 0,
+          "why": "“Then they all went to watch football.”"
+        },
+        {
+          "type": "tf",
+          "q": "The mother used Elvin's dumplings in her meal.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“...a few tomatoes and Elvin's beautiful dumplings.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The boys wanted to cook “from scratch”. What does this mean?",
+          "options": [
+            "Very quickly",
+            "From the beginning, using basic ingredients",
+            "With a lot of salt",
+            "Without a recipe"
+          ],
+          "answer": 1,
+          "why": "They made everything themselves, “like my grandmother does”."
+        },
+        {
+          "type": "inference",
+          "q": "What does the mother's last line suggest?",
+          "options": [
+            "She will do the washing-up herself",
+            "She thinks the boys should obviously wash the dishes",
+            "She doesn't want them to help",
+            "She is angry about the soup"
+          ],
+          "answer": 1,
+          "why": "“That was never a question” means of course they will do it."
+        }
+      ]
+    },
+    "B2": {
+      "text": "When Orkhan's mother rang to say she was coming in from Shamakhi for Sunday dinner, the three students sharing his cramped flat in Yasamal held what Tural solemnly called an emergency summit. Takeaway was ruled out at once as an admission of defeat. “We're making dushbara,” Orkhan declared, “completely from scratch. Exactly the way my grandmother does it.”\n\nThe recipe came from a cooking channel run by a cheerful woman in Sheki who made everything look effortless. Saturday was spent hunting down each ingredient — fatty lamb, onions, flour, dried mint, a pinch of saffron that cost more than Tural's lunch. Elvin, who possessed the patience of a watchmaker, folded over a hundred dumplings the size of hazelnuts. Tural volunteered to chop the onions and spent twenty minutes weeping theatrically over the cutting board. Orkhan took charge of the broth, which, according to the woman from Sheki, needed to simmer for two hours over the lowest possible flame.\n\nThe fatal flaw in the operation was trust. Elvin tasted the broth and quietly added salt. An hour later, Tural tasted it, decided it lacked “personality” and threw in a generous amount of seasoning. Orkhan, unaware of either intervention, salted it for a third time. Then all three drifted off to watch a football match, and by the time anyone noticed the smell, the bottom of the pot was burnt beyond rescue.\n\nHis mother arrived punctually at six. She lifted the lid, sampled a spoonful and maintained an expression of heroic neutrality.\n\n“Too many cooks spoil the broth,” she observed at last. “Out of interest, how many of you added salt?”\n\nThree hands rose slowly.\n\nShe laughed until she had to wipe her eyes. Then, without a word of complaint, she pushed up her sleeves and inspected the fridge. Half an hour later the leftovers — yesterday's rice, four eggs, some tired tomatoes and Elvin's immaculate dumplings — had been transformed into the best meal the flat had ever seen.\n\n“You have a lot on your plate this term,” she said, ruffling her son's hair. “The cooking can wait until summer.”\n\n“At least let us handle the washing-up,” Orkhan offered.\n\nHis mother poured herself a glass of tea and settled into the only comfortable chair. “My darling,” she said, “I was counting on it.”",
+      "words": [
+        {
+          "phrase": "an admission of defeat",
+          "az": "məğlubiyyətin etirafı",
+          "tr": "yenilginin itirafı"
+        },
+        {
+          "phrase": "the patience of a watchmaker",
+          "az": "saatsazın səbri",
+          "tr": "bir saatçinin sabrı"
+        },
+        {
+          "phrase": "burnt beyond rescue",
+          "az": "xilas olunmayacaq qədər yanmış",
+          "tr": "kurtarılamayacak kadar yanmış"
+        },
+        {
+          "phrase": "heroic neutrality",
+          "az": "qəhrəmancasına neytrallıq",
+          "tr": "kahramanca bir tarafsızlık"
+        },
+        {
+          "phrase": "I was counting on it",
+          "az": "Elə buna ümid edirdim",
+          "tr": "Buna güveniyordum"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the source of the boys' failure?",
+          "options": [
+            "A bad recipe",
+            "Cheap ingredients",
+            "Each boy secretly salting the soup without telling the others",
+            "The mother arriving early"
+          ],
+          "answer": 2,
+          "why": "“The fatal flaw in the operation was trust.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why was takeaway “ruled out”?",
+          "options": [
+            "It would feel like admitting defeat",
+            "It was too expensive",
+            "The mother hates takeaway",
+            "The restaurants were closed"
+          ],
+          "answer": 0,
+          "why": "“Takeaway was ruled out at once as an admission of defeat.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural say the broth lacked?",
+          "options": [
+            "Salt",
+            "Personality",
+            "Saffron",
+            "Time"
+          ],
+          "answer": 1,
+          "why": "He “decided it lacked 'personality'”."
+        },
+        {
+          "type": "tf",
+          "q": "The mother complained a lot about the burnt soup.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "She laughed and cooked “without a word of complaint”."
+        },
+        {
+          "type": "vocab",
+          "q": "The mother says Orkhan has “a lot on his plate this term”. What does she mean?",
+          "options": [
+            "He eats too much",
+            "He has many responsibilities and is busy",
+            "He has a lot of dishes to wash",
+            "He has a big kitchen"
+          ],
+          "answer": 1,
+          "why": "She means he is busy with university, so cooking can wait."
+        },
+        {
+          "type": "inference",
+          "q": "What does “I was counting on it” reveal about the mother?",
+          "options": [
+            "She expected the boys to wash up all along",
+            "She wants to count the plates",
+            "She is surprised by their offer",
+            "She plans to leave immediately"
+          ],
+          "answer": 0,
+          "why": "She sits down with tea, having always expected them to do it."
+        }
+      ]
+    }
+  }
+}

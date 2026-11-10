@@ -1,0 +1,316 @@
+{
+  "index": 30,
+  "topic": "Neighbours & Community",
+  "reading": {
+    "title": "The note under the door",
+    "A2": {
+      "text": "Nigar is a music student. Last month, she moved into an old building in the centre of Baku. Her flat is small, but she loves the green courtyard. She is a tenant, and the landlord, Mr Vugar, lives on the first floor.\n\nEvery evening, Nigar plays the violin for two hours. One morning, she found a note under her door. It said: “Please stop the noise at night!” It was a noise complaint.\n\nNigar was sad. She thought about her neighbour, Mr Agil. He is old and very quiet. His rule is “keep yourself to yourself”, and he never says hello. “It is him,” she thought.\n\nA week later, Nigar saw Mr Agil on the stairs. He had two heavy bags of shopping. She wanted to lend a hand, so she carried the bags to his door.\n\nInside his flat, Nigar saw an old piano and many photos of children with violins.\n\n“I was a music teacher for forty years,” Mr Agil said. “I did not write that note. I open my window every evening to listen to you.”\n\n“Then who wrote it?” Nigar asked.\n\nMr Agil smiled. “In this building, the walls have ears. It was Sona on the second floor. Her baby sleeps at nine.”\n\nNow Nigar plays from seven to nine. On Sundays, she plays in the courtyard. Mr Agil helps to look after the chairs, and Sona's baby dances.",
+      "words": [
+        {
+          "phrase": "moved into an old building",
+          "az": "köhnə binaya köçdü",
+          "tr": "eski bir binaya taşındı"
+        },
+        {
+          "phrase": "found a note under her door",
+          "az": "qapısının altında not tapdı",
+          "tr": "kapısının altında bir not buldu"
+        },
+        {
+          "phrase": "never says hello",
+          "az": "heç vaxt salam vermir",
+          "tr": "hiç selam vermez"
+        },
+        {
+          "phrase": "two heavy bags of shopping",
+          "az": "iki ağır alış-veriş çantası",
+          "tr": "iki ağır alışveriş torbası"
+        },
+        {
+          "phrase": "Her baby sleeps at nine",
+          "az": "Körpəsi doqquzda yatır",
+          "tr": "Bebeği dokuzda uyuyor"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story mainly about?",
+          "options": [
+            "Nigar learns who really complained, and makes a new friend",
+            "Nigar sells her violin",
+            "Mr Agil wants Nigar to move out",
+            "The landlord raises the rent"
+          ],
+          "answer": 0,
+          "why": "She thought Mr Agil wrote the note, but he became her friend."
+        },
+        {
+          "type": "detail",
+          "q": "What did the note under Nigar's door say?",
+          "options": [
+            "“Welcome to the building!”",
+            "“Please pay the rent.”",
+            "“Please stop the noise at night!”",
+            "“Come to the courtyard.”"
+          ],
+          "answer": 2,
+          "why": "“It said: 'Please stop the noise at night!'”"
+        },
+        {
+          "type": "detail",
+          "q": "What was Mr Agil's job?",
+          "options": [
+            "A landlord",
+            "A music teacher",
+            "A shop owner",
+            "A doctor"
+          ],
+          "answer": 1,
+          "why": "“I was a music teacher for forty years.”"
+        },
+        {
+          "type": "tf",
+          "q": "Mr Vugar wrote the noise complaint.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“It was Sona on the second floor.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Mr Agil says, “In this building, the walls have ears.” What does he mean?",
+          "options": [
+            "The walls are very thin and old",
+            "There are animals in the walls",
+            "People hear and know everything here",
+            "The building has no doors"
+          ],
+          "answer": 2,
+          "why": "He knows who wrote the note because neighbours hear everything."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Nigar think Mr Agil wrote the note?",
+          "options": [
+            "He was quiet and unfriendly",
+            "He hated music",
+            "He was the landlord",
+            "His handwriting was on it"
+          ],
+          "answer": 0,
+          "why": "“He keeps himself to himself and never says hello.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "When Nigar, a second-year violin student, rented a flat in an old building near Fountain Square, she fell in love with the courtyard first: a fig tree, washing lines and a tap where neighbours stopped to chat. The landlord, Mr Vugar, lived downstairs and promised her it was a friendly neighbourhood. “Everybody here gets along,” he said.\n\nFor three weeks she practised every evening. Then one morning a folded note appeared under her door: “Some of us need to sleep. Please stop the noise at night!” It wasn't signed, but it was clearly a noise complaint.\n\nNigar's first suspect was Mr Agil from across the landing. He was an elderly man who kept himself to himself. He nodded on the stairs but never started a conversation, and his curtains were always half closed. “Of course it's him,” she told her friend on the phone.\n\nA few days later she found him stopping every few steps with two heavy shopping bags. However annoyed she felt, she couldn't walk past. “Let me lend a hand,” she said, and took the bags.\n\nHis flat surprised her. There was an upright piano, shelves of sheet music and framed photos of children holding tiny violins. “Forty years at the music school,” he explained. “And no, I didn't write that note. I open my window every evening to hear you play. You rush the slow parts, by the way.”\n\nNigar laughed, embarrassed. “Then who did?”\n\n“In this building, the walls have ears,” he said. “Sona on the second floor has a new baby. She asked Vugar to write it because she was too shy.”\n\nNigar knocked on Sona's door that afternoon. They agreed on a simple deal: music until nine, silence after. Now, on Sunday evenings, Nigar plays in the courtyard. Mr Agil looks after the chairs, Sona brings tea, and the baby claps — mostly in time.",
+      "words": [
+        {
+          "phrase": "fell in love with the courtyard first",
+          "az": "ilk olaraq həyətə vuruldu",
+          "tr": "ilk önce avluya âşık oldu"
+        },
+        {
+          "phrase": "It wasn't signed",
+          "az": "İmzalanmamışdı",
+          "tr": "İmzalanmamıştı"
+        },
+        {
+          "phrase": "first suspect",
+          "az": "ilk şübhəli",
+          "tr": "ilk şüpheli"
+        },
+        {
+          "phrase": "You rush the slow parts",
+          "az": "Yavaş hissələri tələsik çalırsan",
+          "tr": "Yavaş kısımları aceleyle çalıyorsun"
+        },
+        {
+          "phrase": "a simple deal",
+          "az": "sadə bir razılaşma",
+          "tr": "basit bir anlaşma"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What problem does Nigar solve in the story?",
+          "options": [
+            "She finds a cheaper flat",
+            "She discovers who complained and agrees on music hours",
+            "She stops playing the violin",
+            "She becomes the new landlord"
+          ],
+          "answer": 1,
+          "why": "She talks to Sona and they agree: music until nine."
+        },
+        {
+          "type": "detail",
+          "q": "What did Nigar love first about her new home?",
+          "options": [
+            "The view of the sea",
+            "The modern kitchen",
+            "The courtyard",
+            "The low rent"
+          ],
+          "answer": 2,
+          "why": "“She fell in love with the courtyard first.”"
+        },
+        {
+          "type": "detail",
+          "q": "Who actually wrote the note?",
+          "options": [
+            "Mr Agil",
+            "Nigar's friend",
+            "Sona herself",
+            "Mr Vugar, because Sona asked him"
+          ],
+          "answer": 3,
+          "why": "“She asked Vugar to write it because she was too shy.”"
+        },
+        {
+          "type": "tf",
+          "q": "Mr Agil thinks Nigar plays perfectly.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“You rush the slow parts, by the way.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Mr Agil “kept himself to himself”. What does this mean?",
+          "options": [
+            "He was private and did not talk much with others",
+            "He lived alone in a big house",
+            "He always talked about himself",
+            "He was very rude"
+          ],
+          "answer": 0,
+          "why": "“He nodded on the stairs but never started a conversation.”"
+        },
+        {
+          "type": "inference",
+          "q": "How has the building changed by the end?",
+          "options": [
+            "Everyone wants Nigar to leave",
+            "The neighbours have become a small community",
+            "Mr Agil has moved away",
+            "Nobody uses the courtyard"
+          ],
+          "answer": 1,
+          "why": "On Sundays they all meet in the courtyard for music and tea."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Nigar signed the lease for the flat near Fountain Square on the strength of the courtyard alone: a crooked fig tree, washing lines strung between balconies and a stone tap where neighbours lingered to swap news. Mr Vugar, the landlord, who lived on the ground floor, assured her that the community was close-knit. “Tenants come and go,” he said, “but in this building, we all get along.”\n\nFor three weeks, the second-year violin student practised every evening, working through the same difficult sonata until her fingers ached. Then, one morning, a folded sheet of paper appeared under her door: “Some of us have to sleep. Please stop the noise at night!” There was no signature, but there was no mistaking a noise complaint.\n\nHer suspicion fell immediately on Mr Agil, the elderly widower across the landing. He kept himself to himself to an almost theatrical degree: a polite nod on the stairs, curtains permanently half drawn, never a word more than necessary. “It's obviously him,” she told a friend. “He looks at me as if I'm a mosquito.”\n\nYet when she later found him pausing on every third step, weighed down by two bulging shopping bags, irritation lost to upbringing. “Let me lend a hand,” she offered, and took them before he could refuse.\n\nHis flat stopped her in the doorway. An upright piano, its lid open; shelves sagging with sheet music; dozens of photographs of children clutching tiny violins. “Forty years at the music school,” he said, following her gaze. “And no, I didn't write your note. I open my window every evening to listen. You rush the slow movement, incidentally.”\n\nShe laughed despite herself. “Then who on earth did?”\n\nHe lowered his voice. “In this building, the walls have ears. Sona, on the second floor, has a newborn. She was too shy to knock, so she asked Vugar to write it for her.”\n\nThat afternoon Nigar climbed the stairs with a box of pakhlava. The negotiation took four minutes: music until nine, silence afterwards. These days, on Sunday evenings, she performs in the courtyard. Mr Agil looks after the chairs and offers unrequested advice on tempo, Sona brings a pot of tea, and the baby claps along — enthusiastically, if not always in rhythm.",
+      "words": [
+        {
+          "phrase": "on the strength of the courtyard alone",
+          "az": "yalnız həyətə görə",
+          "tr": "sadece avlu yüzünden"
+        },
+        {
+          "phrase": "there was no mistaking",
+          "az": "səhv salmaq mümkün deyildi",
+          "tr": "yanılmak mümkün değildi"
+        },
+        {
+          "phrase": "irritation lost to upbringing",
+          "az": "əsəbilik tərbiyəyə uduzdu",
+          "tr": "sinir terbiyeye yenildi"
+        },
+        {
+          "phrase": "following her gaze",
+          "az": "onun baxışını izləyərək",
+          "tr": "bakışını takip ederek"
+        },
+        {
+          "phrase": "if not always in rhythm",
+          "az": "həmişə ritmə uyğun olmasa da",
+          "tr": "her zaman ritimde olmasa da"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story's main turn?",
+          "options": [
+            "The landlord asks Nigar to leave",
+            "Nigar finds out the man she blamed is actually her biggest fan",
+            "Sona's baby learns the violin",
+            "Nigar gives up music"
+          ],
+          "answer": 1,
+          "why": "Mr Agil listens every evening and didn't write the note."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Nigar choose this flat?",
+          "options": [
+            "Because of the courtyard",
+            "Because it was close to her school",
+            "Because Mr Agil recommended it",
+            "Because it was cheap"
+          ],
+          "answer": 0,
+          "why": "She signed “on the strength of the courtyard alone”."
+        },
+        {
+          "type": "detail",
+          "q": "How long did it take Nigar and Sona to agree?",
+          "options": [
+            "Four days",
+            "Four minutes",
+            "Three weeks",
+            "One hour"
+          ],
+          "answer": 1,
+          "why": "“The negotiation took four minutes.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar brought Sona a box of pakhlava.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“Nigar climbed the stairs with a box of pakhlava.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Mr Vugar says, “in this building, we all get along”. What does “get along” mean?",
+          "options": [
+            "Walk together every day",
+            "Have the same job",
+            "Have a friendly relationship",
+            "Pay the rent on time"
+          ],
+          "answer": 2,
+          "why": "He is describing a close, friendly community."
+        },
+        {
+          "type": "inference",
+          "q": "What does “irritation lost to upbringing” suggest about Nigar?",
+          "options": [
+            "She was angry and refused to help",
+            "Her good manners were stronger than her annoyance",
+            "She was raised by Mr Agil",
+            "She didn't notice him"
+          ],
+          "answer": 1,
+          "why": "Although she was annoyed, she still helped him with the bags."
+        }
+      ]
+    }
+  }
+}

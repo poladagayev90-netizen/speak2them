@@ -1,0 +1,316 @@
+{
+  "index": 42,
+  "topic": "Games & Puzzles",
+  "reading": {
+    "title": "The poker face",
+    "A2": {
+      "text": "Nigar is ten. Her cousin, Farid, is fourteen. Every Friday, the family has dinner at their grandfather's house. After dinner, Nigar and Farid play chess.\n\nFarid always wins. But Farid is not a fair opponent. When Nigar looks away, he moves her pieces. He likes to cheat. Nigar cries, and sometimes she wants to give up.\n\nOne day, her grandfather, Tofig, said, “Come here. I will teach you a strategy.”\n\nEvery evening, Nigar and her grandfather played chess on the phone. The game was addictive. Nigar played every day. Her grandfather gave her a clue: “Watch his face. When he smiles, he has a plan. But you must keep a poker face. Never show your plan.”\n\nOn Friday, Nigar played Farid again. When it was Farid's turn, he moved her horse. But this time Nigar saw it.\n\n“Put it back,” she said calmly. Farid was surprised.\n\nThe first game was a draw. In the second game, Nigar did not smile. She kept a poker face. Farid did not understand her plan. Then Nigar said, “Checkmate.”\n\nFarid looked at the board. He could not believe it.\n\nGrandfather Tofig laughed. “You can beat someone at their own game,” he said, “if you play your cards right.”",
+      "words": [
+        {
+          "phrase": "Farid always wins",
+          "az": "Fərid həmişə qalib gəlir",
+          "tr": "Ferit her zaman kazanır"
+        },
+        {
+          "phrase": "When Nigar looks away",
+          "az": "Nigar başqa tərəfə baxanda",
+          "tr": "Nigar başka yere bakınca"
+        },
+        {
+          "phrase": "Put it back",
+          "az": "Onu geri qoy",
+          "tr": "Onu geri koy"
+        },
+        {
+          "phrase": "said calmly",
+          "az": "sakitcə dedi",
+          "tr": "sakince söyledi"
+        },
+        {
+          "phrase": "He could not believe it",
+          "az": "İnana bilmədi",
+          "tr": "İnanamadı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Nigar learns chess from her grandfather and beats her cousin",
+            "Farid teaches Nigar to cheat",
+            "Grandfather buys a new chess set",
+            "Nigar stops playing chess"
+          ],
+          "answer": 0,
+          "why": "With her grandfather's help, she wins against Farid."
+        },
+        {
+          "type": "detail",
+          "q": "How does Farid cheat?",
+          "options": [
+            "He looks at her phone",
+            "He moves her pieces when she looks away",
+            "He plays two turns",
+            "He hides pieces"
+          ],
+          "answer": 1,
+          "why": "“When Nigar looks away, he moves her pieces.”"
+        },
+        {
+          "type": "detail",
+          "q": "What clue did the grandfather give Nigar?",
+          "options": [
+            "Always attack first",
+            "Watch Farid's face",
+            "Play very fast",
+            "Move the horse first"
+          ],
+          "answer": 1,
+          "why": "“Watch his face. When he smiles, he has a plan.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar won the first game on Friday.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“The first game was a draw.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Grandfather tells Nigar to keep a “poker face”. What does this mean?",
+          "options": [
+            "Play cards",
+            "Not show your feelings or plans on your face",
+            "Smile all the time",
+            "Look angry"
+          ],
+          "answer": 1,
+          "why": "“Never show your plan.”"
+        },
+        {
+          "type": "inference",
+          "q": "How does Farid feel at the end?",
+          "options": [
+            "Very surprised",
+            "Happy",
+            "Bored",
+            "Angry with his grandfather"
+          ],
+          "answer": 0,
+          "why": "“He could not believe it.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Every Friday, the whole family gathered for dinner at Grandfather Tofig's house in Mardakan, and every Friday ended the same way: ten-year-old Nigar sitting at the chessboard opposite her cousin Farid, fourteen, and losing.\n\nFarid wasn't just a strong opponent. He was a cheat. Whenever Nigar turned to take a sip of her juice, one of her pieces would mysteriously move to a worse square. She complained, he laughed, the adults told them to stop arguing, and Nigar went home close to tears, ready to give up chess forever.\n\nOne evening her grandfather took her aside. “Losing is fine,” he said. “Losing to a cheat is not. Let's work on your strategy.”\n\nFor the next two months, they played every evening on a chess app, Tofig on his tablet in Mardakan, Nigar on her mother's phone in the city. The app was surprisingly addictive; Nigar started solving puzzles on the bus to school. Her grandfather also gave her a clue that had nothing to do with chess. “Watch Farid's face. When he's planning something, his ears go red. And you — never let him read yours. You need a poker face.”\n\nThe following Friday, Nigar sat down at the board as usual. When it was Farid's turn, she pretended to look away, and out of the corner of her eye she saw his hand move her knight.\n\n“Put it back, please,” she said without looking up.\n\nFarid's ears turned bright red.\n\nTheir first game ended in a draw, which had never happened before. In the second, Nigar played slowly and silently, her face as calm as a lake. Farid kept glancing at her, trying to guess what she was thinking. He couldn't. Twenty minutes later, she quietly moved her queen.\n\n“Checkmate.”\n\nThe room went silent. Farid stared at the board as if it had betrayed him.\n\nFrom his armchair, Grandfather Tofig raised his tea glass. “It's possible to beat someone at their own game,” he said, “if you play your cards right.”",
+      "words": [
+        {
+          "phrase": "ended the same way",
+          "az": "eyni cür bitirdi",
+          "tr": "aynı şekilde bitiyordu"
+        },
+        {
+          "phrase": "close to tears",
+          "az": "ağlamaq həddində",
+          "tr": "ağlamak üzere"
+        },
+        {
+          "phrase": "took her aside",
+          "az": "onu bir kənara çəkdi",
+          "tr": "onu bir kenara çekti"
+        },
+        {
+          "phrase": "out of the corner of her eye",
+          "az": "göz ucu ilə",
+          "tr": "göz ucuyla"
+        },
+        {
+          "phrase": "as if it had betrayed him",
+          "az": "sanki ona xəyanət etmişdi",
+          "tr": "sanki ona ihanet etmiş gibi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main point of the story?",
+          "options": [
+            "Chess apps are bad for children",
+            "With practice and calm, Nigar defeats her cheating cousin",
+            "Farid becomes Nigar's teacher",
+            "Grandfather Tofig is a chess champion"
+          ],
+          "answer": 1,
+          "why": "She practises for two months and beats him."
+        },
+        {
+          "type": "detail",
+          "q": "How long did Nigar practise with her grandfather?",
+          "options": [
+            "Two weeks",
+            "Two months",
+            "One year",
+            "One evening"
+          ],
+          "answer": 1,
+          "why": "“For the next two months, they played every evening.”"
+        },
+        {
+          "type": "detail",
+          "q": "What happens to Farid when he is planning something?",
+          "options": [
+            "He smiles",
+            "His ears go red",
+            "He drinks juice",
+            "He talks a lot"
+          ],
+          "answer": 1,
+          "why": "“When he's planning something, his ears go red.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar and Farid had played to a draw many times before.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“...a draw, which had never happened before.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tofig says you can “beat someone at their own game”. What does this mean?",
+          "options": [
+            "Win against someone using the same tricks or skills they are good at",
+            "Hit someone during a game",
+            "Invent a new game",
+            "Let someone win"
+          ],
+          "answer": 0,
+          "why": "Nigar watched Farid's face, just as he tried to read hers."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Nigar pretend to look away?",
+          "options": [
+            "She was tired",
+            "She wanted to catch Farid cheating",
+            "She wanted her juice",
+            "She didn't want to play"
+          ],
+          "answer": 1,
+          "why": "She saw “out of the corner of her eye” his hand move her knight."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Friday dinners at Grandfather Tofig's house in Mardakan followed a ritual as fixed as the tides: plov, an argument about politics, tea under the fig tree — and ten-year-old Nigar being dismantled at chess by her fourteen-year-old cousin Farid.\n\nThe humiliation had less to do with Farid's talent than with his methods. He was an unashamed cheat. Whenever Nigar turned to reach for her juice, a piece of hers would quietly migrate to a hopeless square. She would protest; he would grin; some adult would tell them both to stop squabbling. Nigar regularly went home on the verge of tears, half determined to give up the game for good.\n\nOne evening, Tofig steered her onto the veranda. “Losing is perfectly respectable,” he said. “Losing to a cheat is not. We're going to work on your strategy.”\n\nFor two months they played every night on an app — he on his tablet in Mardakan, she on her mother's phone across the city. The thing proved fiendishly addictive; Nigar took to solving puzzles on the bus to school. Her grandfather also slipped her a clue that had nothing to do with the rules of chess. “Study your opponent, not just the board. When Farid is about to try something, the tips of his ears turn red. As for you — he must never be able to read your face. Learn a poker face.”\n\nThe next Friday, Nigar took her usual seat. When it was Farid's turn, she made a show of gazing out of the window, and from the corner of her eye watched his fingers drift towards her knight.\n\n“Put that back, please,” she said, without turning her head.\n\nThe tips of Farid's ears glowed crimson.\n\nTheir first game ended in a draw — unprecedented in the family's history. The second she played slowly and in total silence, her expression as untroubled as a frozen pond. Farid's eyes kept flicking from the board to her face and back, searching for a hint. There was none. Twenty minutes in, she slid her queen diagonally across the board.\n\n“Checkmate.”\n\nThe veranda fell silent. Farid gazed at the pieces as though they had personally conspired against him.\n\nFrom the depths of his armchair, Grandfather Tofig lifted his tea glass in salute. “You see? You can beat someone at their own game,” he remarked, “provided you play your cards right.”",
+      "words": [
+        {
+          "phrase": "as fixed as the tides",
+          "az": "qabarma-çəkilmə kimi sabit",
+          "tr": "gelgitler kadar sabit"
+        },
+        {
+          "phrase": "on the verge of tears",
+          "az": "ağlamaq həddində",
+          "tr": "ağlamanın eşiğinde"
+        },
+        {
+          "phrase": "proved fiendishly addictive",
+          "az": "dəhşət dərəcədə asılılıq yaradan oldu",
+          "tr": "şeytanca bağımlılık yapıcı çıktı"
+        },
+        {
+          "phrase": "made a show of",
+          "az": "guya ... edirmiş kimi göstərdi",
+          "tr": "...miş gibi yaptı"
+        },
+        {
+          "phrase": "unprecedented in the family's history",
+          "az": "ailənin tarixində görünməmiş",
+          "tr": "aile tarihinde eşi görülmemiş"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the key to Nigar's victory?",
+          "options": [
+            "Luck and a new chess set",
+            "Practice, reading Farid's face, and hiding her own thoughts",
+            "Help from the other adults",
+            "Farid being tired"
+          ],
+          "answer": 1,
+          "why": "Her grandfather taught her strategy, to watch Farid's ears and to keep a poker face."
+        },
+        {
+          "type": "detail",
+          "q": "According to the text, why did Nigar keep losing?",
+          "options": [
+            "Farid was much more talented",
+            "Farid cheated by moving her pieces",
+            "She didn't know the rules",
+            "She played too fast"
+          ],
+          "answer": 1,
+          "why": "“The humiliation had less to do with Farid's talent than with his methods.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where did Nigar solve chess puzzles?",
+          "options": [
+            "On the bus to school",
+            "At Farid's house",
+            "In the classroom",
+            "Under the fig tree"
+          ],
+          "answer": 0,
+          "why": "“Nigar took to solving puzzles on the bus to school.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar turned her head to tell Farid to put the knight back.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "She said it “without turning her head”."
+        },
+        {
+          "type": "vocab",
+          "q": "Tofig tells Nigar to “learn a poker face”. Why?",
+          "options": [
+            "So she can play cards with him",
+            "So Farid can't guess her plans from her expression",
+            "So she looks older",
+            "So she stops crying"
+          ],
+          "answer": 1,
+          "why": "“He must never be able to read your face.”"
+        },
+        {
+          "type": "inference",
+          "q": "What does Tofig mean by “provided you play your cards right”?",
+          "options": [
+            "If you play cards well",
+            "If you act cleverly and carefully",
+            "If you are lucky",
+            "If you cheat too"
+          ],
+          "answer": 1,
+          "why": "Nigar won by being patient and smart."
+        }
+      ]
+    }
+  }
+}

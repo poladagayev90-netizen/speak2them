@@ -1,0 +1,316 @@
+{
+  "index": 43,
+  "topic": "Gifts & Giving",
+  "reading": {
+    "title": "The best gift",
+    "A2": {
+      "text": "Kamran's grandmother, Zarifa, was eighty on Sunday. The whole family wanted to buy her gifts. Kamran is a student, and he did not have much money.\n\nHis cousin Ramin is rich. He bought Grandma a big new TV. “Grandma will love it,” Ramin said.\n\nKamran was sad. He wanted to be generous too. Then he had an idea. He wanted to make something thoughtful.\n\nHe visited all his aunts and uncles. He asked them for old photos of Grandma and for one story about her. Some stories were funny, and some were very kind. He made a big photo album. It took him three weeks. He wanted to go the extra mile. He wrote all the stories under the photos.\n\nOn Sunday, he took time to wrap the album in red paper. He felt a little shy. “It is a small gift,” he said.\n\nGrandma opened the TV box first. “Thank you, Ramin. That is very kind,” she said. Then she opened the album. She read it for a long time and started to cry.\n\n“Kamran, this is the best gift,” she said. “You gave me my whole life.”\n\nKamran smiled. “I owe you a lot, Grandma,” he said. “Family is give and take,” she answered.\n\n“Remember,” she said, “it's the thought that counts.”\n\nThe next week, Grandma decided to donate the big TV to a children's charity. But she kept the album next to her bed.",
+      "words": [
+        {
+          "phrase": "did not have much money",
+          "az": "çox pulu yox idi",
+          "tr": "pek parası yoktu"
+        },
+        {
+          "phrase": "Then he had an idea",
+          "az": "Sonra ağlına bir fikir gəldi",
+          "tr": "Sonra aklına bir fikir geldi"
+        },
+        {
+          "phrase": "It took him three weeks",
+          "az": "Ona üç həftə vaxt apardı",
+          "tr": "Ona üç hafta sürdü"
+        },
+        {
+          "phrase": "for a long time",
+          "az": "uzun müddət",
+          "tr": "uzun süre"
+        },
+        {
+          "phrase": "next to her bed",
+          "az": "yatağının yanında",
+          "tr": "yatağının yanında"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A cheap gift that means more than an expensive one",
+            "A family buys a new TV",
+            "Kamran gets a gift for his birthday",
+            "Grandma wants to go to a charity"
+          ],
+          "answer": 0,
+          "why": "Grandma loves Kamran's album more than the big TV."
+        },
+        {
+          "type": "detail",
+          "q": "What did Kamran ask his aunts and uncles for?",
+          "options": [
+            "Money",
+            "Old photos and stories about Grandma",
+            "Wrapping paper",
+            "A new TV"
+          ],
+          "answer": 1,
+          "why": "“He asked them for old photos of Grandma and for one story about her.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Grandma do with the TV?",
+          "options": [
+            "She put it next to her bed",
+            "She gave it to Kamran",
+            "She donated it to a children's charity",
+            "She sold it"
+          ],
+          "answer": 2,
+          "why": "“Grandma decided to donate the big TV to a children's charity.”"
+        },
+        {
+          "type": "tf",
+          "q": "Kamran made the album in one day.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“It took him three weeks.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Grandma says, “It's the thought that counts.” What does she mean?",
+          "options": [
+            "The price of a gift is the most important thing",
+            "The care and love behind a gift matter most",
+            "You must think before you buy",
+            "Thinking is better than giving"
+          ],
+          "answer": 1,
+          "why": "Kamran's album was cheap but full of love and work."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Grandma cry?",
+          "options": [
+            "She does not like the album",
+            "She is moved by the stories of her life",
+            "The TV is broken",
+            "She is tired"
+          ],
+          "answer": 1,
+          "why": "“You gave me my whole life.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "When Grandmother Zarifa turned eighty, her family planned a big celebration at a restaurant in Novkhani. Zarifa always tried to refuse presents, but everyone was talking about them. Kamran, a second-year student living on a small grant, felt the pressure more than anyone.\n\nHis cousin Ramin, who worked for an oil company, announced that he had bought her the largest smart TV in the shop. “Sixty-five inches,” he said proudly.\n\nKamran couldn't compete with that. For a few days he felt miserable. Then he remembered something his grandmother often said: the best gifts are the ones you can't buy.\n\nHe spent the next three weeks travelling across Baku and Sumgait, visiting every aunt, uncle and old neighbour he could find. From each of them, he collected an old photograph of Zarifa and one story. An old colleague remembered how she secretly paid for a young teacher's wedding dress. Kamran scanned the photos, wrote the stories underneath them and had everything printed as a thick album. He really went the extra mile — he even found a picture from her own wedding in 1964.\n\nOn the night of the party, he wrapped the album in plain brown paper with a ribbon. Next to Ramin's enormous box, it looked tiny.\n\nZarifa opened Ramin's gift first and thanked him warmly. “What a generous gesture,” she said. Then she opened the album. She turned the pages slowly, reading every story. The table went quiet. When she looked up, her eyes were wet.\n\n“Who told you about the wedding dress?” she whispered. “I never told anyone.”\n\n“I owe you everything, Grandma,” Kamran said. “I wanted you to know how many people feel the same.”\n\nShe held his face in her hands. “It's the thought that counts,” she said. “And this, my dear, is a lot of thought.”\n\nA week later, Zarifa asked Ramin, very politely, if he minded her donating the TV to a children's charity in Sumgait. The album stayed on her bedside table.",
+      "words": [
+        {
+          "phrase": "felt the pressure more than anyone",
+          "az": "təzyiqi hamıdan çox hiss edirdi",
+          "tr": "baskıyı herkesten çok hissediyordu"
+        },
+        {
+          "phrase": "couldn't compete with that",
+          "az": "bununla rəqabət apara bilməzdi",
+          "tr": "bununla yarışamazdı"
+        },
+        {
+          "phrase": "the best gifts are the ones you can't buy",
+          "az": "ən yaxşı hədiyyələr satın ala bilmədiklərindir",
+          "tr": "en iyi hediyeler satın alamadıklarındır"
+        },
+        {
+          "phrase": "The table went quiet",
+          "az": "Masa susdu",
+          "tr": "Masa sessizleşti"
+        },
+        {
+          "phrase": "if he minded",
+          "az": "etiraz edib-etmədiyini",
+          "tr": "sakıncası olup olmadığını"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main message of the story?",
+          "options": [
+            "Expensive gifts are always the best",
+            "A gift made with time and love can mean more than an expensive one",
+            "Grandparents prefer technology",
+            "Students should get jobs"
+          ],
+          "answer": 1,
+          "why": "Grandma treasures the album and gives the TV away."
+        },
+        {
+          "type": "detail",
+          "q": "Where did Kamran collect the stories?",
+          "options": [
+            "Only from his parents",
+            "On the internet",
+            "From relatives, neighbours and old colleagues in Baku and Sumgait",
+            "From Ramin"
+          ],
+          "answer": 2,
+          "why": "“...visiting every aunt, uncle and old neighbour he could find.”"
+        },
+        {
+          "type": "detail",
+          "q": "What secret did Zarifa's old colleague remember?",
+          "options": [
+            "She cycled in the snow",
+            "She paid for a young teacher's wedding dress",
+            "She was married in 1964",
+            "She loved TV series"
+          ],
+          "answer": 1,
+          "why": "“...she secretly paid for a young teacher's wedding dress.”"
+        },
+        {
+          "type": "tf",
+          "q": "Zarifa was rude to Ramin about his gift.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "She “thanked him warmly” and asked him “very politely” about the charity."
+        },
+        {
+          "type": "vocab",
+          "q": "Kamran “went the extra mile”. What does this mean?",
+          "options": [
+            "He walked a long way",
+            "He did more than was necessary",
+            "He drove to Sumgait",
+            "He spent a lot of money"
+          ],
+          "answer": 1,
+          "why": "He even found a photo from her 1964 wedding."
+        },
+        {
+          "type": "inference",
+          "q": "Why is Zarifa surprised by the wedding dress story?",
+          "options": [
+            "She thought nobody knew about it",
+            "She forgot it",
+            "It was not true",
+            "She didn't like the teacher"
+          ],
+          "answer": 0,
+          "why": "“I never told anyone.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Grandmother Zarifa's eightieth birthday was to be celebrated in style — a long table at a restaurant in Novkhani, forty guests, a cake shaped like the house she had lived in for half a century. In the weeks beforehand, the family conversation revolved around one subject: presents. For Kamran, a second-year student surviving on a modest grant, it was a source of quiet dread.\n\nHis cousin Ramin, an engineer with an oil company and a talent for being noticed, announced that he had secured the largest television in the shop. “Sixty-five inches,” he said. “She'll be able to follow her series from the balcony.”\n\nKamran could not compete with that, and for several days he didn't try. Then a phrase surfaced that his grandmother had repeated throughout his childhood: the gifts worth having are the ones that can't be bought.\n\nHe spent the next three weeks criss-crossing Baku and Sumgait, tracking down aunts, uncles, former neighbours and colleagues. From each, he asked for two things — an old photograph of Zarifa and a single story about her. A retired colleague confided that Zarifa had once quietly paid for a young teacher's wedding dress and sworn her to secrecy. Kamran scanned every photograph, wrote each story beneath it and had the whole collection bound into a heavy album. He went the extra mile in every sense, at one point taking three buses to a village outside Shamakhi to borrow the only surviving picture of her wedding.\n\nOn the night, he wrapped it in plain brown paper and tied it with string. Beside Ramin's colossal box, it looked almost apologetic.\n\nZarifa opened the television first and thanked Ramin with real warmth. “A very generous gesture,” she said. Then she untied the string. She turned the pages slowly, reading every word, and gradually the table fell silent. When she raised her head, her eyes were bright.\n\n“Who told you about the wedding dress?” she asked softly. “I never told a soul.”\n\n“I owe you more than I can repay, Grandma,” Kamran said. “I just wanted you to see how many people feel the same way.”\n\nShe took his face in both hands. “They say it's the thought that counts,” she murmured. “This is a lifetime of thought.”\n\nA week later, with impeccable tact, she asked Ramin whether he would object to her donating the television to a children's charity in Sumgait. The album never left her bedside table.",
+      "words": [
+        {
+          "phrase": "celebrated in style",
+          "az": "dəbdəbə ilə qeyd edilmək",
+          "tr": "görkemli bir şekilde kutlanmak"
+        },
+        {
+          "phrase": "a source of quiet dread",
+          "az": "səssiz qorxu mənbəyi",
+          "tr": "sessiz bir korku kaynağı"
+        },
+        {
+          "phrase": "sworn her to secrecy",
+          "az": "ondan sirr saxlayacağına söz almışdı",
+          "tr": "ona sır tutacağına dair yemin ettirmişti"
+        },
+        {
+          "phrase": "looked almost apologetic",
+          "az": "az qala üzrxah görünürdü",
+          "tr": "neredeyse mahcup görünüyordu"
+        },
+        {
+          "phrase": "with impeccable tact",
+          "az": "qüsursuz nəzakətlə",
+          "tr": "kusursuz bir nezaketle"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What contrast is at the heart of the story?",
+          "options": [
+            "City versus village",
+            "An expensive impressive gift versus a cheap but deeply personal one",
+            "Old photos versus new photos",
+            "Restaurants versus home cooking"
+          ],
+          "answer": 1,
+          "why": "Ramin's huge TV versus Kamran's album of stories."
+        },
+        {
+          "type": "detail",
+          "q": "What did Kamran ask each relative for?",
+          "options": [
+            "Money for the gift",
+            "A photograph and a single story",
+            "Help with wrapping",
+            "A lift to Novkhani"
+          ],
+          "answer": 1,
+          "why": "“...an old photograph of Zarifa and a single story about her.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did Kamran travel to a village outside Shamakhi?",
+          "options": [
+            "To visit Zarifa's house",
+            "To borrow the only surviving picture of her wedding",
+            "To buy string",
+            "To meet the young teacher"
+          ],
+          "answer": 1,
+          "why": "“...to borrow the only surviving picture of her wedding.”"
+        },
+        {
+          "type": "tf",
+          "q": "Zarifa had told many people about the wedding dress.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“I never told a soul.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Zarifa calls Ramin's gift “a very generous gesture”. What is a gesture here?",
+          "options": [
+            "A movement of the hands",
+            "An action that shows your feelings",
+            "A type of TV",
+            "A joke"
+          ],
+          "answer": 1,
+          "why": "It means something done to show care or kindness."
+        },
+        {
+          "type": "inference",
+          "q": "What does Zarifa's request to donate the TV suggest?",
+          "options": [
+            "She is angry with Ramin",
+            "She values the album far more, but wants to be kind to Ramin",
+            "The TV doesn't work",
+            "She dislikes children"
+          ],
+          "answer": 1,
+          "why": "She asks “with impeccable tact” while keeping the album by her bed."
+        }
+      ]
+    }
+  }
+}

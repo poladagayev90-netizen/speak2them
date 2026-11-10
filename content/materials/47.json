@@ -1,0 +1,316 @@
+{
+  "index": 46,
+  "topic": "Weddings & Big Days",
+  "reading": {
+    "title": "The missing ring",
+    "A2": {
+      "text": "Gunel's sister, Leyla, was getting married. She was engaged to Elvin for one year, and now they wanted to tie the knot. The wedding was in a big restaurant in Baku. There were three hundred guests.\n\nGunel's little son, Ali, had an important job. He was six, and he had to carry the rings to the bride and groom.\n\nEverybody wanted the day to go off without a hitch. But Ali was excited. He ran around the restaurant with the small box.\n\nAt the ceremony, the music started. Ali walked to Leyla and Elvin. He opened the box. It was empty!\n\nThe guests were quiet. Leyla looked at Gunel. Gunel looked at Ali. “Where are the rings?” she whispered. Ali started to cry.\n\nThen Grandfather Ismayil stood up. This day was also his anniversary. Fifty years ago, he married Grandmother Sara. He took off his old gold ring, and Sara took off hers.\n\n“Take our rings,” Grandfather said. “It is a family tradition now.”\n\nEverybody clapped. Leyla and Elvin got married with the old rings. Later, a waiter found the new rings under a table.\n\nIn the evening, Grandfather made a toast. “To fifty years of love!” Everybody cheered. The bride was beautiful, but nobody could steal the show from Grandfather and Grandmother.",
+      "words": [
+        {
+          "phrase": "was getting married",
+          "az": "ərə gedirdi",
+          "tr": "evleniyordu"
+        },
+        {
+          "phrase": "had an important job",
+          "az": "vacib bir vəzifəsi var idi",
+          "tr": "önemli bir görevi vardı"
+        },
+        {
+          "phrase": "ran around the restaurant",
+          "az": "restoranda qaçırdı",
+          "tr": "restoranın içinde koşturdu"
+        },
+        {
+          "phrase": "started to cry",
+          "az": "ağlamağa başladı",
+          "tr": "ağlamaya başladı"
+        },
+        {
+          "phrase": "Everybody clapped",
+          "az": "Hamı əl çaldı",
+          "tr": "Herkes alkışladı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens at the wedding?",
+          "options": [
+            "The rings are lost, and the grandparents give their own rings",
+            "The bride is late",
+            "Ali loses his shoes",
+            "The restaurant closes"
+          ],
+          "answer": 0,
+          "why": "Grandfather and Grandmother give their old rings."
+        },
+        {
+          "type": "detail",
+          "q": "How many guests were at the wedding?",
+          "options": [
+            "Fifty",
+            "One hundred",
+            "Three hundred",
+            "Six"
+          ],
+          "answer": 2,
+          "why": "“There were three hundred guests.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where were the new rings?",
+          "options": [
+            "In Ali's pocket",
+            "Under a table",
+            "In Leyla's bag",
+            "At home"
+          ],
+          "answer": 1,
+          "why": "“A waiter found the new rings under a table.”"
+        },
+        {
+          "type": "tf",
+          "q": "It was also the grandparents' wedding anniversary.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“This day was also his anniversary.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Leyla and Elvin wanted to “tie the knot”. What does this mean?",
+          "options": [
+            "Buy rings",
+            "Get married",
+            "Have a party",
+            "Wear a tie"
+          ],
+          "answer": 1,
+          "why": "They were engaged and wanted to get married."
+        },
+        {
+          "type": "inference",
+          "q": "Why does the story say the grandparents “stole the show”?",
+          "options": [
+            "They took something from the restaurant",
+            "Everyone noticed and loved them more than anyone",
+            "They danced badly",
+            "They left early"
+          ],
+          "answer": 1,
+          "why": "Their rings and their fifty years of love got all the attention."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Leyla and Elvin had been engaged for a year, and by June they were ready to tie the knot. Their wedding was planned for three hundred guests at a restaurant on the Baku seafront, and Leyla's sister Gunel had spent months making sure everything would go off without a hitch.\n\nOne small but important job was given to Gunel's six-year-old son, Ali. He would walk down the aisle in a tiny suit and bring the rings to the bride and groom.\n\nAli took the responsibility very seriously — for about ten minutes. After that, he was running between tables, showing the velvet box to every guest who would look.\n\nWhen the ceremony began, the room went dark except for the lights on the couple. The music changed, and Ali walked proudly towards them. Elvin smiled, took the box and opened it.\n\nIt was empty.\n\nThree hundred people held their breath. Leyla's face turned white. Gunel was already on her knees, searching Ali's pockets while he burst into tears.\n\nThen Leyla's grandfather Ismayil slowly stood up. That very day, by pure coincidence, was his fiftieth wedding anniversary. He pulled a thin, worn gold ring off his finger and turned to his wife. Grandmother Sara understood at once and took off hers.\n\n“We've worn these for fifty years,” he said, placing them in Elvin's hand. “I think they still have a little luck in them. Let's call it a new tradition.”\n\nThe applause was so loud the DJ had to turn the music down. Leyla and Elvin exchanged the old rings, and both of them were crying. Half an hour later, a waiter found the new rings under table fourteen, where Ali had been showing them to his cousins.\n\nLater that night, Grandfather Ismayil raised his glass for a toast. “To the next fifty years,” he said, “and to grandsons who make sure nobody forgets a wedding.”\n\nThe bride looked beautiful and the groom looked happy, but everyone agreed: the grandparents had stolen the show.",
+      "words": [
+        {
+          "phrase": "walk down the aisle",
+          "az": "gəlin-bəy yolu ilə getmək",
+          "tr": "koridorda yürümek"
+        },
+        {
+          "phrase": "for about ten minutes",
+          "az": "təxminən on dəqiqə",
+          "tr": "yaklaşık on dakika"
+        },
+        {
+          "phrase": "held their breath",
+          "az": "nəfəslərini saxladılar",
+          "tr": "nefeslerini tuttular"
+        },
+        {
+          "phrase": "by pure coincidence",
+          "az": "tamamilə təsadüfən",
+          "tr": "tamamen tesadüfen"
+        },
+        {
+          "phrase": "still have a little luck in them",
+          "az": "hələ də içlərində bir az uğur var",
+          "tr": "hâlâ içlerinde biraz şans var"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main event of the story?",
+          "options": [
+            "A grandfather saves a wedding by giving his own ring",
+            "A boy gets married",
+            "A waiter loses his job",
+            "The DJ plays the wrong music"
+          ],
+          "answer": 0,
+          "why": "Ismayil and Sara give their fifty-year-old rings."
+        },
+        {
+          "type": "detail",
+          "q": "What did Gunel organise for months?",
+          "options": [
+            "Her own wedding",
+            "Everything for her sister's wedding",
+            "Her grandparents' anniversary party",
+            "A trip to the seafront"
+          ],
+          "answer": 1,
+          "why": "“...making sure everything would go off without a hitch.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where were the new rings found?",
+          "options": [
+            "In Ali's pocket",
+            "Under table fourteen",
+            "In the cake",
+            "In Gunel's bag"
+          ],
+          "answer": 1,
+          "why": "“...a waiter found the new rings under table fourteen.”"
+        },
+        {
+          "type": "tf",
+          "q": "Grandfather Ismayil planned to give his ring before the wedding.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "He did it only after the box was empty; the anniversary was “pure coincidence”."
+        },
+        {
+          "type": "vocab",
+          "q": "Gunel wanted everything to “go off without a hitch”. What does this mean?",
+          "options": [
+            "Happen without any problems",
+            "Happen very quickly",
+            "Happen outdoors",
+            "Happen without music"
+          ],
+          "answer": 0,
+          "why": "She planned every detail carefully."
+        },
+        {
+          "type": "inference",
+          "q": "What does Grandfather's toast suggest about his feelings towards Ali?",
+          "options": [
+            "He is very angry with Ali",
+            "He is joking kindly — Ali made the day unforgettable",
+            "He wants Ali to leave",
+            "He didn't notice Ali"
+          ],
+          "answer": 1,
+          "why": "“...to grandsons who make sure nobody forgets a wedding.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "After a year of being engaged, Leyla and Elvin were ready to tie the knot, and Leyla's elder sister Gunel had appointed herself commander-in-chief of the operation. For four months she had controlled every variable — three hundred guests, a seafront restaurant, a seating plan negotiated with the delicacy of a peace treaty — so that the day would go off without a hitch.\n\nHer single concession to chaos was her six-year-old son, Ali, who had been entrusted with carrying the rings to the bride and groom. He accepted the role with tremendous solemnity, which lasted for roughly ten minutes. Thereafter he was seen sprinting between tables, displaying the velvet box to any guest who showed the faintest interest.\n\nWhen the ceremony began, the lights dimmed to a single spotlight on the couple. The music swelled, Ali advanced with immense dignity, and Elvin, smiling, opened the box.\n\nIt was empty.\n\nThree hundred people stopped breathing simultaneously. Leyla went the colour of her dress. Gunel was already on her knees, turning out Ali's pockets while he dissolved into tears.\n\nIt was at this moment that Leyla's grandfather Ismayil rose slowly to his feet. That day, by sheer coincidence, marked his fiftieth wedding anniversary. He worked a thin gold ring, worn almost smooth, off his finger and turned to his wife. Grandmother Sara needed no explanation; she was already removing her own.\n\n“We've worn these for half a century,” he said, pressing them into Elvin's palm. “There may be a little luck left in them yet. Let's consider it a new family tradition.”\n\nThe ovation was so loud the DJ was obliged to lower the music. The couple exchanged the old rings with tears streaming down their faces. Half an hour later, a waiter retrieved the missing pair from beneath table fourteen, where Ali had apparently been conducting a private viewing for his cousins.\n\nTowards midnight, Grandfather Ismayil stood to propose a toast. “To the next fifty years,” he declared, “and to grandsons who guarantee that no one will ever forget a wedding.”\n\nThe bride was radiant and the groom visibly overjoyed, yet when guests later described the evening, they all said the same thing: the grandparents had completely stolen the show.",
+      "words": [
+        {
+          "phrase": "commander-in-chief of the operation",
+          "az": "əməliyyatın baş komandanı",
+          "tr": "operasyonun başkomutanı"
+        },
+        {
+          "phrase": "with the delicacy of a peace treaty",
+          "az": "sülh müqaviləsi incəliyi ilə",
+          "tr": "bir barış antlaşması inceliğiyle"
+        },
+        {
+          "phrase": "Her single concession to chaos",
+          "az": "Xaosa etdiyi yeganə güzəşt",
+          "tr": "Kaosa yaptığı tek taviz"
+        },
+        {
+          "phrase": "went the colour of her dress",
+          "az": "paltarının rənginə döndü (ağardı)",
+          "tr": "elbisesinin rengine döndü (bembeyaz oldu)"
+        },
+        {
+          "phrase": "a private viewing",
+          "az": "xüsusi nümayiş",
+          "tr": "özel bir gösterim"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story's main twist?",
+          "options": [
+            "The groom runs away",
+            "The lost rings are replaced by the grandparents' fifty-year-old rings",
+            "Gunel cancels the wedding",
+            "Ali gets married"
+          ],
+          "answer": 1,
+          "why": "Ismayil and Sara give their own rings."
+        },
+        {
+          "type": "detail",
+          "q": "What does the narrator mean by Gunel's “single concession to chaos”?",
+          "options": [
+            "She let her young son carry the rings",
+            "She forgot the cake",
+            "She invited too many guests",
+            "She chose a bad DJ"
+          ],
+          "answer": 0,
+          "why": "Everything else was controlled; only Ali was a risk."
+        },
+        {
+          "type": "detail",
+          "q": "Why was the anniversary important?",
+          "options": [
+            "It was the grandparents' fiftieth wedding anniversary on the same day",
+            "It was Gunel's birthday",
+            "It was Ali's first wedding",
+            "The restaurant had opened fifty years ago"
+          ],
+          "answer": 0,
+          "why": "“That day, by sheer coincidence, marked his fiftieth wedding anniversary.”"
+        },
+        {
+          "type": "tf",
+          "q": "The waiter found the rings in Ali's pocket.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "They were “beneath table fourteen”."
+        },
+        {
+          "type": "vocab",
+          "q": "The guests say the grandparents “stole the show”. What does this mean?",
+          "options": [
+            "They took the wedding gifts",
+            "They attracted the most attention and admiration",
+            "They left the party early",
+            "They ruined the wedding"
+          ],
+          "answer": 1,
+          "why": "Everyone remembered them more than the bride and groom."
+        },
+        {
+          "type": "inference",
+          "q": "What does “conducting a private viewing for his cousins” humorously suggest?",
+          "options": [
+            "Ali was showing the rings off to his cousins like a museum guide",
+            "Ali was watching a film",
+            "The cousins stole the rings",
+            "Ali was hiding from his mother"
+          ],
+          "answer": 0,
+          "why": "It's a playful, grand way of describing a child showing off."
+        }
+      ]
+    }
+  }
+}

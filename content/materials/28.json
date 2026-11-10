@@ -1,0 +1,316 @@
+{
+  "index": 27,
+  "topic": "Future & Predictions",
+  "reading": {
+    "title": "Grandpa's crystal ball",
+    "A2": {
+      "text": "Aysel is fourteen. She lives in Baku with her parents and her grandfather, Rashid. Her school gave her a project: “Baku in 2050”. She had to write a prediction about the future.\n\n“The future is easy,” Aysel said. “Flying cars, robot teachers and no homework!”\n\nHer grandfather laughed. “Wait here,” he said. He went to his room and came back with an old notebook. “In 1986, my teacher gave me the same project. Look.”\n\nAysel opened the notebook. The paper was yellow. Rashid wrote about “Baku in 2020”. He wrote: “Every family will have a telephone in their pocket. People will see their friends on a small screen. Shops will be inside the computer.”\n\nAysel was surprised. “Grandpa, you were right! Did you have a crystal ball?”\n\n“No,” he smiled. “I just watched the young people. New things always come. It is only a matter of time.”\n\nThen Aysel read the last page. It said: “In 2020, cars will fly over the Caspian Sea.”\n\nThey both laughed loudly.\n\n“Nobody can see everything,” Rashid said. “But you can shape the future a little. Write about the city you want.”\n\nThat night, Aysel wrote about clean buses, green parks and a sea with no rubbish. She did not write about flying cars.",
+      "words": [
+        {
+          "phrase": "gave her a project",
+          "az": "ona layihə verdi",
+          "tr": "ona bir proje verdi"
+        },
+        {
+          "phrase": "came back with an old notebook",
+          "az": "köhnə bir dəftərlə qayıtdı",
+          "tr": "eski bir defterle geri geldi"
+        },
+        {
+          "phrase": "The paper was yellow",
+          "az": "Kağız saralmışdı",
+          "tr": "Kâğıt sararmıştı"
+        },
+        {
+          "phrase": "laughed loudly",
+          "az": "ucadan güldülər",
+          "tr": "yüksek sesle güldüler"
+        },
+        {
+          "phrase": "the city you want",
+          "az": "istədiyin şəhər",
+          "tr": "istediğin şehir"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What does Aysel learn from her grandfather's old notebook?",
+          "options": [
+            "He never did his homework",
+            "He hated computers",
+            "He was right about many things, but not everything",
+            "He wanted to be a pilot"
+          ],
+          "answer": 2,
+          "why": "Most of his ideas came true, but the flying cars did not."
+        },
+        {
+          "type": "detail",
+          "q": "When did Rashid's teacher give him the same project?",
+          "options": [
+            "In 1986",
+            "In 2020",
+            "In 2050",
+            "Last year"
+          ],
+          "answer": 0,
+          "why": "“In 1986, my teacher gave me the same project.”"
+        },
+        {
+          "type": "detail",
+          "q": "Which of Rashid's ideas did NOT come true?",
+          "options": [
+            "Telephones in people's pockets",
+            "Shops inside the computer",
+            "Seeing friends on a small screen",
+            "Cars flying over the Caspian Sea"
+          ],
+          "answer": 3,
+          "why": "They laughed at the last page: “cars will fly over the Caspian Sea.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel wrote about flying cars in her final project.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“She did not write about flying cars.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Rashid says new things are “only a matter of time”. What does he mean?",
+          "options": [
+            "They never happen",
+            "They will surely happen, maybe later",
+            "They are very expensive",
+            "They happen in one day"
+          ],
+          "answer": 1,
+          "why": "He means new things always come in the end."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Aysel change her project?",
+          "options": [
+            "Her grandfather said she can help make the future she wants",
+            "Her teacher did not like it",
+            "She lost the first page",
+            "Her mother wrote it for her"
+          ],
+          "answer": 0,
+          "why": "“You can shape the future a little. Write about the city you want.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Aysel, fourteen, had a school project that did not excite her at all: “Baku in 2050 — make a prediction.” She sat at the kitchen table and typed quickly. “Flying cars, robot teachers, no exams. Done.”\n\nHer grandfather Rashid looked over his glasses. “That is not a forecast,” he said. “That is a cartoon.”\n\nAysel rolled her eyes. Sometimes the generation gap between them felt as wide as the Caspian. “Grandpa, you grew up without the internet. What do you know about the future?”\n\nInstead of answering, he went to his room and came back with a thin notebook, its pages yellow with age. “School Number 6, 1986,” he said. “My teacher gave us the same project.”\n\nAysel began to read. Rashid had imagined that every family would carry a telephone in their pocket, that friends would talk on small screens, and that shops would move inside computers. “Typewriters will become obsolete,” he had written in careful blue ink.\n\n“This is incredible,” Aysel said. “Did you own a crystal ball?”\n\n“No. I just noticed that every innovation starts small, with a few curious young people. After that, it is only a matter of time.”\n\nThen she turned to the last page: “By 2020, cars will fly over the Caspian Sea, and nobody will need to work.”\n\nThey laughed until Aysel's mother came in to see what was happening.\n\n“So I got some things wrong,” Rashid admitted. “Nobody sees everything. But a prediction is not only a guess. When you write down what you want, you help to shape the future.”\n\nAysel deleted her first paragraph. She wrote about sustainable buses, shady parks along the Boulevard and a clean sea. Then she added one more line: “Grandpa says the flying cars are still coming.”",
+      "words": [
+        {
+          "phrase": "did not excite her at all",
+          "az": "onu heç həvəsləndirmirdi",
+          "tr": "onu hiç heyecanlandırmıyordu"
+        },
+        {
+          "phrase": "rolled her eyes",
+          "az": "gözlərini çevirdi",
+          "tr": "gözlerini devirdi"
+        },
+        {
+          "phrase": "yellow with age",
+          "az": "köhnəlikdən saralmış",
+          "tr": "eskilikten sararmış"
+        },
+        {
+          "phrase": "in careful blue ink",
+          "az": "səliqəli göy mürəkkəblə",
+          "tr": "özenli mavi mürekkeple"
+        },
+        {
+          "phrase": "I got some things wrong",
+          "az": "bəzi şeyləri səhv bildim",
+          "tr": "bazı şeyleri yanlış bildim"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main point of the story?",
+          "options": [
+            "Old notebooks are worth a lot of money",
+            "Rashid's old predictions teach Aysel how to think about the future",
+            "Aysel's teacher gives too much homework",
+            "Flying cars will arrive in 2050"
+          ],
+          "answer": 1,
+          "why": "Reading his 1986 project makes Aysel rewrite her own."
+        },
+        {
+          "type": "detail",
+          "q": "What did Rashid think would happen to typewriters?",
+          "options": [
+            "They would become obsolete",
+            "They would fly",
+            "Every family would buy one",
+            "They would be inside computers"
+          ],
+          "answer": 0,
+          "why": "“Typewriters will become obsolete,” he had written."
+        },
+        {
+          "type": "detail",
+          "q": "According to Rashid, how does every innovation start?",
+          "options": [
+            "With a lot of money",
+            "In a big factory",
+            "Small, with a few curious young people",
+            "With a government plan"
+          ],
+          "answer": 2,
+          "why": "“Every innovation starts small, with a few curious young people.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel's mother helped her write the project.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "Her mother only came in because they were laughing; the text does not say she helped."
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel feels the “generation gap” with her grandfather is wide. What is a generation gap?",
+          "options": [
+            "A long time between two visits",
+            "A space between two buildings",
+            "A mistake in a school project",
+            "Differences in ideas between older and younger people"
+          ],
+          "answer": 3,
+          "why": "He grew up without the internet, and she thinks he cannot understand the future."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Aysel add the last line about flying cars?",
+          "options": [
+            "She is joking kindly about her grandfather",
+            "She really believes they will come in 2050",
+            "Her teacher asked for it",
+            "She wants to make Rashid angry"
+          ],
+          "answer": 0,
+          "why": "After they laughed together, the line is a warm joke."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Aysel had fourteen years of experience in ignoring advice, and she intended to use all of it. The project was called “Baku in 2050 — a prediction”, and by nine o'clock she had finished it in four lines: flying cars, robot teachers, no exams, unlimited Wi-Fi.\n\n“That is not a forecast,” remarked her grandfather Rashid from behind his newspaper. “That is a utopia drawn by someone who wants to sleep late.”\n\nThe generation gap in their flat was a running joke. Rashid still printed his emails; Aysel had never seen a fax machine. “With respect, Grandpa, you grew up with three TV channels. What would you know about the future?”\n\nHe didn't argue. He disappeared into his room and returned with a thin school notebook, its cover soft with age. “School Number 6, autumn 1986,” he said. “Same project, different century.”\n\nAysel opened it, expecting to be amused. Instead, she went quiet. In neat blue handwriting, a thirteen-year-old Rashid had described pocket telephones, friends chatting through small screens and shops that lived inside computers. “Typewriters and phone boxes will become obsolete,” he had predicted, “and many jobs will disappear before new ones are invented — a disruption, but not the end of the world.”\n\n“Okay, this is genuinely creepy,” Aysel said. “Where did you hide the crystal ball?”\n\n“There wasn't one. I simply noticed that every innovation begins with a few curious people whom everybody else laughs at. Once they exist, it's only a matter of time.”\n\nThen she reached the final page: “By 2020, cars will fly over the Caspian and nobody will need to work.”\n\nThe two of them laughed so hard that the neighbour knocked on the wall.\n\n“So I wasn't a prophet,” Rashid admitted, wiping his eyes. “But that isn't the point of the exercise. A prediction is half guess and half decision. The people who write down the city they want are the ones who end up helping to shape the future.”\n\nAysel deleted all four lines. Her new version described sustainable electric buses, shady parks stretching along the Boulevard and a Caspian clean enough to swim in. At the bottom, in smaller letters, she added a footnote: “My grandfather insists the flying cars are merely delayed.”",
+      "words": [
+        {
+          "phrase": "a running joke",
+          "az": "daimi zarafat mövzusu",
+          "tr": "süregelen bir şaka"
+        },
+        {
+          "phrase": "expecting to be amused",
+          "az": "əylənəcəyini gözləyərək",
+          "tr": "eğleneceğini bekleyerek"
+        },
+        {
+          "phrase": "not the end of the world",
+          "az": "dünyanın sonu deyil",
+          "tr": "dünyanın sonu değil"
+        },
+        {
+          "phrase": "half guess and half decision",
+          "az": "yarı təxmin, yarı qərar",
+          "tr": "yarı tahmin, yarı karar"
+        },
+        {
+          "phrase": "merely delayed",
+          "az": "sadəcə gecikib",
+          "tr": "sadece gecikti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What makes Aysel take her project seriously in the end?",
+          "options": [
+            "Her teacher's warning",
+            "A fax machine she finds",
+            "Seeing how much her grandfather predicted correctly as a boy",
+            "A neighbour's advice"
+          ],
+          "answer": 2,
+          "why": "She “went quiet” reading his accurate 1986 predictions and rewrote her work."
+        },
+        {
+          "type": "detail",
+          "q": "What did Rashid call Aysel's first version?",
+          "options": [
+            "A utopia drawn by someone who wants to sleep late",
+            "A brilliant forecast",
+            "A sustainable plan",
+            "A disruption"
+          ],
+          "answer": 0,
+          "why": "“That is a utopia drawn by someone who wants to sleep late.”"
+        },
+        {
+          "type": "detail",
+          "q": "How did young Rashid describe job losses?",
+          "options": [
+            "As the end of the world",
+            "As impossible",
+            "As something only robots would cause",
+            "As a disruption, but not the end of the world"
+          ],
+          "answer": 3,
+          "why": "“...a disruption, but not the end of the world.”"
+        },
+        {
+          "type": "tf",
+          "q": "Rashid still prints his emails.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“Rashid still printed his emails.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Rashid says people who write down the city they want help to “shape the future”. What does this mean?",
+          "options": [
+            "Predict the weather",
+            "Influence how the future turns out",
+            "Draw maps of the city",
+            "Forget about the past"
+          ],
+          "answer": 1,
+          "why": "He means a prediction is also a decision that changes what happens."
+        },
+        {
+          "type": "inference",
+          "q": "What does Aysel's footnote suggest?",
+          "options": [
+            "She still believes everything her grandfather wrote",
+            "She is angry that cars do not fly",
+            "She is teasing her grandfather affectionately",
+            "She thinks her new project is weak"
+          ],
+          "answer": 2,
+          "why": "“Merely delayed” is a playful joke about his one big mistake."
+        }
+      ]
+    }
+  }
+}

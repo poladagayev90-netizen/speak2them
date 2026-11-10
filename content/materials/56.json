@@ -1,0 +1,316 @@
+{
+  "index": 55,
+  "topic": "Farming & Where Food Comes From",
+  "reading": {
+    "title": "Hazelnuts and hard work",
+    "A2": {
+      "text": "Kamran is a student in Baku. He works in an office in summer and looks at a screen all day. In September, his uncle Vugar asked him to help on his farm in a rural village near Gakh. It was harvest time for hazelnuts.\n\n“Farm work is easy,” Kamran thought.\n\nHe was wrong. They started at six in the morning. They picked hazelnuts from the ground for ten hours. Kamran's back hurt, and his hands were black from the soil.\n\nThis year was difficult for Uncle Vugar. There was a drought in summer, and the crop was small. “We must work fast,” he said. “The rain can come next week. We must make hay while the sun shines.”\n\nUncle Vugar also has livestock: ten cows and many chickens. He does not use chemicals. Everything on his farm is organic.\n\nIn the evening, they drank tea. Kamran asked, “Why is food so expensive in Baku?”\n\nUncle Vugar explained the supply chain. “I sell my hazelnuts to a man. He sells them to a company. The company sells them to a shop. Everybody takes money.”\n\nUncle Vugar is a very down to earth man. He smiled and said, “You worked hard today. You will sleep well. You reap what you sow.”\n\nKamran slept for ten hours.",
+      "words": [
+        {
+          "phrase": "looks at a screen all day",
+          "az": "bütün günü ekrana baxır",
+          "tr": "bütün gün ekrana bakıyor"
+        },
+        {
+          "phrase": "He was wrong",
+          "az": "Yanılırdı",
+          "tr": "Yanılıyordu"
+        },
+        {
+          "phrase": "Kamran's back hurt",
+          "az": "Kamranın beli ağrıyırdı",
+          "tr": "Kamran'ın sırtı ağrıyordu"
+        },
+        {
+          "phrase": "does not use chemicals",
+          "az": "kimyəvi maddələrdən istifadə etmir",
+          "tr": "kimyasal kullanmıyor"
+        },
+        {
+          "phrase": "Everybody takes money",
+          "az": "Hamı pul götürür",
+          "tr": "Herkes para alıyor"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Kamran learns that farm work is hard",
+            "Uncle Vugar moves to Baku",
+            "Kamran buys a farm",
+            "The farm closes"
+          ],
+          "answer": 0,
+          "why": "He thought it was easy, but it was very hard work."
+        },
+        {
+          "type": "detail",
+          "q": "Why was the crop small this year?",
+          "options": [
+            "There was too much rain",
+            "There was a drought",
+            "The cows ate it",
+            "Kamran came late"
+          ],
+          "answer": 1,
+          "why": "“There was a drought in summer, and the crop was small.”"
+        },
+        {
+          "type": "detail",
+          "q": "What animals does Uncle Vugar have?",
+          "options": [
+            "Sheep and horses",
+            "Cows and chickens",
+            "Goats and dogs",
+            "No animals"
+          ],
+          "answer": 1,
+          "why": "“...ten cows and many chickens.”"
+        },
+        {
+          "type": "tf",
+          "q": "Uncle Vugar uses chemicals on his farm.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He does not use chemicals.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Uncle Vugar says, “We must make hay while the sun shines.” What does he mean?",
+          "options": [
+            "They must cut grass",
+            "They must use a good chance before it ends",
+            "They must sleep in the sun",
+            "They must stop working"
+          ],
+          "answer": 1,
+          "why": "Rain could come next week, so they must work now."
+        },
+        {
+          "type": "inference",
+          "q": "What does Uncle Vugar mean by “You reap what you sow”?",
+          "options": [
+            "Hard work brings good results",
+            "Kamran should plant seeds",
+            "Food is expensive",
+            "Kamran should go home"
+          ],
+          "answer": 0,
+          "why": "Kamran worked hard, so he will sleep well."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Kamran had grown up in a ninth-floor flat in Baku and had never seen where his food actually came from. So when his uncle Vugar called in September and asked for help with the hazelnut harvest in his village near Gakh, Kamran agreed immediately. He imagined fresh air, long lunches and maybe some photos for Instagram.\n\nThe first morning destroyed that idea. They started at six. By nine, Kamran's back was aching from bending to collect nuts from the ground. By noon, his hands were black with soil. By six in the evening, he could barely lift his tea glass.\n\nIt was a hard year for Uncle Vugar. A long summer drought had damaged the crop, and the harvest was a third smaller than usual. The weather forecast said heavy rain would arrive the following week, so there was no time to rest. “We make hay while the sun shines,” his uncle said every morning.\n\nVugar also kept livestock, and he had never used a chemical spray in his life. “My grandfather didn't need poison, and neither do I,” he said. “Organic isn't a fashion here. It's just farming.”\n\nOne evening, on the veranda, Kamran asked a question that had been bothering him. “If you sell hazelnuts so cheaply, why do they cost so much in Baku?”\n\nHis uncle drew a line on a napkin. “Me. Then a buyer from the village. Then a factory. Then a distributor. Then the shop. That's the supply chain. Everyone along the line takes a piece, and the farmer gets the smallest one.”\n\nDespite his hard life, Vugar was the most down to earth person Kamran knew. He never complained; he simply worked.\n\nOn the last day, with the harvest finally in and the first clouds arriving over the mountains, Vugar handed him a heavy bag of hazelnuts. “These are yours. You picked them.”\n\n“I don't deserve all these,” Kamran laughed.\n\n“You worked,” his uncle said. “You reap what you sow. That's the only rule out here.”",
+      "words": [
+        {
+          "phrase": "had never seen where his food actually came from",
+          "az": "yeməyinin əslində haradan gəldiyini heç görməmişdi",
+          "tr": "yemeğinin aslında nereden geldiğini hiç görmemişti"
+        },
+        {
+          "phrase": "destroyed that idea",
+          "az": "bu fikri məhv etdi",
+          "tr": "bu fikri yıktı"
+        },
+        {
+          "phrase": "could barely lift his tea glass",
+          "az": "çay stəkanını güclə qaldıra bilirdi",
+          "tr": "çay bardağını zar zor kaldırabiliyordu"
+        },
+        {
+          "phrase": "a third smaller than usual",
+          "az": "adi haldan üçdə bir az",
+          "tr": "her zamankinden üçte bir daha az"
+        },
+        {
+          "phrase": "takes a piece",
+          "az": "bir pay götürür",
+          "tr": "bir pay alır"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Farming is easy and relaxing",
+            "Kamran learns how hard farming is and where food really comes from",
+            "Hazelnuts are cheap in Baku",
+            "Uncle Vugar wants to move to the city"
+          ],
+          "answer": 1,
+          "why": "The harvest shows him the hard work and the supply chain."
+        },
+        {
+          "type": "detail",
+          "q": "What did Kamran expect before he arrived?",
+          "options": [
+            "Very hard work",
+            "Fresh air, long lunches and photos",
+            "A big city",
+            "Bad weather"
+          ],
+          "answer": 1,
+          "why": "“He imagined fresh air, long lunches and maybe some photos for Instagram.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why was there no time to rest?",
+          "options": [
+            "Heavy rain was coming the following week",
+            "The cows were ill",
+            "Kamran had to go back to university",
+            "The buyer was waiting"
+          ],
+          "answer": 0,
+          "why": "“The weather forecast said heavy rain would arrive the following week.”"
+        },
+        {
+          "type": "tf",
+          "q": "Uncle Vugar uses chemical sprays like his grandfather.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“...he had never used a chemical spray in his life.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Kamran thinks his uncle is “down to earth”. What does this mean?",
+          "options": [
+            "He works on the ground",
+            "He is practical, simple and honest",
+            "He is dirty",
+            "He is very serious"
+          ],
+          "answer": 1,
+          "why": "“He never complained; he simply worked.”"
+        },
+        {
+          "type": "inference",
+          "q": "According to Uncle Vugar, who gets the smallest part of the money?",
+          "options": [
+            "The shop",
+            "The factory",
+            "The farmer",
+            "The distributor"
+          ],
+          "answer": 2,
+          "why": "“...and the farmer gets the smallest one.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Kamran had spent his entire life on the ninth floor of a Baku apartment block and had only the haziest notion of where his food came from before it appeared in a supermarket. So when his uncle Vugar rang in September to ask for help with the hazelnut harvest in his village near Gakh, Kamran accepted on the spot, picturing mountain air, leisurely lunches and a few flattering photos for social media.\n\nThe first morning demolished the fantasy. Work began at six. By nine, his back was screaming from hours of stooping to gather nuts from the ground; by noon, his hands were caked in dark soil and his phone had given up searching for a signal; by evening, he could scarcely lift a glass of tea.\n\nIt was a punishing year for his uncle. A prolonged summer drought had stunted the crop, leaving the harvest a third smaller than usual, and the forecast promised heavy rain the following week. There was no question of rest. “We make hay while the sun shines,” Vugar announced each dawn, already lacing his boots.\n\nHe also kept livestock — a dozen cows, a small flock of sheep and an uncountable population of chickens — and had never sprayed a chemical on his land in his life. “My grandfather managed without poison, and so do I,” he shrugged. “Out here, organic isn't a marketing label. It's simply how farming is done.”\n\nOne evening on the veranda, Kamran voiced a question that had been nagging at him. “If you sell hazelnuts for so little, why do they cost a fortune in Baku?”\n\nVugar took a napkin and drew a line of dots. “Me. A village buyer. A processing plant. A distributor. The shop. That's your supply chain. Everyone along the way takes a slice, and the farmer — who did the work — gets the thinnest one.”\n\nFor all the hardship of rural life, Vugar remained the most down to earth man Kamran had ever met: no complaints, no speeches, only work.\n\nOn the final day, as the last sacks were loaded and the first dark clouds rolled over the peaks, Vugar handed him a heavy bag of hazelnuts. “Yours. You picked them.”\n\n“I hardly deserve this many,” Kamran protested.\n\n“You worked,” his uncle said simply. “You reap what you sow. That's the only law up here.”",
+      "words": [
+        {
+          "phrase": "only the haziest notion",
+          "az": "yalnız ən dumanlı təsəvvür",
+          "tr": "sadece en belirsiz bir fikir"
+        },
+        {
+          "phrase": "accepted on the spot",
+          "az": "dərhal qəbul etdi",
+          "tr": "anında kabul etti"
+        },
+        {
+          "phrase": "demolished the fantasy",
+          "az": "xəyalı dağıtdı",
+          "tr": "hayali yerle bir etti"
+        },
+        {
+          "phrase": "had been nagging at him",
+          "az": "onu narahat edirdi",
+          "tr": "aklını kurcalıyordu"
+        },
+        {
+          "phrase": "gets the thinnest one",
+          "az": "ən incəsini alır",
+          "tr": "en incesini alır"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What does Kamran learn on the farm?",
+          "options": [
+            "That farming is relaxing",
+            "How hard farming is and how little the farmer earns",
+            "How to take good photos",
+            "How to sell hazelnuts online"
+          ],
+          "answer": 1,
+          "why": "The work is exhausting, and the supply chain leaves the farmer the least."
+        },
+        {
+          "type": "detail",
+          "q": "What did Kamran originally imagine?",
+          "options": [
+            "Mountain air, leisurely lunches and photos",
+            "Hard physical labour",
+            "A business trip",
+            "A holiday by the sea"
+          ],
+          "answer": 0,
+          "why": "“...picturing mountain air, leisurely lunches and a few flattering photos.”"
+        },
+        {
+          "type": "detail",
+          "q": "What damaged the crop?",
+          "options": [
+            "A prolonged summer drought",
+            "Heavy rain",
+            "Insects",
+            "Chemicals"
+          ],
+          "answer": 0,
+          "why": "“A prolonged summer drought had stunted the crop.”"
+        },
+        {
+          "type": "tf",
+          "q": "Vugar regards organic farming as a marketing label.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“...organic isn't a marketing label. It's simply how farming is done.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Vugar says “We make hay while the sun shines”. Why?",
+          "options": [
+            "He wants to cut grass",
+            "They must use the dry weather before the rain arrives",
+            "He likes sunny weather",
+            "It is a village song"
+          ],
+          "answer": 1,
+          "why": "Heavy rain was forecast the following week."
+        },
+        {
+          "type": "inference",
+          "q": "What does “You reap what you sow” mean in this context?",
+          "options": [
+            "Kamran gets the reward of his own hard work",
+            "Kamran should plant hazelnut trees",
+            "Bad things will happen to Kamran",
+            "The harvest was poor"
+          ],
+          "answer": 0,
+          "why": "“You worked... You picked them.”"
+        }
+      ]
+    }
+  }
+}

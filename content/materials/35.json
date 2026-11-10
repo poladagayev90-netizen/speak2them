@@ -1,0 +1,316 @@
+{
+  "index": 34,
+  "topic": "Childhood Memories",
+  "reading": {
+    "title": "The swing in the yard",
+    "A2": {
+      "text": "Sevinj is thirty-five. She grew up in Ganja, but now she lives in Baku. Last weekend, she visited Ganja for a friend's wedding. On Sunday morning, she walked to her old yard.\n\nShe stopped next to the playground. The old green swing was still there! Sevinj remembered the day she fell from it. She was seven. She remembered it like it was yesterday. She still has a small scar on her knee.\n\nSevinj sat on a bench. She felt a lot of nostalgia. “Children grow up so fast,” she thought. Her grandmother was very strict. She always said, “Come home before dark!” Her cousin Elnur was spoiled. He had a bicycle, a football and every new toy. And Sevinj had an imaginary friend. His name was Bubu, and he lived under the swing.\n\nA little girl came to the playground. She tried to sit on the swing, but it was too high for her.\n\n“Can you help me?” the girl asked.\n\n“Of course,” Sevinj said. “This is child's play.” She lifted the girl onto the swing and pushed her gently.\n\n“Higher!” the girl laughed.\n\n“Be careful,” Sevinj said. “I fell from this swing once.”\n\nThe girl looked at her. “Did you have a friend here too?”\n\nSevinj smiled. “Yes,” she said. “His name was Bubu.”",
+      "words": [
+        {
+          "phrase": "for a friend's wedding",
+          "az": "dostunun toyu üçün",
+          "tr": "bir arkadaşının düğünü için"
+        },
+        {
+          "phrase": "was still there",
+          "az": "hələ də orada idi",
+          "tr": "hâlâ oradaydı"
+        },
+        {
+          "phrase": "Come home before dark",
+          "az": "Qaranlıq düşməmiş evə gəl",
+          "tr": "Hava kararmadan eve gel"
+        },
+        {
+          "phrase": "it was too high for her",
+          "az": "onun üçün çox hündür idi",
+          "tr": "onun için çok yüksekti"
+        },
+        {
+          "phrase": "pushed her gently",
+          "az": "onu yavaşca itələdi",
+          "tr": "onu nazikçe itti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Sevinj buys a new swing",
+            "Sevinj visits her childhood yard and remembers the past",
+            "Sevinj's cousin gets married",
+            "A girl falls from a swing"
+          ],
+          "answer": 1,
+          "why": "She walks to her old yard and remembers her childhood."
+        },
+        {
+          "type": "detail",
+          "q": "How old was Sevinj when she fell from the swing?",
+          "options": [
+            "Five",
+            "Seven",
+            "Thirty-five",
+            "Ten"
+          ],
+          "answer": 1,
+          "why": "“She was seven.”"
+        },
+        {
+          "type": "detail",
+          "q": "Who was Bubu?",
+          "options": [
+            "Her cousin",
+            "Her dog",
+            "Her imaginary friend",
+            "The little girl"
+          ],
+          "answer": 2,
+          "why": "“Sevinj had an imaginary friend. His name was Bubu.”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevinj's grandmother let her stay out late.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“She always said, 'Come home before dark!'”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj says helping the girl is “child's play”. What does she mean?",
+          "options": [
+            "It is a game for children",
+            "It is very easy",
+            "It is dangerous",
+            "It is boring"
+          ],
+          "answer": 1,
+          "why": "Lifting the girl onto the swing is very easy for her."
+        },
+        {
+          "type": "inference",
+          "q": "How does Sevinj probably feel at the end?",
+          "options": [
+            "Angry and tired",
+            "Warm and happy",
+            "Scared",
+            "Bored"
+          ],
+          "answer": 1,
+          "why": "She smiles and shares her old secret."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Sevinj had not been back to her childhood yard in Ganja for almost twenty years. She grew up in a five-storey building near Javad Khan Street, and when a school friend invited her to a wedding there, she decided to stay an extra day. On Sunday morning, before her train, she walked around the corner and stopped.\n\nThe playground was still there. Somebody had painted the fence blue, but the old green swing hung from the same metal frame. Sevinj remembered the afternoon she fell off it like it was yesterday: flying too high, letting go for a second, the gravel, the blood, her grandmother running out in her slippers. The scar on her knee was still there too, a small white line.\n\nShe sat on a bench and let herself take a trip down memory lane. Her grandmother had been strict — homework before play, home before dark, no arguments. Her cousin Elnur, on the other hand, was hopelessly spoiled; he got a new bicycle every summer and never shared it. And there was Bubu, the imaginary friend who lived under the swing and agreed with everything she said. She hadn't thought about Bubu for years. Strange, she thought, how nostalgia can arrive so suddenly.\n\nA little girl in a red jacket ran into the playground and tried to climb onto the swing. It was too high for her.\n\n“Can you lift me?” she asked.\n\n“That's child's play,” said Sevinj, and lifted her up. She pushed, gently at first.\n\n“Higher!”\n\n“Hold on with both hands,” Sevinj said. “I fell off this swing when I was your age.”\n\nThe girl thought about this seriously. Then she whispered, “Don't tell anyone, but my friend lives under here. He's invisible.”\n\nSevinj had to look away for a moment. “Say hello to him from me,” she said. “Tell him Bubu says hi.”",
+      "words": [
+        {
+          "phrase": "stay an extra day",
+          "az": "bir gün artıq qalmaq",
+          "tr": "bir gün fazla kalmak"
+        },
+        {
+          "phrase": "letting go for a second",
+          "az": "bir saniyəlik buraxaraq",
+          "tr": "bir saniyeliğine bırakarak"
+        },
+        {
+          "phrase": "no arguments",
+          "az": "mübahisəsiz",
+          "tr": "itiraz yok"
+        },
+        {
+          "phrase": "hopelessly spoiled",
+          "az": "ümidsiz dərəcədə ərköyün",
+          "tr": "umutsuzca şımarık"
+        },
+        {
+          "phrase": "had to look away",
+          "az": "üzünü çevirməli oldu",
+          "tr": "başını çevirmek zorunda kaldı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "A visit to an old playground brings back Sevinj's childhood",
+            "Sevinj wants to buy her old flat",
+            "Sevinj argues with her cousin",
+            "A wedding goes wrong"
+          ],
+          "answer": 0,
+          "why": "Seeing the swing makes her remember her grandmother, cousin and Bubu."
+        },
+        {
+          "type": "detail",
+          "q": "What had changed in the playground?",
+          "options": [
+            "The swing was new",
+            "The fence was painted blue",
+            "The building was gone",
+            "There was no gravel"
+          ],
+          "answer": 1,
+          "why": "“Somebody had painted the fence blue.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did Sevinj fall off the swing as a child?",
+          "options": [
+            "Elnur pushed her",
+            "The swing broke",
+            "She let go while flying too high",
+            "Bubu pushed her"
+          ],
+          "answer": 2,
+          "why": "“...flying too high, letting go for a second.”"
+        },
+        {
+          "type": "tf",
+          "q": "Elnur always shared his bicycle with Sevinj.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He got a new bicycle every summer and never shared it.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj decides to “take a trip down memory lane”. What does she do?",
+          "options": [
+            "She walks along a street called Memory Lane",
+            "She takes a train trip",
+            "She thinks about happy times from her past",
+            "She writes a diary"
+          ],
+          "answer": 2,
+          "why": "She remembers her grandmother, her cousin and Bubu."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Sevinj have to look away?",
+          "options": [
+            "The sun is in her eyes",
+            "She is moved because the girl reminds her of herself",
+            "She is bored",
+            "She sees her grandmother"
+          ],
+          "answer": 1,
+          "why": "The girl also has an invisible friend under the swing."
+        }
+      ]
+    },
+    "B2": {
+      "text": "It took a wedding to bring Sevinj back to Ganja. She had left at fifteen, when her parents moved to Baku, and in the twenty years since, her childhood had shrunk into a handful of photographs and a story she told at parties. But the morning after the celebration, with three hours before her train, she found her feet carrying her, almost without permission, towards the five-storey building near Javad Khan Street.\n\nThe playground had survived. Someone had repainted the fence a cheerful blue and replaced the sandpit with rubber tiles, yet the old green swing still creaked on its rusting frame. She could recall the afternoon she fell from it like it was yesterday: the thrill of flying higher than any of the boys, the reckless decision to let go at the top, the gravel, the blood, her grandmother sprinting across the yard in her house slippers. She touched her knee through her jeans. The scar was still there, a pale crescent.\n\nShe sat down on a bench and allowed herself to take a trip down memory lane. Her grandmother had been famously strict — homework before play, indoors before the streetlights, no negotiation. Her cousin Elnur, by contrast, was spoiled beyond repair, a boy who received a new bicycle every summer and regarded sharing as a form of theft. And then there was Bubu, an imaginary friend of enormous patience who lived beneath the swing and approved of all her decisions. She hadn't spared him a thought in decades. Nostalgia, she reflected, was less a feeling than an ambush.\n\nA small girl in a red jacket marched into the playground and attempted to scale the swing, which was clearly built for someone taller.\n\n“Could you lift me?” she demanded.\n\n“Child's play,” said Sevinj, and did.\n\n“Higher!”\n\n“Both hands on the chains,” Sevinj warned. “I fell off this exact swing when I was about your age.”\n\nThe child weighed this information gravely. Then she leaned back and confided, in a stage whisper, “My friend lives under here. Grown-ups can't see him.”\n\nSevinj found that she needed to examine the rooftops for a moment. When she trusted her voice again, she said, “Then please give him a message. Tell him Bubu says it's good to know the place is in safe hands.”",
+      "words": [
+        {
+          "phrase": "almost without permission",
+          "az": "demək olar ki, icazəsiz",
+          "tr": "neredeyse izinsiz"
+        },
+        {
+          "phrase": "the reckless decision",
+          "az": "ehtiyatsız qərar",
+          "tr": "pervasız karar"
+        },
+        {
+          "phrase": "spoiled beyond repair",
+          "az": "düzəlməz dərəcədə ərköyün",
+          "tr": "düzelmeyecek kadar şımarık"
+        },
+        {
+          "phrase": "less a feeling than an ambush",
+          "az": "hissdən çox pusqu",
+          "tr": "bir duygudan çok bir pusu"
+        },
+        {
+          "phrase": "in safe hands",
+          "az": "etibarlı əllərdə",
+          "tr": "emin ellerde"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What triggers Sevinj's memories?",
+          "options": [
+            "A conversation with her cousin",
+            "Old photographs at the wedding",
+            "Seeing the swing and meeting a girl with an imaginary friend",
+            "A phone call from her grandmother"
+          ],
+          "answer": 2,
+          "why": "The swing and the girl bring her childhood back."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Sevinj leave Ganja?",
+          "options": [
+            "Her parents moved to Baku when she was fifteen",
+            "She went to university",
+            "She got married",
+            "Her grandmother sent her away"
+          ],
+          "answer": 0,
+          "why": "“She had left at fifteen, when her parents moved to Baku.”"
+        },
+        {
+          "type": "detail",
+          "q": "What replaced the sandpit?",
+          "options": [
+            "Gravel",
+            "Grass",
+            "Rubber tiles",
+            "A new swing"
+          ],
+          "answer": 2,
+          "why": "“...replaced the sandpit with rubber tiles.”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevinj's grandmother allowed negotiation about the rules.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“...indoors before the streetlights, no negotiation.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj says nostalgia is “less a feeling than an ambush”. What does she mean?",
+          "options": [
+            "Nostalgia is dangerous",
+            "Nostalgia attacks you suddenly when you don't expect it",
+            "Nostalgia is a happy feeling",
+            "Nostalgia disappears quickly"
+          ],
+          "answer": 1,
+          "why": "An ambush is a surprise attack — her memories arrived suddenly."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Sevinj “examine the rooftops”?",
+          "options": [
+            "She is looking for her old flat",
+            "She is checking the weather",
+            "She is trying not to cry",
+            "She is ignoring the girl"
+          ],
+          "answer": 2,
+          "why": "She needs a moment before she “trusted her voice again”."
+        }
+      ]
+    }
+  }
+}

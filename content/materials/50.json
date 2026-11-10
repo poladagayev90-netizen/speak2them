@@ -1,0 +1,316 @@
+{
+  "index": 49,
+  "topic": "Working Late & Night Shifts",
+  "reading": {
+    "title": "Running on empty",
+    "A2": {
+      "text": "Aysel is a nurse at a hospital in Baku. She works the night shift, from eight in the evening to eight in the morning. She is also studying for a big exam. She wants to become a head nurse.\n\nFor two months, Aysel did not sleep much. After work, she studied all day. She had to burn the midnight oil every night. She also did overtime to cover for a sick friend.\n\nAysel was exhausted. She drank a lot of coffee. “I can't run on empty much longer,” she told her mother on the phone. “But the deadline for the exam is next week.”\n\nOne night, she was on call. An old man, Mr Rafael, needed his medicine. Aysel was so tired that she almost gave him the wrong pills. She stopped just in time.\n\nHer boss, Nurse Sevda, saw her face. “Aysel, this is burnout,” she said. “Go home and call it a day. You need sleep, not coffee.”\n\nAysel went home and slept for twelve hours. After that, she changed her plan. She studied for three hours a day and always took a nap before her shift.\n\nA week later, she took the exam. She passed with a high score.\n\nMr Rafael gave her a box of chocolates. “Now,” he said, “sleep a little more.”",
+      "words": [
+        {
+          "phrase": "the night shift",
+          "az": "gecə növbəsi",
+          "tr": "gece vardiyası"
+        },
+        {
+          "phrase": "did not sleep much",
+          "az": "çox yatmırdı",
+          "tr": "pek uyumadı"
+        },
+        {
+          "phrase": "just in time",
+          "az": "tam vaxtında",
+          "tr": "tam zamanında"
+        },
+        {
+          "phrase": "slept for twelve hours",
+          "az": "on iki saat yatdı",
+          "tr": "on iki saat uyudu"
+        },
+        {
+          "phrase": "with a high score",
+          "az": "yüksək balla",
+          "tr": "yüksek bir puanla"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A tired nurse learns she must rest to succeed",
+            "A nurse loses her job",
+            "An old man becomes a nurse",
+            "A hospital closes at night"
+          ],
+          "answer": 0,
+          "why": "After almost making a mistake, she changes her plan and passes."
+        },
+        {
+          "type": "detail",
+          "q": "What hours does Aysel work?",
+          "options": [
+            "From eight in the morning to eight in the evening",
+            "From eight in the evening to eight in the morning",
+            "Only on weekends",
+            "From nine to five"
+          ],
+          "answer": 1,
+          "why": "“...from eight in the evening to eight in the morning.”"
+        },
+        {
+          "type": "detail",
+          "q": "What mistake did Aysel almost make?",
+          "options": [
+            "She almost gave Mr Rafael the wrong pills",
+            "She almost missed her exam",
+            "She almost fell asleep in the car",
+            "She almost forgot her shift"
+          ],
+          "answer": 0,
+          "why": "“She almost gave him the wrong pills.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel failed her exam.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“She passed with a high score.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel says she “can't run on empty much longer”. What does she mean?",
+          "options": [
+            "She needs to buy petrol",
+            "She has no energy left",
+            "She is running very fast",
+            "Her coffee cup is empty"
+          ],
+          "answer": 1,
+          "why": "She is exhausted after two months with little sleep."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Aysel pass the exam?",
+          "options": [
+            "She drank more coffee",
+            "She studied less but rested properly",
+            "Nurse Sevda gave her the answers",
+            "She stopped working"
+          ],
+          "answer": 1,
+          "why": "“She studied for three hours a day and always took a nap before her shift.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Aysel had worked as a nurse at a hospital in Yasamal for four years, mostly on the night shift. This autumn she had a big goal: the exam to become a senior nurse. The date was fixed, and she had six weeks to prepare.\n\nSo she made a plan that looked heroic on paper. Work from eight in the evening until eight in the morning. Study from nine until three. Sleep, if possible, from three until seven. When a colleague broke her arm, Aysel even agreed to cover her shifts, which meant two extra nights of overtime every week.\n\nFor a while, it worked. She burned the midnight oil — and the midday oil too — and filled notebook after notebook. But by the fifth week, she was exhausted in a way that coffee couldn't fix. “I'm running on empty,” she admitted to her sister, “but it's only one more week.”\n\nThen, at four in the morning, while she was on call in the cardiology ward, she prepared the medicine for Mr Rafael, a retired engineer in Room 12. Just as she was about to give it to him, she looked again at the label. It was the wrong patient's medicine.\n\nHer heart nearly stopped. Nothing had happened — but it so easily could have.\n\nThe head nurse, Sevda, found her shaking in the staff room. She didn't shout. “This is how burnout starts,” she said quietly. “Call it a day. Go home and sleep. I'll find someone for the rest of your shift.”\n\nAysel slept for thirteen hours. When she woke up, she threw away her heroic plan. She studied three hours a day, stopped covering extra shifts and took a proper nap before every night at work.\n\nShe passed the exam with the third-highest score in the city.\n\nOn her next shift, Mr Rafael handed her a box of chocolates. “For the new senior nurse,” he said. “But promise me something. Eat them after you sleep.”",
+      "words": [
+        {
+          "phrase": "looked heroic on paper",
+          "az": "kağız üzərində qəhrəmancasına görünürdü",
+          "tr": "kâğıt üzerinde kahramanca görünüyordu"
+        },
+        {
+          "phrase": "notebook after notebook",
+          "az": "dəftər-dəftər ardınca",
+          "tr": "defter üstüne defter"
+        },
+        {
+          "phrase": "in a way that coffee couldn't fix",
+          "az": "qəhvənin düzəldə bilmədiyi şəkildə",
+          "tr": "kahvenin düzeltemeyeceği şekilde"
+        },
+        {
+          "phrase": "Her heart nearly stopped",
+          "az": "Ürəyi az qala dayandı",
+          "tr": "Kalbi neredeyse durdu"
+        },
+        {
+          "phrase": "threw away her heroic plan",
+          "az": "qəhrəmanlıq planından imtina etdi",
+          "tr": "kahramanca planını çöpe attı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Working more always brings success",
+            "Aysel learns that rest is necessary for safe work and success",
+            "Nurses should not take exams",
+            "Mr Rafael is a difficult patient"
+          ],
+          "answer": 1,
+          "why": "A near mistake shows her she must rest; then she passes."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Aysel work extra nights?",
+          "options": [
+            "She needed money for the exam",
+            "She covered for a colleague who broke her arm",
+            "Her boss forced her",
+            "She liked the night shift"
+          ],
+          "answer": 1,
+          "why": "“When a colleague broke her arm, Aysel even agreed to cover her shifts.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Aysel notice on the medicine label?",
+          "options": [
+            "It was out of date",
+            "It was the wrong patient's medicine",
+            "It was in English",
+            "It was empty"
+          ],
+          "answer": 1,
+          "why": "“It was the wrong patient's medicine.”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevda shouted at Aysel in the staff room.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“She didn't shout.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevda tells Aysel to “call it a day”. What does this mean?",
+          "options": [
+            "Phone someone",
+            "Stop working for now",
+            "Write the date",
+            "Start a new day early"
+          ],
+          "answer": 1,
+          "why": "She sends Aysel home to sleep."
+        },
+        {
+          "type": "inference",
+          "q": "What does Mr Rafael's last request show?",
+          "options": [
+            "He doesn't like chocolate",
+            "He cares about Aysel's health",
+            "He wants to share the chocolates",
+            "He is still angry about the mistake"
+          ],
+          "answer": 1,
+          "why": "“Eat them after you sleep.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Aysel had spent four years as a nurse in a hospital in Yasamal, most of them on the night shift, and this autumn she had set herself a formidable goal: the senior nurse examination. The deadline for preparation was immovable, and she had six weeks.\n\nThe schedule she devised was magnificent on paper and catastrophic in practice. Work from eight in the evening until eight in the morning; study from nine until three; sleep, circumstances permitting, from three until seven. When a colleague fractured her wrist, Aysel volunteered to cover two of her shifts a week as well, adding a steady stream of overtime to an already impossible timetable.\n\nFor a month, sheer willpower carried her. She burned the midnight oil and most of the afternoon oil besides, filling notebook after notebook with dosages and protocols. By the fifth week, however, she was exhausted in a way no amount of coffee could touch. Her hands trembled; words slipped away mid-sentence. “I'm running on empty,” she confessed to her sister, “but it's only one more week.”\n\nAt four o'clock one morning, while on call in cardiology, she prepared the medication for Mr Rafael, a retired engineer in Room 12. With the cup already in her hand, some instinct made her glance at the label once more. The name on it belonged to another patient.\n\nShe stood frozen. Nothing had happened — but the distance between nothing and disaster had been a single glance.\n\nSevda, the head nurse, found her trembling in the staff room. There was no reprimand. “This is what burnout looks like at the beginning,” she said gently. “Call it a day. Go home and sleep. I'll arrange cover for the rest of your shift.”\n\nAysel slept for thirteen hours straight. When she woke, she discarded the magnificent schedule entirely: three focused hours of study a day, no extra shifts, and a non-negotiable nap before every night at work.\n\nShe passed the examination with the third-highest score in the city.\n\nOn her next shift, Mr Rafael presented her with a box of chocolates. “For the new senior nurse,” he said, then wagged a finger. “On one condition. You eat them after a full night's sleep.”",
+      "words": [
+        {
+          "phrase": "a formidable goal",
+          "az": "çətin hədəf",
+          "tr": "zorlu bir hedef"
+        },
+        {
+          "phrase": "magnificent on paper and catastrophic in practice",
+          "az": "kağız üzərində möhtəşəm, praktikada fəlakətli",
+          "tr": "kâğıt üzerinde muhteşem, pratikte felaket"
+        },
+        {
+          "phrase": "sheer willpower carried her",
+          "az": "onu yalnız iradə gücü aparırdı",
+          "tr": "onu sırf irade gücü taşıdı"
+        },
+        {
+          "phrase": "She stood frozen",
+          "az": "Donub qaldı",
+          "tr": "Donakaldı"
+        },
+        {
+          "phrase": "a non-negotiable nap",
+          "az": "müzakirəsiz qısa yuxu",
+          "tr": "pazarlığa kapalı bir şekerleme"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What turning point changes Aysel's approach?",
+          "options": [
+            "Failing a practice test",
+            "Nearly giving a patient the wrong medicine",
+            "Her sister's advice",
+            "Losing her job"
+          ],
+          "answer": 1,
+          "why": "The near mistake makes her stop and rethink."
+        },
+        {
+          "type": "detail",
+          "q": "How does the narrator describe Aysel's first schedule?",
+          "options": [
+            "Magnificent on paper and catastrophic in practice",
+            "Lazy and slow",
+            "Perfectly balanced",
+            "Too relaxed"
+          ],
+          "answer": 0,
+          "why": "“...magnificent on paper and catastrophic in practice.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Sevda offer to do?",
+          "options": [
+            "Report Aysel",
+            "Arrange cover for the rest of her shift",
+            "Take the exam for her",
+            "Give her coffee"
+          ],
+          "answer": 1,
+          "why": "“I'll arrange cover for the rest of your shift.”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevda reprimanded Aysel for the near mistake.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“There was no reprimand.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel “burned the midnight oil”. What does this mean?",
+          "options": [
+            "She worked or studied late into the night",
+            "She cooked at night",
+            "She wasted money on lamps",
+            "She slept early"
+          ],
+          "answer": 0,
+          "why": "She studied after long night shifts."
+        },
+        {
+          "type": "inference",
+          "q": "What does “the distance between nothing and disaster had been a single glance” mean?",
+          "options": [
+            "One quick look was all that prevented a serious mistake",
+            "Aysel needed glasses",
+            "The patient was far away",
+            "Nothing bad could happen"
+          ],
+          "answer": 0,
+          "why": "Only her second look at the label stopped the error."
+        }
+      ]
+    }
+  }
+}

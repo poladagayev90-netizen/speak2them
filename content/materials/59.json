@@ -1,0 +1,316 @@
+{
+  "index": 58,
+  "topic": "Sharing Space & Roommates",
+  "reading": {
+    "title": "Notes on the fridge",
+    "A2": {
+      "text": "Gunel and Sevinj are students. They are roommates in a small flat in Baku. Gunel is very tidy. Sevinj is not. Her clothes are on the chairs, and her dishes are in the sink.\n\nAt first, they were friends. But after two months, Sevinj's mess started to bother Gunel. Small things can really get on someone's nerves.\n\nGunel did not want to argue. So she wrote notes and put them on the fridge. “Somebody forgot to wash her cup :)” “The bin is full — again!” The notes were passive-aggressive.\n\nSevinj was angry. She thought, “Gunel thinks I don't pull my weight.” She wrote her own note: “Somebody plays loud music at midnight :)”\n\nFor one week, they did not talk. The fridge was full of notes.\n\nThen, one evening, Sevinj made tea and knocked on Gunel's door. “We need to clear the air,” she said.\n\nThey talked for two hours. Gunel said, “I need a clean kitchen. When you share a flat, you have to pull your weight.” Sevinj said, “I need quiet at night. I also need some privacy.”\n\nThey made a compromise. They wrote a list of chores. Every week, they split the jobs. Sevinj washes the dishes every evening. Gunel takes out the bin. And there is no music after eleven.\n\nNow there is only one note on the fridge. It says: “Pizza night on Friday?”",
+      "words": [
+        {
+          "phrase": "her dishes are in the sink",
+          "az": "qabları lavabodadır",
+          "tr": "bulaşıkları lavabodadır"
+        },
+        {
+          "phrase": "did not want to argue",
+          "az": "mübahisə etmək istəmirdi",
+          "tr": "tartışmak istemiyordu"
+        },
+        {
+          "phrase": "they did not talk",
+          "az": "danışmadılar",
+          "tr": "konuşmadılar"
+        },
+        {
+          "phrase": "knocked on Gunel's door",
+          "az": "Günelin qapısını döydü",
+          "tr": "Günel'in kapısını çaldı"
+        },
+        {
+          "phrase": "no music after eleven",
+          "az": "on birdən sonra musiqi yoxdur",
+          "tr": "on birden sonra müzik yok"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Two roommates have problems and solve them by talking",
+            "Gunel moves out",
+            "Sevinj buys a new fridge",
+            "The roommates start a band"
+          ],
+          "answer": 0,
+          "why": "They clear the air and make a compromise."
+        },
+        {
+          "type": "detail",
+          "q": "How did Gunel tell Sevinj about the problems at first?",
+          "options": [
+            "She shouted",
+            "She wrote notes on the fridge",
+            "She called Sevinj's mother",
+            "She sent messages"
+          ],
+          "answer": 1,
+          "why": "“She wrote notes and put them on the fridge.”"
+        },
+        {
+          "type": "detail",
+          "q": "What does Sevinj need at night?",
+          "options": [
+            "Music",
+            "Quiet",
+            "Pizza",
+            "A clean kitchen"
+          ],
+          "answer": 1,
+          "why": "“I need quiet at night.”"
+        },
+        {
+          "type": "tf",
+          "q": "Gunel washes the dishes every evening now.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Sevinj washes the dishes every evening. Gunel takes out the bin.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj says, “We need to clear the air.” What does she mean?",
+          "options": [
+            "Open the windows",
+            "Talk honestly about the problems",
+            "Clean the flat",
+            "Buy a fan"
+          ],
+          "answer": 1,
+          "why": "They talked for two hours about their problems."
+        },
+        {
+          "type": "inference",
+          "q": "What does the last note on the fridge show?",
+          "options": [
+            "They are still angry",
+            "They are friends again",
+            "Sevinj is hungry",
+            "Gunel wants to move"
+          ],
+          "answer": 1,
+          "why": "“Pizza night on Friday?” is a friendly invitation."
+        }
+      ]
+    },
+    "B1": {
+      "text": "When Gunel and Sevinj decided to share a flat near their university, everyone said it was a perfect match. They had been best friends since school and loved the same terrible Turkish series.\n\nWhat nobody had considered was that Gunel was extremely tidy and Sevinj was not. Within a month, Sevinj's jackets lived on the chairs, her books covered the kitchen table, and her dishes stayed in the sink for days. Slowly but surely, the mess began to get on Gunel's nerves.\n\nBut Gunel hated arguments. So instead of saying anything, she started leaving small notes on the fridge. “Just a reminder: cups don't wash themselves :)” “The bin is full… again!” “Someone forgot it was her turn to buy bread :)” Each note had a smiley face. Each one felt like a slap.\n\nSevinj recognised passive-aggressive behaviour when she saw it, and she was hurt. Did Gunel really think she didn't pull her weight? She paid half the rent and did most of the shopping. So she answered with a note of her own: “Some people play music at 1 a.m. while others are trying to sleep :)”\n\nFor a week, the fridge door became a battlefield, and the two friends communicated only with sticky notes.\n\nOn Sunday evening, Sevinj made two glasses of tea, took a deep breath and knocked on Gunel's door. “This is ridiculous,” she said. “Can we clear the air?”\n\nThey talked until midnight. Gunel admitted that the mess made her anxious. Sevinj admitted that she needed more privacy and a quiet flat at night.\n\nIn the end, they made a compromise. They wrote a weekly list of chores and agreed to split them fairly: Sevinj would wash the dishes every evening and keep her things in her own room; Gunel would take out the bin and stop playing music after eleven.\n\nThe next morning, every sticky note had disappeared from the fridge except one, in Sevinj's handwriting: “Pizza on Friday? My treat.”",
+      "words": [
+        {
+          "phrase": "a perfect match",
+          "az": "mükəmməl uyğunluq",
+          "tr": "mükemmel bir uyum"
+        },
+        {
+          "phrase": "Slowly but surely",
+          "az": "Yavaş-yavaş, amma əminliklə",
+          "tr": "Yavaş ama emin adımlarla"
+        },
+        {
+          "phrase": "Each one felt like a slap",
+          "az": "Hər biri şillə kimi gəlirdi",
+          "tr": "Her biri bir tokat gibiydi"
+        },
+        {
+          "phrase": "became a battlefield",
+          "az": "döyüş meydanına çevrildi",
+          "tr": "bir savaş alanına döndü"
+        },
+        {
+          "phrase": "My treat",
+          "az": "Məndən",
+          "tr": "Benden"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Best friends should never live together",
+            "Honest talking works better than passive-aggressive notes",
+            "Tidy people are always right",
+            "Students don't do chores"
+          ],
+          "answer": 1,
+          "why": "The notes made things worse; talking solved the problem."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Sevinj feel she did pull her weight?",
+          "options": [
+            "She cleaned every day",
+            "She paid half the rent and did most of the shopping",
+            "She cooked for Gunel",
+            "She bought the fridge"
+          ],
+          "answer": 1,
+          "why": "“She paid half the rent and did most of the shopping.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Gunel admit?",
+          "options": [
+            "The mess made her anxious",
+            "She hated Sevinj",
+            "She wanted to move out",
+            "She liked the notes"
+          ],
+          "answer": 0,
+          "why": "“Gunel admitted that the mess made her anxious.”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevinj and Gunel had met at university.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“They had been best friends since school.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Gunel's notes were “passive-aggressive”. What does this mean?",
+          "options": [
+            "They were angry but expressed in an indirect way",
+            "They were very funny",
+            "They were kind and helpful",
+            "They were written in a hurry"
+          ],
+          "answer": 0,
+          "why": "They had smiley faces, but “each one felt like a slap”."
+        },
+        {
+          "type": "inference",
+          "q": "What does the last note on the fridge show?",
+          "options": [
+            "Sevinj wants to make peace and be friends again",
+            "Sevinj is still angry",
+            "Gunel is hungry",
+            "They have no money"
+          ],
+          "answer": 0,
+          "why": "“Pizza on Friday? My treat.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "When Gunel and Sevinj announced they would share a flat near the university, everyone agreed it was a match made in heaven. Friends since primary school, studying the same degree and united by an unapologetic love of the same melodramatic Turkish series, they seemed incapable of falling out.\n\nWhat nobody had factored in was that Gunel was fastidiously tidy and Sevinj cheerfully was not. Within a month, Sevinj's jackets had colonised the chairs, her textbooks had annexed the kitchen table and her dishes were taking extended holidays in the sink. Slowly but steadily, the mess began to get on Gunel's nerves.\n\nGunel, however, would rather walk barefoot on glass than have an argument. So instead of saying anything, she began leaving notes on the fridge. “Friendly reminder: cups don't wash themselves :)” “The bin is full… again!” “Someone forgot whose turn it was to buy bread :)” Every note ended with a smiley face, and every smiley face landed like a slap.\n\nSevinj knew passive-aggressive behaviour when she saw it, and she was wounded. Did Gunel genuinely believe she didn't pull her weight? She paid exactly half the rent and did nearly all the shopping. Her reply appeared the next morning: “Some people play music at 1 a.m. while others are trying to sleep :)”\n\nFor a week, the fridge door became a battlefield, and two lifelong friends communicated exclusively through yellow squares of paper.\n\nOn Sunday evening, Sevinj made two glasses of tea, steadied her nerves and knocked on Gunel's door. “This is absurd,” she said. “Can we please clear the air?”\n\nThey talked until well past midnight. Gunel confessed that clutter made her genuinely anxious. Sevinj confessed that she needed more privacy and silence at night. Both confessed that the notes had been a catastrophic idea.\n\nWhat emerged was a compromise. They drew up a weekly rota of chores and agreed to split them fairly: Sevinj would wash up every evening and confine her belongings to her own room; Gunel would take out the bin and observe a strict no-music rule after eleven.\n\nBy the following morning, every note had vanished from the fridge except one, in Sevinj's looping handwriting: “Pizza on Friday? My treat. No smiley face required.”",
+      "words": [
+        {
+          "phrase": "a match made in heaven",
+          "az": "göylərdə yazılmış uyğunluq",
+          "tr": "cennette yazılmış bir uyum"
+        },
+        {
+          "phrase": "taking extended holidays in the sink",
+          "az": "lavabodа uzun tətil edirdi",
+          "tr": "lavaboda uzun tatil yapıyordu"
+        },
+        {
+          "phrase": "would rather walk barefoot on glass",
+          "az": "ayaqyalın şüşə üstündə gəzməyə üstünlük verərdi",
+          "tr": "yalınayak cam üstünde yürümeyi tercih ederdi"
+        },
+        {
+          "phrase": "steadied her nerves",
+          "az": "əsəblərini cilovladı",
+          "tr": "sinirlerini yatıştırdı"
+        },
+        {
+          "phrase": "No smiley face required",
+          "az": "Gülüş simvolu lazım deyil",
+          "tr": "Gülen yüze gerek yok"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What resolves the conflict between the roommates?",
+          "options": [
+            "Gunel moving out",
+            "An honest conversation and a fair compromise",
+            "More notes on the fridge",
+            "Their parents' advice"
+          ],
+          "answer": 1,
+          "why": "They clear the air and agree on a chore rota."
+        },
+        {
+          "type": "detail",
+          "q": "How does the narrator describe Sevinj's mess?",
+          "options": [
+            "In military language — her things “colonised” and “annexed” spaces",
+            "As very small",
+            "As Gunel's fault",
+            "As hidden in her room"
+          ],
+          "answer": 0,
+          "why": "“...jackets had colonised the chairs, her textbooks had annexed the kitchen table.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Sevinj confess she needed?",
+          "options": [
+            "More money",
+            "More privacy and silence at night",
+            "A bigger room",
+            "A new roommate"
+          ],
+          "answer": 1,
+          "why": "“...she needed more privacy and silence at night.”"
+        },
+        {
+          "type": "tf",
+          "q": "Gunel enjoys arguments.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Gunel... would rather walk barefoot on glass than have an argument.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj asks to “clear the air”. What does she want?",
+          "options": [
+            "To open the windows",
+            "To discuss the problems honestly and end the tension",
+            "To clean the kitchen",
+            "To stop talking"
+          ],
+          "answer": 1,
+          "why": "They then talk until past midnight."
+        },
+        {
+          "type": "inference",
+          "q": "What is the meaning of “No smiley face required” in the final note?",
+          "options": [
+            "Sevinj is joking about the passive-aggressive notes, showing the tension is over",
+            "Sevinj is still angry",
+            "Sevinj doesn't like pizza",
+            "Gunel must draw a face"
+          ],
+          "answer": 0,
+          "why": "It's a friendly joke about the earlier notes."
+        }
+      ]
+    }
+  }
+}

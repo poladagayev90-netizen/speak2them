@@ -1,0 +1,316 @@
+{
+  "index": 59,
+  "topic": "Goodbyes & Reunions",
+  "reading": {
+    "title": "The airport and the school yard",
+    "A2": {
+      "text": "Leyla and Aysel were best friends at school in Baku. They did everything together. But when they were eighteen, Aysel's family decided to emigrate to Canada.\n\nThe farewell at the airport was very sad. They hugged and cried. “We will keep in touch,” Aysel said. “Every day!” “Say your goodbyes now,” her father said. Leyla waved until Aysel was gone.\n\nAt first, they talked every day. Aysel was homesick. She missed Baku, the sea and her friends. But Canada is nine hours behind Baku. Slowly, they talked less. They made new friends. They started to drift apart. After three years, they only sent messages on birthdays.\n\nTen years later, Leyla got an invitation. There was a school reunion in their old school yard.\n\nOn the day, Leyla stood with old classmates. Then she heard a voice. “Leyla?” It was Aysel!\n\nThey looked at each other. Then they ran and hugged. They talked for five hours about everything.\n\n“Absence makes the heart grow fonder,” Aysel laughed. “I missed you so much.”\n\nAt the end of the evening, they had to part ways again. Aysel was flying back to Canada the next day. It was bittersweet. But this time, they made a plan: a video call every Sunday. And they kept it.",
+      "words": [
+        {
+          "phrase": "did everything together",
+          "az": "hər şeyi birlikdə edirdilər",
+          "tr": "her şeyi birlikte yapıyorlardı"
+        },
+        {
+          "phrase": "hugged and cried",
+          "az": "qucaqlaşıb ağladılar",
+          "tr": "sarılıp ağladılar"
+        },
+        {
+          "phrase": "nine hours behind Baku",
+          "az": "Bakıdan doqquz saat geridə",
+          "tr": "Bakü'den dokuz saat geride"
+        },
+        {
+          "phrase": "only sent messages on birthdays",
+          "az": "yalnız ad günlərində mesaj göndərirdilər",
+          "tr": "sadece doğum günlerinde mesaj atıyorlardı"
+        },
+        {
+          "phrase": "And they kept it",
+          "az": "Və buna əməl etdilər",
+          "tr": "Ve buna sadık kaldılar"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Two friends drift apart after one moves abroad, then meet again",
+            "Leyla moves to Canada",
+            "Two friends open a school",
+            "Aysel's family returns to Baku"
+          ],
+          "answer": 0,
+          "why": "They lose contact, meet at a reunion and make a new plan."
+        },
+        {
+          "type": "detail",
+          "q": "Where did Aysel's family emigrate?",
+          "options": [
+            "Turkey",
+            "Canada",
+            "Germany",
+            "Russia"
+          ],
+          "answer": 1,
+          "why": "“...Aysel's family decided to emigrate to Canada.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did they talk less?",
+          "options": [
+            "They had an argument",
+            "The time difference and new friends",
+            "Aysel lost her phone",
+            "Leyla moved too"
+          ],
+          "answer": 1,
+          "why": "“Canada is nine hours behind Baku... They made new friends.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel stayed in Baku after the reunion.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Aysel was flying back to Canada the next day.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel says, “Absence makes the heart grow fonder.” What does she mean?",
+          "options": [
+            "When you are far from someone, you love them more",
+            "You forget people when they are away",
+            "Hearts get bigger with age",
+            "Travel is good for your health"
+          ],
+          "answer": 0,
+          "why": "“I missed you so much.”"
+        },
+        {
+          "type": "inference",
+          "q": "Why was the end of the evening “bittersweet”?",
+          "options": [
+            "They were happy together but sad to separate again",
+            "The food was bad",
+            "They argued",
+            "They were tired"
+          ],
+          "answer": 0,
+          "why": "They had to part ways, but they made a new plan."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Leyla and Aysel had sat at the same desk from first grade to eleventh. They shared lunches, secrets, exam stress and one terrible haircut. So when Aysel's parents announced, the summer after graduation, that the family would emigrate to Toronto, both girls refused to believe it until the tickets were bought.\n\nThe farewell at Heydar Aliyev Airport was the hardest moment of Leyla's eighteen years. At the gate, they held each other until Aysel's father reminded them about the flight. “We'll keep in touch every single day,” Aysel promised. Then she had to say her goodbyes and walk through. Leyla stood at the glass and waved until she could no longer see her.\n\nFor the first months, they kept their promise. Aysel was terribly homesick; she missed the sea, her grandmother's cooking and even the Baku wind. They called every night. But Toronto is nine hours behind Baku, and life is busy on both sides of the world. University started. New friends appeared. The calls became weekly, then monthly. Without either of them deciding it, they began to drift apart. By the third year, they were sending each other a heart on birthdays and nothing more.\n\nTen years later, an invitation arrived: a reunion for their class in the old school yard.\n\nLeyla almost didn't go. When she did, she stood awkwardly with people she hardly recognised — until a voice behind her said, “You still have that terrible haircut.”\n\nShe turned around, and there was Aysel.\n\nThey talked for five hours on the steps where they used to eat lunch, filling in ten years of gaps.\n\n“They say absence makes the heart grow fonder,” Aysel said. “I never believed it until today.”\n\nAt midnight, they had to part ways again; Aysel's flight was at six. The moment was bittersweet, but different from the airport ten years earlier. This time they didn't make big promises. They made a small one: one video call every Sunday.\n\nThey haven't missed one since.",
+      "words": [
+        {
+          "phrase": "one terrible haircut",
+          "az": "bir dəhşətli saç düzümü",
+          "tr": "berbat bir saç kesimi"
+        },
+        {
+          "phrase": "refused to believe it",
+          "az": "buna inanmaqdan imtina etdilər",
+          "tr": "buna inanmayı reddettiler"
+        },
+        {
+          "phrase": "life is busy on both sides of the world",
+          "az": "dünyanın hər iki tərəfində həyat məşğuldur",
+          "tr": "dünyanın iki tarafında da hayat yoğun"
+        },
+        {
+          "phrase": "Without either of them deciding it",
+          "az": "Heç biri bunu qərara almadan",
+          "tr": "İkisi de buna karar vermeden"
+        },
+        {
+          "phrase": "filling in ten years of gaps",
+          "az": "on illik boşluqları doldurmaq",
+          "tr": "on yıllık boşlukları doldurmak"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main idea of the story?",
+          "options": [
+            "Distance can make friends drift apart, but a real friendship can be renewed",
+            "Moving to Canada is easy",
+            "School reunions are boring",
+            "Friends should never emigrate"
+          ],
+          "answer": 0,
+          "why": "They lose touch, then reconnect at the reunion."
+        },
+        {
+          "type": "detail",
+          "q": "Where did Aysel's family move?",
+          "options": [
+            "Montreal",
+            "Toronto",
+            "London",
+            "Istanbul"
+          ],
+          "answer": 1,
+          "why": "“...the family would emigrate to Toronto.”"
+        },
+        {
+          "type": "detail",
+          "q": "How did Aysel greet Leyla at the reunion?",
+          "options": [
+            "She called her name",
+            "She joked about her terrible haircut",
+            "She sent a message",
+            "She waved from far away"
+          ],
+          "answer": 1,
+          "why": "“You still have that terrible haircut.”"
+        },
+        {
+          "type": "tf",
+          "q": "Leyla was very excited to go to the reunion.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Leyla almost didn't go.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The friends began to “drift apart”. What does this mean?",
+          "options": [
+            "They slowly became less close",
+            "They had a big fight",
+            "They moved to the same city",
+            "They went sailing"
+          ],
+          "answer": 0,
+          "why": "Calls became weekly, then monthly, then only birthdays."
+        },
+        {
+          "type": "inference",
+          "q": "How is the promise at the end different from the one at the airport?",
+          "options": [
+            "It is small and realistic, not big",
+            "It is bigger",
+            "It is a promise to move back",
+            "There is no promise"
+          ],
+          "answer": 0,
+          "why": "“This time they didn't make big promises. They made a small one.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Leyla and Aysel had shared a desk from the first grade to the eleventh — lunches, secrets, exam panics and one catastrophic attempt at cutting each other's fringe. So when Aysel's parents announced, the summer after graduation, that the family would emigrate to Toronto, neither girl truly believed it until the tickets had been bought.\n\nThe farewell at Heydar Aliyev Airport remained the hardest moment of Leyla's eighteen years. At the security gate, they clung to each other until Aysel's father gently mentioned the boarding time. “We'll keep in touch every single day,” Aysel vowed. Then she had to say her goodbyes and walk through. Leyla stood pressed against the glass, waving long after there was anyone to wave at.\n\nFor the first months, the promise held. Aysel was achingly homesick — for the smell of the Caspian, her grandmother's dolma, even the infamous Baku wind — and they spoke every night. But Toronto runs nine hours behind Baku, and life fills whatever space it is given. Lectures began; new friendships formed. Daily calls became weekly, then monthly. Neither of them ever decided it, but they began to drift apart. By the third year, their friendship had dwindled to a heart emoji exchanged on birthdays.\n\nA decade later, an invitation arrived: a class reunion in the old school yard.\n\nLeyla very nearly stayed at home. When she did go, she found herself making stilted conversation with people she barely recognised — until a voice behind her remarked, “Your fringe never recovered, did it?”\n\nShe turned, and there was Aysel.\n\nThey talked for five hours on the very steps where they had once eaten lunch, laughing, crying and filling in ten years of silence.\n\n“Absence makes the heart grow fonder,” Aysel said eventually. “I always thought that was something people said to feel better. Apparently not.”\n\nAt midnight, they had to part ways once more; Aysel's flight left at six. The moment was bittersweet, yet utterly unlike the airport ten years before. This time there were no grand vows. Instead, they made one modest, practical promise: a video call every Sunday, at an hour that suited both cities.\n\nThey have not missed one since.",
+      "words": [
+        {
+          "phrase": "one catastrophic attempt at cutting each other's fringe",
+          "az": "bir-birinin kəkilini kəsməyə dair bir fəlakətli cəhd",
+          "tr": "birbirlerinin perçemini kesmeye yönelik felaket bir girişim"
+        },
+        {
+          "phrase": "waving long after there was anyone to wave at",
+          "az": "əl yelləməyə adam qalmadıqdan çox sonra da əl yelləyərək",
+          "tr": "el sallayacak kimse kalmadıktan çok sonra bile el sallayarak"
+        },
+        {
+          "phrase": "life fills whatever space it is given",
+          "az": "həyat ona verilən hər boşluğu doldurur",
+          "tr": "hayat ona verilen her boşluğu doldurur"
+        },
+        {
+          "phrase": "had dwindled to",
+          "az": "...-a qədər azalmışdı",
+          "tr": "...e kadar azalmıştı"
+        },
+        {
+          "phrase": "stilted conversation",
+          "az": "süni, gərgin söhbət",
+          "tr": "yapmacık bir sohbet"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What does the story suggest about friendship and distance?",
+          "options": [
+            "Distance always destroys friendship",
+            "Friends may drift apart, but a deep bond can be revived with realistic effort",
+            "Only daily contact keeps friendships alive",
+            "Emigration is a mistake"
+          ],
+          "answer": 1,
+          "why": "They reconnect and keep a small, practical promise."
+        },
+        {
+          "type": "detail",
+          "q": "Why did the daily calls stop, according to the text?",
+          "options": [
+            "The friends argued",
+            "The time difference and busy new lives",
+            "Aysel's parents didn't allow it",
+            "Leyla changed her number"
+          ],
+          "answer": 1,
+          "why": "“...Toronto runs nine hours behind Baku, and life fills whatever space it is given.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Aysel joke about at the reunion?",
+          "options": [
+            "Leyla's fringe",
+            "Leyla's job",
+            "The school yard",
+            "Leyla's clothes"
+          ],
+          "answer": 0,
+          "why": "“Your fringe never recovered, did it?”"
+        },
+        {
+          "type": "tf",
+          "q": "Leyla was eager to attend the reunion.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Leyla very nearly stayed at home.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The friends “began to drift apart”. What does this mean?",
+          "options": [
+            "They gradually lost their closeness without a clear decision",
+            "They had a sudden argument",
+            "They moved to the same city",
+            "They travelled by boat"
+          ],
+          "answer": 0,
+          "why": "“Neither of them ever decided it.”"
+        },
+        {
+          "type": "inference",
+          "q": "Why is the ending different from the airport goodbye?",
+          "options": [
+            "They make a modest, practical promise instead of grand vows",
+            "They promise to live together",
+            "They don't promise anything",
+            "Aysel stays in Baku"
+          ],
+          "answer": 0,
+          "why": "“This time there were no grand vows.”"
+        }
+      ]
+    }
+  }
+}
