@@ -1,0 +1,316 @@
+{
+  "index": 4,
+  "topic": "Health & Wellbeing",
+  "reading": {
+    "title": "A walk by the sea",
+    "A2": {
+      "text": "Tural was a programmer in Baku. He worked from his small flat near Icherisheher. He sat at his computer all day and night. He only drank coffee and ate fast food.\n\nOne Saturday morning, his sister Aysel visited him. Tural looked terrible. His eyes were red and tired.\n\n“Are you okay?” Aysel asked.\n\n“I feel a bit under the weather,” Tural said. He touched his head. “I took a painkiller this morning, but my head still hurts a lot.”\n\nAysel shook her head. “You work too much, Tural. You need to stand up and stretch your legs. Come outside with me.”\n\n“I cannot. I have to work,” he said.\n\n“No, you need a real break,” she said. “And you need to see a doctor soon. When was your last checkup?”\n\nTural did not answer. He knew she was right.\n\nAysel took him to the Boulevard. They walked slowly near the Caspian Sea. The fresh morning air felt wonderful. Then, they ate fresh fish and a big salad at a small restaurant.\n\n“Good food is very important for your body,” Aysel smiled.\n\nAfter two hours, Tural felt much better. His headache was completely gone.\n\n“Thank you, Aysel,” he said. “I think I will buy a new desk tomorrow. A tall desk where I can stand up!”\n\n“That is a great idea,” she laughed. “But today, we just walk.”",
+      "words": [
+        {
+          "phrase": "all day and night",
+          "az": "bütün günü və gecəni",
+          "tr": "bütün gün ve gece"
+        },
+        {
+          "phrase": "his eyes were red",
+          "az": "onun gözləri qırmızı idi",
+          "tr": "gözleri kırmızıydı"
+        },
+        {
+          "phrase": "shook her head",
+          "az": "başını buladı",
+          "tr": "başını salladı"
+        },
+        {
+          "phrase": "knew she was right",
+          "az": "onun haqlı olduğunu bilirdi",
+          "tr": "onun haklı olduğunu biliyordu"
+        },
+        {
+          "phrase": "where I can stand up",
+          "az": "ayaq üstə dura biləcəyim",
+          "tr": "ayakta durabileceğim"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is this story mainly about?",
+          "options": [
+            "A programmer who writes a new software program",
+            "A young man who goes to the hospital",
+            "A sister helping her brother feel better by taking him outside",
+            "A brother and sister who cook fish together"
+          ],
+          "answer": 2,
+          "why": "Aysel takes Tural away from his computer to the Boulevard, and after two hours, he feels much better."
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural eat and drink while working?",
+          "options": [
+            "Only coffee and fast food",
+            "Fresh fish and salad",
+            "Tea and bread",
+            "Only water"
+          ],
+          "answer": 0,
+          "why": "“He only drank coffee and ate fast food.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural take for his headache?",
+          "options": [
+            "A vitamin",
+            "A painkiller",
+            "A cold glass of water",
+            "A cup of tea"
+          ],
+          "answer": 1,
+          "why": "“I took a painkiller this morning, but my head still hurts a lot.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural went to the doctor for a checkup yesterday.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "Aysel asks, “When was your last checkup?” and Tural does not answer because it has been a long time. He did not go yesterday."
+        },
+        {
+          "type": "vocab",
+          "q": "Tural says he feels “under the weather”. What does this mean?",
+          "options": [
+            "He is feeling very hot",
+            "He wants to go outside in the rain",
+            "He is feeling a little ill",
+            "He is angry with his sister"
+          ],
+          "answer": 2,
+          "why": "He has red, tired eyes and explains that his head hurts."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Tural want to buy a tall desk tomorrow?",
+          "options": [
+            "Because his old desk is broken",
+            "Because he wants to work while standing up for his health",
+            "Because Aysel wants his old desk",
+            "Because he wants to put it in the kitchen"
+          ],
+          "answer": 1,
+          "why": "“A tall desk where I can stand up!” He realizes he needs to stop sitting all day."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Tural, a freelance software developer in Baku, worked from his apartment near Icherisheher. His lifestyle had become incredibly sedentary. He spent twelve hours a day sitting at his computer, eating nothing but frozen pizza and drinking endless cups of black coffee.\n\nOne Saturday morning, his sister Aysel dropped by. She took one look at Tural’s pale face and red eyes and sighed.\n\n“Are you feeling alright?” she asked, opening the curtains to let in some sunlight.\n\n“I feel a bit under the weather,” Tural admitted, rubbing his temples. “I took a strong painkiller earlier, but this headache just won't go away.”\n\n“I’m not surprised,” Aysel replied. “You never stretch your muscles, and your diet is terrible. Poor nutrition is bad for your physical and mental health. When did you last have a proper medical checkup?”\n\nTural looked at his shoes. “Maybe three years ago?”\n\n“Right. Put your laptop away,” Aysel commanded. “You are coming outside with me.”\n\nTural tried to argue about his project deadline, but Aysel refused to listen. She dragged him out to the Boulevard for a long walk along the Caspian Sea. At first, Tural complained about his tired legs, but soon the sea breeze cleared his head. Later, they stopped at a seaside café, where Aysel ordered them grilled fish and fresh salads.\n\n“See? Real food gives you real energy,” she smiled.\n\nBy the early afternoon, Tural felt like a new person. The fresh air and healthy meal had worked magic.\n\n“Thanks for getting me out of the flat,” Tural said, finishing his tea. “I think I need to change my habits. Maybe I'll buy a standing desk tomorrow.”\n\n“That’s a brilliant start to get you back on your feet,” Aysel laughed. “But for the rest of today, no screens!”",
+      "words": [
+        {
+          "phrase": "frozen pizza",
+          "az": "dondurulmuş pizza",
+          "tr": "dondurulmuş pizza"
+        },
+        {
+          "phrase": "dropped by",
+          "az": "baş çəkdi",
+          "tr": "uğradı"
+        },
+        {
+          "phrase": "rubbing his temples",
+          "az": "gicgahlarını ovuşduraraq",
+          "tr": "şakaklarını ovalayarak"
+        },
+        {
+          "phrase": "put your laptop away",
+          "az": "noutbukunu kənara qoy",
+          "tr": "dizüstü bilgisayarını kenara koy"
+        },
+        {
+          "phrase": "cleared his head",
+          "az": "zehnini açdı",
+          "tr": "zihnini açtı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens in the story?",
+          "options": [
+            "Aysel helps Tural buy a new desk for his office",
+            "Aysel forces her brother to take a healthy break from his sedentary life",
+            "Tural finishes his project at a seaside café",
+            "Tural gets angry with Aysel for interrupting his work"
+          ],
+          "answer": 1,
+          "why": "Aysel notices how unhealthy Tural looks, makes him put his laptop away, and takes him out for a walk and good food."
+        },
+        {
+          "type": "detail",
+          "q": "How long did Tural spend sitting at his computer every day?",
+          "options": [
+            "Eight hours",
+            "Ten hours",
+            "Fourteen hours",
+            "Twelve hours"
+          ],
+          "answer": 3,
+          "why": "“He spent twelve hours a day sitting at his computer...”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Aysel order at the seaside café?",
+          "options": [
+            "Frozen pizza and coffee",
+            "Only hot tea",
+            "Grilled fish and fresh salads",
+            "Chicken soup"
+          ],
+          "answer": 2,
+          "why": "“...Aysel ordered them grilled fish and fresh salads.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel is a doctor who works at a hospital in Baku.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text says she is his sister and asks about his medical checkup, but it does not mention her profession."
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel says poor “nutrition” is bad for Tural's health. What does “nutrition” refer to here?",
+          "options": [
+            "Sitting in front of a computer",
+            "The type of food and drink you consume",
+            "Sleeping for too many hours",
+            "Taking strong painkillers"
+          ],
+          "answer": 1,
+          "why": "She talks about his nutrition right after saying “your diet is terrible” and complaining about him eating frozen pizza."
+        },
+        {
+          "type": "inference",
+          "q": "Why did the sea breeze help Tural?",
+          "options": [
+            "It blew his papers away so he could not work",
+            "It was cold enough to cure his fever",
+            "The fresh air relieved his headache and fatigue from sitting indoors",
+            "It made him walk faster"
+          ],
+          "answer": 2,
+          "why": "He had a headache and felt unwell, but during the walk, “soon the sea breeze cleared his head.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Tural, a freelance software engineer living near Icherisheher, had fully embraced a highly sedentary lifestyle. For months, he had been glued to his office chair for fourteen hours a day, fueled by nothing but stale coffee and instant noodles.\n\nWhen his sister Aysel dropped by unannounced one Saturday morning, she was shocked by his appearance. Tural looked pale and exhausted, with dark circles under his bloodshot eyes.\n\n“You look absolutely awful,” Aysel said, marching into the living room and throwing the curtains wide open.\n\nTural winced at the bright sunlight. “I’m just feeling a bit under the weather,” he mumbled, rubbing his aching temples. “I’ve already swallowed a heavy-duty painkiller, but this pounding headache simply refuses to fade.”\n\n“I am hardly surprised,” Aysel retorted, crossing her arms. “You never bother to stretch, your daily nutrition consists of junk food, and you never see the sun. You’re going to ruin your immunity and destroy your mental health if you keep this up. You can't just burn the candle at both ends and expect to feel fine. When was your last comprehensive medical checkup?”\n\nTural stared guiltily at his keyboard. “Sometime before the pandemic, I think.”\n\n“Exactly. You are on the fast track to severe burnout,” she warned. “Shut that laptop down immediately. We’re going outside.”\n\nDespite Tural’s weak protests about an approaching project deadline, Aysel dragged him out to the Boulevard. They took a brisk walk along the Caspian Sea. Initially, Tural’s stiff muscles ached, but gradually, the salty sea breeze cleared his foggy brain. Afterwards, they sat at a breezy outdoor restaurant, where Aysel ordered them grilled seabass and a massive vegetable salad.\n\n“See? Proper food actually provides real energy,” she smiled, watching him devour the meal.\n\nBy mid-afternoon, the heavy exhaustion had finally lifted. Tural felt like an entirely different person, realizing just how desperately he had needed a break from his screens.\n\n“You were right, as always. Thanks for getting me out,” Tural admitted, sipping his tea. “I need to fix my routine. I'm going to order a standing desk tomorrow.”\n\n“That’s a fantastic first step to get you back on your feet,” Aysel laughed warmly. “But for the rest of this weekend, you are officially unplugged!”",
+      "words": [
+        {
+          "phrase": "glued to his office chair",
+          "az": "ofis kreslosuna yapışmış",
+          "tr": "ofis sandalyesine yapışmış"
+        },
+        {
+          "phrase": "dropped by unannounced",
+          "az": "xəbərsiz baş çəkdi",
+          "tr": "habersiz uğradı"
+        },
+        {
+          "phrase": "heavy-duty painkiller",
+          "az": "güclü ağrıkəsici",
+          "tr": "güçlü ağrı kesici"
+        },
+        {
+          "phrase": "on the fast track",
+          "az": "sürətlə gedən yolda",
+          "tr": "hızlı gidişatta"
+        },
+        {
+          "phrase": "officially unplugged",
+          "az": "rəsmən texnologiyadan uzaqsan",
+          "tr": "resmen teknolojiden uzaksın"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "Which statement best summarizes the story?",
+          "options": [
+            "A freelancer fails to meet a deadline because he gets sick",
+            "Two siblings have an argument about the best seafood in Baku",
+            "A sister intervenes to save her brother from the physical toll of overworking",
+            "A software engineer decides to quit his job and become healthier"
+          ],
+          "answer": 2,
+          "why": "Aysel sees that Tural is exhausted from his unhealthy work routine and forces him to take a restorative break outdoors."
+        },
+        {
+          "type": "detail",
+          "q": "What exactly was Tural eating during his long work days?",
+          "options": [
+            "Frozen pizza and energy drinks",
+            "Stale coffee and instant noodles",
+            "Grilled seabass and vegetables",
+            "Bread and black tea"
+          ],
+          "answer": 1,
+          "why": "“...fueled by nothing but stale coffee and instant noodles.”"
+        },
+        {
+          "type": "detail",
+          "q": "When did Tural last have a comprehensive medical checkup?",
+          "options": [
+            "Last Saturday",
+            "Three years ago",
+            "Sometime before the pandemic",
+            "He never had one"
+          ],
+          "answer": 2,
+          "why": "“Sometime before the pandemic, I think.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural agreed immediately to go outside when Aysel told him to shut the laptop.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "The text mentions “Tural’s weak protests about an approaching project deadline”, meaning he did not agree immediately."
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel says Tural cannot “burn the candle at both ends”. What does this idiom mean?",
+          "options": [
+            "Work too hard without getting enough rest",
+            "Use too much electricity in his apartment",
+            "Sit in a dark room with no windows",
+            "Forget to pay his bills on time"
+          ],
+          "answer": 0,
+          "why": "She warns him about working 14 hours a day, eating poorly, and risking severe burnout."
+        },
+        {
+          "type": "inference",
+          "q": "What does Aysel mean when she says Tural is “officially unplugged” for the rest of the weekend?",
+          "options": [
+            "He is not allowed to use his electronic devices for work",
+            "His laptop charger is broken",
+            "He has to pay his electricity bill",
+            "He needs to listen to music to relax"
+          ],
+          "answer": 0,
+          "why": "Tural just realized he desperately needed “a break from his screens,” and Aysel tells him he is unplugged to make sure he stays away from technology."
+        }
+      ]
+    }
+  }
+}

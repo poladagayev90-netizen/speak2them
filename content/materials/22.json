@@ -1,0 +1,316 @@
+{
+  "index": 21,
+  "topic": "City vs Countryside",
+  "reading": {
+    "title": "A quiet weekend",
+    "A2": {
+      "text": "Leyla and her husband Murad lived in the busy centre of Baku. Murad hated his long daily commute. He sat in slow traffic for two hours every day.\n\n“I am so tired of this noisy city,” Murad said one evening. “I want a peaceful life. Let's buy a small rural house in Quba.”\n\nLeyla agreed. On Saturday morning, they drove to Quba to look at a beautiful stone house. The garden was amazing. There were many tall apple trees, and the air was very clean.\n\n“It is perfect,” Murad smiled. “We can drink tea here every morning.”\n\nSuddenly, the weather changed. A heavy storm started, and the electricity stopped working. They sat in the dark living room for four hours. It was very cold. Leyla tried to watch a funny video on her phone, but there was no internet connection.\n\n“Maybe it is too quiet here,” Murad said. He looked at his wife and laughed.\n\nThe next morning, they quickly drove back to Baku. When Leyla saw the tall buildings of the city, she felt very happy.\n\n“I love the city,” she said. “But we need a quieter place.”\n\nA month later, they did not move to Quba. Instead, they bought a house in a quiet suburb of Baku. It had a small garden, and the internet was very fast.",
+      "words": [
+        {
+          "phrase": "in the busy centre",
+          "az": "məşğul mərkəzində",
+          "tr": "yoğun merkezinde"
+        },
+        {
+          "phrase": "sat in slow traffic",
+          "az": "yavaş tıxacda oturdu",
+          "tr": "yavaş trafikte oturdu"
+        },
+        {
+          "phrase": "the weather changed",
+          "az": "hava dəyişdi",
+          "tr": "hava değişti"
+        },
+        {
+          "phrase": "sat in the dark",
+          "az": "qaranlıqda oturdular",
+          "tr": "karanlıkta oturdular"
+        },
+        {
+          "phrase": "tall buildings",
+          "az": "hündür binalar",
+          "tr": "yüksek binalar"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story mainly about?",
+          "options": [
+            "A husband and wife who decide country life is not for them yet",
+            "A couple who get lost in a forest",
+            "How to buy a cheap house in Baku",
+            "A dangerous storm that destroys a village"
+          ],
+          "answer": 0,
+          "why": "They want to move to a rural house, but after a boring and cold storm, they decide to buy a house in a suburb instead."
+        },
+        {
+          "type": "detail",
+          "q": "How much time did Murad spend traveling to work every day?",
+          "options": [
+            "Two hours",
+            "One hour",
+            "Three hours",
+            "Four hours"
+          ],
+          "answer": 0,
+          "why": "“He sat in slow traffic for two hours every day.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Leyla try to do when the electricity stopped working?",
+          "options": [
+            "Watch a video on her phone",
+            "Cook a hot meal",
+            "Read a book",
+            "Call her mother"
+          ],
+          "answer": 0,
+          "why": "“Leyla tried to watch a funny video on her phone, but there was no internet connection.”"
+        },
+        {
+          "type": "tf",
+          "q": "The stone house in Quba did not have a garden.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "The text says, “The garden was amazing. There were many tall apple trees...”"
+        },
+        {
+          "type": "vocab",
+          "q": "The story says they want to move to a “suburb”. What does this word mean?",
+          "options": [
+            "A busy city centre with tall buildings",
+            "A farm with many animals",
+            "A large shopping centre",
+            "A residential area outside the city centre"
+          ],
+          "answer": 3,
+          "why": "They didn't move to rural Quba, but chose a quiet area just outside Baku (a suburb) to have a garden and fast internet."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Murad laugh when he said, “Maybe it is too quiet here”?",
+          "options": [
+            "He was listening to a funny joke",
+            "He was happy the storm stopped",
+            "He wanted to scare Leyla",
+            "He realised they were bored and missed the city"
+          ],
+          "answer": 3,
+          "why": "They were sitting in the dark and cold with no internet, realising their dream of a peaceful rural life was actually boring and difficult."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Leyla and her husband Murad lived in a small flat in the busy centre of Baku. Murad was completely exhausted from the urban overcrowding and his terrible morning commute. Every day, he spent two hours sitting in heavy traffic just to get to his office.\n\n“I cannot do this anymore,” Murad sighed one Friday evening. “I need a peaceful life away from the city. Let's look for a rural property in Quba. We can grow our own vegetables.”\n\nLeyla thought it was a wonderful idea. The next weekend, they drove up to the mountains to view an old stone cottage. It had huge apple trees and plenty of beautiful green space.\n\n“This is exactly what we need,” Murad said, breathing in the fresh air. “Imagine having breakfast here.”\n\nBut later that afternoon, a dark storm rolled over the mountains. The wind blew hard, and the electricity immediately went out. They soon discovered that the local infrastructure was quite poor. They sat in the freezing living room for five hours, wrapped in thick blankets. Leyla tried to check her work emails, but her phone had no signal at all.\n\n“You know,” Murad whispered in the dark, “maybe I like electricity more than fresh air.”\n\nThe following morning, they packed their bags and drove back down the mountain. As they got closer to the city, the famous Baku skyline appeared in the distance. Leyla smiled brightly. She had never been so happy to see traffic lights and coffee shops.\n\nIn the end, they compromised. They gave up on the mountain cottage and moved to a quiet suburb just outside Baku. It gave them a lovely garden to relax in, but they were still close enough to enjoy city life — and high-speed internet.",
+      "words": [
+        {
+          "phrase": "exhausted from",
+          "az": "çox yorulmuşdu",
+          "tr": "tükenmişti"
+        },
+        {
+          "phrase": "breathing in the fresh air",
+          "az": "təmiz havanı içinə çəkərək",
+          "tr": "temiz havayı içine çekerek"
+        },
+        {
+          "phrase": "went out",
+          "az": "söndü (kəsildi)",
+          "tr": "kesildi"
+        },
+        {
+          "phrase": "wrapped in thick blankets",
+          "az": "qalın ədyallara bürünərək",
+          "tr": "kalın battaniyelere sarılarak"
+        },
+        {
+          "phrase": "in the distance",
+          "az": "uzaqda",
+          "tr": "uzakta"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "Why did Leyla and Murad decide not to buy the mountain cottage?",
+          "options": [
+            "The house was too expensive for them",
+            "Murad lost his job in the city",
+            "They realized they were not ready to live without modern comforts",
+            "The owner did not want to sell the house"
+          ],
+          "answer": 2,
+          "why": "After spending hours in the cold without electricity or signal, they realise they prefer having city amenities."
+        },
+        {
+          "type": "detail",
+          "q": "What did Murad want to do at the rural property?",
+          "options": [
+            "Grow their own vegetables",
+            "Open a small restaurant",
+            "Build a swimming pool",
+            "Start a farm with horses"
+          ],
+          "answer": 0,
+          "why": "“Let's look for a rural property in Quba. We can grow our own vegetables.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why couldn't Leyla check her work emails during the storm?",
+          "options": [
+            "She left her phone in Baku",
+            "Her phone had no signal",
+            "Her phone battery died",
+            "Murad asked her not to work"
+          ],
+          "answer": 1,
+          "why": "“Leyla tried to check her work emails, but her phone had no signal at all.”"
+        },
+        {
+          "type": "tf",
+          "q": "Leyla and Murad sold their flat in Baku before traveling to Quba.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text says they lived in a small flat and drove to Quba for the weekend, but it never mentions if they sold their flat first."
+        },
+        {
+          "type": "vocab",
+          "q": "Murad was tired of the “overcrowding”. What does this word mean?",
+          "options": [
+            "When a place is too expensive",
+            "When the weather is very hot",
+            "When a city has no trees",
+            "When there are too many people in one place"
+          ],
+          "answer": 3,
+          "why": "He is exhausted by the busy centre, heavy traffic, and too many people, which defines overcrowding."
+        },
+        {
+          "type": "inference",
+          "q": "How did Leyla feel when she saw the traffic lights and coffee shops?",
+          "options": [
+            "Angry because she hated the city",
+            "Relieved and excited to be back in civilisation",
+            "Sad that the weekend was over",
+            "Nervous about driving in the traffic"
+          ],
+          "answer": 1,
+          "why": "“Leyla smiled brightly. She had never been so happy to see traffic lights and coffee shops.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "For five years, Leyla and her husband Murad had lived in a cramped apartment right in the bustling heart of Baku. Recently, the urban overcrowding had started to take its toll on them both. Murad, in particular, was burnt out from the daily commute, spending over two hours a day crawling through gridlocked traffic just to reach his office.\n\n“I am so done with this rat race,” Murad announced one Friday, dropping his briefcase on the sofa. “I want to put down roots somewhere peaceful. Let's buy a rural farmhouse in Quba. We can escape the noise and actually hear ourselves think.”\n\nDrawn to the romantic idea of country living, Leyla agreed. The very next weekend, they drove up into the misty mountains of Quba to view a charming stone cottage. It boasted a vast orchard of apple trees and offered more green space than they had ever seen.\n\n“This is paradise,” Murad beamed, taking a deep breath of the crisp autumn air. “Imagine waking up to this silence every single day.”\n\nHowever, the silence was soon broken by a fierce thunderstorm. As heavy rain battered the roof, the power grid failed, plunging the house into darkness. They quickly realised that the rural infrastructure left a lot to be desired. Wrapped in heavy woollen blankets, they shivered in the freezing living room for six hours. When Leyla tried to stream a film to pass the time, she found her phone had absolutely no reception.\n\n“I have to admit,” Murad muttered through chattering teeth, “I might actually prefer central heating over scenic views.”\n\nThey packed their bags at dawn and fled back down the winding mountain roads. When the familiar, glittering Baku skyline finally came into view, Leyla let out a long sigh of relief. She had never felt so grateful for concrete, streetlights, and twenty-four-hour supermarkets.\n\nUltimately, they reached a sensible compromise. Instead of fleeing to the wilderness, they bought a spacious house in a leafy suburb on the edge of the city. It gave them a tranquil garden and fresh air, but kept them firmly connected to civilisation — and, crucially, fibre-optic internet.",
+      "words": [
+        {
+          "phrase": "take its toll",
+          "az": "öz mənfi təsirini göstərmək",
+          "tr": "olumsuz etkisini göstermek"
+        },
+        {
+          "phrase": "burnt out",
+          "az": "tükənmiş",
+          "tr": "tükenmiş"
+        },
+        {
+          "phrase": "hear ourselves think",
+          "az": "öz səsimizi eşitmək",
+          "tr": "kafamızı dinlemek"
+        },
+        {
+          "phrase": "left a lot to be desired",
+          "az": "arzuedilən səviyyədə deyildi",
+          "tr": "beklentilerin çok altındaydı"
+        },
+        {
+          "phrase": "plunging the house into darkness",
+          "az": "evi qaranlığa qərq edərək",
+          "tr": "evi karanlığa gömerek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of Leyla and Murad's experience?",
+          "options": [
+            "The romantic idea of country living often clashes with harsh reality",
+            "Buying a house in the city is a better financial investment",
+            "Couples should never travel during thunderstorm season",
+            "Working in an office is better than working on a farm"
+          ],
+          "answer": 0,
+          "why": "They loved the idea of a peaceful farmhouse, but hated the reality of freezing temperatures and no internet, leading them to compromise."
+        },
+        {
+          "type": "detail",
+          "q": "How did Murad describe his daily journey to the office?",
+          "options": [
+            "Crawling through gridlocked traffic",
+            "Walking through crowded streets",
+            "Taking a delayed underground train",
+            "Driving too fast on the motorway"
+          ],
+          "answer": 0,
+          "why": "“...spending over two hours a day crawling through gridlocked traffic just to reach his office.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Leyla try to do while they were shivering in the living room?",
+          "options": [
+            "Stream a film on her phone",
+            "Light a fire in the chimney",
+            "Cook dinner on a gas stove",
+            "Read an old book"
+          ],
+          "answer": 0,
+          "why": "“When Leyla tried to stream a film to pass the time, she found her phone had absolutely no reception.”"
+        },
+        {
+          "type": "tf",
+          "q": "Murad and Leyla completely abandoned their plan to leave the city centre.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "False. They didn't stay in the centre; they “bought a spacious house in a leafy suburb on the edge of the city.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Murad says he is done with the “rat race”. What does this idiom mean?",
+          "options": [
+            "A problem with pests in an old building",
+            "A sporting event held in the capital",
+            "An exhausting, competitive city lifestyle",
+            "A slow and relaxing daily routine"
+          ],
+          "answer": 2,
+          "why": "The phrase refers to the tiring, endless struggle for wealth or power in city life, which he wants to escape."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Murad say he might prefer central heating over scenic views?",
+          "options": [
+            "Because he thought the cottage was ugly",
+            "Because he wanted to save money on electricity",
+            "Because he was freezing and realised natural beauty couldn't keep him warm",
+            "Because he works for a heating company"
+          ],
+          "answer": 2,
+          "why": "He said it “through chattering teeth” while shivering in the dark, showing he valued basic comfort more than the beautiful nature outside."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "index": 2,
+  "topic": "Food & Culture",
+  "reading": {
+    "title": "A recipe for disaster",
+    "A2": {
+      "text": "Tural wanted to cook a special dinner for his friends. He lived in a nice flat near Nizami Street in Baku. He decided to make a Mexican dinner. He watched one video on the internet and thought it was a piece of cake.\n\n“I can do this easily,” Tural told his sister, Nigar, on the phone.\n\nTural bought chicken, tomatoes, and a lot of red peppers. He loved spicy food. He chopped the vegetables and started to cook. But he made a big mistake. He cooked a huge portion of chicken, and he put too much pepper in the pan.\n\nHe tasted the meat and coughed loudly. His face went red. It was much too hot!\n\nNigar arrived thirty minutes later to help. She looked at the kitchen. It was very messy.\n\n“What happened here?” she asked.\n\n“I cannot serve this,” Tural said sadly. “My mouth is on fire.”\n\nNigar laughed. “Do not worry. Let's make something simple.”\n\nThey quickly cooked a nice homemade pasta. They added some fresh cheese and sweet tomatoes, but no hot peppers.\n\nWhen Tural’s friends arrived, they sat at the big table. They ate the pasta and loved it.\n\n“This is delicious,” his friend Elvin said.\n\n“Thank you,” Tural smiled. Next time, he decided, he would not cook without a recipe.",
+      "words": [
+        {
+          "phrase": "on the internet",
+          "az": "internetdə",
+          "tr": "internette"
+        },
+        {
+          "phrase": "on the phone",
+          "az": "telefonda",
+          "tr": "telefonda"
+        },
+        {
+          "phrase": "made a big mistake",
+          "az": "böyük bir səhv etdi",
+          "tr": "büyük bir hata yaptı"
+        },
+        {
+          "phrase": "My mouth is on fire",
+          "az": "Ağzım yanır",
+          "tr": "Ağzım yanıyor"
+        },
+        {
+          "phrase": "without a recipe",
+          "az": "resept olmadan",
+          "tr": "tarif olmadan"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story mainly about?",
+          "options": [
+            "Tural tries to cook a new dish but needs his sister's help",
+            "Tural goes to a Mexican restaurant",
+            "Nigar learns how to cook",
+            "Tural's friends bring him food"
+          ],
+          "answer": 0,
+          "why": "Tural tries to make Mexican food, ruins it, and his sister helps him make pasta instead."
+        },
+        {
+          "type": "detail",
+          "q": "What kind of food did Tural want to make first?",
+          "options": [
+            "Mexican",
+            "Italian",
+            "Azerbaijani",
+            "Chinese"
+          ],
+          "answer": 0,
+          "why": "“He decided to make a Mexican dinner.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did Tural's face go red?",
+          "options": [
+            "He was angry with Nigar",
+            "He ran very fast",
+            "The chicken was too hot and spicy",
+            "He drank too much tea"
+          ],
+          "answer": 2,
+          "why": "“He tasted the meat and coughed loudly. His face went red. It was much too hot!”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar arrived and cooked the Mexican chicken again.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "False. They abandoned the chicken and “quickly cooked a nice homemade pasta.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The text says Tural thought it was “a piece of cake”. What does this idiom mean?",
+          "options": [
+            "It is very sweet",
+            "It needs a lot of sugar",
+            "It is impossible",
+            "It is very easy"
+          ],
+          "answer": 3,
+          "why": "He thought making the dinner would be very simple after watching one video."
+        },
+        {
+          "type": "inference",
+          "q": "What will Tural probably do for his next dinner party?",
+          "options": [
+            "Cook a new foreign dish without help",
+            "Ask his friends to cook",
+            "Order a pizza",
+            "Follow instructions carefully if he cooks"
+          ],
+          "answer": 3,
+          "why": "“Next time, he decided, he will not cook without a recipe.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Tural wanted to impress his new colleagues with a special dinner. He lived in a small flat near Nizami Street in Baku, and he usually just ordered pizza. However, this Friday, he decided to cook Asian cuisine. He watched a short video online and assumed the recipe was a piece of cake.\n\n“It is just chicken and a few vegetables,” Tural confidently told his sister, Nigar, on the phone.\n\nTural went to the local market and bought all the necessary items. He loved spicy dishes, so he bought extra hot chillies. Back home, he chopped every ingredient and threw them into a massive pot. Unfortunately, he ended up making a huge portion for ten people, even though he had only invited three guests. Worse, he added a whole handful of chillies.\n\nHe tasted the sauce and immediately started coughing. His eyes watered. He quickly realised he had bitten off more than he could chew.\n\nHalf an hour later, Nigar knocked on the door. She walked in and stared at the disastrous kitchen.\n\n“What on earth happened here?” she asked, smelling the strong smoke.\n\n“I completely ruined the dinner,” Tural sighed. Nigar tasted the chicken and immediately grabbed a large glass of water.\n\n“Okay, we definitely cannot serve this,” she said. “Let's go back to a local staple.”\n\nThey quickly cleaned the kitchen and prepared a traditional homemade plov with dried fruits and mild spices.\n\nWhen the guests arrived, they sat down, displayed excellent table manners, and praised the beautiful meal.\n\n“This rice is amazing,” his colleague Leyla smiled.\n\nTural looked at Nigar and laughed. He learned a valuable lesson: experimenting with food is fun, but sometimes the classics are safest.",
+      "words": [
+        {
+          "phrase": "impress his new colleagues",
+          "az": "yeni iş yoldaşlarını heyran etmək",
+          "tr": "yeni iş arkadaşlarını etkilemek"
+        },
+        {
+          "phrase": "bought all the necessary items",
+          "az": "bütün lazımi əşyaları aldı",
+          "tr": "tüm gerekli malzemeleri aldı"
+        },
+        {
+          "phrase": "started coughing",
+          "az": "öskürməyə başladı",
+          "tr": "öksürmeye başladı"
+        },
+        {
+          "phrase": "knocked on the door",
+          "az": "qapını döydü",
+          "tr": "kapıyı çaldı"
+        },
+        {
+          "phrase": "learned a valuable lesson",
+          "az": "dəyərli bir dərs aldı",
+          "tr": "değerli bir ders aldı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main event of the story?",
+          "options": [
+            "Tural teaches his sister how to make plov",
+            "Tural's colleagues complain about the food",
+            "Tural ruins an Asian dish and makes a local meal instead",
+            "Tural opens a restaurant in Baku"
+          ],
+          "answer": 2,
+          "why": "He messes up the spicy Asian cuisine and his sister helps him make a traditional plov instead."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Tural make such a large amount of food?",
+          "options": [
+            "He threw every ingredient in without planning",
+            "He invited ten people to the dinner",
+            "He wanted to have leftovers for a week",
+            "He bought a new giant pot on purpose"
+          ],
+          "answer": 0,
+          "why": "“he chopped every ingredient and threw them into a massive pot. Unfortunately, he ended up making a huge portion for ten people”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Nigar do right after she tasted the spicy sauce?",
+          "options": [
+            "She laughed at him",
+            "She threw the pot in the bin",
+            "She grabbed a large glass of water",
+            "She went back home"
+          ],
+          "answer": 2,
+          "why": "“Nigar tasted the chicken and immediately grabbed a large glass of water.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural usually cooks traditional Azerbaijani food on Fridays.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "False. The text says “he usually just ordered pizza.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural realised he had “bitten off more than he could chew”. What does this idiom mean?",
+          "options": [
+            "He took a very big bite of chicken",
+            "He tried to do something that was too difficult for him",
+            "He burned his mouth",
+            "He cooked too much rice"
+          ],
+          "answer": 1,
+          "why": "He thought the complex meal would be easy, but it turned out to be too hard for him to manage."
+        },
+        {
+          "type": "inference",
+          "q": "How did the guests feel about the dinner they actually ate?",
+          "options": [
+            "They were very impressed and praised it",
+            "They thought it was too spicy",
+            "They preferred Asian cuisine",
+            "They knew Nigar cooked it"
+          ],
+          "answer": 0,
+          "why": "They “praised the beautiful meal” and Leyla said “This rice is amazing”."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Tural had always believed that mastering a foreign cuisine was simply a matter of following instructions. Living in a modern apartment near Nizami Street, he usually relied on food delivery. However, when he invited his foreign colleagues over for Friday dinner, he decided to prepare a complex Thai delicacy. After skimming a five-minute tutorial, he was convinced the whole process would be a piece of cake.\n\n“It’s basically just chicken, coconut milk, and some herbs,” Tural boasted to his sister, Nigar, over the phone. “I have it completely under control.”\n\nHe visited a specialty market in Baku to hunt down every exotic ingredient. Since he was a massive fan of spicy food, he doubled the amount of bird’s eye chillies the recipe recommended. Back in his kitchen, he started chopping and frying. Without measuring properly, he accidentally prepared a colossal portion meant to feed a dozen people, rather than a cosy group of four.\n\nWhen the sauce began to bubble, Tural took a confident spoonful. Instantly, his throat tightened, his eyes streamed, and he broke into a sweat. As he gasped for air, it dawned on him that he had definitely bitten off more than he could chew.\n\nJust then, Nigar let herself in with her spare key. She surveyed the smoke-filled kitchen and the mountain of burning pots.\n\n“What is burning?” she asked, waving a towel to clear the air.\n\n“My pride, mostly,” Tural croaked. “I can't possibly serve this. It is basically liquid fire.”\n\nNigar tried a tiny drop and immediately lunged for the milk. “Right, let’s abandon this disaster and whip up an Azerbaijani staple instead.”\n\nWorking together, they quickly assembled a rich, comforting homemade plov with chestnuts and dried apricots.\n\nBy the time the guests arrived, the flat smelled incredible. Throughout the evening, his colleagues demonstrated impeccable table manners and could not stop complimenting the authentic local dish.\n\n“You know, trying to be someone you're not in the kitchen rarely works,” Nigar whispered to him as they cleared the plates.\n\nTural smiled, realising her words gave him some genuine food for thought. Next time, he would stick to the classics.",
+      "words": [
+        {
+          "phrase": "following instructions",
+          "az": "təlimatlara əməl etmək",
+          "tr": "talimatları takip etmek"
+        },
+        {
+          "phrase": "under control",
+          "az": "nəzarət altında",
+          "tr": "kontrol altında"
+        },
+        {
+          "phrase": "broke into a sweat",
+          "az": "tər basdı",
+          "tr": "ter döktü"
+        },
+        {
+          "phrase": "gasped for air",
+          "az": "hava udmağa çalışdı",
+          "tr": "nefes nefese kaldı"
+        },
+        {
+          "phrase": "cleared the plates",
+          "az": "boşqabları yığışdırdı",
+          "tr": "tabakları topladı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the central theme of the story?",
+          "options": [
+            "The difficulty of buying exotic ingredients in Baku",
+            "How to prepare a Thai delicacy step by step",
+            "The importance of table manners in business",
+            "A cooking failure that leads to appreciating familiar, traditional food"
+          ],
+          "answer": 3,
+          "why": "Tural ruins a complex Thai dish but successfully pivots to a beloved local staple with his sister's help."
+        },
+        {
+          "type": "detail",
+          "q": "Why did the Thai dish turn out so extremely spicy?",
+          "options": [
+            "Tural purposely doubled the recommended amount of chillies",
+            "The recipe online was wrong",
+            "Tural used the wrong type of chilli",
+            "Nigar added extra spices by mistake"
+          ],
+          "answer": 0,
+          "why": "“he doubled the amount of bird’s eye chillies the recipe recommended.”"
+        },
+        {
+          "type": "detail",
+          "q": "What was Nigar's first reaction when she entered the flat?",
+          "options": [
+            "She drank some milk",
+            "She started chopping vegetables",
+            "She laughed at Tural",
+            "She asked what was burning"
+          ],
+          "answer": 3,
+          "why": "“What is burning?” she asked, waving a towel to clear the air."
+        },
+        {
+          "type": "tf",
+          "q": "Tural's colleagues realised that he did not cook the meal by himself.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text mentions they complimented the food, but does not state whether they knew Nigar helped cook it."
+        },
+        {
+          "type": "vocab",
+          "q": "What does “food for thought” mean in the context of the story?",
+          "options": [
+            "An idea or lesson worth thinking about seriously",
+            "A physical meal that makes you full",
+            "A recipe book",
+            "A traditional cooking method"
+          ],
+          "answer": 0,
+          "why": "Nigar's advice about not pretending to be someone else gave him something serious to reflect on."
+        },
+        {
+          "type": "inference",
+          "q": "What does Nigar imply when she says, “trying to be someone you're not in the kitchen rarely works”?",
+          "options": [
+            "Tural should embrace his own culture rather than poorly copying others",
+            "Tural should have ordered delivery instead",
+            "Tural is a terrible cook and should give up",
+            "Tural needs to buy better kitchen equipment to cook Thai food"
+          ],
+          "answer": 0,
+          "why": "She suggests he is better off cooking the traditional Azerbaijani staples he knows, rather than forcing an exotic cuisine."
+        }
+      ]
+    }
+  }
+}

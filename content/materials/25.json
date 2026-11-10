@@ -1,0 +1,316 @@
+{
+  "index": 24,
+  "topic": "Shopping & Consumerism",
+  "reading": {
+    "title": "The perfect price tag",
+    "A2": {
+      "text": "Aysel needed a dress for her sister's wedding. She went to a big shopping mall in Baku with her friend Nigar.\n\nIn the first shop, Aysel saw a beautiful blue dress. It was brand new and very expensive.\n\n“Let's look at other shops,” Nigar said.\n\nBut Aysel saw a sign in the window. “Look, there is a big discount today!” she said.\n\nShe did not wait. She stood in a long queue to pay for it. The cashier smiled and gave her the receipt.\n\nThe next day, Aysel tried the dress on at home. She looked in the mirror and felt sad. The dress was too long and the color did not look good on her.\n\n“I made a mistake,” she told Nigar.\n\nThey went back to the mall. Aysel asked the shop for a refund. The cashier took the dress and gave her money back.\n\nThen, they walked to Icherisheher. They found a small shop with second-hand clothes. Aysel saw a beautiful green silk dress. She tried it on. It was perfect!\n\n“How much is it?” Aysel asked.\n\nIt was very cheap. She bought it immediately. At the wedding, everyone loved her green dress. Aysel smiled. Sometimes, the best things do not come from expensive shops.",
+      "words": [
+        {
+          "phrase": "in the first shop",
+          "az": "ilk mağazada",
+          "tr": "ilk mağazada"
+        },
+        {
+          "phrase": "look at other shops",
+          "az": "başqa mağazalara baxaq",
+          "tr": "başka mağazalara bakalım"
+        },
+        {
+          "phrase": "tried the dress on",
+          "az": "donu geyinib yoxladı",
+          "tr": "elbiseyi denedi"
+        },
+        {
+          "phrase": "looked in the mirror",
+          "az": "güzgüyə baxdı",
+          "tr": "aynaya baktı"
+        },
+        {
+          "phrase": "gave her money back",
+          "az": "pulunu geri qaytardı",
+          "tr": "parasını geri verdi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Aysel working in a clothes shop",
+            "Nigar buying a blue dress",
+            "Aysel losing her receipt",
+            "Aysel finding a better dress in a second-hand shop"
+          ],
+          "answer": 3,
+          "why": "Aysel returns an expensive dress and finds a perfect green dress in a second-hand shop."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Aysel buy the blue dress so quickly?",
+          "options": [
+            "Because it was green",
+            "Because it was cheap",
+            "Because Nigar liked it",
+            "Because there was a big discount"
+          ],
+          "answer": 3,
+          "why": "She saw a sign and said, “Look, there is a big discount today!”"
+        },
+        {
+          "type": "detail",
+          "q": "How did Aysel feel when she tried the dress on at home?",
+          "options": [
+            "She felt very happy",
+            "She felt sad because it was too long",
+            "She felt angry with Nigar",
+            "She felt cold"
+          ],
+          "answer": 1,
+          "why": "“She looked in the mirror and felt sad. The dress was too long...”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel lost the money she paid for the blue dress.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Aysel asked the shop for a refund. The cashier took the dress and gave her money back.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel asked for a “refund”. What does this mean?",
+          "options": [
+            "Money returned for something you bought",
+            "A smaller size of the same dress",
+            "A new receipt",
+            "A discount for the next time"
+          ],
+          "answer": 0,
+          "why": "The cashier took the dress and gave her money back."
+        },
+        {
+          "type": "inference",
+          "q": "What lesson did Aysel learn at the end of the story?",
+          "options": [
+            "You must always pay with cash",
+            "Expensive shops always have the best clothes",
+            "Beautiful things do not have to be expensive",
+            "You should never listen to your friends"
+          ],
+          "answer": 2,
+          "why": "“Sometimes, the best things do not come from expensive shops.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Aysel was invited to her cousin’s wedding, so she decided to splurge on something special to wear. On Saturday, she went to a large shopping mall near Ganjlik with her best friend Nigar.\n\nIn the very first boutique, Aysel found a stunning dark blue dress. It was brand new and looked like it belonged in a fashion magazine. However, the price tag was extremely high.\n\n“It is lovely, but you should shop around,” Nigar advised. “We just got here. You might find something better.”\n\nBut Aysel did not want to wait. The shop assistant told her there was a special twenty percent discount if she bought it that hour. It was a complete impulse buy. Aysel joined the long queue at the cash desk, paid for the dress, and put the paper receipt carefully in her bag.\n\nOn Sunday morning, Aysel tried the dress on again in her bedroom. In the natural light, the dark blue colour washed her out, and the fabric felt heavy. She felt terrible. She realised she was just being a careless consumer.\n\nThat afternoon, she went straight back to the mall and asked for a refund. Fortunately, the shop assistant gave her the money back without any problems.\n\nFeeling relieved, Aysel and Nigar decided to take a walk through the narrow streets of Icherisheher. Soon, they discovered a tiny vintage shop. Tucked in a corner, Aysel found a gorgeous emerald green dress. It was second-hand, but it fit her perfectly and looked completely unique.\n\nBest of all, it was a quarter of the price of the blue dress. At the wedding, Aysel received compliments all night. She smiled, knowing that she did not need a famous label to look beautiful.",
+      "words": [
+        {
+          "phrase": "belonged in a fashion magazine",
+          "az": "moda jurnalına aid idi",
+          "tr": "moda dergisine ait gibiydi"
+        },
+        {
+          "phrase": "the price tag",
+          "az": "qiymət etiketi",
+          "tr": "fiyat etiketi"
+        },
+        {
+          "phrase": "without any problems",
+          "az": "heç bir problem olmadan",
+          "tr": "hiçbir sorun olmadan"
+        },
+        {
+          "phrase": "take a walk",
+          "az": "gəzintiyə çıxmaq",
+          "tr": "yürüyüşe çıkmak"
+        },
+        {
+          "phrase": "received compliments",
+          "az": "təriflər aldı",
+          "tr": "iltifatlar aldı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of this story?",
+          "options": [
+            "How to negotiate prices in Icherisheher",
+            "The importance of buying designer brands",
+            "A consumer learning to avoid impulse buys and finding a cheaper alternative",
+            "Why dark blue is a bad colour for weddings"
+          ],
+          "answer": 2,
+          "why": "She regrets an impulse buy, gets a refund, and finds a much better second-hand dress."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Aysel buy the dark blue dress immediately?",
+          "options": [
+            "The shop assistant offered a discount that hour",
+            "Nigar told her it was the best choice",
+            "It was the only dress left in her size",
+            "She needed it for a party that evening"
+          ],
+          "answer": 0,
+          "why": "“The shop assistant told her there was a special twenty percent discount if she bought it that hour.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where did Aysel find the emerald green dress?",
+          "options": [
+            "In a tiny vintage shop in Icherisheher",
+            "In a boutique near Ganjlik",
+            "At the wedding",
+            "In a fashion magazine"
+          ],
+          "answer": 0,
+          "why": "“Soon, they discovered a tiny vintage shop... Aysel found a gorgeous emerald green dress.”"
+        },
+        {
+          "type": "tf",
+          "q": "The shop assistant refused to give Aysel a refund for the blue dress.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Fortunately, the shop assistant gave her the money back without any problems.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar told Aysel she should “shop around”. What does this mean?",
+          "options": [
+            "Walk in circles inside the shop",
+            "Compare prices and items in other shops before buying",
+            "Buy things very quickly",
+            "Ask the shop assistant for a discount"
+          ],
+          "answer": 1,
+          "why": "Nigar advised her to look at other places first, saying, “We just got here. You might find something better.”"
+        },
+        {
+          "type": "inference",
+          "q": "How did Aysel’s feelings change from Sunday morning to Sunday afternoon?",
+          "options": [
+            "She went from feeling terrible about her purchase to feeling relieved after the refund",
+            "She went from being happy to being angry with Nigar",
+            "She went from wanting a green dress to wanting a blue one",
+            "She felt excited and then bored"
+          ],
+          "answer": 0,
+          "why": "On Sunday morning she “felt terrible” and realised she was a careless consumer. That afternoon, she got a refund and was “Feeling relieved”."
+        }
+      ]
+    },
+    "B2": {
+      "text": "When Aysel received an invitation to her cousin’s lavish wedding at a luxury hotel in Baku, she immediately decided to splurge on something spectacular to wear. She grabbed her best friend Nigar and headed straight for the gleaming designer boutiques in Port Baku Mall.\n\nIn the first shop they entered, a brand new midnight-blue gown caught Aysel’s eye. It was beautifully tailored and covered in delicate beadwork. There was just one problem: it was going to cost an arm and a leg.\n\n“It’s gorgeous, but maybe we should shop around first,” Nigar suggested gently. “You don’t want to blow your entire salary in the first five minutes.”\n\nHowever, the sales assistant smoothly informed them that a rare weekend discount was about to expire. Panic set in. Afraid of missing out on a bargain, Aysel made a classic impulse buy. She stood in a slow-moving queue, handed over her credit card, and carefully folded the printed receipt into her purse.\n\nThe buyer's remorse hit her the following morning. When Aysel tried the dress on in the harsh daylight of her bedroom, the magic was gone. The heavy fabric felt restrictive, and she realised the dark colour completely washed out her complexion. She felt like a foolish consumer who had been tricked by clever marketing.\n\nSwallowing her pride, Aysel returned to the boutique that afternoon. She presented her receipt and politely requested a full refund. To her immense relief, the money was returned to her account.\n\nFeeling much lighter, she and Nigar took a long stroll down into the winding alleys of Icherisheher. Tucked away behind an old stone wall, they stumbled upon a quirky vintage clothing store. Buried at the back of a crowded rail, Aysel unearthed an emerald green silk dress from the 1980s. Though it was second-hand, it looked completely unworn. She slipped it on, and it fit like a glove.\n\nThe beautiful vintage dress cost a fraction of the designer gown. At the wedding reception on Saturday, Aysel turned heads all evening, proudly telling everyone who asked that true style doesn’t have to come with an outrageous price tag. It was a wonderful night.",
+      "words": [
+        {
+          "phrase": "caught Aysel’s eye",
+          "az": "Ayselin diqqətini çəkdi",
+          "tr": "Aysel'in dikkatini çekti"
+        },
+        {
+          "phrase": "blow your entire salary",
+          "az": "bütün maaşını xərcləmək",
+          "tr": "tüm maaşını harcamak"
+        },
+        {
+          "phrase": "harsh daylight",
+          "az": "sərt gün işığı",
+          "tr": "sert gün ışığı"
+        },
+        {
+          "phrase": "swallowing her pride",
+          "az": "qürurunu kənara qoyaraq",
+          "tr": "gururunu hiçe sayarak"
+        },
+        {
+          "phrase": "fit like a glove",
+          "az": "əlcək kimi oturdu (tam uyğun gəldi)",
+          "tr": "üzerine tam oturdu"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens to Aysel in the story?",
+          "options": [
+            "She ruins her cousin's wedding by wearing an old dress",
+            "She buys an expensive dress, regrets it, gets her money back, and finds a stunning vintage alternative",
+            "She loses her credit card in a slow-moving queue",
+            "She argues with Nigar about how to spend her salary"
+          ],
+          "answer": 1,
+          "why": "The story follows her from an expensive impulse buy to a refund, ending with a successful second-hand purchase."
+        },
+        {
+          "type": "detail",
+          "q": "What prompted Aysel to make an impulse buy at the designer boutique?",
+          "options": [
+            "Nigar strongly encouraged her to buy it",
+            "She had a lot of extra money from her salary",
+            "The sales assistant warned her that a weekend discount was expiring",
+            "She wanted to impress the shop assistant"
+          ],
+          "answer": 2,
+          "why": "“the sales assistant smoothly informed them that a rare weekend discount was about to expire.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Aysel dislike about the blue gown when she tried it on at home?",
+          "options": [
+            "The delicate beadwork was falling off",
+            "The zipper was broken",
+            "The heavy fabric felt restrictive and the colour washed her out",
+            "It did not fit her properly"
+          ],
+          "answer": 2,
+          "why": "“The heavy fabric felt restrictive, and she realised the dark colour completely washed out her complexion.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel found the green vintage dress hanging right at the entrance of the store.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "The text says she unearthed it “Buried at the back of a crowded rail”."
+        },
+        {
+          "type": "vocab",
+          "q": "The designer gown was going to “cost an arm and a leg”. What does this idiom mean?",
+          "options": [
+            "To require physical effort to make",
+            "To be custom-tailored for the buyer",
+            "To be sold without a receipt",
+            "To be very expensive"
+          ],
+          "answer": 3,
+          "why": "Nigar warned her not to \"blow your entire salary\", showing that the dress was extremely expensive."
+        },
+        {
+          "type": "inference",
+          "q": "What does Aysel’s statement at the wedding imply about her attitude?",
+          "options": [
+            "She believes designer brands are always superior",
+            "She is ashamed of buying second-hand clothes",
+            "She is proud of finding a beautiful dress without spending a fortune",
+            "She wants everyone to know how much money she earns"
+          ],
+          "answer": 2,
+          "why": "She told everyone “proudly” that “true style doesn’t have to come with an outrageous price tag.”"
+        }
+      ]
+    }
+  }
+}

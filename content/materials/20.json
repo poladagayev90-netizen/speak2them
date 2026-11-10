@@ -1,0 +1,316 @@
+{
+  "index": 19,
+  "topic": "Culture & Traditions",
+  "reading": {
+    "title": "The flying shoe",
+    "A2": {
+      "text": "Oliver is a young lawyer from London. He lives in Baku. His best friend Yunus is a clever potter in Icherisheher. Baku is a multicultural city, but Yunus loves old Azerbaijani traditions.\n\nTomorrow is the famous Novruz holiday. Yunus invites Oliver to his family’s house for a big dinner.\n\n“We have a special custom for this holiday,” Yunus says. “Everybody jumps over a fire in the yard. It is a fun spring ritual.”\n\nOliver is nervous, but he wants to be a good guest. He goes to a shop and buys traditional folk sweets, called pakhlava, for the family.\n\nIn the evening, the family makes a bright fire in the garden. Yunus’s grandmother, Lala, sits on a comfortable chair and watches everyone.\n\n“Go on, Oliver, jump!” Yunus says.\n\nOliver runs fast and jumps over the fire. He safely clears the flames, but he jumps too high. Suddenly, his right shoe falls off his foot. It flies through the air and lands exactly on Grandmother Lala’s lap!\n\nOliver stops. He is very embarrassed and his face is red.\n\nBut Grandmother Lala looks at the shoe and laughs loudly. She gives it back and hands Oliver a glass of hot tea.\n\n“Your shoe is safe,” she says. “Welcome to our family!”",
+      "words": [
+        {
+          "phrase": "best friend",
+          "az": "ən yaxşı dost",
+          "tr": "en iyi arkadaş"
+        },
+        {
+          "phrase": "a big dinner",
+          "az": "böyük şam yeməyi",
+          "tr": "büyük bir akşam yemeği"
+        },
+        {
+          "phrase": "wants to be a good guest",
+          "az": "yaxşı qonaq olmaq istəyir",
+          "tr": "iyi bir misafir olmak istiyor"
+        },
+        {
+          "phrase": "flies through the air",
+          "az": "havada uçur",
+          "tr": "havada uçuyor"
+        },
+        {
+          "phrase": "his face is red",
+          "az": "onun üzü qızarır",
+          "tr": "onun yüzü kızarıyor"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Oliver buying a new pair of shoes",
+            "Oliver making pots in Icherisheher",
+            "Grandmother Lala cooking pakhlava",
+            "Oliver jumping over a fire for a spring holiday"
+          ],
+          "answer": 3,
+          "why": "The story is about Oliver participating in a spring ritual where everybody jumps over a fire."
+        },
+        {
+          "type": "detail",
+          "q": "What does Oliver buy for Yunus's family?",
+          "options": [
+            "A comfortable chair",
+            "Traditional folk sweets",
+            "A pair of shoes",
+            "A glass of hot tea"
+          ],
+          "answer": 1,
+          "why": "“He goes to a shop and buys traditional folk sweets, called pakhlava, for the family.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where does the flying shoe land?",
+          "options": [
+            "In the bright fire",
+            "On Grandmother Lala's lap",
+            "On Oliver's head",
+            "In the glass of hot tea"
+          ],
+          "answer": 1,
+          "why": "“It flies through the air and lands exactly on Grandmother Lala’s lap!”"
+        },
+        {
+          "type": "tf",
+          "q": "Oliver jumps over the fire safely but loses his shoe.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“He safely clears the flames, but he jumps too high. Suddenly, his right shoe falls off his foot.”"
+        },
+        {
+          "type": "vocab",
+          "q": "The story mentions a “multicultural” city. What does this mean?",
+          "options": [
+            "A city with very tall buildings",
+            "A city that is very old and quiet",
+            "A city with many different cultures and people",
+            "A city with lots of traditional sweets"
+          ],
+          "answer": 2,
+          "why": "Baku is described as a multicultural city, meaning it includes many different cultures."
+        },
+        {
+          "type": "inference",
+          "q": "How does Grandmother Lala feel when the shoe lands on her?",
+          "options": [
+            "She finds it funny and welcomes him",
+            "She is angry and tells him to leave",
+            "She is sad because the shoe is dirty",
+            "She is afraid of the flying shoe"
+          ],
+          "answer": 0,
+          "why": "“Grandmother Lala looks at the shoe and laughs loudly... ‘Welcome to our family!’”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Oliver, a young British lawyer living in Baku, often visits his good friend Yunus, a talented potter in the old streets of Icherisheher. Oliver enjoys the city's modern, multicultural vibe, but he really wants to understand the rich local heritage.\n\nWhen the famous Novruz holiday arrives, Yunus invites Oliver to a big family gathering in his courtyard. He explains a popular local superstition about the spring holiday.\n\n“If you jump over a fire on the last Tuesday before the new year, you leave all your bad luck and sadness behind,” Yunus says. “It is a very old ritual that we pass down to our children.”\n\nOliver wants to be a respectful guest. “Well, when in Rome, do as the Romans do,” he smiles. To prepare, he goes to a local market and buys a large box of famous folk sweets as a traditional gift for the hosts.\n\nThat evening, Yunus's family builds a roaring bonfire in the courtyard. Yunus’s elderly grandmother, Lala, watches the celebration from the porch with a warm smile.\n\nWhen it is Oliver's turn, he steps up to the fire. He takes a deep breath, runs, and jumps as high as he can. He clears the hot flames easily, but unfortunately, his loose left shoe flies off his foot! The shoe sails through the smoky air and lands right in Grandmother Lala’s lap.\n\nOliver freezes, and his face turns completely red. He expects her to be annoyed by the clumsy foreigner. However, Lala just examines the shoe and begins to laugh heartily. She hands the shoe back to him along with a glass of hot tea.\n\n“Do not worry,” she says warmly. “We have a long custom of welcoming everyone, even flying shoes!”",
+      "words": [
+        {
+          "phrase": "a talented potter",
+          "az": "istedadlı dulusçu",
+          "tr": "yetenekli çömlekçi"
+        },
+        {
+          "phrase": "leave all your bad luck and sadness behind",
+          "az": "bütün pis şansınızı və kədərinizi arxada qoymaq",
+          "tr": "tüm kötü şansınızı ve hüznünüzü geride bırakmak"
+        },
+        {
+          "phrase": "takes a deep breath",
+          "az": "dərindən nəfəs alır",
+          "tr": "derin bir nefes alır"
+        },
+        {
+          "phrase": "clears the hot flames easily",
+          "az": "isti alovların üzərindən asanlıqla keçir",
+          "tr": "sıcak alevlerin üzerinden kolayca geçer"
+        },
+        {
+          "phrase": "laugh heartily",
+          "az": "ürəkdən gülmək",
+          "tr": "yürekten gülmek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens during Oliver's visit to his friend's family?",
+          "options": [
+            "He learns to make pottery with Yunus",
+            "He forgets to buy a gift and feels embarrassed",
+            "He burns his clothes in the bonfire",
+            "He accidentally throws his shoe at the grandmother while following a holiday tradition"
+          ],
+          "answer": 3,
+          "why": "While jumping over the fire, Oliver's shoe flies off and lands in Grandmother Lala's lap."
+        },
+        {
+          "type": "detail",
+          "q": "What is the superstition about jumping over the fire?",
+          "options": [
+            "You will find a new job",
+            "You leave your bad luck and sadness behind",
+            "You will get married soon",
+            "You must buy sweets the next day"
+          ],
+          "answer": 1,
+          "why": "“If you jump over a fire... you leave all your bad luck and sadness behind.”"
+        },
+        {
+          "type": "detail",
+          "q": "How does Oliver prepare for the holiday visit?",
+          "options": [
+            "He learns to speak perfect Azerbaijani",
+            "He buys a large box of famous folk sweets from a market",
+            "He makes a special cup of hot tea",
+            "He buys a new pair of tight shoes"
+          ],
+          "answer": 1,
+          "why": "“To prepare, he goes to a local market and buys a large box of famous folk sweets.”"
+        },
+        {
+          "type": "tf",
+          "q": "Grandmother Lala is annoyed when the shoe lands on her.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He expects her to be annoyed... However, Lala just examines the shoe and begins to laugh heartily.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Oliver says, “when in Rome, do as the Romans do”. What does this mean?",
+          "options": [
+            "You should travel to Italy for the holidays",
+            "You must eat Italian food at a party",
+            "You should follow the local customs when visiting a place",
+            "You should speak loudly when you are angry"
+          ],
+          "answer": 2,
+          "why": "He says this because he wants to be a respectful guest and follow their local traditions."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Oliver's face turn completely red?",
+          "options": [
+            "The fire is too hot",
+            "He is very embarrassed about his shoe flying off",
+            "He is angry at Grandmother Lala",
+            "He ate a very spicy sweet"
+          ],
+          "answer": 1,
+          "why": "“Oliver freezes, and his face turns completely red. He expects her to be annoyed by the clumsy foreigner.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "After two years working as a corporate lawyer in Baku, Oliver thought his cultural assimilation was nearly complete. He could effortlessly navigate the multicultural streets of the capital and drink incredibly strong black tea without a single drop of milk. But his close friend Yunus, a master potter with a dusty workshop in Icherisheher, insisted that Oliver still had much to learn about true Azerbaijani heritage.\n\nFor the upcoming Novruz festival, Yunus invited him to his family's spacious courtyard in Yasamal. “We are going to light a massive bonfire,” Yunus explained, meticulously painting a clay bowl. “Our ancestors believed the sacred flames would burn away the winter's hardships and purify the soul. It is a powerful superstition that we proudly pass down through the generations.”\n\n“I suppose old habits die hard,” Oliver laughed, admiring the intricate pottery on the shelves. “But when in Rome, do as the Romans do, right? I will gladly jump over the fire.”\n\nDetermined to respect the local custom, Oliver purchased a premium box of Sheki halva and memorized a couple of traditional folk greetings. When he arrived at the house, the courtyard was already glowing with bright firelight. Yunus's grandmother, Lala, sat wrapped in a thick woollen shawl on the porch. She cheerfully supervised the ritual as excited relatives took turns leaping over the crackling flames.\n\nWhen his turn came, Oliver took a deep breath, ran, and launched himself into the air. He cleared the fire perfectly with an athletic bound. Unfortunately, he was wearing a loose leather loafer. Mid-flight, the shoe slipped off his heel, sailed gracefully through the smoky air, and landed directly into Grandmother Lala's lap.\n\nThe lively music abruptly stopped. Oliver froze in absolute horror, expecting the elderly matriarch to be furious at his clumsiness. Instead, Lala picked up the warm shoe, examined it carefully, and began to roar with laughter.\n\n“Next year,” she chuckled, handing the embarrassed lawyer a glass of pear-shaped tea, “we must definitely tie your shoes with a strong knot. But your adventurous spirit is very welcome here.”",
+      "words": [
+        {
+          "phrase": "nearly complete",
+          "az": "demək olar ki, tamamlanmışdı",
+          "tr": "neredeyse tamamlanmıştı"
+        },
+        {
+          "phrase": "burn away the winter's hardships",
+          "az": "qışın çətinliklərini yandırıb yox etmək",
+          "tr": "kışın zorluklarını yakıp yok etmek"
+        },
+        {
+          "phrase": "wrapped in a thick woollen shawl",
+          "az": "qalın yun şala bürünmüş",
+          "tr": "kalın yün şala sarınmış"
+        },
+        {
+          "phrase": "sailed gracefully",
+          "az": "zərifcə süzüldü",
+          "tr": "zarifçe süzüldü"
+        },
+        {
+          "phrase": "roar with laughter",
+          "az": "qəhqəhə çəkmək",
+          "tr": "kahkahalarla gülmek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the central event of the story?",
+          "options": [
+            "Oliver opens a pottery workshop in Icherisheher with Yunus",
+            "Grandmother Lala teaches Oliver how to bake traditional Sheki halva",
+            "Oliver tries to participate in a cultural tradition but makes a funny mistake during the ritual",
+            "Oliver learns how to drink black tea without milk"
+          ],
+          "answer": 2,
+          "why": "Oliver tries to respect local customs by jumping over a bonfire, but accidentally throws his shoe onto the grandmother's lap."
+        },
+        {
+          "type": "detail",
+          "q": "Why did the ancestors light bonfires, according to Yunus?",
+          "options": [
+            "To cook traditional meals for the village",
+            "To keep wild animals away from the courtyard",
+            "To signal the start of the harvest season",
+            "To burn away winter's hardships and purify the soul"
+          ],
+          "answer": 3,
+          "why": "“Our ancestors believed the sacred flames would burn away the winter's hardships and purify the soul.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Oliver wear that caused the accident?",
+          "options": [
+            "A thick woollen shawl",
+            "A loose leather loafer",
+            "A traditional folk costume",
+            "A tight pair of running shoes"
+          ],
+          "answer": 1,
+          "why": "“Unfortunately, he was wearing a loose leather loafer. Mid-flight, the shoe slipped off his heel...”"
+        },
+        {
+          "type": "tf",
+          "q": "Yunus's grandmother was furious when the shoe landed on her lap.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Oliver froze in absolute horror, expecting the elderly matriarch to be furious... Instead, Lala... began to roar with laughter.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Yunus mentions a superstition that they “pass down” through the generations. What does “pass down” mean?",
+          "options": [
+            "To throw something away",
+            "To forget old memories",
+            "To move to a new city",
+            "To give traditions or knowledge to younger family members"
+          ],
+          "answer": 3,
+          "why": "To 'pass down' means to transfer traditions, beliefs, or items from older generations to younger ones."
+        },
+        {
+          "type": "inference",
+          "q": "Grandmother Lala suggests they “tie your shoes with a strong knot” next year. What does this imply?",
+          "options": [
+            "She expects him to come back and jump again next year",
+            "She wants him to buy cheaper shoes",
+            "She expects him to be punished",
+            "She thinks his shoes are too small"
+          ],
+          "answer": 0,
+          "why": "By saying 'Next year, we must definitely tie your shoes', she implies he is welcome to return and participate again."
+        }
+      ]
+    }
+  }
+}

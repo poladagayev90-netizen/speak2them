@@ -1,0 +1,316 @@
+{
+  "index": 23,
+  "topic": "Language & Communication",
+  "reading": {
+    "title": "The perfect mistake",
+    "A2": {
+      "text": "Oliver is a young lawyer in Baku. His friend Yunus makes beautiful plates in Icherisheher. Oliver wants to speak Azerbaijani well, but he has a strong British accent. He always reads grammar books.\n\nOne day, they went to a traditional tea house near the Maiden Tower. Oliver wanted to practice speaking. “I will make small talk with the waiter,” Oliver said.\n\n“Good idea,” Yunus answered. “Do not be shy. Close your books. Use your hands and body language.”\n\nThe waiter came to the table. Oliver tried to ask about the delicious local food. But he was very nervous. He did not want to mispronounce the words. Instead of saying “chicken,” he accidentally said “cow” in Azerbaijani. Then he tried to use some street slang he learned on the internet.\n\nThe waiter looked confused for a second. Then, he started laughing loudly. “You are a funny guy!” the waiter said in perfect English.\n\nOliver turned red and hid his face. “I am sorry,” he said.\n\n“Do not worry! Sometimes you just need to get your point across,” Yunus smiled. “He understands that you are very hungry.”\n\nThe waiter brought them hot tea and a big plate of fresh food. Oliver's language was not perfect, but they had a great lunch together.",
+      "words": [
+        {
+          "phrase": "makes beautiful plates",
+          "az": "gözəl boşqablar düzəldir",
+          "tr": "güzel tabaklar yapıyor"
+        },
+        {
+          "phrase": "traditional tea house",
+          "az": "ənənəvi çay evi",
+          "tr": "geleneksel çay evi"
+        },
+        {
+          "phrase": "started laughing loudly",
+          "az": "ucadan gülməyə başladı",
+          "tr": "yüksek sesle gülmeye başladı"
+        },
+        {
+          "phrase": "turned red and hid his face",
+          "az": "qızardı və üzünü gizlətdi",
+          "tr": "kızardı ve yüzünü sakladı"
+        },
+        {
+          "phrase": "a big plate of fresh food",
+          "az": "bir böyük boşqab təzə yemək",
+          "tr": "büyük bir tabak taze yemek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Oliver tries to practice his Azerbaijani at a tea house",
+            "Oliver buys new plates in Icherisheher",
+            "Yunus teaches English to a waiter",
+            "Oliver and Yunus cook a meal together"
+          ],
+          "answer": 0,
+          "why": "The story is about Oliver trying to practice speaking Azerbaijani with a waiter at a tea house."
+        },
+        {
+          "type": "detail",
+          "q": "Where does Yunus work?",
+          "options": [
+            "At a law firm in Baku",
+            "In Icherisheher making plates",
+            "At a traditional tea house",
+            "Near the Maiden Tower selling tea"
+          ],
+          "answer": 1,
+          "why": "“His friend Yunus makes beautiful plates in Icherisheher.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Oliver accidentally ask for instead of chicken?",
+          "options": [
+            "A cow",
+            "A plate of fish",
+            "A cup of coffee",
+            "A grammar book"
+          ],
+          "answer": 0,
+          "why": "“Instead of saying ‘chicken,’ he accidentally said ‘cow’ in Azerbaijani.”"
+        },
+        {
+          "type": "tf",
+          "q": "Oliver spoke perfect Azerbaijani during the lunch.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Oliver's language was not perfect, but they had a great lunch together.”"
+        },
+        {
+          "type": "vocab",
+          "q": "What does “mispronounce” mean?",
+          "options": [
+            "To forget a word completely",
+            "To write a word in a book",
+            "To speak very quietly",
+            "To say a word incorrectly"
+          ],
+          "answer": 3,
+          "why": "Oliver was nervous because he didn't want to say the words wrong, so he didn't want to mispronounce them."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Oliver turn red?",
+          "options": [
+            "He was angry at Yunus",
+            "He felt embarrassed about his mistake",
+            "The hot tea burned his tongue",
+            "He was allergic to the food"
+          ],
+          "answer": 1,
+          "why": "He turned red and hid his face after the waiter laughed at his language mistake, showing embarrassment."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Oliver, an expat lawyer working in Baku, was determined to improve his Azerbaijani. He spent hours studying grammar, but his heavy British accent often made conversations difficult. His best friend Yunus, a talented potter in Icherisheher, always told him to relax and stop worrying about being perfectly bilingual.\n\nOn a beautiful, sunny Saturday, they sat at a busy tea house near the Maiden Tower. Oliver closed his notebook. “Today, I will make small talk with the waiter,” he announced bravely.\n\n“Finally!” Yunus laughed. “Remember, you do not need perfect fluency. Just speak your mind and use some body language. People appreciate the effort.”\n\nWhen the waiter approached, Oliver confidently tried to order a popular local chicken dish. However, he was terrified he would mispronounce the difficult vowels. In his panic, he accidentally asked for a roasted cow. Realising his mistake, Oliver panicked and quickly threw in a bit of Baku slang he had read online to sound more natural.\n\nThe waiter stared at him in silence. For a moment, Oliver wanted the ground to open up and swallow him. Then, the waiter burst into loud laughter.\n\n“Roasted cow coming right up!” the waiter replied in excellent English, wiping a tear from his eye.\n\nOliver covered his face in embarrassment. “That was a disaster. I should just speak English.”\n\n“Not at all,” Yunus said, pouring them both some tea. “Communication is not about perfect grammar. You managed to get your point across, and you made him smile. That is a win.”\n\nOliver sighed, but soon he was laughing too. When the food arrived, it was exactly what he had wanted. He quickly realised that making mistakes was just part of the journey.",
+      "words": [
+        {
+          "phrase": "determined to improve",
+          "az": "inkişaf etdirməyə qərarlı idi",
+          "tr": "geliştirmeye kararlıydı"
+        },
+        {
+          "phrase": "wiping a tear from his eye",
+          "az": "gözündən bir damla yaşı silərək",
+          "tr": "gözünden bir damla yaşı silerek"
+        },
+        {
+          "phrase": "covered his face in embarrassment",
+          "az": "utancından üzünü örtdü",
+          "tr": "utancından yüzünü kapattı"
+        },
+        {
+          "phrase": "pouring them both some tea",
+          "az": "hər ikisinə bir az çay süzərək",
+          "tr": "her ikisine de biraz çay doldurarak"
+        },
+        {
+          "phrase": "part of the journey",
+          "az": "səyahətin bir hissəsi",
+          "tr": "yolculuğun bir parçası"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of the story?",
+          "options": [
+            "That making mistakes is a natural and positive part of communication",
+            "Why expats should always speak English in Baku",
+            "How a potter creates art in Icherisheher",
+            "Why grammar is the most important part of learning a language"
+          ],
+          "answer": 0,
+          "why": "Yunus explains that communication is not about perfect grammar, and Oliver realizes making mistakes is part of the journey."
+        },
+        {
+          "type": "detail",
+          "q": "Why were conversations often difficult for Oliver?",
+          "options": [
+            "He had a heavy British accent",
+            "He refused to speak to local people",
+            "He did not know any vocabulary",
+            "He never studied grammar"
+          ],
+          "answer": 0,
+          "why": "“His heavy British accent often made conversations difficult.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Oliver accidentally order?",
+          "options": [
+            "A popular chicken dish",
+            "A roasted cow",
+            "Only tea and no food",
+            "A traditional pottery plate"
+          ],
+          "answer": 1,
+          "why": "“In his panic, he accidentally asked for a roasted cow.”"
+        },
+        {
+          "type": "tf",
+          "q": "The waiter spoke only Azerbaijani.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“The waiter replied in excellent English.”"
+        },
+        {
+          "type": "vocab",
+          "q": "What does “fluency” mean in the story?",
+          "options": [
+            "A heavy accent from another country",
+            "The ability to speak a language smoothly and easily",
+            "A book used to study grammar rules",
+            "The fear of talking to strangers"
+          ],
+          "answer": 1,
+          "why": "Yunus tells him he doesn't need perfect fluency, meaning he doesn't have to speak perfectly and smoothly."
+        },
+        {
+          "type": "inference",
+          "q": "How did Oliver’s feelings change from the moment the waiter laughed to the end of the meal?",
+          "options": [
+            "He went from feeling angry to feeling sad",
+            "He went from feeling confident to feeling terrified",
+            "He went from feeling embarrassed to laughing at his own mistake",
+            "He went from wanting to go home to wanting to fight the waiter"
+          ],
+          "answer": 2,
+          "why": "First he covered his face saying “That was a disaster,” but then he sighed and “soon he was laughing too.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Oliver, a British lawyer who had relocated to Baku two years ago, treated learning Azerbaijani like preparing for a supreme court trial. He memorised thick grammar books and obsessed over vocabulary. Yet, despite his hard work, his harsh accent and lack of natural fluency meant he often struggled in real-life situations.\n\nHis close friend Yunus, a potter with a small workshop in the winding streets of Icherisheher, always tried to loosen him up. Yunus was effortlessly bilingual and knew that true connection required more than just textbook precision.\n\n“You overthink it,” Yunus told him one breezy Saturday as they sat outside a traditional tea house near the Maiden Tower. “Stop trying to be flawless. Don’t beat around the bush with formal phrases. Just speak your mind. Use some body language and throw in a bit of local slang. Even if you mispronounce a word, people will love that you are trying.”\n\nOliver took a deep breath. “Right. I’m going to make small talk with the waiter and order our lunch entirely in Azerbaijani.”\n\nWhen the elderly waiter approached their table, Oliver puffed out his chest. He intended to ask for a specific regional chicken dish, but the pressure got to him. He completely forgot the standard word and ended up using an obscure rural dialect term he had read about, accidentally demanding a whole roasted sheep instead. Panicking, he tried to recover by using a very casual street greeting he had heard teenagers use at the mall.\n\nThe waiter froze, his bushy eyebrows raised high. Oliver braced himself for a scolding. Instead, the old man’s face broke into a massive grin, and he began to laugh so hard he had to hold onto the table.\n\n“A whole sheep for the English gentleman!” the waiter chuckled in flawless English.\n\nOliver sank into his chair, entirely mortified. “I’m never speaking this language again.”\n\n“Are you joking? That was brilliant,” Yunus laughed, clapping him on the shoulder. “You didn't just get your point across; you made his entire week. That’s what communication is actually about.”\n\nOliver groaned, but a smile crept onto his face. When their food arrived, it was the best meal they had eaten all month.",
+      "words": [
+        {
+          "phrase": "obsessed over vocabulary",
+          "az": "söz ehtiyatına aludə olmuşdu",
+          "tr": "kelime dağarcığına takıntılıydı"
+        },
+        {
+          "phrase": "real-life situations",
+          "az": "real həyat vəziyyətləri",
+          "tr": "gerçek hayat durumları"
+        },
+        {
+          "phrase": "winding streets",
+          "az": "dolama küçələr",
+          "tr": "dolambaçlı sokaklar"
+        },
+        {
+          "phrase": "puffed out his chest",
+          "az": "sinəsini qabartdı",
+          "tr": "göğsünü kabarttı"
+        },
+        {
+          "phrase": "clapping him on the shoulder",
+          "az": "onun çiyinindən vuraraq",
+          "tr": "omzuna vurarak"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the primary message of Oliver’s experience?",
+          "options": [
+            "Lawyers are naturally bad at learning foreign languages",
+            "You should never use slang when ordering food in a restaurant",
+            "Regional dialects are impossible for foreigners to understand",
+            "Making mistakes and connecting with people is more valuable than textbook perfection"
+          ],
+          "answer": 3,
+          "why": "Yunus explains that despite the mistake, Oliver connected with the waiter, proving that connection matters more than being flawless."
+        },
+        {
+          "type": "detail",
+          "q": "How did Oliver treat learning Azerbaijani?",
+          "options": [
+            "Like a fun hobby for the weekends",
+            "Like a waste of his free time",
+            "Like preparing for a supreme court trial",
+            "Like an easy game to play with Yunus"
+          ],
+          "answer": 2,
+          "why": "“treated learning Azerbaijani like preparing for a supreme court trial.”"
+        },
+        {
+          "type": "detail",
+          "q": "What caused the waiter to laugh so hard?",
+          "options": [
+            "Oliver spilled hot tea all over the table",
+            "Oliver told a hilarious joke in perfect English",
+            "Oliver used an obscure dialect word for sheep and teenage street slang",
+            "Oliver tried to pay the bill using foreign money"
+          ],
+          "answer": 2,
+          "why": "Oliver accidentally demanded a whole roasted sheep using a dialect term, and then used a casual street greeting."
+        },
+        {
+          "type": "tf",
+          "q": "Yunus was annoyed by Oliver’s mistake with the waiter.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Are you joking? That was brilliant,” Yunus laughed, showing he was entertained, not annoyed."
+        },
+        {
+          "type": "vocab",
+          "q": "Yunus tells Oliver not to “beat around the bush”. What does this mean?",
+          "options": [
+            "To avoid saying something directly",
+            "To hide in the gardens in Icherisheher",
+            "To speak very loudly to waiters",
+            "To use a dictionary while talking"
+          ],
+          "answer": 0,
+          "why": "It is an idiom meaning to avoid getting to the point, which Yunus tells him to stop doing by instead saying, “Just speak your mind.”"
+        },
+        {
+          "type": "inference",
+          "q": "Why does the author mention that Yunus is “effortlessly bilingual”?",
+          "options": [
+            "To explain why Yunus wanted to become a lawyer",
+            "To contrast Yunus's natural communication style with Oliver's rigid studying",
+            "To prove that pottery is a bilingual profession",
+            "To show that Yunus does not understand Oliver's struggles at all"
+          ],
+          "answer": 1,
+          "why": "It highlights the difference between Oliver's stressful, textbook approach and Yunus's relaxed, natural ability to connect."
+        }
+      ]
+    }
+  }
+}

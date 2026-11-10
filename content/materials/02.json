@@ -1,0 +1,316 @@
+{
+  "index": 1,
+  "topic": "Technology",
+  "reading": {
+    "title": "The Grandma Update",
+    "A2": {
+      "text": "Tural works with computers in Baku. His grandmother, Sevinj, makes beautiful carpets in Icherisheher. Her carpets are popular with tourists. Tural wanted to help her business.\n\nLast month, he bought her a tablet. “This is very modern, nənə,” Tural said. “You can save your carpet pictures here. We will use a strong password for your cybersecurity.”\n\nSevinj smiled and poured him tea. She looked at the shiny tablet, but she kept her old paper notebook on the desk.\n\nOne Saturday, Tural visited her shop. He wanted to show her a software update. He clicked a button, but suddenly the tablet had a crash. The screen went completely black.\n\nTural panicked. “Oh no! We lost all your new customer orders. I must pull the plug and take this to a repair shop,” he said.\n\nSevinj laughed softly. “Do not worry, my boy,” she said.\n\nShe opened a small drawer and took out her paper notebook. “I wrote all the orders here this morning,” she explained. “Computers are fast, but paper does not need electricity.”\n\nTural looked at the notebook. He felt a little silly, but he was very happy.\n\n“You are right, nənə,” he smiled. “Sometimes the old way is the best.”",
+      "words": [
+        {
+          "phrase": "popular with tourists",
+          "az": "turistlər arasında populyar",
+          "tr": "turistler arasında popüler"
+        },
+        {
+          "phrase": "poured him tea",
+          "az": "ona çay süzdü",
+          "tr": "ona çay doldurdu"
+        },
+        {
+          "phrase": "went completely black",
+          "az": "tamamilə qaraldı",
+          "tr": "tamamen karardı"
+        },
+        {
+          "phrase": "take this to a repair shop",
+          "az": "bunu təmir sexinə aparım",
+          "tr": "bunu tamirciye götüreyim"
+        },
+        {
+          "phrase": "the old way is the best",
+          "az": "köhnə üsul ən yaxşısıdır",
+          "tr": "eski yol en iyisidir"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A woman who buys a new computer for her grandson",
+            "How to fix a broken tablet at home",
+            "A young man trying to modernize his grandmother's business",
+            "A tourist visiting a shop in Icherisheher"
+          ],
+          "answer": 2,
+          "why": "Tural buys a tablet for his grandmother to help her business, but learns her old way is still useful."
+        },
+        {
+          "type": "detail",
+          "q": "What does Sevinj make in her shop?",
+          "options": [
+            "Computers",
+            "Carpets",
+            "Tea",
+            "Notebooks"
+          ],
+          "answer": 1,
+          "why": "“His grandmother, Sevinj, makes beautiful carpets in Icherisheher.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where does Sevinj write her customer orders?",
+          "options": [
+            "On her tablet",
+            "On a computer",
+            "In a paper notebook",
+            "On the wall"
+          ],
+          "answer": 2,
+          "why": "“She opened a small drawer and took out her paper notebook. ‘I wrote all the orders here this morning,’ she explained.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural successfully updated the tablet.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“He clicked a button, but suddenly the tablet had a crash.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural says he must “pull the plug”. What does this mean?",
+          "options": [
+            "Buy a new tablet",
+            "Charge the battery",
+            "Call the police for help",
+            "Stop using it completely and turn it off"
+          ],
+          "answer": 3,
+          "why": "He thinks the system is broken and wants to stop using it and take it away."
+        },
+        {
+          "type": "inference",
+          "q": "How does Tural feel at the end of the story?",
+          "options": [
+            "Angry that his grandmother didn't use the tablet",
+            "Sad because he lost his job",
+            "Happy to see that traditional ways are still useful",
+            "Scared because the tablet is broken"
+          ],
+          "answer": 2,
+          "why": "“He felt a little silly, but he was very happy. ‘You are right, nənə,’ he smiled.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Tural was a software engineer in Baku. His grandmother, Sevinj, ran a small traditional carpet shop in Icherisheher. Tourists loved her colourful designs, but her business methods were extremely old-fashioned. She kept all her customer records in a heavy notebook.\n\nTural decided it was time to modernize her shop. He bought her a high-tech tablet and set up cloud storage so she would never lose her designs.\n\n“This is a cutting edge system, nənə,” Tural explained, showing her the screen. “Everything is saved online now. We just need to create a secure password for good cybersecurity.”\n\nSevinj smiled, gave him a slice of pakhlava, and nodded. However, Tural noticed she still kept her trusty paper notebook next to the cash register.\n\nA few weeks later, Tural came to the shop on a busy Saturday afternoon. He noticed a notification for a system update and quickly tapped the screen to install it. Suddenly, the tablet froze, made a strange noise, and suffered a complete crash.\n\nTural panicked. He tried to restart it, but nothing happened. “This is terrible! We might lose the new orders,” he groaned. “I need to pull the plug, take this home, and fix the whole system.”\n\n“Relax, my dear,” Sevinj said calmly. She opened her laptop, typed something quickly, and the tablet screen suddenly lit up again.\n\nTural stared at her in shock. “How did you do that?”\n\n“I read about this problem online yesterday,” she laughed. “I also used an Artificial Intelligence program to translate the manual into Azerbaijani. You need to get up to speed, Tural! I am not just drinking tea all day.”\n\nTural could not stop laughing. His grandmother was much smarter than he realized.",
+      "words": [
+        {
+          "phrase": "extremely old-fashioned",
+          "az": "həddindən artıq köhnə dəb",
+          "tr": "son derece eski moda"
+        },
+        {
+          "phrase": "next to the cash register",
+          "az": "kassa aparatının yanında",
+          "tr": "yazar kasanın yanında"
+        },
+        {
+          "phrase": "lit up again",
+          "az": "yenidən işıqlandı",
+          "tr": "yeniden aydınlandı"
+        },
+        {
+          "phrase": "stared at her in shock",
+          "az": "şok içində ona baxdı",
+          "tr": "şok içinde ona baktı"
+        },
+        {
+          "phrase": "drinking tea all day",
+          "az": "bütün gün çay içmək",
+          "tr": "bütün gün çay içmek"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What happens when Tural tries to update the shop's system?",
+          "options": [
+            "He accidentally deletes all of Sevinj's designs",
+            "The internet stops working in the shop",
+            "The device crashes, but his grandmother fixes it herself",
+            "He teaches his grandmother how to repair it"
+          ],
+          "answer": 2,
+          "why": "The tablet crashes, and Tural panics, but Sevinj surprises him by typing on her laptop and fixing the problem."
+        },
+        {
+          "type": "detail",
+          "q": "Why did Tural set up cloud storage?",
+          "options": [
+            "To play online games",
+            "To watch films in the shop",
+            "To translate the manual",
+            "So Sevinj would never lose her designs"
+          ],
+          "answer": 3,
+          "why": "“He bought her a high-tech tablet and set up cloud storage so she would never lose her designs.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Sevinj use to translate the manual?",
+          "options": [
+            "A dictionary",
+            "A local tourist",
+            "A software engineer",
+            "An Artificial Intelligence program"
+          ],
+          "answer": 3,
+          "why": "“I also used an Artificial Intelligence program to translate the manual into Azerbaijani.”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevinj threw away her old notebook after getting the tablet.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Tural noticed she still kept her trusty paper notebook next to the cash register.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural tells his grandmother that the system is “cutting edge”. What does this mean?",
+          "options": [
+            "The most modern and advanced",
+            "Very cheap and easy to break",
+            "Very sharp and dangerous",
+            "Too difficult to use"
+          ],
+          "answer": 0,
+          "why": "He is trying to modernize her shop with high-tech equipment."
+        },
+        {
+          "type": "inference",
+          "q": "What does Sevinj mean when she says, “I am not just drinking tea all day”?",
+          "options": [
+            "She prefers coffee to tea",
+            "She is too busy making pakhlava to learn",
+            "She wants Tural to leave the shop",
+            "She has been secretly learning about the new technology"
+          ],
+          "answer": 3,
+          "why": "She read about the problem online and translated the manual, proving she is actively learning and adapting."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Tural, a young software developer based in Baku, was determined to bring his grandmother’s business into the twenty-first century. Sevinj ran a charming, traditional carpet boutique in the heart of Icherisheher. While tourists adored her intricate, hand-woven designs, Tural was horrified by her archaic administrative methods. She managed her entire inventory using a fading leather notebook and a jar of ink.\n\nHoping to revolutionize her daily operations, Tural gifted her a premium tablet. He proudly set up remote cloud storage and introduced a smart algorithm designed to track her most popular carpet patterns.\n\n“This is truly cutting edge technology, nənə,” Tural declared, tapping the sleek screen. “It features full automation for your customer receipts. We just need to establish a complex password to ensure top-tier cybersecurity.”\n\nSevinj offered a warm, tolerant smile, poured him a glass of pear compote, and nodded politely. Yet, whenever Tural visited, he noticed that the leather notebook never left its prime position on the wooden counter.\n\nA month later, Tural dropped by during the chaotic Novruz holiday rush. Seeing a pending software update notification on the tablet, he absentmindedly initiated the installation. Almost instantly, the device froze, emitted a sharp beep, and experienced a catastrophic crash. The screen went entirely black.\n\nTural’s face went pale. He frantically tapped the glass. “Oh no, the operating system is corrupted! We’ve lost all the holiday orders,” he panicked. “I’ll have to pull the plug on this device and take it to a specialist immediately.”\n\n“Sit down and drink your compote,” Sevinj instructed calmly. She reached under the counter, pulled out her own modern laptop, and swiftly typed a command into a terminal window. Within seconds, the tablet rebooted, displaying the orders perfectly intact.\n\nTural’s jaw dropped. “How on earth did you manage that?”\n\n“I was curious about your system,” she chuckled, her eyes sparkling with amusement. “So, I used Artificial Intelligence to study the code and learned how to reboot the server. You really need to get up to speed, my boy. Did you honestly think I survived in business for forty years without learning how to adapt?”\n\nTural leaned back, shaking his head in sheer admiration.",
+      "words": [
+        {
+          "phrase": "into the twenty-first century",
+          "az": "iyirmi birinci əsrə",
+          "tr": "yirmi birinci yüzyıla"
+        },
+        {
+          "phrase": "chaotic Novruz holiday rush",
+          "az": "xaotik Novruz bayramı təlaşı",
+          "tr": "kaotik Nevruz bayramı telaşı"
+        },
+        {
+          "phrase": "went entirely black",
+          "az": "tamamilə qaraldı",
+          "tr": "tamamen karardı"
+        },
+        {
+          "phrase": "eyes sparkling with amusement",
+          "az": "gözləri sevincdən parlayaraq",
+          "tr": "gözleri eğlenceyle parlayarak"
+        },
+        {
+          "phrase": "shaking his head in sheer admiration",
+          "az": "heyranlıqla başını yelləyərək",
+          "tr": "hayranlıkla başını sallayarak"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the central theme of the story?",
+          "options": [
+            "A grandmother proving she is much more tech-savvy than her grandson expects",
+            "A young man failing to fix a broken tablet during a holiday",
+            "The decline of traditional carpet weaving in modern times",
+            "The dangers of downloading software updates without reading the manual"
+          ],
+          "answer": 0,
+          "why": "Tural tries to modernize his grandmother's shop, but when the system fails, she fixes it herself, proving she has already mastered the technology."
+        },
+        {
+          "type": "detail",
+          "q": "How did Sevinj traditionally manage her inventory before the tablet?",
+          "options": [
+            "With a fading leather notebook and ink",
+            "With a smart algorithm",
+            "With a modern laptop",
+            "By memorizing every order"
+          ],
+          "answer": 0,
+          "why": "“She managed her entire inventory using a fading leather notebook and a jar of ink.”"
+        },
+        {
+          "type": "detail",
+          "q": "What caused the tablet to freeze and crash?",
+          "options": [
+            "Sevinj typed a command on her laptop",
+            "The chaotic Novruz holiday rush overloaded it",
+            "A power cut occurred in the shop",
+            "Tural initiated a software update"
+          ],
+          "answer": 3,
+          "why": "“Seeing a pending software update notification on the tablet, he absentmindedly initiated the installation. Almost instantly, the device froze...”"
+        },
+        {
+          "type": "tf",
+          "q": "Sevinj's carpets were only bought by local residents.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“While tourists adored her intricate, hand-woven designs, Tural was horrified by her archaic administrative methods.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Sevinj tells Tural that he needs to “get up to speed”. What does this mean?",
+          "options": [
+            "To learn the latest information and keep up",
+            "To run faster to the repair shop",
+            "To buy a faster computer for the shop",
+            "To leave the boutique quickly"
+          ],
+          "answer": 0,
+          "why": "She is teasing him because she learned the new technology faster than he realized, and he is falling behind her."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Tural shake his head in “sheer admiration” at the end?",
+          "options": [
+            "He was amazed at how beautiful her new carpets were",
+            "He realized his grandmother had outsmarted him by mastering the tech",
+            "He was happy the tablet was permanently broken",
+            "He was surprised she liked drinking pear compote"
+          ],
+          "answer": 1,
+          "why": "She used Artificial Intelligence to study the code and fixed the system herself, showing she could easily adapt to modern technology."
+        }
+      ]
+    }
+  }
+}

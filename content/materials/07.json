@@ -1,0 +1,316 @@
+{
+  "index": 6,
+  "topic": "Work & Career",
+  "reading": {
+    "title": "The Extra Mile",
+    "A2": {
+      "text": "Aysel loved her job at a marketing company in Baku, but she was very tired. Her workload was huge this month. She had a strict deadline for a new coffee shop project. She really wanted a promotion, so she worked late every evening.\n\nHer colleague, Tural, sat next to her. Tural did not want to work in an office forever. He wanted to be an entrepreneur and open a small bookstore in Icherisheher.\n\nOne morning, Aysel showed her project to her boss, Leyla. Leyla looked at the papers and frowned. “This design is not right,” Leyla said. “We must start again. It is back to the drawing board.”\n\nAysel felt very sad. She wanted to resign and go home. She walked to the Boulevard and sat on a bench. Tural called her on the phone.\n\n“Do not be sad,” Tural said. “Your ideas are great. You always work hard.”\n\nThe next day, Aysel went back to the office with a new idea. Leyla loved it. She smiled and gave Aysel the promotion. Leyla also gave her two days of remote work every week. Aysel was very happy. Tural smiled and brought her a cup of tea. It was a good day.",
+      "words": [
+        {
+          "phrase": "loved her job",
+          "az": "işini sevirdi",
+          "tr": "işini seviyordu"
+        },
+        {
+          "phrase": "sat next to her",
+          "az": "onun yanında əyləşirdi",
+          "tr": "onun yanında oturuyordu"
+        },
+        {
+          "phrase": "looked at the papers",
+          "az": "kağızlara baxdı",
+          "tr": "kağıtlara baktı"
+        },
+        {
+          "phrase": "called her on the phone",
+          "az": "ona zəng etdi",
+          "tr": "ona telefon etti"
+        },
+        {
+          "phrase": "a cup of tea",
+          "az": "bir fincan çay",
+          "tr": "bir fincan çay"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story mainly about?",
+          "options": [
+            "Tural opening a new bookstore in Icherisheher",
+            "Aysel's hard work pays off after a difficult project",
+            "A boss who fires her employees",
+            "Why working in an office is bad"
+          ],
+          "answer": 1,
+          "why": "Aysel works hard on a project, overcomes a failure, and finally gets a promotion and remote work."
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural want to do in the future?",
+          "options": [
+            "Become the boss of the company",
+            "Move to another country",
+            "Be an entrepreneur and open a bookstore",
+            "Work from home every day"
+          ],
+          "answer": 2,
+          "why": "“He wanted to be an entrepreneur and open a small bookstore in Icherisheher.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where did Aysel go when she felt sad?",
+          "options": [
+            "To a coffee shop",
+            "To Icherisheher",
+            "To the Boulevard",
+            "To Tural's house"
+          ],
+          "answer": 2,
+          "why": "“She walked to the Boulevard and sat on a bench.”"
+        },
+        {
+          "type": "tf",
+          "q": "Leyla fired Aysel because the design was bad.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "Leyla did not fire her; she said they must start again, and later gave her a promotion."
+        },
+        {
+          "type": "vocab",
+          "q": "Leyla says, “It is back to the drawing board.” What does this mean?",
+          "options": [
+            "To start again after something fails",
+            "To draw a picture of a board",
+            "To buy new office furniture",
+            "To ask a colleague for help"
+          ],
+          "answer": 0,
+          "why": "The design was not right, so they had to start the project again."
+        },
+        {
+          "type": "inference",
+          "q": "How did Tural feel when Aysel came back with a new idea?",
+          "options": [
+            "He was supportive and happy for her",
+            "He was angry with her",
+            "He was jealous of her promotion",
+            "He was too busy to notice"
+          ],
+          "answer": 0,
+          "why": "He called to encourage her earlier, and when she succeeded, he “smiled and brought her a cup of tea.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Aysel worked at a busy marketing agency near Nizami Street in Baku. She liked her job, but recently her workload was impossible. She was trying to climb the ladder and get a much-needed promotion to Senior Designer. Because of a strict deadline for a major client, she stayed in the office until eight o'clock every night.\n\nHer favorite colleague, Tural, had different plans for his future. He spent his weekends networking with local business owners. He dreamed of leaving the corporate world to become an entrepreneur and open an art café in Icherisheher.\n\nOn Wednesday, Aysel proudly presented her campaign to their manager, Leyla. Leyla looked at the slides in silence, sighed, and shook her head. “The client changed their mind about the colors yesterday,” she explained. “None of this works anymore. I am sorry, Aysel, but we are back to the drawing board.”\n\nAysel felt completely crushed. After weeks of hard work, she just wanted to resign and sleep for a month. She took a long walk along the Boulevard to clear her head, watching the ships on the Caspian Sea.\n\nLater that evening, Tural sent her a message. “Don't give up,” he wrote. “You always go the extra mile for our clients. Just change the colors and keep your amazing concept.”\n\nThe next morning, Aysel presented the updated design. This time, Leyla was delighted. “This is perfect,” the manager said with a bright smile. “You handled the problem beautifully.” Not only did Aysel finally get her promotion, but Leyla also offered her two days of remote work each week so she could rest. Aysel smiled at Tural, knowing her hard work had finally paid off.",
+      "words": [
+        {
+          "phrase": "near Nizami Street",
+          "az": "Nizami küçəsinin yaxınlığında",
+          "tr": "Nizami Caddesi'nin yakınında"
+        },
+        {
+          "phrase": "shook her head",
+          "az": "başını buladı",
+          "tr": "başını salladı"
+        },
+        {
+          "phrase": "clear her head",
+          "az": "fikrini dağıtmaq",
+          "tr": "kafasını dağıtmak"
+        },
+        {
+          "phrase": "watching the ships",
+          "az": "gəmiləri izləyərək",
+          "tr": "gemileri izleyerek"
+        },
+        {
+          "phrase": "finally paid off",
+          "az": "nəhayət bəhrəsini verdi",
+          "tr": "sonunda karşılığını verdi"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "Why did Aysel have to change her project?",
+          "options": [
+            "She used the wrong software",
+            "Her manager did not like her attitude",
+            "The client changed their mind about the colors",
+            "Tural accidentally deleted her files"
+          ],
+          "answer": 2,
+          "why": "Leyla said, “The client changed their mind about the colors yesterday.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural do on the weekends?",
+          "options": [
+            "He spent his time networking with local business owners",
+            "He rested at home",
+            "He studied to become a Senior Designer",
+            "He painted pictures at an art café"
+          ],
+          "answer": 0,
+          "why": "“He spent his weekends networking with local business owners.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Leyla offer Aysel besides the promotion?",
+          "options": [
+            "A pay rise",
+            "Two days of remote work each week",
+            "A new office on Nizami Street",
+            "A free vacation on the Caspian Sea"
+          ],
+          "answer": 1,
+          "why": "“Leyla also offered her two days of remote work each week so she could rest.”"
+        },
+        {
+          "type": "tf",
+          "q": "Aysel finished her work early every day because she was fast.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“She stayed in the office until eight o'clock every night.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Aysel was trying to “climb the ladder”. What does this phrase mean?",
+          "options": [
+            "To clean the office windows",
+            "To leave the company and start a new business",
+            "To ask the boss for a longer deadline",
+            "To progress upward in your career"
+          ],
+          "answer": 3,
+          "why": "She was trying to climb the ladder by getting a promotion to Senior Designer."
+        },
+        {
+          "type": "inference",
+          "q": "Why did Aysel walk along the Boulevard?",
+          "options": [
+            "She was meeting a major client there",
+            "She wanted to look for an art café",
+            "She missed her bus home",
+            "She needed to calm down after receiving bad news"
+          ],
+          "answer": 3,
+          "why": "She felt completely crushed and wanted to clear her head."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Aysel had been working at a prestigious marketing agency in the heart of Baku for three years, and the pressure was finally getting to her. Her workload had doubled in the last quarter, largely because she was determined to climb the ladder and secure a highly competitive promotion to Art Director. With a brutal deadline approaching for their biggest client, she practically lived at her desk.\n\nHer closest colleague, Tural, offered a sharp contrast to her corporate ambition. Tural spent his evenings attending industry events and networking with local investors. His ultimate goal was to resign from the agency, become an entrepreneur, and launch his own digital illustration studio in Icherisheher.\n\nOn Wednesday morning, Aysel presented her meticulously planned campaign to their demanding director, Leyla. Leyla stared at the vibrant slides for a long moment before letting out a heavy sigh. “The client sent an email at midnight,” Leyla said gently. “They are rebranding completely. The current concept is useless now. I'm afraid it is back to the drawing board.”\n\nAysel’s heart sank. She had sacrificed her weekends and evenings for this project. For a fleeting moment, she seriously considered packing her things and walking out of the building forever. To calm down, she grabbed her coat and took a brisk walk along the windy Boulevard, staring out at the grey waves of the Caspian Sea.\n\nWhen she returned to her desk, there was a fresh cup of coffee and a sticky note from Tural waiting for her. “You always go the extra mile, and the clients know it. Don't let one email ruin your masterpiece. Tweak the core message and try again.”\n\nTaking a deep breath, Aysel opened her laptop and spent the afternoon reshaping her original idea to fit the new brand guidelines. When she pitched the revised version the following morning, Leyla was genuinely impressed by her resilience.\n\n“You handled that crisis brilliantly,” Leyla announced proudly. Not only did Aysel finally receive her hard-earned promotion, but the agency also transitioned her to a flexible remote work schedule. Sitting at a seaside café the next Monday, she realized the setback was exactly what she had needed.",
+      "words": [
+        {
+          "phrase": "in the heart of Baku",
+          "az": "Bakının mərkəzində",
+          "tr": "Bakü'nün merkezinde"
+        },
+        {
+          "phrase": "offered a sharp contrast",
+          "az": "kəskin bir ziddiyyət yaradırdı",
+          "tr": "keskin bir zıtlık oluşturuyordu"
+        },
+        {
+          "phrase": "letting out a heavy sigh",
+          "az": "dərindən ah çəkərək",
+          "tr": "derin bir iç çekerek"
+        },
+        {
+          "phrase": "heart sank",
+          "az": "məyus oldu",
+          "tr": "hayal kırıklığına uğradı"
+        },
+        {
+          "phrase": "genuinely impressed",
+          "az": "həqiqətən təsirlənmişdi",
+          "tr": "gerçekten etkilenmişti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of the story?",
+          "options": [
+            "The dangers of working too closely with friends",
+            "Overcoming a professional setback to achieve career success",
+            "How to start a digital illustration studio in Azerbaijan",
+            "Why remote work is bad for young professionals"
+          ],
+          "answer": 1,
+          "why": "Aysel faces a major project failure, but perseveres and earns both a promotion and remote work."
+        },
+        {
+          "type": "detail",
+          "q": "Why did the client's project need to be changed?",
+          "options": [
+            "Aysel missed the deadline",
+            "The client decided to rebrand completely",
+            "Leyla disliked the vibrant slides",
+            "Tural gave Aysel the wrong information"
+          ],
+          "answer": 1,
+          "why": "Leyla said, “They are rebranding completely. The current concept is useless now.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural leave on Aysel's desk to encourage her?",
+          "options": [
+            "A book about entrepreneurship",
+            "A new laptop",
+            "A fresh cup of coffee and a sticky note",
+            "A signed contract from a local investor"
+          ],
+          "answer": 2,
+          "why": "“...there was a fresh cup of coffee and a sticky note from Tural waiting for her.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural wanted to stay at the agency and become the new Art Director.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“His ultimate goal was to resign from the agency, become an entrepreneur, and launch his own digital illustration studio.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural writes, “You always go the extra mile.” What does this mean?",
+          "options": [
+            "To walk a long distance to work",
+            "To do more than what is expected of you",
+            "To complain about your colleagues",
+            "To quit your job suddenly"
+          ],
+          "answer": 1,
+          "why": "It means putting in extra effort beyond standard expectations, which she did by sacrificing her weekends."
+        },
+        {
+          "type": "inference",
+          "q": "How did the remote work schedule change Aysel's perspective at the end?",
+          "options": [
+            "It made her want to resign immediately",
+            "It helped her realize the stressful event had a positive outcome",
+            "It caused her to lose contact with Tural",
+            "It made her dislike the Caspian Sea"
+          ],
+          "answer": 1,
+          "why": "Sitting at a seaside café, she realized the setback was exactly what she had needed, enjoying her new flexibility."
+        }
+      ]
+    }
+  }
+}

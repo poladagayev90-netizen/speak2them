@@ -1,0 +1,316 @@
+{
+  "index": 5,
+  "topic": "Environment",
+  "reading": {
+    "title": "One coffee at a time",
+    "A2": {
+      "text": "Tural has a small coffee shop in Icherisheher. His sister, Leyla, helps him on weekends. Tural makes great coffee, but he uses hundreds of plastic cups every day.\n\nOne Saturday, Leyla looked at the big rubbish bin. “Tural, this is bad for nature,” she said. “These single-use cups create a lot of pollution. We must go green.”\n\n“I know,” Tural said. “But glass cups are expensive to wash. And people want to take their coffee outside to the Boulevard.”\n\n“We can ask people to bring their own cups,” Leyla answered. “We can give them a cheaper price. Also, we can recycle our paper and plastic.”\n\nTural was not sure. “Will people really do that?”\n\n“Let's try,” she smiled.\n\nOn Monday, Tural put a big sign on the door. It said: “Bring your cup, pay less!”\n\nAt first, nobody cared. But on Wednesday, a young man brought a red metal cup. Then, two students brought their own mugs. By Friday evening, the rubbish bin was only half full.\n\nTural was very surprised. “You were right,” he told Leyla. “It is a small change, but it helps. Next week, I want to buy wooden spoons too!”\n\nLeyla laughed loudly. “Good job! We are saving the world, one coffee at a time.”",
+      "words": [
+        {
+          "phrase": "helps him on weekends",
+          "az": "həftəsonları ona kömək edir",
+          "tr": "hafta sonları ona yardım eder"
+        },
+        {
+          "phrase": "take their coffee outside",
+          "az": "qəhvələrini çölə çıxarmaq",
+          "tr": "kahvelerini dışarı çıkarmak"
+        },
+        {
+          "phrase": "bring their own cups",
+          "az": "öz fincanlarını gətirmək",
+          "tr": "kendi fincanlarını getirmek"
+        },
+        {
+          "phrase": "was only half full",
+          "az": "yalnız yarısı dolu idi",
+          "tr": "sadece yarısı doluydu"
+        },
+        {
+          "phrase": "saving the world",
+          "az": "dünyanı xilas edirik",
+          "tr": "dünyayı kurtarıyoruz"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A coffee shop that closes because it is too expensive",
+            "A man who learns how to make better coffee",
+            "A brother and sister who make their cafe more eco-friendly",
+            "Two students who invent a new kind of plastic"
+          ],
+          "answer": 2,
+          "why": "The story is about Tural and Leyla reducing the use of plastic cups in their coffee shop."
+        },
+        {
+          "type": "detail",
+          "q": "Why does Tural think using glass cups is difficult?",
+          "options": [
+            "He does not like the way they look",
+            "Leyla often breaks them by accident",
+            "They are expensive to wash and customers want to go outside",
+            "They make the coffee taste bad"
+          ],
+          "answer": 2,
+          "why": "“But glass cups are expensive to wash. And people want to take their coffee outside to the Boulevard.”"
+        },
+        {
+          "type": "detail",
+          "q": "What happened on Wednesday?",
+          "options": [
+            "Tural bought wooden spoons",
+            "A young man brought a red metal cup",
+            "Leyla put a sign on the door",
+            "The rubbish bin was completely full"
+          ],
+          "answer": 1,
+          "why": "“But on Wednesday, a young man brought a red metal cup.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural's coffee shop is located on the Boulevard.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "The text says “Tural has a small coffee shop in Icherisheher” and people want to take their coffee to the Boulevard."
+        },
+        {
+          "type": "vocab",
+          "q": "Leyla says, “We must go green.” What does “go green” mean?",
+          "options": [
+            "Paint the coffee shop walls",
+            "Live or work in an eco-friendly way",
+            "Buy cheaper products",
+            "Drink tea instead of coffee"
+          ],
+          "answer": 1,
+          "why": "She wants him to stop using plastic cups and reduce pollution."
+        },
+        {
+          "type": "inference",
+          "q": "How does Tural feel at the end of the week?",
+          "options": [
+            "He is angry because he lost money",
+            "He is happy because the new idea worked well",
+            "He is tired of washing glass cups",
+            "He is sad because nobody bought coffee"
+          ],
+          "answer": 1,
+          "why": "He was very surprised, said Leyla was right, and wanted to buy wooden spoons next."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Tural runs a popular coffee shop in Icherisheher. His younger sister, Leyla, studies environmental science and helps him on weekends. Tural's coffee is famous, but his business has a big problem. He throws away hundreds of plastic cups every single day.\n\nOne Saturday afternoon, Leyla looked at the overflowing rubbish bins outside. “Tural, we really have to stop this,” she said. “These single-use plastics cause terrible pollution. If we want to reduce our carbon footprint, we need to turn over a new leaf.”\n\nTural sighed and wiped the counter. “Leyla, I own one tiny cafe in Baku. Even if I stop using plastic entirely, it is just a drop in the ocean. Plus, paper cups cause deforestation. What should I do?”\n\n“We can encourage customers to bring their own reusable cups,” Leyla suggested. “If they do, we will give them a ten percent discount. We can also recycle everything we use in the shop.”\n\nTural thought it was a strange idea, but he agreed to try it for a week.\n\nOn Monday morning, Tural put a chalkboard outside. The sign explained the new discount. For the first two days, people ignored it. But on Wednesday, a regular customer came in with a beautiful ceramic mug. On Thursday, a group of office workers brought their own flasks.\n\nBy the end of the week, Tural noticed something amazing. He had only used half the amount of plastic cups he normally used. He also saved money on buying them.\n\n“You were completely right,” Tural admitted to his sister on Sunday. “It actually works. Next month, I want to buy our electricity from a renewable energy provider.”\n\nLeyla smiled proudly. “See? A small drop can create a big wave.”",
+      "words": [
+        {
+          "phrase": "every single day",
+          "az": "hər bir gün",
+          "tr": "her Allah'ın günü"
+        },
+        {
+          "phrase": "overflowing rubbish bins",
+          "az": "daşıb tökülən zibil qutuları",
+          "tr": "dolup taşan çöp kutuları"
+        },
+        {
+          "phrase": "wiped the counter",
+          "az": "rəfi sildi",
+          "tr": "tezgahı sildi"
+        },
+        {
+          "phrase": "give them a ten percent discount",
+          "az": "onlara on faiz endirim etmək",
+          "tr": "onlara yüzde on indirim yapmak"
+        },
+        {
+          "phrase": "saved money on buying them",
+          "az": "onları almağa pul qənaət etdi",
+          "tr": "onları alırken paradan tasarruf etti"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of the story?",
+          "options": [
+            "How a small business makes a positive change for the environment",
+            "Why opening a cafe in Baku is a bad business idea",
+            "The dangers of drinking too much coffee",
+            "Why customers prefer ceramic mugs to paper cups"
+          ],
+          "answer": 0,
+          "why": "The story follows Tural as he listens to his sister and successfully makes his cafe more environmentally friendly."
+        },
+        {
+          "type": "detail",
+          "q": "What does Leyla study at university?",
+          "options": [
+            "Business management",
+            "Renewable energy engineering",
+            "Ceramic arts",
+            "Environmental science"
+          ],
+          "answer": 3,
+          "why": "“His younger sister, Leyla, studies environmental science...”"
+        },
+        {
+          "type": "detail",
+          "q": "Why does Tural think switching to paper cups is not a perfect solution?",
+          "options": [
+            "They cause deforestation",
+            "They cost too much money",
+            "They burn customers' hands",
+            "They cannot be recycled"
+          ],
+          "answer": 0,
+          "why": "“Plus, paper cups cause deforestation. What should I do?”"
+        },
+        {
+          "type": "tf",
+          "q": "The customers loved the discount on the very first day.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“For the first two days, people ignored it.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural thinks his effort is just a “drop in the ocean”. What does this mean?",
+          "options": [
+            "A very small action that does not change a big problem",
+            "A business that is located near the sea",
+            "A wet and messy coffee spill",
+            "A cheap way to run a cafe"
+          ],
+          "answer": 0,
+          "why": "He feels that because he owns just one tiny cafe, his actions won't make a real difference to global pollution."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Tural want to buy electricity from a renewable energy provider?",
+          "options": [
+            "Because the local government forced him to do it",
+            "Because it is much cheaper than standard electricity",
+            "Because Leyla threatened to stop helping him",
+            "Because seeing the cup discount work gave him confidence to make bigger green changes"
+          ],
+          "answer": 3,
+          "why": "After admitting Leyla was right and seeing that \"it actually works,\" he is immediately inspired to take another eco-friendly step."
+        }
+      ]
+    },
+    "B2": {
+      "text": "Tural managed a thriving artisan coffee shop nestled in the winding streets of Icherisheher. While his espresso was widely considered the best in town, the café had a glaring flaw. Every day, it generated mountains of waste. His sister Leyla, a university student passionate about sustainability, often helped out on weekends and never missed a chance to critique his habits.\n\nOne busy Saturday, Leyla dragged Tural to the back alley, pointing at the overflowing bins. “Look at this,” she scolded. “Our reliance on single-use plastics is a disaster for local biodiversity and creates needless pollution. If you are serious about lowering your carbon footprint, it is time to turn over a new leaf.”\n\nTural leaned against the ancient stone wall and sighed. “Leyla, I run a single, independent cafe in a huge city. Even if I completely eradicate plastic from my shop, it’s just a drop in the ocean. And switching to paper isn't much better, considering the impact of deforestation.”\n\n“Every effort counts,” Leyla countered, refusing to back down. “We can launch a green initiative. Let's offer a twenty percent discount to anyone who brings a reusable cup. We can also rigorously recycle our waste. Just give it a shot for a fortnight.”\n\nThough highly skeptical, Tural finally surrendered. On Monday morning, an elegant wooden sign was placed by the door, boldly advertising the eco-friendly discount.\n\nInitially, the regulars barely noticed. However, by midweek, the tide began to turn. A young lawyer arrived with a sleek metal thermos, and soon, a group of university students followed suit with colourful travel mugs. Tural was astonished to see people actively participating.\n\nWhen Friday evening rolled around, Tural did the inventory. The results were undeniable: he had used sixty percent fewer disposable cups and significantly reduced his overhead costs.\n\n“I have to eat my words,” Tural confessed on Sunday morning, pouring Leyla a fresh latte. “It was a phenomenal success. In fact, I've been researching how we can switch our shop's power supply to a renewable energy provider next year.”\n\nLeyla took a sip and beamed. “I told you. When enough people care, it’s no longer a drop in the ocean.”",
+      "words": [
+        {
+          "phrase": "never missed a chance",
+          "az": "heç vaxt fürsəti əldən vermirdi",
+          "tr": "hiçbir fırsatı kaçırmazdı"
+        },
+        {
+          "phrase": "refusing to back down",
+          "az": "geri çəkilməkdən imtina edərək",
+          "tr": "geri adım atmayı reddederek"
+        },
+        {
+          "phrase": "give it a shot for a fortnight",
+          "az": "iki həftəlik yoxla",
+          "tr": "iki haftalığına bir dene"
+        },
+        {
+          "phrase": "the tide began to turn",
+          "az": "vəziyyət dəyişməyə başladı",
+          "tr": "rüzgar tersine dönmeye başladı"
+        },
+        {
+          "phrase": "reduced his overhead costs",
+          "az": "onun əlavə xərclərini azaltdı",
+          "tr": "onun genel giderlerini azalttı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What message does the story convey?",
+          "options": [
+            "That running a coffee shop is impossible without plastic",
+            "That family members should not work together",
+            "That collective small efforts can significantly impact environmental sustainability",
+            "That large corporations are responsible for most pollution"
+          ],
+          "answer": 2,
+          "why": "The story shows how a small, local initiative reduced waste, proving that when enough people care, it makes a real difference."
+        },
+        {
+          "type": "detail",
+          "q": "What did Leyla point out as the café's “glaring flaw”?",
+          "options": [
+            "The espresso was too bitter",
+            "The stone walls were falling apart",
+            "It produced massive amounts of daily waste",
+            "The coffee was too expensive"
+          ],
+          "answer": 2,
+          "why": "“...the café had a glaring flaw. Every day, it generated mountains of waste.”"
+        },
+        {
+          "type": "detail",
+          "q": "What specific incentive did they offer to change customer behaviour?",
+          "options": [
+            "A free coffee after ten purchases",
+            "A larger cup of coffee for the same price",
+            "Free wooden spoons and sugar",
+            "A twenty percent discount for bringing a reusable cup"
+          ],
+          "answer": 3,
+          "why": "“Let's offer a twenty percent discount to anyone who brings a reusable cup.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural agreed to Leyla's idea enthusiastically from the very beginning.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "“Though highly skeptical, Tural finally surrendered.” He was not enthusiastic at first."
+        },
+        {
+          "type": "vocab",
+          "q": "Leyla says they need to “turn over a new leaf”. What does this idiom mean?",
+          "options": [
+            "To start behaving in a better and more responsible way",
+            "To close the shop and open a new one",
+            "To pick up leaves from the street",
+            "To change the menu completely"
+          ],
+          "answer": 0,
+          "why": "She wants Tural to change his environmentally harmful habits and start acting more sustainably."
+        },
+        {
+          "type": "inference",
+          "q": "What does Tural mean when he says “I have to eat my words”?",
+          "options": [
+            "He is very hungry after a long week",
+            "He admits that his previous doubts about the idea were completely wrong",
+            "He wants to stop talking and drink his latte",
+            "He is angry that Leyla forced him to change"
+          ],
+          "answer": 1,
+          "why": "He previously thought it was a useless idea (“a drop in the ocean”), but after seeing it work, he admits he was wrong."
+        }
+      ]
+    }
+  }
+}

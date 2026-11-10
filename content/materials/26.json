@@ -1,0 +1,316 @@
+{
+  "index": 25,
+  "topic": "Dreams & Ambitions",
+  "reading": {
+    "title": "A sweet taste of success",
+    "A2": {
+      "text": "Elvin is a quiet accountant in Baku, but he really loves baking. Every weekend, he makes delicious apple and walnut cakes. His grandmother is his role model. She was a famous baker in Sheki, and he uses her old recipes. Elvin’s big goal is to open a small, warm cafe in Icherisheher.\n\n“You must aim high,” his good friend Nigar always tells him. “Life is very short. You should chase your dreams!”\n\nSo, Elvin bakes fifty cakes. On Sunday morning, he takes a small folding table to a street market near the Maiden Tower. He is very happy and excited. But suddenly, dark clouds appear and it starts to rain. The narrow street is completely empty. Elvin waits for two hours in the cold. Nobody buys a single cake. He feels very sad and loses his motivation.\n\n“I am going home,” Elvin says to Nigar on the phone. “This was a terrible idea.”\n\n“Wait!” Nigar says. “Do not pack your table yet. I am coming.”\n\nTen minutes later, Nigar arrives. She is not alone. She brings a local tour guide and ten hungry tourists.\n\n“Wow, it smells amazing!” the guide says. He buys twenty cakes.\n\nElvin smiles. He is ready to bake again.",
+      "words": [
+        {
+          "phrase": "a quiet accountant",
+          "az": "sakit bir mühasib",
+          "tr": "sessiz bir muhasebeci"
+        },
+        {
+          "phrase": "very short",
+          "az": "çox qısadır",
+          "tr": "çok kısa"
+        },
+        {
+          "phrase": "starts to rain",
+          "az": "yağış yağmağa başlayır",
+          "tr": "yağmur yağmaya başlıyor"
+        },
+        {
+          "phrase": "completely empty",
+          "az": "tamamilə boşdur",
+          "tr": "tamamen boş"
+        },
+        {
+          "phrase": "pack your table",
+          "az": "masanızı yığışdırmaq",
+          "tr": "masanızı toplamak"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "Elvin learns to bake from his grandmother",
+            "Nigar opens a new cafe in Icherisheher",
+            "Elvin changes his job to a tour guide",
+            "Elvin wants to sell cakes but the rain almost stops him"
+          ],
+          "answer": 3,
+          "why": "The story is about Elvin trying to sell his cakes at the market, facing rain, and being saved by Nigar bringing customers."
+        },
+        {
+          "type": "detail",
+          "q": "Whose recipes does Elvin use for his cakes?",
+          "options": [
+            "His mother's",
+            "His friend Nigar's",
+            "His grandmother's",
+            "A famous chef's"
+          ],
+          "answer": 2,
+          "why": "“She was a famous baker in Sheki, and he uses her old recipes.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why does Elvin want to go home early?",
+          "options": [
+            "The street is empty because of the rain",
+            "He is tired and sleepy",
+            "He sold all his cakes",
+            "He has to go to work"
+          ],
+          "answer": 0,
+          "why": "Because it started to rain, the street was completely empty, and nobody bought a cake."
+        },
+        {
+          "type": "tf",
+          "q": "Nigar buys all fifty cakes from Elvin.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "Nigar brings a tour guide who buys twenty cakes, she does not buy fifty cakes herself."
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar tells Elvin he should “aim high”. What does this mean?",
+          "options": [
+            "To throw things up in the air",
+            "To climb a very tall building",
+            "To set ambitious goals for yourself",
+            "To stop trying and go home"
+          ],
+          "answer": 2,
+          "why": "Aiming high means trying to achieve something great, like Elvin's goal to open a cafe."
+        },
+        {
+          "type": "inference",
+          "q": "How does Elvin feel at the end of the story?",
+          "options": [
+            "He is angry at Nigar",
+            "He hates the tourists",
+            "He is excited to continue baking",
+            "He wants to stay an accountant forever"
+          ],
+          "answer": 2,
+          "why": "“Elvin smiles. He is ready to bake again.”"
+        }
+      ]
+    },
+    "B1": {
+      "text": "Elvin worked as an accountant in a tall office building in Baku, but his true ambition was to open a cozy bakery in Icherisheher. He spent every weekend baking traditional Sheki sweets with a modern twist. His grandmother, a master baker, was his role model.\n\nFor a long time, opening a shop was just a distant goal. Then, his friend Nigar told him to go after it. “You have enough motivation to succeed,” she said. “Start small. Rent a stall at the weekend market near the Maiden Tower.”\n\nElvin baked sixty honey cakes and set up his stall early on Sunday morning. He arranged the sweets perfectly and waited for customers. Unfortunately, he faced a major setback. By noon, strong winds blew in from the Caspian Sea, and heavy rain started to fall. The tourists disappeared, and the street went completely quiet.\n\nAfter three hours of freezing in the damp air, Elvin’s determination began to fade. He called Nigar. “I am packing up,” he said, feeling defeated. “Nobody wants to buy anything in this terrible weather.”\n\n“Don’t move!” Nigar ordered. “Give me fifteen minutes.”\n\nWhen Nigar finally arrived, she was holding a large umbrella. Walking behind her was a tour guide named Kamran, followed by a group of freezing tourists. Nigar had found them sheltering in a nearby museum.\n\n“I told them you had the best sweets in the city,” Nigar smiled.\n\nThe tourists crowded around the small table. The sweet smell of honey and cinnamon was exactly what they needed. Within twenty minutes, Elvin sold every single cake.\n\nAs he folded up his empty table, the rain was still falling, but Elvin didn’t care. His dream suddenly felt a lot closer.",
+      "words": [
+        {
+          "phrase": "traditional Sheki sweets",
+          "az": "ənənəvi Şəki şirniyyatları",
+          "tr": "geleneksel Şeki tatlıları"
+        },
+        {
+          "phrase": "strong winds blew in",
+          "az": "güclü küləklər əsdi",
+          "tr": "güçlü rüzgarlar esti"
+        },
+        {
+          "phrase": "went completely quiet",
+          "az": "tamamilə sakitləşdi",
+          "tr": "tamamen sessizleşti"
+        },
+        {
+          "phrase": "feeling defeated",
+          "az": "məğlub olmuş hiss edərək",
+          "tr": "yenilmiş hissederek"
+        },
+        {
+          "phrase": "folded up his empty table",
+          "az": "boş masasını qatladı",
+          "tr": "boş masasını katladı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of the story?",
+          "options": [
+            "Why accounting is a boring job",
+            "How bad weather ruins weekend markets",
+            "How a friend's help saves a baker's first day",
+            "Why you need a lot of money to start a business"
+          ],
+          "answer": 2,
+          "why": "Elvin almost gives up due to bad weather, but his friend Nigar brings tourists to buy all his cakes."
+        },
+        {
+          "type": "detail",
+          "q": "What kind of weather caused problems for Elvin?",
+          "options": [
+            "Snow and ice",
+            "Extreme heat",
+            "A thick fog",
+            "Strong winds and heavy rain"
+          ],
+          "answer": 3,
+          "why": "“By noon, strong winds blew in from the Caspian Sea, and heavy rain started to fall.”"
+        },
+        {
+          "type": "detail",
+          "q": "Where did Nigar find the tourists?",
+          "options": [
+            "At Elvin's bakery",
+            "In an office building",
+            "Waiting at the Maiden Tower",
+            "Sheltering in a nearby museum"
+          ],
+          "answer": 3,
+          "why": "“Nigar had found them sheltering in a nearby museum.”"
+        },
+        {
+          "type": "tf",
+          "q": "Elvin ate some of the cakes because he was hungry.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text says he sold every single cake to the tourists, but it never mentions him eating any."
+        },
+        {
+          "type": "vocab",
+          "q": "Elvin faced a major “setback”. What does this mean?",
+          "options": [
+            "A big success",
+            "A new customer",
+            "Something that delays your progress",
+            "A helpful idea"
+          ],
+          "answer": 2,
+          "why": "The bad weather was a problem that stopped him from selling his cakes and making progress."
+        },
+        {
+          "type": "inference",
+          "q": "Why didn't Elvin care that the rain was still falling at the end?",
+          "options": [
+            "He had a large umbrella",
+            "He enjoyed the cold weather",
+            "He was happy because he sold all his cakes",
+            "He knew Nigar would drive him home"
+          ],
+          "answer": 2,
+          "why": "He sold every single cake and his dream felt closer, so the bad weather no longer bothered him."
+        }
+      ]
+    },
+    "B2": {
+      "text": "By day, Elvin was a corporate accountant in a glass tower overlooking the Baku Boulevard. But by night, his kitchen turned into a flour-dusted laboratory. He baked traditional Sheki pastries, blending his grandmother’s historic recipes with modern flavours. His ultimate ambition was to open an artisanal bakery in the winding stone streets of Icherisheher.\n\nHowever, for years, he did nothing but talk about it. It was his closest friend, Nigar, who finally convinced him to go after it. “You can’t just aspire to be a baker while staring at spreadsheets all day,” she told him over tea one evening. “If you want it, you have to chase your dreams.”\n\nTaking her advice, Elvin rented a modest pop-up stall at a weekend food market near the Maiden Tower. He stayed up all night baking eighty delicate honey-and-walnut pastries, carefully packing them in elegant boxes.\n\nHe set up his display on Sunday morning, buzzing with excitement. Unfortunately, he immediately encountered a brutal setback. Shortly after midday, the notorious Baku wind picked up, bringing a sudden, freezing downpour. The cobblestone streets emptied in minutes as people rushed indoors.\n\nElvin stood shivering under a leaking canvas roof for three hours. His determination evaporated completely. Feeling foolish, he pulled out his phone and called Nigar.\n\n“I’m throwing in the towel,” he muttered, staring at the unsold boxes. “It’s pouring, I’m freezing, and clearly, this was a massive mistake.”\n\n“Don’t you dare pack up,” Nigar commanded. “Perseverance is part of the business. Just give me twenty minutes.”\n\nWhen Nigar appeared through the heavy rain, she looked like a tour guide leading an expedition. In fact, she was leading an actual tour guide—a man named Kamran—along with a dozen shivering, exhausted tourists. Nigar had spotted them taking shelter in a carpet shop and promised them the best traditional sweets in Azerbaijan.\n\nThe tourists practically sprinted to Elvin’s stall. The scent of warm cinnamon and honey worked like magic. They bought every single pastry and even asked for his business card.\n\nPacking away his empty boxes in the pouring rain, Elvin couldn't stop grinning. The corporate spreadsheets could wait; he finally had his first real customers.",
+      "words": [
+        {
+          "phrase": "winding stone streets",
+          "az": "qıvrılan daş küçələr",
+          "tr": "kıvrımlı taş sokaklar"
+        },
+        {
+          "phrase": "buzzing with excitement",
+          "az": "həyəcandan coşaraq",
+          "tr": "heyecandan coşarak"
+        },
+        {
+          "phrase": "throwing in the towel",
+          "az": "təslim olmaq",
+          "tr": "havlu atmak (pes etmek)"
+        },
+        {
+          "phrase": "worked like magic",
+          "az": "sehr kimi təsir etdi",
+          "tr": "sihir gibi işe yaradı"
+        },
+        {
+          "phrase": "couldn't stop grinning",
+          "az": "gülümsəməyini saxlaya bilmirdi",
+          "tr": "gülümsemesine engel olamadı"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the core message of Elvin's story?",
+          "options": [
+            "A successful business requires expensive marketing",
+            "You should never trust the weather forecast in Baku",
+            "Office jobs are better than working in food service",
+            "Achieving a dream often requires overcoming initial difficulties"
+          ],
+          "answer": 3,
+          "why": "Elvin faces a setback with the weather but succeeds because his friend helps him persevere."
+        },
+        {
+          "type": "detail",
+          "q": "How is Elvin's baking described in the story?",
+          "options": [
+            "He strictly follows modern recipes",
+            "He blends his grandmother's historic recipes with modern flavours",
+            "He only bakes things he learned on the internet",
+            "He buys frozen pastries and heats them up"
+          ],
+          "answer": 1,
+          "why": "“He baked traditional Sheki pastries, blending his grandmother’s historic recipes with modern flavours.”"
+        },
+        {
+          "type": "detail",
+          "q": "Why did Elvin's determination evaporate?",
+          "options": [
+            "Nigar laughed at his idea",
+            "The tourists complained about the prices",
+            "He dropped all the boxes on the ground",
+            "A freezing downpour emptied the streets"
+          ],
+          "answer": 3,
+          "why": "“...bringing a sudden, freezing downpour. The cobblestone streets emptied in minutes... His determination evaporated completely.”"
+        },
+        {
+          "type": "tf",
+          "q": "Nigar bought a carpet while looking for the tourists.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text says she spotted the tourists taking shelter in a carpet shop, but does not say she bought a carpet."
+        },
+        {
+          "type": "vocab",
+          "q": "Nigar tells Elvin that “perseverance” is part of the business. What does this mean?",
+          "options": [
+            "Spending a lot of money to start",
+            "Continuing to try despite difficulties",
+            "Making traditional sweets for locals",
+            "Advertising your products online"
+          ],
+          "answer": 1,
+          "why": "Perseverance means not giving up even when things get tough, like standing in the freezing rain."
+        },
+        {
+          "type": "inference",
+          "q": "What does the final sentence imply about Elvin's future?",
+          "options": [
+            "He will quit baking entirely",
+            "He will ask for a promotion at his accounting job",
+            "He plans to become a tour guide",
+            "He is motivated to pursue his bakery dream seriously"
+          ],
+          "answer": 3,
+          "why": "“The corporate spreadsheets could wait; he finally had his first real customers.” This shows he is excited to focus on his dream."
+        }
+      ]
+    }
+  }
+}

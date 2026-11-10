@@ -1,0 +1,316 @@
+{
+  "index": 17,
+  "topic": "Sports & Competition",
+  "reading": {
+    "title": "The patience of the underdog",
+    "A2": {
+      "text": "Tural loved tennis. Every summer, he played in a small tournament near the Baku Boulevard. This year, his good friend Kamran was his coach.\n\nTural was very nervous. His opponent, Elvin, was a famous local athlete. Tural was the underdog. Nobody thought he could win the game.\n\nBefore the match, Tural started to warm up. He ran around the court. His right leg hurt a little. It was an old injury from last winter.\n\n“Do not run too fast at the start,” Kamran said. “Do not jump the gun. You have good stamina. Wait for him to get tired. Just give it your best shot.”\n\nThe match began. The referee shouted the rules. Elvin hit the yellow ball very hard. Tural ran and hit it back. He remembered Kamran's words. He played slowly and carefully.\n\nAfter one hour, Elvin was very tired. He moved slowly. But Tural did not stop running. His leg felt fine now.\n\nIn the last game, Tural hit a perfect ball over the net. The referee looked at the line and shouted, “Game, set, match! Tural wins!”\n\nKamran ran to the court and hugged his friend. “You did it! Next year, we will raise the bar and play in the big city games.”\n\nTural laughed loudly. “Let's drink a big glass of tea first!”",
+      "words": [
+        {
+          "phrase": "near the Baku Boulevard",
+          "az": "Bakı Bulvarının yaxınlığında",
+          "tr": "Bakü Bulvarı'nın yakınında"
+        },
+        {
+          "phrase": "famous local",
+          "az": "məşhur yerli",
+          "tr": "ünlü yerel"
+        },
+        {
+          "phrase": "from last winter",
+          "az": "keçən qışdan qalan",
+          "tr": "geçen kıştan kalma"
+        },
+        {
+          "phrase": "over the net",
+          "az": "torun üzərindən",
+          "tr": "filenin üzerinden"
+        },
+        {
+          "phrase": "a big glass of tea",
+          "az": "böyük stəkan çay",
+          "tr": "büyük bir bardak çay"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the story about?",
+          "options": [
+            "A man who buys a new tennis racket",
+            "Two friends who watch a tennis match on TV",
+            "A referee who stops a game because of rain",
+            "A tennis player who wins a match with his coach's help"
+          ],
+          "answer": 3,
+          "why": "The story is about Tural playing in a tournament and winning thanks to Kamran's advice."
+        },
+        {
+          "type": "detail",
+          "q": "What did Kamran tell Tural to do?",
+          "options": [
+            "Hit the ball as hard as possible",
+            "Stop playing because of his leg",
+            "Run fast at the start",
+            "Wait for Elvin to get tired"
+          ],
+          "answer": 3,
+          "why": "Kamran told him, “Wait for him to get tired.”"
+        },
+        {
+          "type": "detail",
+          "q": "What part of Tural's body hurt?",
+          "options": [
+            "His arm",
+            "His head",
+            "His right leg",
+            "His shoulder"
+          ],
+          "answer": 2,
+          "why": "“His right leg hurt a little.”"
+        },
+        {
+          "type": "tf",
+          "q": "Elvin was very tired after one hour of playing.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 0,
+          "why": "“After one hour, Elvin was very tired.”"
+        },
+        {
+          "type": "vocab",
+          "q": "Tural was the “underdog” in the match. What does this mean?",
+          "options": [
+            "The tallest player",
+            "The person who trains others",
+            "The person who enforces rules",
+            "The person expected to lose"
+          ],
+          "answer": 3,
+          "why": "He was the underdog because his opponent was famous and “Nobody thought he could win the game.”"
+        },
+        {
+          "type": "inference",
+          "q": "How did Tural probably feel at the end of the story?",
+          "options": [
+            "Angry",
+            "Happy and thirsty",
+            "Scared of Elvin",
+            "Sad and tired"
+          ],
+          "answer": 1,
+          "why": "He laughed, hugged his friend, and wanted to drink a big glass of tea."
+        }
+      ]
+    },
+    "B1": {
+      "text": "Every September, an amateur tennis tournament takes place near the Baku Boulevard. Tural loved playing in it, and this year he asked his friend Kamran to be his coach.\n\nOn the day of the final match, Tural felt extremely nervous. He was playing against Elvin, a tall and powerful athlete who won every year. Everyone knew Tural was the underdog. To make things worse, as Tural started to warm up on the court, he felt a sharp pain in his ankle. It was an old injury from playing football.\n\nKamran noticed his friend rubbing his leg. “Listen to me,” the coach said. “Elvin is strong, but he gets tired quickly. Don't jump the gun and try to win the first set too fast. You have much better stamina. Just stay calm, keep the ball in play, and give it your best shot.”\n\nWhen the referee started the match, Elvin played aggressively. He hit the ball incredibly hard. Tural lost the first set quickly, but he remembered his coach's advice. He stopped trying to hit winning shots and just focused on returning the ball.\n\nBy the second hour, the strategy was working perfectly. Elvin was breathing heavily and making mistakes. Tural's ankle still hurt, but he ignored the pain and kept running.\n\nIn the final game, Tural hit a brilliant shot down the line. The referee checked the mark and blew his whistle. Tural had actually won.\n\nKamran jumped over the net to hug him. “I am so proud of you! Next year, we will raise the bar and enter the national championship.”\n\nTural smiled, drinking from his water bottle. “Let's just go to Icherisheher for some tea first. My ankle needs a rest.”",
+      "words": [
+        {
+          "phrase": "takes place",
+          "az": "baş tutur",
+          "tr": "gerçekleşir"
+        },
+        {
+          "phrase": "rubbing his leg",
+          "az": "qıçını ovuşdurduğunu",
+          "tr": "bacağını ovuşturduğunu"
+        },
+        {
+          "phrase": "keep the ball in play",
+          "az": "topu oyunda saxlamaq",
+          "tr": "topu oyunda tutmak"
+        },
+        {
+          "phrase": "working perfectly",
+          "az": "mükəmməl işləyirdi",
+          "tr": "mükemmel işliyordu"
+        },
+        {
+          "phrase": "down the line",
+          "az": "xətt boyu",
+          "tr": "çizgi boyunca"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the main theme of the story?",
+          "options": [
+            "Why amateur tournaments in Baku are always delayed",
+            "The importance of buying expensive tennis equipment",
+            "How playing strategically helped a player win against a stronger opponent",
+            "How injuries can end an athlete's career permanently"
+          ],
+          "answer": 2,
+          "why": "Tural uses his coach's strategy (defending and using stamina) to beat a more powerful opponent."
+        },
+        {
+          "type": "detail",
+          "q": "Where did Tural get his old injury?",
+          "options": [
+            "From a car accident",
+            "From running in the park",
+            "From a previous tennis match",
+            "From playing football"
+          ],
+          "answer": 3,
+          "why": "“It was an old injury from playing football.”"
+        },
+        {
+          "type": "detail",
+          "q": "What did Tural do after losing the first set?",
+          "options": [
+            "He started hitting the ball much harder",
+            "He focused only on returning the ball",
+            "He asked the referee to pause the match",
+            "He took medicine for his ankle"
+          ],
+          "answer": 1,
+          "why": "“He stopped trying to hit winning shots and just focused on returning the ball.”"
+        },
+        {
+          "type": "tf",
+          "q": "Kamran played tennis against Elvin last year.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 2,
+          "why": "The text says Elvin won every year, but it never mentions if Kamran played against him."
+        },
+        {
+          "type": "vocab",
+          "q": "Kamran tells Tural, “Don't jump the gun.” What does this mean?",
+          "options": [
+            "Do not run off the court",
+            "Do not act too early or fast",
+            "Do not drop your racket",
+            "Do not argue with the referee"
+          ],
+          "answer": 1,
+          "why": "Kamran warns him not to try to win the first set too fast, but to be patient instead."
+        },
+        {
+          "type": "inference",
+          "q": "Why does Tural want to go to Icherisheher at the end?",
+          "options": [
+            "To buy a new pair of shoes",
+            "To find the referee and thank him",
+            "To celebrate and rest his painful ankle",
+            "To play another match"
+          ],
+          "answer": 2,
+          "why": "He says, “Let's just go to Icherisheher for some tea first. My ankle needs a rest.”"
+        }
+      ]
+    },
+    "B2": {
+      "text": "Every September, a fiercely competitive amateur tennis tournament takes place on the courts near the Baku Boulevard. Tural had entered for three consecutive years, but this time he had persuaded his childhood friend Kamran to step in as his official coach.\n\nAs they arrived for the final match, the atmosphere was tense. Tural was facing Elvin, a formidable local athlete known for his thunderous serve. Tural was undoubtedly the underdog of the day. To complicate matters, while he was trying to warm up and stretch his legs, a familiar ache flared up in his right ankle. It was a lingering injury from a skiing trip in Gabala two winters ago.\n\nKamran immediately noticed Tural wincing. He pulled him aside and handed him a towel. “Listen to me,” Kamran advised, lowering his voice. “Elvin hits hard, but his stamina is his weak point. Don't jump the gun and try to match his power in the opening games. Let him run himself into the ground. Just stay patient, keep the rallies long, and give it your best shot.”\n\nWhen the referee finally called play, Elvin came out swinging aggressively. Tural surrendered the first set in barely thirty minutes, but he stuck strictly to Kamran's tactical plan. Instead of attempting risky winners, he focused purely on defense, returning every ball deep into the court.\n\nBy the middle of the second set, the dynamic shifted entirely. Elvin's shoulders slumped, and his powerful shots began clipping the net. Tural's ankle was throbbing painfully, yet he pushed through the discomfort, relying on his superior endurance.\n\nAt match point in the third set, Tural delivered a stunning backhand passing shot. The referee climbed down from his chair, inspected the chalk mark on the clay, and raised his hand. Tural had secured the victory.\n\nKamran practically sprinted onto the court, beaming with pride. “That was a tactical masterclass! Next season, we are definitely going to raise the bar and register for the national qualifiers.”\n\nTural chuckled, untying his shoes with a sigh of relief. “Maybe. But right now, let's head to Icherisheher. I need a pot of thyme tea and a bag of ice.”",
+      "words": [
+        {
+          "phrase": "three consecutive years",
+          "az": "ardıcıl üç il",
+          "tr": "üst üste üç yıl"
+        },
+        {
+          "phrase": "lowering his voice",
+          "az": "səsini alçaldaraq",
+          "tr": "sesini alçaltarak"
+        },
+        {
+          "phrase": "flared up",
+          "az": "kəskinləşdi",
+          "tr": "şiddetlendi"
+        },
+        {
+          "phrase": "run himself into the ground",
+          "az": "özünü yorub əldən salsın",
+          "tr": "kendini yorup bitirsin"
+        },
+        {
+          "phrase": "beaming with pride",
+          "az": "qürurla parlayaraq",
+          "tr": "gururla parlayarak"
+        }
+      ],
+      "questions": [
+        {
+          "type": "gist",
+          "q": "What is the central event of the narrative?",
+          "options": [
+            "A dispute between a coach and a referee over a chalk mark",
+            "A player who is forced to withdraw due to a skiing injury",
+            "A local athlete who dominates a tournament effortlessly",
+            "A tennis match where endurance and strategy overcome raw power"
+          ],
+          "answer": 3,
+          "why": "The story is about Tural surviving the early games and using his stamina to eventually defeat the powerful Elvin."
+        },
+        {
+          "type": "detail",
+          "q": "How did Tural respond to Elvin's aggressive play in the first set?",
+          "options": [
+            "He asked for a medical timeout to check his ankle",
+            "He matched his power shot for shot",
+            "He started serving more aggressively",
+            "He surrendered the set quickly but stuck to his defensive plan"
+          ],
+          "answer": 3,
+          "why": "“Tural surrendered the first set in barely thirty minutes, but he stuck strictly to Kamran's tactical plan.”"
+        },
+        {
+          "type": "detail",
+          "q": "What was the origin of Tural's ankle injury?",
+          "options": [
+            "A skiing trip in Gabala",
+            "A football match in Ganjlik",
+            "A tennis final three years ago",
+            "A running injury on the Baku Boulevard"
+          ],
+          "answer": 0,
+          "why": "“It was a lingering injury from a skiing trip in Gabala two winters ago.”"
+        },
+        {
+          "type": "tf",
+          "q": "Tural hit a powerful forehand shot to win the final point.",
+          "options": [
+            "True",
+            "False",
+            "Not given"
+          ],
+          "answer": 1,
+          "why": "False, because he “delivered a stunning backhand passing shot”."
+        },
+        {
+          "type": "vocab",
+          "q": "Kamran mentions that next season they will “raise the bar”. What does this mean?",
+          "options": [
+            "Set a higher standard or goal",
+            "Buy a new tennis net",
+            "Challenge Elvin to a rematch",
+            "Speak louder during matches"
+          ],
+          "answer": 0,
+          "why": "He wants to aim higher by registering for the national qualifiers next season."
+        },
+        {
+          "type": "inference",
+          "q": "What does Elvin's body language (shoulders slumped) in the second set indicate?",
+          "options": [
+            "He was preparing a new strategy",
+            "He was becoming fatigued and losing his edge",
+            "He was angry with the referee",
+            "He was feeling energetic"
+          ],
+          "answer": 1,
+          "why": "His slumped shoulders and shots clipping the net show he had run himself into the ground, as Kamran predicted."
+        }
+      ]
+    }
+  }
+}
