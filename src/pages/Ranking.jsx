@@ -33,12 +33,11 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
   return (
     <div className="home-page leaderboard-page">
       <div className="home-body leaderboard-content">
-        <header className="leaderboard-header">
-          <div><p className="leaderboard-eyebrow">THE PRACTICE CLUB</p><h1>Little by little.<br /><span>Up the leaderboard.</span></h1><p>Show up. Speak more. Grow together.</p></div>
-          <div className="leaderboard-emblem"><Trophy size={34} strokeWidth={1.5} aria-hidden="true" /></div>
-        </header>
-        <div className="leaderboard-toolbar">
-        <h2>Leaderboard</h2>
+        {/* One compact row (Polad 2026-11-10): the old two-line hero pushed
+            «Your position» and the podium below the fold on a phone, and the
+            board is the point of this page. */}
+        <header className="leaderboard-toolbar">
+        <h1><Trophy size={20} strokeWidth={2} aria-hidden="true" />Practice Club</h1>
         <div className="leaderboard-tabs" aria-label="Ranking period">
           <button
             onClick={() => setTab('weekly')}
@@ -53,15 +52,12 @@ export default function Ranking({ user }) {  const [allUsers, setAllUsers] = us
             {'All time'}
           </button>
         </div>
-        </div>
-        {tab === 'weekly' && (
-          <p style={{
-            fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center',
-            margin: '0 0 12px',
-          }}>
-            {'Calls + analysed AInur practice. Resets Monday, Baku time.'}
-          </p>
-        )}
+        </header>
+        <p className="leaderboard-note">
+          {tab === 'weekly'
+            ? 'Calls + analysed AInur practice. Resets Monday, Baku time.'
+            : 'Every minute you have practised. Little by little.'}
+        </p>
         {loading ? (
           <div className="empty-state">
             <p>Loading the leaderboard...</p>

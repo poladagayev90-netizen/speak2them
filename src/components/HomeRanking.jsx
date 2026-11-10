@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
-import { Crown, Clock, Phone, Flame, Trophy } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Crown, Clock, Phone, Flame, Trophy, ArrowUp } from 'lucide-react';
+import HeroParade, { heroClockStyle } from './plan/HeroFx';
+import './plan/plan.css';
 import RankingCard from './RankingCard';
 import TutorBadge from './TutorBadge';
 import AvatarImage from './ui/AvatarImage';
@@ -7,8 +9,25 @@ import { getUserRank, sortUsersForRanking, weeklyMinutesOf } from '../utils/rank
 import { useNavigate } from 'react-router-dom';
 import './Ranking.css';
 import { totalPracticeMinutes } from '../utils/practiceStats';
+import { rankClimb } from '../utils/ranking';
 
-function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
+// The place this learner had the last time they opened this board, per
+// period, on this device. Only a CLIMB is ever shown — the board is for
+// showing up, not for telling someone they slipped.
+const lastRankKey = (uid, mode) => `sl.rank.${mode}.${uid}`;
+function useRankClimb(uid, mode, rank) {
+  const [climb, setClimb] = useState(0);
+  useEffect(() => {
+    if (!uid || rank == null) return;
+    let before = null;
+    try { before = Number(localStorage.getItem(lastRankKey(uid, mode))) || null; } catch { /* private mode */ }
+    setClimb(rankClimb(before, rank));
+    try { localStorage.setItem(lastRankKey(uid, mode), String(rank)); } catch { /* private mode */ }
+  }, [uid, mode, rank]);
+  return climb;
+}
+
+function PodiumCard({ user, rank, isCurrentUser, displayMinutes, order }) {
   // A gentler staircase than before (was 120/90/70 in a 240px well, which left
   // a large dead gap under the shortest column). The steps still read as first,
   // second and third; they just stop dominating the screen.
@@ -19,11 +38,12 @@ function PodiumCard({ user, rank, isCurrentUser, displayMinutes }) {
   return (
     <div
       className={`ranking-podium-slot rank-${rank}`}
+      // Staggers the rise: third, second, then first last (ranking.css).
+      style={{ cursor: 'pointer', '--rise-order': order }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/user/${user.uid || user.id}`); } }}
       onClick={() => navigate(`/user/${user.uid || user.id}`)}
-      style={{ cursor: 'pointer' }}
     >
       <div className="ranking-podium-avatar">
         {/* The initial sits UNDER the photo rather than being replaced by
@@ -54,6 +74,8 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
   const sortedUsers = useMemo(() => sortUsersForRanking(users, mode), [users, mode]);
   const myRank = useMemo(() => getUserRank(sortedUsers, currentUserId), [sortedUsers, currentUserId]);
   const currentUser = sortedUsers.find((u) => (u.uid || u.id) === currentUserId);
+  const climb = useRankClimb(currentUserId, mode, myRank);
+  const clock = useMemo(heroClockStyle, []);
   const minutesOf = (u) => (mode === 'weekly' ? weeklyMinutesOf(u) : totalPracticeMinutes(u));
   const topThree = sortedUsers.slice(0, 3);
   const rest = sortedUsers.slice(3);
@@ -74,10 +96,23 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
   return (
     <div className="ranking-board">
       {myRank !== null && (
-        <div className="ranking-you-card">
+        // The one moving, filled surface on the page — the same drifting
+        // purple and sea parade as Today's headline card (HeroFx), so «where
+        // am I» is the first thing the eye lands on.
+        <div className="ranking-you-card pl-card--hero" style={clock}>
+          <HeroParade />
           <div>
-            <p className="ranking-you-label">Your position</p>
-            <p className="ranking-you-rank">#{myRank}</p>
+            <p className="ranking-you-label">Your position · {mode === 'weekly' ? 'this week' : 'all time'}</p>
+            <p className="ranking-you-rank">
+              {/* Keyed on the place, so a new place pops in. */}
+              <span key={`${mode}-${myRank}`} className="ranking-you-num">#{myRank}</span>
+              {climb > 0 && (
+                <span className="ranking-climb">
+                  <ArrowUp size={13} strokeWidth={2.5} aria-hidden="true" />
+                  {climb === 1 ? 'up 1 place' : `up ${climb} places`}
+                </span>
+              )}
+            </p>
           </div>
           {/* Each pill used to open with a stray space where an emoji had been
               removed, and the streak was a bare number with nothing to say what
@@ -104,7 +139,8 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
       {topThree.length > 0 && (
         <section className="ranking-leaders">
         <div className="ranking-section-heading"><h3>Leading the way</h3><span>{mode === 'weekly' ? 'THIS WEEK' : 'ALL TIME'}</span></div>
-        <div className="ranking-podium">
+        {/* Keyed on the period so switching tabs replays the rise. */}
+        <div className="ranking-podium" key={mode}>
           {podiumOrder.map((user) => {
             const rank = sortedUsers.findIndex((u) => (u.uid || u.id) === (user.uid || user.id)) + 1;
             return (
@@ -114,6 +150,7 @@ export default function HomeRanking({ users, currentUserId, mode = 'all' }) {
                 rank={rank}
                 isCurrentUser={(user.uid || user.id) === currentUserId}
                 displayMinutes={minutesOf(user)}
+                order={3 - rank}
               />
             );
           })}

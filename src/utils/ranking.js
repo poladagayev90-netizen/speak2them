@@ -62,3 +62,13 @@ export function getUserRank(sortedUsers, currentUserId) {
   const index = sortedUsers.findIndex((user) => getUserKey(user) === currentUserId);
   return index === -1 ? null : index + 1;
 }
+
+// How many places the learner climbed since they last saw the board (a
+// positive number), or 0 — no previous place, the same place, or a drop. The
+// board only ever celebrates a climb (HomeRanking).
+export function rankClimb(previousRank, currentRank) {
+  const before = Number(previousRank);
+  const now = Number(currentRank);
+  if (!Number.isFinite(before) || before < 1 || !Number.isFinite(now) || now < 1) return 0;
+  return before > now ? before - now : 0;
+}
