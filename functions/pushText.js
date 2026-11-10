@@ -12,7 +12,7 @@
 // Callers that already hold the user document (streakReminder, topicReminder)
 // pass the resolved language in instead.
 
-const SUPPORTED = ["az", "tr", "en"];
+const SUPPORTED = ["az", "tr", "ru", "en"];
 const DEFAULT_LANG = "az";
 
 // Language of the notifications for one user, from their already-loaded doc.
@@ -46,6 +46,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DAY_WORDS = {
   az: { today: "Bu gün", tomorrow: "Sabah" },
   tr: { today: "Bugün", tomorrow: "Yarın" },
+  ru: { today: "Сегодня", tomorrow: "Завтра" },
   en: { today: "Today", tomorrow: "Tomorrow" },
 };
 
@@ -83,6 +84,8 @@ const hourOnlyLabel = (startMs, timeZone) => zonedHour(startMs, timeZone || TZ_F
 const FALLBACK = {
   az: { peer: "Partnyorunuz", someone: "Kimsə", teacher: "Müəlliminiz", student: "Şagirdiniz", member: "Üzv", time: "yeni" },
   tr: { peer: "Partneriniz", someone: "Biri", teacher: "Öğretmeniniz", student: "Öğrenciniz", member: "Üye", time: "yeni" },
+  // ru: `peerWith` is the instrumental form for «с …».
+  ru: { peer: "Ваш партнёр", peerWith: "партнёром", someone: "Кто-то", teacher: "Ваш преподаватель", student: "Ваш ученик", member: "Участник", time: "новое время" },
   en: { peer: "your partner", someone: "Someone", teacher: "Your teacher", student: "Your student", member: "Member", time: "the new time" },
 };
 
@@ -108,7 +111,7 @@ const STRINGS = {
     slot_change_accepted: (v) => ({ title: "✅ Vaxt dəyişdirildi", body: `Zənginiz ${v.time} vaxtına keçirildi.` }),
     slot_change_declined: () => ({ title: "Vaxt dəyişikliyi baş tutmadı", body: "Partnyorunuz üçün bu vaxt uyğun deyil — köhnə vaxt qüvvədə qalır." }),
     slot_reminder: (v) => ({ title: "⏰ 10 dəqiqəyə praktika", body: `${v.time} — zənginiz başlamaq üzrədir.` }),
-    slot_start: () => ({ title: "🎙️ Praktika vaxtıdır", body: "Partnyorunuz sizi gözləyir — tətbiqi açın." }),
+    slot_start: () => ({ title: "🎙️ Praktika başlayır", body: "Tətbiqi açıb zəngə qoşulun." }),
     // Reminder ladder (callReminders.js). The call's own time, in the reader's zone.
     call_reminder_24h: (v, f) => ({ title: `${v.peerName || f.peer} ilə praktika — ${v.time}`, body: "Zənginiz rezerv olunub. Təqvimə əlavə edin ki, vaxt yadınızda qalsın." }),
     call_reminder_1h: (v, f) => ({ title: `Bir saata praktika — ${v.time}`, body: `${v.peerName || f.peer} sizinlə danışmağa hazırlaşır.` }),
@@ -118,7 +121,7 @@ const STRINGS = {
     // özbaşına yox olsaydı, istifadəçi seçiminin itdiyini düşünərdi.
     slot_day_cleared: (v) => ({ title: "Bugünkü digər bloklarınız boşaldıldı", body: `Zənginiz ${v.time} vaxtına təsdiqləndi, ona görə bugünkü qalan bloklarınız axtarışdan çıxarıldı. Sabahkı seçimləriniz olduğu kimi qalır.` }),
     slot_match_cancelled: (v, f) => ({ title: "Zənginiz ləğv edildi", body: `${v.byName || f.teacher} ${v.time} zəngini ləğv etdi. Blokda qalırsınız — yeni partnyor tapıla bilər.` }),
-    slot_missed: (v) => ({ title: "🔕 Praktika keçmədi", body: `${v.time} zənginə heç kim qoşulmadı. Növbəti dəfə vaxtında qoşulmağa çalış!` }),
+    slot_missed: (v) => ({ title: "🔕 Praktika keçmədi", body: `${v.time} zənginə heç kim qoşulmadı. Yeni vaxtı Plan tabında seçə bilərsiniz.` }),
     search_ping: (v, f) => ({ title: "Kimsə praktika axtarır 🎙️", body: `${v.searcherName || f.someone} partnyor gözləyir — indi qoşul!` }),
     analysis_ready: () => ({ title: "Analiziniz hazırdır 🎓", body: "Zəng analizin hazır oldu — nəticəyə bax!" }),
     analysis_failed: (v) => ({ title: "Analiz alınmadı", body: v.noSpeech ? "Danışıq eşidilmədi — mikrofonu yoxlayıb yenidən cəhd et." : "Zəngin analizi tamamlana bilmədi. Növbəti zəngdə yenidən cəhd edəcəyik." }),
@@ -176,13 +179,13 @@ const STRINGS = {
     slot_change_accepted: (v) => ({ title: "✅ Saat değiştirildi", body: `Görüşmeniz ${v.time} saatine alındı.` }),
     slot_change_declined: () => ({ title: "Saat değişikliği olmadı", body: "Partneriniz için bu saat uygun değil — eski saat geçerli kalıyor." }),
     slot_reminder: (v) => ({ title: "⏰ Pratiğe 10 dakika", body: `${v.time} — görüşmeniz başlamak üzere.` }),
-    slot_start: () => ({ title: "🎙️ Pratik zamanı", body: "Partneriniz sizi bekliyor — uygulamayı açın." }),
+    slot_start: () => ({ title: "🎙️ Pratik başlıyor", body: "Uygulamayı açıp görüşmeye katılın." }),
     call_reminder_24h: (v, f) => ({ title: `${v.peerName || f.peer} ile pratik — ${v.time}`, body: "Görüşmeniz ayrıldı. Saatini hatırlamak için takviminize ekleyin." }),
     call_reminder_1h: (v, f) => ({ title: `Bir saat sonra pratik — ${v.time}`, body: `${v.peerName || f.peer} sizinle konuşmaya hazırlanıyor.` }),
     call_reminder_10m: (v, f) => ({ title: `10 dakika sonra pratik — ${v.time}`, body: `${v.peerName || f.peer} ile görüşmeniz başlıyor. Uygulamayı açıp katılın.` }),
     slot_day_cleared: (v) => ({ title: "Bugünkü diğer bloklarınız boşaltıldı", body: `Görüşmeniz ${v.time} için onaylandı, bu yüzden bugünkü diğer bloklarınız eşleşmeden çıkarıldı. Yarınki seçimleriniz olduğu gibi kalıyor.` }),
     slot_match_cancelled: (v, f) => ({ title: "Görüşmeniz iptal edildi", body: `${v.byName || f.teacher} ${v.time} görüşmesini iptal etti. Blokta kalıyorsunuz — yeni bir partner bulunabilir.` }),
-    slot_missed: (v) => ({ title: "🔕 Pratik gerçekleşmedi", body: `${v.time} görüşmesine kimse katılmadı. Bir dahaki sefere zamanında katılmayı dene!` }),
+    slot_missed: (v) => ({ title: "🔕 Pratik gerçekleşmedi", body: `${v.time} görüşmesine kimse katılmadı. Yeni bir saati Plan sekmesinden seçebilirsiniz.` }),
     search_ping: (v, f) => ({ title: "Biri pratik arıyor 🎙️", body: `${v.searcherName || f.someone} partner bekliyor — hemen katıl!` }),
     analysis_ready: () => ({ title: "Analiziniz hazır 🎓", body: "Görüşme analizin hazır — sonuca göz at!" }),
     analysis_failed: (v) => ({ title: "Analiz alınamadı", body: v.noSpeech ? "Konuşma duyulmadı — mikrofonu kontrol edip tekrar dene." : "Görüşmenin analizi tamamlanamadı. Bir sonraki görüşmede tekrar deneyeceğiz." }),
@@ -240,13 +243,13 @@ const STRINGS = {
     slot_change_accepted: (v) => ({ title: "✅ Time changed", body: `Your call moved to ${v.time}.` }),
     slot_change_declined: () => ({ title: "The time change didn't happen", body: "That time doesn't work for your partner — the original time stands." }),
     slot_reminder: (v) => ({ title: "⏰ Practice in 10 minutes", body: `${v.time} — your call is about to start.` }),
-    slot_start: () => ({ title: "🎙️ Time to practise", body: "Your partner is waiting — open the app." }),
+    slot_start: () => ({ title: "🎙️ Your practice is starting", body: "Open the app and join the call." }),
     call_reminder_24h: (v, f) => ({ title: `Practice with ${v.peerName || f.peer} — ${v.time}`, body: "Your call is booked. Add it to your calendar to keep the time in view." }),
     call_reminder_1h: (v, f) => ({ title: `Practice in an hour — ${v.time}`, body: `${v.peerName || "Your partner"} is getting ready to talk with you.` }),
     call_reminder_10m: (v, f) => ({ title: `Practice in 10 minutes — ${v.time}`, body: `Your call with ${v.peerName || f.peer} is starting. Open the app and join.` }),
     slot_day_cleared: (v) => ({ title: "Your other blocks today were released", body: `Your call is confirmed for ${v.time}, so the rest of today's blocks were taken out of matching. Your choices for the other days are untouched.` }),
     slot_match_cancelled: (v, f) => ({ title: "Your call was cancelled", body: `${v.byName || f.teacher} cancelled the ${v.time} call. You are still in that block — a new partner can be found.` }),
-    slot_missed: (v) => ({ title: "🔕 The practice didn't happen", body: `Nobody joined your call (${v.time}). Try to be there on time next round!` }),
+    slot_missed: (v) => ({ title: "🔕 The practice didn't happen", body: `Nobody joined the ${v.time} call. You can pick a new time on the Plan tab.` }),
     search_ping: (v, f) => ({ title: "Someone is looking for practice 🎙️", body: `${v.searcherName || f.someone} is waiting for a partner — join now!` }),
     analysis_ready: () => ({ title: "Your analysis is ready 🎓", body: "Your call analysis is done — go and see the result!" }),
     analysis_failed: (v) => ({ title: "The analysis failed", body: v.noSpeech ? "We heard no speech — check your microphone and try again." : "We could not finish the analysis of your call. We'll try again on your next one." }),
@@ -282,6 +285,72 @@ const STRINGS = {
     admin_intro_moved: (v, f) => ({ title: "Intro call moved", body: `${v.name || f.someone} picked a new time: ${v.time}.` }),
     admin_intro_cancelled: (v, f) => ({ title: "Intro call cancelled", body: `${v.name || f.someone} — ${v.time}.` }),
     admin_intro_reminder: (v, f) => ({ title: "👋 Intro call in 15 minutes", body: `${v.name || f.someone} — ${v.time}.` }),
+  },
+
+  // Russian (2026-11-10): Russian-language phones used to get English.
+  // Formal «вы», like the az/tr sets addressed to learners.
+  ru: {
+    incoming_call: (v) => ({ title: `📞 ${v.callerName} звонит вам`, body: "Откройте приложение, чтобы ответить" }),
+    missed_call: (v, f) => ({ title: "📵 Пропущенный звонок", body: `${v.callerName || f.someone} звонил(а) вам. Нажмите, чтобы перезвонить.` }),
+    premium_activated: (v, f) => ({ title: "👑 Premium активирован", body: `${v.userName || f.member}, все функции Premium теперь открыты для вас!` }),
+    daily_reminder: (v) => ({ title: `💬 ${v.topic}`, body: v.question ? `${v.question} — подумайте над ответом и заходите!` : "Откройте приложение и попрактикуйте то, что выучили по этой теме!" }),
+    streak_urgent: (v) => ({ title: "⚠️ Ваша серия прервётся сегодня ночью!", body: `${v.streak} дн. работы обнулятся в полночь. Хватит одного короткого звонка! 🔥` }),
+    streak_soft: (v) => ({ title: `🔥 Ваша серия ${v.streak} дн. ждёт вас`, body: "Сегодня вы ещё не говорили — сделайте один звонок и сохраните серию!" }),
+    teacher_invite: (v, f) => ({ title: "🎓 Приглашение от преподавателя", body: `${v.teacherName || f.teacher} хочет добавить вас как ученика — посмотрите.` }),
+    invite_accepted: (v, f) => ({ title: "✅ Ученик присоединился", body: `${v.studentName || f.student} принял(а) ваше приглашение.` }),
+    tutor_verified: () => ({ title: "🎓 Ваш профиль репетитора подтверждён", body: "Значок Tutor теперь виден рядом с вашим именем." }),
+    teacher_nudge: (v, f) => ({ title: `${v.teacherName || f.teacher} ждёт вас`, body: "Сегодняшняя разговорная практика ещё не закончена — это около 8 минут." }),
+    teacher_scheduled_call: (v, f) => ({ title: `🗓️ ${v.teacherName || f.teacher} назначил(а) звонок`, body: `${v.time} — с ${v.peerName || f.peer}. Подключайтесь вовремя!` }),
+    slot_nearby: (v) => ({ title: "Рядом есть свободный собеседник", body: `В блоке ${v.time} кто-то ждёт — запишитесь туда тоже, и звонок подтвердится сразу.` }),
+    slot_matched: (v, f) => ({ title: "✅ Ваш звонок подтверждён", body: `${v.time} — с ${v.peerName || f.peer}. Подключайтесь вовремя!` }),
+    slot_matched_mentor: (v, f) => ({ title: "✅ Ваш звонок подтверждён", body: `${v.time} — с ${v.peerName || f.peer}. Ваш партнёр хочет у вас учиться; ваша беглость поддержит сегодняшний разговор.` }),
+    slot_released: (v) => ({ title: "Ваш слот снова открыт", body: `Планы партнёра изменились — слот ${v.time} снова в поиске.` }),
+    slot_change_request: (v, f) => ({ title: "🕘 Предложено новое время", body: `${v.peerName || f.peer} хочет перенести звонок на ${v.time}.` }),
+    slot_change_accepted: (v) => ({ title: "✅ Время изменено", body: `Ваш звонок перенесён на ${v.time}.` }),
+    slot_change_declined: () => ({ title: "Время не изменилось", body: "Это время не подходит партнёру — остаётся прежнее." }),
+    slot_reminder: (v) => ({ title: "⏰ Практика через 10 минут", body: `${v.time} — ваш звонок скоро начнётся.` }),
+    slot_start: () => ({ title: "🎙️ Практика начинается", body: "Откройте приложение и подключитесь к звонку." }),
+    call_reminder_24h: (v, f) => ({ title: `Практика с ${v.peerName || f.peerWith} — ${v.time}`, body: "Ваш звонок забронирован. Добавьте его в календарь, чтобы время было перед глазами." }),
+    call_reminder_1h: (v, f) => ({ title: `Практика через час — ${v.time}`, body: `${v.peerName || f.peer} готовится поговорить с вами.` }),
+    call_reminder_10m: (v, f) => ({ title: `Практика через 10 минут — ${v.time}`, body: `Ваш звонок с ${v.peerName || f.peerWith} начинается. Откройте приложение и подключитесь.` }),
+    slot_day_cleared: (v) => ({ title: "Ваши другие блоки на сегодня освобождены", body: `Звонок подтверждён на ${v.time}, поэтому остальные сегодняшние блоки сняты с подбора. Выбор на другие дни не изменился.` }),
+    slot_match_cancelled: (v, f) => ({ title: "Ваш звонок отменён", body: `${v.byName || f.teacher} отменил(а) звонок ${v.time}. Вы остаётесь в этом блоке — новый партнёр может найтись.` }),
+    slot_missed: (v) => ({ title: "Практика не состоялась", body: `К звонку ${v.time} никто не подключился. Новое время можно выбрать на вкладке Plan.` }),
+    search_ping: (v, f) => ({ title: "Кто-то ищет практику 🎙️", body: `${v.searcherName || f.someone} ждёт партнёра — подключайтесь!` }),
+    analysis_ready: () => ({ title: "Ваш анализ готов 🎓", body: "Анализ звонка готов — посмотрите результат!" }),
+    analysis_failed: (v) => ({ title: "Анализ не получился", body: v.noSpeech ? "Речь не была слышна — проверьте микрофон и попробуйте снова." : "Не удалось завершить анализ звонка. Попробуем снова в следующий раз." }),
+    student_analysis_ready: (v, f) => ({ title: "Анализ ученика готов 🎓", body: `Новый анализ речи ${v.studentName || f.student} готов — посмотрите в панели.` }),
+    ai_report_ready: () => ({ title: "Ваш отчёт готов", body: "Посмотрите, как прошла сессия с AInur." }),
+    admin_new_applicant: (v, f) => ({ title: "🆕 Новый профиль ученика", body: `${v.name || f.someone}${v.country ? ` (${v.country})` : ""} прошёл(ла) онбординг — ${v.target || "?"} практик в неделю. См. Applicants.` }),
+    match_offer: (v, f) => ({ title: "🗓️ Предложение практики", body: `${v.time} — с ${v.peerName || f.peerWith}. Звонок забронируется, когда вы оба подтвердите.` }),
+    match_confirmed: (v, f) => ({ title: "✅ Практика подтверждена", body: `${v.time} — с ${v.peerName || f.peerWith}. Вы оба согласились — до встречи!` }),
+    week_plan: (v) => ({ title: "🗓️ Ваши практики на следующую неделю", body: `Предложено практик: ${v.count}. Подтвердите в приложении — каждая бронируется, когда вы оба скажете «да».` }),
+    match_offer_reminder: (v, f) => ({ title: "🗓️ Предложение ещё открыто", body: `Практика с ${v.peerName || f.peerWith}, ${v.time}. Ответьте «да» или «нет» в приложении.` }),
+    plan_booked: (v, f) => ({ title: "✅ Практика забронирована", body: `${v.time} — с ${v.peerName || f.peerWith}. Если время не подходит, отмените на вкладке Plan не позже чем за 2 часа.` }),
+    match_offer_partner_yes: (v, f) => ({ title: "🙌 Ваш партнёр сказал «да»", body: `${v.peerName || f.peer} готов(а) на ${v.time}. Ваше «да» бронирует практику.` }),
+    week_checkin: () => ({ title: "🗓️ Следующая неделя — в ваше обычное время", body: "План с партнёрами придёт в воскресенье вечером. Другие часы или неделя отдыха? Измените на вкладке Plan." }),
+    week_checkin_reminder: () => ({ title: "🗓️ Ваш план придёт сегодня вечером", body: "Следующая неделя — в обычное время. Другие часы или неделя отдыха? Измените на вкладке Plan до вечера." }),
+    plan_tonight: () => ({ title: "🗓️ Ваш план придёт сегодня вечером", body: "Пакет активен — практики на следующую неделю придут вечером. Хотите другие дни? Откройте вкладку Plan." }),
+    admin_plan_sent: (v) => ({ title: "🗓️ План отправлен автоматически", body: `${v.booked || 0} брон., ${v.offers} предл., ${v.people} чел. Admin → Matching.` }),
+    admin_agent_report: (v) => ({ title: "🤖 AI-аналитик: есть аккаунты для проверки", body: `Предложено проверить аккаунтов: ${v.flags}. Admin → Agent.` }),
+    admin_agent_budget: (v) => ({ title: "🤖 AI-аналитик приостановлен", body: `Месячный бюджет ($${v.usd}) исчерпан. Планировщик работает без AI. Admin → Agent.` }),
+    plan_offer_expired: (v) => ({ title: "Это время не подтверждено", body: `Практика ${v.time} не была подтверждена вовремя, поэтому не забронирована.` }),
+    partner_late: (v) => ({ title: "Ваш партнёр ещё не подключился", body: v.refill ? "Мы ищем для вас другое время на этой неделе." : "Можно подождать ещё немного или написать ему(ей)." }),
+    admin_roster_missing: () => ({ title: "🗓️ Список на следующую неделю не выбран", body: "Admin → Week: выберите, кто практикует, и пересоберите план." }),
+    admin_week_plan: (v) => ({ title: "🗓️ Черновик недельного плана готов", body: `${v.pairs} пар, без партнёра: ${v.unmet}. Admin → Week plan.` }),
+    match_offer_withdrawn: (v) => ({ title: "Это время не получилось", body: `Практика ${v.time} не состоится. Команда SpeakLab предложит новое время.` }),
+    admin_offer_declined: (v, f) => ({ title: "Предложение отклонено", body: `${v.name || f.someone} (${v.time}): ${v.reason || "без причины"}.` }),
+    admin_offer_confirmed: (v) => ({ title: "✅ Пара подтверждена", body: `${v.nameA} + ${v.nameB} — ${v.time}.` }),
+    admin_offer_failed: (v) => ({ title: "Предложение не забронировано", body: `${v.nameA} + ${v.nameB}: один из них уже записан на другой звонок.` }),
+    lesson_prepare: (v) => ({ title: `📚 Урок: ${v.time}`, body: `${v.topic ? `${v.topic}. ` : ""}Посмотрите слова и историю — приходите на урок готовыми.` }),
+    lesson_soon: (v) => ({ title: "⏰ Урок начнётся через 15 минут", body: `${v.time}${v.platform ? ` · ${v.platform}` : ""}. Ещё раз взгляните на слова.` }),
+    intro_reminder: (v) => ({ title: "👋 Знакомство через 15 минут", body: `${v.time} — команда SpeakLab ждёт встречи с вами.` }),
+    intro_done: () => ({ title: "🎉 Живая практика открыта", body: "Рады знакомству! Теперь вы можете практиковаться с партнёрами." }),
+    intro_missed: () => ({ title: "Новое время для знакомства", body: "Выберите удобное время — это займёт 15 минут." }),
+    admin_intro_booked: (v, f) => ({ title: "👋 Знакомство забронировано", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_moved: (v, f) => ({ title: "Знакомство перенесено", body: `${v.name || f.someone} выбрал(а) новое время: ${v.time}.` }),
+    admin_intro_cancelled: (v, f) => ({ title: "Знакомство отменено", body: `${v.name || f.someone} — ${v.time}.` }),
+    admin_intro_reminder: (v, f) => ({ title: "👋 Знакомство через 15 минут", body: `${v.name || f.someone} — ${v.time}.` }),
   },
 };
 

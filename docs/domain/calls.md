@@ -34,3 +34,10 @@ Moved out of CLAUDE.md on 2026-10-15 so it is read only when a task touches this
 - **Opt-in**: required by Meta policy. Store an explicit `whatsappReminders: true` + timestamp in `onboarding/{uid}` (a checkbox on the WhatsApp step / Profile, off by default); stop on «STOP» replies (webhook) or the toggle.
 - **Hook**: one more channel in `sendCallReminders` — the 1 h step (or 24 h), same `reminded.<step>` claim, so it is idempotent with push and e-mail.
 - **Cost (estimate, verify on Meta's rate card before launch)**: per-message pricing; a utility template to Azerbaijan/Turkey is roughly **$0.005–0.02** per message, free inside an open 24 h service window. 20 active learners × ~8 calls/month × 1 message ≈ 160 messages ≈ **$1–3/month**.
+
+
+## Round 2 (2026-11-10)
+- **One device, one notification**: `pushTokens.dropMobileWebWhenNative` — a user with a native Android token gets NO push on their web tokens whose stored `userAgent` is a phone/tablet browser (the APK + PWA on one phone doubled everything). Computer web tokens and web tokens without a userAgent are kept. Applied in `getTokensForUser` and `getAllTokens`.
+- **Web incoming call** (SW): `requireInteraction`, a long ring-like vibration, `renotify`, actions **Answer** (opens the app, where the ringing screen is) / **Not now** (just closes). A web page cannot ring full-screen — that is what the Play app is for (the install gate says so).
+- **Push languages: az / tr / ru / en** (pushText.js `SUPPORTED`). ru added with its own `DAY_WORDS` and `FALLBACK` (`peerWith` = instrumental «партнёром» after «с»). `src/utils/appLanguage.js` now records `ru` from a Russian phone. `functions/pushText.test.js` fails if any language misses a key or renders "undefined".
+- **Copy fixes**: `slot_start` no longer says «your partner is waiting» (it went to both before anyone joined); `slot_missed` names one action (pick a new time on Plan) instead of «be on time next round».

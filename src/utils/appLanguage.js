@@ -24,7 +24,9 @@
 
 import { LANG_STORAGE_KEY } from './feedbackLanguage';
 
-export const APP_LANGUAGES = ['az', 'tr', 'en'];
+// ru added 2026-11-10: pushes have a Russian set now (functions/pushText.js),
+// so a Russian-language phone gets Russian notifications instead of English.
+export const APP_LANGUAGES = ['az', 'tr', 'ru', 'en'];
 
 // The device's own language, narrowed to what we support.
 function deviceLanguage() {
@@ -48,7 +50,7 @@ export function resolveAppLanguage() {
     const chosen = localStorage.getItem(LANG_STORAGE_KEY);
     // An explicit choice always wins: someone on an English phone who picked
     // Azerbaijani feedback wants Azerbaijani.
-    if (chosen === 'az' || chosen === 'tr') return chosen;
+    if (chosen === 'az' || chosen === 'tr' || chosen === 'ru') return chosen;
   } catch {
     // private mode / storage disabled — fall through to the device
   }

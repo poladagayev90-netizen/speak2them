@@ -41,7 +41,7 @@ export default function SlotNoticeModal({ uid }) {
           You missed your last call
         </div>
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 18px' }}>
-          Your partner waited for you. Please pick only the hours you are sure you can make.
+          Your partner waited for you. When a time stops working, cancel it on Plan — your partner is told right away and keeps the hour free.
         </p>
         <button
           type="button"

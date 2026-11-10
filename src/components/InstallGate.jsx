@@ -188,7 +188,7 @@ export default function InstallGate({ user = null }) {
               {copied ? <><Check size={16} aria-hidden="true" /> {t('gate.copied')}</> : <><Copy size={16} aria-hidden="true" /> {t('gate.copy')}</>}
             </button>
           )}
-          <p className="ig-after">{t('gate.after')}</p>
+          <p className="ig-after">{t(isIOS ? 'gate.after.ios' : 'gate.after')}</p>
         </section>
 
         <button type="button" className="ig-secondary" onClick={openHelp}>

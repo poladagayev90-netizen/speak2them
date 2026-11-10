@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, CalendarClock as CalendarQuestion } from 'lucide-react';
 import { Button } from './ui';
 import {
   subscribeToMyOffers, respondToOffer, localBlockLabel, DECLINE_REASONS,
@@ -61,7 +61,7 @@ function OfferItem({ offer, uid }) {
           <p className="mo-wait-when">{day} · {start}</p>
           <p className="mo-wait-text">
             <span className="mo-pulse" aria-hidden="true" />
-            <span>You said yes · waiting for <b>{peerName}</b></span>
+            <span>You said yes · booked once <b>{peerName}</b> says yes too</span>
           </p>
         </div>
       </section>
@@ -73,6 +73,9 @@ function OfferItem({ offer, uid }) {
   return (
     <section className="pl-card pl-card--hero mo-ask" style={clock} aria-label={`Practice proposal with ${peerName}`}>
       <HeroParade />
+      {/* Says up front that this is a QUESTION, not a booking — on Today it
+          sits above «Your next practice», which only a two-yes booking gets. */}
+      <p className="pl-kicker"><CalendarQuestion size={16} aria-hidden="true" /> {peerName} wants to practise</p>
       <p className="pl-when mo-ask-when">
         {day}
         <span className="mo-ask-time">{start}</span>

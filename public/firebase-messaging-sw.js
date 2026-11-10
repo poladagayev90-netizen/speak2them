@@ -30,7 +30,15 @@ messaging.onBackgroundMessage((payload) => {
     // without a sound. Every push here is worth hearing.
     renotify: true,
     data: { url: data.url || '/' },
-    ...(isCall ? { requireInteraction: true, vibrate: [400, 200, 400, 200, 400] } : {}),
+    // A web page cannot ring full-screen like the Android app does, so this
+    // is as strong as a browser allows: stays up until tapped, a long
+    // ring-like vibration (Android browsers; iOS ignores it), and an Answer
+    // button that opens the app, where the ringing call screen is waiting.
+    ...(isCall ? {
+      requireInteraction: true,
+      vibrate: [600, 300, 600, 300, 600, 300, 600, 300, 600, 300, 600],
+      actions: [{ action: 'answer', title: 'Answer' }, { action: 'dismiss', title: 'Not now' }],
+    } : {}),
   });
 });
 
@@ -38,6 +46,8 @@ messaging.onBackgroundMessage((payload) => {
 // SpeakLab tab if there is one, otherwise open a new window.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  // «Not now» only closes the notification; the caller's ring times out.
+  if (event.action === 'dismiss') return;
   const url = (event.notification.data && event.notification.data.url) || '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {

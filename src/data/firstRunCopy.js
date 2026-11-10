@@ -278,6 +278,8 @@ const en = {
   'gate.copy': 'Copy the link',
   'gate.copied': 'Copied',
   'gate.after': 'Then open SpeakLab from your home screen and allow notifications.',
+  // iOS keeps the home-screen app's sign-in apart from Safari's.
+  'gate.after.ios': 'Then open SpeakLab from your home screen, sign in there, and allow notifications.',
   'gate.help': 'Need help? Write to us',
 };
 
@@ -548,6 +550,7 @@ const az = {
   'gate.copy': 'Linki kopyala',
   'gate.copied': 'Kopyalandı',
   'gate.after': 'Sonra SpeakLab-ı ana ekrandan aç və bildirişlərə icazə ver.',
+  'gate.after.ios': 'Sonra SpeakLab-ı ana ekrandan aç, orada hesabına daxil ol və bildirişlərə icazə ver.',
   'gate.help': 'Kömək lazımdır? Bizə yaz',
 };
 
@@ -818,6 +821,7 @@ const tr = {
   'gate.copy': 'Bağlantıyı kopyala',
   'gate.copied': 'Kopyalandı',
   'gate.after': 'Sonra SpeakLab’i ana ekrandan aç ve bildirimlere izin ver.',
+  'gate.after.ios': 'Sonra SpeakLab’i ana ekrandan aç, orada giriş yap ve bildirimlere izin ver.',
   'gate.help': 'Yardım mı lazım? Bize yaz',
 };
 
@@ -1088,6 +1092,7 @@ const ru = {
   'gate.copy': 'Скопировать ссылку',
   'gate.copied': 'Скопировано',
   'gate.after': 'Потом открой SpeakLab с главного экрана и разреши уведомления.',
+  'gate.after.ios': 'Потом открой SpeakLab с главного экрана, войди там в аккаунт и разреши уведомления.',
   'gate.help': 'Нужна помощь? Напиши нам',
 };
 

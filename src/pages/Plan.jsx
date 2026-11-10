@@ -106,6 +106,24 @@ export default function Plan({ user }) {
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
         <MissReasonCard uid={uid} onboarding={ob} now={plan.now} />
 
+        {/* Questions first: «Needs your answer» used to sit below the week
+            grid, out of sight on a phone (Polad 2026-11-10 could not find it). */}
+        {open.length > 0 && (
+          <div className="pl-section" style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-2)', marginTop: 'var(--s-2)' }}>
+            <p className="ui-section-label" style={{ margin: 0 }}>Needs your answer</p>
+            {open.length > 1 && (
+              <Button size="sm" variant="secondary" style={{ marginLeft: 'auto' }} icon={<CheckCheck size={16} aria-hidden="true" />}
+                onClick={confirmAll} disabled={confirming}>
+                {confirming ? 'Confirming…' : `Confirm all ${open.length}`}
+              </Button>
+            )}
+          </div>
+        )}
+        {/* Outside the section: after "Confirm all" the section is gone, and
+            the result still has to be read. */}
+        {msg && <p className="pl-notice" role="status">{msg}</p>}
+        <MatchOfferCard uid={uid} />
+
         {/* The week as a calendar: what is booked, and the days you want. */}
         {ob && ob.charterAcceptedAt && (ob.availability || []).length > 0 && (
           <WeekCalendar uid={uid} onboarding={ob} bookings={plan.bookings} offers={plan.offers}
@@ -128,24 +146,6 @@ export default function Plan({ user }) {
         {!booked.length && !open.length && !plan.loading && !(teacherDesk && headline.kind === 'setup') && (PLAN_CARD_KINDS.has(headline.kind) || plan.planStatus?.limit?.active || noPractices) && (
           <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} hasPartners={(user?.callCount || 0) > 0} />
         )}
-
-        {open.length > 0 && (
-          <>
-            <div className="pl-section" style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-2)', marginTop: 'var(--s-2)' }}>
-              <p className="ui-section-label" style={{ margin: 0 }}>Needs your answer</p>
-              {open.length > 1 && (
-                <Button size="sm" variant="secondary" style={{ marginLeft: 'auto' }} icon={<CheckCheck size={16} aria-hidden="true" />}
-                  onClick={confirmAll} disabled={confirming}>
-                  {confirming ? 'Confirming…' : `Confirm all ${open.length}`}
-                </Button>
-              )}
-            </div>
-          </>
-        )}
-        {/* Outside the section: after "Confirm all" the section is gone, and
-            the result still has to be read. */}
-        {msg && <p className="pl-notice" role="status">{msg}</p>}
-        <MatchOfferCard uid={uid} />
 
         {schedule.length > 0 && (
           <>

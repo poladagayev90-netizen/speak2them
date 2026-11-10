@@ -43,6 +43,21 @@ function isDeadTokenError(error) {
     code === "messaging/registration-token-not-registered";
 }
 
+// A phone with BOTH the Android app and the PWA got every push twice (Polad
+// 2026-11-10). When a user has a native Android token, their web tokens from a
+// MOBILE browser are dropped — the app is the reliable channel there. Web
+// tokens from a computer stay. A web token with no userAgent (written before
+// it was stored, or the legacy field) is kept: we cannot tell it is a phone.
+const MOBILE_UA = /Android|iPhone|iPad|iPod|Mobile/i;
+function isMobileWeb(e) {
+  return e.platform !== "android" && typeof e.userAgent === "string" && MOBILE_UA.test(e.userAgent);
+}
+function dropMobileWebWhenNative(entries) {
+  const nativeUids = new Set(entries.filter((e) => e.platform === "android").map((e) => e.uid));
+  if (!nativeUids.size) return entries;
+  return entries.filter((e) => !(nativeUids.has(e.uid) && isMobileWeb(e)));
+}
+
 // All device tokens for one user (sub-collection + legacy field), de-duplicated.
 async function getTokensForUser(db, uid, legacyToken, legacyFailCount) {
   const userRef = db.collection("users").doc(uid);
@@ -56,6 +71,7 @@ async function getTokensForUser(db, uid, legacyToken, legacyFailCount) {
         failCount: d.data().failCount || 0,
         platform: d.data().platform || "web",
         ring: ringsNatively(d.data()),
+        userAgent: d.data().userAgent || null,
       });
     }
   });
@@ -65,7 +81,7 @@ async function getTokensForUser(db, uid, legacyToken, legacyFailCount) {
       failCount: legacyFailCount || 0, platform: "web",
     });
   }
-  return [...byToken.values()];
+  return dropMobileWebWhenNative([...byToken.values()]);
 }
 
 // Every device token across the whole user base, for broadcasts. A single
@@ -84,6 +100,7 @@ async function getAllTokens(db, usersWithLegacy) {
       failCount: d.data().failCount || 0,
       platform: d.data().platform || "web",
       ring: ringsNatively(d.data()),
+      userAgent: d.data().userAgent || null,
     });
   });
   for (const u of usersWithLegacy) {
@@ -95,7 +112,7 @@ async function getAllTokens(db, usersWithLegacy) {
       });
     }
   }
-  return [...byToken.values()];
+  return dropMobileWebWhenNative([...byToken.values()]);
 }
 
 // The payload has to differ per platform.
@@ -256,6 +273,7 @@ async function sendPush(entries, data) {
 module.exports = {
   buildMessage,
   ringsNatively,
+  dropMobileWebWhenNative,
   getTokensForUser,
   getAllTokens,
   sendPush,

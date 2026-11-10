@@ -64,7 +64,12 @@ export default function AppLayout({ children, user }) {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   if (!user || isAuthPage) {
-    return <>{children}</>;
+    // The install gate also stands in front of sign-up / sign-in on a phone
+    // (2026-11-10): an iOS home-screen app does not share Safari's login, so
+    // someone who signed up in Safari first had to sign in again after
+    // installing — and many simply stayed in the browser, where push never
+    // works. The gate itself stays away on desktops and inside the installed app.
+    return <>{children}<InstallGate user={null} /></>;
   }
 
   // -------------------------

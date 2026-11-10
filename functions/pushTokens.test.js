@@ -27,6 +27,19 @@ test('other pushes to a ringing-capable app are unchanged', () => {
   assert.ok(buildMessage('web', ['t'], call).webpush);
 });
 
+test('a user with the Android app gets no push on their phone browser; computers stay', () => {
+  const { dropMobileWebWhenNative } = require('./pushTokens');
+  const phoneUa = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/130 Mobile Safari/537.36';
+  const deskUa = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130 Safari/537.36';
+  const e = (uid, platform, userAgent) => ({ uid, platform, userAgent, token: `${uid}-${platform}-${userAgent ? userAgent.length : 0}` });
+  const all = [
+    e('a', 'android'), e('a', 'web', phoneUa), e('a', 'web', deskUa), e('a', 'web', null),
+    e('b', 'web', phoneUa), // no native app: keeps its phone browser
+  ];
+  const kept = dropMobileWebWhenNative(all).map((x) => x.token);
+  assert.deepStrictEqual(kept, [all[0], all[2], all[3], all[4]].map((x) => x.token));
+});
+
 test('a reminder carries its own TTL and tag; web stays data-only', () => {
   const r = { type: 'call_reminder', title: 'Practice', body: '', ttl: '600', tag: 'call_b1' };
   const web = buildMessage('web', ['t'], r);

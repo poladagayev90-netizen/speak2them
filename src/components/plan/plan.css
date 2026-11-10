@@ -401,6 +401,15 @@
   font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary); text-decoration: none;
 }
 .pl-cal-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* On the purple hero card the dark link was unreadable (Polad 2026-11-10):
+   white text, choices as outline pills like the hero's other buttons. */
+.pl-card--hero .pl-cal .pl-ticket-link { color: var(--text-on-accent); }
+.pl-card--hero .pl-cal-option {
+  background: transparent; color: var(--text-on-accent);
+  border-color: color-mix(in srgb, var(--text-on-accent) 45%, transparent);
+}
+.pl-card--hero .pl-cal .pl-ticket-link:focus-visible,
+.pl-card--hero .pl-cal-option:focus-visible { outline-color: var(--text-on-accent); }
 
 /* Next topics under today's card: a quiet row to prepare ahead. */
 .pl-next-topics { display: grid; gap: var(--s-2); margin: 0 0 var(--s-4); }

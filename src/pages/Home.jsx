@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, CalendarClock, ChevronRight, MessageCircle, FlaskConical, Trophy } from 'lucide-react';
+import { BookOpen, ChevronRight, MessageCircle, FlaskConical, Trophy } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -24,6 +24,7 @@ import WarmupCard from '../components/WarmupCard';
 import useWarmupOffer from '../hooks/useWarmupOffer';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
+import MatchOfferCard from '../components/MatchOfferCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
 import TopicCard from '../components/plan/TopicCard';
 import NextTopics from '../components/plan/NextTopics';
@@ -38,7 +39,7 @@ import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
 import { lessonItems, teachingItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
 import { plainTopic } from '../utils/topicLabel';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
-import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel, weekGoal } from '../utils/planState';
+import { planHeadline, upcomingBookings, peerOf, comingUpLabel, weekGoal } from '../utils/planState';
 import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
 import '../components/plan/plan.css';
@@ -166,7 +167,6 @@ export default function Home({ user }) {
 
   const autoMode = useAutoMode();
   const headline = planHeadline({ uid: user.uid, ...plan, autoMode });
-  const open = openOffers(plan.offers, user.uid, plan.now);
   const booked = upcomingBookings(plan.bookings, plan.now);
   // This week's goal: the days picked for it, else the usual number.
   const target = weekGoal({
@@ -252,26 +252,21 @@ export default function Home({ user }) {
             is a row in Get ready instead (docs/domain/calls.md). */}
         <WarmupCard user={user} offer={warmupOffer} />
 
+        {/* 0. A proposal waiting for this learner's yes, as the answer card
+            itself (2026-11-10: Today showed only «Your next practice» and
+            the question sat on Plan below the week grid — Polad could not
+            find it). «Your next practice» is a two-yes booking only. */}
+        <MatchOfferCard uid={user.uid} />
+
         {/* 1. The next practice, or what is happening instead. */}
-        {/* A teacher (or the admin) is not a learner: no "set up your plan". */}
-        {!plan.loading && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} />}
+        {/* A teacher (or the admin) is not a learner: no "set up your plan".
+            «N need your answer» is not repeated: the cards above ARE that. */}
+        {!plan.loading && headline.kind !== 'answer' && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} />}
 
         {/* «What happened?» after the learner's own miss or cancel, and —
             once — the general week profile for those already practising. */}
         <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
         {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} />}
-
-        {/* 2. Proposals, when the card above is already a booking. */}
-        {headline.kind === 'next' && open.length > 0 && (
-          <button type="button" className="pl-card pl-row" style={{ padding: 'var(--s-3) var(--s-4)' }} onClick={() => navigate('/plan')}>
-            <span className="pl-row-icon" aria-hidden="true"><CalendarClock size={18} /></span>
-            <span className="pl-row-main">
-              <p className="pl-row-title">{open.length} {open.length === 1 ? 'practice needs' : 'practices need'} your answer</p>
-              <p className="pl-row-sub">Review the plan</p>
-            </span>
-            <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
-          </button>
-        )}
 
         {/* Today's materials, right under the plan (Polad 2026-10-06: "they
             look good and they ARE the class"). Online now is on Partners only. */}
