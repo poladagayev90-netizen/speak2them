@@ -65,18 +65,21 @@ export function toAnalysisView(analysis) {
   // from before the split none at all — there the theme still shows, as a
   // mistake type with its count.
   const teacherView = analysis.teacherView === true;
+  // `at` is the item's address in the stored errorThemes ({ t, i }) — what
+  // the "Hide from teacher" toggle sends to setExampleVisibility.
   const errorThemes = arr(analysis.errorThemes)
-    .map((t) => ({
+    .map((t, ti) => ({
       title: t?.title || '',
       rule: t?.rule || '',
       count: Number(t?.count) || arr(t?.items).length,
       items: arr(t?.items)
-        .map((i) => {
+        .map((i, ii) => {
           if (!i) return null;
-          if (i.original && i.corrected) return i;
+          const at = { t: ti, i: ii };
+          if (i.original && i.corrected) return { ...i, at };
           const n = i.neutralExample;
           return n && n.original && n.corrected
-            ? { ...i, original: n.original, corrected: n.corrected, generic: true }
+            ? { ...i, original: n.original, corrected: n.corrected, generic: true, at }
             : null;
         })
         .filter(Boolean),

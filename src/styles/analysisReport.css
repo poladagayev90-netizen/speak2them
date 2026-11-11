@@ -437,6 +437,26 @@
   color: var(--text-secondary);
 }
 
+/* "Hide from teacher" — a quiet text button under one example, never louder
+   than the correction above it. */
+.rep-hide {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin: var(--s-2) 0 0 24px;
+  padding: var(--s-1) 0;
+  min-height: 32px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.rep-hide[aria-pressed="true"] { color: var(--accent); }
+.rep-hide:disabled { opacity: .6; cursor: default; }
+
 /* What the teacher sees — the last line of the learner's own report. */
 .rep-why.rep-privacy { margin: var(--s-5) var(--s-4) var(--s-4); }
 

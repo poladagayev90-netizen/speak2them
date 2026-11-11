@@ -7946,6 +7946,116 @@ async function writeTeacherAnalysis(db, analysisId, analysis) {
   }
 }
 
+// "Hide from teacher" (2026-11-12): the learner keeps one example of their
+// report to themselves. Enforced here, not in the UI: the flag goes on the item
+// in callAnalysis (clients cannot update that doc — firestore.rules) and every
+// teacher-facing copy is rebuilt from it at once — callAnalysisTeacher, the
+// carry-over cards in insights/teacherProgress, and any lesson homework doc
+// already built from the report. classBrief and later homework read examples
+// through analysisPrivacy.neutralOf, which skips a hidden item.
+// Body: { analysisId, theme, item, hidden } — theme/item are the indexes in
+// errorThemes as stored.
+exports.setExampleVisibility = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "POST") return res.status(405).json({ error: "method" });
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  const uid = decoded.uid;
+  const body = req.body || {};
+  const analysisId = String(body.analysisId || "").trim();
+  const themeIdx = Number(body.theme);
+  const itemIdx = Number(body.item);
+  const hidden = body.hidden === true;
+  if (!analysisId || analysisId.length > 200 || analysisId.includes("/")
+    || !Number.isInteger(themeIdx) || themeIdx < 0 || themeIdx > 50
+    || !Number.isInteger(itemIdx) || itemIdx < 0 || itemIdx > 50) {
+    return res.status(400).json({ error: "invalid" });
+  }
+  try {
+    await enforceRateLimit(uid, "setExampleVisibility", 200, 24 * 60 * 60 * 1000);
+  } catch (e) {
+    return res.status(e.httpStatus || 429).json({ error: "rate-limited" });
+  }
+
+  const db = admin.firestore();
+  const ref = db.collection("callAnalysis").doc(analysisId);
+  try {
+    let updated = null;
+    let item = null;
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw Object.assign(new Error("not-found"), { code: 404 });
+      const a = snap.data() || {};
+      if (a.userId !== uid) throw Object.assign(new Error("not-yours"), { code: 403 });
+      if (a.status !== "done") throw Object.assign(new Error("not-ready"), { code: 409 });
+      const themes = analysisPrivacy.setItemHidden(a.errorThemes, themeIdx, itemIdx, hidden);
+      if (!themes) throw Object.assign(new Error("invalid"), { code: 400 });
+      item = a.errorThemes[themeIdx].items[itemIdx];
+      tx.update(ref, { errorThemes: themes });
+      updated = { ...a, errorThemes: themes };
+    });
+
+    // The teacher's copy of this report — rebuilt whole from the allow-list,
+    // keeping its original timestamp so the teacher's list order is unchanged.
+    const tRef = db.collection("callAnalysisTeacher").doc(analysisId);
+    const tSnap = await tRef.get();
+    const tPrev = tSnap.exists ? (tSnap.data() || {}) : {};
+    await tRef.set({
+      ...analysisPrivacy.teacherAnalysis(updated),
+      timestamp: tPrev.timestamp || updated.timestamp || admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Carry-over cards (insights/progress.focus) are copies of report items.
+    const base = db.collection("users").doc(uid).collection("insights");
+    await db.runTransaction(async (tx) => {
+      const pSnap = await tx.get(base.doc("progress"));
+      if (!pSnap.exists) return;
+      const prog = pSnap.data() || {};
+      const focus = analysisPrivacy.setFocusHidden(prog.focus, item, hidden);
+      if (focus && focus !== prog.focus) tx.set(base.doc("progress"), { focus }, { merge: true });
+      tx.set(base.doc("teacherProgress"), {
+        ...analysisPrivacy.teacherProgress({ ...prog, ...(focus ? { focus } : {}) }),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    // Lesson homework docs already built from this report (teacher-readable).
+    // Hiding takes the example out; showing again does not put it back — the
+    // next homework built picks it up.
+    const n = item && item.neutralExample;
+    if (hidden && n && n.original) {
+      const hw = await db.collection("homework").where("uid", "==", uid).get();
+      const no = String(n.original).trim().slice(0, 200);
+      const nc = String(n.corrected || "").trim().toLowerCase();
+      for (const d of hw.docs) {
+        const p = (d.data() || {}).personal;
+        if (!p) continue;
+        const themes = (Array.isArray(p.themes) ? p.themes : []).map((t) => ({
+          ...t,
+          examples: (Array.isArray(t.examples) ? t.examples : []).filter((e) => !(e && e.original === no)),
+        }));
+        const wordOrder = (Array.isArray(p.wordOrder) ? p.wordOrder : [])
+          .filter((w) => !(w && nc && String(w.sentence || "").trim().toLowerCase() === nc));
+        if (JSON.stringify(themes) !== JSON.stringify(p.themes || []) || wordOrder.length !== (p.wordOrder || []).length) {
+          await d.ref.update({ "personal.themes": themes, "personal.wordOrder": wordOrder });
+        }
+      }
+    }
+
+    return res.json({ ok: true, hidden });
+  } catch (e) {
+    if (e.code && Number.isInteger(e.code)) return res.status(e.code).json({ error: e.message });
+    console.error("[setExampleVisibility]", e);
+    return res.status(500).json({ error: "server" });
+  }
+});
+
 async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, meta = {}) {
   if (!uid || !analysisId) return;
   const base = db.collection("users").doc(uid).collection("insights");

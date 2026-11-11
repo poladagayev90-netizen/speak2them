@@ -113,6 +113,16 @@ export function nudgeStudent(studentUid) {
   return callTeacherFn('nudgeStudent', { studentUid }, NUDGE_ERROR_TEXT);
 }
 
+// "Hide from teacher" on one example of the learner's own report. The server
+// (setExampleVisibility) flags the item and rebuilds every teacher-facing
+// copy; nothing here is trusted on its own. `at` = { t, i } from
+// toAnalysisView.
+export function setExampleHidden(analysisId, at, hidden) {
+  return callTeacherFn('setExampleVisibility', { analysisId, theme: at.t, item: at.i, hidden: !!hidden }, {
+    unauthorized: 'Your session has expired. Please sign in again.',
+  });
+}
+
 export function removeStudent(studentUid) {
   return callTeacherFn('removeStudent', { studentUid }, {
     'not-your-student': 'This student is no longer in your class.',

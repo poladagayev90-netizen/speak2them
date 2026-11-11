@@ -130,6 +130,8 @@ function nextFocus(conceptStats, errorThemes, prevFocus, { at = Date.now(), anal
           original: String(item.original),
           corrected: String(item.corrected),
           ...(n && n.original && n.corrected ? { neutralExample: { original: String(n.original), corrected: String(n.corrected) } } : {}),
+          // "Hide from teacher" travels with the copy (analysisPrivacy.isHidden).
+          ...(item.hiddenFromTeacher === true ? { hiddenFromTeacher: true } : {}),
         });
       }
     }

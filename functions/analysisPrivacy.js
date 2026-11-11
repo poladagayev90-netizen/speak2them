@@ -58,7 +58,17 @@ function neutralFrom(raw, ownOriginal = '', ownCorrected = '') {
   return { original, corrected };
 }
 
+// "Hide from teacher" (2026-11-12): the learner can keep any single example
+// to themselves from their report. The flag sits on the item in callAnalysis
+// (and on its carry-over copy in insights/progress) and is written only by
+// setExampleVisibility. Every teacher-facing path reads examples through
+// neutralOf, so a hidden item has no example anywhere a teacher looks — the
+// projections, classBrief, the homework doc. The mistake still counts as a
+// TYPE (the teacher sees types; that promise is unchanged).
+const isHidden = (item) => !!(item && item.hiddenFromTeacher === true);
+
 function neutralOf(item) {
+  if (isHidden(item)) return null;
   const n = item && item.neutralExample;
   return n && str(n.original) && str(n.corrected) ? { original: str(n.original), corrected: str(n.corrected) } : null;
 }
@@ -155,6 +165,62 @@ function teacherProgress(progress) {
   return out;
 }
 
+// Sets or clears the flag on errorThemes[themeIdx].items[itemIdx]. Returns a
+// new errorThemes array, or null when the address does not point at an item.
+function setItemHidden(errorThemes, themeIdx, itemIdx, hidden) {
+  const themes = Array.isArray(errorThemes) ? errorThemes : [];
+  const t = themes[themeIdx];
+  const items = Array.isArray(t && t.items) ? t.items : null;
+  if (!items || !items[itemIdx] || typeof items[itemIdx] !== 'object') return null;
+  return themes.map((th, ti) => (ti !== themeIdx ? th : {
+    ...th,
+    items: items.map((it, ii) => {
+      if (ii !== itemIdx) return it;
+      const { hiddenFromTeacher, ...rest } = it;
+      return hidden ? { ...rest, hiddenFromTeacher: true } : rest;
+    }),
+  }));
+}
+
+// The same flag on the carry-over examples in insights/progress.focus: they
+// are copies of report items (learningFocus.nextFocus), matched by the
+// learner's own sentence pair. Returns the new focus (unchanged object when
+// nothing matched).
+function setFocusHidden(focus, item, hidden) {
+  if (!focus || !Array.isArray(focus.items) || !item) return focus || null;
+  const same = (e) => e && str(e.original) === str(item.original) && str(e.corrected) === str(item.corrected)
+    && (str(item.original) || (item.neutralExample && e.neutralExample
+      && str(e.neutralExample.original) === str(item.neutralExample.original)));
+  let changed = false;
+  const items = focus.items.map((fi) => ({
+    ...fi,
+    examples: (Array.isArray(fi && fi.examples) ? fi.examples : []).map((e) => {
+      if (!same(e)) return e;
+      changed = true;
+      const { hiddenFromTeacher, ...rest } = e;
+      return hidden ? { ...rest, hiddenFromTeacher: true } : rest;
+    }),
+  }));
+  return changed ? { ...focus, items } : focus;
+}
+
+// Lower-cased neutral sentences of the hidden items in one report — so an
+// exercise the report built from such a sentence (the word-order fallback in
+// normalizeAnalysis) can be left out of the teacher-readable homework too.
+function hiddenSentences(analysis) {
+  const out = new Set();
+  for (const t of Array.isArray(analysis && analysis.errorThemes) ? analysis.errorThemes : []) {
+    for (const i of Array.isArray(t && t.items) ? t.items : []) {
+      if (!isHidden(i) || !i.neutralExample) continue;
+      for (const k of ['original', 'corrected']) {
+        const v = str(i.neutralExample[k]).toLowerCase();
+        if (v) out.add(v);
+      }
+    }
+  }
+  return out;
+}
+
 // Anything quoting the learner, for the tests and the backfill's self-check:
 // every original / corrected / transcript / quote string in the object that is
 // not a neutral example.
@@ -179,4 +245,8 @@ module.exports = {
   teacherProgress,
   rawQuotes,
   echoes,
+  isHidden,
+  setItemHidden,
+  setFocusHidden,
+  hiddenSentences,
 };

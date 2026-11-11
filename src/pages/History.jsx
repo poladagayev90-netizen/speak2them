@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Clock, ChevronLeft, FileText } from 'lucide-react';
+import { Clock, ChevronLeft, FileText, Eye, EyeOff } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import GuidedTour from '../components/GuidedTour';
 import AnalysisHomework from '../components/AnalysisHomework';
@@ -9,6 +9,7 @@ import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 import { fetchAnalyses } from '../utils/insights';
 import { TEACHER_PRIVACY_LINE } from '../utils/teacherPrivacy';
+import { setExampleHidden } from '../utils/teacher';
 import '../styles/analysisReport.css';
 
 const PROFILE_TOUR_STEPS = [
@@ -110,7 +111,8 @@ export default function History({ user }) {
                 <div style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Clock size={14} />
                   {call.durationSeconds ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s` : 'Unknown'}
-                  {call.timestamp && ` • ${new Date(call.timestamp.seconds * 1000).toLocaleDateString()}`}
+                  {/* Same «Nov 11» format as the report header (QA 2026-11-12 O8). */}
+                  {call.timestamp && ` • ${new Date(call.timestamp.seconds * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`}
                 </div>
               </div>
 
@@ -193,6 +195,31 @@ export function AnalysisDetail({ analysis, onClose, lang, embedded = false, priv
   // the app, so nothing here needs to branch on the language.
   const [showTranscript, setShowTranscript] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  // "Hide from teacher" per example (2026-11-12). Only on the learner's own
+  // report, only when they have a teacher, and only for reports whose teacher
+  // copy can carry an example at all (privacyVersion ≥ 1 — older ones show the
+  // teacher a type and a count, nothing to hide). The server does the hiding.
+  const [hiddenMap, setHiddenMap] = useState({});
+  const [busyKey, setBusyKey] = useState('');
+  const [hideError, setHideError] = useState('');
+  const canHide = privacyNote && !!analysis.id && analysis.teacherView !== true
+    && Number(analysis.privacyVersion) >= 1;
+  const toggleHidden = async (f, key, next) => {
+    setBusyKey(key);
+    setHideError('');
+    setHiddenMap((m) => ({ ...m, [key]: next }));
+    const res = await setExampleHidden(analysis.id, f.at, next);
+    setBusyKey('');
+    if (!res.ok) {
+      setHiddenMap((m) => ({ ...m, [key]: !next }));
+      setHideError(res.errorText || 'Could not save that. Please try again.');
+      return;
+    }
+    // Keep the loaded report in step, so reopening it from the list shows
+    // the same state without a refetch.
+    const item = analysis.errorThemes?.[f.at.t]?.items?.[f.at.i];
+    if (item) item.hiddenFromTeacher = next;
+  };
 
   if (analysis.error) return (
     <div className={`analysis-doc ${embedded ? 'analysis-doc--embedded' : ''}`}>
@@ -271,15 +298,33 @@ export function AnalysisDetail({ analysis, onClose, lang, embedded = false, priv
       {fixes.length > 0 ? (
         <>
           <p className="rep-label">Fix these · {fixes.length}</p>
-          {fixes.map((f, i) => (
-            <div className="rep-fix" key={i}>
-              {f.tag && <span className="rep-tag">{f.tag}</span>}
-              <p className="rep-wrong"><span className="rep-mark">✗</span>{f.original}</p>
-              <p className="rep-right"><span className="rep-mark">✓</span>{f.corrected}</p>
-              {(f.reason || f.rule) && <p className="rep-why">{f.reason || f.rule}</p>}
-              {f.generic && <p className="rep-why">A general sentence with the same mistake.</p>}
-            </div>
-          ))}
+          {fixes.map((f, i) => {
+            const key = f.at ? `${f.at.t}.${f.at.i}` : '';
+            const isHidden = key in hiddenMap ? hiddenMap[key] : f.hiddenFromTeacher === true;
+            return (
+              <div className="rep-fix" key={i}>
+                {f.tag && <span className="rep-tag">{f.tag}</span>}
+                <p className="rep-wrong"><span className="rep-mark">✗</span>{f.original}</p>
+                <p className="rep-right"><span className="rep-mark">✓</span>{f.corrected}</p>
+                {(f.reason || f.rule) && <p className="rep-why">{f.reason || f.rule}</p>}
+                {f.generic && <p className="rep-why">A general sentence with the same mistake.</p>}
+                {canHide && f.at && f.neutralExample?.original && (
+                  <button
+                    type="button"
+                    className="rep-hide"
+                    aria-pressed={isHidden}
+                    disabled={busyKey === key}
+                    onClick={() => toggleHidden(f, key, !isHidden)}
+                  >
+                    {isHidden
+                      ? <><EyeOff size={14} strokeWidth={1.75} aria-hidden="true" /> Only you see this example · Show</>
+                      : <><Eye size={14} strokeWidth={1.75} aria-hidden="true" /> Hide from teacher</>}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {hideError && <p className="rep-why" role="alert">{hideError}</p>}
           {typesOnly.map((t, i) => (
             <div className="rep-fix" key={`type${i}`}>
               <span className="rep-tag">{t.title}</span>

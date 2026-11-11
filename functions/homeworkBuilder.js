@@ -9,7 +9,7 @@
 // Input: callAnalysis docs (as stored: errorThemes, vocabulary, homework),
 // newest first. Output is small enough to sit on the homework doc.
 
-const { PRIVACY_VERSION, neutralOf } = require("./analysisPrivacy");
+const { PRIVACY_VERSION, neutralOf, hiddenSentences } = require("./analysisPrivacy");
 
 const MAX_WORDS = 8;
 const MAX_THEMES = 2;
@@ -77,6 +77,9 @@ function buildPersonal(analyses = []) {
   for (const a of done) {
     if (!safe(a)) continue;
     const hw = (a && a.homework) || {};
+    // An exercise built from an example the learner hid from their teacher
+    // stays out of this teacher-readable doc as well.
+    const hidden = hiddenSentences(a);
     for (const q of Array.isArray(hw.multiple_choice) ? hw.multiple_choice : []) {
       if (multipleChoice.length >= MAX_MC) break;
       const options = Array.isArray(q.options) ? q.options.map((o) => str(o, 120)).filter(Boolean) : [];
@@ -88,7 +91,7 @@ function buildPersonal(analyses = []) {
     for (const w of Array.isArray(hw.word_order) ? hw.word_order : []) {
       if (wordOrder.length >= MAX_ORDER) break;
       const scrambled = Array.isArray(w.scrambled) ? w.scrambled.map((x) => str(x, 40)).filter(Boolean) : [];
-      if (scrambled.length >= 2 && str(w.correct_sentence)) {
+      if (scrambled.length >= 2 && str(w.correct_sentence) && !hidden.has(str(w.correct_sentence).toLowerCase())) {
         wordOrder.push({ scrambled, sentence: str(w.correct_sentence), explanation: str(w.explanation) });
       }
     }

@@ -118,3 +118,50 @@ test('neutralFrom rejects a "neutral" sentence that repeats the learner', () => 
     { original: 'He not finish the book.', corrected: 'He did not finish the book.' },
   );
 });
+
+// "Hide from teacher" (2026-11-12): a hidden item has no example on any
+// teacher-facing path, while the mistake still counts as a type.
+test('a hidden example drops out of every teacher projection', () => {
+  const { buildClassBrief } = require('./classBrief');
+  const { buildPersonal } = require('./homeworkBuilder');
+  const NEUTRAL = 'He not finish the book yesterday.';
+  const a = report(1);
+  a.homework = { word_order: [{ correct_sentence: 'He did not finish the book yesterday.', scrambled: ['He', 'did', 'not', 'finish'] }] };
+  const themes = p.setItemHidden(a.errorThemes, 0, 0, true);
+  assert.ok(themes && themes[0].items[0].hiddenFromTeacher === true);
+  assert.ok(!a.errorThemes[0].items[0].hiddenFromTeacher, 'input is not mutated');
+  const hidden = { ...a, errorThemes: themes };
+
+  // callAnalysisTeacher
+  const t = p.teacherAnalysis(hidden);
+  assert.ok(!allText(t).includes(NEUTRAL));
+  assert.strictEqual(t.errorThemes[0].count, 1);
+  assert.deepStrictEqual(t.errorThemes[0].items, []);
+  assert.ok(!allText(t).includes('hiddenFromTeacher'));
+
+  // classBrief (class + one-student view use the same counting)
+  const brief = buildClassBrief([{ uid: 'stu1', name: 'S', analyses: [hidden] }]);
+  assert.ok(!allText(brief).includes(NEUTRAL));
+  assert.strictEqual(brief.themes[0].mistakes, 1);
+
+  // the lesson homework doc (teacher-readable): no example, no exercise built from it
+  const personal = buildPersonal([hidden]);
+  assert.ok(!allText(personal).includes('finish the book'));
+
+  // insights/teacherProgress carry-over cards
+  const item = a.errorThemes[0].items[0];
+  const focus = { at: 1, items: [{ concept: 'past_simple', attempts: 6, errors: 1, examples: [{ original: item.original, corrected: item.corrected, neutralExample: item.neutralExample }] }] };
+  const hf = p.setFocusHidden(focus, item, true);
+  assert.notStrictEqual(hf, focus);
+  assert.deepStrictEqual(p.teacherProgress({ focus: hf }).focus.items[0].examples, []);
+
+  // showing it again brings the example back
+  const shown = { ...a, errorThemes: p.setItemHidden(themes, 0, 0, false) };
+  assert.ok(!('hiddenFromTeacher' in shown.errorThemes[0].items[0]));
+  assert.ok(allText(p.teacherAnalysis(shown)).includes(NEUTRAL));
+  assert.deepStrictEqual(p.teacherProgress({ focus: p.setFocusHidden(hf, item, false) }).focus.items[0].examples, [item.neutralExample]);
+
+  // a bad address is refused
+  assert.strictEqual(p.setItemHidden(a.errorThemes, 3, 0, true), null);
+  assert.strictEqual(p.setItemHidden(a.errorThemes, 0, 9, true), null);
+});
