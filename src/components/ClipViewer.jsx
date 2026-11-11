@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { ChevronLeft, ChevronRight, RotateCcw, Sparkles, VideoOff, Volume2, VolumeX } from 'lucide-react';
 import KeywordChips from './KeywordChips';
+import HowToDescribe from './HowToDescribe';
 
 // Sound is web/PWA only (Polad, 2026-10-13); the Android app keeps every clip
 // silent. Only clips marked `sound` in describeVideos.js have an audio track.
@@ -191,6 +192,7 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
           wherever the class meets it. Below the fold on a phone, on purpose:
           the clip and the words come first. */}
       <div className="dt-questions-list">
+        <HowToDescribe key={clip.id} howTo={clip.howTo} />
         {(clip.prompts || []).map((q, n) => (
           <div key={q} className="dt-question-card">
             <span className="dt-q-num">{n + 1}</span>

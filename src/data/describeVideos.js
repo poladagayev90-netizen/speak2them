@@ -67,6 +67,15 @@ export const describeVideos = [
       'What cooking technique is the chef using?',
       'Have you ever tried making a dish that required high heat like this?',
     ],
+    howTo: {
+      steps: [
+        "A chef in a white apron is standing *at* a stainless-steel kitchen counter.",
+        "He holds a heavy frying pan *over* a bright gas flame, looking {focused}.",
+        "He shakes the handle and tosses the vegetables high *into* the air.",
+        "The vegetables land back *in* the hot pan while he keeps cooking {confidently}.",
+      ],
+      useful: ["toss in the pan", "cook over a flame", "shake the handle"],
+    },
   },
   {
     // source: pexels_35282483.mp4 (CC0 Free Commercial License)
@@ -81,6 +90,15 @@ export const describeVideos = [
       'What are the two dogs doing together?',
       'Why do dogs enjoy running in open spaces so much?',
     ],
+    howTo: {
+      steps: [
+        "Two dogs are running *across* the green grass *in* an open park.",
+        "One dog sprints *in front*, looking {excited} with its tail wagging.",
+        "The second dog chases right *behind* it and turns *in* a wide circle.",
+        "Both dogs keep racing *around* the lawn, full of {playful} energy.",
+      ],
+      useful: ["chase each other", "run in circles", "wag its tail"],
+    },
   },
 
   {
@@ -96,6 +114,15 @@ export const describeVideos = [
       'What is the rooster doing while he plays?',
       'Why do you think he came out to the garden to play?',
     ],
+    howTo: {
+      steps: [
+        "A boy is sitting cross-legged *on* a low wall *in* a vegetable garden.",
+        "A basketball rests *on* the ground *beside* him while he strums a guitar, looking {relaxed}.",
+        "A large rooster stands right *next to* him and listens {curiously}.",
+        "The boy keeps playing his song *until the end* without the bird moving away.",
+      ],
+      useful: ["sit cross-legged", "strum a guitar", "stand next to"],
+    },
   },
   {
     // source: video_2026-09-22_00-21-54.mp4
@@ -110,6 +137,15 @@ export const describeVideos = [
       'What happens in the last few seconds?',
       'Would you try this? Why or why not?',
     ],
+    howTo: {
+      steps: [
+        "A group of friends are standing *by* the edge of a quiet pond *among* tall reeds.",
+        "One person grabs a rope swing and swings far out *over* the water, looking {fearless}.",
+        "*At* the highest point, they suddenly let go *of* the rope.",
+        "They drop straight *into* the pond with a big splash, leaving everyone {amused}.",
+      ],
+      useful: ["take turns", "swing out over", "let go of"],
+    },
   },
   {
     // source: video_2026-09-22_00-21-56.mp4
@@ -124,6 +160,15 @@ export const describeVideos = [
       'Why does the man hold out his hand?',
       'How would you feel if you were standing there?',
     ],
+    howTo: {
+      steps: [
+        "A group of trekkers are standing still *on* a narrow path *in* a dense forest.",
+        "A large mountain gorilla walks slowly *past* them while chewing leaves, looking {calm}.",
+        "One man reaches his arm *out* and holds an open palm *towards* the animal, {carefully}.",
+        "The gorilla continues *down* the trail without touching his hand.",
+      ],
+      useful: ["stand still", "walk past", "hold out a hand"],
+    },
   },
   {
     // source: video_2026-09-22_00-21-58.mp4
@@ -139,6 +184,15 @@ export const describeVideos = [
       'Which visitor surprised you most?',
       'What kind of house has a garden like this?',
     ],
+    howTo: {
+      steps: [
+        "A small camera is mounted *on* a bird feeder *in* a green garden.",
+        "*At first*, a squirrel climbs *onto* the tray to eat seeds, and then a dove lands *in* its place.",
+        "*After that*, a deer walks *up to* the feeder, looking {curious}.",
+        "The deer pushes its nose right *into* the seed tray and eats {happily}.",
+      ],
+      useful: ["climb onto", "one after another", "push its nose into"],
+    },
   },
   {
     // source: video_2026-09-22_00-21-59.mp4
@@ -153,6 +207,15 @@ export const describeVideos = [
       'What exactly went wrong, step by step?',
       'What would you say to him afterwards?',
     ],
+    howTo: {
+      steps: [
+        "An estate agent in a suit is standing *at* the top of a carpeted staircase *in* an empty house.",
+        "He turns to speak *to* the camera, looking {confident}.",
+        "Suddenly his foot slips *on* the top step and he loses his footing.",
+        "He slides all the way *down* the stairs, looking {shocked} and {embarrassed}.",
+      ],
+      useful: ["lose his footing", "slip on the stairs", "slide all the way down"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-01.mp4
@@ -168,6 +231,15 @@ export const describeVideos = [
       'What does the hen do every time the hand stops?',
       'Can a chicken really be a pet? Why?',
     ],
+    howTo: {
+      steps: [
+        "A ginger hen is lying comfortably *on* a blue blanket *on* a sofa.",
+        "Someone strokes its feathers gently *from* its head *down* its back, and the bird looks {relaxed}.",
+        "Each time the hand stops and pulls *away*, the hen looks {impatient}.",
+        "It pushes its head back *under* the person’s fingers to ask *for* more.",
+      ],
+      useful: ["lie on a blanket", "stroke gently", "push back for more"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-11.mp4
@@ -182,6 +254,15 @@ export const describeVideos = [
       'How close is the car to the animal?',
       'What is the leopard going to do next?',
     ],
+    howTo: {
+      steps: [
+        "A spotted leopard is walking slowly *down* a dusty track *in front of* a safari vehicle.",
+        "Tall dry grass grows *on* both sides of the road *in* the evening light.",
+        "The leopard glances *around* {calmly}, completely {unbothered} by the car.",
+        "*At the end*, it stops *in* the middle of the road and lies *down* in the dust.",
+      ],
+      useful: ["walk down a track", "lie down in the dust", "glance around"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-15.mp4
@@ -196,6 +277,15 @@ export const describeVideos = [
       'What is on the table in front of the man?',
       'What do you think the dish tastes like?',
     ],
+    howTo: {
+      steps: [
+        "A guest is sitting *at* a crowded table *in* a busy restaurant, surrounded *by* plates of salad.",
+        "A waiter stands *beside* the table holding a huge curved knife *over* a hot round bread pie.",
+        "He slices *across* the crust, and thick steam rises *into* the air.",
+        "The guest watches the waiter cut the dish, looking {impressed} and {hungry}.",
+      ],
+      useful: ["sit at a table", "slice across", "rise into the air"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-17.mp4
@@ -210,6 +300,15 @@ export const describeVideos = [
       'Tell the whole story in three sentences.',
       'Was it his own fault? Why?',
     ],
+    howTo: {
+      steps: [
+        "A man is standing *on* a narrow wooden pier *above* the sea.",
+        "He holds a large fish *up* to the camera, looking {proud} of his catch.",
+        "Then he kneels *down* *at* the edge to put the fish back *into* the water.",
+        "He suddenly loses his balance and tumbles headfirst *into* the sea, coming up {soaked}.",
+      ],
+      useful: ["hold up", "put back in", "lose his balance"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-23.mp4
@@ -224,6 +323,15 @@ export const describeVideos = [
       'What has actually happened here?',
       'Do you ever dream about falling? Tell me about it.',
     ],
+    howTo: {
+      steps: [
+        "The view starts high *in* the sky *above* the clouds and a huge city.",
+        "The person is falling fast *through* the air *towards* the streets *below*, feeling {terrified}.",
+        "Just *before* hitting the ground, the scene suddenly cuts *to* a dark bedroom.",
+        "The person wakes up lying safely *in* bed, {relieved} that it was only a dream.",
+      ],
+      useful: ["fall through the air", "rush towards", "wake up in bed"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-41.mp4
@@ -238,6 +346,15 @@ export const describeVideos = [
       'Why is that person crawling across the floor?',
       'Did the presenter notice? How can you tell?',
     ],
+    howTo: {
+      steps: [
+        "A news presenter is sitting *at* a desk *in front of* a bright screen *in* a TV studio.",
+        "She is speaking {seriously} *into* the camera during a live broadcast.",
+        "*Behind* her, a crew member gets down *on* hands and knees and crawls *across* the floor.",
+        "The person tries to stay {unnoticed} while the presenter keeps talking *without* stopping.",
+      ],
+      useful: ["on live TV", "crawl across the floor", "keep talking"],
+    },
   },
   {
     // source: video_2026-09-22_00-22-47.mp4
@@ -252,6 +369,15 @@ export const describeVideos = [
       'What is he chasing down the canal?',
       'Is this a good idea? Why do you think he does it?',
     ],
+    howTo: {
+      steps: [
+        "A man wearing a helmet is crouching *beside* a fast narrow canal *next to* green rice fields.",
+        "He puts a small toy boat *into* the water, and the current carries it *down* the channel.",
+        "He runs *along* the concrete bank *after* the boat, looking {excited}.",
+        "*At the end*, he jumps *into* the canal himself and slides *along* with the water, {laughing}.",
+      ],
+      useful: ["drop into the water", "run along the bank", "slide into"],
+    },
   },
   {
     // source: pexels_18925870.mp4 (Pexels License)
@@ -266,6 +392,15 @@ export const describeVideos = [
       'What is about to happen to the people in the car?',
       'How do you think they feel at the very top?',
     ],
+    howTo: {
+      steps: [
+        "A roller coaster car full of passengers is climbing *up* a steep metal track.",
+        "A giant ferris wheel stands *next to* the ride *against* a cloudy sky.",
+        "The car moves slowly *towards* the very top *of* the rail while riders sit {tense} and {excited}.",
+        "*At* the peak, the track curves *down* for the big drop ahead.",
+      ],
+      useful: ["climb a steep track", "at the very top", "be about to drop"],
+    },
   },
   {
     // source: pexels_19901707.mp4 (Pexels License)
@@ -280,6 +415,15 @@ export const describeVideos = [
       'What went wrong here?',
       'Tell the story: why was this person pouring the coffee?',
     ],
+    howTo: {
+      steps: [
+        "Two white cups are sitting *on* a wooden table.",
+        "A person lifts one cup and tilts it *over* the second cup to pour the coffee *in*, acting {hurriedly}.",
+        "Instead of going neatly *into* the cup, dark coffee splashes *over* the rim.",
+        "A large puddle spreads *across* the table, leaving a {messy} spill.",
+      ],
+      useful: ["pour into", "splash over the rim", "spread across"],
+    },
   },
   {
     // source: pexels_26761228.mp4 (Pexels License)
@@ -294,6 +438,15 @@ export const describeVideos = [
       'What happened in the middle of the dance?',
       'What do you think they said to each other after?',
     ],
+    howTo: {
+      steps: [
+        "A bride in a white dress and a groom in a suit are dancing *in* the middle *of* a shiny floor.",
+        "The groom holds her hand and spins her *around* *under* his arm, both looking {joyful}.",
+        "Her feet suddenly slip *on* the smooth floor and she drops straight *down*.",
+        "He puts both hands *on* his head, looking {shocked} and {guilty}.",
+      ],
+      useful: ["spin around", "slip on the floor", "put hands on his head"],
+    },
   },
   {
     // source: pexels_33251033.mp4 (Pexels License)
@@ -308,6 +461,15 @@ export const describeVideos = [
       'Describe the sea before and after the big wave.',
       'Would you stand on these rocks? Why or why not?',
     ],
+    howTo: {
+      steps: [
+        "Dark blue waves are rolling *across* the sea *towards* a group of red rocks.",
+        "*At first*, the water moves {calmly} *against* the shore *under* a clear horizon.",
+        "Then a powerful wave slams {violently} straight *into* the rocks.",
+        "White spray shoots high *into* the air and falls *back* *over* the stone.",
+      ],
+      useful: ["roll in", "slam into the rocks", "explode into spray"],
+    },
   },
   {
     // source: pexels_34466882.mp4 (Pexels License)
@@ -322,6 +484,15 @@ export const describeVideos = [
       'What just happened on the pitch?',
       'Describe the atmosphere in the stadium.',
     ],
+    howTo: {
+      steps: [
+        "Thousands of fans in red shirts are sitting *in* the stands *around* a bright football pitch.",
+        "Down *on* the grass, the players score a goal and sprint *towards* the corner.",
+        "They jump *around* each other *in* a tight group, looking {ecstatic}.",
+        "The crowd cheers {wildly} while the scoreboard glows *above* the stadium.",
+      ],
+      useful: ["in the stands", "run together", "celebrate a goal"],
+    },
   },
   {
     // source: pexels_34805837.mp4 (Pexels License)
@@ -336,6 +507,15 @@ export const describeVideos = [
       'What happens when the dice land?',
       'Which games do you play with dice?',
     ],
+    howTo: {
+      steps: [
+        "Two red dice are resting still *on* a flat white table.",
+        "Suddenly, two more dice drop *down* *from* above.",
+        "They bounce *off* the surface and crash right *into* the first pair, {unexpectedly}.",
+        "All four dice roll *across* the table before coming *to* a {quiet} stop.",
+      ],
+      useful: ["fall from above", "bounce off", "knock into"],
+    },
   },
   {
     // source: pexels_35124869.mp4 (Pexels License)
@@ -350,6 +530,15 @@ export const describeVideos = [
       'What is the kitten doing under the sofa?',
       'Where do you think it runs to at the end?',
     ],
+    howTo: {
+      steps: [
+        "A small white kitten is hiding *under* a grey sofa *on* a patterned carpet.",
+        "A pink fluffy toy sits *in front of* the gap, and the kitten bats *at* it, looking {playful}.",
+        "It pulls the toy *towards* itself with its paws.",
+        "*At the end*, the kitten dashes *out* *from* under the sofa {energetically}.",
+      ],
+      useful: ["hide under", "play with a toy", "run out from under"],
+    },
   },
   {
     // source: pexels_38187890.mp4 (Pexels License)
@@ -364,6 +553,15 @@ export const describeVideos = [
       'What does the waiter do, step by step?',
       'Why are the guests filming it?',
     ],
+    howTo: {
+      steps: [
+        "Several guests are sitting *around* a restaurant table with a hot sizzling pan *in* the middle.",
+        "They hold their phones *up* *above* the plates, looking {eager} to record.",
+        "A waiter wearing a red oven glove leans *over* the table and pours dark sauce *into* the pan.",
+        "Steam rises *up* immediately while the guests film the dish {excitedly}.",
+      ],
+      useful: ["lean over the table", "pour sauce into", "film on their phones"],
+    },
   },
   {
     // source: pexels_4781511.mp4 (Pexels License)
@@ -378,6 +576,15 @@ export const describeVideos = [
       'What is he cooking, do you think?',
       'Who is better at cooking in your home?',
     ],
+    howTo: {
+      steps: [
+        "A young man in a checked shirt is standing *at* the stove *in* a home kitchen.",
+        "He holds a frying pan *with* one hand while his friend watches *behind* him, looking {curious}.",
+        "With a quick flick *of* his wrist, he tosses the food *up* and catches it *in* the pan.",
+        "Both friends laugh {happily}, {pleased} that the trick worked.",
+      ],
+      useful: ["stand at the stove", "toss food in a pan", "laugh together"],
+    },
   },
   {
     // source: pexels_6864989.mp4 (Pexels License)
@@ -392,6 +599,15 @@ export const describeVideos = [
       'What does the cat do with the toy?',
       'Are cats or dogs better pets?',
     ],
+    howTo: {
+      steps: [
+        "A white cat is lying *on* a polished wooden floor *near* long curtains.",
+        "Someone dangles a small toy *on* a string right *in front of* its face.",
+        "The cat grabs the toy *with* its paws and bites it, looking {determined}.",
+        "Then it stands *up* and walks *away* carrying the toy {proudly}.",
+      ],
+      useful: ["dangle in front of", "grab with its paws", "walk off with"],
+    },
   },
   {
     // source: pexels_7419682.mp4 (Pexels License)
@@ -406,6 +622,15 @@ export const describeVideos = [
       'What happens at this party?',
       'Tell about a birthday you remember.',
     ],
+    howTo: {
+      steps: [
+        "A group of children wearing colourful party hats are gathered *around* a plate *of* doughnuts.",
+        "Small birthday candles are burning *on* top *of* the doughnuts.",
+        "One boy leans *forward* and blows the flames *out*, looking {happy}.",
+        "*Right after*, all the children clap their hands and cheer {excitedly}.",
+      ],
+      useful: ["gather around", "blow out the candles", "clap and cheer"],
+    },
   },
   {
     // source: pexels_8500933.mp4 (Pexels License)
@@ -420,6 +645,15 @@ export const describeVideos = [
       'What did the child draw?',
       'What did you like to draw when you were small?',
     ],
+    howTo: {
+      steps: [
+        "A small child dressed *in* a penguin costume is standing *on* a wooden floor.",
+        "The child holds a large sheet of paper *up* *in front of* their face.",
+        "There is a colourful drawing *of* a penguin *on* the paper.",
+        "The child peeks *out* *from* behind the picture, smiling {proudly} and {shyly}.",
+      ],
+      useful: ["dress up in a costume", "hold up a drawing", "peek out from behind"],
+    },
   },
   {
     // source: pexels_9502511.mp4 (Pexels License)
@@ -434,6 +668,15 @@ export const describeVideos = [
       'What happened with the penalty?',
       'How does the goalkeeper feel now?',
     ],
+    howTo: {
+      steps: [
+        "A footballer is standing *on* the green pitch *in front of* the goal.",
+        "The goalkeeper waits *on* the goal line, looking {focused} and {tense}.",
+        "The player runs *up* and kicks the ball hard *towards* the net.",
+        "The goalkeeper dives *across* the grass and lands flat *on* the ground.",
+      ],
+      useful: ["take a penalty", "dive across", "land on the grass"],
+    },
   },
   {
     // source: pexels_9787350.mp4 (Pexels License)
@@ -448,6 +691,15 @@ export const describeVideos = [
       'How long do you think they have not seen each other?',
       'Tell about a time you met an old friend.',
     ],
+    howTo: {
+      steps: [
+        "A woman with a handbag is standing *on* a city pavement *in* the daytime.",
+        "Her friend runs *down* the street *towards* her with open arms, looking {overjoyed}.",
+        "They throw their arms *around* each other and hug tightly *in* the middle of the sidewalk.",
+        "Both women rock *from* side to side and laugh {warmly}.",
+      ],
+      useful: ["run up to", "throw arms around", "hug tightly"],
+    },
   },
   {
     // source: acrobat-handstand.mp4
@@ -462,6 +714,15 @@ export const describeVideos = [
       'How does she put the shoes on? Tell it step by step.',
       'How much training do you think a trick like this takes?',
     ],
+    howTo: {
+      steps: [
+        "A woman in a black bodysuit is standing barefoot *at* the bottom *of* a staircase.",
+        "A pair of high-heeled shoes sits *on* the floor *behind* her.",
+        "She bends backwards *until* her hands touch the ground and lifts her legs *into* the air, looking {calm}.",
+        "While balancing upside *down*, she slides her feet {carefully} *into* the heels.",
+      ],
+      useful: ["bend backwards", "balance upside down", "slip feet into shoes"],
+    },
   },
   {
     // source: baby-calves-milk.mp4
@@ -477,6 +738,15 @@ export const describeVideos = [
       'What are the two babies doing together?',
       'How are the two animals different from each other?',
     ],
+    howTo: {
+      steps: [
+        "A baby goat and a fluffy white calf are standing side *by* side *in* a wooden barn.",
+        "Both animals have their heads *in* metal feeding chutes, drinking milk {eagerly}.",
+        "After finishing the milk, they pull their heads *back* *from* the trough.",
+        "They turn *around* and wander *off* across the barn floor, looking {content}.",
+      ],
+      useful: ["side by side", "drink from a chute", "wander off"],
+    },
   },
   {
     // source: baby-donkey-jump.mp4
@@ -492,6 +762,15 @@ export const describeVideos = [
       'Why is the little donkey jumping and kicking like that?',
       'What does it do when it comes close to the camera?',
     ],
+    howTo: {
+      steps: [
+        "A small grey donkey foal is standing *in* a sandy yard *next to* a wooden fence.",
+        "Suddenly it jumps *up* and kicks its back legs *into* the air, looking {energetic}.",
+        "After bouncing *around* the yard, it trots straight *up to* the camera.",
+        "It stretches its neck *forward* and sniffs the lens {curiously}.",
+      ],
+      useful: ["kick its back legs", "trot up to", "sniff the camera"],
+    },
   },
   {
     // source: baby-giraffe-hair.mp4
@@ -507,6 +786,15 @@ export const describeVideos = [
       'What makes this young giraffe look funny?',
       'What do you think it is thinking when it looks at the camera?',
     ],
+    howTo: {
+      steps: [
+        "A young giraffe with brown spots is standing *inside* a bright stable.",
+        "A funny dark tuft of hair sticks straight *up* *on* top *of* its head.",
+        "It walks slowly *towards* the camera *on* its long legs, looking {curious}.",
+        "Then it stops right *in front of* the lens and stares *at* it {calmly}.",
+      ],
+      useful: ["stick straight up", "walk up to", "stare straight into"],
+    },
   },
   {
     // source: bear-water-hose.mp4
@@ -522,6 +810,15 @@ export const describeVideos = [
       'What is the bear doing with the hose?',
       'What happens at the end? How would you feel if you were filming?',
     ],
+    howTo: {
+      steps: [
+        "A large brown bear is sitting *in* a muddy puddle *in* the middle of a forest.",
+        "Water sprays *out of* a hose, and the bear bites and paws *at* the stream, looking {playful}.",
+        "Water splashes all *around* the puddle while it rolls *in* the mud.",
+        "*At the end*, the bear suddenly stands *up* and charges *towards* the camera, looking {fierce}.",
+      ],
+      useful: ["sit in a puddle", "spray everywhere", "run straight at"],
+    },
   },
   {
     // source: canopy-tree-climb.mp4
@@ -537,6 +834,15 @@ export const describeVideos = [
       'How high up do you think he is?',
       'Would you ever climb a tree like this? Why or why not?',
     ],
+    howTo: {
+      steps: [
+        "A barefoot man is climbing *up* the narrow trunk *of* a tall jungle tree.",
+        "The camera looks *down* *past* his feet *towards* the green forest floor far *below*.",
+        "He grips the bark and thin branches *with* his hands and feet, moving {confidently}.",
+        "Soon he reaches the high canopy *above* the other trees, feeling {fearless}.",
+      ],
+      useful: ["climb up a trunk", "far below", "hold on to branches"],
+    },
   },
   {
     // source: dancing-lemur.mp4
@@ -552,6 +858,15 @@ export const describeVideos = [
       'Describe the strange way this animal moves.',
       'What happens before it starts hopping?',
     ],
+    howTo: {
+      steps: [
+        "A white-and-brown lemur is sitting *near* a tree *by* a dirt path.",
+        "It takes a small piece of fruit and climbs *up* *onto* a low trunk, looking {alert}.",
+        "Then it drops *down* *onto* the forest path and stands *on* its two back legs.",
+        "With its arms held wide *open*, it hops sideways *along* the ground {gracefully}.",
+      ],
+      useful: ["climb onto a tree", "stand on two legs", "hop sideways"],
+    },
   },
   {
     // source: dog-wizard.mp4
@@ -566,6 +881,15 @@ export const describeVideos = [
       'Why do you think the dog is dressed like this?',
       'Describe the dog\'s face and how it sits.',
     ],
+    howTo: {
+      steps: [
+        "A golden retriever is sitting *on* mossy rocks *in* a green forest.",
+        "It is wearing a black hooded cloak *over* its head and holding a wooden staff *between* its paws.",
+        "A person’s hand reaches *in* and hangs a shiny amulet *onto* the staff.",
+        "The dog sits completely still and looks *ahead* {calmly} and {patiently}.",
+      ],
+      useful: ["dressed in a cloak", "sit on rocks", "hang onto"],
+    },
   },
   {
     // source: ginger-trio.mp4
@@ -581,6 +905,15 @@ export const describeVideos = [
       'What three animals are sitting together here?',
       'Why is it surprising that they get along so well?',
     ],
+    howTo: {
+      steps: [
+        "A tiny chick, a kitten, and a rabbit — all with ginger fur and feathers — are sitting *on* the green grass.",
+        "They are lined *up* side *by* side *in* a neat row, looking {peaceful}.",
+        "The chick and the rabbit stay still *on* either side *of* the kitten.",
+        "The kitten turns its head *from* one friend *to* the other, looking {curious}.",
+      ],
+      useful: ["sit side by side", "in a row", "look from one to the other"],
+    },
   },
   {
     // source: hammock-highrise.mp4
@@ -595,6 +928,15 @@ export const describeVideos = [
       'How do you think he got the hammock up there?',
       'Would you ever lie in a hammock like this? Why or why not?',
     ],
+    howTo: {
+      steps: [
+        "A narrow hammock is tied high *up* *between* two tall apartment buildings.",
+        "Wet laundry hangs *on* a line right *next to* the hammock, far *above* the street.",
+        "A man is lying *inside* the hammock and reading, looking completely {relaxed}.",
+        "The camera zooms *out* to show the windows and the huge drop *below*, which looks {terrifying}.",
+      ],
+      useful: ["tied between", "high above the street", "zoom out"],
+    },
   },
   {
     // source: hedgehog-run.mp4
@@ -610,6 +952,15 @@ export const describeVideos = [
       'Where do you think the hedgehog is running to?',
       'Would a hedgehog be a good pet? Why?',
     ],
+    howTo: {
+      steps: [
+        "A tiny hedgehog is standing *on* a smooth wooden floor *at* one end of a room.",
+        "It starts running fast *on* its short legs straight *towards* the camera, looking {eager}.",
+        "Its spiky body bounces slightly as it hurries *across* the boards.",
+        "*At the end*, it bumps right *past* the lens and keeps going, {unbothered}.",
+      ],
+      useful: ["run across the floor", "head straight for", "bump past"],
+    },
   },
   {
     // source: kittens-bottle-play.mp4
@@ -625,6 +976,15 @@ export const describeVideos = [
       'How do the kittens react when the bottle rolls?',
       'What is the grown-up cat doing in the background?',
     ],
+    howTo: {
+      steps: [
+        "Several black-and-white kittens are gathered *on* a wooden floor *in front of* a chest of drawers.",
+        "One kitten bats a green plastic bottle, sending it rolling *across* the room.",
+        "The other kittens chase *after* the bottle *together*, looking {excited} and {playful}.",
+        "An adult cat lies *in* the background and watches them *from* a distance.",
+      ],
+      useful: ["bat across the floor", "chase after", "watch from a distance"],
+    },
   },
   {
     // source: man-seagull-argument.mp4
@@ -639,6 +999,15 @@ export const describeVideos = [
       'What do you think the man is saying to the seagull?',
       'What would the seagull say back?',
     ],
+    howTo: {
+      steps: [
+        "A man in an orange shirt and cap is leaning *against* a stone wall *outdoors*.",
+        "A white seagull is standing *on* the top *of* the wall right *next to* him.",
+        "The man waves his hands *in* the air as if having a {serious} argument *with* the bird.",
+        "The seagull stares back *at* him without flying away, looking {unbothered}.",
+      ],
+      useful: ["lean on a wall", "wave his hands", "argue with"],
+    },
   },
   {
     // source: moose-roadside.mp4
@@ -654,6 +1023,15 @@ export const describeVideos = [
       'How big do the animals look next to the cars?',
       'What should drivers do when wild animals are near the road?',
     ],
+    howTo: {
+      steps: [
+        "The clip is filmed *through* the side window *of* a car driving *along* a busy road.",
+        "Two giant moose with big antlers are walking *on* the grass strip *beside* the tarmac.",
+        "Cars pass right *by* them, with tall pine trees standing *behind* the animals.",
+        "Both moose keep walking steadily *along* the roadside, looking {calm} and {unhurried}.",
+      ],
+      useful: ["filmed from a car", "walk along the roadside", "drive past"],
+    },
   },
   {
     // source: round-blue-bird.mp4
@@ -668,6 +1046,15 @@ export const describeVideos = [
       'Describe the bird\'s shape and colours.',
       'Is it a real bird or a toy? What makes you think so?',
     ],
+    howTo: {
+      steps: [
+        "A very round, fluffy bird is perched *on* a thin branch *in* a garden.",
+        "A red brick wall stands *in* the background *behind* the green leaves.",
+        "The bird sits *on* the twig looking {calm} with its soft white chest puffed *out*.",
+        "Then it hops *around* *on* the branch to show its bright blue back and tail, looking {adorable}.",
+      ],
+      useful: ["perch on a branch", "puff out", "turn around"],
+    },
   },
   {
     // source: toad-apple-bite.mp4
@@ -683,6 +1070,15 @@ export const describeVideos = [
       'What is funny about how this tortoise is dressed?',
       'Describe how it eats the apple.',
     ],
+    howTo: {
+      steps: [
+        "A small tortoise with orange spots on its head is standing *beside* a yellow toy truck.",
+        "It is wearing a tiny knitted backpack *on* its shell, which looks {funny}.",
+        "Someone holds a slice of apple right *in front of* its mouth.",
+        "The tortoise stretches its neck *out* and takes big bites *out of* the apple {eagerly}.",
+      ],
+      useful: ["hold out", "stretch its neck", "take a bite out of"],
+    },
   },
   {
     // source: woman-brick-wall.mp4
@@ -697,6 +1093,15 @@ export const describeVideos = [
       'What is she building? Tell it step by step.',
       'Why do you think she is doing this job herself?',
     ],
+    howTo: {
+      steps: [
+        "An older woman in glasses and a flowery dress is standing *beside* an unfinished brick wall.",
+        "She scoops wet mortar *with* a metal trowel and spreads it *along* the top row *of* bricks.",
+        "Then she places a new brick *onto* the mortar and taps it *into* place, working {skillfully}.",
+        "*At the end*, she turns *to* the camera and gives a big thumbs up, smiling {proudly}.",
+      ],
+      useful: ["spread mortar", "lay bricks", "give a thumbs up"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-23.mp4
@@ -711,6 +1116,15 @@ export const describeVideos = [
       'How do you think the monkey got into the house?',
       'What would you do if an animal walked into your home?',
     ],
+    howTo: {
+      steps: [
+        "A wild monkey walks *into* a bright living room *through* an open balcony door.",
+        "It steps *around* a glass coffee table while looking *around* the room {curiously}.",
+        "A woman in a green top runs *in* and waves her hand *at* the monkey, looking {alarmed}.",
+        "The monkey hurries back *out* *onto* the balcony with the sea *in* the background.",
+      ],
+      useful: ["walk into a room", "chase out", "run out onto the balcony"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-28.mp4
@@ -725,6 +1139,15 @@ export const describeVideos = [
       'Why does the rider move the cat?',
       'What does the cat do after that? Why do you think it goes back?',
     ],
+    howTo: {
+      steps: [
+        "A cat is lying *on* the road right *under* the front bumper *of* a parked car.",
+        "A delivery rider bends *down*, grabs the cat gently, and pulls it *out* onto the pavement.",
+        "Instead of walking *away*, the cat flops *onto* its side, looking {stubborn}.",
+        "It rolls right back *under* the car to the exact same spot, completely {unbothered}.",
+      ],
+      useful: ["pull out from under", "flop onto its side", "roll back"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-30.mp4
@@ -739,6 +1162,15 @@ export const describeVideos = [
       'How does he get the fridge off the lorry? Tell it step by step.',
       'Could you carry something this heavy? What would you use?',
     ],
+    howTo: {
+      steps: [
+        "A man in a red shirt is standing *at* the back *of* a delivery lorry *in* the street.",
+        "He pulls a tall refrigerator *towards* the edge and balances it *onto* his back, looking {determined}.",
+        "Holding the weight *with* his arms, he steps *away* from the lorry.",
+        "He walks steadily *down* the street carrying the huge fridge all *by* himself, looking {strong}.",
+      ],
+      useful: ["take off a lorry", "lift onto his back", "carry by himself"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-32.mp4
@@ -753,6 +1185,15 @@ export const describeVideos = [
       'What was he trying to do before he fell?',
       'How do you think he felt after he climbed out?',
     ],
+    howTo: {
+      steps: [
+        "A man in a dark uniform is standing *next to* a large glass fish tank *in* a shop.",
+        "He climbs *up* and leans far *over* the glass edge to catch a fish *inside*, looking {focused}.",
+        "Suddenly his feet slip and he tumbles headfirst right *into* the deep water.",
+        "He stands *up* *inside* the tank completely {soaked} and waves *at* the camera, {embarrassed}.",
+      ],
+      useful: ["lean over the edge", "fall in headfirst", "soaking wet"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-34.mp4
@@ -768,6 +1209,15 @@ export const describeVideos = [
       'Where is the cat going, and how does it get there?',
       'Why do you think the cat sits so calmly?',
     ],
+    howTo: {
+      steps: [
+        "A ginger cat is sitting *inside* the yellow back *of* a toy dump truck.",
+        "The truck rolls smoothly *across* a shiny floor *towards* a cardboard box.",
+        "The cat stays sitting *in* the truck, looking completely {calm} and {unbothered}.",
+        "The toy truck drives straight *into* the open cardboard box with the cat still *on* board.",
+      ],
+      useful: ["ride in the back", "roll across the floor", "drive straight into"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-40.mp4
@@ -782,6 +1232,15 @@ export const describeVideos = [
       'What happens after the knock? Tell it in order.',
       'Who do you think the flowers are for?',
     ],
+    howTo: {
+      steps: [
+        "A tiny wooden door is built *into* the bottom *of* a wide tree trunk.",
+        "A person reaches *down* and knocks gently *on* the little door.",
+        "The door swings *open*, and small kittens walk *out* one *by* one holding bunches of flowers, looking {adorable}.",
+        "They stand *in* a neat line *in front of* the tree, waiting {patiently}.",
+      ],
+      useful: ["knock on a door", "one by one", "line up"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-43.mp4
@@ -796,6 +1255,15 @@ export const describeVideos = [
       'What happened to her? Describe it step by step.',
       'Have you ever slipped on ice or snow? What happened?',
     ],
+    howTo: {
+      steps: [
+        "A woman in a winter coat is walking *along* an icy pavement *at* night.",
+        "Bright shop lights shine *onto* the snow *beside* the path while other people walk *past*.",
+        "Her boots suddenly slide *out* from *under* her on the ice, leaving her {helpless}.",
+        "She falls sideways right *into* a deep pile of snow, looking {stunned}.",
+      ],
+      useful: ["walk along a path", "slip on the ice", "fall into a snow pile"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-45.mp4
@@ -811,6 +1279,15 @@ export const describeVideos = [
       'Why do you think the sloth is in the lorry?',
       'Where could they be going together?',
     ],
+    howTo: {
+      steps: [
+        "A lorry is driving *down* a busy motorway *on* a sunny day.",
+        "*Inside* the cab, a brown sloth is lying stretched *out* *across* the dashboard.",
+        "It rests right *above* the steering wheel *in* the warm sunlight, looking {sleepy}.",
+        "The sloth slowly moves its head and long claws, completely {relaxed} during the ride.",
+      ],
+      useful: ["lie stretched out", "on the dashboard", "drive down a motorway"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-46.mp4
@@ -825,6 +1302,15 @@ export const describeVideos = [
       'What does the man do, and what happens next?',
       'Was this a good idea? Why or why not?',
     ],
+    howTo: {
+      steps: [
+        "A man is sitting *on* the ground *near* the top *of* a steep rocky hillside.",
+        "He places both feet *against* a huge boulder *in front of* him, looking {determined}.",
+        "With a hard push, he sends the rock rolling *down* the slope.",
+        "The boulder crashes *through* the dry bushes and kicks *up* dust, which looks {dangerous}.",
+      ],
+      useful: ["push with his feet", "roll down a slope", "crash through bushes"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-53.mp4
@@ -840,6 +1326,15 @@ export const describeVideos = [
       'What do you think the cat was trying to catch?',
       'Describe the jump from start to finish.',
     ],
+    howTo: {
+      steps: [
+        "A cat is running fast *across* the floor *of* a large empty room.",
+        "It sprints straight *towards* a plain wall *next to* a television.",
+        "The cat leaps high *up* *against* the wall, looking {energetic} and {fearless}.",
+        "It pushes *off* the wall with its paws and flies backwards *through* the air.",
+      ],
+      useful: ["run across a room", "jump up the wall", "push off"],
+    },
   },
   {
     // source: video_2026-09-30_21-09-57.mp4
@@ -855,6 +1350,15 @@ export const describeVideos = [
       'What happens to the log when more turtles climb on?',
       'Why do you think turtles like to sit on logs?',
     ],
+    howTo: {
+      steps: [
+        "Several turtles are sitting *in* a row *on* a floating log *in* a green pond.",
+        "Another turtle climbs *out of* the water and pulls itself *onto* the log.",
+        "The extra weight makes the round log tip and roll *over* *in* the water.",
+        "The turtles scramble {frantically} to keep their balance before slipping *off*, looking {clumsy}.",
+      ],
+      useful: ["climb onto a log", "keep their balance", "tip over"],
+    },
   },
   {
     // source: video_2026-09-30_21-10-00.mp4
@@ -870,6 +1374,15 @@ export const describeVideos = [
       'What does the cat think it is doing?',
       'Why do cats love watching things that move?',
     ],
+    howTo: {
+      steps: [
+        "A fluffy ginger cat is standing *on* its hind legs *in front of* a white washing machine.",
+        "*Inside* the round glass door, wet clothes are spinning *around* fast.",
+        "The cat watches the laundry {intently} and scratches rapidly *at* the glass *with* its front paws.",
+        "It keeps pawing *at* the door, {confused} about why it cannot catch the clothes.",
+      ],
+      useful: ["stand on hind legs", "spin around inside", "paw at the glass"],
+    },
   },
   {
     // source: video_2026-09-30_21-10-01.mp4
@@ -885,6 +1398,15 @@ export const describeVideos = [
       'How does the squirrel drink the water?',
       'What other clever things have you seen animals do?',
     ],
+    howTo: {
+      steps: [
+        "A grey squirrel with a bushy tail is sitting *on* a metal drinking fountain *in* a park.",
+        "A steady stream of water arches *up* *from* the spout.",
+        "The squirrel leans *over* the basin and holds its paws *by* the water, looking {thirsty}.",
+        "It drinks neatly *from* the running stream just like a person, looking {calm}.",
+      ],
+      useful: ["climb onto", "drink from a fountain", "lean over"],
+    },
   },
   {
     // source: video_2026-09-30_21-10-06.mp4
@@ -900,6 +1422,15 @@ export const describeVideos = [
       'Where is the trolley going? What might happen?',
       'What would you do if you saw this?',
     ],
+    howTo: {
+      steps: [
+        "The scene is filmed *from* inside a car *in* a wet supermarket car park.",
+        "Strong wind and rain are blowing *across* the tarmac *towards* a row of parked cars.",
+        "An empty metal shopping trolley starts rolling *across* the open space *on* its own.",
+        "It gathers speed *towards* the cars, making the situation look {tense} and {risky}.",
+      ],
+      useful: ["roll across a car park", "on its own", "head towards"],
+    },
   },
   {
     // source: video_2026-09-30_21-10-08.mp4
@@ -914,6 +1445,15 @@ export const describeVideos = [
       'What does the cat do while the man is busy?',
       'Should the man be angry? Why or why not?',
     ],
+    howTo: {
+      steps: [
+        "A fisherman is standing *by* the seafront holding his fishing rod *over* the water.",
+        "A plastic bucket sits *on* the pavement *behind* him while people walk *past*.",
+        "A cat sneaks *up* to the bucket, sticks its head *inside*, and grabs a fish {boldly}.",
+        "It runs *off* *down* the promenade with the fish in its mouth, looking {pleased}.",
+      ],
+      useful: ["sneak up to", "put its head in", "run off with"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-27.mp4
@@ -929,6 +1469,15 @@ export const describeVideos = [
       'What do you think the squirrel wants?',
       'What would you do if it jumped into your room?',
     ],
+    howTo: {
+      steps: [
+        "A squirrel is clinging *to* the glass *of* an open door *by* a garden.",
+        "It hangs *near* the door handle and peers *into* the house, looking {curious}.",
+        "The person filming moves the camera closer *to* the glass.",
+        "All *of* a sudden, the squirrel leaps straight *at* the camera, which is {startling}.",
+      ],
+      useful: ["hold on to", "peer into", "jump straight at"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-29.mp4
@@ -943,6 +1492,15 @@ export const describeVideos = [
       'What is the dog doing so late at night?',
       'Why does it close the curtain?',
     ],
+    howTo: {
+      steps: [
+        "At night, the camera zooms *in* *from* outside *towards* a bright apartment window.",
+        "*Inside* the room, a dog wearing glasses is sitting *in* an office chair *at* a computer.",
+        "The dog turns its head and spots the camera filming *from* the street, looking {annoyed}.",
+        "It reaches *over* and pulls the curtain shut *across* the window for privacy, acting {serious}.",
+      ],
+      useful: ["zoom into a window", "sit at a computer", "pull the curtain shut"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-31.mp4
@@ -957,6 +1515,15 @@ export const describeVideos = [
       'What was the cat doing before the camera came?',
       'How does the cat look now: guilty or innocent?',
     ],
+    howTo: {
+      steps: [
+        "A ginger cat is standing *on* top *of* a metal cooking pot *near* a window.",
+        "When the camera gets close, the cat quickly jumps *down* *onto* the counter.",
+        "It sits right *beside* the pot and stares *at* the camera with huge round eyes, looking {guilty}.",
+        "*Behind* it, a second cat watches the whole scene {quietly}.",
+      ],
+      useful: ["jump down from", "sit beside", "stare with big eyes"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-36.mp4
@@ -971,6 +1538,15 @@ export const describeVideos = [
       'What went wrong? Tell the story step by step.',
       'What does the other man do after the fall?',
     ],
+    howTo: {
+      steps: [
+        "Two men are carrying a heavy air conditioner *along* the narrow edge *of* a swimming pool.",
+        "One man walks backwards *in front*, guiding the unit *towards* a ladder, looking {careful}.",
+        "He takes one step too close *to* the edge and his foot misses the tiles.",
+        "He falls straight backwards *into* the pool with the box, leaving his partner {shocked}.",
+      ],
+      useful: ["walk backwards", "along the edge", "fall into the pool"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-42.mp4
@@ -985,6 +1561,15 @@ export const describeVideos = [
       'Why does the girl use a long stick?',
       'Have you ever fed an animal? What happened?',
     ],
+    howTo: {
+      steps: [
+        "A little girl is standing *outside* a wooden stable *in* a yard.",
+        "She holds a long stick *out* *in front of* her with a carrot attached *to* the end, feeling {nervous} to get too close.",
+        "A brown horse leans its head *out* *through* the stable window.",
+        "The horse bites the carrot *off* the stick and munches it {happily}.",
+      ],
+      useful: ["hold out a stick", "lean out of a window", "bite off"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-46.mp4
@@ -1000,6 +1585,15 @@ export const describeVideos = [
       'Where do you think the two friends are going?',
       'Why are cats and dogs usually not friends?',
     ],
+    howTo: {
+      steps: [
+        "A black dog and a grey cat meet *on* the green grass *by* the side of a path.",
+        "They pause *next to* each other for a moment, looking {friendly} and {relaxed}.",
+        "Then both animals turn *onto* a long gravel path.",
+        "They walk *away* together side *by* side *down* the road like old friends.",
+      ],
+      useful: ["meet in the grass", "side by side", "walk off together"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-49.mp4
@@ -1014,6 +1608,15 @@ export const describeVideos = [
       'How does the cat feel? How do you know?',
       'Who started the merry-go-round, do you think?',
     ],
+    howTo: {
+      steps: [
+        "A white cat is lying *on* its back *on* a blue merry-go-round *in* a playground.",
+        "The roundabout spins slowly *around* *in* circles.",
+        "The cat keeps its paws *up* *in* the air while riding upside *down*.",
+        "It makes no effort to get *off*, looking completely {relaxed} and {unbothered}.",
+      ],
+      useful: ["lie on its back", "spin round and round", "upside down"],
+    },
   },
   {
     // source: video_2026-10-13_11-06-51.mp4
@@ -1028,6 +1631,15 @@ export const describeVideos = [
       'How did the bear get there, and how will it get down?',
       'What should the people living here do?',
     ],
+    howTo: {
+      steps: [
+        "A brown bear is sitting high *up* *in* an apple tree *on* a quiet street.",
+        "A bright rainbow arches *across* the sky *behind* the neighbourhood houses.",
+        "The bear balances *on* a thick branch and reaches *for* the red apples, looking {content}.",
+        "It pulls the fruit *to* its mouth and eats {calmly} without caring about the street *below*.",
+      ],
+      useful: ["high up in a tree", "balance on a branch", "reach for"],
+    },
   },
   {
     // source: cake-dog-lick.mp4
@@ -1044,6 +1656,15 @@ export const describeVideos = [
       'What did the dog do to the cake?',
       'What should the family do now — eat the cake or not?',
     ],
+    howTo: {
+      steps: [
+        "A birthday cake with lit candles is sitting *on* a table *in* a dining room.",
+        "A small dog puts its front paws *up* *on* the table edge, looking {greedy}.",
+        "It stretches its tongue *out* and licks the white cream *on* the side of the cake.",
+        "Just *at* that moment, the family walks back *into* the room, looking {surprised}.",
+      ],
+      useful: ["jump up to the table", "lick the cream", "walk back in"],
+    },
   },
   {
     // source: cat-glass-push.mp4
@@ -1060,6 +1681,15 @@ export const describeVideos = [
       'How did the cat move the glass?',
       'Why do you think cats like to push things off tables?',
     ],
+    howTo: {
+      steps: [
+        "A cat is sitting *on* a wooden kitchen table *next to* a full glass of water.",
+        "It looks straight *at* the camera, seeming {calm} and {mischievous}.",
+        "Slowly, the cat reaches its paw *out* and taps the glass *towards* the edge.",
+        "One final push sends the glass falling *off* the table *onto* the floor.",
+      ],
+      useful: ["stare at the camera", "push towards the edge", "knock off the table"],
+    },
   },
   {
     // source: dog-cushion-caught.mp4
@@ -1076,6 +1706,15 @@ export const describeVideos = [
       'What was the dog doing before the door opened?',
       'What do you think the owner said when she saw the room?',
     ],
+    howTo: {
+      steps: [
+        "A dog is alone *on* the sofa *in* a living room, biting a soft cushion.",
+        "It rips the fabric *open* and white feathers fly all *over* the carpet.",
+        "Suddenly the front door opens *in* the background and the owner steps *inside*.",
+        "The dog immediately stops and lies *down* *among* the feathers, trying to look {innocent} and {calm}.",
+      ],
+      useful: ["rip apart", "fly everywhere", "act innocent"],
+    },
   },
   {
     // source: goat-car-roof.mp4
@@ -1092,6 +1731,15 @@ export const describeVideos = [
       'How did the goat get onto the roof?',
       'What would you do if you were the farmer?',
     ],
+    howTo: {
+      steps: [
+        "A car is parked *outside* a wooden barn *on* a farm.",
+        "A goat jumps *onto* the bonnet and climbs right *up* *onto* the car roof, looking {bold}.",
+        "It stands *on* top *of* the car and looks *around* the yard.",
+        "A farmer runs *out* and waves her arms *at* the goat, looking {frustrated}.",
+      ],
+      useful: ["jump onto the bonnet", "climb onto the roof", "wave her arms"],
+    },
   },
   {
     // source: robot-vacuum-cat.mp4
@@ -1108,6 +1756,15 @@ export const describeVideos = [
       'What happened when the robot hit the wall?',
       'Do you have a robot vacuum or a pet at home? What do they do?',
     ],
+    howTo: {
+      steps: [
+        "A cat is sitting *on* top *of* a round robot vacuum cleaner *in* a hallway.",
+        "The vacuum glides *across* the wooden floor while the cat rides *along*, looking {unbothered}.",
+        "Then the machine bumps straight *into* the bottom *of* a wall.",
+        "The sudden stop makes the cat slide *off* the vacuum *onto* the floor, looking {surprised}.",
+      ],
+      useful: ["ride on top of", "bump into a wall", "slide off"],
+    },
   },
   {
     // source: seagull-pizza.mp4
@@ -1124,6 +1781,15 @@ export const describeVideos = [
       'What did the seagull do, step by step?',
       'Who do you think ordered the pizza, and how did they feel when they opened the door?',
     ],
+    howTo: {
+      steps: [
+        "A closed pizza box is sitting *on* a doormat *in front of* a house door.",
+        "A large seagull lands *on* the doorstep and walks *up to* the box, looking {bold}.",
+        "It uses its sharp beak to flip the cardboard lid *open*.",
+        "The bird grabs a big slice of pizza *out of* the box and flies *away*, looking {pleased}.",
+      ],
+      useful: ["land on a doorstep", "flip the lid open", "fly away with"],
+    },
   },
   {
     // source: umbrella-wind.mp4
@@ -1140,6 +1806,15 @@ export const describeVideos = [
       'What did the wind do to the umbrella?',
       'What is the worst weather you have been out in?',
     ],
+    howTo: {
+      steps: [
+        "A man is walking *down* a wet street *in* heavy rain, holding an open umbrella *over* his head.",
+        "A strong gust of wind blows *across* the road and flips the umbrella *inside out*.",
+        "*Right after*, the wind rips the umbrella *out of* his hand and carries it *down* the pavement.",
+        "The man chases *after* it *through* the puddles, looking {panicked} and {frustrated}.",
+      ],
+      useful: ["turn inside out", "blow away", "run after"],
+    },
   },
   {
     // source: waiter-tray-save.mp4
@@ -1156,6 +1831,15 @@ export const describeVideos = [
       'What almost happened to the glasses?',
       'Have you ever dropped something in public? What happened?',
     ],
+    howTo: {
+      steps: [
+        "A waiter wearing an apron is walking *between* tables *in* a busy café.",
+        "He is carrying a round tray full *of* glasses *in* one hand.",
+        "His foot suddenly trips *on* the floor and the glasses tilt *towards* the edge, making everyone {tense}.",
+        "He drops *to* one knee and catches the whole tray *in* time, leaving the customers {amazed} as they clap.",
+      ],
+      useful: ["carry a tray", "trip over", "catch just in time"],
+    },
   },
   {
     // source: Cat_steals_bread_from_counter_20261017172729.mp4
@@ -1172,6 +1856,15 @@ export const describeVideos = [
       'What did the cat do, step by step, and where do you think it was going?',
       'Has an animal ever stolen food from you? What happened?',
     ],
+    howTo: {
+      steps: [
+        "A ginger cat is standing *on* a messy kitchen counter *next to* a loaf of bread.",
+        "It reaches *into* the plastic bag with its mouth and pulls a slice *out*, acting {sneaky}.",
+        "Holding the bread firmly *in* its jaws, the cat jumps *down* *onto* the floor.",
+        "It hurries *out of* the kitchen *past* the fridge, looking {pleased} with itself.",
+      ],
+      useful: ["pull out of a bag", "jump down from", "run out of the kitchen"],
+    },
   },
   {
     // source: Goat_chewing_shirt_with_woman_20261017172701.mp4
@@ -1188,6 +1881,15 @@ export const describeVideos = [
       'Tell the story from the goat\'s point of view. What was it thinking?',
       'Who do you think will win, the goat or the woman? Why?',
     ],
+    howTo: {
+      steps: [
+        "Clean clothes are hanging *on* a washing line *in* a sunny village yard.",
+        "A white goat stands *under* the line and grabs the sleeve *of* a blue shirt in its mouth, looking {stubborn}.",
+        "A woman in an apron rushes *over* and grabs the other side *of* the shirt.",
+        "She pulls *back* hard against the goat, looking {annoyed} and {determined} to save the laundry.",
+      ],
+      useful: ["hang on a washing line", "pull off", "tug back and forth"],
+    },
   },
   {
     // source: Man_catches_slipping_watermelon_20261017172739.mp4
@@ -1204,6 +1906,15 @@ export const describeVideos = [
       'What made him drop the watermelon, and how did he save it?',
       'Describe a time you almost dropped or broke something important.',
     ],
+    howTo: {
+      steps: [
+        "A man in flip-flops is walking *across* a courtyard *between* old apartment blocks.",
+        "He is carrying a huge green watermelon *in* both arms.",
+        "His foot catches *on* a garden hose *on* the ground, and the watermelon slips *out of* his hands, making him {panicked}.",
+        "He dives *forward* and catches the fruit just *before* it hits the concrete, looking {relieved}.",
+      ],
+      useful: ["trip over a hose", "slip out of his hands", "catch just in time"],
+    },
   },
   {
     // source: 1000070200.mp4
@@ -1218,6 +1929,15 @@ export const describeVideos = [
       'What is the cameraman filming, and what happens around him?',
       'Have you ever watched a race live? What was it like?',
     ],
+    howTo: {
+      steps: [
+        "A cameraman is standing *in* the middle *of* a grassy racecourse *between* yellow fences.",
+        "Dark clouds hang *in* the sky while riders *on* racehorses gallop fast *towards* him.",
+        "The horses split *to* both sides and thunder right *past* him *through* a wooden arch.",
+        "The cameraman turns smoothly *with* his camera to film them, staying {calm} and {focused}.",
+      ],
+      useful: ["stand in the middle of", "gallop past", "keep filming"],
+    },
   },
   {
     // source: 1000072776.mp4
@@ -1232,6 +1952,15 @@ export const describeVideos = [
       'What happened when she tried to walk through?',
       'Have you ever walked into a glass door or window?',
     ],
+    howTo: {
+      steps: [
+        "A woman in a black outfit is walking *towards* an indoor doorway *with* shoes lined *up* *on* the floor.",
+        "She does not notice the spotless glass panel *in* the frame and walks straight *into* it.",
+        "She bounces *back* and puts both hands *on* her head, looking {shocked} and {embarrassed}.",
+        "*After* a moment, she laughs *at* her mistake while her friends watch *from* inside.",
+      ],
+      useful: ["walk straight into", "bounce back", "hold her head"],
+    },
   },
   {
     // source: 1000073166.mp4
@@ -1246,6 +1975,15 @@ export const describeVideos = [
       'What does the bear do after it sits down next to the man?',
       'How would you react if a wild animal came this close to you?',
     ],
+    howTo: {
+      steps: [
+        "A man in jeans is sitting *on* a fallen wooden log *in* the middle *of* a forest.",
+        "A huge brown bear walks *up* and sits *down* *on* the log right *beside* him.",
+        "The bear lifts its heavy paw and drapes its arm *around* the man’s shoulder, acting {friendly}.",
+        "Both of them sit together *on* the log looking *out* at the trees, completely {relaxed}.",
+      ],
+      useful: ["sit down beside", "put an arm around", "like an old friend"],
+    },
   },
   {
     // source: 1000073292.mp4
@@ -1261,6 +1999,15 @@ export const describeVideos = [
       'What was she trying to do, and what went wrong?',
       'Have you ever tried a silly game with friends that went wrong?',
     ],
+    howTo: {
+      steps: [
+        "A heavy armchair is swinging back and forth *on* ropes *in* a tiled courtyard.",
+        "A woman waits *to* one side and then tries to sprint *across* the floor *before* the chair comes back.",
+        "She times her run badly, and the swinging chair knocks her right *off* her feet.",
+        "She falls *onto* the tiles while her bag spills *across* the ground, leaving her {stunned} and {embarrassed}.",
+      ],
+      useful: ["swing back and forth", "run past", "knock off her feet"],
+    },
   },
   {
     // source: 1000073841.mp4
@@ -1275,6 +2022,15 @@ export const describeVideos = [
       'What happens when the dog catches up with the man?',
       'Have you ever seen a working dog or a dog training session?',
     ],
+    howTo: {
+      steps: [
+        "A man in a blue training suit is running *along* a park path holding a stuffed toy.",
+        "A black dog sprints *across* the grass *behind* him and catches *up* quickly.",
+        "Instead of grabbing the toy, the dog bites the back *of* his trousers and pulls them *down*.",
+        "His spotted boxers show *underneath*, leaving the trainer {surprised} while the dog stays {excited}.",
+      ],
+      useful: ["chase across a park", "catch up with", "pull off"],
+    },
   },
   {
     // source: 1000074143.mp4
@@ -1289,6 +2045,15 @@ export const describeVideos = [
       'What does the cat do right after the person lifts it out?',
       'Why do cats love squeezing into tight spaces?',
     ],
+    howTo: {
+      steps: [
+        "A grey cat in a black harness is squeezing *into* a narrow crack *in* a concrete wall *by* some weeds.",
+        "Its owner reaches *down* with both hands and lifts the cat *out* *of* the gap.",
+        "As soon as the person sets it *on* the ground, the cat turns *around*, looking {stubborn}.",
+        "It climbs straight back *into* the tight crack, completely {unbothered}.",
+      ],
+      useful: ["squeeze into a crack", "lift out of", "climb straight back in"],
+    },
   },
   {
     // source: 1000074467.mp4
@@ -1304,6 +2069,15 @@ export const describeVideos = [
       'Tell the story of what the two cats do with the money.',
       'Where is the safest place to hide something at home?',
     ],
+    howTo: {
+      steps: [
+        "A black-and-white cat is sitting *on* a bed with a stack *of* dollar bills.",
+        "It lifts the corner *of* a beige blanket and tucks the money *underneath*, acting {secretive}.",
+        "Meanwhile, a ginger cat climbs *onto* the headboard *behind* the pillows and watches {closely}.",
+        "The first cat turns *around* and spots the ginger cat staring *down* at its hiding place.",
+      ],
+      useful: ["hide under a blanket", "climb onto", "catch someone in the act"],
+    },
   },
   {
     // source: 1000074485.mp4
@@ -1319,6 +2093,15 @@ export const describeVideos = [
       'What happens to the cat right after it looks at the camera?',
       'If you could fly anywhere without a plane, where would you go first?',
     ],
+    howTo: {
+      steps: [
+        "An orange-and-white cat is flying *down* an empty suburban street *on* a wooden broomstick.",
+        "It turns its head *towards* the camera and holds *up* two fingers *in* a peace sign, looking {playful}.",
+        "Because it is not looking *ahead*, the broom drifts *off* the road *towards* the grass.",
+        "The cat crashes straight *into* a metal street sign, ending the ride {clumsily}.",
+      ],
+      useful: ["fly down a street", "give a peace sign", "crash into a sign"],
+    },
   },
   {
     // source: 1000075708.mp4
@@ -1334,6 +2117,15 @@ export const describeVideos = [
       'What do you see when the car pulls up next to the silver car?',
       'What is the funniest thing you have ever seen from a car window?',
     ],
+    howTo: {
+      steps: [
+        "A driver is filming *through* the side window while moving *along* a multi-lane highway.",
+        "A silver car drives *in* the lane right *next to* them.",
+        "As the camera pulls *up* *beside* the front window, an orange cat appears *in* the driver’s seat.",
+        "The cat holds both paws *on* the steering wheel and looks *ahead* {calmly}, leaving the viewer {amazed}.",
+      ],
+      useful: ["in the next lane", "pull up beside", "behind the wheel"],
+    },
   },
   {
     // source: 1000077416.mp4
@@ -1349,6 +2141,15 @@ export const describeVideos = [
       'What is the grey cat doing in the kitchen when the camera zooms in?',
       'Have you ever caught a pet doing something it should not do?',
     ],
+    howTo: {
+      steps: [
+        "The camera looks *across* a courtyard and zooms *into* a bright apartment window.",
+        "*Inside* the kitchen, a grey cat is standing *on* its back legs *in front of* a gas stove.",
+        "The cat is holding a round glass fishbowl with a goldfish *over* the burner, looking {focused}.",
+        "When the cat notices the camera *outside*, it freezes and stares *back*, looking {guilty}.",
+      ],
+      useful: ["zoom in on", "hold over the stove", "freeze on the spot"],
+    },
   },
   {
     // source: 1000080656.mp4
@@ -1363,6 +2164,15 @@ export const describeVideos = [
       'What are the machines doing at the start, and who is watching them?',
       'How does this clip make you feel about nature and wildlife?',
     ],
+    howTo: {
+      steps: [
+        "Two yellow excavators are working *on* red soil *at* the edge *of* a green jungle.",
+        "Their metal arms push *against* a tall tree until it crashes *down* *into* the bushes.",
+        "Not far *away*, an orangutan is standing *among* the green leaves.",
+        "The animal watches the machines destroy the trees, looking {quiet} and {helpless}.",
+      ],
+      useful: ["push down a tree", "crash into the bushes", "watch from a distance"],
+    },
   },
   {
     // source: 1000082157.mp4
@@ -1378,6 +2188,15 @@ export const describeVideos = [
       'What did the rooster do to the cats\' work, and what happened in the next scene?',
       'Tell about a time someone ruined something you had just finished cleaning or making.',
     ],
+    howTo: {
+      steps: [
+        "Two cats are working *on* a path, smoothing wet grey cement *with* a metal trowel.",
+        "Just *after* they finish, a rooster walks right *across* the fresh cement and leaves deep footprints *in* it.",
+        "The cats stare *at* the ruined surface, looking {furious}.",
+        "*In* the next scene, the two cats are sitting *at* a table and eating roast chicken {happily}.",
+      ],
+      useful: ["smooth wet cement", "walk across", "leave footprints"],
+    },
   },
   {
     // source: 1000082286.mp4
@@ -1393,6 +2212,15 @@ export const describeVideos = [
       'How does the man get home instead of taking a taxi or bus?',
       'If you could ride any animal to work or school, which one would you choose?',
     ],
+    howTo: {
+      steps: [
+        "A businessman in a suit is standing *on* a city pavement *at* night, holding a briefcase.",
+        "He raises his hand to hail a ride, and a giant fluffy cat walks *up* *along* the street.",
+        "The man climbs *onto* the giant cat’s back and sits *behind* its ears, looking {calm}.",
+        "The huge cat trots *down* the road under the streetlights, carrying him *away* {smoothly}.",
+      ],
+      useful: ["hail a ride", "climb onto its back", "ride away"],
+    },
   },
   {
     // source: 1000082288.mp4
@@ -1408,6 +2236,15 @@ export const describeVideos = [
       'What happens between the man and the cat at the gym machine?',
       'Do you prefer working out at a gym or exercising outdoors? Why?',
     ],
+    howTo: {
+      steps: [
+        "A chubby tabby cat is sitting *on* a bench *in* a gym, pulling the handles *of* a cable machine.",
+        "A man in a black T-shirt walks *over* and tries to take the handles *from* the cat.",
+        "The cat bats *at* him and refuses to share, looking {stubborn} and {annoyed}.",
+        "When the cat pulls too hard, it loses its balance and tips backwards *off* the bench.",
+      ],
+      useful: ["work out at a gym", "argue over", "tip backwards"],
+    },
   },
   {
     // source: 1000082297.mp4
@@ -1422,6 +2259,15 @@ export const describeVideos = [
       'Where is the cat sitting, and where do the two animals go?',
       'Have you ever seen two very different animals become friends?',
     ],
+    howTo: {
+      steps: [
+        "A small brown pony with a blonde tail is walking *out* *through* an open stable door.",
+        "A black-and-white cat is lying stretched *out* *on* the pony’s back.",
+        "The pony steps *into* a grassy green field while the cat rides *along*, looking {relaxed}.",
+        "Neither animal seems {bothered} as they stroll *across* the yard together.",
+      ],
+      useful: ["lie on its back", "walk out of a stable", "stroll across a field"],
+    },
   },
   {
     // source: 1000082301.mp4
@@ -1436,6 +2282,15 @@ export const describeVideos = [
       'Why does the man on the pink flamingo suddenly panic?',
       'Are you afraid of heights, or would you swim in a rooftop pool like this?',
     ],
+    howTo: {
+      steps: [
+        "A man is lying *on* a pink flamingo float *in* a rooftop infinity pool, high *above* city skyscrapers.",
+        "He rests right *at* the glass edge *of* the pool, looking {relaxed}.",
+        "Someone suddenly gives the float a push *from* behind, and he thinks he is going *over* the edge.",
+        "He panics and paddles backwards *with* his hands {frantically}, looking {terrified}.",
+      ],
+      useful: ["at the edge of", "give a push", "paddle backwards"],
+    },
   },
   {
     // source: 1000082321.mp4
@@ -1450,6 +2305,15 @@ export const describeVideos = [
       'How does the interaction between the cat and the dog change during the clip?',
       'In your experience, who is usually the boss at home — the cat or the dog?',
     ],
+    howTo: {
+      steps: [
+        "A small brown dog with a curled tail is standing *on* a concrete driveway *outside* a house.",
+        "A grey cat crouches low and creeps slowly *across* the yard *towards* the dog, looking {playful}.",
+        "When the cat gets close, the two animals circle *around* each other *on* the pavement.",
+        "Then they take turns chasing each other *back* and forth, both looking {lively}.",
+      ],
+      useful: ["creep up to", "circle around each other", "take turns chasing"],
+    },
   },
   {
     // source: 1000082341.mp4
@@ -1465,6 +2329,15 @@ export const describeVideos = [
       'How does the cat start going down the stairs, and how does it finish?',
       'What is a chore at home that makes you feel as lazy as this cat?',
     ],
+    howTo: {
+      steps: [
+        "An orange cat is walking *down* a flight *of* tiled stairs *on* two legs while carrying a small bowl.",
+        "Halfway *down*, it stops *beside* a blue bucket, looking {tired} and {lazy}.",
+        "It drops *onto* its side *on* the smooth step while a small dog watches *from* above.",
+        "The cat slides slowly *down* the rest *of* the stairs on its side.",
+      ],
+      useful: ["walk down the stairs", "flop onto its side", "slide the rest of the way"],
+    },
   },
   {
     // source: video_2026-11-11_10-09-32.mp4
@@ -1480,6 +2353,15 @@ export const describeVideos = [
       'What does the cat waiter do before serving the bottle to the dog?',
       'What is the funniest or worst service you have ever had at a restaurant?',
     ],
+    howTo: {
+      steps: [
+        "A fluffy white dog is sitting *at* an outdoor restaurant table, waiting {patiently}.",
+        "A cat wearing a brown waiter apron stands *beside* the table and opens a glass bottle *of* cola.",
+        "Before serving the guest, the cat tilts the bottle *up* and drinks *from* it, acting {cheeky}.",
+        "Then it sets the half-empty bottle *down* *in front of* the dog.",
+      ],
+      useful: ["wait at a table", "open a bottle", "serve to a guest"],
+    },
   },
   {
     // source: video_2026-11-11_10-09-35.mp4
@@ -1495,6 +2377,15 @@ export const describeVideos = [
       'What happens when the tiny kitten steps over the hairdryer?',
       'Have you ever seen a pet react in a funny way to a household appliance?',
     ],
+    howTo: {
+      steps: [
+        "A pink hairdryer is lying switched *on* *on* a bathroom counter *in front of* a mirror.",
+        "A tiny ginger kitten walks *across* the counter and steps right *over* the nozzle, looking {curious}.",
+        "The warm air stream lifts the light kitten straight *up* *into* the air.",
+        "The kitten floats and spins *around* *above* the counter, looking {surprised} but {calm}.",
+      ],
+      useful: ["step over", "lift into the air", "spin around"],
+    },
   },
   {
     // source: video_2026-11-11_10-09-40.mp4
@@ -1510,6 +2401,15 @@ export const describeVideos = [
       'What does the cat push into the river one after another?',
       'What is the most mischievous thing you have seen an animal do?',
     ],
+    howTo: {
+      steps: [
+        "A cat wearing a pink tutu is standing *on* a concrete bridge *above* a river.",
+        "First, it kicks a shiny golden ball *off* the bridge *into* the water, looking {mischievous}.",
+        "When a woman gets *out of* her brown car to look, the cat pushes both her and the car *over* the edge.",
+        "*At the end*, the cat hops *onto* a pink bicycle and rides *away* {calmly}.",
+      ],
+      useful: ["kick into the water", "push over the edge", "ride off on a bike"],
+    },
   },
   {
     // source: video_2026-11-11_10-09-46.mp4
@@ -1525,6 +2425,15 @@ export const describeVideos = [
       'What happens after the kitten pours the sack of corn into the volcano?',
       'What is your favourite snack to make or eat when watching a movie?',
     ],
+    howTo: {
+      steps: [
+        "A ginger kitten is flying *in* a helicopter high *above* a glowing volcano crater.",
+        "It holds a heavy sack *of* corn *by* the open door and pours it *down* *into* the hot lava, looking {excited}.",
+        "Seconds later, the heat turns the corn *into* a giant wave *of* white popcorn.",
+        "The popcorn erupts *up* from the crater and fills the helicopter cabin, leaving the kitten {delighted}.",
+      ],
+      useful: ["pour into a crater", "turn into popcorn", "fill the cabin"],
+    },
   },
 ];
 

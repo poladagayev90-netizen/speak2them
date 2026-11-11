@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ImageOff, VideoOff, Check, RotateCcw } from 'lucide-react';
 import Pill from '../ui/Pill';
 import DescribeFrames from '../DescribeFrames';
+import HowToDescribe from '../HowToDescribe';
 import { keywordGlossary } from '../../data/keywordGlossary';
 import { getFeedbackLanguage } from '../../utils/feedbackLanguage';
 import './ai.css';
@@ -175,6 +176,8 @@ export default function AiDescribeStage({ image, isVideo = false, hits = [], jus
           <p className="ai-heard">“{heard}”</p>
         </div>
       )}
+
+      {isVideo && <HowToDescribe key={image.id} howTo={image.howTo} compact style={{ padding: 0 }} />}
 
       <DescribeFrames compact prompts={image.prompts || []} />
     </>

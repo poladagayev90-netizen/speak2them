@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { callVideosForTopic } from '../utils/fetchTopicVideos';
 import { X, VideoOff, RotateCcw, Play, Pause } from 'lucide-react';
 import DescribeFrames from './DescribeFrames';
+import HowToDescribe from './HowToDescribe';
 
 // In-call synchronized CLIP stage — the moving-picture twin of CallImageStage.
 //
@@ -203,6 +204,7 @@ export default function CallVideoStage({ content, deck, videoIndex, onNext, onCl
             label={`Keywords · ${safeIndex + 1}/${videos.length}`}
             style={{ padding: '12px 16px 4px' }}
           />
+          <HowToDescribe key={clip.id} howTo={clip.howTo} compact />
           <DescribeFrames compact prompts={clip.prompts || []} />
         </div>
 

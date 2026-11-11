@@ -2060,7 +2060,7 @@ body {
    questions move up into what is left. On a portrait clip there is nothing
    left over, the cap bites, and the flex line shrinks the clip as before. */
 .dt-video-fit {
-  max-height: 100%;
+  max-height: calc(100% - 56px);
   min-height: 0;
   display: flex;
   flex-direction: column;

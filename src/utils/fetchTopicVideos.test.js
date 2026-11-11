@@ -44,3 +44,16 @@ test('a call reads the deck from the call doc, not from the device', () => {
   expect(callVideosForTopic(5, 'full').map((v) => v.id)).toEqual(videosForTopic(5).map((v) => v.id));
   expect(callVideosForTopic(5, undefined).map((v) => v.id)).toEqual(videosForTopic(5).map((v) => v.id));
 });
+
+test('every clip carries a B1 howTo model description with marked prepositions and feelings', () => {
+  for (const clip of describeVideos) {
+    expect(clip.howTo).toBeDefined();
+    expect(clip.howTo.steps.length).toBeGreaterThanOrEqual(4);
+    expect(clip.howTo.steps.length).toBeLessThanOrEqual(6);
+    const joined = clip.howTo.steps.join(' ');
+    expect((joined.match(/\*[^*]+\*/g) || []).length).toBeGreaterThanOrEqual(4);
+    expect((joined.match(/\{[^}]+\}/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(clip.howTo.useful.length).toBeGreaterThanOrEqual(2);
+    expect(clip.howTo.useful.length).toBeLessThanOrEqual(3);
+  }
+});
