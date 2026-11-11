@@ -1464,6 +1464,8 @@ body {
   cursor: pointer;
 }
 
+.call-roadmap-privacy { margin: var(--s-4) 0 0; text-align: center; }
+
 .call-roadmap-more {
   width: 100%;
   margin-top: 10px;

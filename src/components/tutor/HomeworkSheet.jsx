@@ -120,7 +120,7 @@ export default function HomeworkSheet({ uid, name }) {
 
               {sheet.fix.length > 0 && (
                 <section className="hs-sec">
-                  <h2 className="hs-h">{num.fix}. Fix your own sentences</h2>
+                  <h2 className="hs-h">{num.fix}. Fix these sentences</h2>
                   <p className="hs-hint">You said these in your calls. Write each one correctly.</p>
                   <ol className="hs-list">
                     {sheet.fix.map((f) => (

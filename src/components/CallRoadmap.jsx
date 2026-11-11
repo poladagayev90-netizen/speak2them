@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { TEACHER_PRIVACY_LINE } from '../utils/teacherPrivacy';
 
 // Conversation roadmap shown to both peers the moment a call connects, so
 // nobody sits in silence wondering what to talk about. It now doubles as a
@@ -30,7 +31,22 @@ const STEPS = [
   },
 ];
 
-export default function CallRoadmap({ content, onStart, onOpenDaily }) {
+// A learner linked to a teacher reads, once, what that teacher sees of a call
+// (TEACHER_PRIVACY_LINE, History.jsx) — at the start of their first call with
+// the guide on screen. Remembered per device; the same line sits under every
+// report for good.
+const PRIVACY_SEEN_KEY = (uid) => `teacherPrivacySeen_v1_${uid}`;
+
+export default function CallRoadmap({ content, onStart, onOpenDaily, user }) {
+  const [privacyLine] = useState(() => {
+    if (!user?.uid || !user.teacherId) return false;
+    try { return !localStorage.getItem(PRIVACY_SEEN_KEY(user.uid)); } catch { return false; }
+  });
+  useEffect(() => {
+    if (!privacyLine) return;
+    try { localStorage.setItem(PRIVACY_SEEN_KEY(user.uid), '1'); } catch { /* private mode */ }
+  }, [privacyLine, user?.uid]);
+
   if (!content) return null;
 
   const starterQuestions = (content.questions?.easy || []).slice(0, 3);
@@ -76,6 +92,8 @@ export default function CallRoadmap({ content, onStart, onOpenDaily }) {
             </div>
           ))}
         </div>
+
+        {privacyLine && <p className="call-roadmap-step-text call-roadmap-privacy">{TEACHER_PRIVACY_LINE}</p>}
 
         <button className="call-roadmap-start" onClick={onStart}>Start</button>
         <button className="call-roadmap-more" onClick={onOpenDaily}>

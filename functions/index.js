@@ -17,6 +17,7 @@ const { weekKey: bakuWeekKey } = require("./practiceStats");
 const homeworkBuilder = require("./homeworkBuilder");
 const storyChapter = require("./storyChapter");
 const classBrief = require("./classBrief");
+const analysisPrivacy = require("./analysisPrivacy");
 const tutorLessons = require("./tutorLessons");
 const weekRoster = require("./weekRoster");
 const offerReminders = require("./offerReminders");
@@ -7391,12 +7392,18 @@ HONESTY — THE MOST IMPORTANT RULE:
 - If there are no real errors at all, return an empty error_themes array and say so warmly in the report. Never manufacture a problem to fill space.
 - Do not turn a correct sentence into a "mistake" by rewriting it in your preferred style.
 
+PRIVATE TOPICS — NEVER QUOTE THEM:
+- People talk about their own lives in these calls. Never use a sentence about health or illness, family conflict, relationships or romance, money or debts, religion, politics, an address or a place where someone lives or works, or any other person's name as an example ANYWHERE in the answer: not in items, strengths, best_moment, delivery, vocabulary examples, homework, recap or report_markdown.
+- If a mistake appears in such a sentence, pick another real example of the same mistake from a neutral sentence. If it ONLY appears in private sentences, leave original and corrected as empty strings for that item and give just the neutral example (below) — describe the pattern, never the sentence.
+- recap and report_markdown name the topic of the conversation only in general words ("your weekend", "your work"), never a private detail.
+- pronunciation never picks the name of a person or a place.
+
 Rules:
 - Correct ONLY real grammatical or lexical mistakes. If a sentence is already correct, leave it alone.
 - Never rewrite for style: do not swap "is not" for "isn't", do not reorder correct clauses, do not offer alternatives to correct sentences.
 - error_themes: THIS IS THE HEART OF THE REPORT. Do not produce a flat list of unrelated fixes. Read the WHOLE transcript, find the PATTERNS the learner repeats, and group the errors into at most 5 named themes, strongest pattern first.
   Each theme = one recurring habit, e.g. "using am/is/are together with a main verb", "past tense forms", "countable vs uncountable quantifiers", "unnecessary preposition after a verb", "{{LANGUAGE}} word-for-word translation (L1 transfer)".
-  - title: the theme name in {{LANGUAGE}} — name the ACTUAL structure, not a school subject.
+  - title: the theme name in {{LANGUAGE}} — name the ACTUAL structure, not a school subject. A title names grammar, never what was talked about.
     Titles MUST be written in {{LANGUAGE}} only — never borrow a word from a related language.
     GOOD: {{GOOD_TITLES}}
     BAD: {{BAD_TITLES}} — too broad to act on.
@@ -7405,6 +7412,7 @@ Rules:
     BAD: a vague description like "word choice is important" / "pay attention to tenses" — these teach nothing.
     Write the rule so that a learner who memorises just that one line stops making every error in this theme. If you show a wrong→right pair, use REAL English examples, never the placeholder symbols alone.
   - items: 1-4 real examples of THIS theme from the transcript. original = near-verbatim from the transcript; corrected = the fixed sentence; explanation = {{LANGUAGE}}, 1-2 sentences saying WHY, and naming the {{LANGUAGE}} interference when that is the cause. Example of the depth expected: {{L1_EXAMPLE}}
+  - neutral_original / neutral_corrected: EVERY item also gets a short generic English sentence (4-12 words) with exactly the SAME mistake, and its correction. It shares no content with the learner's sentence — no names, places, people, events or private topics from the call, only an everyday neutral situation ("She go to work by bus." → "She goes to work by bus."). The learner's teacher sees only this pair, never the learner's own words.
   - concept: EVERY item must also carry a concept id copied EXACTLY from the CONCEPT LIST below. This is a machine key, not prose — never translate it, never invent one, never leave it out. Pick the single most specific concept the mistake is about. Use word_choice only for a genuinely lexical slip and l1_transfer only when the whole phrase is a word-for-word translation; if a named grammar concept fits, that one wins.
   - A theme with only ONE example is fine if the error is important. A theme with zero real examples must NOT exist.
 - report_markdown: an Executive Summary in {{LANGUAGE}}, in Markdown, 120-180 words. CRITICAL: every heading and every bullet MUST be on its own line — put a real newline ("\\n") between them, never run them together on one line. Follow this exact skeleton:
@@ -7417,7 +7425,7 @@ Rules:
 - vocabulary: 3-5 useful or slightly advanced words or phrases, each with a natural example sentence. Skip basic words. For each also give cefr = its CEFR level (A1, A2, B1, B2, C1 or C2) and meaning = a short gloss in {{LANGUAGE}} (1-6 words, the sense used here).
 - homework: personalized exercises built ONLY from the learner's ACTUAL mistakes in this transcript. Never invent mistakes they did not make. If there are no real mistakes, return empty arrays.
   - multiple_choice: up to 5 items. question = a short English sentence or gap-fill testing the exact pattern they got wrong (do not copy their sentence verbatim — same pattern, fresh example). options = exactly 3 plausible choices, one correct. correct_answer must be copied character-for-character from options. explanation = {{LANGUAGE}}, 1-2 sentences, deep and meaningful; explain L1 transfer where relevant.
-  - word_order: up to 4 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong (their corrected sentence is ideal if short enough). scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, naming the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration"). State ONLY rules that are true of English — never invent word-order rules (English is Subject-Verb-Object; the verb does NOT go at the end). If unsure, just name the tense or structure being practised.
+  - word_order: up to 4 items. correct_sentence = a natural English sentence of 5-9 words practising a pattern they got wrong — a fresh neutral sentence (a neutral_corrected sentence is ideal), never the learner's own sentence. scrambled = ALL words of correct_sentence in shuffled order, one word per array element, no punctuation-only elements. explanation = {{LANGUAGE}}, naming the specific grammar point this sentence practises (e.g. "past tense 'went'", "'for' + duration"). State ONLY rules that are true of English — never invent word-order rules (English is Subject-Verb-Object; the verb does NOT go at the end). If unsure, just name the tense or structure being practised.
 - concepts_used: the learner's USAGE census, not their mistakes. For every concept from the CONCEPT LIST that the learner actually attempted in this transcript, report {concept, attempts}. attempts = roughly how many times they used that structure at all, RIGHT OR WRONG — a learner who spoke ten past-tense sentences and got one wrong has attempts 10 for past_simple, not 1. Count only what you can see in the transcript, list at most 12 concepts, and omit any concept they never attempted. Never include a concept with attempts 0. This is what makes progress measurable across sessions: without the attempts number, a learner who talks more simply looks better than one who takes risks.
 - Every explanation must teach something concrete. Write natural, correct, modern {{LANGUAGE}} — if you are not sure a morphological form is right, use a simpler phrasing.
 - recap, reason, strengths, tips and every explanation must be in {{LANGUAGE}}. word, example, question, options and English sentences stay in English.
@@ -7473,11 +7481,16 @@ const ANALYSIS_SCHEMA = {
             items: {
               type: "object",
               additionalProperties: false,
-              required: ["original", "corrected", "explanation", "concept"],
+              required: ["original", "corrected", "explanation", "concept", "neutral_original", "neutral_corrected"],
               properties: {
                 original: { type: "string" },
                 corrected: { type: "string" },
                 explanation: { type: "string" },
+                // The teacher's copy of the example (analysisPrivacy.js): same
+                // mistake, generic sentence. Flat strings, not an object — the
+                // Gemini schema sits close to its size limit.
+                neutral_original: { type: "string" },
+                neutral_corrected: { type: "string" },
                 // enum = the taxonomy is enforced by the API itself on the Groq
                 // strict path. DeepSeek (the primary) only supports
                 // json_object, so the same check runs again in
@@ -7684,7 +7697,14 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
     // one bad key would otherwise sit in the learner's aggregate forever, and
     // the aggregate is keyed by these ids.
     concept: isConceptId(f?.concept) ? f.concept : null,
+    // What the teacher sees instead of the learner's words. Null when the
+    // model left it out or only repeated the learner's sentence.
+    neutralExample: analysisPrivacy.neutralFrom(f, asStr(f?.original), asStr(f?.corrected)),
   });
+  // A mistake the model found only in a private sentence: no quote, just the
+  // neutral pair (prompt, PRIVATE TOPICS). It cannot be checked against the
+  // transcript, so it is shown but never counted in the concept stats.
+  const patternOnly = (it) => !it.original && !it.corrected && !!it.neutralExample && !!it.concept;
 
   let invented = 0;
   const errorThemes = (Array.isArray(obj.error_themes) ? obj.error_themes : [])
@@ -7693,8 +7713,9 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
       rule: asStr(t?.rule),
       items: (Array.isArray(t?.items) ? t.items : [])
         .map(themeItem)
-        .filter(isRealCorrection)
         .filter((it) => {
+          if (patternOnly(it)) return true;
+          if (!isRealCorrection(it)) return false;
           const ok = quotedInTranscript(it.original);
           if (!ok) invented += 1;
           return ok;
@@ -7720,7 +7741,7 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
   const conceptErrors = new Map();
   for (const theme of errorThemes) {
     for (const item of theme.items) {
-      if (!item.concept) continue;
+      if (!item.concept || !item.original) continue;
       conceptErrors.set(item.concept, (conceptErrors.get(item.concept) || 0) + 1);
     }
   }
@@ -7757,7 +7778,7 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
 
   // Köhnə UI və homework.correction düz siyahı gözləyir — mövzulardan düzəldilir.
   const rawFeedback = errorThemes.length
-    ? errorThemes.flatMap((t) => t.items)
+    ? errorThemes.flatMap((t) => t.items).filter((it) => it.original)
     : (Array.isArray(obj.feedback) ? obj.feedback : [])
       .map((f) => ({ original: asStr(f?.original), corrected: asStr(f?.corrected), reason: asStr(f?.reason) }))
       .filter(isRealCorrection)
@@ -7815,21 +7836,30 @@ function normalizeAnalysis(raw, { analyzeSeconds, transcript }) {
 
   // Model word_order verməyibsə, amma real səhvlər varsa — düzəldilmiş
   // cümlələrdən özümüz qururuq: tapşırıqsız "homework" bölməsi boş görünməsin.
-  if (wordOrder.length === 0 && feedback.length > 0) {
-    wordOrder = feedback
-      .map((f, i) => ({ words: sentenceWords(f.corrected), corrected: f.corrected, i }))
+  // Built from the NEUTRAL pairs: this homework is copied onto the lesson
+  // homework doc, which the teacher reads too, so the learner's own sentence
+  // cannot go there.
+  const neutralFixes = errorThemes.flatMap((t) => t.items)
+    .map((it) => it.neutralExample && it.neutralExample.corrected)
+    .filter(Boolean);
+  if (wordOrder.length === 0 && neutralFixes.length > 0) {
+    wordOrder = neutralFixes
+      .map((corrected, i) => ({ words: sentenceWords(corrected), corrected, i }))
       .filter((x) => x.words.length >= 3 && x.words.length <= 10)
       .slice(0, 2)
       .map((x) => ({
         correct_sentence: x.corrected,
         scrambled: seededShuffle(x.words, 13 + x.i),
-        explanation: "Bu, sənin öz cümlənin düzəldilmiş formasıdır — sıranı yadda saxla.",
+        explanation: "Səhvinlə eyni quruluşdur — sıranı yadda saxla.",
       }));
   }
 
   return {
-    // Hesabat müəllim panelində də birə-bir göstərilir (TeacherStudent →
-    // AnalysisDetail) — markdown hər iki oxucu üçün eyni mənbədir.
+    // Written under the PRIVATE TOPICS prompt: its neutral pairs and theme
+    // rules may go into the teacher's projection (analysisPrivacy.js).
+    privacyVersion: analysisPrivacy.PRIVACY_VERSION,
+    // Student-only, like everything below: the teacher reads
+    // callAnalysisTeacher, which carries none of this prose.
     reportMarkdown: asStr(obj.report_markdown).slice(0, 4000),
     recap: asStr(obj.recap) || "Söhbətiniz analiz olundu.",
     // Derived, not asked of the model: one less field to hallucinate, and it can
@@ -7898,6 +7928,24 @@ function transcriptVocabulary(transcript) {
 // `analysisId` idempotentlik açarıdır. Növbədəki bilet worker çökəndə
 // "pending"-ə qayıdır və analiz TƏKRAR işlənə bilər — qoruma olmasa həmin
 // sessiyanın səhvləri sayğaca iki dəfə düşərdi.
+// The teacher's copy of one report (analysisPrivacy.teacherAnalysis): scores,
+// the mistake PATTERNS and neutral example sentences — never the learner's
+// words. The linked teacher reads this, and only this (firestore.rules,
+// callAnalysisTeacher). Written for every report, linked or not, so a teacher
+// the learner joins later still sees their history.
+async function writeTeacherAnalysis(db, analysisId, analysis) {
+  try {
+    await db.collection("callAnalysisTeacher").doc(analysisId).set({
+      ...analysisPrivacy.teacherAnalysis(analysis),
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    // The learner's own report is already saved; the teacher's copy failing
+    // only means the teacher sees one session fewer.
+    console.warn("[TeacherAnalysis] write failed:", analysisId, e.message);
+  }
+}
+
 async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, meta = {}) {
   if (!uid || !analysisId) return;
   const base = db.collection("users").doc(uid).collection("insights");
@@ -7995,15 +8043,21 @@ async function updateLearnerInsights(db, uid, analysisId, analysis, transcript, 
       const review = reviewFocus(prev.focus, stats, { at, analysisId });
       const focus = nextFocus(stats, analysis.errorThemes, prev.focus, { at, analysisId });
 
-      tx.set(ref, {
+      const next = {
         wordCount: totalWords,
         lastNewWords: newWords,
         // Yeni ən yenidir: otaq massivi tərsinə çevirmədən oxuyur.
         series: [entry, ...series].slice(0, INSIGHTS_SERIES_LEN),
         ...(focus ? { focus } : {}),
         ...(review ? { focusReview: review } : {}),
+      };
+      tx.set(ref, { ...next, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      // The teacher reads THIS copy, never `progress`: the carry-over cards
+      // hold the learner's own sentences, the copy only neutral ones.
+      tx.set(base.doc("teacherProgress"), {
+        ...analysisPrivacy.teacherProgress({ ...prev, ...next }),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+      });
     });
 
     console.log("[Insights] updated:", uid, "concepts:", stats.length, "new words:", newWords);
@@ -8993,6 +9047,13 @@ exports.processAnalysisQueue = onSchedule({
         durationSeconds: ticket.callSeconds || ticket.audioSeconds || 0,
         analyzedSeconds: analyzeSeconds,
       }, { merge: true });
+      await writeTeacherAnalysis(db, ticket.id, {
+        ...analysis,
+        userId: ticket.uid,
+        status: "done",
+        source: "call",
+        durationSeconds: ticket.callSeconds || ticket.audioSeconds || 0,
+      });
       // Sessiyalar arası sayğaclar. Bileti "done" etməzdən ƏVVƏL çağırılır:
       // aradakı çökmə biletin yenidən işlənməsinə səbəb olur, aqreqat isə
       // analiz id-si ilə idempotentdir, ona görə ikiqat sayma baş vermir.
@@ -9250,7 +9311,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
     // 1) Owned documents (+ their sub-collections).
     //    'blocked' və 'private' (yaş təsdiqi) də silinməlidir — əks halda
     //    silinmiş hesabın şəxsi qeydləri Firestore-da qalır.
-    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "avoid", "private", "practiceSessions"]);
+    await deleteDocDeep(db.collection("users").doc(uid), ["fcmTokens", "blocked", "avoid", "private", "practiceSessions", "insights"]);
     await deleteDocDeep(db.collection("wordHistory").doc(uid), ["words"]);
     await db.collection("userStats").doc(uid).delete().catch(() => null); // server copy of the stats
     await db.collection("matchQueue").doc(uid).delete().catch(() => null);
@@ -9298,6 +9359,7 @@ exports.deleteAccount = onRequest({ secrets: [] }, async (req, res) => {
 
     // 2) Owned collections keyed by a uid field.
     await deleteByQuery(db.collection("callAnalysis").where("userId", "==", uid));
+    await deleteByQuery(db.collection("callAnalysisTeacher").where("userId", "==", uid));
     await deleteByQuery(db.collection("analysisQueue").where("uid", "==", uid));
     await deleteByQuery(db.collection("attendance").where("uid", "==", uid));
 
@@ -10105,6 +10167,9 @@ exports.analyzeAiSession = onRequest(
         analyzedSeconds: spokenSeconds,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
+      await writeTeacherAnalysis(db, analysisId, {
+        ...analysis, userId: uid, status: "done", source: "ainur", durationSeconds: spokenSeconds,
+      });
 
       // AInur sessiyası da eyni sayğaclara yazır — proqres otağı üçün insan
       // zəngi ilə AI praktikası arasında fərq yoxdur, ikisi də real nitqdir.

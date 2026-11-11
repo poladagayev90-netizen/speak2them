@@ -4,7 +4,12 @@ const { buildClassBrief, buildStudentBrief, homeworkStepKeys } = require("./clas
 const { GRAMMAR_CONCEPTS } = require("./grammarConcepts");
 
 const [A, B] = GRAMMAR_CONCEPTS.map((c) => c.id);
-const err = (concept, original = "x", corrected = "y") => ({ title: "t", rule: "r", items: [{ original, corrected, explanation: "", concept }] });
+// The brief is read by the teacher, so its examples are the NEUTRAL pair; the
+// learner's own sentence ("own ...") must never come through.
+const err = (concept, original = "x", corrected = "y") => ({ title: "t", rule: "r", items: [{
+  original: `own ${original}`, corrected: `own ${corrected}`, explanation: "", concept,
+  neutralExample: { original, corrected },
+}] });
 const call = (themes = [], vocabulary = []) => ({ status: "done", errorThemes: themes, vocabulary });
 
 test("a pattern shared by more learners comes first", () => {
@@ -55,6 +60,14 @@ test("step keys match the client", () => {
   assert.deepStrictEqual(homeworkStepKeys({ words: [1] }), ["words", "dictation", "mine", "speak"]);
 });
 
+test("a report from before the split counts the mistake but shows no example", () => {
+  const old = { status: "done", errorThemes: [{ title: "t", rule: "r", items: [{ original: "My wife is sick", corrected: "x", concept: A }] }] };
+  const b = buildStudentBrief({ uid: "1", name: "Y", analyses: [old] });
+  assert.strictEqual(b.themes[0].mistakes, 1);
+  assert.deepStrictEqual(b.themes[0].examples, []);
+  assert.ok(!JSON.stringify(b).includes("wife"));
+});
+
 test("examples come from different learners first", () => {
   const brief = buildClassBrief([
     { uid: "1", name: "Yunus", analyses: [call([err(A, "a1", "b1"), err(A, "a2", "b2")])] },
@@ -72,6 +85,7 @@ test("one student's brief: their pattern, words and last homework", () => {
   assert.deepStrictEqual(b.words, ["figure out"]);
   assert.deepStrictEqual(b.homework, { n: 3, done: 1, total: 3, dictation: null });
   assert.strictEqual(b.calls, 1);
+  assert.ok(!JSON.stringify(b).includes("own "), "the learner's own sentence reached the brief");
   assert.match(buildStudentBrief({ uid: "2", name: "S", analyses: [] }).focus, /No analysed calls/);
   assert.match(buildStudentBrief({ uid: "2", name: "S", analyses: [call()] }).focus, /No repeated mistakes/);
 });

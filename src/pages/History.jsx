@@ -8,6 +8,7 @@ import SayButton from '../components/ui/SayButton';
 import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import { toAnalysisView, analysisErrorMessage } from '../utils/analysisView';
 import { fetchAnalyses } from '../utils/insights';
+import { TEACHER_PRIVACY_LINE } from '../utils/teacherPrivacy';
 import '../styles/analysisReport.css';
 
 const PROFILE_TOUR_STEPS = [
@@ -60,7 +61,7 @@ export default function History({ user }) {
   const scoreTone = (s) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger');
 
   if (selectedAnalysis) {
-    return <AnalysisDetail analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} lang={getFeedbackLanguage()} />;
+    return <AnalysisDetail analysis={selectedAnalysis} onClose={() => setSelectedAnalysis(null)} lang={getFeedbackLanguage()} privacyNote={!!user?.teacherId} />;
   }
 
   // maxWidth below: the report this list opens is already capped at 780px, but
@@ -182,7 +183,11 @@ const mdComponents = {
 // `embedded`: rendered inside the Lab's Feedback tab, which already shows the
 // score, the date and the words — so the header, the score line and the word
 // list are left to the Lab and only the corrections and practice render here.
-export function AnalysisDetail({ analysis, onClose, lang, embedded = false }) {
+// `privacyNote`: the learner has a teacher, so their own report says once, at
+// the bottom, what that teacher can and cannot see. A teacher-view analysis
+// (callAnalysisTeacher) never shows it — and has no transcript or prose to
+// show either.
+export function AnalysisDetail({ analysis, onClose, lang, embedded = false, privacyNote = false }) {
   // The generated content (corrections, reasons, tips) arrives already written
   // in the learner language; the frame around it is English like the rest of
   // the app, so nothing here needs to branch on the language.
@@ -227,6 +232,11 @@ export function AnalysisDetail({ analysis, onClose, lang, embedded = false }) {
       }
     });
   });
+  // Teacher view of a report from before the example split: the mistake
+  // type and how often, nothing quoted.
+  const typesOnly = view.teacherView
+    ? (view.errorThemes || []).filter((t) => !(t.items || []).length)
+    : [];
 
   return (
     <div className={`analysis-doc rep ${embedded ? 'analysis-doc--embedded' : ''}`}>
@@ -267,6 +277,24 @@ export function AnalysisDetail({ analysis, onClose, lang, embedded = false }) {
               <p className="rep-wrong"><span className="rep-mark">✗</span>{f.original}</p>
               <p className="rep-right"><span className="rep-mark">✓</span>{f.corrected}</p>
               {(f.reason || f.rule) && <p className="rep-why">{f.reason || f.rule}</p>}
+              {f.generic && <p className="rep-why">A general sentence with the same mistake.</p>}
+            </div>
+          ))}
+          {typesOnly.map((t, i) => (
+            <div className="rep-fix" key={`type${i}`}>
+              <span className="rep-tag">{t.title}</span>
+              <p className="rep-why">Came up {t.count > 1 ? `${t.count} times` : 'once'} in this session.</p>
+            </div>
+          ))}
+        </>
+      ) : typesOnly.length > 0 ? (
+        <>
+          <p className="rep-label">Mistake types · {typesOnly.length}</p>
+          {typesOnly.map((t, i) => (
+            <div className="rep-fix" key={`type${i}`}>
+              <span className="rep-tag">{t.title}</span>
+              {t.rule && <p className="rep-why">{t.rule}</p>}
+              <p className="rep-why">Came up {t.count > 1 ? `${t.count} times` : 'once'} in this session.</p>
             </div>
           ))}
         </>
@@ -391,6 +419,8 @@ export function AnalysisDetail({ analysis, onClose, lang, embedded = false }) {
           )}
         </>
       )}
+
+      {privacyNote && !view.teacherView && <p className="rep-why rep-privacy">{TEACHER_PRIVACY_LINE}</p>}
     </div>
   );
 }

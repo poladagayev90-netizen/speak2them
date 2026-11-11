@@ -9,6 +9,7 @@
 // lessons use.
 
 const { GRAMMAR_CONCEPTS } = require("./grammarConcepts");
+const { neutralOf } = require("./analysisPrivacy");
 
 const LABEL = new Map(GRAMMAR_CONCEPTS.map((c) => [c.id, c.en]));
 const MAX_THEMES = 3;
@@ -48,8 +49,12 @@ function buildClassBrief(members) {
           const cur = themes.get(concept) || { concept, students: new Set(), mistakes: 0, examples: [] };
           cur.students.add(m.uid);
           cur.mistakes += 1;
-          if (it.original && it.corrected && !cur.examples.some((e) => e.original === it.original)) {
-            cur.examples.push({ uid: m.uid, name: m.name, original: String(it.original).slice(0, 200), corrected: String(it.corrected).slice(0, 200) });
+          // The teacher reads this brief, so only the NEUTRAL example — never
+          // the learner's own sentence (analysisPrivacy.js). Reports from
+          // before the split have none and show as a count only.
+          const n = neutralOf(it);
+          if (n && !cur.examples.some((e) => e.original === n.original)) {
+            cur.examples.push({ uid: m.uid, name: m.name, original: n.original.slice(0, 200), corrected: n.corrected.slice(0, 200) });
           }
           themes.set(concept, cur);
         }

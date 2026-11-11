@@ -9,6 +9,8 @@
 // Input: callAnalysis docs (as stored: errorThemes, vocabulary, homework),
 // newest first. Output is small enough to sit on the homework doc.
 
+const { PRIVACY_VERSION, neutralOf } = require("./analysisPrivacy");
+
 const MAX_WORDS = 8;
 const MAX_THEMES = 2;
 const MAX_EXAMPLES = 3;
@@ -19,6 +21,11 @@ const str = (v, n = 300) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 
 function buildPersonal(analyses = []) {
   const done = analyses.filter((a) => a && a.status === "done");
+  // The homework doc is read by the teacher too (and printed as their lesson
+  // sheet), so it carries nothing the learner said: neutral examples only,
+  // and the model-written parts (rule, word examples, exercises) only from
+  // reports written under the private-topics prompt (analysisPrivacy.js).
+  const safe = (a) => Number(a && a.privacyVersion) >= PRIVACY_VERSION;
 
   // Words: newest report first, one entry per word.
   const words = [];
@@ -29,7 +36,7 @@ function buildPersonal(analyses = []) {
       const key = word.toLowerCase();
       if (!word || seen.has(key)) continue;
       seen.add(key);
-      words.push({ word, meaning: str(v.meaning, 160), example: str(v.example, 200), cefr: str(v.cefr, 2) });
+      words.push({ word, meaning: str(v.meaning, 160), example: safe(a) ? str(v.example, 200) : "", cefr: str(v.cefr, 2) });
       if (words.length >= MAX_WORDS) break;
     }
     if (words.length >= MAX_WORDS) break;
@@ -44,12 +51,14 @@ function buildPersonal(analyses = []) {
       const items = Array.isArray(t && t.items) ? t.items : [];
       const concept = str(items[0] && items[0].concept, 60) || str(t && t.title, 60).toLowerCase();
       if (!concept) continue;
-      const cur = byConcept.get(concept) || { concept, title: str(t.title, 120), rule: str(t.rule, 300), count: 0, examples: [] };
+      const cur = byConcept.get(concept) || { concept, title: str(t.title, 120), rule: "", count: 0, examples: [] };
+      if (!cur.rule && safe(a)) cur.rule = str(t.rule, 300);
       cur.count += items.length || 1;
       for (const it of items) {
         if (cur.examples.length >= MAX_EXAMPLES) break;
-        const original = str(it && it.original, 200);
-        const corrected = str(it && it.corrected, 200);
+        const n = neutralOf(it);
+        const original = n ? str(n.original, 200) : "";
+        const corrected = n ? str(n.corrected, 200) : "";
         if (original && corrected && !cur.examples.some((e) => e.original === original)) {
           cur.examples.push({ original, corrected });
         }
@@ -66,6 +75,7 @@ function buildPersonal(analyses = []) {
   const multipleChoice = [];
   const wordOrder = [];
   for (const a of done) {
+    if (!safe(a)) continue;
     const hw = (a && a.homework) || {};
     for (const q of Array.isArray(hw.multiple_choice) ? hw.multiple_choice : []) {
       if (multipleChoice.length >= MAX_MC) break;

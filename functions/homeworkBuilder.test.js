@@ -4,10 +4,12 @@ const { buildPersonal, hasPersonal } = require("./homeworkBuilder");
 
 const report = (over = {}) => ({
   status: "done",
+  privacyVersion: 1,
   vocabulary: [{ word: "figure out", meaning: "həll etmək", example: "I can figure it out.", cefr: "B1" }],
   errorThemes: [{
     title: "Articles", rule: "Use a/an before a singular noun.",
-    items: [{ original: "I have car", corrected: "I have a car", explanation: "", concept: "articles" }],
+    items: [{ original: "I have car", corrected: "I have a car", explanation: "", concept: "articles",
+      neutralExample: { original: "She has dog.", corrected: "She has a dog." } }],
   }],
   homework: {
     multiple_choice: [{ question: "I have ___ car.", options: ["a", "an", "the"], correct_answer: "a", explanation: "" }],
@@ -37,7 +39,8 @@ test("words are deduplicated, newest report first", () => {
 
 test("the most repeated pattern comes first, counted by concept", () => {
   const tense = { title: "Past tense", rule: "Use the past for finished time.",
-    items: [{ original: "Yesterday I go", corrected: "Yesterday I went", explanation: "", concept: "past_simple" }] };
+    items: [{ original: "Yesterday I go", corrected: "Yesterday I went", explanation: "", concept: "past_simple",
+      neutralExample: { original: "Last week he go out.", corrected: "Last week he went out." } }] };
   const p = buildPersonal([
     report({ errorThemes: [tense] }),
     report({ errorThemes: [{ ...tense, title: "Verbs in the past" }] }),
@@ -46,6 +49,22 @@ test("the most repeated pattern comes first, counted by concept", () => {
   assert.strictEqual(p.themes[0].concept, "past_simple");
   assert.strictEqual(p.themes[0].examples.length, 1); // same sentence twice is kept once
   assert.strictEqual(p.themes[1].concept, "articles");
+});
+
+test("the homework doc (the teacher reads it) never carries the learner's own words", () => {
+  const p = buildPersonal([report()]);
+  assert.deepStrictEqual(p.themes[0].examples, [{ original: "She has dog.", corrected: "She has a dog." }]);
+  assert.ok(!JSON.stringify(p).includes("I have car"));
+});
+
+test("a report from before the split gives the pattern and words only", () => {
+  const old = report({ privacyVersion: undefined });
+  delete old.errorThemes[0].items[0].neutralExample;
+  const p = buildPersonal([old]);
+  assert.deepStrictEqual(p.themes, [{ concept: "articles", title: "Articles", rule: "", examples: [] }]);
+  assert.strictEqual(p.words[0].example, "");
+  assert.strictEqual(p.multipleChoice.length, 0);
+  assert.strictEqual(p.wordOrder.length, 0);
 });
 
 test("a question whose answer is not among its options is dropped", () => {

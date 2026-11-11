@@ -73,10 +73,12 @@ export default function Progress({ user, learnerUid }) {
       if (!uid) return;
       try {
         const [insights, userSnap, list] = await Promise.all([
-          fetchLearnerInsights(uid),
+          // Someone else's Lab gets the teacher copies: mistake types and
+          // neutral examples, never the learner's own words.
+          fetchLearnerInsights(uid, { asTeacher: viewing }),
           getDoc(doc(db, 'users', uid)),
           // A failed list read must not take the totals down with it.
-          fetchAnalyses(uid, 30).catch(() => []),
+          fetchAnalyses(uid, 30, { asTeacher: viewing }).catch(() => []),
         ]);
         if (!alive) return;
         setGrammar(insights.grammar);
@@ -166,7 +168,8 @@ export default function Progress({ user, learnerUid }) {
     return (
       <div className={pageClass}>
         {header}
-        <LabSession key={session.id} analysis={session} analyses={analyses} level={levelFull} />
+        <LabSession key={session.id} analysis={session} analyses={analyses} level={levelFull}
+          privacyNote={!viewing && !!profile?.teacherId} />
       </div>
     );
   }

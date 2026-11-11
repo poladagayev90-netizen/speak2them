@@ -437,6 +437,9 @@
   color: var(--text-secondary);
 }
 
+/* What the teacher sees — the last line of the learner's own report. */
+.rep-why.rep-privacy { margin: var(--s-5) var(--s-4) var(--s-4); }
+
 .rep-clean {
   margin: var(--s-4);
   padding: var(--s-4);

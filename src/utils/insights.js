@@ -23,12 +23,16 @@ import {
 } from '../data/grammarConcepts';
 import { getFeedbackLanguage } from './feedbackLanguage';
 
-export async function fetchLearnerInsights(uid) {
+// `asTeacher`: someone else's Lab (their teacher, the admin). The teacher sees
+// TYPES, never the conversation: they read `teacherProgress`, the copy whose
+// carry-over cards hold neutral example sentences instead of the learner's
+// own (functions/analysisPrivacy.js) — rules deny them `progress`.
+export async function fetchLearnerInsights(uid, { asTeacher = false } = {}) {
   if (!uid) return { grammar: null, progress: null };
   const base = ['users', uid, 'insights'];
   const [grammarSnap, progressSnap] = await Promise.all([
     getDoc(doc(db, ...base, 'grammar')),
-    getDoc(doc(db, ...base, 'progress')),
+    getDoc(doc(db, ...base, asTeacher ? 'teacherProgress' : 'progress')),
   ]);
   return {
     grammar: grammarSnap.exists() ? grammarSnap.data() : null,
@@ -40,9 +44,11 @@ export async function fetchLearnerInsights(uid) {
 // printable history both read this. Tickets still queued or processing carry
 // no report yet and are left out; failed ones stay, so a learner waiting for
 // a report sees that it failed instead of waiting for ever.
-export async function fetchAnalyses(uid, max = 50) {
+// `asTeacher` reads callAnalysisTeacher: scores, mistake patterns and neutral
+// examples, no transcript and no quote. Same ids as the learner's reports.
+export async function fetchAnalyses(uid, max = 50, { asTeacher = false } = {}) {
   if (!uid) return [];
-  const base = [collection(db, 'callAnalysis'), where('userId', '==', uid)];
+  const base = [collection(db, asTeacher ? 'callAnalysisTeacher' : 'callAnalysis'), where('userId', '==', uid)];
   let snap;
   try {
     snap = await getDocs(query(...base, orderBy('timestamp', 'desc'), limit(max)));

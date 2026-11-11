@@ -122,7 +122,15 @@ function nextFocus(conceptStats, errorThemes, prevFocus, { at = Date.now(), anal
       if (!item.original || !item.corrected) continue;
       const list = examples[item.concept] || (examples[item.concept] = []);
       if (list.length < FOCUS_EXAMPLES) {
-        list.push({ original: String(item.original), corrected: String(item.corrected) });
+        // The neutral pair rides along so the teacher's copy of this doc
+        // (analysisPrivacy.teacherProgress) can show the mistake without the
+        // learner's words.
+        const n = item.neutralExample;
+        list.push({
+          original: String(item.original),
+          corrected: String(item.corrected),
+          ...(n && n.original && n.corrected ? { neutralExample: { original: String(n.original), corrected: String(n.corrected) } } : {}),
+        });
       }
     }
   }

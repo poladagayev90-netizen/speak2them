@@ -35,7 +35,8 @@ export function buildLessonSheet(brief, topic) {
   const themes = Array.isArray(p.themes) ? p.themes : [];
   const briefThemes = Array.isArray(b.themes) ? b.themes : [];
 
-  // 1. Fix the sentence — their own mistakes, newest-pattern first.
+  // 1. Fix the sentence — their mistake patterns, newest-pattern first, each
+  // as a neutral sentence with the same mistake (functions/analysisPrivacy.js).
   const fix = [];
   const seen = new Set();
   const pushFix = (e, rule) => {
@@ -79,7 +80,9 @@ export function buildLessonSheet(brief, topic) {
     plan.push({
       min: i === 0 ? 10 : 8,
       title: `Focus: ${t.title || t.label || t.concept}`,
-      detail: [t.rule, ex ? `Their line: "${ex.original}" → "${ex.corrected}"` : ''].filter(Boolean).join(' '),
+      // `ex` is the NEUTRAL example (same mistake, generic sentence) — the
+      // brief never carries the learner's own words.
+      detail: [t.rule, ex ? `Example: "${ex.original}" → "${ex.corrected}"` : ''].filter(Boolean).join(' '),
     });
   });
   if (words.length) plan.push({ min: 7, title: 'Words', detail: words.slice(0, 6).map((w) => w.word).join(', ') });

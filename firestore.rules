@@ -184,12 +184,16 @@ service cloud.firestore {
       // istifadəçi öz mastery faizini özü qura bilərdi və ondan törəyən hər
       // rəqəm mənasını itirərdi.
       //
-      // Oxu: sahibi + bağlı müəllim. Müəllim şərti callAnalysis-dəki ilə
-      // eynidir (şagird razılığı claimTeacherCode-da alınıb), amma burada
-      // əlavə get() ucuzdur: istifadəçi id-si onsuz da yoldadır.
+      // Oxu: sahibi + admin; bağlı müəllim YALNIZ `grammar` (konsept
+      // sayğacları) və `teacherProgress`-i oxuyur. TEACHER SEES TYPES, NEVER
+      // THE CONVERSATION (2026-11-11): `progress` keeps the learner's own
+      // sentences on the carry-over cards and `vocabIndex` every word they
+      // said (names, places) — teacherProgress is the copy with neutral
+      // examples only (functions/analysisPrivacy.js). A rule cannot hide a
+      // field, so the split is by document.
       match /insights/{docId} {
         allow read: if isOwnDoc(userId) || isAdmin()
-          || (isSignedIn()
+          || (isSignedIn() && docId in ['grammar', 'teacherProgress']
               && get(/databases/$(database)/documents/users/$(userId)).data.teacherId == request.auth.uid);
         allow write: if false;
       }
@@ -535,16 +539,13 @@ service cloud.firestore {
     }
 
     match /callAnalysis/{docId} {
-      // Müəllim funnel-inin ƏSAS dəyəri: bağlı şagirdin AI analizini müəllim
-      // oxuya bilir. Şagird bunun razılığını claimTeacherCode-da açıq verib
-      // (teacherConsentAt). get() sənəd-başına 1 əlavə oxu deməkdir — kiçik
-      // roster üçün qəbul olunandır; şagird linki qırılsa (teacherId dəyişsə)
-      // giriş özü-özünə bağlanır, heç nə purge etmək lazım deyil.
+      // The learner's OWN report: transcript, their sentences, the prose.
+      // Learner only. TEACHER SEES TYPES, NEVER THE CONVERSATION (2026-11-11):
+      // the linked teacher used to read this doc and saw private sentences
+      // quoted as mistakes; they now read callAnalysisTeacher below.
       allow read: if isSignedIn() && (
         docId.split('_')[0] == request.auth.uid ||
-        (resource != null && resource.data.userId == request.auth.uid) ||
-        (resource != null && resource.data.userId is string
-          && get(/databases/$(database)/documents/users/$(resource.data.userId)).data.teacherId == request.auth.uid)
+        (resource != null && resource.data.userId == request.auth.uid)
       );
       // Clients only seed the "queued" placeholder for their OWN recording.
       // The analysis itself is written by the worker through the Admin SDK.
@@ -556,6 +557,21 @@ service cloud.firestore {
         && request.resource.data.status == 'queued'
         && request.resource.data.keys().hasOnly(['status', 'userId', 'timestamp']);
       allow update, delete: if false;
+    }
+
+    // The teacher's copy of each report (functions/analysisPrivacy.js
+    // teacherAnalysis): scores, mistake patterns and neutral example
+    // sentences — no transcript, no quote, no prose. Read by the learner, the
+    // admin and the teacher the learner linked to (consent: claimTeacherCode,
+    // teacherConsentAt); the get() closes access by itself when the link
+    // changes. Queried with where('userId', '==', uid), which is what lets the
+    // rule evaluate resource.data.userId for a list. Server-written only.
+    match /callAnalysisTeacher/{docId} {
+      allow read: if isAdmin() || (isSignedIn() && resource != null && resource.data.userId is string && (
+        resource.data.userId == request.auth.uid
+        || get(/databases/$(database)/documents/users/$(resource.data.userId)).data.teacherId == request.auth.uid
+      ));
+      allow write: if false;
     }
 
     // AInur activity sessions. The learner reads their own; nobody writes from

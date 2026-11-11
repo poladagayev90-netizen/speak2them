@@ -57,13 +57,31 @@ export function toAnalysisView(analysis) {
 
   // Mövzu qrupları (yeni analizlər). Köhnə sənədlərdə yoxdur — o halda UI
   // düz `feedback` cədvəlinə qayıdır.
+  //
+  // An item with no quote but a neutral pair is a mistake the model found only
+  // in a private sentence (functions/index.js, PRIVATE TOPICS): it shows as the
+  // general example, marked `generic`. The teacher's copy
+  // (callAnalysisTeacher, `teacherView`) holds only such items, and a report
+  // from before the split none at all — there the theme still shows, as a
+  // mistake type with its count.
+  const teacherView = analysis.teacherView === true;
   const errorThemes = arr(analysis.errorThemes)
     .map((t) => ({
       title: t?.title || '',
       rule: t?.rule || '',
-      items: arr(t?.items).filter((i) => i && i.original && i.corrected),
+      count: Number(t?.count) || arr(t?.items).length,
+      items: arr(t?.items)
+        .map((i) => {
+          if (!i) return null;
+          if (i.original && i.corrected) return i;
+          const n = i.neutralExample;
+          return n && n.original && n.corrected
+            ? { ...i, original: n.original, corrected: n.corrected, generic: true }
+            : null;
+        })
+        .filter(Boolean),
     }))
-    .filter((t) => t.title && t.items.length > 0);
+    .filter((t) => t.title && (t.items.length > 0 || teacherView));
 
   // Bu sessiyanın konsept kəsiyi ({concept, attempts, errors}). Aqreqat
   // users/{uid}/insights/grammar-dadır — bu sahə yalnız "bu zəngdə nə oldu"
@@ -77,6 +95,7 @@ export function toAnalysisView(analysis) {
     }));
 
   return {
+    teacherView,
     errorThemes,
     conceptStats,
     reportMarkdown: typeof analysis.reportMarkdown === 'string' ? analysis.reportMarkdown : '',

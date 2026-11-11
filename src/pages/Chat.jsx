@@ -1981,6 +1981,7 @@ export default function Chat({ user }) {
       {inCall && !connecting && showRoadmap && !activityOpen && (
         <CallRoadmap
           content={content}
+          user={user}
           onStart={() => setShowRoadmap(false)}
           onOpenDaily={() => { setShowRoadmap(false); setShowDaily(true); }}
         />

@@ -33,7 +33,7 @@ export function whenLine(a) {
   return `${day}, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
-export default function LabSession({ analysis, analyses, level }) {
+export default function LabSession({ analysis, analyses, level, privacyNote = false }) {
   const [tab, setTab] = useState('progress');
   const view = analysis.error ? null : toAnalysisView(analysis);
   const fixCount = view
@@ -60,8 +60,8 @@ export default function LabSession({ analysis, analyses, level }) {
 
       {tab === 'progress' && (view
         ? <SessionProgress analysis={analysis} view={view} analyses={analyses} level={level} />
-        : <AnalysisDetail analysis={analysis} embedded />)}
-      {tab === 'feedback' && <AnalysisDetail analysis={analysis} embedded />}
+        : <AnalysisDetail analysis={analysis} embedded privacyNote={privacyNote} />)}
+      {tab === 'feedback' && <AnalysisDetail analysis={analysis} embedded privacyNote={privacyNote} />}
       {tab === 'vocabulary' && <SessionWords words={view ? view.vocabulary : []} />}
     </>
   );
