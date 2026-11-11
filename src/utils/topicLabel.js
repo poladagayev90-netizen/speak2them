@@ -1,6 +1,6 @@
-// Topic names in weeklyContent.js carry a trailing emoji ("Travel ✈️"). That is
-// fine as a heading in the topic modal, where it is the subject of the screen.
-// It is not fine dropped into the middle of a sentence — "Five pictures on
+// Topic names in weeklyContent.js carry a trailing emoji ("Travel ✈️"). Not as
+// a heading either (QA 2026-11-12 O3: icons are lucide, never emoji —
+// design.md), and least of all dropped into the middle of a sentence — "Five pictures on
 // Education 📚." puts a stray piece of colour in the one paragraph on an
 // otherwise monochrome card, which is exactly the kind of noise the design is
 // trying to remove.

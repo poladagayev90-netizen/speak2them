@@ -45,6 +45,9 @@ export default function TeacherStudent({ user }) {
   // browser's own dialog, which saves a PDF — the same route as the homework
   // sheet, no PDF library. The Android WebView has no print dialog, so there
   // the button explains instead. 0 = idle, otherwise the delay before print.
+  // Within the Progress tab it prints whichever session view (Progress /
+  // Feedback / Vocabulary) is open — on purpose: the teacher picks what goes on
+  // paper (QA 2026-11-12 O6). Every one of them is the teacher projection.
   const native = Capacitor.isNativePlatform();
   const [printDelay, setPrintDelay] = useState(0);
   const [pdfNote, setPdfNote] = useState('');

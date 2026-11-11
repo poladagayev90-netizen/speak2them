@@ -635,8 +635,13 @@ export default function TeacherUnlock({ user }) {
               {'No students yet.'}
             </p>
             <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
-              {'Send the invite link below to your students — they appear here as soon as they join.'}
+              {'Send your invite link to your students — they appear here as soon as they join.'}
             </p>
+            {/* The link lives on the other tab (QA 2026-11-12 O5: the old copy
+                said «below»), so the empty state takes the teacher there. */}
+            <button type="button" className="ui-btn ui-btn--secondary ui-btn--sm" style={{ marginTop: 'var(--s-3)' }} onClick={() => setParams({ tab: 'setup' }, { replace: true })}>
+              Open Invite &amp; profile
+            </button>
           </div>
         ) : (
           <div style={{

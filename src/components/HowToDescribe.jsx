@@ -30,7 +30,9 @@ function renderMarkedStep(text) {
           style={{
             fontStyle: 'italic',
             textDecorationLine: 'underline',
-            textDecorationColor: 'var(--coral)',
+            // Plum, not coral: coral is for progress only (design.md), and a
+            // coral underline read as a spell-check squiggle (QA 2026-11-12 O2).
+            textDecorationColor: 'var(--accent)',
             textDecorationThickness: '2px',
             textUnderlineOffset: '3px',
           }}

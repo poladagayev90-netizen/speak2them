@@ -223,6 +223,8 @@ export default function Chat({ user }) {
   const [newBadge, setNewBadge] = useState(null);
   const [callTranslations, setCallTranslations] = useState([]);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  // The in-call tour starts only after 30 s of call (see the GuidedTour below).
+  const [tourReady, setTourReady] = useState(false);
   // True when the recording never made it into the queue, so no result is coming.
   const [enqueueFailed, setEnqueueFailed] = useState(false);
   const [newBadgeReward, setNewBadgeReward] = useState('');
@@ -300,6 +302,11 @@ export default function Chat({ user }) {
   
   const recognitionRef = useRef(null);
   const inCallRef = useRef(false);
+  useEffect(() => {
+    if (!inCall) { setTourReady(false); return undefined; }
+    const t = setTimeout(() => setTourReady(true), 30000);
+    return () => clearTimeout(t);
+  }, [inCall]);
 
   const stateCallId = location.state?.callId;
   const slotId = location.state?.slotId || null;
@@ -1794,7 +1801,10 @@ export default function Chat({ user }) {
 
       {/* Wait for the roadmap: on a first call both would fire at once and the
           tour's overlay sat on top, blocking every tap on the roadmap. */}
-      {inCall && <GuidedTour user={user} steps={CHAT_TOUR_STEPS} tourKey="tourDone_chat" disabled={showRoadmap} />}
+      {/* And wait 30 s into the call (QA 2026-11-12 O7): at connect the tour
+          dimmed the whole screen before the two learners had said hello.
+          Never over an open activity stage either — its target is hidden. */}
+      {inCall && <GuidedTour user={user} steps={CHAT_TOUR_STEPS} tourKey="tourDone_chat" disabled={showRoadmap || !tourReady || stageOpen} />}
 
       {inCall && imageStage?.active && content && (
         <CallImageStage
@@ -1990,7 +2000,7 @@ export default function Chat({ user }) {
       {showDaily && (
         <div className="daily-panel">
           <div className="daily-panel-header">
-            <h3>{content.topic}</h3>
+            <h3>{plainTopic(content.topic)}</h3>
             <button className="daily-close" onClick={() => setShowDaily(false)}><X size={20} strokeWidth={1.75} aria-hidden="true" /></button>
           </div>
           {/* Zəng içində suallar artıq sinxron 🗣️ stage-indədir; bu panel yalnız

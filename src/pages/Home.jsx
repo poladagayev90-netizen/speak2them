@@ -200,7 +200,7 @@ export default function Home({ user }) {
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
             <h3 className="topic-intro-label">Today’s topic</h3>
-            <h1 className="topic-intro-title">{todayTopic.topic}</h1>
+            <h1 className="topic-intro-title">{plainTopic(todayTopic.topic)}</h1>
             <p className="topic-intro-desc">
               Look through the words, idioms and questions to get ready.
             </p>

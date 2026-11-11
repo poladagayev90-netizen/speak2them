@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MessageCircleQuestion, BookOpen, Quote, Headphones, ChevronDown, X, Presentation } from 'lucide-react';
 import { getTodayIndex, getContentByIndex, weeklyContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
+import { plainTopic } from '../utils/topicLabel';
 import SpeakingCards from '../components/SpeakingCards';
 import { localMeaning } from '../utils/feedbackLanguage';
 import ChapterListeningView from '../components/ChapterListeningView';
@@ -55,7 +56,7 @@ export default function DailyHub() {
               All Topics <ChevronDown size={14} />
             </button>
           </div>
-          <h1 className="hub-topic" style={{ margin: 0 }}>{content.topic}</h1>
+          <h1 className="hub-topic" style={{ margin: 0 }}>{plainTopic(content.topic)}</h1>
         </div>
       </div>
 

@@ -22,7 +22,7 @@ export function LangSwitch({ compact = false }) {
   const [lang, setLang] = useMeaningLang();
   return (
     <div className={`mt-lang${compact ? ' mt-lang--compact' : ''}`} role="group" aria-label="Translate into">
-      {[['az', 'AZ'], ['tr', 'TR']].map(([v, label]) => (
+      {[['az', 'AZ'], ['tr', 'TR'], ['en', 'EN']].map(([v, label]) => (
         <button key={v} type="button" aria-pressed={lang === v} className={lang === v ? 'is-on' : ''} onClick={() => setLang(v)}>{label}</button>
       ))}
     </div>
@@ -34,6 +34,10 @@ export function LangSwitch({ compact = false }) {
 export function WordCard({ term, onClose }) {
   const [lang] = useMeaningLang();
   if (!term) return null;
+  // 'en' shows the English meaning alone (useMeaningLang.js). Reading and
+  // podcast words carry az/tr only — there the L1 line stays, or the card
+  // would be empty.
+  const local = lang === 'en' && term.meaning ? '' : localMeaning(term, lang === 'en' ? undefined : lang);
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- only stops the outside-tap close
     <div className="mt-card" role="dialog" aria-label={term.phrase} onClick={(e) => e.stopPropagation()}>
@@ -43,8 +47,8 @@ export function WordCard({ term, onClose }) {
         <LangSwitch compact />
         <button type="button" className="mt-card-x" onClick={onClose} aria-label="Close"><X size={18} /></button>
       </div>
-      <p className="mt-card-meaning">{localMeaning(term, lang) || term.meaning}</p>
-      {term.meaning && localMeaning(term, lang) && <p className="mt-card-en">{term.meaning}</p>}
+      <p className="mt-card-meaning">{local || term.meaning}</p>
+      {term.meaning && local && <p className="mt-card-en">{term.meaning}</p>}
       {term.example && <p className="mt-card-ex">“{term.example}”</p>}
     </div>
   );

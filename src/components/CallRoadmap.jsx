@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { TEACHER_PRIVACY_LINE } from '../utils/teacherPrivacy';
+import { plainTopic } from '../utils/topicLabel';
 
 // Conversation roadmap shown to both peers the moment a call connects, so
 // nobody sits in silence wondering what to talk about. It now doubles as a
@@ -67,7 +68,7 @@ export default function CallRoadmap({ content, onStart, onOpenDaily, user }) {
 
         {content.topic && (
           <div className="call-roadmap-topic-pill">
-            Today's topic · <b>{content.topic}</b>
+            Today's topic · <b>{plainTopic(content.topic)}</b>
           </div>
         )}
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
 import { getContentByIndex, getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
+import { plainTopic } from '../utils/topicLabel';
 import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
 import { VIDEOS_ENABLED, canBrowseAllVideos } from '../utils/fetchTopicVideos';
@@ -11,6 +12,8 @@ import ReadingView from './materials/ReadingView';
 import { readingLevelFor } from '../utils/topicMaterials';
 import { hasMaterials, loadMaterials } from '../utils/topicMaterialsLoader';
 import './materials/materials.css';
+import useMeaningLang from './materials/useMeaningLang';
+import { LangSwitch } from './materials/TermText';
 import SayButton from './ui/SayButton';
 
 function shuffle(array) {
@@ -141,6 +144,10 @@ function DailyQuiz({ content, onFinish }) {
 // /class/:id — the same sheet the teacher shares in the lesson).
 export default function DailyTopicModal({ open, onClose, user, topicIndex = null }) {
   const [content, setContent] = useState(null);
+  // The L1 line under each word follows the same AZ / TR / EN choice as the
+  // word cards (useMeaningLang). EN = no L1 line (QA 2026-11-12 O1).
+  const [meaningLang] = useMeaningLang();
+  const l1 = (item) => (meaningLang === 'en' ? '' : localMeaning(item, meaningLang));
   const [activeSection, setActiveSection] = useState('vocabulary');
   const [difficulty, setDifficulty] = useState('easy');
   const [expandedVocab, setExpandedVocab] = useState(null);
@@ -179,7 +186,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
         <div className="dt-header">
           <div className="dt-header-info">
             <span className="dt-badge">Day {content.day}</span>
-            <h2 className="dt-title">{content.topic}</h2>
+            <h2 className="dt-title">{plainTopic(content.topic)}</h2>
           </div>
           <button className="dt-close" onClick={onClose} aria-label="Close">
             <X size={22} />
@@ -249,6 +256,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
 
           {activeSection === 'vocabulary' && (
             <div className="dt-section dt-section--list">
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}><LangSwitch compact /></div>
               {content.vocabulary.map((v, i) => (
                 <div
                   key={i}
@@ -263,7 +271,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                     {expandedVocab === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <p className="dt-vocab-meaning">{v.meaning}</p>
-                  {localMeaning(v) && <p className="dt-vocab-meaning dt-meaning-l1">{localMeaning(v)}</p>}
+                  {l1(v) && <p className="dt-vocab-meaning dt-meaning-l1">{l1(v)}</p>}
                   {expandedVocab === i && (
                     <p className="dt-vocab-example">"{v.example}"</p>
                   )}
@@ -293,7 +301,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                     <p className="dt-idiom-phrase">"{idm.phrase}"</p>
                   </div>
                   <p className="dt-idiom-meaning">{idm.meaning}</p>
-                  {localMeaning(idm) && <p className="dt-idiom-meaning dt-meaning-l1">{localMeaning(idm)}</p>}
+                  {l1(idm) && <p className="dt-idiom-meaning dt-meaning-l1">{l1(idm)}</p>}
                   <p className="dt-idiom-example"> {idm.example}</p>
                 </div>
               ))}

@@ -64,6 +64,10 @@
    Slot starts: fish 0%, whale 16.667%, otter 33.333%, manta 50%,
    octopus 66.667%, school 83.333%. All sit behind the text (z -1). */
 .pl-parade { position: absolute; inset: 0; z-index: -1; pointer-events: none; color: var(--text-on-accent); }
+/* Dark theme: the card is light lavender and the creatures dark ink, which
+   reads twice as strong — an octopus sat on «My week» like a stamp (QA
+   2026-11-12 O4). Half the weight keeps it a background. */
+[data-theme="dark"] .pl-parade { opacity: .5; }
 .pl-sea {
   position: absolute; inset: 0;
   opacity: .24;

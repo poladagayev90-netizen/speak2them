@@ -5,6 +5,7 @@ import { ArrowLeft, Check, Volume2, Snail } from 'lucide-react';
 import { db } from '../firebase';
 import { weeklyContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
+import { plainTopic } from '../utils/topicLabel';
 import { canPronounce, pronounce } from '../utils/pronounce';
 import { markDictation, markOriginal } from '../utils/dictation';
 import { homeworkStepKeys } from '../utils/tutorLessons';
@@ -206,7 +207,7 @@ export default function Homework({ user }) {
         <button type="button" className="hw-back" onClick={() => navigate('/')} aria-label="Back"><ArrowLeft size={20} /></button>
         <div className="hw-titles">
           <h1 className="hw-title">Lesson {hw.n} homework</h1>
-          <p className="hw-topic">{topic.topic}</p>
+          <p className="hw-topic">{plainTopic(topic.topic)}</p>
         </div>
       </header>
 
