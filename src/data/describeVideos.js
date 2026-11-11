@@ -1205,6 +1205,327 @@ export const describeVideos = [
       'Describe a time you almost dropped or broke something important.',
     ],
   },
+  {
+    // source: 1000070200.mp4
+    id: 'horse-race-cameraman',
+    src: '/videos/horse-race-cameraman.mp4',
+    poster: '/videos/horse-race-cameraman.jpg',
+    seconds: 18,
+    sound: true,
+    alt: 'A cameraman stands in the middle of a grassy track between yellow fences as riders on horses gallop past him through the finish arch.',
+    keywords: ['cameraman', 'yellow fence', 'racehorse', 'wooden arch', 'dark clouds'],
+    prompts: [
+      'What is the cameraman filming, and what happens around him?',
+      'Have you ever watched a race live? What was it like?',
+    ],
+  },
+  {
+    // source: 1000072776.mp4
+    id: 'glass-wall-bump',
+    src: '/videos/glass-wall-bump.mp4',
+    poster: '/videos/glass-wall-bump.jpg',
+    seconds: 14,
+    sound: true,
+    alt: 'A woman walks straight into a spotless glass wall thinking it is open, then holds her head and laughs while her friends watch.',
+    keywords: ['glass wall', 'black outfit', 'holding her head', 'corridor', 'shoes on the floor'],
+    prompts: [
+      'What happened when she tried to walk through?',
+      'Have you ever walked into a glass door or window?',
+    ],
+  },
+  {
+    // source: 1000073166.mp4
+    id: 'bear-log-hug',
+    src: '/videos/bear-log-hug.mp4',
+    poster: '/videos/bear-log-hug.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'A huge brown bear sits down on a log beside a man in the forest and puts its arm around his shoulder like an old friend.',
+    keywords: ['brown bear', 'wooden log', 'forest', 'arm around shoulder', 'jeans'],
+    prompts: [
+      'What does the bear do after it sits down next to the man?',
+      'How would you react if a wild animal came this close to you?',
+    ],
+  },
+  {
+    // source: 1000073292.mp4
+    id: 'swinging-armchair-mall',
+    ai: true,
+    src: '/videos/swinging-armchair-mall.mp4',
+    poster: '/videos/swinging-armchair-mall.jpg',
+    seconds: 6,
+    sound: true,
+    alt: 'A woman tries to run past a swinging armchair in a courtyard, gets knocked off her feet and lands on the tiled floor.',
+    keywords: ['swinging armchair', 'tiled floor', 'shopping mall', 'falling down', 'spilled bag'],
+    prompts: [
+      'What was she trying to do, and what went wrong?',
+      'Have you ever tried a silly game with friends that went wrong?',
+    ],
+  },
+  {
+    // source: 1000073841.mp4
+    id: 'dog-rips-trousers',
+    src: '/videos/dog-rips-trousers.mp4',
+    poster: '/videos/dog-rips-trousers.jpg',
+    seconds: 9,
+    sound: true,
+    alt: 'A black dog chases a trainer in a blue suit across a park and pulls the back of his trousers off, revealing his spotted boxers.',
+    keywords: ['black dog', 'blue uniform', 'stuffed toy', 'spotted boxers', 'park path'],
+    prompts: [
+      'What happens when the dog catches up with the man?',
+      'Have you ever seen a working dog or a dog training session?',
+    ],
+  },
+  {
+    // source: 1000074143.mp4
+    id: 'cat-concrete-crack',
+    src: '/videos/cat-concrete-crack.mp4',
+    poster: '/videos/cat-concrete-crack.jpg',
+    seconds: 14,
+    sound: true,
+    alt: 'A grey cat on a leash squeezes into a narrow crack in the concrete, gets lifted out by its owner, and climbs straight back in.',
+    keywords: ['grey cat', 'black harness', 'narrow crack', 'concrete', 'weeds'],
+    prompts: [
+      'What does the cat do right after the person lifts it out?',
+      'Why do cats love squeezing into tight spaces?',
+    ],
+  },
+  {
+    // source: 1000074467.mp4
+    id: 'cats-bed-money',
+    ai: true,
+    src: '/videos/cats-bed-money.mp4',
+    poster: '/videos/cats-bed-money.jpg',
+    seconds: 20,
+    sound: true,
+    alt: 'A black-and-white cat hides a stack of money under a blanket on a bed, but a ginger cat climbs onto the headboard and catches it.',
+    keywords: ['black-and-white cat', 'ginger cat', 'dollar bills', 'beige blanket', 'bed'],
+    prompts: [
+      'Tell the story of what the two cats do with the money.',
+      'Where is the safest place to hide something at home?',
+    ],
+  },
+  {
+    // source: 1000074485.mp4
+    id: 'cat-flying-broom',
+    ai: true,
+    src: '/videos/cat-flying-broom.mp4',
+    poster: '/videos/cat-flying-broom.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'An orange-and-white cat flies down a quiet street on a broomstick, gives a peace sign, and crashes into a metal sign on the grass.',
+    keywords: ['flying broomstick', 'orange-and-white cat', 'empty street', 'peace sign', 'metal sign'],
+    prompts: [
+      'What happens to the cat right after it looks at the camera?',
+      'If you could fly anywhere without a plane, where would you go first?',
+    ],
+  },
+  {
+    // source: 1000075708.mp4
+    id: 'cat-driving-highway',
+    ai: true,
+    src: '/videos/cat-driving-highway.mp4',
+    poster: '/videos/cat-driving-highway.jpg',
+    seconds: 11,
+    sound: true,
+    alt: 'A driver films a silver car in the next lane on the highway and discovers an orange cat holding the steering wheel.',
+    keywords: ['silver car', 'highway', 'orange cat', 'steering wheel', 'side mirror'],
+    prompts: [
+      'What do you see when the car pulls up next to the silver car?',
+      'What is the funniest thing you have ever seen from a car window?',
+    ],
+  },
+  {
+    // source: 1000077416.mp4
+    id: 'cat-fishbowl-stove',
+    ai: true,
+    src: '/videos/cat-fishbowl-stove.mp4',
+    poster: '/videos/cat-fishbowl-stove.jpg',
+    seconds: 12,
+    sound: true,
+    alt: 'Seen through an apartment window, a grey cat stands at a kitchen stove holding a fishbowl with a goldfish over the burner.',
+    keywords: ['apartment window', 'grey cat', 'fishbowl', 'gas stove', 'goldfish'],
+    prompts: [
+      'What is the grey cat doing in the kitchen when the camera zooms in?',
+      'Have you ever caught a pet doing something it should not do?',
+    ],
+  },
+  {
+    // source: 1000080656.mp4
+    id: 'orangutan-watches-excavators',
+    src: '/videos/orangutan-watches-excavators.mp4',
+    poster: '/videos/orangutan-watches-excavators.jpg',
+    seconds: 20,
+    sound: true,
+    alt: 'Two yellow excavators push down a tall jungle tree while an orangutan stands among the green bushes watching quietly.',
+    keywords: ['yellow excavator', 'falling tree', 'red soil', 'orangutan', 'jungle leaves'],
+    prompts: [
+      'What are the machines doing at the start, and who is watching them?',
+      'How does this clip make you feel about nature and wildlife?',
+    ],
+  },
+  {
+    // source: 1000082157.mp4
+    id: 'cats-cement-rooster',
+    ai: true,
+    src: '/videos/cats-cement-rooster.mp4',
+    poster: '/videos/cats-cement-rooster.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'A cat smooths wet cement with a trowel, a rooster walks across it leaving footprints, and the next scene shows the cats eating roast chicken.',
+    keywords: ['wet cement', 'trowel', 'rooster', 'footprints', 'roast chicken'],
+    prompts: [
+      'What did the rooster do to the cats\' work, and what happened in the next scene?',
+      'Tell about a time someone ruined something you had just finished cleaning or making.',
+    ],
+  },
+  {
+    // source: 1000082286.mp4
+    id: 'giant-cat-taxi',
+    ai: true,
+    src: '/videos/giant-cat-taxi.mp4',
+    poster: '/videos/giant-cat-taxi.jpg',
+    seconds: 12,
+    sound: true,
+    alt: 'A man in a suit with a briefcase hails a giant fluffy cat on a city street at night, climbs onto its back and rides away.',
+    keywords: ['businessman', 'briefcase', 'giant cat', 'city street', 'riding'],
+    prompts: [
+      'How does the man get home instead of taking a taxi or bus?',
+      'If you could ride any animal to work or school, which one would you choose?',
+    ],
+  },
+  {
+    // source: 1000082288.mp4
+    id: 'cat-gym-bench',
+    ai: true,
+    src: '/videos/cat-gym-bench.mp4',
+    poster: '/videos/cat-gym-bench.jpg',
+    seconds: 11,
+    sound: true,
+    alt: 'A chubby tabby cat exercises on a cable machine in a gym, argues with a man over the handles, and tips backwards on the bench.',
+    keywords: ['tabby cat', 'gym bench', 'cable machine', 'black T-shirt', 'tipping over'],
+    prompts: [
+      'What happens between the man and the cat at the gym machine?',
+      'Do you prefer working out at a gym or exercising outdoors? Why?',
+    ],
+  },
+  {
+    // source: 1000082297.mp4
+    id: 'cat-rides-pony',
+    src: '/videos/cat-rides-pony.mp4',
+    poster: '/videos/cat-rides-pony.jpg',
+    seconds: 9,
+    sound: true,
+    alt: 'A black-and-white cat lies on the back of a small pony as it walks out of a stable into a green field.',
+    keywords: ['black-and-white cat', 'brown pony', 'stable door', 'blonde tail', 'green field'],
+    prompts: [
+      'Where is the cat sitting, and where do the two animals go?',
+      'Have you ever seen two very different animals become friends?',
+    ],
+  },
+  {
+    // source: 1000082301.mp4
+    id: 'rooftop-pool-flamingo',
+    src: '/videos/rooftop-pool-flamingo.mp4',
+    poster: '/videos/rooftop-pool-flamingo.jpg',
+    seconds: 11,
+    sound: true,
+    alt: 'A man relaxing on a pink flamingo float at the edge of a rooftop infinity pool panics and paddles back when someone pushes him.',
+    keywords: ['pink flamingo float', 'rooftop pool', 'skyscrapers', 'pool edge', 'paddling'],
+    prompts: [
+      'Why does the man on the pink flamingo suddenly panic?',
+      'Are you afraid of heights, or would you swim in a rooftop pool like this?',
+    ],
+  },
+  {
+    // source: 1000082321.mp4
+    id: 'cat-dog-driveway',
+    src: '/videos/cat-dog-driveway.mp4',
+    poster: '/videos/cat-dog-driveway.jpg',
+    seconds: 14,
+    sound: true,
+    alt: 'A grey cat creeps up to a small brown dog on a concrete yard, and the two animals circle and chase each other.',
+    keywords: ['grey cat', 'small brown dog', 'concrete driveway', 'curled tail', 'chasing'],
+    prompts: [
+      'How does the interaction between the cat and the dog change during the clip?',
+      'In your experience, who is usually the boss at home — the cat or the dog?',
+    ],
+  },
+  {
+    // source: 1000082341.mp4
+    id: 'cat-slides-downstairs',
+    ai: true,
+    src: '/videos/cat-slides-downstairs.mp4',
+    poster: '/videos/cat-slides-downstairs.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'An orange cat walks down tiled stairs on two legs holding a bowl, then flops onto its side and slides the rest of the way down.',
+    keywords: ['orange cat', 'tiled stairs', 'blue bucket', 'small dog', 'sliding down'],
+    prompts: [
+      'How does the cat start going down the stairs, and how does it finish?',
+      'What is a chore at home that makes you feel as lazy as this cat?',
+    ],
+  },
+  {
+    // source: video_2026-11-11_10-09-32.mp4
+    id: 'cat-waiter-cola',
+    ai: true,
+    src: '/videos/cat-waiter-cola.mp4',
+    poster: '/videos/cat-waiter-cola.jpg',
+    seconds: 12,
+    sound: true,
+    alt: 'A cat wearing a waiter apron opens a bottle of cola at a restaurant table, drinks from it, and serves the rest to a white dog.',
+    keywords: ['cat waiter', 'brown apron', 'cola bottle', 'fluffy white dog', 'restaurant table'],
+    prompts: [
+      'What does the cat waiter do before serving the bottle to the dog?',
+      'What is the funniest or worst service you have ever had at a restaurant?',
+    ],
+  },
+  {
+    // source: video_2026-11-11_10-09-35.mp4
+    id: 'kitten-floating-hairdryer',
+    ai: true,
+    src: '/videos/kitten-floating-hairdryer.mp4',
+    poster: '/videos/kitten-floating-hairdryer.jpg',
+    seconds: 15,
+    sound: true,
+    alt: 'A tiny ginger kitten steps onto a switched-on hairdryer on a bathroom counter and floats spinning in the warm air stream.',
+    keywords: ['fluffy kitten', 'pink hairdryer', 'bathroom counter', 'floating in air', 'mirror'],
+    prompts: [
+      'What happens when the tiny kitten steps over the hairdryer?',
+      'Have you ever seen a pet react in a funny way to a household appliance?',
+    ],
+  },
+  {
+    // source: video_2026-11-11_10-09-40.mp4
+    id: 'cat-tutu-bridge',
+    ai: true,
+    src: '/videos/cat-tutu-bridge.mp4',
+    poster: '/videos/cat-tutu-bridge.jpg',
+    seconds: 18,
+    sound: true,
+    alt: 'A cat in a pink tutu on a river bridge kicks a gold ball into the water, then pushes a woman and her car in before riding off on a bike.',
+    keywords: ['pink tutu', 'golden ball', 'concrete bridge', 'brown car', 'pink bicycle'],
+    prompts: [
+      'What does the cat push into the river one after another?',
+      'What is the most mischievous thing you have seen an animal do?',
+    ],
+  },
+  {
+    // source: video_2026-11-11_10-09-46.mp4
+    id: 'kitten-volcano-popcorn',
+    ai: true,
+    src: '/videos/kitten-volcano-popcorn.mp4',
+    poster: '/videos/kitten-volcano-popcorn.jpg',
+    seconds: 11,
+    sound: true,
+    alt: 'A ginger kitten in a helicopter pours a sack of corn into a glowing volcano crater, and a huge explosion of popcorn fills the cabin.',
+    keywords: ['ginger kitten', 'sack of corn', 'volcano crater', 'glowing lava', 'popcorn'],
+    prompts: [
+      'What happens after the kitten pours the sack of corn into the volcano?',
+      'What is your favourite snack to make or eat when watching a movie?',
+    ],
+  },
 ];
 
 // Which clips a topic gets lives in topicVideos.js, which
