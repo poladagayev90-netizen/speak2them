@@ -69,12 +69,13 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A chef in a white apron is standing *at* a stainless-steel kitchen counter.",
-        "He holds a heavy frying pan *over* a bright gas flame, looking {focused}.",
-        "He shakes the handle and tosses the vegetables high *into* the air.",
-        "The vegetables land back *in* the hot pan while he keeps cooking {confidently}.",
+        "A chef is standing *at* a kitchen counter.",
+        "He holds a hot pan *over* a big fire.",
+        "He looks very {calm} and {careful}.",
+        "He throws the vegetables *up* *into* the air.",
+        "They fall back *into* the pan.",
       ],
-      useful: ["toss in the pan", "cook over a flame", "shake the handle"],
+      useful: ["stand at", "over a fire", "throw up"],
     },
   },
   {
@@ -92,12 +93,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Two dogs are running *across* the green grass *in* an open park.",
-        "One dog sprints *in front*, looking {excited} with its tail wagging.",
-        "The second dog chases right *behind* it and turns *in* a wide circle.",
-        "Both dogs keep racing *around* the lawn, full of {playful} energy.",
+        "Two dogs are running *on* the green grass *in* a park.",
+        "One dog runs *in front* and looks {happy}.",
+        "The other dog runs fast *behind* it.",
+        "They run *in* big circles and look {excited}.",
       ],
-      useful: ["chase each other", "run in circles", "wag its tail"],
+      useful: ["run in circles", "in front", "run after"],
     },
   },
 
@@ -116,12 +117,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A boy is sitting cross-legged *on* a low wall *in* a vegetable garden.",
-        "A basketball rests *on* the ground *beside* him while he strums a guitar, looking {relaxed}.",
-        "A large rooster stands right *next to* him and listens {curiously}.",
-        "The boy keeps playing his song *until the end* without the bird moving away.",
+        "A boy is sitting *on* a low wall *in* a garden.",
+        "A basketball is lying *on* the ground *near* him.",
+        "He plays his guitar and looks {calm}.",
+        "A big rooster stands *next to* him and looks {funny}.",
       ],
-      useful: ["sit cross-legged", "strum a guitar", "stand next to"],
+      useful: ["sit on a wall", "play the guitar", "stand next to"],
     },
   },
   {
@@ -139,12 +140,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A group of friends are standing *by* the edge of a quiet pond *among* tall reeds.",
-        "One person grabs a rope swing and swings far out *over* the water, looking {fearless}.",
-        "*At* the highest point, they suddenly let go *of* the rope.",
-        "They drop straight *into* the pond with a big splash, leaving everyone {amused}.",
+        "Some friends are standing *by* a small pond.",
+        "One person holds a rope and swings *over* the water.",
+        "They look very {happy} and {excited}.",
+        "*At* the end, they let go and fall *into* the water.",
       ],
-      useful: ["take turns", "swing out over", "let go of"],
+      useful: ["stand by", "swing over", "fall into"],
     },
   },
   {
@@ -162,10 +163,10 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A group of trekkers are standing still *on* a narrow path *in* a dense forest.",
-        "A large mountain gorilla walks slowly *past* them while chewing leaves, looking {calm}.",
-        "One man reaches his arm *out* and holds an open palm *towards* the animal, {carefully}.",
-        "The gorilla continues *down* the trail without touching his hand.",
+        "Some people are standing still *in* a green forest.",
+        "A big gorilla walks *past* them *on* the path.",
+        "The gorilla eats leaves and looks {calm}.",
+        "One man holds his hand *out* *to* the gorilla and stays {quiet}.",
       ],
       useful: ["stand still", "walk past", "hold out a hand"],
     },
@@ -186,12 +187,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small camera is mounted *on* a bird feeder *in* a green garden.",
-        "*At first*, a squirrel climbs *onto* the tray to eat seeds, and then a dove lands *in* its place.",
-        "*After that*, a deer walks *up to* the feeder, looking {curious}.",
-        "The deer pushes its nose right *into* the seed tray and eats {happily}.",
+        "There is a small camera *on* a bird feeder *in* a garden.",
+        "First, a squirrel climbs *onto* it, and then a bird sits *there*.",
+        "Next, a deer walks *up to* the feeder and looks {hungry}.",
+        "It puts its face *into* the box, and it looks {funny}.",
       ],
-      useful: ["climb onto", "one after another", "push its nose into"],
+      useful: ["climb onto", "walk up to", "put into"],
     },
   },
   {
@@ -209,12 +210,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "An estate agent in a suit is standing *at* the top of a carpeted staircase *in* an empty house.",
-        "He turns to speak *to* the camera, looking {confident}.",
-        "Suddenly his foot slips *on* the top step and he loses his footing.",
-        "He slides all the way *down* the stairs, looking {shocked} and {embarrassed}.",
+        "A man is standing *at* the top *of* the stairs.",
+        "He is talking *to* the camera and looks {happy}.",
+        "Suddenly, his foot slips *on* the carpet.",
+        "He slides all the way *down* the stairs and looks {surprised}.",
       ],
-      useful: ["lose his footing", "slip on the stairs", "slide all the way down"],
+      useful: ["at the top of", "talk to", "slide down"],
     },
   },
   {
@@ -233,12 +234,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A ginger hen is lying comfortably *on* a blue blanket *on* a sofa.",
-        "Someone strokes its feathers gently *from* its head *down* its back, and the bird looks {relaxed}.",
-        "Each time the hand stops and pulls *away*, the hen looks {impatient}.",
-        "It pushes its head back *under* the person’s fingers to ask *for* more.",
+        "A brown hen is lying *on* a blue blanket *on* a sofa.",
+        "A person pets its back, and the hen feels {happy}.",
+        "Then the hand stops and moves *away*.",
+        "The hen pushes its head *under* the hand again and stays {calm}.",
       ],
-      useful: ["lie on a blanket", "stroke gently", "push back for more"],
+      useful: ["lie on a sofa", "move away", "push under"],
     },
   },
   {
@@ -256,12 +257,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A spotted leopard is walking slowly *down* a dusty track *in front of* a safari vehicle.",
-        "Tall dry grass grows *on* both sides of the road *in* the evening light.",
-        "The leopard glances *around* {calmly}, completely {unbothered} by the car.",
-        "*At the end*, it stops *in* the middle of the road and lies *down* in the dust.",
+        "A leopard is walking *down* a dirt road *in* the evening.",
+        "Some people are watching it *from* a car.",
+        "The leopard looks {calm} and a little {tired}.",
+        "Then it stops and lies *down* *in* the dust.",
       ],
-      useful: ["walk down a track", "lie down in the dust", "glance around"],
+      useful: ["walk down a road", "watch from a car", "lie down"],
     },
   },
   {
@@ -279,12 +280,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A guest is sitting *at* a crowded table *in* a busy restaurant, surrounded *by* plates of salad.",
-        "A waiter stands *beside* the table holding a huge curved knife *over* a hot round bread pie.",
-        "He slices *across* the crust, and thick steam rises *into* the air.",
-        "The guest watches the waiter cut the dish, looking {impressed} and {hungry}.",
+        "A man is sitting *at* a table *in* a busy restaurant.",
+        "A waiter stands *next to* him *with* a huge knife.",
+        "He cuts a hot round bread pie *on* the table.",
+        "The guest watches the food and looks {surprised} and {hungry}.",
       ],
-      useful: ["sit at a table", "slice across", "rise into the air"],
+      useful: ["sit at a table", "stand next to", "cut with a knife"],
     },
   },
   {
@@ -302,12 +303,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man is standing *on* a narrow wooden pier *above* the sea.",
-        "He holds a large fish *up* to the camera, looking {proud} of his catch.",
-        "Then he kneels *down* *at* the edge to put the fish back *into* the water.",
-        "He suddenly loses his balance and tumbles headfirst *into* the sea, coming up {soaked}.",
+        "A man is standing *on* a wooden pier *by* the sea.",
+        "He holds a big fish *in* his hands and looks {proud}.",
+        "He gets *down* *on* his knees to put the fish back.",
+        "He falls *into* the water and comes *out* {surprised}.",
       ],
-      useful: ["hold up", "put back in", "lose his balance"],
+      useful: ["stand on a pier", "put back", "fall into the water"],
     },
   },
   {
@@ -325,12 +326,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "The view starts high *in* the sky *above* the clouds and a huge city.",
-        "The person is falling fast *through* the air *towards* the streets *below*, feeling {terrified}.",
-        "Just *before* hitting the ground, the scene suddenly cuts *to* a dark bedroom.",
-        "The person wakes up lying safely *in* bed, {relieved} that it was only a dream.",
+        "A person is falling *from* the sky *above* a big city.",
+        "The streets *below* come closer, and the person feels {scared}.",
+        "Suddenly, the person wakes *up* *in* a bedroom.",
+        "They are lying *in* bed and feel {safe} and {calm}.",
       ],
-      useful: ["fall through the air", "rush towards", "wake up in bed"],
+      useful: ["fall from the sky", "wake up", "lie in bed"],
     },
   },
   {
@@ -348,12 +349,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A news presenter is sitting *at* a desk *in front of* a bright screen *in* a TV studio.",
-        "She is speaking {seriously} *into* the camera during a live broadcast.",
-        "*Behind* her, a crew member gets down *on* hands and knees and crawls *across* the floor.",
-        "The person tries to stay {unnoticed} while the presenter keeps talking *without* stopping.",
+        "A woman is sitting *at* a desk *in* a TV studio.",
+        "She is talking *to* the camera and looks {calm}.",
+        "Another person crawls *across* the floor *behind* her.",
+        "That person stays low *on* the floor and looks {funny}.",
       ],
-      useful: ["on live TV", "crawl across the floor", "keep talking"],
+      useful: ["sit at a desk", "talk to the camera", "crawl across"],
     },
   },
   {
@@ -371,12 +372,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man wearing a helmet is crouching *beside* a fast narrow canal *next to* green rice fields.",
-        "He puts a small toy boat *into* the water, and the current carries it *down* the channel.",
-        "He runs *along* the concrete bank *after* the boat, looking {excited}.",
-        "*At the end*, he jumps *into* the canal himself and slides *along* with the water, {laughing}.",
+        "A man with a helmet is standing *by* a fast water canal.",
+        "He puts a small toy boat *into* the water.",
+        "He runs *along* the side *after* the boat and looks {excited}.",
+        "Then he jumps *into* the water too and looks {happy}.",
       ],
-      useful: ["drop into the water", "run along the bank", "slide into"],
+      useful: ["put into the water", "run after", "jump into"],
     },
   },
   {
@@ -394,12 +395,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A roller coaster car full of passengers is climbing *up* a steep metal track.",
-        "A giant ferris wheel stands *next to* the ride *against* a cloudy sky.",
-        "The car moves slowly *towards* the very top *of* the rail while riders sit {tense} and {excited}.",
-        "*At* the peak, the track curves *down* for the big drop ahead.",
+        "People are sitting *in* a roller coaster car *at* a park.",
+        "The car is going *up* a very high track.",
+        "There is a big wheel *next to* them *under* the clouds.",
+        "The people wait *at* the top and feel {excited} and {scared}.",
       ],
-      useful: ["climb a steep track", "at the very top", "be about to drop"],
+      useful: ["sit in a car", "go up", "at the top"],
     },
   },
   {
@@ -417,12 +418,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Two white cups are sitting *on* a wooden table.",
-        "A person lifts one cup and tilts it *over* the second cup to pour the coffee *in*, acting {hurriedly}.",
-        "Instead of going neatly *into* the cup, dark coffee splashes *over* the rim.",
-        "A large puddle spreads *across* the table, leaving a {messy} spill.",
+        "Two coffee cups are sitting *on* a table.",
+        "A person holds one cup *above* the other cup.",
+        "They try to pour coffee *into* the second cup.",
+        "The coffee spills *over* the table and makes a {sad}, {funny} mess.",
       ],
-      useful: ["pour into", "splash over the rim", "spread across"],
+      useful: ["sit on a table", "pour into", "spill over"],
     },
   },
   {
@@ -440,12 +441,13 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A bride in a white dress and a groom in a suit are dancing *in* the middle *of* a shiny floor.",
-        "The groom holds her hand and spins her *around* *under* his arm, both looking {joyful}.",
-        "Her feet suddenly slip *on* the smooth floor and she drops straight *down*.",
-        "He puts both hands *on* his head, looking {shocked} and {guilty}.",
+        "A bride and groom are dancing *on* a shiny floor.",
+        "They hold hands and look very {happy}.",
+        "He spins her *around*, and her feet slip *on* the floor.",
+        "She falls *down*, and he holds his head *in* his hands.",
+        "He looks very {surprised}.",
       ],
-      useful: ["spin around", "slip on the floor", "put hands on his head"],
+      useful: ["dance on a floor", "spin around", "fall down"],
     },
   },
   {
@@ -463,12 +465,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Dark blue waves are rolling *across* the sea *towards* a group of red rocks.",
-        "*At first*, the water moves {calmly} *against* the shore *under* a clear horizon.",
-        "Then a powerful wave slams {violently} straight *into* the rocks.",
-        "White spray shoots high *into* the air and falls *back* *over* the stone.",
+        "Blue waves are moving *across* the sea *towards* red rocks.",
+        "*At* first, the water looks {calm} and {quiet}.",
+        "Then one big wave hits the rocks very hard.",
+        "White water flies high *into* the air *above* the rocks.",
       ],
-      useful: ["roll in", "slam into the rocks", "explode into spray"],
+      useful: ["move towards", "at first", "fly into the air"],
     },
   },
   {
@@ -486,12 +488,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Thousands of fans in red shirts are sitting *in* the stands *around* a bright football pitch.",
-        "Down *on* the grass, the players score a goal and sprint *towards* the corner.",
-        "They jump *around* each other *in* a tight group, looking {ecstatic}.",
-        "The crowd cheers {wildly} while the scoreboard glows *above* the stadium.",
+        "Many fans in red are sitting *in* a big football stadium.",
+        "*On* the green grass, the players just scored a goal.",
+        "The players run *together* *to* the corner and look {happy}.",
+        "All the fans *in* the stands cheer and feel {excited}.",
       ],
-      useful: ["in the stands", "run together", "celebrate a goal"],
+      useful: ["in a stadium", "score a goal", "run together"],
     },
   },
   {
@@ -509,12 +511,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Two red dice are resting still *on* a flat white table.",
-        "Suddenly, two more dice drop *down* *from* above.",
-        "They bounce *off* the surface and crash right *into* the first pair, {unexpectedly}.",
-        "All four dice roll *across* the table before coming *to* a {quiet} stop.",
+        "Two red dice are sitting *on* a white table.",
+        "They do not move and the table looks {quiet}.",
+        "Suddenly, two more dice fall *down* *from* above.",
+        "They hit the first dice and roll *across* the table, looking {surprised}.",
       ],
-      useful: ["fall from above", "bounce off", "knock into"],
+      useful: ["sit on a table", "fall from above", "roll across"],
     },
   },
   {
@@ -532,12 +534,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small white kitten is hiding *under* a grey sofa *on* a patterned carpet.",
-        "A pink fluffy toy sits *in front of* the gap, and the kitten bats *at* it, looking {playful}.",
-        "It pulls the toy *towards* itself with its paws.",
-        "*At the end*, the kitten dashes *out* *from* under the sofa {energetically}.",
+        "A small white kitten is hiding *under* a sofa.",
+        "It is playing *with* a pink toy *on* the carpet.",
+        "The kitten hits the toy and looks {happy} and {excited}.",
+        "Then it runs *out* *from* under the sofa.",
       ],
-      useful: ["hide under", "play with a toy", "run out from under"],
+      useful: ["hide under", "play with", "run out"],
     },
   },
   {
@@ -555,12 +557,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Several guests are sitting *around* a restaurant table with a hot sizzling pan *in* the middle.",
-        "They hold their phones *up* *above* the plates, looking {eager} to record.",
-        "A waiter wearing a red oven glove leans *over* the table and pours dark sauce *into* the pan.",
-        "Steam rises *up* immediately while the guests film the dish {excitedly}.",
+        "People are sitting *around* a table *in* a restaurant.",
+        "There is a very hot pan *in* the middle *of* the table.",
+        "A waiter with a red glove pours sauce *into* the pan.",
+        "The guests hold *up* their phones and look {excited} and {happy}.",
       ],
-      useful: ["lean over the table", "pour sauce into", "film on their phones"],
+      useful: ["sit around a table", "in the middle of", "pour into"],
     },
   },
   {
@@ -578,12 +580,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A young man in a checked shirt is standing *at* the stove *in* a home kitchen.",
-        "He holds a frying pan *with* one hand while his friend watches *behind* him, looking {curious}.",
-        "With a quick flick *of* his wrist, he tosses the food *up* and catches it *in* the pan.",
-        "Both friends laugh {happily}, {pleased} that the trick worked.",
+        "A young man is cooking *at* the stove *in* a kitchen.",
+        "His friend is standing *behind* him and watching.",
+        "The man throws the food *up* and catches it *in* the pan.",
+        "It works well, and both friends look {happy} and {proud}.",
       ],
-      useful: ["stand at the stove", "toss food in a pan", "laugh together"],
+      useful: ["cook at the stove", "stand behind", "catch in a pan"],
     },
   },
   {
@@ -601,12 +603,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A white cat is lying *on* a polished wooden floor *near* long curtains.",
-        "Someone dangles a small toy *on* a string right *in front of* its face.",
-        "The cat grabs the toy *with* its paws and bites it, looking {determined}.",
-        "Then it stands *up* and walks *away* carrying the toy {proudly}.",
+        "A white cat is lying *on* a wooden floor *near* a curtain.",
+        "Someone moves a small toy *on* a string *in front of* it.",
+        "The cat grabs the toy *with* its paws and looks {happy}.",
+        "Then it stands *up* and walks *away* feeling {proud}.",
       ],
-      useful: ["dangle in front of", "grab with its paws", "walk off with"],
+      useful: ["lie on the floor", "in front of", "walk away"],
     },
   },
   {
@@ -624,12 +626,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A group of children wearing colourful party hats are gathered *around* a plate *of* doughnuts.",
-        "Small birthday candles are burning *on* top *of* the doughnuts.",
-        "One boy leans *forward* and blows the flames *out*, looking {happy}.",
-        "*Right after*, all the children clap their hands and cheer {excitedly}.",
+        "Some children in party hats are sitting *around* a table.",
+        "There are small candles burning *on* the doughnuts.",
+        "One boy leans *over* and blows *out* the candles.",
+        "He looks {proud}, and the other kids clap and feel {happy}.",
       ],
-      useful: ["gather around", "blow out the candles", "clap and cheer"],
+      useful: ["sit around", "blow out candles", "clap hands"],
     },
   },
   {
@@ -647,12 +649,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small child dressed *in* a penguin costume is standing *on* a wooden floor.",
-        "The child holds a large sheet of paper *up* *in front of* their face.",
-        "There is a colourful drawing *of* a penguin *on* the paper.",
-        "The child peeks *out* *from* behind the picture, smiling {proudly} and {shyly}.",
+        "A little child is standing *on* a wooden floor *at* home.",
+        "The child is wearing a penguin costume and looks {funny}.",
+        "They hold *up* a big picture *of* a penguin.",
+        "Then the child looks *out* *from* behind the paper and feels {proud}.",
       ],
-      useful: ["dress up in a costume", "hold up a drawing", "peek out from behind"],
+      useful: ["wear a costume", "hold up a picture", "look out from behind"],
     },
   },
   {
@@ -670,12 +672,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A footballer is standing *on* the green pitch *in front of* the goal.",
-        "The goalkeeper waits *on* the goal line, looking {focused} and {tense}.",
-        "The player runs *up* and kicks the ball hard *towards* the net.",
-        "The goalkeeper dives *across* the grass and lands flat *on* the ground.",
+        "A football player is standing *in front of* the goal.",
+        "The goalkeeper waits *on* the line and looks {ready}.",
+        "The player runs *up* and kicks the ball *into* the goal.",
+        "The goalkeeper dives *onto* the grass and looks {sad}.",
       ],
-      useful: ["take a penalty", "dive across", "land on the grass"],
+      useful: ["in front of", "kick the ball", "dive onto the grass"],
     },
   },
   {
@@ -693,12 +695,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A woman with a handbag is standing *on* a city pavement *in* the daytime.",
-        "Her friend runs *down* the street *towards* her with open arms, looking {overjoyed}.",
-        "They throw their arms *around* each other and hug tightly *in* the middle of the sidewalk.",
-        "Both women rock *from* side to side and laugh {warmly}.",
+        "A woman is standing *on* the street *in* the city.",
+        "Her friend runs *up to* her *along* the sidewalk.",
+        "They put their arms *around* each other and hug.",
+        "Both women laugh a lot and look very {happy} and {excited}.",
       ],
-      useful: ["run up to", "throw arms around", "hug tightly"],
+      useful: ["on the street", "run up to", "hug each other"],
     },
   },
   {
@@ -716,12 +718,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A woman in a black bodysuit is standing barefoot *at* the bottom *of* a staircase.",
-        "A pair of high-heeled shoes sits *on* the floor *behind* her.",
-        "She bends backwards *until* her hands touch the ground and lifts her legs *into* the air, looking {calm}.",
-        "While balancing upside *down*, she slides her feet {carefully} *into* the heels.",
+        "A woman in black is standing *at* the bottom *of* the stairs.",
+        "Two high shoes are sitting *on* the floor *behind* her.",
+        "She bends her body *back* and puts her feet *in* the air.",
+        "She stays {calm} and puts her feet *into* the shoes, looking {proud}.",
       ],
-      useful: ["bend backwards", "balance upside down", "slip feet into shoes"],
+      useful: ["at the bottom of", "bend back", "put on shoes"],
     },
   },
   {
@@ -740,12 +742,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A baby goat and a fluffy white calf are standing side *by* side *in* a wooden barn.",
-        "Both animals have their heads *in* metal feeding chutes, drinking milk {eagerly}.",
-        "After finishing the milk, they pull their heads *back* *from* the trough.",
-        "They turn *around* and wander *off* across the barn floor, looking {content}.",
+        "A baby goat and a white calf are standing *in* a barn.",
+        "They stand *next to* each other *at* the metal feeders.",
+        "Both animals drink milk and look {hungry} and {happy}.",
+        "Then they turn *around* and walk *away* together.",
       ],
-      useful: ["side by side", "drink from a chute", "wander off"],
+      useful: ["next to each other", "drink milk", "walk away"],
     },
   },
   {
@@ -764,12 +766,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small grey donkey foal is standing *in* a sandy yard *next to* a wooden fence.",
-        "Suddenly it jumps *up* and kicks its back legs *into* the air, looking {energetic}.",
-        "After bouncing *around* the yard, it trots straight *up to* the camera.",
-        "It stretches its neck *forward* and sniffs the lens {curiously}.",
+        "A little donkey is standing *in* a yard *by* a fence.",
+        "Suddenly, it jumps *up* and kicks its back legs *in* the air.",
+        "It looks very {happy} and {excited}.",
+        "Then it walks *up to* the camera and smells it.",
       ],
-      useful: ["kick its back legs", "trot up to", "sniff the camera"],
+      useful: ["in a yard", "jump up", "walk up to"],
     },
   },
   {
@@ -788,12 +790,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A young giraffe with brown spots is standing *inside* a bright stable.",
-        "A funny dark tuft of hair sticks straight *up* *on* top *of* its head.",
-        "It walks slowly *towards* the camera *on* its long legs, looking {curious}.",
-        "Then it stops right *in front of* the lens and stares *at* it {calmly}.",
+        "A baby giraffe is standing *inside* a bright stable.",
+        "It has some black hair *on* top *of* its head.",
+        "It looks {funny}.",
+        "It walks *up to* the camera and looks *at* it, staying {calm}.",
       ],
-      useful: ["stick straight up", "walk up to", "stare straight into"],
+      useful: ["on top of", "walk up to", "look at"],
     },
   },
   {
@@ -812,12 +814,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A large brown bear is sitting *in* a muddy puddle *in* the middle of a forest.",
-        "Water sprays *out of* a hose, and the bear bites and paws *at* the stream, looking {playful}.",
-        "Water splashes all *around* the puddle while it rolls *in* the mud.",
-        "*At the end*, the bear suddenly stands *up* and charges *towards* the camera, looking {fierce}.",
+        "A brown bear is sitting *in* a muddy puddle *in* the forest.",
+        "Water comes *out of* a hose, and the bear plays *with* it.",
+        "The bear splashes water everywhere and looks {happy}.",
+        "Then it runs straight *at* the camera, and the person feels {scared}.",
       ],
-      useful: ["sit in a puddle", "spray everywhere", "run straight at"],
+      useful: ["sit in a puddle", "play with a hose", "run at"],
     },
   },
   {
@@ -836,12 +838,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A barefoot man is climbing *up* the narrow trunk *of* a tall jungle tree.",
-        "The camera looks *down* *past* his feet *towards* the green forest floor far *below*.",
-        "He grips the bark and thin branches *with* his hands and feet, moving {confidently}.",
-        "Soon he reaches the high canopy *above* the other trees, feeling {fearless}.",
+        "A man with bare feet is climbing *up* a very tall tree.",
+        "The green forest floor is far *below* him.",
+        "He holds *on to* the tree with his hands and stays {calm}.",
+        "He reaches the top *above* the trees and feels {proud}.",
       ],
-      useful: ["climb up a trunk", "far below", "hold on to branches"],
+      useful: ["climb up a tree", "far below", "hold on to"],
     },
   },
   {
@@ -860,12 +862,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A white-and-brown lemur is sitting *near* a tree *by* a dirt path.",
-        "It takes a small piece of fruit and climbs *up* *onto* a low trunk, looking {alert}.",
-        "Then it drops *down* *onto* the forest path and stands *on* its two back legs.",
-        "With its arms held wide *open*, it hops sideways *along* the ground {gracefully}.",
+        "A lemur is sitting *by* a path *in* the forest.",
+        "It takes some fruit and climbs *up* a tree.",
+        "Then it comes *down* *onto* the path and stands on two legs.",
+        "It jumps sideways *along* the road and looks {happy} and {funny}.",
       ],
-      useful: ["climb onto a tree", "stand on two legs", "hop sideways"],
+      useful: ["climb up", "stand on two legs", "jump along"],
     },
   },
   {
@@ -883,12 +885,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A golden retriever is sitting *on* mossy rocks *in* a green forest.",
-        "It is wearing a black hooded cloak *over* its head and holding a wooden staff *between* its paws.",
-        "A person’s hand reaches *in* and hangs a shiny amulet *onto* the staff.",
-        "The dog sits completely still and looks *ahead* {calmly} and {patiently}.",
+        "A golden dog is sitting *on* some rocks *in* a forest.",
+        "It is wearing a black cloak *over* its head.",
+        "It holds a wooden stick *between* its paws and looks {calm}.",
+        "Someone puts a necklace *on* the stick, and the dog looks {funny}.",
       ],
-      useful: ["dressed in a cloak", "sit on rocks", "hang onto"],
+      useful: ["sit on rocks", "wear a cloak", "put on"],
     },
   },
   {
@@ -907,12 +909,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A tiny chick, a kitten, and a rabbit — all with ginger fur and feathers — are sitting *on* the green grass.",
-        "They are lined *up* side *by* side *in* a neat row, looking {peaceful}.",
-        "The chick and the rabbit stay still *on* either side *of* the kitten.",
-        "The kitten turns its head *from* one friend *to* the other, looking {curious}.",
+        "A chick, a kitten, and a rabbit are sitting *on* the grass.",
+        "They are sitting *next to* each other *in* a row.",
+        "The chick and the rabbit stay still and look {calm}.",
+        "The kitten looks *at* its friends and looks very {funny}.",
       ],
-      useful: ["sit side by side", "in a row", "look from one to the other"],
+      useful: ["sit on the grass", "next to each other", "look at"],
     },
   },
   {
@@ -930,12 +932,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A narrow hammock is tied high *up* *between* two tall apartment buildings.",
-        "Wet laundry hangs *on* a line right *next to* the hammock, far *above* the street.",
-        "A man is lying *inside* the hammock and reading, looking completely {relaxed}.",
-        "The camera zooms *out* to show the windows and the huge drop *below*, which looks {terrifying}.",
+        "A hammock is hanging high *up* *between* two tall buildings.",
+        "Some clothes are drying *on* a line *next to* it.",
+        "A man is lying *in* the hammock and reading a book.",
+        "He looks {calm}, but the street far *below* looks {scared}.",
       ],
-      useful: ["tied between", "high above the street", "zoom out"],
+      useful: ["hang between", "lie in a hammock", "far below"],
     },
   },
   {
@@ -954,12 +956,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A tiny hedgehog is standing *on* a smooth wooden floor *at* one end of a room.",
-        "It starts running fast *on* its short legs straight *towards* the camera, looking {eager}.",
-        "Its spiky body bounces slightly as it hurries *across* the boards.",
-        "*At the end*, it bumps right *past* the lens and keeps going, {unbothered}.",
+        "A tiny hedgehog is standing *on* a wooden floor *in* a room.",
+        "It starts running very fast *towards* the camera.",
+        "It moves *on* its short legs and looks {excited} and {funny}.",
+        "Then it runs right *past* the camera.",
       ],
-      useful: ["run across the floor", "head straight for", "bump past"],
+      useful: ["on the floor", "run towards", "run past"],
     },
   },
   {
@@ -978,12 +980,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Several black-and-white kittens are gathered *on* a wooden floor *in front of* a chest of drawers.",
-        "One kitten bats a green plastic bottle, sending it rolling *across* the room.",
-        "The other kittens chase *after* the bottle *together*, looking {excited} and {playful}.",
-        "An adult cat lies *in* the background and watches them *from* a distance.",
+        "Some small kittens are playing *on* a wooden floor *in* a room.",
+        "One kitten hits a green plastic bottle *with* its paw.",
+        "The bottle rolls *across* the floor, and the kittens look {excited}.",
+        "A big cat lies *behind* them and looks {calm}.",
       ],
-      useful: ["bat across the floor", "chase after", "watch from a distance"],
+      useful: ["play on the floor", "roll across", "lie behind"],
     },
   },
   {
@@ -1001,12 +1003,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man in an orange shirt and cap is leaning *against* a stone wall *outdoors*.",
-        "A white seagull is standing *on* the top *of* the wall right *next to* him.",
-        "The man waves his hands *in* the air as if having a {serious} argument *with* the bird.",
-        "The seagull stares back *at* him without flying away, looking {unbothered}.",
+        "A man in an orange shirt is standing *by* a stone wall.",
+        "A white seagull is standing *on* the wall *next to* him.",
+        "The man waves his hands *at* the bird and looks {angry}.",
+        "The bird just looks *at* him and stays {calm}.",
       ],
-      useful: ["lean on a wall", "wave his hands", "argue with"],
+      useful: ["stand by a wall", "wave hands", "look at"],
     },
   },
   {
@@ -1025,12 +1027,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "The clip is filmed *through* the side window *of* a car driving *along* a busy road.",
-        "Two giant moose with big antlers are walking *on* the grass strip *beside* the tarmac.",
-        "Cars pass right *by* them, with tall pine trees standing *behind* the animals.",
-        "Both moose keep walking steadily *along* the roadside, looking {calm} and {unhurried}.",
+        "A person is filming *from* a car *on* a busy road.",
+        "Two huge moose are walking *on* the grass *beside* the road.",
+        "Cars drive *past* them, with green trees *in* the background.",
+        "The moose keep walking slowly and look {calm} and {quiet}.",
       ],
-      useful: ["filmed from a car", "walk along the roadside", "drive past"],
+      useful: ["from a car", "walk beside the road", "drive past"],
     },
   },
   {
@@ -1048,12 +1050,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A very round, fluffy bird is perched *on* a thin branch *in* a garden.",
-        "A red brick wall stands *in* the background *behind* the green leaves.",
-        "The bird sits *on* the twig looking {calm} with its soft white chest puffed *out*.",
-        "Then it hops *around* *on* the branch to show its bright blue back and tail, looking {adorable}.",
+        "A round blue bird is sitting *on* a thin branch.",
+        "There is a brick wall *behind* it *in* the garden.",
+        "The bird sits still *on* the tree and looks {calm}.",
+        "Then it turns *around* to show its tail and looks {funny}.",
       ],
-      useful: ["perch on a branch", "puff out", "turn around"],
+      useful: ["sit on a branch", "in the garden", "turn around"],
     },
   },
   {
@@ -1072,12 +1074,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small tortoise with orange spots on its head is standing *beside* a yellow toy truck.",
-        "It is wearing a tiny knitted backpack *on* its shell, which looks {funny}.",
-        "Someone holds a slice of apple right *in front of* its mouth.",
-        "The tortoise stretches its neck *out* and takes big bites *out of* the apple {eagerly}.",
+        "A small tortoise is standing *next to* a yellow toy truck.",
+        "It is wearing a tiny bag *on* its back and looks {funny}.",
+        "Someone holds a piece *of* apple *in front of* its mouth.",
+        "The tortoise takes a big bite and looks {hungry}.",
       ],
-      useful: ["hold out", "stretch its neck", "take a bite out of"],
+      useful: ["stand next to", "on its back", "take a bite"],
     },
   },
   {
@@ -1095,12 +1097,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "An older woman in glasses and a flowery dress is standing *beside* an unfinished brick wall.",
-        "She scoops wet mortar *with* a metal trowel and spreads it *along* the top row *of* bricks.",
-        "Then she places a new brick *onto* the mortar and taps it *into* place, working {skillfully}.",
-        "*At the end*, she turns *to* the camera and gives a big thumbs up, smiling {proudly}.",
+        "An older woman in a dress is working *on* a brick wall.",
+        "She puts wet cement *onto* the bricks *with* a tool.",
+        "Then she puts a new brick *on* top and looks {careful}.",
+        "At the end, she smiles *at* the camera and feels {proud}.",
       ],
-      useful: ["spread mortar", "lay bricks", "give a thumbs up"],
+      useful: ["work on a wall", "put on top", "smile at"],
     },
   },
   {
@@ -1118,12 +1120,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A wild monkey walks *into* a bright living room *through* an open balcony door.",
-        "It steps *around* a glass coffee table while looking *around* the room {curiously}.",
-        "A woman in a green top runs *in* and waves her hand *at* the monkey, looking {alarmed}.",
-        "The monkey hurries back *out* *onto* the balcony with the sea *in* the background.",
+        "A monkey walks *into* a living room *through* an open door.",
+        "It walks *past* a glass table and looks *around*.",
+        "A woman runs *into* the room and feels {scared} and {angry}.",
+        "She chases the monkey *out* *onto* the balcony.",
       ],
-      useful: ["walk into a room", "chase out", "run out onto the balcony"],
+      useful: ["walk into a room", "look around", "chase out"],
     },
   },
   {
@@ -1141,12 +1143,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A cat is lying *on* the road right *under* the front bumper *of* a parked car.",
-        "A delivery rider bends *down*, grabs the cat gently, and pulls it *out* onto the pavement.",
-        "Instead of walking *away*, the cat flops *onto* its side, looking {stubborn}.",
-        "It rolls right back *under* the car to the exact same spot, completely {unbothered}.",
+        "A cat is lying *on* the road *under* a parked car.",
+        "A delivery driver bends *down* and pulls the cat *out*.",
+        "The cat looks {lazy} and {calm}.",
+        "It rolls right back *under* the car *to* the same spot.",
       ],
-      useful: ["pull out from under", "flop onto its side", "roll back"],
+      useful: ["lie under a car", "pull out", "roll back"],
     },
   },
   {
@@ -1164,12 +1166,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man in a red shirt is standing *at* the back *of* a delivery lorry *in* the street.",
-        "He pulls a tall refrigerator *towards* the edge and balances it *onto* his back, looking {determined}.",
-        "Holding the weight *with* his arms, he steps *away* from the lorry.",
-        "He walks steadily *down* the street carrying the huge fridge all *by* himself, looking {strong}.",
+        "A man in a red shirt is standing *behind* a big truck.",
+        "He pulls a tall fridge *off* the truck.",
+        "He puts it *on* his back and looks very {careful}.",
+        "Then he walks *down* the street alone and looks {proud}.",
       ],
-      useful: ["take off a lorry", "lift onto his back", "carry by himself"],
+      useful: ["take off a truck", "put on his back", "walk down the street"],
     },
   },
   {
@@ -1187,12 +1189,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man in a dark uniform is standing *next to* a large glass fish tank *in* a shop.",
-        "He climbs *up* and leans far *over* the glass edge to catch a fish *inside*, looking {focused}.",
-        "Suddenly his feet slip and he tumbles headfirst right *into* the deep water.",
-        "He stands *up* *inside* the tank completely {soaked} and waves *at* the camera, {embarrassed}.",
+        "A man is standing *next to* a big glass fish tank.",
+        "He leans *over* the top to catch a fish *inside* the water.",
+        "Suddenly, he loses his balance and falls headfirst *into* the tank.",
+        "He stands *up* all wet and looks {surprised} and {funny}.",
       ],
-      useful: ["lean over the edge", "fall in headfirst", "soaking wet"],
+      useful: ["stand next to", "lean over", "fall into"],
     },
   },
   {
@@ -1211,12 +1213,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A ginger cat is sitting *inside* the yellow back *of* a toy dump truck.",
-        "The truck rolls smoothly *across* a shiny floor *towards* a cardboard box.",
-        "The cat stays sitting *in* the truck, looking completely {calm} and {unbothered}.",
-        "The toy truck drives straight *into* the open cardboard box with the cat still *on* board.",
+        "A ginger cat is sitting *in* the back *of* a toy truck.",
+        "The toy truck rolls *across* the floor *towards* a box.",
+        "The cat does not move and looks very {calm} and {lazy}.",
+        "The truck drives straight *into* the cardboard box.",
       ],
-      useful: ["ride in the back", "roll across the floor", "drive straight into"],
+      useful: ["sit in the back", "roll across", "drive into"],
     },
   },
   {
@@ -1234,12 +1236,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A tiny wooden door is built *into* the bottom *of* a wide tree trunk.",
-        "A person reaches *down* and knocks gently *on* the little door.",
-        "The door swings *open*, and small kittens walk *out* one *by* one holding bunches of flowers, looking {adorable}.",
-        "They stand *in* a neat line *in front of* the tree, waiting {patiently}.",
+        "A tiny door is *at* the bottom *of* a big tree.",
+        "Someone knocks *on* the little door *with* their hand.",
+        "The door opens, and small kittens walk *out* holding flowers.",
+        "They stand *in* a line and look {happy} and {funny}.",
       ],
-      useful: ["knock on a door", "one by one", "line up"],
+      useful: ["knock on a door", "walk out", "stand in a line"],
     },
   },
   {
@@ -1257,12 +1259,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A woman in a winter coat is walking *along* an icy pavement *at* night.",
-        "Bright shop lights shine *onto* the snow *beside* the path while other people walk *past*.",
-        "Her boots suddenly slide *out* from *under* her on the ice, leaving her {helpless}.",
-        "She falls sideways right *into* a deep pile of snow, looking {stunned}.",
+        "A woman is walking *down* an icy street *at* night.",
+        "Other people are walking *past* the bright shop lights.",
+        "Suddenly, her feet slip *on* the ice.",
+        "She falls *into* the snow and looks {surprised} and {sad}.",
       ],
-      useful: ["walk along a path", "slip on the ice", "fall into a snow pile"],
+      useful: ["walk down a street", "slip on the ice", "fall into the snow"],
     },
   },
   {
@@ -1281,12 +1283,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A lorry is driving *down* a busy motorway *on* a sunny day.",
-        "*Inside* the cab, a brown sloth is lying stretched *out* *across* the dashboard.",
-        "It rests right *above* the steering wheel *in* the warm sunlight, looking {sleepy}.",
-        "The sloth slowly moves its head and long claws, completely {relaxed} during the ride.",
+        "A truck is driving *down* a busy road *on* a sunny day.",
+        "A sloth is lying *on* the dashboard *inside* the truck.",
+        "It stays *above* the steering wheel in the sun.",
+        "The sloth moves very slowly and looks {tired} and {calm}.",
       ],
-      useful: ["lie stretched out", "on the dashboard", "drive down a motorway"],
+      useful: ["drive down a road", "lie on", "move slowly"],
     },
   },
   {
@@ -1304,12 +1306,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man is sitting *on* the ground *near* the top *of* a steep rocky hillside.",
-        "He places both feet *against* a huge boulder *in front of* him, looking {determined}.",
-        "With a hard push, he sends the rock rolling *down* the slope.",
-        "The boulder crashes *through* the dry bushes and kicks *up* dust, which looks {dangerous}.",
+        "A man is sitting *on* the ground *on* a high hill.",
+        "There is a huge rock right *in front of* his feet.",
+        "He pushes the rock hard *with* his legs and looks {excited}.",
+        "The rock rolls fast *down* the hill, and it looks {scared}.",
       ],
-      useful: ["push with his feet", "roll down a slope", "crash through bushes"],
+      useful: ["sit on the ground", "push with his feet", "roll down a hill"],
     },
   },
   {
@@ -1328,12 +1330,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A cat is running fast *across* the floor *of* a large empty room.",
-        "It sprints straight *towards* a plain wall *next to* a television.",
-        "The cat leaps high *up* *against* the wall, looking {energetic} and {fearless}.",
-        "It pushes *off* the wall with its paws and flies backwards *through* the air.",
+        "A cat is running fast *across* a big empty room.",
+        "It runs straight *towards* a wall *next to* the TV.",
+        "The cat jumps high *up* *onto* the wall and looks {excited}.",
+        "It lands *back* *on* the floor and looks {proud}.",
       ],
-      useful: ["run across a room", "jump up the wall", "push off"],
+      useful: ["run across a room", "jump onto", "land on the floor"],
     },
   },
   {
@@ -1352,12 +1354,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Several turtles are sitting *in* a row *on* a floating log *in* a green pond.",
-        "Another turtle climbs *out of* the water and pulls itself *onto* the log.",
-        "The extra weight makes the round log tip and roll *over* *in* the water.",
-        "The turtles scramble {frantically} to keep their balance before slipping *off*, looking {clumsy}.",
+        "Some turtles are sitting *in* a row *on* a log.",
+        "They are resting *above* the green water and look {calm}.",
+        "Another turtle climbs *onto* the log, and the log rolls *over*.",
+        "All the turtles fall *into* the water and look {surprised}.",
       ],
-      useful: ["climb onto a log", "keep their balance", "tip over"],
+      useful: ["in a row", "climb onto", "roll over"],
     },
   },
   {
@@ -1376,12 +1378,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A fluffy ginger cat is standing *on* its hind legs *in front of* a white washing machine.",
-        "*Inside* the round glass door, wet clothes are spinning *around* fast.",
-        "The cat watches the laundry {intently} and scratches rapidly *at* the glass *with* its front paws.",
-        "It keeps pawing *at* the door, {confused} about why it cannot catch the clothes.",
+        "A ginger cat is standing *in front of* a washing machine.",
+        "The clothes are spinning *around* *inside* the glass door.",
+        "The cat puts its paws *on* the glass and moves them fast.",
+        "It wants to catch the clothes and looks {excited} and {funny}.",
       ],
-      useful: ["stand on hind legs", "spin around inside", "paw at the glass"],
+      useful: ["in front of", "spin around", "put paws on"],
     },
   },
   {
@@ -1400,12 +1402,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A grey squirrel with a bushy tail is sitting *on* a metal drinking fountain *in* a park.",
-        "A steady stream of water arches *up* *from* the spout.",
-        "The squirrel leans *over* the basin and holds its paws *by* the water, looking {thirsty}.",
-        "It drinks neatly *from* the running stream just like a person, looking {calm}.",
+        "A squirrel is sitting *on* a water fountain *in* a park.",
+        "Clean water is coming *out of* the metal tap.",
+        "The squirrel leans *over* the water and looks {thirsty}.",
+        "It drinks *from* the fountain with its hands and looks {happy}.",
       ],
-      useful: ["climb onto", "drink from a fountain", "lean over"],
+      useful: ["sit on", "come out of", "drink from"],
     },
   },
   {
@@ -1424,12 +1426,13 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "The scene is filmed *from* inside a car *in* a wet supermarket car park.",
-        "Strong wind and rain are blowing *across* the tarmac *towards* a row of parked cars.",
-        "An empty metal shopping trolley starts rolling *across* the open space *on* its own.",
-        "It gathers speed *towards* the cars, making the situation look {tense} and {risky}.",
+        "It is raining hard *in* a supermarket car park.",
+        "A person is watching *from* inside a car.",
+        "The strong wind pushes an empty shopping cart *across* the road.",
+        "The cart rolls fast *towards* the parked cars.",
+        "The driver feels {scared} and {sad}.",
       ],
-      useful: ["roll across a car park", "on its own", "head towards"],
+      useful: ["in a car park", "push across", "roll towards"],
     },
   },
   {
@@ -1447,12 +1450,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A fisherman is standing *by* the seafront holding his fishing rod *over* the water.",
-        "A plastic bucket sits *on* the pavement *behind* him while people walk *past*.",
-        "A cat sneaks *up* to the bucket, sticks its head *inside*, and grabs a fish {boldly}.",
-        "It runs *off* *down* the promenade with the fish in its mouth, looking {pleased}.",
+        "A man is fishing *by* the sea *with* a long rod.",
+        "His bucket of fish is sitting *on* the ground *behind* him.",
+        "A cat puts its head *into* the bucket and takes a fish.",
+        "The cat runs *away* *down* the street and looks {happy} and {proud}.",
       ],
-      useful: ["sneak up to", "put its head in", "run off with"],
+      useful: ["by the sea", "put its head into", "run away with"],
     },
   },
   {
@@ -1471,12 +1474,13 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A squirrel is clinging *to* the glass *of* an open door *by* a garden.",
-        "It hangs *near* the door handle and peers *into* the house, looking {curious}.",
-        "The person filming moves the camera closer *to* the glass.",
-        "All *of* a sudden, the squirrel leaps straight *at* the camera, which is {startling}.",
+        "A squirrel is holding *on to* a glass door *by* a garden.",
+        "It looks *through* the glass *into* the house.",
+        "The camera moves closer *to* the squirrel.",
+        "Suddenly, the squirrel jumps straight *at* the camera.",
+        "The person feels {surprised} and {scared}.",
       ],
-      useful: ["hold on to", "peer into", "jump straight at"],
+      useful: ["hold on to", "look through", "jump at"],
     },
   },
   {
@@ -1494,12 +1498,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "At night, the camera zooms *in* *from* outside *towards* a bright apartment window.",
-        "*Inside* the room, a dog wearing glasses is sitting *in* an office chair *at* a computer.",
-        "The dog turns its head and spots the camera filming *from* the street, looking {annoyed}.",
-        "It reaches *over* and pulls the curtain shut *across* the window for privacy, acting {serious}.",
+        "The camera looks *at* a bright window *at* night.",
+        "*Inside* the room, a dog in glasses is sitting *at* a computer.",
+        "The dog sees the camera *outside* and looks {angry}.",
+        "It pulls the curtain *across* the window and looks {funny}.",
       ],
-      useful: ["zoom into a window", "sit at a computer", "pull the curtain shut"],
+      useful: ["look at a window", "sit at a computer", "close the curtain"],
     },
   },
   {
@@ -1517,12 +1521,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A ginger cat is standing *on* top *of* a metal cooking pot *near* a window.",
-        "When the camera gets close, the cat quickly jumps *down* *onto* the counter.",
-        "It sits right *beside* the pot and stares *at* the camera with huge round eyes, looking {guilty}.",
-        "*Behind* it, a second cat watches the whole scene {quietly}.",
+        "A ginger cat is standing *on* a cooking pot *near* a window.",
+        "It sees the camera and jumps *down* *onto* the table.",
+        "It sits *next to* the pot and looks {scared}.",
+        "Another cat is watching *from* behind and looks {calm}.",
       ],
-      useful: ["jump down from", "sit beside", "stare with big eyes"],
+      useful: ["jump down", "sit next to", "watch from behind"],
     },
   },
   {
@@ -1540,12 +1544,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Two men are carrying a heavy air conditioner *along* the narrow edge *of* a swimming pool.",
-        "One man walks backwards *in front*, guiding the unit *towards* a ladder, looking {careful}.",
-        "He takes one step too close *to* the edge and his foot misses the tiles.",
-        "He falls straight backwards *into* the pool with the box, leaving his partner {shocked}.",
+        "Two men are carrying a heavy box *by* a swimming pool.",
+        "They walk slowly *along* the narrow edge and try to be {careful}.",
+        "One man steps backwards and misses the ground.",
+        "He falls *into* the water *with* the box and looks {surprised}.",
       ],
-      useful: ["walk backwards", "along the edge", "fall into the pool"],
+      useful: ["by a pool", "walk along", "fall into the water"],
     },
   },
   {
@@ -1563,12 +1567,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A little girl is standing *outside* a wooden stable *in* a yard.",
-        "She holds a long stick *out* *in front of* her with a carrot attached *to* the end, feeling {nervous} to get too close.",
-        "A brown horse leans its head *out* *through* the stable window.",
-        "The horse bites the carrot *off* the stick and munches it {happily}.",
+        "A little girl is standing *outside* a wooden stable.",
+        "She feels {scared}, so she puts a carrot *on* a stick.",
+        "She holds the stick *up* *to* the window.",
+        "A horse leans *out* and eats the carrot, looking {happy}.",
       ],
-      useful: ["hold out a stick", "lean out of a window", "bite off"],
+      useful: ["stand outside", "on a stick", "lean out"],
     },
   },
   {
@@ -1587,12 +1591,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A black dog and a grey cat meet *on* the green grass *by* the side of a path.",
-        "They pause *next to* each other for a moment, looking {friendly} and {relaxed}.",
-        "Then both animals turn *onto* a long gravel path.",
-        "They walk *away* together side *by* side *down* the road like old friends.",
+        "A black dog and a grey cat meet *on* the green grass.",
+        "They stand *next to* each other and look {calm}.",
+        "Then they turn *onto* a long path.",
+        "They walk *down* the path *together* and look {happy}.",
       ],
-      useful: ["meet in the grass", "side by side", "walk off together"],
+      useful: ["meet on the grass", "stand next to", "walk down a path"],
     },
   },
   {
@@ -1610,12 +1614,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A white cat is lying *on* its back *on* a blue merry-go-round *in* a playground.",
-        "The roundabout spins slowly *around* *in* circles.",
-        "The cat keeps its paws *up* *in* the air while riding upside *down*.",
-        "It makes no effort to get *off*, looking completely {relaxed} and {unbothered}.",
+        "A white cat is lying *on* its back *in* a playground.",
+        "It is *on* a blue roundabout, and the ride is spinning *around*.",
+        "The cat holds its paws *up* *in* the air.",
+        "It does not get *off* and looks very {calm} and {lazy}.",
       ],
-      useful: ["lie on its back", "spin round and round", "upside down"],
+      useful: ["lie on its back", "spin around", "get off"],
     },
   },
   {
@@ -1633,12 +1637,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A brown bear is sitting high *up* *in* an apple tree *on* a quiet street.",
-        "A bright rainbow arches *across* the sky *behind* the neighbourhood houses.",
-        "The bear balances *on* a thick branch and reaches *for* the red apples, looking {content}.",
-        "It pulls the fruit *to* its mouth and eats {calmly} without caring about the street *below*.",
+        "A brown bear is sitting high *up* *in* an apple tree.",
+        "There are houses *below* it and a rainbow *in* the sky.",
+        "The bear sits *on* a branch and picks red apples.",
+        "It eats the apples and looks {hungry} and {happy}.",
       ],
-      useful: ["high up in a tree", "balance on a branch", "reach for"],
+      useful: ["up in a tree", "in the sky", "sit on a branch"],
     },
   },
   {
@@ -1658,12 +1662,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A birthday cake with lit candles is sitting *on* a table *in* a dining room.",
-        "A small dog puts its front paws *up* *on* the table edge, looking {greedy}.",
-        "It stretches its tongue *out* and licks the white cream *on* the side of the cake.",
-        "Just *at* that moment, the family walks back *into* the room, looking {surprised}.",
+        "A birthday cake with candles is sitting *on* a table.",
+        "A small dog jumps *up* and puts its paws *on* the edge.",
+        "It licks the white cream *on* the cake and looks {happy}.",
+        "The family walks *into* the room and looks {surprised}.",
       ],
-      useful: ["jump up to the table", "lick the cream", "walk back in"],
+      useful: ["on a table", "jump up", "walk into a room"],
     },
   },
   {
@@ -1683,12 +1687,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A cat is sitting *on* a wooden kitchen table *next to* a full glass of water.",
-        "It looks straight *at* the camera, seeming {calm} and {mischievous}.",
-        "Slowly, the cat reaches its paw *out* and taps the glass *towards* the edge.",
-        "One final push sends the glass falling *off* the table *onto* the floor.",
+        "A cat is sitting *on* a table *next to* a glass.",
+        "It looks straight *at* the camera and stays {calm}.",
+        "It slowly pushes the glass *towards* the edge *with* its paw.",
+        "The glass falls *off* the table, and the cat looks {proud}.",
       ],
-      useful: ["stare at the camera", "push towards the edge", "knock off the table"],
+      useful: ["next to", "push with a paw", "fall off the table"],
     },
   },
   {
@@ -1708,12 +1712,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A dog is alone *on* the sofa *in* a living room, biting a soft cushion.",
-        "It rips the fabric *open* and white feathers fly all *over* the carpet.",
-        "Suddenly the front door opens *in* the background and the owner steps *inside*.",
-        "The dog immediately stops and lies *down* *among* the feathers, trying to look {innocent} and {calm}.",
+        "A dog is sitting alone *on* a sofa *in* a living room.",
+        "It bites a pillow, and white feathers fly *all over* the floor.",
+        "Then the door opens and the owner walks *into* the room.",
+        "The dog lies *down* *on* the sofa and looks {calm} and {funny}.",
       ],
-      useful: ["rip apart", "fly everywhere", "act innocent"],
+      useful: ["on a sofa", "walk into", "lie down"],
     },
   },
   {
@@ -1733,12 +1737,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A car is parked *outside* a wooden barn *on* a farm.",
-        "A goat jumps *onto* the bonnet and climbs right *up* *onto* the car roof, looking {bold}.",
-        "It stands *on* top *of* the car and looks *around* the yard.",
-        "A farmer runs *out* and waves her arms *at* the goat, looking {frustrated}.",
+        "A car is parked *outside* a barn *on* a farm.",
+        "A goat jumps *onto* the front *of* the car.",
+        "Then it climbs *up* *onto* the roof and looks {proud}.",
+        "A farmer runs *out* and waves her arms, looking {angry}.",
       ],
-      useful: ["jump onto the bonnet", "climb onto the roof", "wave her arms"],
+      useful: ["jump onto", "on the roof", "wave arms"],
     },
   },
   {
@@ -1758,12 +1762,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A cat is sitting *on* top *of* a round robot vacuum cleaner *in* a hallway.",
-        "The vacuum glides *across* the wooden floor while the cat rides *along*, looking {unbothered}.",
-        "Then the machine bumps straight *into* the bottom *of* a wall.",
-        "The sudden stop makes the cat slide *off* the vacuum *onto* the floor, looking {surprised}.",
+        "A cat is sitting *on* top *of* a robot vacuum.",
+        "The robot moves *across* the wooden floor, and the cat looks {calm}.",
+        "Suddenly, the robot hits the bottom *of* a wall.",
+        "The cat slides *off* *onto* the floor and looks {surprised}.",
       ],
-      useful: ["ride on top of", "bump into a wall", "slide off"],
+      useful: ["on top of", "move across", "slide off"],
     },
   },
   {
@@ -1783,12 +1787,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A closed pizza box is sitting *on* a doormat *in front of* a house door.",
-        "A large seagull lands *on* the doorstep and walks *up to* the box, looking {bold}.",
-        "It uses its sharp beak to flip the cardboard lid *open*.",
-        "The bird grabs a big slice of pizza *out of* the box and flies *away*, looking {pleased}.",
+        "A pizza box is sitting *on* a mat *by* a door.",
+        "A big seagull lands *on* the step *next to* the box.",
+        "It opens the box *with* its beak and looks {hungry}.",
+        "It takes a slice *of* pizza and flies *away*, looking {happy}.",
       ],
-      useful: ["land on a doorstep", "flip the lid open", "fly away with"],
+      useful: ["by a door", "open a box", "fly away"],
     },
   },
   {
@@ -1808,12 +1812,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man is walking *down* a wet street *in* heavy rain, holding an open umbrella *over* his head.",
-        "A strong gust of wind blows *across* the road and flips the umbrella *inside out*.",
-        "*Right after*, the wind rips the umbrella *out of* his hand and carries it *down* the pavement.",
-        "The man chases *after* it *through* the puddles, looking {panicked} and {frustrated}.",
+        "A man is walking *down* a wet street *in* the rain.",
+        "He holds an umbrella *over* his head.",
+        "The strong wind blows the umbrella *out of* his hand.",
+        "He runs *after* it *in* the street and looks {angry} and {sad}.",
       ],
-      useful: ["turn inside out", "blow away", "run after"],
+      useful: ["in the rain", "blow away", "run after"],
     },
   },
   {
@@ -1833,12 +1837,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A waiter wearing an apron is walking *between* tables *in* a busy café.",
-        "He is carrying a round tray full *of* glasses *in* one hand.",
-        "His foot suddenly trips *on* the floor and the glasses tilt *towards* the edge, making everyone {tense}.",
-        "He drops *to* one knee and catches the whole tray *in* time, leaving the customers {amazed} as they clap.",
+        "A waiter is walking *between* the tables *in* a busy café.",
+        "He is carrying a tray *of* glasses *in* his hand.",
+        "Suddenly, he trips and the glasses almost fall *off* the tray.",
+        "He catches the tray *on* one knee and looks {surprised} and {happy}.",
       ],
-      useful: ["carry a tray", "trip over", "catch just in time"],
+      useful: ["walk between", "carry a tray", "fall off"],
     },
   },
   {
@@ -1858,12 +1862,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A ginger cat is standing *on* a messy kitchen counter *next to* a loaf of bread.",
-        "It reaches *into* the plastic bag with its mouth and pulls a slice *out*, acting {sneaky}.",
-        "Holding the bread firmly *in* its jaws, the cat jumps *down* *onto* the floor.",
-        "It hurries *out of* the kitchen *past* the fridge, looking {pleased} with itself.",
+        "A ginger cat is standing *on* a counter *in* a kitchen.",
+        "It pulls a slice *of* bread *out of* a plastic bag.",
+        "The cat holds the bread *in* its mouth and looks {happy}.",
+        "It jumps *down* and runs *out of* the kitchen, feeling {proud}.",
       ],
-      useful: ["pull out of a bag", "jump down from", "run out of the kitchen"],
+      useful: ["on a counter", "pull out of", "run out of"],
     },
   },
   {
@@ -1883,12 +1887,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Clean clothes are hanging *on* a washing line *in* a sunny village yard.",
-        "A white goat stands *under* the line and grabs the sleeve *of* a blue shirt in its mouth, looking {stubborn}.",
-        "A woman in an apron rushes *over* and grabs the other side *of* the shirt.",
-        "She pulls *back* hard against the goat, looking {annoyed} and {determined} to save the laundry.",
+        "Clean clothes are hanging *on* a line *in* a yard.",
+        "A white goat stands *under* the line and bites a blue shirt.",
+        "A woman runs *over* and grabs the other side *of* the shirt.",
+        "She pulls hard *against* the goat and looks {angry}; it looks {funny}.",
       ],
-      useful: ["hang on a washing line", "pull off", "tug back and forth"],
+      useful: ["hang on a line", "run over", "pull back"],
     },
   },
   {
@@ -1908,12 +1912,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man in flip-flops is walking *across* a courtyard *between* old apartment blocks.",
-        "He is carrying a huge green watermelon *in* both arms.",
-        "His foot catches *on* a garden hose *on* the ground, and the watermelon slips *out of* his hands, making him {panicked}.",
-        "He dives *forward* and catches the fruit just *before* it hits the concrete, looking {relieved}.",
+        "A man is walking *across* a yard *between* two buildings.",
+        "He is carrying a big watermelon *in* both arms.",
+        "He trips *over* a hose, and the watermelon falls *from* his hands.",
+        "He feels {scared}, but he catches it *in* time and looks {happy}.",
       ],
-      useful: ["trip over a hose", "slip out of his hands", "catch just in time"],
+      useful: ["walk across", "trip over", "in time"],
     },
   },
   {
@@ -1931,12 +1935,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A cameraman is standing *in* the middle *of* a grassy racecourse *between* yellow fences.",
-        "Dark clouds hang *in* the sky while riders *on* racehorses gallop fast *towards* him.",
-        "The horses split *to* both sides and thunder right *past* him *through* a wooden arch.",
-        "The cameraman turns smoothly *with* his camera to film them, staying {calm} and {focused}.",
+        "A cameraman is standing *in* the middle *of* a green track.",
+        "Many horses are running fast *towards* him *between* yellow fences.",
+        "The horses run right *past* him *on* both sides.",
+        "The cameraman keeps filming them and stays very {calm} and {careful}.",
       ],
-      useful: ["stand in the middle of", "gallop past", "keep filming"],
+      useful: ["in the middle of", "run towards", "run past"],
     },
   },
   {
@@ -1954,12 +1958,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A woman in a black outfit is walking *towards* an indoor doorway *with* shoes lined *up* *on* the floor.",
-        "She does not notice the spotless glass panel *in* the frame and walks straight *into* it.",
-        "She bounces *back* and puts both hands *on* her head, looking {shocked} and {embarrassed}.",
-        "*After* a moment, she laughs *at* her mistake while her friends watch *from* inside.",
+        "A woman in black is walking *towards* an open room.",
+        "She does not see the clean glass wall *in front of* her.",
+        "She walks straight *into* the glass and hits her head.",
+        "She puts her hands *on* her head and looks {surprised} and {funny}.",
       ],
-      useful: ["walk straight into", "bounce back", "hold her head"],
+      useful: ["in front of", "walk into", "put hands on her head"],
     },
   },
   {
@@ -1977,12 +1981,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man in jeans is sitting *on* a fallen wooden log *in* the middle *of* a forest.",
-        "A huge brown bear walks *up* and sits *down* *on* the log right *beside* him.",
-        "The bear lifts its heavy paw and drapes its arm *around* the man’s shoulder, acting {friendly}.",
-        "Both of them sit together *on* the log looking *out* at the trees, completely {relaxed}.",
+        "A man is sitting *on* a wooden log *in* a forest.",
+        "A big brown bear walks *up* and sits *next to* him.",
+        "The bear puts its arm *around* the man’s shoulder.",
+        "They sit *together* *on* the log and look very {calm} and {happy}.",
       ],
-      useful: ["sit down beside", "put an arm around", "like an old friend"],
+      useful: ["sit on a log", "sit next to", "put an arm around"],
     },
   },
   {
@@ -2001,12 +2005,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A heavy armchair is swinging back and forth *on* ropes *in* a tiled courtyard.",
-        "A woman waits *to* one side and then tries to sprint *across* the floor *before* the chair comes back.",
-        "She times her run badly, and the swinging chair knocks her right *off* her feet.",
-        "She falls *onto* the tiles while her bag spills *across* the ground, leaving her {stunned} and {embarrassed}.",
+        "A big chair is swinging *on* ropes *in* a building.",
+        "A woman tries to run *across* the floor *past* the chair.",
+        "The swinging chair hits her and knocks her *down*.",
+        "She lands *on* the floor and looks {surprised} and {sad}.",
       ],
-      useful: ["swing back and forth", "run past", "knock off her feet"],
+      useful: ["run across", "knock down", "land on the floor"],
     },
   },
   {
@@ -2024,12 +2028,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man in a blue training suit is running *along* a park path holding a stuffed toy.",
-        "A black dog sprints *across* the grass *behind* him and catches *up* quickly.",
-        "Instead of grabbing the toy, the dog bites the back *of* his trousers and pulls them *down*.",
-        "His spotted boxers show *underneath*, leaving the trainer {surprised} while the dog stays {excited}.",
+        "A man in a blue suit is running *in* a park.",
+        "A black dog runs fast *behind* him *across* the grass.",
+        "The dog bites the back *of* his trousers and pulls them *down*.",
+        "The man looks {surprised}, and the scene looks very {funny}.",
       ],
-      useful: ["chase across a park", "catch up with", "pull off"],
+      useful: ["run in a park", "run behind", "pull down"],
     },
   },
   {
@@ -2047,12 +2051,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A grey cat in a black harness is squeezing *into* a narrow crack *in* a concrete wall *by* some weeds.",
-        "Its owner reaches *down* with both hands and lifts the cat *out* *of* the gap.",
-        "As soon as the person sets it *on* the ground, the cat turns *around*, looking {stubborn}.",
-        "It climbs straight back *into* the tight crack, completely {unbothered}.",
+        "A grey cat is sitting *inside* a narrow crack *in* the concrete.",
+        "Its owner reaches *down* and lifts the cat *out*.",
+        "The person puts the cat *on* the ground, and it stays {calm}.",
+        "Then it climbs right back *into* the crack and looks {funny}.",
       ],
-      useful: ["squeeze into a crack", "lift out of", "climb straight back in"],
+      useful: ["lift out", "put on the ground", "climb back into"],
     },
   },
   {
@@ -2071,12 +2075,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A black-and-white cat is sitting *on* a bed with a stack *of* dollar bills.",
-        "It lifts the corner *of* a beige blanket and tucks the money *underneath*, acting {secretive}.",
-        "Meanwhile, a ginger cat climbs *onto* the headboard *behind* the pillows and watches {closely}.",
-        "The first cat turns *around* and spots the ginger cat staring *down* at its hiding place.",
+        "A black-and-white cat is sitting *on* a bed *with* some money.",
+        "It puts the money *under* a blanket and looks {careful}.",
+        "A ginger cat climbs *up* *behind* the bed and watches.",
+        "The first cat turns *around* and looks {surprised} and {scared}.",
       ],
-      useful: ["hide under a blanket", "climb onto", "catch someone in the act"],
+      useful: ["sit on a bed", "put under a blanket", "turn around"],
     },
   },
   {
@@ -2095,12 +2099,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "An orange-and-white cat is flying *down* an empty suburban street *on* a wooden broomstick.",
-        "It turns its head *towards* the camera and holds *up* two fingers *in* a peace sign, looking {playful}.",
-        "Because it is not looking *ahead*, the broom drifts *off* the road *towards* the grass.",
-        "The cat crashes straight *into* a metal street sign, ending the ride {clumsily}.",
+        "An orange cat is flying *down* a quiet street *on* a broom.",
+        "It looks *at* the camera and makes a peace sign.",
+        "The cat looks very {happy} and {proud}.",
+        "Then it flies *off* the road and hits a sign *on* grass.",
       ],
-      useful: ["fly down a street", "give a peace sign", "crash into a sign"],
+      useful: ["fly down a street", "look at the camera", "hit a sign"],
     },
   },
   {
@@ -2119,12 +2123,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A driver is filming *through* the side window while moving *along* a multi-lane highway.",
-        "A silver car drives *in* the lane right *next to* them.",
-        "As the camera pulls *up* *beside* the front window, an orange cat appears *in* the driver’s seat.",
-        "The cat holds both paws *on* the steering wheel and looks *ahead* {calmly}, leaving the viewer {amazed}.",
+        "A person is filming *from* a car *on* a highway.",
+        "A silver car is driving *in* the lane *next to* them.",
+        "An orange cat is sitting *in* the driver’s seat.",
+        "It holds the wheel and looks {calm}, and the driver is {surprised}.",
       ],
-      useful: ["in the next lane", "pull up beside", "behind the wheel"],
+      useful: ["on a highway", "next to", "sit in a seat"],
     },
   },
   {
@@ -2143,12 +2147,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "The camera looks *across* a courtyard and zooms *into* a bright apartment window.",
-        "*Inside* the kitchen, a grey cat is standing *on* its back legs *in front of* a gas stove.",
-        "The cat is holding a round glass fishbowl with a goldfish *over* the burner, looking {focused}.",
-        "When the cat notices the camera *outside*, it freezes and stares *back*, looking {guilty}.",
+        "The camera looks *through* a window *into* a kitchen.",
+        "A grey cat is standing *in front of* the stove.",
+        "It holds a fishbowl *with* a goldfish *over* the fire.",
+        "The cat sees the camera and stops, looking {surprised} and {funny}.",
       ],
-      useful: ["zoom in on", "hold over the stove", "freeze on the spot"],
+      useful: ["look through a window", "in front of", "hold over"],
     },
   },
   {
@@ -2166,12 +2170,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Two yellow excavators are working *on* red soil *at* the edge *of* a green jungle.",
-        "Their metal arms push *against* a tall tree until it crashes *down* *into* the bushes.",
-        "Not far *away*, an orangutan is standing *among* the green leaves.",
-        "The animal watches the machines destroy the trees, looking {quiet} and {helpless}.",
+        "Two yellow machines are working *at* the edge *of* a jungle.",
+        "They push a tall tree, and it falls *down* *onto* the ground.",
+        "An orangutan is standing *in* the green bushes *near* them.",
+        "It watches the tree fall and looks {quiet} and {sad}.",
       ],
-      useful: ["push down a tree", "crash into the bushes", "watch from a distance"],
+      useful: ["push down a tree", "fall onto the ground", "stand in the bushes"],
     },
   },
   {
@@ -2190,12 +2194,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "Two cats are working *on* a path, smoothing wet grey cement *with* a metal trowel.",
-        "Just *after* they finish, a rooster walks right *across* the fresh cement and leaves deep footprints *in* it.",
-        "The cats stare *at* the ruined surface, looking {furious}.",
-        "*In* the next scene, the two cats are sitting *at* a table and eating roast chicken {happily}.",
+        "Two cats are working *on* wet cement *on* the ground.",
+        "A rooster walks *across* the wet cement and leaves footprints *in* it.",
+        "The cats look *at* the footprints and feel {angry}.",
+        "*In* the next scene, they eat roast chicken and look {happy}.",
       ],
-      useful: ["smooth wet cement", "walk across", "leave footprints"],
+      useful: ["on the ground", "walk across", "look at"],
     },
   },
   {
@@ -2214,12 +2218,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A businessman in a suit is standing *on* a city pavement *at* night, holding a briefcase.",
-        "He raises his hand to hail a ride, and a giant fluffy cat walks *up* *along* the street.",
-        "The man climbs *onto* the giant cat’s back and sits *behind* its ears, looking {calm}.",
-        "The huge cat trots *down* the road under the streetlights, carrying him *away* {smoothly}.",
+        "A man in a suit is standing *on* a street *at* night.",
+        "He waves his hand, and a giant cat stops *by* him.",
+        "He climbs *onto* the cat’s back and feels {calm}.",
+        "The giant cat walks *down* the street, and it looks {funny}.",
       ],
-      useful: ["hail a ride", "climb onto its back", "ride away"],
+      useful: ["on a street", "stop by", "climb onto"],
     },
   },
   {
@@ -2238,12 +2242,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A chubby tabby cat is sitting *on* a bench *in* a gym, pulling the handles *of* a cable machine.",
-        "A man in a black T-shirt walks *over* and tries to take the handles *from* the cat.",
-        "The cat bats *at* him and refuses to share, looking {stubborn} and {annoyed}.",
-        "When the cat pulls too hard, it loses its balance and tips backwards *off* the bench.",
+        "A fat cat is sitting *on* a bench *in* a gym.",
+        "A man walks *over* and takes the handles *from* the cat.",
+        "The cat hits his hand and looks {angry}.",
+        "Then the cat pulls hard and falls *off* the bench, looking {surprised}.",
       ],
-      useful: ["work out at a gym", "argue over", "tip backwards"],
+      useful: ["sit on a bench", "take from", "fall off"],
     },
   },
   {
@@ -2261,12 +2265,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small brown pony with a blonde tail is walking *out* *through* an open stable door.",
-        "A black-and-white cat is lying stretched *out* *on* the pony’s back.",
-        "The pony steps *into* a grassy green field while the cat rides *along*, looking {relaxed}.",
-        "Neither animal seems {bothered} as they stroll *across* the yard together.",
+        "A small brown pony is walking *out of* a stable.",
+        "A black-and-white cat is lying *on* the pony’s back.",
+        "The pony walks *into* a green field *in* the sun.",
+        "Both animals stay together and look {calm} and {happy}.",
       ],
-      useful: ["lie on its back", "walk out of a stable", "stroll across a field"],
+      useful: ["walk out of", "on its back", "walk into a field"],
     },
   },
   {
@@ -2284,12 +2288,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A man is lying *on* a pink flamingo float *in* a rooftop infinity pool, high *above* city skyscrapers.",
-        "He rests right *at* the glass edge *of* the pool, looking {relaxed}.",
-        "Someone suddenly gives the float a push *from* behind, and he thinks he is going *over* the edge.",
-        "He panics and paddles backwards *with* his hands {frantically}, looking {terrified}.",
+        "A man is sitting *on* a pink float *in* a roof pool.",
+        "He is resting *at* the edge and looks {calm}.",
+        "Someone pushes him *from* behind *towards* the edge.",
+        "He feels very {scared} and paddles *back* with his hands, looking {funny}.",
       ],
-      useful: ["at the edge of", "give a push", "paddle backwards"],
+      useful: ["in a pool", "at the edge", "push from behind"],
     },
   },
   {
@@ -2307,12 +2311,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A small brown dog with a curled tail is standing *on* a concrete driveway *outside* a house.",
-        "A grey cat crouches low and creeps slowly *across* the yard *towards* the dog, looking {playful}.",
-        "When the cat gets close, the two animals circle *around* each other *on* the pavement.",
-        "Then they take turns chasing each other *back* and forth, both looking {lively}.",
+        "A small brown dog is standing *on* a driveway *outside* a house.",
+        "A grey cat walks slowly *across* the ground *towards* the dog.",
+        "They walk *around* each other *in* a circle.",
+        "Then they chase each other and look {happy} and {excited}.",
       ],
-      useful: ["creep up to", "circle around each other", "take turns chasing"],
+      useful: ["outside a house", "walk towards", "walk around"],
     },
   },
   {
@@ -2331,12 +2335,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "An orange cat is walking *down* a flight *of* tiled stairs *on* two legs while carrying a small bowl.",
-        "Halfway *down*, it stops *beside* a blue bucket, looking {tired} and {lazy}.",
-        "It drops *onto* its side *on* the smooth step while a small dog watches *from* above.",
-        "The cat slides slowly *down* the rest *of* the stairs on its side.",
+        "An orange cat is walking *down* the stairs *on* two legs.",
+        "It is holding a small bowl *in* its paws.",
+        "Halfway *down*, it stops *by* a bucket and feels {tired} and {lazy}.",
+        "It lies *on* its side and slides *down* the stairs.",
       ],
-      useful: ["walk down the stairs", "flop onto its side", "slide the rest of the way"],
+      useful: ["walk down the stairs", "lie on its side", "slide down"],
     },
   },
   {
@@ -2355,12 +2359,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A fluffy white dog is sitting *at* an outdoor restaurant table, waiting {patiently}.",
-        "A cat wearing a brown waiter apron stands *beside* the table and opens a glass bottle *of* cola.",
-        "Before serving the guest, the cat tilts the bottle *up* and drinks *from* it, acting {cheeky}.",
-        "Then it sets the half-empty bottle *down* *in front of* the dog.",
+        "A white dog is sitting *at* a table *in* a restaurant.",
+        "A cat in an apron stands *by* the table *with* a cola.",
+        "First, the cat drinks *from* the bottle and looks {happy}.",
+        "It puts the bottle *in front of* the dog and looks {funny}.",
       ],
-      useful: ["wait at a table", "open a bottle", "serve to a guest"],
+      useful: ["sit at a table", "drink from a bottle", "in front of"],
     },
   },
   {
@@ -2379,12 +2383,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A pink hairdryer is lying switched *on* *on* a bathroom counter *in front of* a mirror.",
-        "A tiny ginger kitten walks *across* the counter and steps right *over* the nozzle, looking {curious}.",
-        "The warm air stream lifts the light kitten straight *up* *into* the air.",
-        "The kitten floats and spins *around* *above* the counter, looking {surprised} but {calm}.",
+        "A pink hairdryer is lying *on* a counter *in* a bathroom.",
+        "A tiny ginger kitten walks *across* the counter *towards* it.",
+        "The warm air lifts the kitten *up* *into* the air.",
+        "The kitten spins *around* and looks {surprised} and {calm}.",
       ],
-      useful: ["step over", "lift into the air", "spin around"],
+      useful: ["on a counter", "lift into the air", "spin around"],
     },
   },
   {
@@ -2403,12 +2407,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A cat wearing a pink tutu is standing *on* a concrete bridge *above* a river.",
-        "First, it kicks a shiny golden ball *off* the bridge *into* the water, looking {mischievous}.",
-        "When a woman gets *out of* her brown car to look, the cat pushes both her and the car *over* the edge.",
-        "*At the end*, the cat hops *onto* a pink bicycle and rides *away* {calmly}.",
+        "A cat in a dress stands *on* a bridge *over* a river.",
+        "First, it kicks a gold ball *into* the water.",
+        "Then it pushes a woman and her car *off* the bridge.",
+        "It rides *away* *on* a pink bike and looks {happy} and {funny}.",
       ],
-      useful: ["kick into the water", "push over the edge", "ride off on a bike"],
+      useful: ["on a bridge", "kick into the water", "ride away on a bike"],
     },
   },
   {
@@ -2427,12 +2431,12 @@ export const describeVideos = [
     ],
     howTo: {
       steps: [
-        "A ginger kitten is flying *in* a helicopter high *above* a glowing volcano crater.",
-        "It holds a heavy sack *of* corn *by* the open door and pours it *down* *into* the hot lava, looking {excited}.",
-        "Seconds later, the heat turns the corn *into* a giant wave *of* white popcorn.",
-        "The popcorn erupts *up* from the crater and fills the helicopter cabin, leaving the kitten {delighted}.",
+        "A ginger kitten is sitting *in* a helicopter *above* a volcano.",
+        "It pours a bag *of* corn *down* *into* the hot volcano.",
+        "The corn turns *into* white popcorn and flies *up*.",
+        "Popcorn fills the helicopter, and the kitten looks {surprised} and {happy}.",
       ],
-      useful: ["pour into a crater", "turn into popcorn", "fill the cabin"],
+      useful: ["above a volcano", "pour into", "turn into"],
     },
   },
 ];
