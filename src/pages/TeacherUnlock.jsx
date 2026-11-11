@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GraduationCap, MessageCircle, BarChart3, BellRing, Check, Pencil } from 'lucide-react';
+import { GraduationCap, MessageCircle, BarChart3, BellRing, Check, Pencil, Users } from 'lucide-react';
 import { doc, getDoc, collection, getDocs, query, limit, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 // ui.css BEFORE any component that pulls in cohort.css (TeacherWeek,
@@ -151,22 +151,33 @@ export default function TeacherUnlock({ user }) {
   // No code yet → make one from the name and go straight to the cabinet. A
   // taken code gets a new number (up to four tries); any other answer — not
   // eligible, rate limit, offline — falls back to the old manual form.
+  //
+  // The run is guarded by a ref, not by an effect-local `alive` flag: the
+  // effect itself sets autoCode to 'working', which re-ran it and flipped the
+  // old flag to false while createInviteCode was in flight — the code was
+  // created on the server but never reached the page, and every new teacher
+  // sat on "Loading..." until a reload (QA 2026-11-12).
+  const autoCodeStarted = useRef(false);
+  const mounted = useRef(true);
   useEffect(() => {
-    if (checking || !eligible || myCode || autoCode !== 'idle') return undefined;
-    let alive = true;
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  useEffect(() => {
+    if (checking || !eligible || myCode || autoCodeStarted.current) return;
+    autoCodeStarted.current = true;
     setAutoCode('working');
     (async () => {
       const name = user?.name || user?.displayName || '';
       for (let i = 0; i < 4; i += 1) {
         const res = await createInviteCode(suggestTeacherCode(name));
-        if (!alive) return;
+        if (!mounted.current) return;
         if (res.ok) { setMyCode(res.data.code); setRoster((r) => r || []); setAutoCode('done'); return; }
         if (res.error !== 'code-taken') break;
       }
-      if (alive) setAutoCode('failed');
+      if (mounted.current) setAutoCode('failed');
     })();
-    return () => { alive = false; };
-  }, [checking, eligible, myCode, autoCode, user?.name, user?.displayName]);
+  }, [checking, eligible, myCode, user?.name, user?.displayName]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -790,9 +801,9 @@ export default function TeacherUnlock({ user }) {
             <div style={{ minWidth: 0 }}>
               <div style={{
                 fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)',
-                display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+                display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px',
               }}>
-                🎓 Your tutor profile
+                <GraduationCap size={16} strokeWidth={1.75} aria-hidden="true" /> Your tutor profile
                 {verifState === 'verified' && <TutorBadge />}
               </div>
               <div style={{ fontSize: '12px', color: verifInfo.color, marginTop: '4px', lineHeight: 1.5 }}>
@@ -1013,11 +1024,12 @@ export default function TeacherUnlock({ user }) {
             style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
               background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',
+              fontFamily: 'inherit',
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
-                👥 Pick from users
+              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={16} strokeWidth={1.75} aria-hidden="true" /> Pick from users
               </div>
               <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
                 Invite straight from the list — no email needed

@@ -101,6 +101,9 @@ const LIVE_USER_FIELDS = [
   // Admin təsdiq edən kimi Tutor nişanı reload olmadan görünsün.
   'teacherVerified',
   'preferredLanguage',
+  // The warm-up card (useWarmupOffer) reads these: «Not now» and the first
+  // real call must move it off Today at once, not after a reload (QA 2026-11-12).
+  'warmupDismissedAt', 'callCount',
 ];
 
 const fieldValue = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : v);
