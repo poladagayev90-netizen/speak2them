@@ -24,6 +24,28 @@ export default function GlobalCallListener({ user }) {
     return () => { audio.pause(); };
   }, []);
 
+  // While the ringing modal is up in a visible page, vibrate like a phone
+  // ring (Android Chrome; iOS and desktop have no navigator.vibrate). The
+  // web-push notification cannot do this itself: on Android 8+ Chrome posts
+  // into its own notification channel, which ignores the `vibrate` pattern and
+  // `requireInteraction` (Polad 2026-11-11: a call on the phone BROWSER came
+  // in as a quiet tray item). The full-screen ring is the native app's job.
+  const ringing = !!incomingCall;
+  useEffect(() => {
+    if (!ringing || typeof navigator === 'undefined' || !navigator.vibrate) return undefined;
+    const buzz = () => {
+      if (document.visibilityState === 'visible') {
+        try { navigator.vibrate([700, 400, 700]); } catch { /* not allowed yet */ }
+      }
+    };
+    buzz();
+    const t = setInterval(buzz, 2500);
+    return () => {
+      clearInterval(t);
+      try { navigator.vibrate(0); } catch { /* ignore */ }
+    };
+  }, [ringing]);
+
   useEffect(() => {
     if (!user?.uid) return;
     const q = query(

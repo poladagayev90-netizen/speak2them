@@ -319,6 +319,20 @@ export default function Home({ user }) {
           </section>
         )}
 
+        {/* The leaderboard, one tap from Today (it used to live only inside
+            Profile, where a newcomer never found it). Above «Get ready»
+            since 2026-11-11 (Polad). */}
+        <section id="tour-leaderboard" className="pl-card">
+          <button type="button" className="pl-row" onClick={() => navigate('/ranking')}>
+            <span className="pl-row-icon" aria-hidden="true"><Trophy size={18} /></span>
+            <span className="pl-row-main">
+              <p className="pl-row-title">Leaderboard</p>
+              <p className="pl-row-sub">Who practised most this week</p>
+            </span>
+            <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
+          </button>
+        </section>
+
         {/* 3. Preparation — below the practice it prepares you for. The
             topic is a picture card so Today is not only text. */}
         <GetReadyCard user={user} />
@@ -334,19 +348,6 @@ export default function Home({ user }) {
             now={plan.now}
           />
         )}
-
-        {/* The leaderboard, one tap from Today (it used to live only inside
-            Profile, where a newcomer never found it). */}
-        <section id="tour-leaderboard" className="pl-card">
-          <button type="button" className="pl-row" onClick={() => navigate('/ranking')}>
-            <span className="pl-row-icon" aria-hidden="true"><Trophy size={18} /></span>
-            <span className="pl-row-main">
-              <p className="pl-row-title">Leaderboard</p>
-              <p className="pl-row-sub">Who practised most this week</p>
-            </span>
-            <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
-          </button>
-        </section>
 
         <NotificationPrompt user={user} />
 

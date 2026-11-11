@@ -1832,15 +1832,23 @@ body {
   justify-content: center;
 }
 
+/* Every tab is exactly a third of the row and does not grow (Polad
+   2026-11-11): with `flex-grow` the last row's two tabs (Pictures, Videos)
+   stretched to half the row each. A short last row now stays centred at the
+   same size. Fixed height + nowrap so a long label or the active fill never
+   changes a tab's size. */
 .dt-tab {
-  flex: 1 1 calc(33.333% - 8px);
-  min-width: 90px;
+  flex: 0 0 calc((100% - 2 * var(--s-2)) / 3);
+  min-width: 0;
+  height: 48px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 13px 10px;
-  font-size: 15px;
+  padding: 0 var(--s-1);
+  overflow: hidden;
+  font-size: var(--fs-body);
   font-weight: 700;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1851,8 +1859,9 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* No lift on hover or when active: the raised active tab read as a taller
+   button next to its neighbours. Only colour changes. */
 .dt-tab:hover {
-  transform: translateY(-2px);
   border-color: var(--accent);
   color: var(--text-primary);
 }
@@ -1860,8 +1869,7 @@ body {
 .dt-tab.active {
   background: var(--accent);
   color: var(--text-on-accent);
-  border-color: transparent;
-  transform: translateY(-2px);
+  border-color: var(--accent);
 }
 
 /* Scrollable Content */
@@ -2962,7 +2970,7 @@ body {
   .dt-header { padding: 16px 28px 14px; }
   .dt-title { font-size: 28px; }
   .dt-tabs { flex-wrap: nowrap; padding: 0 28px 14px; }
-  .dt-tab { flex: 1 1 0; min-width: 0; padding: 11px 10px; font-size: 16px; }
+  .dt-tab { flex: 1 1 0; min-width: 0; height: 46px; padding: 0 10px; font-size: 16px; }
   .dt-content { padding: 20px 28px; }
 
   .dt-section--video {
@@ -3016,7 +3024,7 @@ body {
      in to read it). Words and idioms are what the class reads off the shared
      screen, so they get the biggest step; the two-column grid stays. */
   .dt-title { font-size: 32px; }
-  .dt-tab { font-size: 17px; padding: 12px 10px; }
+  .dt-tab { font-size: 17px; height: 48px; }
   .dt-content { padding: 24px 28px; }
   .dt-section--list { gap: 16px; }
   .dt-vocab-card, .dt-idiom-card { padding: 20px 24px; border-radius: var(--r-lg); }
