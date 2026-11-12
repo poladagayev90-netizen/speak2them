@@ -154,9 +154,36 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
   const [showPictureDescribing, setShowPictureDescribing] = useState(false);
   const [materials, setMaterials] = useState(null);
   const contentRef = useRef(null);
+  const tabsRef = useRef(null);
+  // Scrolled down → the three-row tab grid folds into ONE row of chips that
+  // scrolls sideways (Polad 2026-11-12: the pinned grid ate so much height that
+  // portrait clips shrank to a strip). Back at the top it opens up again. The
+  // CSS only applies on phones (App.css, .dt-modal--compact).
+  const [compactTabs, setCompactTabs] = useState(false);
+  const onContentScroll = (e) => {
+    const el = e.currentTarget;
+    const y = el.scrollTop;
+    // Fold only when there is room to scroll well past what folding frees
+    // (~130px); otherwise unfolding could pull the page back to 0 and fold
+    // and unfold in a loop. Hysteresis: fold past 48px, unfold under 8px.
+    const room = el.scrollHeight - el.clientHeight;
+    if (!compactTabs && y > 48 && room > 200) setCompactTabs(true);
+    else if (compactTabs && y < 8) setCompactTabs(false);
+  };
 
   // A long tab (a reading, a script) must not leave the next one scrolled halfway.
-  useEffect(() => { if (contentRef.current) contentRef.current.scrollTop = 0; }, [activeSection]);
+  useEffect(() => {
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+    setCompactTabs(false);
+  }, [activeSection]);
+
+  // In the folded row the active chip is always in view.
+  useEffect(() => {
+    if (!compactTabs || !tabsRef.current) return;
+    const row = tabsRef.current;
+    const active = row.querySelector('.dt-tab.active');
+    if (active) row.scrollLeft = active.offsetLeft - (row.clientWidth - active.offsetWidth) / 2;
+  }, [compactTabs, activeSection]);
 
   useEffect(() => {
     if (open) {
@@ -180,7 +207,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
 
   return (
     <div className="dt-overlay" onClick={onClose}>
-      <div className="dt-modal" onClick={e => e.stopPropagation()}>
+      <div className={`dt-modal${compactTabs ? ' dt-modal--compact' : ''}`} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="dt-header">
@@ -194,7 +221,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
         </div>
 
         {/* Section Tabs */}
-        <div className="dt-tabs">
+        <div className="dt-tabs" ref={tabsRef}>
           <button
             className={`dt-tab ${activeSection === 'vocabulary' ? 'active' : ''}`}
             onClick={() => setActiveSection('vocabulary')}
@@ -252,7 +279,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
         </div>
 
         {/* Content Area */}
-        <div className="dt-content" ref={contentRef}>
+        <div className="dt-content" ref={contentRef} onScroll={onContentScroll}>
 
           {activeSection === 'vocabulary' && (
             <div className="dt-section dt-section--list">

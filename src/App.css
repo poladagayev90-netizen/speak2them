@@ -1874,6 +1874,30 @@ body {
   border-color: var(--accent);
 }
 
+/* Folded tabs (DailyTopicModal `compactTabs`, phones only): once the sheet is
+   scrolled, the three rows become ONE row of equal chips that scrolls
+   sideways — ~44px instead of ~170px — with the active chip centred. Every
+   chip is the same width (3.6 per screen, so the next one peeks out). */
+@media not all and (min-width: 900px) and (min-aspect-ratio: 5/4) {
+  .dt-modal--compact .dt-tabs {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: var(--s-2);
+    scrollbar-width: none;
+  }
+  .dt-modal--compact .dt-tabs::-webkit-scrollbar { display: none; }
+  .dt-modal--compact .dt-tab {
+    flex: 0 0 calc((100% - 3 * 6px) / 3.6);
+    height: 36px;
+    font-size: var(--fs-sm);
+    border-radius: var(--r-pill);
+    box-shadow: none;
+  }
+  .dt-modal--compact .dt-tab svg { display: none; }
+}
+
 /* Scrollable Content */
 .dt-content {
   flex: 1;
@@ -2090,6 +2114,18 @@ body {
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
+}
+
+/* In the topic sheet on a phone the clip no longer shrinks to whatever the
+   pinned tabs leave (Polad 2026-11-12: portrait clips became a narrow strip).
+   It takes its own shape up to 60% of the screen; the words and questions
+   scroll below it, and scrolling folds the tabs (.dt-modal--compact). The
+   teacher library (VideoLibrary) keeps the one-screenful fit. The wide-screen
+   grid below overrides this with its own !important sizing. */
+.dt-modal .dt-video-fit { max-height: none; }
+.dt-modal .dt-video-frame {
+  flex: none;
+  max-height: 60dvh !important;
 }
 
 .dt-video-frame video {

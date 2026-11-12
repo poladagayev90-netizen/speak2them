@@ -55,7 +55,9 @@ export default function HowToDescribe({ howTo, compact = false, style }) {
   const useful = Array.isArray(howTo.useful) ? howTo.useful.filter(Boolean) : [];
 
   return (
-    <div style={{ padding: compact ? 'var(--s-1) var(--s-4) 0' : 0, ...style }}>
+    // marginTop: the button used to sit flush against the keyword chips above
+    // it, in the sheet and in the call (Polad 2026-11-12).
+    <div style={{ marginTop: 'var(--s-3)', padding: compact ? '0 var(--s-4)' : 0, ...style }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
