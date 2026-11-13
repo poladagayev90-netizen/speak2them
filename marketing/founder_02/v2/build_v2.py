@@ -314,7 +314,7 @@ def sfx():
     ww.writeframes((out * 32767).astype(np.int16).tobytes()); ww.close()
     print(f"sfx.wav: {len(tl['sfx'])} cues, voice speech RMS {20*np.log10(vrms):.1f} dBFS, sfx peak {20*np.log10(np.abs(out).max()):.1f} dBFS")
 
-def final(music_vol=0.34):   # was 0.16 with ratio-5 ducking (F01/F02); Polad asked for the bed a bit more audible.
+def final(music_vol=0.48):   # 0.34 -> 0.48 (+3 dB): Polad «musiqini bir pillə də qaldır» (2026-11-14)   # was 0.16 with ratio-5 ducking (F01/F02); Polad asked for the bed a bit more audible.
     # 0.26 still measured 24 dB under the voice between words; 0.34 with ratio 3 targets ≈ 18–20 dB (reference: 12–15)
     tl = json.load(open(TL, encoding="utf-8"))
     z = "1"
@@ -330,7 +330,8 @@ def final(music_vol=0.34):   # was 0.16 with ratio-5 ducking (F01/F02); Polad as
           "[3:a]aresample=48000[fx]",
           "[vo][mus][fx]amix=inputs=3:normalize=0:duration=first[mix]",
           f"[mix]afade=t=out:st={D-0.25}:d=0.25,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=192000,"
-          "alimiter=limit=0.8:attack=1:release=50:level=false,aresample=48000[a]"]
+          # limit 0.8 let the denser mix (louder bed) reach +0.4 dBTP after AAC; 0.66 keeps the true peak under −1.5
+          "alimiter=limit=0.66:attack=1:release=50:level=false,aresample=48000[a]"]
     run(["ffmpeg", "-v", "error", "-y", *TH, "-i", os.path.join(WORK, "master.mov"), "-i", os.path.join(WORK, "overlay.mov"),
          "-stream_loop", "-1", "-i", MUSIC, "-i", os.path.join(WORK, "sfx.wav"), "-filter_complex", ";".join(fc),
          "-map", "[v]", "-map", "[a]", "-t", str(D), *TH, "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-r", "30",
