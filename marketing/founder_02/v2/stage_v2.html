@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="az"><head><meta charset="utf-8">
+<!-- F02_v2_RefStyle overlay stage (spec: Claude_Videos/Edit_Study_Research/REF_DdtBbI0AIt_rhythm.md).
+     Same window.render(t) contract as motion_kit/stage.html, so motion_kit/render.cjs drives it (timeline.stage = this file).
+     Fonts: Montserrat (running line) and Anton (keyword) both carry «ə» and «Ə» — checked glyph by glyph; Outfit/Manrope do not. -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Anton&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#191727;--h1:#2b2764;--h2:#5438a6;--ai:#6f5ad0;--aifill:#c9baff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;background:transparent;overflow:hidden;font-family:Montserrat,sans-serif}
+#stage{position:absolute;inset:0;overflow:hidden}
+.row{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;line-height:1}
+.line{font-weight:600;font-size:52px;color:#fff;text-shadow:0 3px 14px rgba(25,23,39,.8),0 1px 3px rgba(25,23,39,.65)}
+.line i{font-style:normal;display:inline-block;margin:0 7px}
+.line.pill>b{display:inline-block;font-weight:600;color:var(--ink);text-shadow:none;background:rgba(255,255,255,.94);border-radius:26px;padding:16px 30px 18px;box-shadow:0 14px 34px -18px rgba(25,23,39,.5)}
+.slam{font-family:Anton,sans-serif;letter-spacing:1.5px}
+.slam i{font-style:normal;display:inline-block;margin:0 12px;background:linear-gradient(180deg,#fff 18%,#c9baff 96%);-webkit-background-clip:text;background-clip:text;color:transparent;padding:6px 2px 10px}
+.label i{font-style:normal;display:inline-block;font-family:Anton,sans-serif;letter-spacing:1.5px;font-size:92px;line-height:1;color:#fff;background:var(--h1);border-radius:30px;padding:16px 40px 22px;box-shadow:0 22px 44px -20px rgba(25,23,39,.6)}
+.chip{position:absolute;height:100px;border-radius:50px;background:rgba(255,255,255,.95);display:flex;align-items:center;gap:14px;padding:0 26px 0 14px;font-weight:700;font-size:36px;color:var(--ink);box-shadow:0 16px 36px -18px rgba(25,23,39,.6)}
+.chip .ic{width:72px;height:72px;border-radius:36px;background:var(--h2);display:flex;align-items:center;justify-content:center}
+.chip.hot{background:var(--h2);color:#fff}.chip.hot .ic{background:#fff}
+</style></head>
+<body><div id="stage"></div>
+<script>
+const P = (t, s, d) => Math.max(0, Math.min(1, (t - s) / d));
+const eo3 = (p) => 1 - Math.pow(1 - p, 3);
+const back = (p) => 1 + 2.70158 * Math.pow(p - 1, 3) + 1.70158 * Math.pow(p - 1, 2);
+const ICON = {
+  headphones: '<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>',
+  book: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  mic: '<path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/>',
+  up: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+};
+const svg = (n, c, s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
+const ready = (async () => {
+  const az = 'ƏəĞğİıÖöŞşÜüÇç ABC abc 0123?';
+  await Promise.all([document.fonts.load('600 52px Montserrat', az), document.fonts.load('700 36px Montserrat', az), document.fonts.load('128px Anton', az)]);
+  await document.fonts.ready;
+})();
+const ctx = document.createElement('canvas').getContext('2d');
+function slamSize(text, max, base) {   // shrink the keyword until it fits `max` px
+  ctx.font = `${base}px Anton`; const w = ctx.measureText(text).width + text.length * 1.5 + 60;
+  return w > max ? Math.floor(base * max / w) : base;
+}
+
+function line(t, c) {   // running caption: each word drifts into the line on its spoken onset, hard off
+  const words = c.words.map((w, k) => {
+    const p = eo3(P(t, w.t, 0.28)), on = t >= w.t;
+    const amp = c.pill ? 0.4 : 1;   // inside the pill the words must not leave it
+    const dy = (k % 2 ? -30 : 38) * (1 - p) * amp, dx = (k % 2 ? 10 : -8) * (1 - p) * amp;
+    return `<i style="opacity:${on ? 0.3 + 0.7 * p : 0};transform:translate(${dx}px,${dy}px)">${w.w}</i>`;
+  }).join('');
+  return `<div class="row line${c.pill ? ' pill' : ''}" style="top:${c.y}px">${c.pill ? `<b>${words}</b>` : words}</div>`;
+}
+function slam(t, c) {   // keyword: blurred, oversized, lands with a small overshoot in 0.17 s, then keeps creeping
+  const full = c.beats.map((b) => b.text).join(' '), size = slamSize(full, 960, c.size || 128);
+  const beats = c.beats.map((b) => {
+    const p = P(t, b.t, 0.17), on = t >= b.t, sc = (1 + 0.38 * (1 - back(p))) * (1 + 0.03 * P(t, b.t + 0.17, 2.5));
+    return `<i style="opacity:${on ? Math.min(1, p * 2.5) : 0};transform:translateY(${-26 * (1 - eo3(p))}px) scale(${sc});filter:blur(${14 * (1 - p)}px) drop-shadow(0 8px 16px rgba(25,23,39,.62))">${b.text}</i>`;
+  }).join('');
+  return `<div class="row slam" style="top:${c.y}px;font-size:${size}px">${beats}</div>`;
+}
+function label(t, c) {   // in-graphic label on a cutaway (plum box)
+  const p = P(t, c.s, 0.17), sc = 1 + 0.3 * (1 - back(p));
+  return `<div class="row label" style="top:${c.y}px;opacity:${Math.min(1, p * 2.5)};transform:scale(${sc});filter:blur(${10 * (1 - p)}px)"><i>${c.text}</i></div>`;
+}
+function cutaway(t, c) {   // full-screen app shot: real recording in a phone, zoom-cut in, slow creep the whole time
+  const idx = Math.max(1, Math.min(c.n, Math.floor((t - c.t0 + c.in) * 30) + 1));
+  const W = 592, H = 1280, X = 244, Y = 104, pop = 1 + 0.07 * (1 - eo3(P(t, c.s, 0.2)));
+  const sc = c.z * (1 + 0.035 * P(t, c.s, c.e - c.s)) * pop;
+  const tx = (0.5 - c.fx) * W * (c.z - 1) * 0.9, ty = (0.46 - c.fy) * H * (c.z - 1) * 0.9;
+  return `<div style="position:absolute;inset:0;background:linear-gradient(165deg,#e9e2ff 0%,#f8f5ff 46%,#ddd3ff 100%)"></div>` +
+    `<div style="position:absolute;left:${X}px;top:${Y}px;width:${W}px;height:${H}px;transform-origin:${c.fx * W}px ${c.fy * H}px;transform:translate(${tx}px,${ty}px) scale(${sc});border-radius:66px;background:var(--ink);padding:10px;box-shadow:0 50px 90px -40px rgba(43,39,100,.55)">` +
+    `<img src="${window.FRAMES}/${c.dir}/${String(idx).padStart(5, '0')}.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:56px;display:block"></div>`;
+}
+function chips(t, c) {   // skill chips flip in on their words; the last one fills when its pay-off word is spoken
+  const w = 328, gap = 18, x0 = (1080 - 3 * w - 2 * gap) / 2;
+  return c.items.map((it, k) => {
+    if (t < it.at) return '';
+    const p = P(t, it.at, 0.25), hot = it.hot !== undefined && t >= it.hot, hp = hot ? 1 + 0.08 * (1 - eo3(P(t, it.hot, 0.25))) : 1;
+    return `<div class="chip${hot ? ' hot' : ''}" style="left:${x0 + k * (w + gap)}px;top:${c.y}px;width:${w}px;opacity:${Math.min(1, p * 3)};transform:perspective(900px) rotateY(${70 * (1 - back(p))}deg) scale(${(0.8 + 0.2 * back(p)) * hp})">` +
+      `<span class="ic">${svg(it.icon, hot ? '#5438a6' : '#fff', 40)}</span>${it.text}</div>`;
+  }).join('');
+}
+function pill(t, c) {   // comment-keyword CTA as a UI object: the word types in, a cursor travels and clicks send
+  const p = P(t, c.s, 0.2), n = Math.round(c.text.length * P(t, c.typeS, c.typeE - c.typeS));
+  const typed = c.text.slice(0, n), caret = n < c.text.length || Math.floor(t * 2.5) % 2 === 0;
+  const k = P(t, c.click, 0.3), clicked = t >= c.click, cp = eo3(P(t, c.click - 0.7, 0.62));
+  // the cursor ends centred on the send button (pill-local px)
+  const gone = 1 - P(t, c.click + 0.3, 0.3);   // after the click the cursor fades, so the arrow is visible again
+  const cx = 770 - 92 * cp, cy = 200 - 142 * cp, press = clicked ? 1 - 0.12 * Math.sin(Math.PI * k) : 1;
+  return `<div style="position:absolute;left:170px;top:${c.y}px;width:740px;height:108px;border-radius:54px;background:#fff;box-shadow:0 22px 46px -20px rgba(25,23,39,.7);opacity:${Math.min(1, p * 3)};transform:scale(${0.82 + 0.18 * back(p)})">` +
+    `<div style="position:absolute;left:44px;top:0;line-height:108px;font-weight:600;font-size:48px;color:var(--ink)">${typed}<span style="opacity:${caret ? 0.55 : 0};font-weight:400">|</span></div>` +
+    `<div style="position:absolute;right:14px;top:14px;width:132px;height:80px;border-radius:40px;background:${clicked ? '#6f5ad0' : '#5438a6'};display:flex;align-items:center;justify-content:center;transform:scale(${press})">${svg('up', '#fff', 44)}</div>` +
+    (t >= c.click - 0.7 ? `<div style="position:absolute;left:${cx}px;top:${cy}px;width:46px;height:46px;border-radius:23px;background:rgba(255,255,255,.92);border:3px solid rgba(25,23,39,.25);box-shadow:0 6px 14px rgba(25,23,39,.45);opacity:${gone};transform:scale(${press})"></div>` : '') +
+    `</div>`;
+}
+function flash(t, TL) {   // 4-frame light flash with scanlines on every return to the face / section change
+  for (const f of TL.flashes) {
+    const k = Math.round((t - f) * 30);
+    if (k >= 0 && k < 4) return `<div style="position:absolute;inset:0;opacity:${[0.8, 0.56, 0.28, 0.1][k]};background:repeating-linear-gradient(0deg,rgba(84,56,166,.16) 0 2px,rgba(0,0,0,0) 2px 5px),#f4f0ff"></div>`;
+  }
+  return '';
+}
+window.render = async function (t) {
+  await ready;
+  const TL = window.TL; let h = '';
+  const cut = TL.cuts.find((c) => t >= c.s && t < c.e);
+  if (cut) h += cutaway(t, cut);
+  else h += '<div style="position:absolute;left:0;right:0;top:1080px;bottom:0;background:linear-gradient(180deg,rgba(25,23,39,0),rgba(25,23,39,.5) 62%,rgba(25,23,39,.62))"></div>';
+  for (const c of TL.chips) if (t >= c.s && t < c.e) h += chips(t, c);
+  for (const c of TL.pills) if (t >= c.s && t < c.e) h += pill(t, c);
+  for (const c of TL.labels) if (t >= c.s && t < c.e) h += label(t, c);
+  for (const c of TL.caps) if (t >= c.s && t < c.e) h += line(t, c);
+  for (const c of TL.slams) if (t >= c.s && t < c.e) h += slam(t, c);
+  h += flash(t, TL);
+  const st = document.getElementById('stage'); st.innerHTML = h;
+  await Promise.all([...st.querySelectorAll('img')].map((i) => i.decode().catch(() => {})));
+  return false;
+};
+</script></body></html>
