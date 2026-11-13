@@ -20,7 +20,7 @@ English speaking-practice app: React PWA + Firebase + Agora voice calls, wrapped
 - Backend-only changes (`functions/`) do **not** require rebuilding the Android AAB.
 
 ## Skills (in `.claude/skills/`)
-Load the matching one instead of re-deriving: `firebase-deploy`, `android-release`, `cloud-function-author`, `firestore-rules-guard`, `ai-pipeline`, `cost-optimizer`, `capacitor-expert`, `speaklab-content`, `verify`.
+Load the matching one instead of re-deriving: `firebase-deploy`, `android-release`, `cloud-function-author`, `firestore-rules-guard`, `ai-pipeline`, `cost-optimizer`, `capacitor-expert`, `speaklab-content`, `reference-edit`, `viral-reel-editing`, `verify`.
 
 ## Domain rules — read the file before touching its area
 Each file holds the full rules, field names and the reasons behind them. Read it first; update it when the behaviour changes.

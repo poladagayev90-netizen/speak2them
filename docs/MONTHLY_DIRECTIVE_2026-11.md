@@ -22,6 +22,7 @@ Səlis Azərbaycan dili, nəticə + kliklənən fayl yolları. Qeyri-müəyyənl
 9. Quru dərslik quizi yox — emosiya, sirr, hekayə.
 
 ## Ünvanlar
+- Video/kontent skill-ləri: `.claude/skills/speaklab-content/SKILL.md`, `.claude/skills/viral-reel-editing/SKILL.md`, `.claude/skills/reference-edit/SKILL.md`
 - Təsdiqlənmiş videolar: `C:\Users\p\Desktop\SpeakLab_Social_Videos\`
 - Xam çəkilişlər/masterlər: `C:\Users\p\Downloads\Telegram Desktop\`
 - Qat-Qat: `C:\Users\p\Desktop\qatqat\`
