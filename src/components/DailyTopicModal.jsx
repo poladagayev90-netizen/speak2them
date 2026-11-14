@@ -283,7 +283,8 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
 
           {activeSection === 'vocabulary' && (
             <div className="dt-section dt-section--list">
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}><LangSwitch compact /></div>
+              {/* Spans the whole row: on wide screens the list is a 2-column grid and the switch would take a card's cell. */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gridColumn: '1 / -1' }}><LangSwitch compact /></div>
               {content.vocabulary.map((v, i) => (
                 <div
                   key={i}
