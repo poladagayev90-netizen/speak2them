@@ -23,6 +23,7 @@ import { FUNCTIONS_BASE } from '../constants';
 import { isNativePush, getNativePushPermission, enableNativePush } from '../nativePush';
 import { FEEDBACK_LANGUAGES, setFeedbackLanguage, getReportLanguage } from '../utils/feedbackLanguage';
 import { resolveAppLanguage } from '../utils/appLanguage';
+import { FIRST_RUN_LANGS, FIRST_RUN_LANG_KEY, FIRST_RUN_LANG_NAMES, resolveFirstRunLang } from '../utils/firstRunLang';
 import { isAdminUser } from '../utils/courseProgress';
 import usePackages from '../hooks/usePackages';
 import { showPlanEntry } from '../utils/packages';
@@ -68,6 +69,25 @@ export default function Profile({ user }) {
       await updateDoc(doc(db, 'users', docId || user.uid), { partnerLevel: value });
     } catch (e) {
       setPartnerLevel(prev);
+    }
+  };
+
+  // App language (practice path + first run). Not storeFirstRunLang(): that
+  // also sets the report language, and this switch must leave it alone.
+  const [appLang, setAppLang] = useState(() => resolveFirstRunLang(user?.guideLanguage));
+  const changeAppLang = async (code) => {
+    if (code === appLang || !FIRST_RUN_LANGS.includes(code)) return;
+    const prev = appLang;
+    setAppLang(code);
+    try { localStorage.setItem(FIRST_RUN_LANG_KEY, code); } catch { /* private mode */ }
+    window.dispatchEvent(new CustomEvent('sl:firstRunLang', { detail: code }));
+    try {
+      await updateDoc(doc(db, 'users', docId || user.uid), { guideLanguage: code });
+    } catch (e) {
+      console.warn('[Profile] guideLanguage save failed:', e.message);
+      setAppLang(prev);
+      try { localStorage.setItem(FIRST_RUN_LANG_KEY, prev); } catch { /* private mode */ }
+      window.dispatchEvent(new CustomEvent('sl:firstRunLang', { detail: prev }));
     }
   };
 
@@ -392,6 +412,36 @@ export default function Profile({ user }) {
             : 'Teacher mode unlocked — create a code'}
         </button>
       )}
+
+      {/* App language — the practice path on Today (plan card, usual-week
+          card, topic card chrome; data/practiceCopy.js) and the first-run
+          screens. Starts as the language picked at registration. Separate from
+          the feedback language below: picking English cards must not change
+          the report. Written to users.guideLanguage so another device follows. */}
+      {sectionLabel('App language')}
+      <div style={{ ...listCard, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', padding: '10px' }}>
+        {FIRST_RUN_LANGS.map((code) => {
+          const active = appLang === code;
+          return (
+            <button
+              key={code}
+              type="button"
+              aria-pressed={active}
+              onClick={() => changeAppLang(code)}
+              style={{
+                padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
+                border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+                background: active ? 'var(--accent-soft)' : 'transparent',
+                color: 'var(--text-primary)', fontSize: '14px', fontWeight: active ? 800 : 600,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              {FIRST_RUN_LANG_NAMES[code]}
+              {active && <span style={{ color: 'var(--accent)' }}>✓</span>}
+            </button>
+          );
+        })}
+      </div>
 
       {/* DİL — Türkiyə bazarı üçün. Seçim dərhal tətbiq olunur və
           users/{uid}.preferredLanguage-ə yazılır (cihazlar arası sinxron). */}

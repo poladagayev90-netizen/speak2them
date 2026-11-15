@@ -74,7 +74,10 @@ const HOME_TOUR_KEYS = [
 export default function Home({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t: tr } = useFirstRunCopy(user?.guideLanguage);
+  // `lang` also dresses the practice-path cards below (data/practiceCopy.js):
+  // the plan card, the usual-week card and the topic card's chrome follow the
+  // learner's first-run language, Profile → App language changes it.
+  const { t: tr, lang } = useFirstRunCopy(user?.guideLanguage);
   const firstDay = isFirstDay(user);
   // Where the warm-up call is offered: the top card, a Get ready row, or nowhere.
   const warmupOffer = useWarmupOffer(user);
@@ -261,16 +264,16 @@ export default function Home({ user }) {
         {/* 1. The next practice, or what is happening instead. */}
         {/* A teacher (or the admin) is not a learner: no "set up your plan".
             «N need your answer» is not repeated: the cards above ARE that. */}
-        {!plan.loading && headline.kind !== 'answer' && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} />}
+        {!plan.loading && headline.kind !== 'answer' && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} lang={lang} />}
 
         {/* «What happened?» after the learner's own miss or cancel, and —
             once — the general week profile for those already practising. */}
         <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
-        {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} />}
+        {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} lang={lang} />}
 
         {/* Today's materials, right under the plan (Polad 2026-10-06: "they
             look good and they ARE the class"). Online now is on Partners only. */}
-        <TopicCard topic={todayTopic} onOpen={() => { setDailyTopicIndex(null); setDailyTopicOpen(true); }} />
+        <TopicCard topic={todayTopic} lang={lang} onOpen={() => { setDailyTopicIndex(null); setDailyTopicOpen(true); }} />
         {todayTopic && (
           <NextTopics
             todayIndex={weeklyContent.indexOf(todayTopic)}

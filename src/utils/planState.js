@@ -107,7 +107,9 @@ export function planHeadline({
     || (bakuWd !== 6 && bakuWd !== 0
       && autoIn({ onboarding: ob, access: planStatus?.access, monday: weekKey, auto: planStatus?.auto }));
   if (autoMode && inNow && !(answer && !answer.in)) {
-    return { kind: 'looking', days: answer && answer.in ? dayNames(answer.days) : '' };
+    // dayList: the raw weekdays, so Today can name them in the learner's
+    // language (data/practiceCopy.js); `days` stays the English string.
+    return { kind: 'looking', days: answer && answer.in ? dayNames(answer.days) : '', dayList: answer && answer.in ? answer.days : [] };
   }
   return { kind: 'waiting' };
 }

@@ -4,9 +4,10 @@ import {
   CalendarCheck, CalendarClock, CalendarDays, Mic, MessageCircle, PauseCircle, Sparkles, Trophy, UsersRound,
 } from 'lucide-react';
 import { Button } from '../ui';
-import { whenLabel, countdownLabel, joinState, limitText } from '../../utils/planState';
+import { joinState } from '../../utils/planState';
 import { setPlanPaused, saveWeek, addFreeBlock, usePopularTimes } from '../../hooks/useMyPlan';
-import { dayNames, popularSuggestion } from '../../utils/myWeek';
+import { popularSuggestion } from '../../utils/myWeek';
+import { practiceText, practiceDayNames } from '../../data/practiceCopy';
 import { offsetVsBaku } from '../../utils/timezone';
 import HeroParade, { heroClockStyle } from './HeroFx';
 import AddToCalendar from './AddToCalendar';
@@ -20,14 +21,56 @@ import './plan.css';
 // on Sunday, why no partner fits yet) and offers the one useful next step.
 // The wording is planHeadline's (utils/planState.js); nothing here promises a
 // partner the platform may not have.
-export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false, onboarding = null, hasPartners = true }) {
+//
+// `lang` (az/tr/ru/en, the first-run language) picks the words — the practice
+// path speaks the learner's language (data/practiceCopy.js, 2026-11-15).
+const LOCALES = { az: 'az', tr: 'tr', ru: 'ru', en: 'en-GB' };
+
+// planState.whenLabel / countdownLabel / limitText, in the learner's language.
+function whenText(lang, startMs, now) {
+  const d = new Date(Number(startMs));
+  const same = (a, b) => a.toDateString() === b.toDateString();
+  let day;
+  if (same(d, new Date(now))) day = practiceText(lang, 'today');
+  else if (same(d, new Date(now + 86400000))) day = practiceText(lang, 'tomorrow');
+  else {
+    try { day = d.toLocaleDateString(LOCALES[lang] || 'en-GB', { weekday: 'long' }); } catch { day = d.toLocaleDateString('en-GB', { weekday: 'long' }); }
+    day = day.charAt(0).toLocaleUpperCase() + day.slice(1);
+  }
+  return `${day} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+}
+function countdownText(lang, startMs, now) {
+  const diff = Number(startMs) - now;
+  if (diff <= 0) return practiceText(lang, 'count.now');
+  const min = Math.floor(diff / 60000);
+  const d = Math.floor(min / 1440); const h = Math.floor((min % 1440) / 60); const m = min % 60;
+  if (d > 0) return practiceText(lang, 'count.dh', { d, h });
+  if (h > 0) return practiceText(lang, 'count.hm', { h, m });
+  return practiceText(lang, 'count.m', { m });
+}
+function limitLines(lang, limit) {
+  if (!limit || !limit.active) return null;
+  return {
+    title: practiceText(lang, 'limit.title'),
+    text: practiceText(lang, 'limit.text', {
+      missed: Math.max(1, Number(limit.missed) || 1),
+      left: Math.max(1, Number(limit.recoverLeft) || 1),
+      usual: Math.max(1, Number(limit.usualTarget) || 1),
+    }),
+  };
+}
+// popularSuggestion's "Tue 19:00", with the weekday in the learner's language.
+const tipLabel = (lang, tip) => `${practiceText(lang, `day.${tip.day}`)} ${String(Math.floor(tip.startMin / 60)).padStart(2, '0')}:${String(tip.startMin % 60).padStart(2, '0')}`;
+
+export default function NextPracticeCard({ uid, headline, now, limit, noPractices = false, onboarding = null, hasPartners = true, lang = 'en' }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   // Phase from the clock, fixed for this mount (see HeroFx).
   const clock = useMemo(heroClockStyle, []);
   const h = headline || { kind: 'waiting' };
+  const t = (key, vars) => practiceText(lang, key, vars);
   // A reliability limit rides along in every state: why, and the way back.
-  const lim = limitText(limit);
+  const lim = limitLines(lang, limit);
   const limitLine = (
     <>
       {lim && <p className="pl-hint"><b>{lim.title}.</b> {lim.text}</p>}
@@ -35,8 +78,8 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
           switch is on and nothing is left — never a popup. */}
       {noPractices && (
         <p className="pl-hint">
-          <b>No planned practices left.</b>{' '}
-          <button type="button" className="pl-hint-link" onClick={() => navigate('/packages')}>See packages</button>
+          <b>{t('packages.none')}</b>{' '}
+          <button type="button" className="pl-hint-link" onClick={() => navigate('/packages')}>{t('packages.see')}</button>
         </p>
       )}
     </>
@@ -48,89 +91,93 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
     return (
       <section id="tour-next" className={`pl-card pl-card--hero ${h.joinable ? 'pl-card--live' : ''}`} style={clock} aria-label="Your next practice">
         <HeroParade />
-        <p className="pl-kicker">
+        {/* lang: CSS uppercase needs it for Turkish İ (see TopicCard). */}
+        <p className="pl-kicker" lang={lang}>
           <CalendarCheck size={16} aria-hidden="true" />
-          {live ? 'Practice time' : 'Your next practice'}
-          <span className="pl-kicker-end">{countdownLabel(b.startMs, now)}</span>
+          {live ? t('next.kickerLive') : t('next.kicker')}
+          <span className="pl-kicker-end">{countdownText(lang, b.startMs, now)}</span>
         </p>
-        <p className="pl-when">{whenLabel(b.startMs, now)}</p>
+        <p className="pl-when">{whenText(lang, b.startMs, now)}</p>
         <p className="pl-with">
-          with <b>{h.peerName}</b>
+          {t('next.with')} <b>{h.peerName}</b>
           {h.peerLevel && <span className="pl-level">{String(h.peerLevel).slice(0, 2)}</span>}
         </p>
         <div className="pl-actions">
           {h.joinable && (
             <Button icon={<Mic size={18} aria-hidden="true" />} onClick={() => navigate(`/chat/${h.peerUid}`, { state: joinState(b) })}>
-              Join the call
+              {t('next.join')}
             </Button>
           )}
           <Button variant="secondary" icon={<MessageCircle size={18} aria-hidden="true" />} onClick={() => navigate(`/chat/${h.peerUid}`)}>
-            Message
+            {t('next.message')}
           </Button>
-          <Button variant="ghost" onClick={() => navigate('/plan')}>My week</Button>
+          <Button variant="ghost" onClick={() => navigate('/plan')}>{t('next.myWeek')}</Button>
         </div>
-        {!h.joinable && <p className="pl-hint">The Join button appears here five minutes before the start.</p>}
+        {!h.joinable && <p className="pl-hint">{t('next.joinHint')}</p>}
         {!live && <AddToCalendar booking={b} peerName={h.peerName} />}
         {limitLine}
       </section>
     );
   }
 
-  if (h.kind === 'checkin') return <CheckinCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} />;
+  if (h.kind === 'checkin') return <CheckinCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} lang={lang} />;
   if (h.kind === 'no_match' && (h.reason === 'no_overlap' || h.reason === 'no_partner_left') && onboarding) {
-    return <NoMatchCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} />;
+    return <NoMatchCard uid={uid} h={h} onboarding={onboarding} clock={clock} navigate={navigate} limitLine={limitLine} lang={lang} />;
   }
 
   // «Message someone you have practised with» only for someone who has —
   // a newcomer's Partners tab is empty, so the line and the button were a
   // dead end on their very first Today (pre-release walk 2026-10-17).
-  const sooner = hasPartners ? ' Want to talk sooner? Message someone you have practised with.' : '';
-  const partnersAction = hasPartners ? { label: 'Partners', onClick: () => navigate('/chats') } : null;
+  const sooner = hasPartners ? ` ${t('sooner')}` : '';
+  const partnersAction = hasPartners ? { label: t('partners'), onClick: () => navigate('/chats') } : null;
+  const lookingDays = Array.isArray(h.dayList) && h.dayList.length ? practiceDayNames(lang, h.dayList) : '';
 
   const simple = {
     answer: {
       icon: CalendarClock,
-      title: `${h.count} ${h.count === 1 ? 'practice needs' : 'practices need'} your answer`,
-      text: 'Each one is booked once you and your partner both say yes.',
-      action: { label: 'Review', onClick: () => navigate('/plan') },
+      title: t('answer.title', { n: h.count }),
+      text: t('answer.text'),
+      action: { label: t('answer.action'), onClick: () => navigate('/plan') },
     },
     setup: {
       icon: CalendarDays,
-      title: 'Set up your practice plan',
-      text: 'Tell us when you are free and how many practices a week you want. Every Sunday evening you get a plan with real partners.',
-      action: { label: 'Set up my plan', onClick: () => navigate('/onboarding', { state: { jumpTo: 'charter', returnTo: '/' } }) },
+      title: t('setup.title'),
+      text: t('setup.text'),
+      action: { label: t('setup.action'), onClick: () => navigate('/onboarding', { state: { jumpTo: 'charter', returnTo: '/' } }) },
     },
     paused: {
       icon: PauseCircle,
-      title: 'Your plan is paused',
-      text: 'No new practices are planned for you until you switch it back on.',
+      title: t('paused.title'),
+      text: t('paused.text'),
       action: {
-        label: busy ? 'Resuming…' : 'Resume my plan',
+        label: busy ? t('paused.busy') : t('paused.action'),
         onClick: async () => { setBusy(true); await setPlanPaused(uid, false).catch(() => {}); setBusy(false); },
       },
     },
     done: {
       icon: Trophy,
-      title: 'Weekly goal reached',
-      text: `${h.attended} of ${h.target} practices done. Anything more this week is a bonus.`,
-      action: { label: 'Message a partner', onClick: () => navigate('/chats') },
+      title: t('done.title'),
+      text: t('done.text', { a: h.attended, t: h.target }),
+      action: { label: t('done.action'), onClick: () => navigate('/chats') },
     },
     no_match: {
       icon: UsersRound,
-      title: 'No partner at your times yet',
-      text: h.text,
-      action: { label: 'Edit my free times', onClick: () => navigate('/onboarding', { state: { jumpTo: 'availability', returnTo: '/' } }) },
+      title: t('noMatch.title'),
+      // The reason in the learner's language; planState's English text for a
+      // reason this table does not know yet.
+      text: h.reason && practiceText(lang, `noMatch.${h.reason}`) !== `noMatch.${h.reason}` ? t(`noMatch.${h.reason}`) : h.text,
+      action: { label: t('noMatch.action'), onClick: () => navigate('/onboarding', { state: { jumpTo: 'availability', returnTo: '/' } }) },
     },
     looking: {
       icon: Sparkles,
-      title: h.days ? `Looking for partners · ${h.days}` : 'Looking for partners this week',
-      text: `When someone fits your times, a practice comes here to confirm.${sooner}`,
+      title: lookingDays ? t('looking.title', { days: lookingDays }) : (h.days ? t('looking.title', { days: h.days }) : t('looking.titleWeek')),
+      text: `${t('looking.text')}${sooner}`,
       action: partnersAction,
     },
     waiting: {
       icon: Sparkles,
-      title: 'Your next plan arrives on Sunday evening',
-      text: `You will get your practices for the week to confirm.${sooner}`,
+      title: t('waiting.title'),
+      text: `${t('waiting.text')}${sooner}`,
       action: partnersAction,
     },
   }[h.kind] || null;
@@ -140,8 +187,8 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
   // quiet line below still carries «See packages» — no bigger sell than that.
   if (noPractices && (h.kind === 'looking' || h.kind === 'waiting')) {
     Object.assign(simple, {
-      title: 'Your free practices are used',
-      text: 'AInur and calls with friends stay free.',
+      title: t('free.title'),
+      text: t('free.text'),
       action: null,
     });
   }
@@ -181,13 +228,14 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
 // on the usual times without a word from the learner (default «in»,
 // 2026-10-18). It tells, it does not ask: other hours live on the Plan grid,
 // the week off is one tap here (onboarding.weeks.{monday}.skip).
-function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine }) {
+function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine, lang }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const t = (key, vars) => practiceText(lang, key, vars);
   const n = h.target;
   const off = async () => {
     setBusy(true); setErr('');
-    try { await saveWeek(uid, onboarding, h.monday, null); } catch { setErr('Could not save. Check your connection.'); }
+    try { await saveWeek(uid, onboarding, h.monday, null); } catch { setErr(t('saveError')); }
     setBusy(false);
   };
   return (
@@ -196,13 +244,13 @@ function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine }) {
       <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
         <span className="pl-row-icon" aria-hidden="true"><CalendarDays size={20} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="pl-title">Next week on your usual times</p>
-          <p className="pl-text">{dayNames(h.days)} · {n} {n === 1 ? 'practice' : 'practices'}, each with a real partner. Your plan comes on Sunday evening.</p>
+          <p className="pl-title">{t('checkin.title')}</p>
+          <p className="pl-text">{t('checkin.text', { days: practiceDayNames(lang, h.days), n })}</p>
         </div>
       </div>
       <div className="pl-actions">
-        <Button onClick={() => navigate('/plan')}>Change hours</Button>
-        <Button variant="ghost" onClick={off} disabled={busy}>{busy ? 'Saving…' : 'Take the week off'}</Button>
+        <Button onClick={() => navigate('/plan')}>{t('checkin.change')}</Button>
+        <Button variant="ghost" onClick={off} disabled={busy}>{busy ? t('saving') : t('checkin.off')}</Button>
       </div>
       {err && <p className="pl-hint">{err}</p>}
       {limitLine}
@@ -212,7 +260,8 @@ function CheckinCard({ uid, h, onboarding, clock, navigate, limitLine }) {
 
 // Nobody fits: offer the busiest time they are not free at yet, in their own
 // clock, as one tap (appConfig/popularTimes — counts only, no names).
-function NoMatchCard({ uid, h, onboarding, clock, navigate, limitLine }) {
+function NoMatchCard({ uid, h, onboarding, clock, navigate, limitLine, lang }) {
+  const t = (key, vars) => practiceText(lang, key, vars);
   const cells = usePopularTimes();
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(false);
@@ -228,17 +277,18 @@ function NoMatchCard({ uid, h, onboarding, clock, navigate, limitLine }) {
       <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'flex-start' }}>
         <span className="pl-row-icon" aria-hidden="true"><UsersRound size={20} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="pl-title">{added ? 'Added — we are looking again' : 'No partner at your times yet'}</p>
+          <p className="pl-title">{added ? t('noMatch.added') : t('noMatch.title')}</p>
           <p className="pl-text">
-            {added ? `${tip.label} is now one of your free times.`
-              : tip ? `Many people practise ${tip.label}. Add it and the plan has more to work with.` : h.text}
+            {added ? t('noMatch.addedText', { label: tipLabel(lang, tip) })
+              : tip ? t('noMatch.popular', { label: tipLabel(lang, tip) })
+                : (h.reason ? t(`noMatch.${h.reason}`) : h.text)}
           </p>
         </div>
       </div>
       <div className="pl-actions">
-        {tip && !added && <Button onClick={add} disabled={busy}>{busy ? 'Adding…' : `Add ${tip.label}`}</Button>}
+        {tip && !added && <Button onClick={add} disabled={busy}>{busy ? t('noMatch.adding') : t('noMatch.add', { label: tipLabel(lang, tip) })}</Button>}
         <Button variant={tip && !added ? 'ghost' : 'primary'} onClick={() => navigate('/onboarding', { state: { jumpTo: 'availability', returnTo: '/' } })}>
-          Edit my free times
+          {t('noMatch.action')}
         </Button>
       </div>
       {limitLine}

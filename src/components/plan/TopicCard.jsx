@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BookOpen, ChevronRight } from 'lucide-react';
 import { plainTopic } from '../../utils/topicLabel';
 import { hasMaterials } from '../../utils/topicMaterialsLoader';
+import { practiceText } from '../../data/practiceCopy';
 import './plan.css';
 
 // Today's topic as a picture, not a line of text. Polad (2026-09-30): the app
@@ -14,7 +15,10 @@ const cardUrl = (url) => String(url || '').replace('h=650&w=940', 'h=420&w=760')
 // `kicker` replaces "Today's practice topic" where the card shows a lesson's
 // topic (Today's lesson card, /class/:id); `cta` replaces the bottom line;
 // `lesson` marks Today's lesson card so it never reads as the daily topic.
-export default function TopicCard({ topic, onOpen, kicker = null, cta = null, lesson = false }) {
+// `lang` translates the card's own chrome only (data/practiceCopy.js); the
+// topic title and question are the lesson and stay English.
+export default function TopicCard({ topic, onOpen, kicker = null, cta = null, lesson = false, lang = 'en' }) {
+  const t = (key, vars) => practiceText(lang, key, vars);
   const [photo, setPhoto] = useState(null);
   const [failed, setFailed] = useState(false);
   const day = topic?.day;
@@ -38,7 +42,7 @@ export default function TopicCard({ topic, onOpen, kicker = null, cta = null, le
       id={kicker ? undefined : 'tour-topic'}
       className={`pl-topic ${showPhoto ? '' : 'pl-topic--plain'}${lesson ? ' pl-topic--lesson' : ''}`}
       onClick={onOpen}
-      aria-label={`${kicker || "Today's practice topic"}: ${plainTopic(topic?.topic) || 'open'}`}
+      aria-label={`${kicker || t('topic.kicker')}: ${plainTopic(topic?.topic) || 'open'}`}
     >
       {showPhoto && (
         <img
@@ -54,13 +58,16 @@ export default function TopicCard({ topic, onOpen, kicker = null, cta = null, le
         />
       )}
       <span className="pl-topic-body">
-        <span className="pl-topic-kicker">
+        {/* lang: the kicker is CSS-uppercased, and under the page's lang="en"
+            Turkish «pratik» became «PRATIK» (dotless). The learner's own
+            language gives «PRATİK». */}
+        <span className="pl-topic-kicker" lang={kicker ? undefined : lang}>
           {!showPhoto && <BookOpen size={14} aria-hidden="true" />}
-          {kicker || <>Today’s practice topic{day ? ` · Day ${day}` : ''}</>}
+          {kicker || <>{t('topic.kicker')}{day ? ` · ${t('topic.day', { day })}` : ''}</>}
         </span>
-        <span className="pl-topic-title">{plainTopic(topic?.topic) || 'Today’s topic'}</span>
+        <span className="pl-topic-title">{plainTopic(topic?.topic) || t('topic.fallback')}</span>
         {question && <span className="pl-topic-q">{question}</span>}
-        <span className="pl-topic-cta">{cta || (hasMaterials(day) ? 'Listen, read, words and questions' : 'Words, idioms and questions')} <ChevronRight size={16} aria-hidden="true" /></span>
+        <span className="pl-topic-cta">{cta || (hasMaterials(day) ? t('topic.ctaFull') : t('topic.ctaShort'))} <ChevronRight size={16} aria-hidden="true" /></span>
       </span>
     </button>
   );
