@@ -4,6 +4,12 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, signInWithGoogle } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import OpenInBrowser, { useInAppBrowser } from '../components/firstRun/OpenInBrowser';
+import { firstRunText } from '../data/firstRunCopy';
+
+// Sign-in is English (it is not part of the first run); the in-app-browser
+// card borrows the English first-run strings.
+const enText = (key) => firstRunText('en', key);
 
 function getResetPasswordErrorMessage(code) {
   switch (code) {
@@ -28,6 +34,7 @@ function getResetPasswordErrorMessage(code) {
 const SUSPENDED_TEXT = 'This account is paused. Write to us on WhatsApp and we will sort it out.';
 
 export default function Login() {
+  const inApp = useInAppBrowser();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   // App.js signs a suspended account out and leaves this flag behind.
@@ -133,7 +140,9 @@ export default function Login() {
 
         {/* White ink on a white button: the label was invisible on the light
             theme. Google's own brand rule is dark ink on white, in both themes
-            -- see .auth-google. */}
+            -- see .auth-google. In an Instagram / Facebook / TikTok browser
+            Google refuses to sign in, so the card below takes its place. */}
+        {inApp ? <OpenInBrowser t={enText} /> : <>
         <button
           type="button"
           className="auth-google"
@@ -155,6 +164,7 @@ export default function Login() {
         </button>
 
         <div className="auth-divider">or</div>
+        </>}
 
         <form onSubmit={handleLogin}>
           <label>Email</label>

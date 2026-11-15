@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Copy, Flag, Search, UsersRound } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
 import { LEVELS } from '../utils/onboarding';
+import { byLastSeen } from '../utils/presence';
+import { stableOrder } from '../utils/stableOrder';
 import { Button } from './ui';
 import './AdminApplicants.css';
 
@@ -34,6 +36,18 @@ const healthLabel = (h) => {
   if (h.cls === 'suspicious' && h.flag !== 'suspicious') return 'unflagged · back on the next planner run';
   return HEALTH[h.cls][h.why] || h.cls;
 };
+
+// Most recently seen first (byLastSeen), and then each row keeps its place
+// while the admin works (stableOrder) — lastSeen ticks live. The rank is taken
+// only once lastSeen has arrived: ranked before the users snapshot, everyone
+// would look "never seen" and stay in name order. Filters and search keep this
+// order because they only hide rows of the ranked list.
+function useSeenOrder(people) {
+  const ref = useRef({ key: '', rank: new Map() });
+  const key = people.some((p) => p.seen > 0) ? 'ready' : 'waiting';
+  if (ref.current.key !== key) ref.current = { key, rank: new Map() };
+  return stableOrder(people, byLastSeen, ref.current.rank);
+}
 
 export function useAccountHealth() {
   const [map, setMap] = useState(new Map());
@@ -70,8 +84,8 @@ export function FlagButton({ id, name, h }) {
 // joining a practice block and random matching are open only to them; with no
 // list nobody is planned. Direct calls between two people are not affected.
 //
-// The list does NOT move while you work: it is sorted by name once, and
-// ticking someone only changes their box. Nothing is saved until "Save", so a
+// The list does NOT move while you work: it is sorted once, most recently
+// seen first (useSeenOrder), and ticking someone only changes their box. Nothing is saved until "Save", so a
 // slip costs nothing; the planner reads the saved list on its next build.
 export default function AdminWeekRoster({ week, users }) {
   const [mode, setMode] = useState(null);
@@ -115,7 +129,7 @@ const WHY = {
 // Autopilot: the server decides (functions/autoRoster.js) and writes its
 // verdicts to weekRoster/{monday}.autoWhy on every plan/refill run. The admin
 // only overrides: Always (include) or Never (exclude). Nothing moves while
-// you work — sorted by name once.
+// you work — sorted once, most recently seen first.
 function AutoRoster({ week, users }) {
   const health = useAccountHealth();
   const [docData, setDocData] = useState(undefined);
@@ -141,14 +155,14 @@ function AutoRoster({ week, users }) {
     const byUid = new Map((users || []).map((u) => [u.uid || u.id, u]));
     return onboarding
       .map((o) => { const u = byUid.get(o.id) || {}; return { id: o.id, name: u.name || o.id.slice(0, 6), level: u.level || o.level, seen: toMs(u.lastSeen), role: u.role }; })
-      .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher')
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher');
   }, [users, onboarding]);
+  const ordered = useSeenOrder(people);
   if (docData === undefined || draft === null) return <section className="aa-panel"><p className="aa-empty">Loading…</p></section>;
   const why = docData.autoWhy || {};
   const sum = docData.autoSummary || null;
   const inSet = new Set(docData.autoIn || []);
-  const shown = people.filter((p) => filter === 'All' || (filter === 'In' ? inSet.has(p.id) : !inSet.has(p.id)));
+  const shown = ordered.filter((p) => filter === 'All' || (filter === 'In' ? inSet.has(p.id) : !inSet.has(p.id)));
   const savedKey = JSON.stringify([...(docData.include || [])].sort()) + JSON.stringify([...(docData.exclude || [])].sort());
   const draftIn = [...draft].filter(([, v]) => v === 'in').map(([u]) => u).sort();
   const draftOut = [...draft].filter(([, v]) => v === 'out').map(([u]) => u).sort();
@@ -250,11 +264,10 @@ function ManualRoster({ week, users }) {
           role: u.role,
         };
       })
-      .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher')
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher');
   }, [users, onboarding, saved]);
 
-  const shown = people
+  const shown = useSeenOrder(people)
     .filter((p) => level === 'All' || levelShort(p.level) === level)
     .filter((p) => !search.trim() || `${p.name} ${p.email}`.toLowerCase().includes(search.trim().toLowerCase()));
 

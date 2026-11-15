@@ -202,3 +202,22 @@ export function guideFor(browser, ua = '') {
 export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.speaklab.app';
 export const PLAY_STORE_FROM_WEB = `${PLAY_STORE_URL}&referrer=utm_source%3Dweb%26utm_medium%3Dinstall_gate`;
 export const wantsPlayStore = (ua = '') => /Android/i.test(ua);
+
+// Sign-up from an Instagram / Facebook / TikTok ad (2026-11-15): their in-app
+// browser is an embedded webview, and Google refuses OAuth there
+// (403 disallowed_useragent) — the popup/redirect lands on a bare
+// accounts.google.com page that goes nowhere. So in an in-app browser the
+// Google button is replaced by a way out (Login / Register → OpenInBrowser),
+// and email sign-up, which works in a webview, stays right there.
+// NOTE: the Capacitor Android app's UA also carries «; wv)» — callers must
+// rule out Capacitor.isNativePlatform() first.
+export const isInAppBrowser = (ua = '') => detectBrowser(ua) === 'inapp';
+
+// Android: an intent:// link hands the page to Chrome (the webview cannot
+// keep it). Without Chrome, the fallback reopens the same https page.
+// iOS has no equivalent that Instagram lets through (x-safari-https is
+// intercepted), so iOS gets the ⋯ → «Open in external browser» instruction.
+export function chromeIntentUrl(href) {
+  const u = new URL(href);
+  return `intent://${u.host}${u.pathname}${u.search}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(href)};end`;
+}

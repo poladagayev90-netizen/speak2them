@@ -1,7 +1,15 @@
 import { bakuDayHour, hoursLabel, lastDates } from './presenceLog';
-import { lastSeenLabel } from './presence';
+import { byLastSeen, lastSeenLabel } from './presence';
 
 jest.mock('../firebase', () => ({ db: {} }));
+
+test('admin people lists: most recently seen first, never seen last, ties by name', () => {
+  const list = [
+    { name: 'Ali', seen: 1000 }, { name: 'Zara', seen: 0 }, { name: 'Bea', seen: 5000 },
+    { name: 'Aydan' }, { name: 'Cem', seen: 5000 },
+  ];
+  expect([...list].sort(byLastSeen).map((p) => p.name)).toEqual(['Bea', 'Cem', 'Ali', 'Aydan', 'Zara']);
+});
 
 test('Baku day and hour, UTC+4 with no DST', () => {
   // 2026-10-07 20:30 UTC = 2026-10-08 00:30 in Baku.

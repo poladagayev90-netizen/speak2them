@@ -281,6 +281,13 @@ const en = {
   // iOS keeps the home-screen app's sign-in apart from Safari's.
   'gate.after.ios': 'Then open SpeakLab from your home screen, sign in there, and allow notifications.',
   'gate.help': 'Need help? Write to us',
+  // Login / Register inside an Instagram / Facebook / TikTok browser
+  // (components/firstRun/OpenInBrowser.jsx); the iOS menu item stays English.
+  'inapp.sub': 'Google sign-in opens in Chrome or Safari. Email sign-up works right here.',
+  'inapp.chrome': 'Open in Chrome',
+  'inapp.play': 'Get the app on Google Play',
+  'inapp.ios': 'Tap ⋯ at the top right, then «Open in external browser».',
+  'inapp.email': 'Or use your email below.',
 };
 
 const az = {
@@ -552,6 +559,11 @@ const az = {
   'gate.after': 'Sonra SpeakLab-ı ana ekrandan aç və bildirişlərə icazə ver.',
   'gate.after.ios': 'Sonra SpeakLab-ı ana ekrandan aç, orada hesabına daxil ol və bildirişlərə icazə ver.',
   'gate.help': 'Kömək lazımdır? Bizə yaz',
+  'inapp.sub': 'Google ilə giriş Chrome və ya Safari-də açılır. E-poçtla qeydiyyat elə burada işləyir.',
+  'inapp.chrome': 'Chrome-da aç',
+  'inapp.play': 'Tətbiqi Google Play-dən yüklə',
+  'inapp.ios': 'Yuxarı sağdakı ⋯ düyməsinə toxun, sonra «Open in external browser» seç.',
+  'inapp.email': 'Və ya aşağıda e-poçtunla davam et.',
 };
 
 const tr = {
@@ -823,6 +835,11 @@ const tr = {
   'gate.after': 'Sonra SpeakLab’i ana ekrandan aç ve bildirimlere izin ver.',
   'gate.after.ios': 'Sonra SpeakLab’i ana ekrandan aç, orada giriş yap ve bildirimlere izin ver.',
   'gate.help': 'Yardım mı lazım? Bize yaz',
+  'inapp.sub': 'Google ile giriş Chrome veya Safari’de açılır. E-postayla kayıt burada da çalışır.',
+  'inapp.chrome': 'Chrome’da aç',
+  'inapp.play': 'Uygulamayı Google Play’den indir',
+  'inapp.ios': 'Sağ üstteki ⋯ düğmesine dokun, sonra «Open in external browser» seç.',
+  'inapp.email': 'Ya da aşağıda e-postanla devam et.',
 };
 
 const ru = {
@@ -1094,6 +1111,11 @@ const ru = {
   'gate.after': 'Потом открой SpeakLab с главного экрана и разреши уведомления.',
   'gate.after.ios': 'Потом открой SpeakLab с главного экрана, войди там в аккаунт и разреши уведомления.',
   'gate.help': 'Нужна помощь? Напиши нам',
+  'inapp.sub': 'Вход через Google открывается в Chrome или Safari. Регистрация по почте работает прямо здесь.',
+  'inapp.chrome': 'Открыть в Chrome',
+  'inapp.play': 'Скачать приложение в Google Play',
+  'inapp.ios': 'Нажми ⋯ справа вверху и выбери «Open in external browser».',
+  'inapp.email': 'Или продолжи по почте ниже.',
 };
 
 export const FIRST_RUN_COPY = { en, az, tr, ru };

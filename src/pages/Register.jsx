@@ -9,6 +9,7 @@ import { getPendingJoinCode } from '../utils/teacher';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { languageFields } from '../utils/firstRunLang';
 import FirstRunLangPicker from '../components/firstRun/FirstRunLangPicker';
+import OpenInBrowser, { useInAppBrowser } from '../components/firstRun/OpenInBrowser';
 
 export default function Register() {
   // Müəllimin dəvət linki ilə gəlmişiksə rol SEÇİLMİR — dəvət olunan adam
@@ -30,6 +31,7 @@ export default function Register() {
   // The first run speaks the learner's language (utils/firstRunLang.js); the
   // pick is written on the users doc so the wizard keeps it on another device.
   const { lang, setLang, t } = useFirstRunCopy();
+  const inApp = useInAppBrowser();
 
   // Müəllim seçən üçün əlavə sahələr: teacherEligible dərhal true (3-sessiya
   // qapısı bu axında yoxdur), surveyDone true (şagird sorğusu müəllimə aid
@@ -212,6 +214,10 @@ export default function Register() {
           </>
         )}
 
+        {/* Instagram / Facebook / TikTok browser: Google refuses to sign in
+            there, so the button gives way to «open in your browser» and the
+            email form below (components/firstRun/OpenInBrowser.jsx). */}
+        {inApp ? <OpenInBrowser t={t} /> : <>
         <button
           type="button"
           className="auth-google"
@@ -233,6 +239,7 @@ export default function Register() {
         </button>
 
         <div className="auth-divider">{t('reg.or')}</div>
+        </>}
 
         <form onSubmit={handleRegister}>
           <label style={{ marginTop: 0 }}>{t('reg.name')}</label>

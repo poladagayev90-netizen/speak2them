@@ -23,6 +23,14 @@ export function getPresence(userDoc, now = Date.now()) {
   return userDoc.status === 'busy' ? 'busy' : 'online';
 }
 
+// Admin people lists (Week «Who practises», Matching «People»): most recently
+// seen first, in every filter and search, so the dead accounts sink to the
+// bottom (Polad, 2026-11-15). `seen` = users.lastSeen in ms, the same value the
+// rows print; never-seen (0) goes last; ties by name so the order is fixed.
+export function byLastSeen(a, b) {
+  return ((b.seen || 0) - (a.seen || 0)) || String(a.name || '').localeCompare(String(b.name || ''));
+}
+
 // "Seen 5 min ago" / "2 h ago" / "yesterday" / "6 days ago" — the admin's and
 // a teacher's view of someone who is not online right now.
 export function lastSeenLabel(ms, now = Date.now()) {

@@ -1,4 +1,18 @@
-import { detectBrowser, guideFor, iosNeedsSafari, iosVersion, wantsPlayStore } from './installGuide';
+import { chromeIntentUrl, detectBrowser, guideFor, iosNeedsSafari, iosVersion, isInAppBrowser, wantsPlayStore } from './installGuide';
+
+test('in-app browsers (ad traffic) are told apart from real browsers', () => {
+  expect(isInAppBrowser('Mozilla/5.0 (Linux; Android 14; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/126.0 Mobile Safari/537.36 Instagram 330.0')).toBe(true);
+  expect(isInAppBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0')).toBe(true);
+  expect(isInAppBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/480.0]')).toBe(true);
+  expect(isInAppBrowser('Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36 musical_ly_2023')).toBe(true);
+  expect(isInAppBrowser('Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36')).toBe(false);
+  expect(isInAppBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1')).toBe(false);
+});
+
+test('Chrome intent link keeps the path and query and falls back to the page', () => {
+  expect(chromeIntentUrl('https://speaklab-app.vercel.app/register?utm_source=ig'))
+    .toBe('intent://speaklab-app.vercel.app/register?utm_source=ig#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https%3A%2F%2Fspeaklab-app.vercel.app%2Fregister%3Futm_source%3Dig;end');
+});
 
 const UA = {
   iosSafari: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',

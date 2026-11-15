@@ -1,0 +1,31 @@
+/* «Open in your browser» card on Login / Register inside an in-app browser
+   (components/firstRun/OpenInBrowser.jsx). Plum tokens only. */
+.oib {
+  margin-bottom: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+.oib-title { margin: 0 0 var(--s-1); font-size: var(--fs-body); font-weight: 700; }
+.oib-sub,
+.oib-step,
+.oib-email { margin: 0; font-size: var(--fs-sm); line-height: var(--lh-body); color: var(--text-secondary); }
+.oib-step { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2); color: var(--text-primary); font-weight: 600; }
+.oib-glyph {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 28px; height: 28px; border-radius: var(--r-sm);
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--accent);
+}
+.oib-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-3) 0 var(--s-2); }
+.oib-btn {
+  flex: 1 1 140px;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  min-height: 44px; padding: 0 var(--s-3);
+  border-radius: var(--r-md); border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-primary);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700; text-decoration: none; cursor: pointer;
+}
+.oib-btn--main { background: var(--accent); border-color: transparent; color: var(--text-on-accent); }
+.oib-email { font-weight: 600; }

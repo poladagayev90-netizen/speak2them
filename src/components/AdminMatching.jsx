@@ -21,6 +21,7 @@ import { WarmupTag, WarmupFunnel } from './WarmupInsight';
 import { useAccountHealth } from './AdminWeekRoster';
 import { usePackageSummaries } from './AdminPackages';
 import { stableOrder } from '../utils/stableOrder';
+import { byLastSeen, lastSeenLabel } from '../utils/presence';
 import { Button, Sheet } from './ui';
 import './AdminApplicants.css';
 import './AdminMatching.css';
@@ -190,6 +191,7 @@ export default function AdminMatching({ users = [] }) {
           isNew: joined > now - 7 * DAY_MS,
           joinedMs: joined,
           calls: Number(u.callCount) || 0,
+          seen: toMs(u.lastSeen),
           role: u.role,
           inWeek: autoMode ? autoIn.has(o.id) : inList.has(o.id),
           why: autoMode ? (autoWhy[o.id] || null) : null,
@@ -470,13 +472,13 @@ function PeoplePanel({ week, people, pairs, selected, onToggle, onAdd, busy, aut
     .filter((p) => (flag ? p.attention[flag]
       : only === 'all' || (only === 'list' ? p.inWeek : p.inWeek && p.planned < p.wants)) || selected.includes(p.id))
     .filter((p) => !search.trim() || `${p.name} ${p.email}`.toLowerCase().includes(search.trim().toLowerCase()));
-  // New people first, then whoever is furthest below their target; each row
-  // then keeps its place until a filter changes (stableOrder).
-  const key = `${week}|${level}|${only}|${flag}|${search}`;
+  // Most recently seen first in every filter and search, so dead accounts sink
+  // (Polad, 2026-11-15; was: new people, then the biggest shortfall). Each row
+  // then keeps its place until a filter changes (stableOrder). Ranked only once
+  // lastSeen has loaded, or everyone would sort as never seen.
+  const key = `${week}|${level}|${only}|${flag}|${search}|${all.some((p) => p.seen > 0)}`;
   if (rankRef.current.key !== key) rankRef.current = { key, rank: new Map() };
-  const ordered = stableOrder(shown,
-    (a, b) => (b.isNew - a.isNew) || ((b.wants - b.planned) - (a.wants - a.planned)) || a.name.localeCompare(b.name),
-    rankRef.current.rank);
+  const ordered = stableOrder(shown, byLastSeen, rankRef.current.rank);
 
   return (
     <section className="aa-panel mt-people" aria-label="People">
@@ -544,7 +546,7 @@ function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand,
             {p.isNew && <span className="aa-badge aa-badge--soft">new</span>}
           </span>
           <span className={`aa-meta ${p.planned < p.wants ? 'mt-short' : ''}`}>
-            {p.planned} of {p.wants || '—'} this week · {verdict}
+            {p.planned} of {p.wants || '—'} this week · {verdict} · {p.seen ? `seen ${lastSeenLabel(p.seen)}` : 'never seen'}
             {p.timeZone && p.timeZone !== 'Asia/Baku' ? ` · ${cityOf(p.timeZone)}` : ''}
           </span>
           {(p.paid || healthWord || rel || p.warmup) && (
