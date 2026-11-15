@@ -5,7 +5,7 @@
 
 import { SLOT_BLOCK_HOURS, SLOT_START_HOURS, slotIdOf, slotStartMs, SLOT_BLOCK_MS } from './practiceSlots';
 import { LEVELS } from './onboarding';
-import { toBakuIntervals } from './timezone';
+import { toBakuIntervals, intervalsByDay } from './timezone';
 import { weekAnswer } from './myWeek';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -332,4 +332,31 @@ export function attentionOf(p, nowMs = Date.now()) {
     limited: p.reliability === 'limited',
     noWhatsApp: !String(p.whatsapp || '').trim(),
   };
+}
+
+// One plain line for a person's week (Polad 2026-11-15: «tapa bilmədim» — the
+// grid hid inside an opened People row). Same source as freeGrid: weekRanges
+// in Baku hours, minus «Never». Picked hours for `monday` win, else the usual
+// times. → { text, kind: 'week' | 'usual' | 'off' | 'none' }, e.g.
+// "3/week · this week: Mon 19–21, Wed 20–22, Sat 11–13 (maybe)".
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const hm = (min) => (min % 60 ? `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}` : String(min / 60));
+export function availabilitySummary(onboarding, monday) {
+  const ob = onboarding || {};
+  const wants = Number(ob.weeklyTarget) || 0;
+  const head = wants ? `${wants}/week` : 'no weekly target';
+  const r = weekRanges(ob, monday);
+  if (r.skip) return { kind: 'off', text: `${head} · week off` };
+  const tz = ob.timeZone;
+  const nev = toBakuIntervals(r.never, tz);
+  const weekB = subtractIntervals(toBakuIntervals(r.week, tz), nev);
+  const maybeB = subtractIntervals(subtractIntervals(toBakuIntervals(r.maybe, tz), nev), weekB);
+  const rows = [
+    ...intervalsByDay(weekB).map((x) => ({ ...x, maybe: false })),
+    ...intervalsByDay(maybeB).map((x) => ({ ...x, maybe: true })),
+  ].sort((x, y) => ((x.day + 6) % 7) - ((y.day + 6) % 7) || x.startMin - y.startMin);
+  if (!rows.length) return { kind: 'none', text: `${head} · no hours yet` };
+  const kind = r.picked ? 'week' : 'usual';
+  const list = rows.map((x) => `${DAY_SHORT[x.day]} ${hm(x.startMin)}–${hm(x.endMin)}${x.maybe ? ' (maybe)' : ''}`).join(', ');
+  return { kind, text: `${head} · ${kind === 'week' ? 'this week' : 'usual'}: ${list}` };
 }

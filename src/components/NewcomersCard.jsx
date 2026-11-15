@@ -3,6 +3,7 @@ import { Check, MessageCircle, UserPlus } from 'lucide-react';
 import { newcomerRows } from '../utils/newcomers';
 import { lastSeenLabel } from '../utils/presence';
 import { Button } from './ui';
+import AvailabilityLine from './AvailabilityLine';
 import './NewcomersCard.css';
 
 // Admin → Matching, first thing on the tab (2026-11-15, review priority 4):
@@ -14,14 +15,14 @@ import './NewcomersCard.css';
 const SHOW = 8;
 const LANG = { az: 'AZ', tr: 'TR', ru: 'RU', en: 'EN' };
 
-export default function NewcomersCard({ users, onboarding, warmups, pairs, now, skip, levelShort }) {
+export default function NewcomersCard({ users, onboarding, warmups, pairs, week, now, skip, levelShort }) {
   const [all, setAll] = useState(false);
+  const obById = useMemo(() => new Map(onboarding.map((o) => [o.id, o])), [onboarding]);
   const rows = useMemo(() => {
-    const ob = new Map(onboarding.map((o) => [o.id, o]));
     const booked = new Set();
     for (const p of pairs) { if (p.a) booked.add(p.a); if (p.b) booked.add(p.b); }
-    return newcomerRows({ users, onboarding: ob, warmups, bookedUids: booked, now, skip });
-  }, [users, onboarding, warmups, pairs, now, skip]);
+    return newcomerRows({ users, onboarding: obById, warmups, bookedUids: booked, now, skip });
+  }, [users, obById, warmups, pairs, now, skip]);
 
   const waiting = rows.filter((r) => r.noFirst).length;
   const shown = all ? rows : rows.slice(0, SHOW);
@@ -48,6 +49,9 @@ export default function NewcomersCard({ users, onboarding, warmups, pairs, now, 
                     {' · '}{r.seen ? `seen ${lastSeenLabel(r.seen, now)}` : 'never seen'}
                     {' · '}{LANG[r.lang]}
                   </span>
+                  {obById.has(r.uid)
+                    ? <AvailabilityLine onboarding={obById.get(r.uid)} week={week} uid={r.uid} pairs={pairs} />
+                    : <span className="aa-meta">no hours yet · wizard not done</span>}
                   <ol className="nc-steps" aria-label={`${r.reached} of ${r.steps.length} steps`}>
                     {r.steps.map((s) => (
                       <li key={s.key} className={`nc-step ${s.done ? 'is-done' : ''}`} title={s.label}>

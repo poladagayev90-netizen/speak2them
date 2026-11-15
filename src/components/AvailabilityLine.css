@@ -1,0 +1,30 @@
+/* Who practises / Newcomers: a person's hours as one line, the grid on tap.
+   Same cell colours as Matching's free-time grid (AdminMatching.css .mt-cell). */
+.av { display: grid; gap: var(--s-2); min-width: 0; }
+.av-line {
+  display: flex; align-items: flex-start; gap: var(--s-1);
+  min-width: 0; max-width: 100%; padding: 0; border: 0; background: none;
+  font: inherit; font-size: var(--fs-sm); font-weight: 600; line-height: 1.4;
+  color: var(--accent); text-align: left; cursor: pointer;
+}
+.av-line.is-plain { color: var(--text-secondary); cursor: default; }
+.av-line:disabled { opacity: 1; }
+.av-text { min-width: 0; overflow-wrap: anywhere; }
+.av-icon, .av-chev { flex-shrink: 0; margin-top: 2px; }
+.av-chev { transition: transform 0.15s ease; }
+.av-chev.is-open { transform: rotate(180deg); }
+.av-grid {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--s-1) var(--s-2);
+  justify-content: start; min-width: 0;
+}
+.av-days { display: grid; grid-auto-rows: 12px; gap: 2px; font-size: var(--fs-xs); line-height: 12px; color: var(--text-muted); }
+.av-body { display: grid; gap: 2px; min-width: 0; }
+.av-cells { display: grid; grid-template-columns: repeat(17, 12px); grid-auto-rows: 12px; gap: 2px; }
+.av-cell { border-radius: 2px; background: var(--bg-secondary); }
+.av-cell.is-off { background: var(--accent-soft); }
+.av-cell.is-free { background: var(--accent-ring); }
+.av-cell.is-picked { background: rgb(var(--accent-rgb) / 0.6); }
+.av-cell.is-pair { background: var(--accent-strong); }
+.av-cell.is-maybe { background: transparent; box-shadow: inset 0 0 0 1px var(--accent-ring); }
+.av-hours { display: flex; justify-content: space-between; width: calc(17 * 12px + 16 * 2px); font-size: var(--fs-xs); color: var(--text-muted); }
+.av-key { grid-column: 1 / -1; font-size: var(--fs-xs); color: var(--text-muted); }

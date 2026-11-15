@@ -7,6 +7,7 @@ import { LEVELS } from '../utils/onboarding';
 import { byLastSeen } from '../utils/presence';
 import { stableOrder } from '../utils/stableOrder';
 import { Button } from './ui';
+import AvailabilityLine from './AvailabilityLine';
 import './AdminApplicants.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -154,7 +155,7 @@ function AutoRoster({ week, users }) {
   const people = useMemo(() => {
     const byUid = new Map((users || []).map((u) => [u.uid || u.id, u]));
     return onboarding
-      .map((o) => { const u = byUid.get(o.id) || {}; return { id: o.id, name: u.name || o.id.slice(0, 6), level: u.level || o.level, seen: toMs(u.lastSeen), role: u.role }; })
+      .map((o) => { const u = byUid.get(o.id) || {}; return { id: o.id, ob: o, name: u.name || o.id.slice(0, 6), level: u.level || o.level, seen: toMs(u.lastSeen), role: u.role }; })
       .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher');
   }, [users, onboarding]);
   const ordered = useSeenOrder(people);
@@ -199,6 +200,7 @@ function AutoRoster({ week, users }) {
               <span className="aa-roster-main">
                 <span className="aa-name">{p.name} <span className="aa-level">{levelShort(p.level)}</span></span>
                 <span className="aa-meta">{WHY[why[p.id]] || '—'} · {seenLabel(p.seen, now)}{healthLabel(health.get(p.id)) ? ` · ${healthLabel(health.get(p.id))}` : ''}</span>
+                <AvailabilityLine onboarding={p.ob} week={week} uid={p.id} />
               </span>
               <span className="aa-tri" role="group" aria-label={`${p.name}: override`}>
                 <FlagButton id={p.id} name={p.name} h={health.get(p.id)} />
@@ -256,6 +258,7 @@ function ManualRoster({ week, users }) {
         const ob = obById.get(id) || {};
         return {
           id,
+          ob: obById.get(id) || null,
           name: u.name || u.email || id.slice(0, 6),
           email: u.email || '',
           level: u.level || ob.level,
@@ -329,7 +332,9 @@ function ManualRoster({ week, users }) {
               <input type="checkbox" className="aa-check" checked={draft.has(p.id)} onChange={() => toggle(p.id)} />
               <span className="aa-roster-main">
                 <span className="aa-name">{p.name} <span className="aa-level">{levelShort(p.level)}</span></span>
-                <span className="aa-meta">{p.wants ? `wants ${p.wants}/week` : 'no weekly target'} · {seenLabel(p.seen, now)}{healthLabel(health.get(p.id)) ? ` · ${healthLabel(health.get(p.id))}` : ''}</span>
+                <span className="aa-meta">{seenLabel(p.seen, now)}{healthLabel(health.get(p.id)) ? ` · ${healthLabel(health.get(p.id))}` : ''}</span>
+                {/* «N/week · hours» — the weekly target moved into this line. */}
+                <AvailabilityLine onboarding={p.ob} week={week} uid={p.id} />
               </span>
             </label>
             <FlagButton id={p.id} name={p.name} h={health.get(p.id)} />

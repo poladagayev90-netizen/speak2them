@@ -222,3 +222,29 @@ describe('warmupFunnel', () => {
     expect(f.withoutWarmup).toEqual({ reached: 1, of: 2 });
   });
 });
+
+describe('availabilitySummary', () => {
+  const { availabilitySummary } = require('./matching');
+  const MON = '2026-11-16';
+  // Ranges are { day (0 = Sunday), startMin, endMin } in the learner's clock.
+  const usual = [
+    { day: 1, startMin: 19 * 60, endMin: 21 * 60 },
+    { day: 3, startMin: 20 * 60, endMin: 22 * 60 },
+  ];
+  test('usual times, maybe marked, Monday first, target in front', () => {
+    const ob = { weeklyTarget: 3, availability: usual, maybeAvailability: [{ day: 6, startMin: 11 * 60, endMin: 13 * 60 }, { day: 0, startMin: 10 * 60, endMin: 11 * 60 }] };
+    expect(availabilitySummary(ob, MON)).toEqual({ kind: 'usual', text: '3/week · usual: Mon 19–21, Wed 20–22, Sat 11–13 (maybe), Sun 10–11 (maybe)' });
+  });
+  test('picked hours for the week win and drop maybe', () => {
+    const ob = { weeklyTarget: 2, availability: usual, maybeAvailability: [{ day: 6, startMin: 600, endMin: 660 }], weeks: { [MON]: { hours: { 2: [18, 19] } } } };
+    expect(availabilitySummary(ob, MON)).toEqual({ kind: 'week', text: '2/week · this week: Tue 18–20' });
+  });
+  test('Never cuts, week off, empty, other time zone shown in Baku hours', () => {
+    expect(availabilitySummary({ availability: usual, busyAvailability: [{ day: 1, startMin: 20 * 60, endMin: 21 * 60 }] }, MON).text)
+      .toBe('no weekly target · usual: Mon 19–20, Wed 20–22');
+    expect(availabilitySummary({ weeklyTarget: 1, availability: usual, weeks: { [MON]: { skip: true } } }, MON).text).toBe('1/week · week off');
+    expect(availabilitySummary(null, MON)).toEqual({ kind: 'none', text: 'no weekly target · no hours yet' });
+    expect(availabilitySummary({ availability: [{ day: 1, startMin: 18 * 60, endMin: 19 * 60 + 30 }], timeZone: 'Europe/Istanbul' }, MON).text)
+      .toBe('no weekly target · usual: Mon 19–20:30');
+  });
+});
