@@ -322,7 +322,7 @@ export const ATTENTION = [
   ['limited', 'Reliability limited'],
   ['noWhatsApp', 'No WhatsApp'],
 ];
-const NEW_WINDOW_MS = 14 * DAY_MS;
+export const NEW_WINDOW_MS = 14 * DAY_MS;
 export function attentionOf(p, nowMs = Date.now()) {
   const asleep = ['snoozed', 'asleep'].includes(p.why) || ['sleeping', 'ghost'].includes(p.health);
   return {

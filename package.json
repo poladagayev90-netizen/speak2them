@@ -20,6 +20,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "@vercel/analytics": "2.0.1",
     "agora-rtc-sdk-ng": "^4.24.3",
     "firebase": "^12.12.1",
     "lucide-react": "^1.16.0",

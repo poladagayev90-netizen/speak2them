@@ -65,6 +65,11 @@
     <title>SpeakLab</title>
     <script>
       window.onerror = function(message, source, lineno, colno, error) {
+        // Vercel Web Analytics' script is optional: while Analytics is off for
+        // the project, /_vercel/insights/script.js falls through to the SPA
+        // rewrite and comes back as index.html ("Unexpected token '<'"). Never
+        // take the app down for it.
+        if (source && String(source).indexOf('/_vercel/') !== -1) return true;
         var errDiv = document.createElement('div');
         errDiv.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:red; color:white; z-index:999999; padding:20px; font-size:14px; overflow:scroll; word-wrap:break-word;';
         errDiv.innerHTML = '<h2>APP CRASHED</h2><p><b>Error:</b> ' + message + '</p><p><b>Source:</b> ' + source + ' : ' + lineno + '</p><p><b>Stack:</b> ' + (error ? error.stack : 'N/A') + '</p>';

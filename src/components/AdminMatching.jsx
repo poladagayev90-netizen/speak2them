@@ -23,6 +23,7 @@ import { usePackageSummaries } from './AdminPackages';
 import { stableOrder } from '../utils/stableOrder';
 import { byLastSeen, lastSeenLabel } from '../utils/presence';
 import { Button, Sheet } from './ui';
+import NewcomersCard from './NewcomersCard';
 import './AdminApplicants.css';
 import './AdminMatching.css';
 
@@ -204,6 +205,8 @@ export default function AdminMatching({ users = [] }) {
       })
       .filter((p) => p.id !== ADMIN_UID && p.role !== 'teacher');
   }, [onboarding, users, inList, now, autoMode, autoIn, autoWhy, health, reliability, packages, warmups]);
+  // Newcomers card: never the admin or a teacher (same as People).
+  const skipNewcomer = React.useCallback((u) => (u.uid || u.id) === ADMIN_UID || u.role === 'teacher', []);
   const personById = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
 
   const say = (ok, text) => setMsg({ ok, text });
@@ -332,6 +335,8 @@ export default function AdminMatching({ users = [] }) {
 
   return (
     <div className="mt">
+      <NewcomersCard users={users} onboarding={onboarding} warmups={warmups} pairs={pairs} now={now}
+        skip={skipNewcomer} levelShort={levelShort} />
       <div className="mt-top">
         <div className="aa-filters" role="tablist" aria-label="Week">
           {weeks.map((w) => (

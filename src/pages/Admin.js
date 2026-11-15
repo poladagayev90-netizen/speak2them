@@ -184,7 +184,8 @@ export default function Admin({ user }) {
   );
 
   const current = TABS.find((t) => t.id === adminTab);
-  const groupTabs = TABS.filter((t) => t.group === current.group);
+  // Hidden tabs (adminNav.js) show in the row only while one is open by link.
+  const groupTabs = TABS.filter((t) => t.group === current.group && (!t.hidden || t.id === current.id));
 
   return (
     <div className="adm">

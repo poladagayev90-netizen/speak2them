@@ -1,0 +1,27 @@
+/* Admin → Matching → Newcomers. Tokens only (docs/domain/design.md);
+   coral = progress, so only the done steps use it. */
+.nc { display: grid; gap: var(--s-3); }
+.nc .aa-h { margin: 0; }
+.nc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+.nc-row {
+  min-width: 0;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-3);
+  padding: var(--s-2) 0;
+  border-top: 1px solid var(--border);
+}
+.nc-row:first-child { border-top: 0; }
+.nc-main { min-width: 0; flex: 1 1 220px; display: grid; gap: var(--s-1); }
+.nc-steps { list-style: none; margin: var(--s-1) 0 0; padding: 0; display: flex; gap: var(--s-1); }
+.nc-step {
+  width: 18px; height: 18px; border-radius: var(--r-full, 999px);
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: var(--bg-card); color: var(--coral-ink);
+}
+.nc-step.is-done { background: var(--coral-soft); border-color: var(--coral); }
+.nc-next { font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
+.nc-nowa { font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
+.nc-more { justify-self: start; }
+.nc-sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}

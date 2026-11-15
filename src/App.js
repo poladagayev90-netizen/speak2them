@@ -25,6 +25,8 @@ import { LANG_STORAGE_KEY, setFeedbackLanguage } from './utils/feedbackLanguage'
 import { resolveAppLanguage, deviceTimeZone } from './utils/appLanguage';
 import Logo from './components/Logo';
 import { Mic } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
+import { beforeSendAnalytics } from './utils/webAnalytics';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
 // be preloaded on idle (see the preload effect in App) — without this, the
@@ -610,6 +612,8 @@ function App() {
           </BrowserRouter>
         )}
       </ErrorBoundary>
+      {/* Web visits only (cookieless) — never inside the Android app. */}
+      {!Capacitor.isNativePlatform() && <Analytics beforeSend={beforeSendAnalytics} />}
     </>
   );
 }

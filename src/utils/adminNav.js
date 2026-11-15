@@ -17,10 +17,15 @@ export const TABS = [
   // The AI planning analyst (functions/agent): its report, switches, budget.
   { id: 'agent', label: 'Agent', group: 'week' },
   { id: 'premium', label: 'Students', group: 'admin' },
-  { id: 'applicants', label: 'Applicants', group: 'admin' },
+  // Applicants (answers of the old cohort course) and Intros are HIDDEN since
+  // 2026-11-15 (Polad; review priority 8): cohorts no longer exist and the
+  // newcomer work lives in Matching → Newcomers. They are not in the tab row,
+  // but an address still opens them — admin pushes link to ?tab=applicants and
+  // ?tab=intros, and People rows still open ApplicantDetail.
+  { id: 'applicants', label: 'Applicants', group: 'admin', hidden: true },
   { id: 'slots', label: 'Sessions', group: 'admin' },
   { id: 'attendance', label: 'Attendance', group: 'admin' },
-  { id: 'intros', label: 'Intros', group: 'admin' },
+  { id: 'intros', label: 'Intros', group: 'admin', hidden: true },
   // Cohorts (the old paid group course, AdminCohorts.jsx) is hidden since
   // 2026-10-03: individual lessons replaced it and the tab read as the place
   // to schedule them. The component and its data stay; re-add the row to bring it back.
