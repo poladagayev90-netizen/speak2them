@@ -63,7 +63,7 @@ export default function NotificationPrompt({ user }) {
           Turn on notifications
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, lineHeight: 1.4 }}>
-          Allow notifications so you know when a session starts and your report is ready.
+          Know when a partner calls and when your report is ready.
         </div>
       </div>
       <button

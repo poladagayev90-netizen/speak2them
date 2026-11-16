@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Search, X } from 'lucide-react';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Check, Play, Search, X } from 'lucide-react';
 import { describeVideos } from '../data/describeVideos';
-import { canBrowseAllVideos } from '../utils/fetchTopicVideos';
+import { weeklyContent } from '../data/weeklyContent';
+import { canBrowseAllVideos, videosForTopic } from '../utils/fetchTopicVideos';
+import { MAX_PICKS, pickedClips, saveClipPicks, subscribeToClipPicks } from '../utils/teacherClipPicks';
 import ClipViewer from '../components/ClipViewer';
 import { Button } from '../components/ui';
 import './VideoLibrary.css';
@@ -83,12 +85,68 @@ function Stage({ clips, index, onIndexChange, onClose }) {
 export default function VideoLibrary({ user }) {
   const allowed = canBrowseAllVideos(user);
   const navigate = useNavigate();
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState('');
   const openId = params.get('clip');
 
+  // PICK MODE (?pick=<day>, from the topic sheet's «Choose clips»): the same
+  // grid, but a tap adds the clip to that topic's list instead of opening it
+  // (the small play button still previews). The list starts from the
+  // teacher's earlier picks, or from the topic's own clips, so «add two of
+  // mine» is two taps, not six. See utils/teacherClipPicks.js.
+  const pickDay = Number(params.get('pick')) || null;
+  const pickTopic = pickDay ? weeklyContent.find((c) => c.day === pickDay) : null;
+  const [chosen, setChosen] = useState(null); // null until the saved picks load
+  const [saving, setSaving] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
+  // The list as it was when the picker opened leads the grid, so the teacher
+  // sees what is already chosen without hunting through 100 posters. Fixed at
+  // load: re-sorting on every tap would move the tile under the finger.
+  const [leading, setLeading] = useState([]);
+  useEffect(() => {
+    if (!pickTopic || !user?.uid) return undefined;
+    let first = true;
+    return subscribeToClipPicks(user.uid, (days) => {
+      if (!first) return; // later snapshots are our own save echoing back
+      first = false;
+      const mine = pickedClips(days, pickDay);
+      const ids = (mine.length ? mine : videosForTopic(pickDay)).map((c) => c.id);
+      setChosen(ids);
+      setLeading(ids);
+    });
+  }, [pickTopic, pickDay, user?.uid]);
+
+  const toggle = (id) => setChosen((prev) => {
+    const list = prev || [];
+    if (list.includes(id)) return list.filter((x) => x !== id);
+    return list.length >= MAX_PICKS ? list : [...list, id];
+  });
+  // Back to the sheet the picker was opened from; from a pasted link, to the
+  // plain library (a back there could leave the app).
+  // Read once: previewing a clip rewrites the URL and drops the state.
+  const fromSheetRef = useRef(location.state?.fromSheet === true);
+  const leavePick = () => {
+    if (fromSheetRef.current) navigate(-1);
+    else navigate('/teacher/videos', { replace: true });
+  };
+  const save = async (ids) => {
+    if (saving) return;
+    setSaving(true);
+    setSaveFailed(false);
+    const { ok } = await saveClipPicks(user.uid, pickDay, ids);
+    setSaving(false);
+    if (ok) leavePick();
+    else setSaveFailed(true);
+  };
+
   const q = norm(query).trim();
-  const results = useMemo(() => describeVideos.filter((c) => matches(c, q)), [q]);
+  const results = useMemo(() => {
+    const hits = describeVideos.filter((c) => matches(c, q));
+    if (!leading.length) return hits;
+    const rank = (c) => { const k = leading.indexOf(c.id); return k < 0 ? leading.length : k; };
+    return [...hits].sort((a, b) => rank(a) - rank(b));
+  }, [q, leading]);
 
   // The stage steps through what the teacher was looking at: with a search on,
   // the arrows stay inside the results. A pasted link to a clip the search
@@ -96,13 +154,15 @@ export default function VideoLibrary({ user }) {
   const stageList = results.some((c) => c.id === openId) ? results : describeVideos;
   const stageIndex = stageList.findIndex((c) => c.id === openId);
 
-  const open = (id) => setParams({ clip: id });
+  // Pick mode rides along in the URL while a clip is previewed.
+  const base = pickDay ? { pick: String(pickDay) } : {};
+  const open = (id) => setParams({ ...base, clip: id });
   const close = () => {
     // Back, when the stage was opened from this grid (one history entry to
     // pop); a replace when it came from a pasted link, or back would leave
     // the app.
     if (window.history.state?.idx > 0) navigate(-1);
-    else setParams({}, { replace: true });
+    else setParams(base, { replace: true });
   };
 
   // When the stage closes — by its button, Escape or the browser's back —
@@ -114,7 +174,7 @@ export default function VideoLibrary({ user }) {
     lastOpenRef.current = openId;
     if (!openId && was) document.getElementById(`vl-tile-${was}`)?.focus();
   }, [openId]);
-  const step = (i) => setParams({ clip: stageList[i].id }, { replace: true });
+  const step = (i) => setParams({ ...base, clip: stageList[i].id }, { replace: true });
 
   if (!allowed) return <Navigate to="/" replace />;
 
@@ -126,14 +186,25 @@ export default function VideoLibrary({ user }) {
           size="sm"
           iconOnly
           icon={<ArrowLeft size={20} aria-hidden="true" />}
-          aria-label="Back to the teacher panel"
-          onClick={() => navigate('/teacher')}
+          aria-label={pickTopic ? 'Back without saving' : 'Back to the teacher panel'}
+          onClick={() => (pickTopic ? leavePick() : navigate('/teacher'))}
         />
         <div className="vl-head-text">
-          <h1 className="vl-title">Video library</h1>
-          <p className="vl-sub">
-            All {describeVideos.length} clips. Pick one that fits your student, then share this tab.
-          </p>
+          {pickTopic ? (
+            <>
+              <h1 className="vl-title">Choose clips</h1>
+              <p className="vl-sub">
+                Day {pickTopic.day} · {pickTopic.topic}. Tap a clip to add or remove it — they play in the order you add them.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="vl-title">Video library</h1>
+              <p className="vl-sub">
+                All {describeVideos.length} clips. Pick one that fits your student, then share this tab.
+              </p>
+            </>
+          )}
         </div>
       </header>
 
@@ -168,24 +239,57 @@ export default function VideoLibrary({ user }) {
         </div>
       ) : (
         <ul className="vl-grid">
-          {results.map((clip) => (
-            <li key={clip.id}>
-              <button
-                type="button"
-                id={`vl-tile-${clip.id}`}
-                className="vl-tile"
-                onClick={() => open(clip.id)}
-                aria-label={clip.alt}
-              >
-                <span className="vl-thumb">
-                  <img src={clip.poster} alt="" loading="lazy" decoding="async" />
-                  {clip.seconds ? <span className="vl-dur">{clip.seconds}s</span> : null}
-                </span>
-                <span className="vl-words">{(clip.keywords || []).slice(0, 3).join(' · ')}</span>
-              </button>
-            </li>
-          ))}
+          {results.map((clip) => {
+            const order = pickTopic && chosen ? chosen.indexOf(clip.id) : -1;
+            const picked = order >= 0;
+            return (
+              <li key={clip.id} className={pickTopic ? 'vl-cell--pick' : undefined}>
+                <button
+                  type="button"
+                  id={`vl-tile-${clip.id}`}
+                  className={`vl-tile${picked ? ' picked' : ''}`}
+                  onClick={() => (pickTopic ? toggle(clip.id) : open(clip.id))}
+                  aria-label={clip.alt}
+                  aria-pressed={pickTopic ? picked : undefined}
+                  disabled={pickTopic && !chosen}
+                >
+                  <span className="vl-thumb">
+                    <img src={clip.poster} alt="" loading="lazy" decoding="async" />
+                    {clip.seconds ? <span className="vl-dur">{clip.seconds}s</span> : null}
+                    {picked && <span className="vl-order" aria-hidden="true">{order + 1}</span>}
+                  </span>
+                  <span className="vl-words">{(clip.keywords || []).slice(0, 3).join(' · ')}</span>
+                </button>
+                {pickTopic && (
+                  <button type="button" className="vl-preview" onClick={() => open(clip.id)} aria-label={`Preview: ${clip.alt}`}>
+                    <Play size={14} strokeWidth={2.5} aria-hidden="true" />
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
+      )}
+
+      {pickTopic && (
+        <div className="vl-pickbar" role="region" aria-label="Chosen clips">
+          <span className="vl-pickbar-count" aria-live="polite">
+            {chosen ? `${chosen.length} chosen` : 'Loading…'}
+            {chosen && chosen.length >= MAX_PICKS ? ` · ${MAX_PICKS} is the most` : ''}
+          </span>
+          {saveFailed && <span className="vl-pickbar-error">Not saved. Try again.</span>}
+          <Button variant="ghost" size="sm" onClick={() => save([])} disabled={saving || !chosen}>
+            Topic's own
+          </Button>
+          <Button
+            size="sm"
+            icon={<Check size={16} aria-hidden="true" />}
+            onClick={() => save(chosen)}
+            disabled={saving || !chosen || chosen.length === 0}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
+        </div>
       )}
 
       {stageIndex >= 0 && (

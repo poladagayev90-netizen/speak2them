@@ -249,6 +249,9 @@ export default function Home({ user }) {
 
         {/* An unanswered question belongs at the top of the screen. */}
         <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
+        {/* Up here, not at the bottom (2026-11-17, Polad: nobody scrolled to
+            it). Shows only until the permission is answered or dismissed. */}
+        <NotificationPrompt user={user} />
         <IntroCard user={user} />
         {/* The one warm-up call before the first real partner — the card
             only for a newcomer who has not put it aside; after «Not now» it
@@ -351,8 +354,6 @@ export default function Home({ user }) {
             now={plan.now}
           />
         )}
-
-        <NotificationPrompt user={user} />
 
         {/* Course standing sits BELOW the actions: a status note must never
             push the things you can actually do down the screen. */}

@@ -928,6 +928,20 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // A teacher's own describe clips per topic (src/utils/teacherClipPicks.js).
+    // Client-written like lessonProgress and safe for the same reason: nothing
+    // is granted by it — the clips are public files, this only orders the
+    // teacher's own Videos tab. `days` is capped so it is not free storage.
+    match /teacherClipPicks/{uid} {
+      allow read: if isOwnDoc(uid);
+      allow create, update: if isOwnDoc(uid)
+        && request.resource.data.keys().hasOnly(['uid', 'days', 'updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.days is map
+        && request.resource.data.days.size() <= 200;
+      allow delete: if false;
+    }
+
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız
     // "bu push artıq göndərilib" markerləridir, client-in nə oxumağa, nə də
     // yazmağa ehtiyacı var. Client yaza bilsəydi, xatırlatmaları susdura bilərdi.

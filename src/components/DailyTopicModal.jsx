@@ -362,7 +362,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             </div>
           )}
 
-          {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} showLibrary={canBrowseAllVideos(user)} />}
+          {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} showLibrary={canBrowseAllVideos(user)} uid={user?.uid} />}
 
           {activeSection === 'pictures' && (
             <div className="dt-section dt-section--narrow" style={{ textAlign: 'center', padding: '20px 0' }}>
