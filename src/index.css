@@ -396,6 +396,21 @@ body, #root {
   overscroll-behavior-y: none;
 }
 
+/* Reading texts are copyable (learner feedback 2026-11-16: "we can copy for
+   translating"). The app shell stays unselectable for the native feel; only
+   the text people read -- the article, the podcast script, and the words,
+   idioms and questions on the topic sheet -- can be long-pressed and copied. */
+.mt-article,
+.mt-script,
+.mt-line-text,
+.dt-content p,
+.dt-vocab-word,
+.dt-idiom-phrase {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* There used to be an atmosphere layer here: two fixed radial gradients lit in
    the accent hue, painted under every screen. On a tinted plum room it is a
    pair of floodlights and the page stops being flat in the wrong way -- the
