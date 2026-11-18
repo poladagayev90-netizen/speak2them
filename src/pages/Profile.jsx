@@ -7,8 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, Radio, BookMarked, Flame, BarChart3,
   Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
-  LineChart, Smartphone, ArrowLeft, Fish,
+  LineChart, Smartphone, ArrowLeft, Fish, MessageSquare, Share2,
 } from 'lucide-react';
+import { shareApp } from '../utils/shareApp';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Stat from '../components/ui/Stat';
@@ -53,7 +54,21 @@ export default function Profile({ user }) {
   // users.showOnline; the server (functions onlineNow) leaves out anyone at false.
   const [showOnline, setShowOnline] = useState(user?.showOnline !== false);
   const [feedbackLang, setFeedbackLang] = useState(getReportLanguage);
+  // A short confirmation after «Share SpeakLab» fell back to copying the link.
+  const [toast, setToast] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const t = setTimeout(() => setToast(''), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const handleShare = async () => {
+    const result = await shareApp();
+    if (result === 'copied') setToast('Link copied');
+    else if (result === 'failed') setToast('Could not share right now');
+  };
 
   // Dil dəyişimi: dərhal UI + localStorage (i18n modulu), sonra Firestore-a
   // yazılır ki, digər cihazlarda da tətbiq olunsun. Firestore yazısı uğursuz
@@ -642,6 +657,15 @@ export default function Profile({ user }) {
         })}
       </div>
 
+      {/* Help & feedback (/feedback, admin reads it in Admin → Feedback) and
+          sharing the app — both reached only from here, never as a popup.
+          docs/domain/app-screens.md «Help & feedback / Share SpeakLab». */}
+      {sectionLabel('Support')}
+      <div style={listCard}>
+        {row({ icon: MessageSquare, label: 'Help & feedback', value: 'A problem, an idea or a question', onClick: () => navigate('/feedback', { state: { from: '/profile' } }), notLast: true })}
+        {row({ icon: Share2, label: 'Share SpeakLab', value: 'Invite a friend to practise', onClick: handleShare })}
+      </div>
+
       {/* HESAB — Google Play requires an in-app privacy link and a way to
           delete the account together with its data. */}
       {sectionLabel('Account')}
@@ -659,6 +683,16 @@ export default function Profile({ user }) {
       )}
 
       <StreakJourney open={journeyOpen} streakInfo={streakInfo} onClose={() => setJourneyOpen(false)} />
+
+      {toast && (
+        <div role="status" style={{
+          position: 'fixed', left: '50%', transform: 'translateX(-50%)',
+          bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))', zIndex: 'var(--z-toast)',
+          maxWidth: 'calc(100% - var(--s-8))', padding: 'var(--s-2) var(--s-4)',
+          borderRadius: 'var(--r-pill)', background: 'var(--accent)', color: 'var(--text-on-accent)',
+          fontSize: 'var(--fs-sm)', fontWeight: 700, boxShadow: 'var(--glass-lift)', textAlign: 'center', whiteSpace: 'nowrap',
+        }}>{toast}</div>
+      )}
 
     </div>
   );

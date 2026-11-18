@@ -1,0 +1,70 @@
+/* Profile → Help & feedback (pages/Feedback.jsx). Plum tokens only. */
+.fb-page {
+  max-width: 560px;
+  margin: 0 auto;
+  /* The bottom nav floats over the page: leave room so «Send» is never under it. */
+  padding: var(--s-4) var(--s-4) calc(var(--s-10) * 3 + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  display: grid;
+  align-content: start;
+  gap: var(--s-3);
+  background: var(--bg-primary);
+  min-height: 100%;
+}
+/* On a computer the desktop layout widens every page to --desk-col; a form
+   line that long is hard to read, so the content keeps a phone-ish column. */
+.fb-page > * { width: 100%; max-width: 560px; justify-self: center; box-sizing: border-box; }
+.fb-head { display: flex; align-items: center; gap: var(--s-2); margin-left: calc(var(--s-2) * -1); }
+.fb-title { margin: 0; font-size: var(--fs-h1); font-weight: 700; color: var(--text-primary); }
+.fb-sub { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); line-height: var(--lh-body); }
+
+.fb-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+.fb-type {
+  display: flex; flex-direction: column; align-items: center; gap: var(--s-1);
+  padding: var(--s-3) var(--s-2);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  cursor: pointer;
+}
+.fb-type svg { color: var(--accent); }
+.fb-type.is-on { border: 2px solid var(--accent); background: var(--accent-soft); }
+
+.fb-label { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); margin-top: var(--s-1); }
+.fb-text {
+  width: 100%; box-sizing: border-box;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font: inherit; font-size: var(--fs-body); line-height: var(--lh-body);
+  resize: vertical; min-height: 140px;
+}
+.fb-text:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.fb-shot { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.fb-hint { font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
+.fb-shot-preview { position: relative; }
+.fb-shot-preview img {
+  display: block; max-height: 160px; max-width: 100%;
+  border-radius: var(--r-md); border: 1px solid var(--border);
+}
+.fb-shot-remove {
+  position: absolute; top: var(--s-1); right: var(--s-1);
+  width: 28px; height: 28px; border-radius: var(--r-pill);
+  border: none; background: var(--bg-card); color: var(--text-primary);
+  display: grid; place-items: center; cursor: pointer;
+  box-shadow: var(--glass-lift);
+}
+.fb-error { margin: 0; font-size: var(--fs-sm); font-weight: 600; color: var(--danger); }
+
+.fb-done { display: grid; gap: var(--s-3); justify-items: center; text-align: center; }
+.fb-done-mark {
+  width: 44px; height: 44px; border-radius: var(--r-pill);
+  display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+.fb-done-title { margin: 0; font-size: var(--fs-h2); font-weight: 700; color: var(--text-primary); }

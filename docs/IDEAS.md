@@ -34,12 +34,12 @@ new interface, not a tweak — needs its own discussion, a full plan and testing
 before going live. Must keep the invariant: the teacher sees mistake types,
 never the conversation (`docs/domain/calls.md`).
 
-### 5. In-app «Report a problem / Send feedback»
+### 5. In-app «Report a problem / Send feedback» — DONE (2026-11-19, Profile → Help & feedback; rules in `docs/domain/app-screens.md`)
 A feedback/bug-report entry like global apps have. Placement and flow to be
 designed (likely Profile → Help & feedback, optional screenshot + device info,
 lands in an admin-readable collection). No popups.
 
-### 6. Share the app from inside the app
+### 6. Share the app from inside the app — DONE (2026-11-19, Profile → Share SpeakLab; native sheet needs the next AAB)
 A «Share SpeakLab» action (native share sheet on Android via Capacitor, Web
 Share API on web), with a store / web link.
 

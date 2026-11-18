@@ -15,7 +15,7 @@ English speaking-practice app: React PWA + Firebase + Agora voice calls, wrapped
 - **`git push origin main` auto-deploys the web app to production** (Vercel). There is no staging. Treat a push as shipping to real users.
 - **Default to showing the diff and asking before pushing**, unless the user explicitly says to deploy.
 - Cloud Functions deploy separately and manually: `npx firebase-tools deploy --only functions --project speak2them-64f2b`.
-- Functions live in **two regions**: **all six** Firestore triggers (`initTrialForNewUser`, `notifySearchingUser`, `reconcileCallStats`, `notifyChatMessage`, `notifyAdminOnboarding`, `syncUpcomingCall`) run in `europe-west4`; everything else `us-central1`.
+- Functions live in **two regions**: **all seven** Firestore triggers (`initTrialForNewUser`, `notifySearchingUser`, `reconcileCallStats`, `notifyChatMessage`, `notifyAdminOnboarding`, `notifyAdminFeedback`, `syncUpcomingCall`) run in `europe-west4`; everything else `us-central1`.
 - `CI=true` makes ESLint warnings fatal — a warning breaks the deploy. Verify with `CI=true npx react-scripts build` (Bash tool; PowerShell mangles the env prefix).
 - Backend-only changes (`functions/`) do **not** require rebuilding the Android AAB.
 

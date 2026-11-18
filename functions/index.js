@@ -1110,6 +1110,33 @@ exports.notifyAdminOnboarding = onDocumentCreated({ document: "onboarding/{uid}"
   });
 });
 
+// Tells the admin a learner sent something from Profile → Help & feedback
+// (2026-11-19). Same path as notifyAdminOnboarding — no new channel. The push
+// goes only to the admin's own devices; the text is cut short, the full
+// message (and any screenshot) is in Admin → Feedback.
+exports.notifyAdminFeedback = onDocumentCreated({ document: "feedback/{id}", region: "europe-west4" }, async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+  const d = snap.data() || {};
+  if (d.uid === ADMIN_UID) return;
+  const db = admin.firestore();
+  let name = "";
+  try {
+    const u = await db.collection("users").doc(String(d.uid || "")).get();
+    name = (u.exists && u.data().name) || "";
+  } catch (e) {
+    console.warn("[notifyAdminFeedback] user read failed:", e.message);
+  }
+  const kind = d.type === "problem" ? "Problem" : d.type === "idea" ? "Idea" : "Feedback";
+  const text = String(d.text || "").replace(/\s+/g, " ").trim();
+  await sendPushToUser(db, ADMIN_UID, {
+    title: `${kind} from ${name || "a learner"}`,
+    body: text.length > 140 ? `${text.slice(0, 137)}…` : text,
+    type: "admin_feedback",
+    url: "/admin?tab=feedback",
+  });
+});
+
 // Bills a finished call against the caller's trial (then bonus) minutes.
 // Server-authoritative: the duration is computed from the call's own timestamps,
 // never taken from the client, and each participant is billed once per call.

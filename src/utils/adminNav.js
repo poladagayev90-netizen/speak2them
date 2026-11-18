@@ -26,6 +26,8 @@ export const TABS = [
   { id: 'slots', label: 'Sessions', group: 'admin' },
   { id: 'attendance', label: 'Attendance', group: 'admin' },
   { id: 'intros', label: 'Intros', group: 'admin', hidden: true },
+  // Learners' messages from Profile → Help & feedback (2026-11-19).
+  { id: 'feedback', label: 'Feedback', group: 'admin' },
   // Cohorts (the old paid group course, AdminCohorts.jsx) is hidden since
   // 2026-10-03: individual lessons replaced it and the tab read as the place
   // to schedule them. The component and its data stay; re-add the row to bring it back.

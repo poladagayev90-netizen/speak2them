@@ -215,6 +215,39 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Profile → Help & feedback (2026-11-19, src/utils/feedback.js
+    // buildFeedbackDoc — keep the key list in step). The learner may only
+    // CREATE their own message; nobody but the admin reads it (not even the
+    // sender — nothing in the app needs that). The admin may only flip
+    // `status` (new ↔ done). The screenshot is an inline JPEG data URL, capped
+    // so a doc stays far under 1 MiB.
+    match /feedback/{feedbackId} {
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'type', 'text', 'appVersion', 'platform', 'route', 'userAgent', 'screenshot', 'status', 'createdAt'])
+        && request.resource.data.keys().hasAll(['uid', 'type', 'text', 'appVersion', 'platform', 'route', 'status', 'createdAt'])
+        && request.resource.data.type in ['problem', 'idea', 'other']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 1
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.appVersion is string
+        && request.resource.data.appVersion.size() <= 20
+        && request.resource.data.platform in ['web', 'android', 'ios']
+        && request.resource.data.route is string
+        && request.resource.data.route.size() <= 200
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time
+        && (!('userAgent' in request.resource.data)
+          || (request.resource.data.userAgent is string && request.resource.data.userAgent.size() <= 300))
+        && (!('screenshot' in request.resource.data)
+          || (request.resource.data.screenshot is string && request.resource.data.screenshot.size() <= 350000));
+      allow read: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['new', 'done'];
+      allow delete: if isAdmin();
+    }
+
     match /premiumRequests/{userId} {
       allow read: if isAdmin() || isOwnDoc(userId);
       allow create: if isAdmin() || (

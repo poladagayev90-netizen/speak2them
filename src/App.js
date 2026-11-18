@@ -52,6 +52,7 @@ const Homework = React.lazy(() => import('./pages/Homework'));
 const ClassLesson = React.lazy(() => import('./pages/ClassLesson'));
 const Profile = React.lazy(importProfile);
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
+const Feedback = React.lazy(() => import('./pages/Feedback'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const IntroBooking = React.lazy(() => import('./pages/IntroBooking'));
@@ -241,6 +242,7 @@ function AppShell({ user }) {
           <Route path="/homework/:id" element={user ? <Homework user={user} /> : <Navigate to="/login" />} />
           <Route path="/class/:lessonId" element={user ? <ClassLesson user={user} /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+          <Route path="/feedback" element={user ? <Feedback user={user} /> : <Navigate to="/login" />} />
           <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
           <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
           <Route path="/puzzle" element={user ? <DailyPuzzle user={user} /> : <Navigate to="/login" />} />

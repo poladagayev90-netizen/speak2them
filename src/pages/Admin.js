@@ -14,6 +14,7 @@ import AdminAttendance from '../components/AdminAttendance';
 import AdminActivity from '../components/AdminActivity';
 import AdminAgent from '../components/AdminAgent';
 import AdminAppVersion from '../components/AdminAppVersion';
+import AdminFeedback from '../components/AdminFeedback';
 import { BillingSwitch, PackageMenu, SuspendButton, packageLabel, usePackageSummaries } from '../components/AdminPackages';
 import { setTutorVerification } from '../utils/teacher';
 import { stableOrder } from '../utils/stableOrder';
@@ -213,6 +214,7 @@ export default function Admin({ user }) {
           : adminTab === 'intros' ? <AdminIntros users={users} />
           : adminTab === 'applicants' ? <AdminApplicants users={users} />
           : adminTab === 'slots' ? <AdminSlots users={users} />
+          : adminTab === 'feedback' ? <AdminFeedback users={users} />
           : (
           <div className="adm-students">
             {error && <p className="aa-error">{error}</p>}
