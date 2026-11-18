@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithCredential, signOut, connectAuthEmulator } from "firebase/auth";
-import { getFirestore, doc, setDoc, serverTimestamp, connectFirestoreEmulator } from "firebase/firestore";
+import { getFirestore, doc, setDoc, deleteDoc, serverTimestamp, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { Capacitor } from "@capacitor/core";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
@@ -73,6 +73,43 @@ export async function tokenDocId(token) {
   }
 }
 
+// The token doc this device last wrote, so sign-out can delete it. Without
+// this a phone or browser that switched accounts kept receiving the OLD
+// account's pushes — chat messages included (Polad 2026-11-18: the same daily
+// reminder arrived twice, once per account). Kept in localStorage so it
+// survives a reload between writing the token and signing out.
+const DEVICE_TOKEN_KEY = 'slk_push_token';
+let deviceToken = null; // { uid, id } — fallback when storage is blocked
+
+function rememberDeviceToken(uid, id) {
+  deviceToken = { uid, id };
+  try { localStorage.setItem(DEVICE_TOKEN_KEY, JSON.stringify(deviceToken)); } catch { /* private mode */ }
+}
+
+function readDeviceToken() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DEVICE_TOKEN_KEY) || 'null');
+    if (saved?.uid && saved?.id) return saved;
+  } catch { /* private mode or bad JSON */ }
+  return deviceToken;
+}
+
+// Deletes this device's token doc for the signed-in account. Must run BEFORE
+// signOut — the rules only let the owner delete it. Capped at 2 s: offline,
+// a Firestore write waits for the server, and sign-out must never hang on it.
+// A failure is ignored; the token then stays until the sender prunes it.
+async function forgetDeviceToken() {
+  const saved = readDeviceToken();
+  deviceToken = null;
+  try { localStorage.removeItem(DEVICE_TOKEN_KEY); } catch { /* private mode */ }
+  const uid = auth.currentUser?.uid;
+  if (!saved || !uid || saved.uid !== uid) return;
+  await Promise.race([
+    deleteDoc(doc(db, 'users', uid, 'fcmTokens', saved.id)).catch(() => null),
+    new Promise((resolve) => setTimeout(resolve, 2000)),
+  ]);
+}
+
 // Writes one device's token. `platform` tells the sender how to shape the
 // payload: a data-only message is displayed by our service worker on web, but
 // on native Android it would arrive silently — those tokens need an FCM
@@ -80,6 +117,7 @@ export async function tokenDocId(token) {
 // before this field existed are treated as 'web', which is what they were.
 export async function saveFcmToken(uid, token, platform = 'web', extra = {}) {
   const id = await tokenDocId(token);
+  rememberDeviceToken(uid, id);
   await setDoc(
     doc(db, 'users', uid, 'fcmTokens', id),
     {
@@ -240,8 +278,10 @@ async function signInWithGoogleNative() {
 }
 
 // Signing out also clears the native Google session, so the next sign-in
-// shows the account picker instead of reusing the last account.
+// shows the account picker instead of reusing the last account, and deletes
+// this device's push token so the old account's pushes stop here.
 export async function signOutEverywhere() {
+  await forgetDeviceToken();
   if (Capacitor.isNativePlatform()) {
     try {
       const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
