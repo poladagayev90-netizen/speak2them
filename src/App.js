@@ -5,9 +5,9 @@ import { App as CapApp } from '@capacitor/app';
 import { SafeArea } from '@capacitor-community/safe-area';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard } from '@capacitor/keyboard';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
-import { auth, db, watchFcmToken } from './firebase';
+import { auth, db, watchFcmToken, signOutEverywhere } from './firebase';
 import { isNativePush, watchNativePush } from './nativePush';
 import { isInCall } from './utils/presence';
 import { logPresence } from './utils/presenceLog';
@@ -85,7 +85,7 @@ const VideoLibrary = React.lazy(() => import('./pages/VideoLibrary'));
 const SUSPENDED_FLAG = 'slk_suspended'; // read by pages/Login.jsx
 function leaveSuspended() {
   try { sessionStorage.setItem(SUSPENDED_FLAG, '1'); } catch { /* private mode */ }
-  signOut(auth).catch(() => {});
+  signOutEverywhere().catch(() => {});
 }
 
 const LIVE_USER_FIELDS = [
