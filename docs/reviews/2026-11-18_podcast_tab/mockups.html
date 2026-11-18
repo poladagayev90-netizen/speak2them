@@ -1,0 +1,219 @@
+<!doctype html>
+<!-- Static mockups for docs/reviews/2026-11-18_podcast_tab_options.md.
+     Not app code: open in a browser, ?v=a|b|c|desk shows one frame. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Podcast tab options</title>
+<style>
+:root{
+  --bg-primary:#f5f4f9;--bg-secondary:#eae8f2;--bg-card:#fff;--text-primary:#191727;--text-secondary:#48445e;
+  --border:rgba(24,20,48,.15);--accent:#403a7e;--accent-soft:rgba(64,58,126,.10);--ai:#6f5ad0;--ai-soft:rgba(111,90,208,.10);
+  --coral:#dc553a;--glass-lift:0 10px 24px -18px rgba(9,9,11,.34);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#d9d6e6;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:var(--text-primary);padding:24px;display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.label{font-weight:800;font-size:15px;margin:0 0 8px}
+.phone{width:375px;height:812px;background:var(--bg-primary);border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 20px 40px -24px rgba(0,0,0,.4)}
+.sheet-head{padding:14px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:var(--bg-primary)}
+.day{font-size:12px;font-weight:700;background:var(--bg-secondary);padding:4px 10px;border-radius:99px}
+.ttl{font-weight:800;font-size:20px;flex:1}
+.x{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);display:grid;place-items:center}
+.chips{display:flex;gap:6px;padding:8px 16px;overflow:hidden;border-bottom:1px solid var(--border)}
+.chip{flex:none;font-size:13px;font-weight:700;padding:7px 12px;border-radius:99px;background:var(--bg-card);border:1px solid var(--border)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.body{flex:1;overflow:hidden;position:relative}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.steps{display:flex;gap:4px;padding:3px;margin:10px 16px 0;background:var(--bg-secondary);border-radius:99px}
+.steps span{flex:1;text-align:center;font-size:13px;font-weight:700;padding:7px 0;border-radius:99px;color:var(--text-secondary)}
+.steps span.on{background:var(--accent);color:#fff}
+.mini{display:flex;align-items:center;gap:10px;margin:10px 16px 0;padding:8px;background:var(--bg-card);border-radius:16px;box-shadow:var(--glass-lift)}
+.mini img{width:64px;height:40px;object-fit:cover;border-radius:10px}
+.mini .t{flex:1;min-width:0}
+.mini .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .t small{font-size:12px;font-weight:600;color:var(--text-secondary)}
+.bar{height:4px;background:var(--bg-secondary);border-radius:2px;margin-top:6px;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:22%;background:var(--accent);border-radius:2px}
+.script{list-style:none;margin:0;padding:8px 16px 150px;display:flex;flex-direction:column;gap:4px}
+.ln{padding:10px 12px;border-radius:14px;color:var(--text-secondary);opacity:.55;font-size:17px;line-height:1.5}
+.ln .who{display:block;font-size:12px;font-weight:800;letter-spacing:.03em;margin-bottom:2px}
+.who.l{color:var(--accent)}.who.s{color:var(--ai)}
+.ln.done{opacity:.45}
+.ln.on{opacity:1;color:var(--text-primary);background:var(--bg-card);box-shadow:var(--glass-lift);font-size:21px;font-weight:600;border-left:4px solid var(--accent)}
+.term{background:var(--accent-soft);border-bottom:2px solid var(--accent);border-radius:3px;padding:0 2px}
+.dock{position:absolute;left:12px;right:12px;bottom:12px;background:var(--bg-card);border-radius:22px;box-shadow:0 12px 30px -14px rgba(20,8,40,.45);padding:10px 12px 12px;border:1px solid var(--border)}
+.dock .row{display:flex;align-items:center;justify-content:space-between}
+.btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--bg-secondary);color:var(--text-primary)}
+.btn.lbl{width:auto;padding:0 12px;border-radius:99px;font-size:13px;font-weight:800;gap:4px;display:flex;align-items:center}
+.btn.on{background:var(--accent-soft);color:var(--accent);outline:2px solid var(--accent)}
+.play{width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center}
+.play svg{width:26px;height:26px}
+.cap{font-size:11px;font-weight:700;color:var(--text-secondary);text-align:center;margin-top:3px}
+.times{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:8px}
+.trk{height:4px;background:var(--bg-secondary);border-radius:2px;position:relative;margin-bottom:4px}
+.trk i{position:absolute;left:0;top:0;bottom:0;width:22%;background:var(--accent);border-radius:2px}
+.trk b{position:absolute;top:-5px;left:22%;width:14px;height:14px;border-radius:50%;background:var(--accent);transform:translateX(-50%)}
+.trk u{position:absolute;top:-3px;width:2px;height:10px;background:var(--ai)}
+.note{position:absolute;right:10px;background:var(--coral);color:#fff;font-size:11px;font-weight:800;padding:3px 7px;border-radius:6px}
+/* A */
+.pin{position:relative;margin:10px 16px 0}
+.stage{position:relative;border-radius:18px;overflow:hidden;height:118px}
+.stage img{width:100%;height:100%;object-fit:cover}
+.stage .shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,8,32,.8),transparent 70%)}
+.stage .c{position:absolute;left:12px;bottom:8px;right:12px;color:#fff}
+.stage .c small{font-size:10px;font-weight:700;letter-spacing:.06em;opacity:.85}
+.stage .c b{display:block;font-size:17px}
+.live{margin:10px 16px 0;padding:14px 16px;background:var(--bg-card);border-radius:18px;box-shadow:var(--glass-lift);border:2px solid var(--accent)}
+.live .prev{font-size:14px;color:var(--text-secondary);opacity:.6;margin-bottom:8px}
+.live .now{font-size:23px;font-weight:700;line-height:1.4}
+.live .next{font-size:14px;color:var(--text-secondary);opacity:.6;margin-top:8px}
+.tr{margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--ai-soft);font-size:15px;font-weight:600;color:var(--text-secondary)}
+.tr em{font-style:normal;font-size:11px;font-weight:800;color:var(--ai);display:block;letter-spacing:.05em}
+.ctl{display:flex;align-items:center;gap:10px;margin:12px 16px 0}
+.ctl .trk{flex:1;margin:0}
+.under{margin:14px 16px 0;font-weight:800;font-size:15px;color:var(--text-secondary)}
+/* C */
+.cine{position:absolute;inset:0;background:#120a20}
+.cine img{width:100%;height:46%;object-fit:cover;opacity:.9}
+.cine .fade{position:absolute;left:0;right:0;top:30%;height:20%;background:linear-gradient(to bottom,transparent,#120a20)}
+.cine .subs{position:absolute;left:20px;right:20px;top:47%;color:#fff}
+.cine .subs .who{font-size:13px;font-weight:800;color:#cfc4ff;letter-spacing:.04em}
+.cine .subs .big{font-size:27px;font-weight:700;line-height:1.38;margin-top:6px}
+.cine .subs .big .term{background:rgba(201,186,255,.18);border-bottom-color:#c9baff;color:#fff}
+.cine .subs .nx{font-size:15px;opacity:.45;margin-top:16px;line-height:1.45}
+.cine .top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;color:#fff}
+.pill{background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:800;padding:7px 11px;border-radius:99px;display:flex;align-items:center;gap:6px}
+.dock.dark{background:#231a3d;border-color:rgba(255,255,255,.12);color:#fff}
+.dock.dark .btn{background:rgba(255,255,255,.1);color:#fff}
+.dock.dark .play{background:#c9baff;color:#191727}
+.dock.dark .cap,.dock.dark .times{color:#c8c2e4}
+.dock.dark .trk{background:rgba(255,255,255,.15)}.dock.dark .trk i,.dock.dark .trk b{background:#c9baff}
+/* desktop */
+.desk{width:1366px;height:768px;background:var(--bg-primary);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 40px -24px rgba(0,0,0,.4)}
+.desk .grid{flex:1;display:grid;grid-template-columns:520px 1fr;gap:28px;padding:20px 40px;overflow:hidden}
+.desk .stage{height:292px}
+.desk .chapters div{display:flex;justify-content:space-between;padding:9px 12px;border-radius:10px;font-weight:700;font-size:15px}
+.desk .chapters div.on{background:var(--accent-soft)}
+.desk .script{padding:8px 0 40px}
+.desk .ln{font-size:20px}.desk .ln.on{font-size:27px}
+.desk .ctlrow{display:flex;align-items:center;gap:12px;margin:14px 0}
+.legend{font-size:12px;font-weight:700;color:var(--text-secondary);max-width:375px;margin:8px 0 0;line-height:1.5}
+</style></head><body>
+
+<!-- ───────── A: sticky picture + live subtitle card ───────── -->
+<div id="a"><p class="label">A · «Canlı altyazı kartı»</p>
+<div class="phone">
+  <div class="sheet-head"><span class="day">Day 16</span><span class="ttl">Fear &amp; Phobias</span><span class="x"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+  <div class="chips"><span class="chip">Words</span><span class="chip on">Listen</span><span class="chip">Read</span><span class="chip">Idioms</span><span class="chip">Questions</span></div>
+  <div class="body">
+    <div class="pin"><div class="stage"><img src="https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F16%2Fch1.webp?alt=media&token=8bdc474a-38e9-4384-b4fb-6fcaa4523010" alt=""><div class="shade"></div><div class="c"><small>EPISODE 16 · B1 · 1 The glass bridge</small><b>Halfway across the bridge</b></div></div></div>
+    <div class="ctl"><span class="play" style="width:48px;height:48px"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span><div class="trk"><i></i><b></b><u style="left:40%"></u><u style="left:74%"></u></div><span style="font-size:12px;font-weight:700;color:var(--text-secondary)">0:24</span></div>
+    <div class="live">
+      <div class="prev"><span class="who s">SAM</span> Tell them about the glass bridge.</div>
+      <div class="who l" style="font-size:12px;font-weight:800">LEYLA</div>
+      <div class="now">Last spring, my friends wanted to walk across a glass bridge. I looked down and I was <span class="term">scared stiff</span>.</div>
+      <div class="tr"><em>AZ</em>Keçən yaz dostlarım şüşə körpüdən keçmək istədilər. Aşağı baxdım və qorxudan donub qaldım.</div>
+      <div class="next"><span class="who s">SAM</span> What did your friends do?</div>
+    </div>
+    <div class="ctl" style="justify-content:space-between">
+      <span class="btn lbl"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Line again</span>
+      <span class="btn lbl on">AZ</span>
+      <span class="btn lbl">0.9×</span>
+      <span class="btn lbl"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>All</span>
+    </div>
+    <p class="under">Below: 1 Before · 3 Check · 4 Talk (as now)</p>
+  </div>
+</div>
+<p class="legend">Şəkil kiçilir (118px), altında oynatma, sonra ekranın ortasında BÖYÜK cari sətir + əvvəlki/növbəti sətir + istəsən AZ/TR tərcümə. Bütün skript «All» ilə açılır. Ən az dəyişiklik.</p>
+</div>
+
+<!-- ───────── B: karaoke script + bottom dock ───────── -->
+<div id="b"><p class="label">B · «Karaoke skript + aşağıda pult» (tövsiyə)</p>
+<div class="phone">
+  <div class="sheet-head"><span class="day">Day 16</span><span class="ttl">Fear &amp; Phobias</span><span class="x"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+  <div class="chips"><span class="chip">Words</span><span class="chip on">Listen</span><span class="chip">Read</span><span class="chip">Idioms</span><span class="chip">Questions</span></div>
+  <div class="steps"><span>Words</span><span class="on">Listen</span><span>Check</span><span>Talk</span></div>
+  <div class="mini"><img src="https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F16%2Fch1.webp?alt=media&token=8bdc474a-38e9-4384-b4fb-6fcaa4523010" alt=""><div class="t"><b>Halfway across the bridge</b><small>1 · The glass bridge · Leyla is speaking</small></div></div>
+  <div class="body">
+    <ol class="script">
+      <li class="ln done"><span class="who l">LEYLA</span>Yes, everyone knows. I'm scared of heights. It's a real <span class="term">phobia</span>.</li>
+      <li class="ln done"><span class="who s">SAM</span>Tell them about the glass bridge.</li>
+      <li class="ln on"><span class="who l">LEYLA</span>Last spring, in the mountains, my friends wanted to walk across a glass bridge. I looked down and I was <span class="term">scared stiff</span>. I could not move.
+        <div class="tr" style="font-size:14px"><em>AZ</em>Keçən yaz dağlarda dostlarım şüşə körpüdən keçmək istədilər. Aşağı baxdım və qorxudan donub qaldım. Tərpənə bilmirdim.</div></li>
+      <li class="ln"><span class="who s">SAM</span>What did your friends do?</li>
+      <li class="ln"><span class="who l">LEYLA</span>One friend held my hand and tried to <span class="term">reassure</span> me.</li>
+      <li class="ln"><span class="who s">SAM</span>Did it help?</li>
+    </ol>
+    <div class="dock">
+      <div class="trk"><i></i><b></b><u style="left:40%"></u><u style="left:74%"></u></div>
+      <div class="times"><span>0:24</span><span>1:51</span></div>
+      <div class="row">
+        <div><span class="btn lbl">0.9×</span><div class="cap">Speed</div></div>
+        <div><span class="btn"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span><div class="cap">Again</div></div>
+        <span class="play"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span>
+        <div><span class="btn"><svg viewBox="0 0 24 24"><path d="M5 4l10 8-10 8V4zM19 5v14"/></svg></span><div class="cap">Next</div></div>
+        <div><span class="btn on lbl" style="padding:0 10px">AZ</span><div class="cap">Translate</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="legend">Epizod öz addımlarına bölünür (Words · Listen · Check · Talk) — Listen addımında yalnız skript var. Şəkil kiçik başlıq zolağına çevrilir, cari sətir böyük və ekranın yuxarı üçdə birində saxlanılır, keçənlər solğun. Sətrə toxun = oradan oynat. Pult baş barmaq altında: sürət, sətri təkrar, oynat, növbəti sətir, tərcümə.</p>
+</div>
+
+<!-- ───────── C: subtitles mode ───────── -->
+<div id="c"><p class="label">C · «Altyazı rejimi» (kino kimi)</p>
+<div class="phone">
+  <div class="cine">
+    <img src="https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F16%2Fch1.webp?alt=media&token=8bdc474a-38e9-4384-b4fb-6fcaa4523010" alt="">
+    <div class="fade"></div>
+    <div class="top"><span class="pill"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m15 18-6-6 6-6"/></svg>Back to episode</span><span class="pill">Line 5 / 23</span></div>
+    <div class="subs">
+      <div class="who">LEYLA</div>
+      <div class="big">Last spring, my friends wanted to walk across a glass bridge. I looked down and I was <span class="term">scared stiff</span>.</div>
+      <div class="nx">SAM — What did your friends do?</div>
+    </div>
+    <div class="dock dark">
+      <div class="trk"><i></i><b></b></div>
+      <div class="times"><span>0:24</span><span>1:51</span></div>
+      <div class="row">
+        <div><span class="btn lbl">0.9×</span><div class="cap">Speed</div></div>
+        <div><span class="btn"><svg viewBox="0 0 24 24"><path d="M19 20 9 12l10-8v16zM5 19V5"/></svg></span><div class="cap">Back</div></div>
+        <span class="play"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span>
+        <div><span class="btn"><svg viewBox="0 0 24 24"><path d="M5 4l10 8-10 8V4zM19 5v14"/></svg></span><div class="cap">Next</div></div>
+        <div><span class="btn lbl">AZ</span><div class="cap">Translate</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="legend">«Subtitles» düyməsi tam ekran açır: şəkil fon, bir sətir kino altyazısı kimi çox böyük. Diqqət tam sətirdədir, amma kontekst (bütün söhbət) görünmür; mövcud səhifə toxunulmaz qalır, yanında yeni ekran əlavə olunur.</p>
+</div>
+
+<!-- ───────── B on a computer ───────── -->
+<div id="desk"><p class="label">B kompüterdə (müəllim ekranı paylaşır, 1366×768)</p>
+<div class="desk">
+  <div class="sheet-head" style="padding:14px 40px"><span class="day">Day 16</span><span class="ttl" style="font-size:24px">Fear &amp; Phobias</span><span class="x"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+  <div class="chips" style="padding:10px 40px"><span class="chip">Words</span><span class="chip on">Listen</span><span class="chip">Read</span><span class="chip">Idioms</span><span class="chip">Questions</span><span class="chip">Quiz</span><span class="chip">Pictures</span><span class="chip">Videos</span></div>
+  <div class="grid">
+    <div>
+      <div class="stage"><img src="https://firebasestorage.googleapis.com/v0/b/speak2them-64f2b.firebasestorage.app/o/materials%2F16%2Fch1.webp?alt=media&token=8bdc474a-38e9-4384-b4fb-6fcaa4523010" alt=""><div class="shade"></div><div class="c"><small>THE SPEAKLAB PODCAST · EPISODE 16 · B1</small><b style="font-size:22px">Halfway across the bridge</b></div></div>
+      <div class="ctlrow"><span class="play"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></span><div class="trk" style="flex:1"><i></i><b></b><u style="left:40%"></u><u style="left:74%"></u></div><span class="btn"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span><span class="btn lbl">0.9×</span><span class="btn lbl on">AZ</span></div>
+      <div class="chapters"><div class="on"><span>1 · The glass bridge</span><span>0:00</span></div><div><span>2 · A speech at a wedding</span><span>0:44</span></div><div><span>3 · Step by step</span><span>1:22</span></div></div>
+    </div>
+    <div>
+      <div class="steps" style="margin:0 0 6px"><span>Words</span><span class="on">Listen</span><span>Check</span><span>Talk</span></div>
+      <ol class="script">
+        <li class="ln done"><span class="who s">SAM</span>Tell them about the glass bridge.</li>
+        <li class="ln on"><span class="who l">LEYLA</span>Last spring, in the mountains, my friends wanted to walk across a glass bridge. I looked down and I was <span class="term">scared stiff</span>. I could not move.</li>
+        <li class="ln"><span class="who s">SAM</span>What did your friends do?</li>
+        <li class="ln"><span class="who l">LEYLA</span>One friend held my hand and tried to <span class="term">reassure</span> me. "It's safe, Leyla."</li>
+        <li class="ln"><span class="who s">SAM</span>Did it help?</li>
+      </ol>
+    </div>
+  </div>
+</div>
+<p class="legend" style="max-width:none">Sol: şəkil + pult + fəsillər (yerində qalır). Sağ: skript bütün hündürlükdə, cari sətir 27px — paylaşılan ekranda yaxınlaşdırmadan oxunur. Words/Check/Talk eyni sağ sütunda addım kimi.</p>
+</div>
+
+<script>
+const v = new URLSearchParams(location.search).get('v');
+if (v) document.querySelectorAll('body > div').forEach((d) => { if (d.id !== v) d.style.display = 'none'; });
+</script>
+</body></html>
