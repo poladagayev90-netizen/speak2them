@@ -7,15 +7,31 @@ import SayButton from '../ui/SayButton';
 
 // A text with the topic's key words marked; a tap opens the word card.
 export function TermText({ text, terms, picked, onPick }) {
-  const parts = useMemo(() => splitByTerms(text, terms), [text, terms]);
-  return parts.map((p, i) => (p.term ? (
-    <button
-      key={i}
-      type="button"
-      className={`mt-term${picked?.key === p.term.key ? ' is-on' : ''}`}
-      onClick={(e) => { e.stopPropagation(); onPick(picked?.key === p.term.key ? null : p.term); }}
-    >{p.text}</button>
-  ) : <React.Fragment key={i}>{p.text}</React.Fragment>));
+  const parts = useMemo(() => {
+    // Punctuation right after a marked word travels with it: the button is a
+    // box the browser can break after, which left a lone "." on the next line.
+    const out = splitByTerms(text, terms).map((p) => ({ ...p }));
+    out.forEach((p, i) => {
+      const next = out[i + 1];
+      if (!p.term || !next || next.term) return;
+      const m = next.text.match(/^[.,!?;:…”’"')]+/);
+      if (m) { p.tail = m[0]; next.text = next.text.slice(m[0].length); }
+    });
+    return out;
+  }, [text, terms]);
+  return parts.map((p, i) => {
+    if (!p.term) return <React.Fragment key={i}>{p.text}</React.Fragment>;
+    const button = (
+      <button
+        type="button"
+        className={`mt-term${picked?.key === p.term.key ? ' is-on' : ''}`}
+        onClick={(e) => { e.stopPropagation(); onPick(picked?.key === p.term.key ? null : p.term); }}
+      >{p.text}</button>
+    );
+    return p.tail
+      ? <span key={i} className="mt-term-wrap">{button}{p.tail}</span>
+      : <React.Fragment key={i}>{button}</React.Fragment>;
+  });
 }
 
 export function LangSwitch({ compact = false }) {

@@ -192,6 +192,7 @@
   background: var(--accent-soft); border: none; border-bottom: 2px solid var(--accent); border-radius: 3px;
 }
 .mt-term.is-on { color: var(--text-on-accent); background: var(--accent); }
+.mt-term-wrap { white-space: nowrap; }
 
 .mt-talk { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
 .mt-talk li {

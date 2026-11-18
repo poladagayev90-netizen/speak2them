@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
+import { X, Maximize2, Minimize2, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
 import { getContentByIndex, getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import { plainTopic } from '../utils/topicLabel';
@@ -15,6 +15,19 @@ import './materials/materials.css';
 import useMeaningLang from './materials/useMeaningLang';
 import { LangSwitch } from './materials/TermText';
 import SayButton from './ui/SayButton';
+
+// Focus mode: the sheet's header and tab row fold away so Listen or Read
+// fills the screen (Polad 2026-11-18 — on a phone the 3-row tab grid ate the
+// script's room; on a shared laptop screen he wanted only the text). Kept per
+// device; it only takes effect on those two tabs.
+const FOCUS_KEY = 'sl.topicFocus';
+const FOCUS_SECTIONS = ['listen', 'read'];
+function readFocus() {
+  try { return localStorage.getItem(FOCUS_KEY) === '1'; } catch (_) { return false; }
+}
+function saveFocus(on) {
+  try { localStorage.setItem(FOCUS_KEY, on ? '1' : '0'); } catch (_) { /* private mode */ }
+}
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
@@ -160,6 +173,9 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
   // portrait clips shrank to a strip). Back at the top it opens up again. The
   // CSS only applies on phones (App.css, .dt-modal--compact).
   const [compactTabs, setCompactTabs] = useState(false);
+  const [focusPref, setFocusPref] = useState(readFocus);
+  const focus = focusPref && FOCUS_SECTIONS.includes(activeSection);
+  const setFocus = (on) => { setFocusPref(on); saveFocus(on); };
   const onContentScroll = (e) => {
     const el = e.currentTarget;
     const y = el.scrollTop;
@@ -176,6 +192,14 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
     if (contentRef.current) contentRef.current.scrollTop = 0;
     setCompactTabs(false);
   }, [activeSection]);
+
+  // Esc leaves focus mode on a computer (before it would close the sheet).
+  useEffect(() => {
+    if (!open || !focus) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); setFocusPref(false); saveFocus(false); } };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [open, focus]);
 
   // In the folded row the active chip is always in view.
   useEffect(() => {
@@ -207,7 +231,13 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
 
   return (
     <div className="dt-overlay" onClick={onClose}>
-      <div className={`dt-modal${compactTabs ? ' dt-modal--compact' : ''}`} onClick={e => e.stopPropagation()}>
+      <div className={`dt-modal${compactTabs ? ' dt-modal--compact' : ''}${focus ? ' dt-modal--focus' : ''}`} onClick={e => e.stopPropagation()}>
+
+        {focus && (
+          <button type="button" className="dt-focus-exit" onClick={() => setFocus(false)} aria-label="Leave focus mode (Esc)">
+            <Minimize2 size={18} /> <span>Exit focus</span>
+          </button>
+        )}
 
         {/* Header */}
         <div className="dt-header">
@@ -215,9 +245,16 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             <span className="dt-badge">Day {content.day}</span>
             <h2 className="dt-title">{plainTopic(content.topic)}</h2>
           </div>
-          <button className="dt-close" onClick={onClose} aria-label="Close">
-            <X size={22} />
-          </button>
+          <div className="dt-header-actions">
+            {FOCUS_SECTIONS.includes(activeSection) && (
+              <button type="button" className="dt-close" onClick={() => setFocus(true)} aria-label="Focus mode: hide the header and tabs" title="Focus mode">
+                <Maximize2 size={20} />
+              </button>
+            )}
+            <button className="dt-close" onClick={onClose} aria-label="Close">
+              <X size={22} />
+            </button>
+          </div>
         </div>
 
         {/* Section Tabs */}
@@ -315,7 +352,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
           )}
 
           {activeSection === 'read' && materials?.reading && (
-            <div className="dt-section dt-section--narrow">
+            <div className="dt-section dt-section--read">
               <ReadingView reading={materials.reading} topic={content} initialLevel={readingLevelFor(user?.level)} />
             </div>
           )}

@@ -1773,6 +1773,26 @@ body {
   background: var(--border);
 }
 
+.dt-header-actions { display: flex; align-items: center; gap: var(--s-2); flex: none; }
+
+/* Focus mode (DailyTopicModal, Listen and Read only): header and tabs fold
+   away; one pill top-right brings them back (Esc on a computer). The content
+   gets room at the top so the pill never sits on the first line. */
+.dt-modal { position: relative; }
+.dt-modal--focus .dt-header,
+.dt-modal--focus .dt-tabs { display: none; }
+.dt-modal--focus .dt-content { padding-top: calc(var(--safe-area-top, 0px) + 60px); }
+.dt-focus-exit {
+  position: absolute; z-index: 5;
+  top: calc(var(--safe-area-top, 0px) + var(--s-3)); right: var(--s-4);
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  height: 40px; padding: 0 var(--s-4);
+  font: inherit; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--accent); background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: var(--r-pill);
+  box-shadow: var(--glass-lift); cursor: pointer;
+}
+
 /* Tabs */
 .dt-tabs {
   display: flex;
@@ -3030,6 +3050,18 @@ body {
   }
   /* Quiz and the pictures button do not need 1280px of line length. */
   .dt-section--narrow { max-width: 760px; margin: 0 auto; width: 100%; }
+
+  /* Read on a computer (Polad 2026-11-18: «reading biraz daha geniş»): wider
+     AND bigger type, so a line stays ~80 characters and reads from across a
+     shared screen. Focus mode lets the sheet use the whole display. */
+  .dt-section--read { max-width: 880px; margin: 0 auto; width: 100%; }
+  .dt-section--read .mt-article p:not(.mt-chip) { font-size: 23px; line-height: 1.7; }
+  .dt-section--read .mt-article-title { font-size: 34px; }
+  .dt-modal--focus { max-width: min(1600px, 100vw); }
+  .dt-modal--focus .dt-content { padding-top: 72px; }
+  .dt-modal--focus .dt-section--read { max-width: 1000px; }
+  .dt-modal--focus .dt-section--read .mt-article p:not(.mt-chip) { font-size: 26px; }
+  .dt-modal--focus .dt-section--episode { max-width: 1440px; }
 
   /* Reading size on a computer (Polad 2026-11-07: he zoomed the shared sheet
      in to read it). Words and idioms are what the class reads off the shared
