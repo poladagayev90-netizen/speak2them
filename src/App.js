@@ -587,12 +587,10 @@ function App() {
     return (
       <>
         <div className="splash-screen">
+          {/* Just the mark and the credit (Polad 2026-11-18): the quote card and
+              the soft light behind the logo are gone — nothing glows. */}
           <div className="splash-content" style={{ display: 'flex', justifyContent: 'center' }}>
             <Logo width={240} />
-          </div>
-          <div className="splash-quote">
-            <p className="splash-motto">"The limits of my language are the limits of my world."</p>
-            <span className="splash-by">- Ludwig Wittgenstein</span>
           </div>
           <p className="splash-credit">Built by Polad</p>
         </div>
