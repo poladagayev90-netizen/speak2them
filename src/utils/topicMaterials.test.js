@@ -1,4 +1,7 @@
-import { readingLevelFor, activeLineAt, sceneAt, spokenText, optionOrder } from './topicMaterials';
+import {
+  readingLevelFor, activeLineAt, sceneAt, spokenText, optionOrder,
+  replayLineAt, nextLineAt, lineTranslation, hasLineTranslations,
+} from './topicMaterials';
 
 describe('topicMaterials', () => {
   test('readingLevelFor maps free-text levels', () => {
@@ -21,6 +24,34 @@ describe('topicMaterials', () => {
     expect(activeLineAt(lines, 5)).toBe(1);
     expect(activeLineAt(lines, 30)).toBe(2);
     expect(activeLineAt([{ at: 2 }], 1)).toBe(-1);
+  });
+
+  test('replayLineAt goes back to the start of the spoken line', () => {
+    const lines = [{ at: 1 }, { at: 5 }, { at: 9.5 }];
+    expect(replayLineAt(lines, 0.4)).toBe(0); // intro before the first line
+    expect(replayLineAt(lines, 3)).toBe(1);
+    expect(replayLineAt(lines, 7.2)).toBe(5);
+    expect(replayLineAt(lines, 40)).toBe(9.5);
+  });
+
+  test('nextLineAt jumps to the following line, null on the last', () => {
+    const lines = [{ at: 1 }, { at: 5 }, { at: 9.5 }];
+    expect(nextLineAt(lines, 0)).toBe(1);
+    expect(nextLineAt(lines, 2)).toBe(5);
+    expect(nextLineAt(lines, 5)).toBe(9.5);
+    expect(nextLineAt(lines, 10)).toBe(null);
+    expect(nextLineAt([], 0)).toBe(null);
+  });
+
+  test('line translations: only az/tr, and the button needs one line that has it', () => {
+    const line = { t: 'Hi', az: ' Salam ', tr: '' };
+    expect(lineTranslation(line, 'az')).toBe('Salam');
+    expect(lineTranslation(line, 'tr')).toBe('');
+    expect(lineTranslation(line, 'en')).toBe('');
+    expect(lineTranslation(null, 'az')).toBe('');
+    expect(hasLineTranslations([{ t: 'a' }, { t: 'b' }])).toBe(false);
+    expect(hasLineTranslations([{ t: 'a' }, { t: 'b', tr: 'Merhaba' }])).toBe(true);
+    expect(hasLineTranslations(undefined)).toBe(false);
   });
 
   test('sceneAt picks the scene a line falls in', () => {

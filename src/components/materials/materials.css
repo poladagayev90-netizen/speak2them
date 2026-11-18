@@ -59,21 +59,32 @@
   color: var(--accent); background: var(--accent-soft); border: none; border-radius: var(--r-pill); cursor: pointer;
 }
 
-.mt-script {
-  list-style: none; margin: 0; padding: var(--s-1); max-height: 46vh; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 2px;
-  background: var(--bg-secondary); border-radius: var(--r-md);
-}
+/* The podcast script, karaoke style (PodcastEpisode.jsx, 2026-11-18): the
+   spoken line is big and boxed, heard lines dim, the sheet itself scrolls. */
+.mt-script { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1); }
 .mt-line {
-  width: 100%; display: grid; grid-template-columns: 64px 1fr; gap: var(--s-2); text-align: left;
-  padding: var(--s-2); font: inherit; background: none; border: none; border-radius: var(--r-sm); cursor: pointer;
-  color: var(--text-secondary);
+  display: flex; flex-direction: column; gap: 2px;
+  padding: var(--s-2) var(--s-3); border-left: 4px solid transparent; border-radius: var(--r-md);
+  color: var(--text-secondary); cursor: pointer; transition: opacity .25s ease, background-color .25s ease;
 }
-.mt-line.is-on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--glass-lift); }
-.mt-line-who { font-size: var(--fs-xs); font-weight: 800; padding-top: 2px; }
+.mt-line.is-past { opacity: .5; }
+.mt-line.is-on { color: var(--text-primary); background: var(--bg-card); border-left-color: var(--accent); box-shadow: var(--glass-lift); }
+.mt-line-who {
+  align-self: flex-start; padding: 0; font: inherit; font-size: var(--fs-xs); font-weight: 800;
+  letter-spacing: .05em; text-transform: uppercase; background: none; border: none; cursor: pointer;
+}
 .mt-dot-text--0 { color: var(--accent); }
 .mt-dot-text--1 { color: var(--ai); }
-.mt-line-text { font-size: var(--fs-body); line-height: 1.5; }
+.mt-line-text { font-size: var(--fs-h2); line-height: 1.5; }
+.mt-line.is-on .mt-line-text { font-size: var(--fs-h1); font-weight: 600; line-height: 1.4; }
+.mt-line-tr {
+  margin-top: var(--s-2); padding: var(--s-2) var(--s-3); border-radius: var(--r-sm);
+  font-size: var(--fs-body); font-weight: 600; line-height: 1.45; color: var(--text-secondary); background: var(--ai-soft);
+}
+/* «First listen without the text»: the lines stay where they are, blurred, so
+   the eye still sees which one is spoken; nothing in them is tappable. */
+.mt-script.is-blur .mt-line-text, .mt-script.is-blur .mt-line-tr { filter: blur(6px); user-select: none; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .mt-line { transition: none; } }
 
 /* Reading */
 .mt-levels { display: flex; gap: var(--s-1); padding: 3px; align-self: flex-start; background: var(--bg-secondary); border-radius: var(--r-pill); }
@@ -176,14 +187,6 @@
 }
 .mt-predict svg { flex: none; margin-top: 3px; color: var(--accent); }
 
-/* The script, now as rows with a tappable speaker (jumps there) and tappable words. */
-.mt-script li.mt-line {
-  display: grid; grid-template-columns: 64px 1fr; gap: var(--s-2); padding: var(--s-2);
-  border-radius: var(--r-sm); color: var(--text-secondary);
-}
-.mt-script li.mt-line.is-on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--glass-lift); }
-.mt-script .mt-line-who { padding: 2px 0 0; text-align: left; font: inherit; font-size: var(--fs-xs); font-weight: 800; background: none; border: none; cursor: pointer; }
-
 .mt-term {
   padding: 0 2px; margin: 0 -1px; font: inherit; color: inherit; cursor: pointer;
   background: var(--accent-soft); border: none; border-bottom: 2px solid var(--accent); border-radius: 3px;
@@ -225,18 +228,73 @@
 
 .mt-reading-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; }
 
-/* Teacher view: a computer gets media left (sticky), text right. */
-@media (min-width: 900px) {
+/* Episode steps: Words · Listen · Check · Talk. */
+.mt-ep-main { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+.mt-steps { display: flex; gap: 2px; padding: 3px; background: var(--bg-secondary); border-radius: var(--r-pill); }
+.mt-steps-btn {
+  flex: 1 1 0; min-width: 0; height: 40px; font: inherit; font-size: var(--fs-sm); font-weight: 800;
+  color: var(--text-secondary); background: none; border: none; border-radius: var(--r-pill); cursor: pointer;
+}
+.mt-steps-btn.is-on { color: var(--text-on-accent); background: var(--accent); }
+
+/* Phone: the picture as a strip above the script. */
+.mt-mini {
+  display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2);
+  background: var(--bg-card); border-radius: var(--r-md); box-shadow: var(--glass-lift);
+}
+.mt-mini-img { flex: none; width: 64px; height: 40px; object-fit: cover; border-radius: var(--r-sm); background: var(--bg-secondary); }
+.mt-mini-text { min-width: 0; display: flex; flex-direction: column; }
+.mt-mini-title { font-size: var(--fs-body); font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mt-mini-sub { font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mt-listen-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; }
+.mt-row-group { display: flex; gap: var(--s-2); }
+.mt-icon:disabled, .mt-dock-btn:disabled { opacity: .4; cursor: default; }
+.mt-icon.is-on { color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+.mt-icon--text { font-size: var(--fs-xs); font-weight: 800; }
+
+/* Phone: the controls in a dock under the thumb, pinned to the sheet's bottom
+   (the word card, when open, sits right above it). */
+/* `bottom` is minus the sheet's own bottom padding (.dt-content, 32px on a
+   phone): a sticky box stops at the padding edge, which left the next lines
+   showing under the dock. The fade hides the script scrolling behind it. */
+.mt-foot {
+  position: sticky; bottom: calc(-1 * var(--s-8)); z-index: 2;
+  display: flex; flex-direction: column; gap: var(--s-2);
+  padding: var(--s-4) 0 calc(var(--s-2) + var(--safe-area-bottom, 0px));
+  background: linear-gradient(to bottom, transparent, var(--bg-primary) var(--s-4));
+}
+.mt-dock .mt-progress { flex: none; }
+.mt-foot .mt-card { position: static; }
+.mt-dock {
+  display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-2) var(--s-3) var(--s-3);
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--glass-lift);
+}
+.mt-dock-row { display: flex; align-items: center; justify-content: space-between; }
+.mt-dock-btn {
+  width: 56px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0;
+  font: inherit; color: inherit; background: none; border: none; cursor: pointer;
+}
+.mt-dock-cap { font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.mt-dock .mt-play { width: 56px; height: 56px; }
+.mt-step--listen { gap: var(--s-3); }
+
+/* Teacher view (the same wide-screen query as the topic sheet, App.css):
+   picture, controls and chapters left (sticky), steps and the script right.
+   No strip and no dock — the left column holds the controls. */
+.mt-ep-media { display: none; }
+@media (min-width: 900px) and (min-aspect-ratio: 5/4) {
   .dt-section--episode { max-width: 1180px; margin: 0 auto; width: 100%; }
-  .mt-ep { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--s-6); align-items: start; }
-  .mt-ep-media { position: sticky; top: 0; }
-  .mt-ep .mt-card { grid-column: 1 / -1; }
-  .mt-script { max-height: 52vh; }
+  .mt-ep { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: var(--s-8); align-items: start; padding-bottom: var(--s-10); }
+  .mt-ep-media { display: flex; position: sticky; top: 0; }
+  .mt-mini, .mt-dock { display: none; }
+  .mt-foot { bottom: 0; padding: 0 0 var(--s-2); background: none; }
+  .mt-ep .mt-card { grid-column: auto; }
 }
 
 /* «Present»: bigger type for a shared screen in a lesson. */
-.mt-present .mt-line-text, .mt-present .mt-q-text { font-size: 22px; line-height: 1.5; }
+.mt-present .mt-line-text, .mt-present .mt-q-text { font-size: 24px; line-height: 1.5; }
+.mt-present .mt-line.is-on .mt-line-text { font-size: 34px; }
 .mt-present .mt-opt, .mt-present .mt-word, .mt-present .mt-talk li { font-size: 19px; }
 .mt-present .mt-stage-title { font-size: 34px; }
 .mt-present .mt-step-h { font-size: 26px; }
-@media (max-width: 899px) { .mt-present-btn { display: none; } }

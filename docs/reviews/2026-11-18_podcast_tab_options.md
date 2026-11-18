@@ -1,6 +1,8 @@
 # Podcast tab (Listen) — layout options, 2026-11-18
 
-**Trigger:** learner feedback via Polad. On a phone the subtitles sit too far down; you scroll past the media to follow along. Polad asked for options first, then a build. **Nothing is built yet. Polad picks.**
+**Trigger:** learner feedback via Polad. On a phone the subtitles sit too far down; you scroll past the media to follow along. Polad asked for options first, then a build.
+
+**Decision (2026-11-18): Polad picked B.** Built without the Translate button data (hook only). Result screenshots: `new-phone-1-start.png` … `new-phone-4-words-step.png`, `new-desktop.png`. Rule: `docs/domain/app-screens.md` → «Listen tab = karaoke script».
 
 Screenshots and mockups: `docs/reviews/2026-11-18_podcast_tab/`
 (`mockups.html` holds all mockups; `?v=a|b|c|desk` shows one).

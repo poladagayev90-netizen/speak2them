@@ -24,6 +24,34 @@ export function activeLineAt(lines, t) {
   return idx;
 }
 
+// «Again»: where the line being spoken at `t` started (the intro before the
+// first timed line → 0). Repeating one line is the A1 learner's main move.
+export function replayLineAt(lines, t) {
+  const i = activeLineAt(lines, t);
+  return i < 0 ? 0 : lines[i].at;
+}
+
+// «Next»: the start of the line after the one at `t`; null on the last line.
+export function nextLineAt(lines, t) {
+  for (let i = activeLineAt(lines, t) + 1; i < lines.length; i += 1) {
+    if (typeof lines[i].at === 'number') return lines[i].at;
+  }
+  return null;
+}
+
+// A line's translation into the learner's language (`lines[i].az` / `.tr`).
+// No episode carries them yet (2026-11-18); the Translate button in the
+// podcast dock appears only for an episode where some line has one, so the
+// data can be added episode by episode without touching the component.
+export function lineTranslation(line, lang) {
+  if (!line || (lang !== 'az' && lang !== 'tr')) return '';
+  return String(line[lang] || '').trim();
+}
+
+export function hasLineTranslations(lines) {
+  return (lines || []).some((l) => lineTranslation(l, 'az') || lineTranslation(l, 'tr'));
+}
+
 // The scene picture for line `idx` (scenes carry the line they start `from`).
 export function sceneAt(scenes, idx) {
   let s = scenes[0] || null;
