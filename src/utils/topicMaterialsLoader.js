@@ -17,8 +17,8 @@ export async function loadMaterials(day) {
   return mod.default || mod;
 }
 
-// The podcast in four levels: src/data/topicMaterials/levels/NN.json
-// ({A1|A2|B1|B2: {title, lines, audio, duration, words}}), written by
+// The podcast in three levels: src/data/topicMaterials/levels/NN.json
+// ({A1|A2|B1: {title, lines, audio, duration, words}}), written by
 // scripts/publish-podcast-levels.cjs once a level's audio is in Storage.
 // A topic without the file has only its live B1 episode.
 const levelsCtx = require.context('../data/topicMaterials/levels', false, /^\.\/\d\d\.json$/, 'lazy');

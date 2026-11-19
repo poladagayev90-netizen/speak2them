@@ -145,9 +145,15 @@ describe('podcast levels', () => {
     expect(podcastLevelFor('A2 – Elementary')).toBe('A2');
     expect(podcastLevelFor('Pre-intermediate')).toBe('A2');
     expect(podcastLevelFor('B1 – Intermediate')).toBe('B1');
-    expect(podcastLevelFor('B2')).toBe('B2');
-    expect(podcastLevelFor('C1 – Advanced')).toBe('B2');
-    expect(podcastLevelFor('Upper-intermediate')).toBe('B2');
+    // No B2 podcast: B2 and above open on B1, the top level.
+    expect(podcastLevelFor('B2')).toBe('B1');
+    expect(podcastLevelFor('C1 – Advanced')).toBe('B1');
+    expect(podcastLevelFor('Upper-intermediate')).toBe('B1');
+  });
+
+  test('the switch offers A1/A2/B1 only — a B2 episode in old data is ignored', () => {
+    const withB2 = { ...levels, B2: { title: 'Hard', audio: 'b2.mp3', lines: [] } };
+    expect(levelEpisode(base, withB2, 'B2')).toMatchObject({ episode: base, level: 'B1', available: ['A1', 'B1'] });
   });
 
   test('levelEpisode uses the level episode and keeps the topic parts', () => {

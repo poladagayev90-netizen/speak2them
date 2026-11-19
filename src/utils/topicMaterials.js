@@ -15,19 +15,19 @@ export function readingLevelFor(level) {
 }
 
 // ── Podcast levels ──────────────────────────────────────────────────────────
-// A topic's podcast in four levels (src/data/topicMaterials/levels/NN.json,
+// A topic's podcast in three levels (src/data/topicMaterials/levels/NN.json,
 // written by scripts/publish-podcast-levels.cjs). A level the topic doesn't have
-// falls back to its live B1 episode (`materials.podcast`).
-export const PODCAST_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+// falls back to its live B1 episode (`materials.podcast`). There is no B2: Polad
+// cut the podcast to A1/A2/B1 (2026-11-19) — B1 is the top level.
+export const PODCAST_LEVELS = ['A1', 'A2', 'B1'];
 
 // The learner's level (users.level, free text: "A1 – Beginner", "B1+",
-// "Upper-intermediate"…) → the episode to open first. No level = B1.
+// "Upper-intermediate"…) → the episode to open first. No level, B2 and above = B1.
 export function podcastLevelFor(level) {
   const l = String(level || '').toUpperCase().trim();
   if (!l) return 'B1';
   if (/^A1|BEGIN|STARTER/.test(l)) return 'A1';
   if (/^A|ELEMENT|PRE/.test(l)) return 'A2';
-  if (/^B2|^C|UPPER|ADVANC/.test(l)) return 'B2';
   return 'B1';
 }
 
@@ -39,7 +39,7 @@ export function podcastLevelFor(level) {
 export function levelEpisode(base, levels, level) {
   const own = levels && typeof levels === 'object' ? levels : {};
   const available = PODCAST_LEVELS.filter((l) => own[l]?.audio || (l === 'B1' && base));
-  const lv = own[level]?.audio ? own[level] : null;
+  const lv = PODCAST_LEVELS.includes(level) && own[level]?.audio ? own[level] : null;
   if (!lv) return { episode: base || null, level: 'B1', available };
   const episode = {
     ...(base || {}),

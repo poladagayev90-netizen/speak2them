@@ -1,5 +1,5 @@
-// Publishes the levelled podcast episodes (A1/A2/B1/B2 per topic) for the
-// level switch in the Listen tab.
+// Publishes the levelled podcast episodes (A1/A2/B1 per topic — B2 was dropped
+// 2026-11-19, Polad: «3 level olsun») for the level switch in the Listen tab.
 //
 //   node scripts/publish-podcast-levels.cjs [NN ...] [--src <dir>]           DRY RUN (default)
 //   node scripts/publish-podcast-levels.cjs [NN ...] [--src <dir>] --upload  uploads + writes data
@@ -30,7 +30,7 @@ const crypto = require('crypto');
 
 const BUCKET = 'speak2them-64f2b.firebasestorage.app';
 const ROOT = path.join(__dirname, '..');
-const LEVELS = ['A1', 'A2', 'B1', 'B2'];
+const LEVELS = ['A1', 'A2', 'B1'];
 const OUT = path.join(ROOT, 'src/data/topicMaterials/levels');
 
 const argv = process.argv.slice(2);
@@ -110,13 +110,17 @@ function episodeOf(nn, level) {
   if (qa.at.length !== script.lines.length) return { skip: `timings ${qa.at.length} ≠ lines ${script.lines.length}` };
   if (qa.at.some((a, i) => typeof a !== 'number' || (i > 0 && a < qa.at[i - 1]))) return { skip: 'timings not rising' };
   if (!fs.existsSync(mp3)) return { skip: 'no podcast.mp3 yet' };
+  // levels-qa.py measures the pace (WPM + silence share) against the level's band;
+  // an episode outside it is re-recorded, never shipped.
+  if (qa.pace && qa.pace.ok === false) return { skip: `pace outside the ${level} band (${qa.pace.wpm} WPM, ${qa.pace.silence_pct}% silence)` };
   return {
     mp3,
     data: {
       level,
       title: script.title,
       duration: qa.duration,
-      lines: script.lines.map((l, i) => ({ s: l.s, t: l.t, at: qa.at[i] })),
+      // A1/A2 scripts mark chunk pauses with « | » for the TTS; the reader never sees them.
+      lines: script.lines.map((l, i) => ({ s: l.s, t: l.t.replace(/\s*\|\s*/g, ' ').trim(), at: qa.at[i] })),
     },
   };
 }

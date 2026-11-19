@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { levelEpisode, podcastLevelFor } from '../../utils/topicMaterials';
+import { PODCAST_LEVELS, levelEpisode, podcastLevelFor } from '../../utils/topicMaterials';
 import { loadPodcastLevels } from '../../utils/topicMaterialsLoader';
 import PodcastEpisode from './PodcastEpisode';
 
 // The learner's pick, kept per device across topics (a convenience: nothing
 // depends on it, and private mode just starts from the profile level again).
+// A pick that is no longer a level (a «B2» saved before B2 was dropped) is ignored.
 const KEY = 'sl.podcastLevel';
 const readPick = () => {
-  try { return localStorage.getItem(KEY) || null; } catch (_) { return null; }
+  try {
+    const v = localStorage.getItem(KEY);
+    return PODCAST_LEVELS.includes(v) ? v : null;
+  } catch (_) { return null; }
 };
 const savePick = (v) => {
   try { localStorage.setItem(KEY, v); } catch (_) { /* private mode */ }
 };
 
-// The Listen tab: the A1/A2/B1/B2 switch (the Read tab's switch) above the
+// The Listen tab: the A1/A2/B1 switch (the Read tab's switch) above the
 // episode. It opens on the level the learner picked last, else the profile
 // level, else B1. A level this topic doesn't have plays the live B1 episode —
 // the pick itself stays, so the next topic that has it opens there.
