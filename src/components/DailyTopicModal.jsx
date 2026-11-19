@@ -18,10 +18,12 @@ import SayButton from './ui/SayButton';
 
 // Focus mode: the sheet's header and tab row fold away so Listen or Read
 // fills the screen (Polad 2026-11-18 — on a phone the 3-row tab grid ate the
-// script's room; on a shared laptop screen he wanted only the text). Kept per
-// device; it only takes effect on those two tabs.
+// script's room; on a shared laptop screen he wanted only the text). Videos
+// joined on 2026-11-19 — the clip is what the teacher shares, and the header,
+// tabs and picks line cost it a third of the height. Kept per device; it only
+// takes effect on these tabs.
 const FOCUS_KEY = 'sl.topicFocus';
-const FOCUS_SECTIONS = ['listen', 'read'];
+const FOCUS_SECTIONS = ['listen', 'read', 'videos'];
 function readFocus() {
   try { return localStorage.getItem(FOCUS_KEY) === '1'; } catch (_) { return false; }
 }

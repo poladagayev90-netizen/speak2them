@@ -2111,6 +2111,11 @@ body {
   flex: none;
   max-height: 60dvh !important;
 }
+/* Focus mode on Videos (2026-11-19): with the header and tabs gone the clip
+   may take more of a phone, and the teacher's «Your clips · Change» line
+   folds away with the rest of the chrome. */
+.dt-modal--focus .dt-video-frame { max-height: 70dvh !important; }
+.dt-modal--focus .tv-picks-bar { display: none; }
 
 .dt-video-frame video {
   width: 100%;
@@ -3006,7 +3011,10 @@ body {
 
   .dt-section--video {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    /* --clip-w (ClipViewer) = the clip's width at full height, so a portrait
+       clip no longer sits in grey bands while the words are squeezed. The
+       1.35fr split is only the first frame, before the clip reports its shape. */
+    grid-template-columns: var(--clip-w, minmax(0, 1.35fr)) minmax(320px, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "clip words"
@@ -3023,7 +3031,10 @@ body {
   .dt-section--video .dt-video-frame {
     grid-area: clip;
     aspect-ratio: auto !important;
-    height: 100% !important;
+    /* --clip-h only when a wide clip hits the width cap: the frame then hugs
+       the clip and sits in the middle of its area instead of showing bands. */
+    height: var(--clip-h, 100%) !important;
+    align-self: center;
     max-height: none !important;
     min-height: 0;
   }
@@ -3062,6 +3073,14 @@ body {
   .dt-modal--focus .dt-section--read { max-width: 1000px; }
   .dt-modal--focus .dt-section--read .mt-article p:not(.mt-chip) { font-size: 26px; }
   .dt-modal--focus .dt-section--episode { max-width: 1440px; }
+
+  /* Videos in focus (Polad 2026-11-19, «videoları daha böyük planda»): the
+     clip starts at the top edge and takes the full height; the words column
+     starts below the «Exit focus» pill instead, and reads a step bigger. */
+  .dt-modal--focus .dt-content:has(> .tv-wrap) { padding-top: var(--s-6); }
+  .dt-modal--focus .dt-section--video .dt-video-words { margin-top: 52px; font-size: 26px; }
+  .dt-modal--focus .dt-section--video .dt-q-text { font-size: var(--fs-h1); }
+  .dt-modal--focus .dt-section--video .dt-q-num { width: var(--s-10); height: var(--s-10); font-size: var(--fs-h2); }
 
   /* Reading size on a computer (Polad 2026-11-07: he zoomed the shared sheet
      in to read it). Words and idioms are what the class reads off the shared

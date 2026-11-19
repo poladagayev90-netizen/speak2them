@@ -42,9 +42,42 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
   const [soundOn, setSoundOn] = useState(readSound);
   const soundRef = useRef(soundOn);
   soundRef.current = soundOn;
+  const sectionRef = useRef(null);
+  const [clipBox, setClipBox] = useState(null);
 
   const clip = clips[i];
   const hasSound = SOUND_ALLOWED && !!clip?.sound;
+
+  // On a computer (App.css wide grid) the clip's COLUMN is as wide as the clip
+  // is at full height — Polad 2026-11-19: a portrait clip sat in a 1.35fr
+  // column with grey bands either side while the words were squeezed. The
+  // height of the clip's grid area (rows 1–2: the fr row fills the sheet, so
+  // it does not depend on the clip), times the clip's shape, is that width;
+  // it is capped so the words column keeps MIN_TEXT_W. A wide clip that hits
+  // the cap gets its own height too, so it has no bands above and below
+  // either. Only the wide grid reads --clip-w / --clip-h; phones ignore them.
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || !ratio || typeof ResizeObserver === 'undefined') { setClipBox(null); return undefined; }
+    const MIN_TEXT_W = 380;
+    const measure = () => {
+      const cs = getComputedStyle(el);
+      if (cs.display !== 'grid') { setClipBox(null); return; }
+      const rows = cs.gridTemplateRows.split(' ').map(parseFloat);
+      const rowGap = parseFloat(cs.rowGap) || 0;
+      const colGap = parseFloat(cs.columnGap) || 0;
+      const h = (rows[0] || 0) + (rows[1] || 0) + rowGap;
+      const maxW = el.clientWidth - MIN_TEXT_W - colGap;
+      if (h <= 0 || maxW <= 0) { setClipBox(null); return; }
+      const w = Math.floor(Math.min(h * ratio, maxW));
+      const fitH = Math.floor(w / ratio);
+      setClipBox((prev) => (prev && prev.w === w && prev.h === fitH ? prev : { w, h: fitH, cut: fitH < h - 1 }));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ratio]);
 
   useEffect(() => { pendingRef.current = null; }, [i]);
 
@@ -116,7 +149,11 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
   };
 
   return (
-    <div className="dt-section dt-section--video">
+    <div
+      ref={sectionRef}
+      className="dt-section dt-section--video"
+      style={clipBox ? { '--clip-w': `${clipBox.w}px`, ...(clipBox.cut ? { '--clip-h': `${clipBox.h}px` } : {}) } : undefined}
+    >
       {/* Clip + arrows + words are one screenful; see .dt-video-fit. */}
       <div className="dt-video-fit">
         {/* The clip's own shape decides the height — until the screen runs out,
