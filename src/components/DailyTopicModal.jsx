@@ -7,7 +7,7 @@ import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
 import { VIDEOS_ENABLED, canBrowseAllVideos } from '../utils/fetchTopicVideos';
 import SpeakingCards from './SpeakingCards';
-import PodcastEpisode from './materials/PodcastEpisode';
+import PodcastLevels from './materials/PodcastLevels';
 import ReadingView from './materials/ReadingView';
 import { readingLevelFor } from '../utils/topicMaterials';
 import { hasMaterials, loadMaterials } from '../utils/topicMaterialsLoader';
@@ -347,7 +347,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
 
           {activeSection === 'listen' && materials?.podcast && (
             <div className="dt-section dt-section--episode">
-              <PodcastEpisode podcast={materials.podcast} topic={content} />
+              <PodcastLevels podcast={materials.podcast} topic={content} userLevel={user?.level} />
             </div>
           )}
 

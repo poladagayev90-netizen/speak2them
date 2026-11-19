@@ -1,6 +1,7 @@
 import {
   readingLevelFor, activeLineAt, sceneAt, spokenText, optionOrder,
   replayLineAt, nextLineAt, lineTranslation, hasLineTranslations,
+  podcastLevelFor, levelEpisode, levelTerms, splitByTerms,
 } from './topicMaterials';
 
 describe('topicMaterials', () => {
@@ -129,5 +130,54 @@ describe('optionOrder', () => {
     const spots = new Set(['Why?', 'Where did she go?', 'What is it about?', 'Who is the author?', 'How long is it?', 'What woke Sam up?']
       .map((t) => optionOrder(q(t)).indexOf(1)));
     expect(spots.size).toBeGreaterThan(1);
+  });
+});
+
+describe('podcast levels', () => {
+  const base = { episode: 25, title: 'Live B1', level: 'B1', hosts: { Leyla: 'x', Sam: 'y' }, cover: 'c.webp', audio: 'live.mp3', lines: [{ s: 'Leyla', t: 'Hi', at: 0 }], chapters: [{ from: 0, image: 'ch1' }], questions: [{ q: 'a' }], talk: ['t'], words: ['Refund'], before: { predict: 'p' } };
+  const levels = { A1: { title: 'Easy', audio: 'a1.mp3', duration: 57, lines: [{ s: 'Sam', t: 'Hello', at: 0 }], words: [{ phrase: 'shop', kind: 'word' }] }, B2: { title: 'Hard', lines: [] } };
+
+  test('podcastLevelFor maps free-text levels, B1 when unknown', () => {
+    expect(podcastLevelFor('')).toBe('B1');
+    expect(podcastLevelFor(undefined)).toBe('B1');
+    expect(podcastLevelFor('A1 – Beginner')).toBe('A1');
+    expect(podcastLevelFor('Beginner')).toBe('A1');
+    expect(podcastLevelFor('A2 – Elementary')).toBe('A2');
+    expect(podcastLevelFor('Pre-intermediate')).toBe('A2');
+    expect(podcastLevelFor('B1 – Intermediate')).toBe('B1');
+    expect(podcastLevelFor('B2')).toBe('B2');
+    expect(podcastLevelFor('C1 – Advanced')).toBe('B2');
+    expect(podcastLevelFor('Upper-intermediate')).toBe('B2');
+  });
+
+  test('levelEpisode uses the level episode and keeps the topic parts', () => {
+    const { episode, level, available } = levelEpisode(base, levels, 'A1');
+    expect(level).toBe('A1');
+    expect(available).toEqual(['A1', 'B1']);
+    expect(episode.audio).toBe('a1.mp3');
+    expect(episode.title).toBe('Easy');
+    expect(episode.level).toBe('A1');
+    expect(episode.lines[0].t).toBe('Hello');
+    expect(episode.cover).toBe('c.webp');
+    expect(episode.talk).toEqual(['t']);
+    expect(episode.chapters).toEqual([]);
+    expect(episode.questions).toEqual([]);
+    expect(episode.before).toBeUndefined();
+    expect(episode.words).toBeUndefined();
+    expect(episode.levelWords).toEqual([{ phrase: 'shop', kind: 'word' }]);
+  });
+
+  test('levelEpisode falls back to the live B1 when the level is missing or has no audio', () => {
+    expect(levelEpisode(base, levels, 'A2')).toMatchObject({ episode: base, level: 'B1' });
+    expect(levelEpisode(base, levels, 'B2')).toMatchObject({ episode: base, level: 'B1' });
+    expect(levelEpisode(base, null, 'A1')).toEqual({ episode: base, level: 'B1', available: ['B1'] });
+  });
+
+  test('levelTerms keys drop end punctuation and sort longest first', () => {
+    const t = levelTerms([{ phrase: 'shop', kind: 'word', az: 'mağaza' }, { phrase: 'Can I pay by card?', kind: 'chunk' }, { phrase: 'Shop', kind: 'word' }]);
+    expect(t.map((x) => x.key)).toEqual(['can i pay by card', 'shop']);
+    expect(t[1]).toMatchObject({ phrase: 'shop', meaningAZ: 'mağaza', kind: 'word' });
+    const parts = splitByTerms('So, can I pay by card? Yes.', t);
+    expect(parts.find((p) => p.term)?.text).toBe('can I pay by card');
   });
 });

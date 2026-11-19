@@ -14,6 +14,65 @@ export function readingLevelFor(level) {
   return 'B1';
 }
 
+// ── Podcast levels ──────────────────────────────────────────────────────────
+// A topic's podcast in four levels (src/data/topicMaterials/levels/NN.json,
+// written by scripts/publish-podcast-levels.cjs). A level the topic doesn't have
+// falls back to its live B1 episode (`materials.podcast`).
+export const PODCAST_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+
+// The learner's level (users.level, free text: "A1 – Beginner", "B1+",
+// "Upper-intermediate"…) → the episode to open first. No level = B1.
+export function podcastLevelFor(level) {
+  const l = String(level || '').toUpperCase().trim();
+  if (!l) return 'B1';
+  if (/^A1|BEGIN|STARTER/.test(l)) return 'A1';
+  if (/^A|ELEMENT|PRE/.test(l)) return 'A2';
+  if (/^B2|^C|UPPER|ADVANC/.test(l)) return 'B2';
+  return 'B1';
+}
+
+// The episode to play for `level`: the level's own episode when the topic has
+// one, else the live B1 episode. The level episode keeps what belongs to the
+// topic (hosts, cover, talk prompts) and drops what was written for the live
+// script: its chapters (line indexes), «before» guess and questions.
+// `available` = the levels the switch offers; B1 is always there.
+export function levelEpisode(base, levels, level) {
+  const own = levels && typeof levels === 'object' ? levels : {};
+  const available = PODCAST_LEVELS.filter((l) => own[l]?.audio || (l === 'B1' && base));
+  const lv = own[level]?.audio ? own[level] : null;
+  if (!lv) return { episode: base || null, level: 'B1', available };
+  const episode = {
+    ...(base || {}),
+    title: lv.title || base?.title,
+    level,
+    lines: lv.lines,
+    audio: lv.audio,
+    duration: lv.duration || 0,
+    chapters: [],
+    questions: lv.questions || [],
+    before: undefined,
+    words: undefined,
+    levelWords: lv.words || [],
+  };
+  return { episode, level, available };
+}
+
+// A level's word list (core words, phrasal verbs, idioms / chunks) as terms for
+// the highlighter and the word card. Chunks end in punctuation ("Can I pay by
+// card?"), which a `\b` match can't follow, so the key drops it.
+export function levelTerms(words) {
+  const seen = new Set();
+  const out = [];
+  (words || []).forEach((w) => {
+    const phrase = String(w?.phrase || '').trim();
+    const key = phrase.toLowerCase().replace(/[.!?…]+$/, '').trim();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push({ phrase, key, kind: w.kind || 'word', meaningAZ: w.az, meaningTR: w.tr, meaning: w.en, example: w.example });
+  });
+  return out.sort((a, b) => b.key.length - a.key.length);
+}
+
 // Index of the line being spoken at `t` seconds (lines carry their start `at`).
 export function activeLineAt(lines, t) {
   let idx = -1;

@@ -34,3 +34,6 @@ android/app/gradle.properties
 *.jks
 *.keystore
 video_review/
+
+# Local-only copies of staged level audio (scripts/publish-podcast-levels.cjs --local-audio)
+public/staged-levels/

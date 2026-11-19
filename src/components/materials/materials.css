@@ -179,6 +179,11 @@
   color: var(--text-primary); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-pill); cursor: pointer;
 }
 .mt-word--idiom { border-style: dashed; border-color: var(--ai); }
+.mt-word-group { display: flex; flex-direction: column; gap: var(--s-2); }
+.mt-word-group-label { margin: 0; font-size: var(--fs-xs); font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--text-secondary); }
+
+/* Listen: the level switch above the episode. */
+.mt-pod-levels { display: flex; flex-direction: column; gap: var(--s-3); }
 .mt-word.is-on { color: var(--text-on-accent); background: var(--accent); border-color: var(--accent); }
 .mt-predict {
   margin: 0; display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-3) var(--s-4);

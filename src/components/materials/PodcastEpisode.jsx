@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import {
   activeLineAt, buildTerms, onlyWords, sceneAt, spokenText,
-  replayLineAt, nextLineAt, lineTranslation, hasLineTranslations,
+  replayLineAt, nextLineAt, lineTranslation, hasLineTranslations, levelTerms,
 } from '../../utils/topicMaterials';
 import { TermText, LangSwitch, WordCard } from './TermText';
 import useMeaningLang from './useMeaningLang';
@@ -16,6 +16,8 @@ const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(
 // A finger or wheel on the sheet pauses the auto-follow this long, so the
 // learner can look back without being pulled to the spoken line.
 const HANDS_OFF_MS = 4000;
+// A levelled episode's Words step, in the order of the review sheets.
+const WORD_GROUPS = [['Words', ['word']], ['Phrasal verbs', ['phrasal']], ['Idioms & phrases', ['idiom', 'chunk']]];
 
 // The nearest box that scrolls the script: the topic sheet's content area.
 function scrollBoxOf(el) {
@@ -57,7 +59,13 @@ export default function PodcastEpisode({ podcast, topic }) {
   const [present, setPresent] = useState(false);
   const [lang] = useMeaningLang();
 
-  const terms = useMemo(() => onlyWords(buildTerms(topic), podcast.words), [topic, podcast.words]);
+  // A levelled episode brings its own list (core words, phrasal verbs, idioms
+  // and chunks for that level); the live episode marks the topic's words.
+  const levelWords = podcast.levelWords;
+  const terms = useMemo(
+    () => (levelWords ? levelTerms(levelWords) : onlyWords(buildTerms(topic), podcast.words)),
+    [topic, podcast.words, levelWords],
+  );
   const lines = podcast.lines;
   const idx = activeLineAt(lines, t);
   const chapters = podcast.chapters || [];
@@ -70,8 +78,19 @@ export default function PodcastEpisode({ podcast, topic }) {
   // (lines[i].az / .tr) — none do yet; see lineTranslation().
   const canTranslate = useMemo(() => hasLineTranslations(lines), [lines]);
   const keyWords = terms.filter((x) => x.kind !== 'phrase');
-  const steps = [['words', 'Words'], ['listen', 'Listen'], ['check', 'Check']];
-  if (podcast.talk?.length > 0) steps.push(['talk', 'Talk']);
+  // In list order, not the highlighter's longest-first order.
+  const wordGroups = levelWords ? WORD_GROUPS.map(([label, kinds]) => [
+    label, levelWords.map((w) => terms.find((x) => x.phrase === String(w.phrase).trim())).filter((x, i, a) => x && kinds.includes(x.kind) && a.indexOf(x) === i),
+  ]).filter(([, list]) => list.length) : null;
+  const hasCheck = podcast.questions?.length > 0;
+  const hasTalk = podcast.talk?.length > 0;
+  const steps = [['words', 'Words'], ['listen', 'Listen']];
+  if (hasCheck) steps.push(['check', 'Check']);
+  if (hasTalk) steps.push(['talk', 'Talk']);
+  const wordButton = (w) => (
+    <button key={w.key} type="button" className={`mt-word${picked?.key === w.key ? ' is-on' : ''}${w.kind === 'idiom' || w.kind === 'chunk' ? ' mt-word--idiom' : ''}`}
+      onClick={(e) => { e.stopPropagation(); setPicked(picked?.key === w.key ? null : w); }}>{w.phrase}</button>
+  );
 
   useEffect(() => {
     const a = audioRef.current;
@@ -235,12 +254,14 @@ export default function PodcastEpisode({ podcast, topic }) {
               <p className="mt-hint">Tap a word to see it in your language.</p>
               <LangSwitch />
             </div>
-            <div className="mt-words">
-              {keyWords.map((w) => (
-                <button key={w.key} type="button" className={`mt-word${picked?.key === w.key ? ' is-on' : ''}${w.kind === 'idiom' ? ' mt-word--idiom' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); setPicked(picked?.key === w.key ? null : w); }}>{w.phrase}</button>
-              ))}
-            </div>
+            {wordGroups ? wordGroups.map(([label, list]) => (
+              <div key={label} className="mt-word-group">
+                <p className="mt-word-group-label">{label}</p>
+                <div className="mt-words">{list.map(wordButton)}</div>
+              </div>
+            )) : (
+              <div className="mt-words">{keyWords.map(wordButton)}</div>
+            )}
             {podcast.before?.predict && (
               <p className="mt-predict"><Sparkles size={16} aria-hidden="true" /> {podcast.before.predict}</p>
             )}
@@ -281,7 +302,8 @@ export default function PodcastEpisode({ podcast, topic }) {
               })}
             </ol>
 
-            <button type="button" className="mt-ghost" onClick={() => openStep('check')}>Check what you heard <ArrowRight size={16} /></button>
+            {hasCheck && <button type="button" className="mt-ghost" onClick={() => openStep('check')}>Check what you heard <ArrowRight size={16} /></button>}
+            {!hasCheck && hasTalk && <button type="button" className="mt-ghost" onClick={() => openStep('talk')}>Talk about it <ArrowRight size={16} /></button>}
 
             <div className="mt-foot">
               {card}
@@ -317,7 +339,7 @@ export default function PodcastEpisode({ podcast, topic }) {
           </section>
         )}
 
-        {step === 'check' && (
+        {step === 'check' && hasCheck && (
           <section className="mt-step">
             <MaterialQuestions questions={podcast.questions} title="Did you get it?" />
             {steps.some(([k]) => k === 'talk') && (

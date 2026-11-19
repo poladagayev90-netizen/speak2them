@@ -16,3 +16,16 @@ export async function loadMaterials(day) {
   const mod = await ctx(fileOf(day));
   return mod.default || mod;
 }
+
+// The podcast in four levels: src/data/topicMaterials/levels/NN.json
+// ({A1|A2|B1|B2: {title, lines, audio, duration, words}}), written by
+// scripts/publish-podcast-levels.cjs once a level's audio is in Storage.
+// A topic without the file has only its live B1 episode.
+const levelsCtx = require.context('../data/topicMaterials/levels', false, /^\.\/\d\d\.json$/, 'lazy');
+const levelKeys = new Set(levelsCtx.keys());
+
+export async function loadPodcastLevels(day) {
+  if (!levelKeys.has(fileOf(day))) return null;
+  const mod = await levelsCtx(fileOf(day));
+  return mod.default || mod;
+}
