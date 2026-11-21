@@ -10968,5 +10968,5 @@ exports.warmupCallEnd = onRequest(
 // Local simulation only (scratchpad sim20.js through the emulator functions
 // server): drive the planner with a made-up clock. Never set in production.
 if (process.env.FUNCTIONS_EMULATOR === "true") {
-  exports._sim = { runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs, runAgent, runAnalysisShadow, buildAnalysisPrompt, ANALYSIS_SCHEMA };
+  exports._sim = { pairVerdict, runPlannerTick, buildWeeklyPlan, sendWeeklyPlan, refillThisWeek, expireLateOffers, sendOfferReminders, rosterOf, loadPlannerInputs, runAgent, runAnalysisShadow, buildAnalysisPrompt, ANALYSIS_SCHEMA };
 }
