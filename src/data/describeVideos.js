@@ -2439,6 +2439,533 @@ export const describeVideos = [
       useful: ["above a volcano", "pour into", "turn into"],
     },
   },
+  {
+    // source: 01_shalaev.vlad_Df4iMBboGms.mp4 (IG saved 2026-11-21)
+    id: 'man-slips-wet-floor',
+    src: '/videos/man-slips-wet-floor.mp4',
+    poster: '/videos/man-slips-wet-floor.jpg',
+    seconds: 7,
+    sound: true,
+    alt: 'A man holding a mug slips and falls twice on a wet tiled floor while a woman is mopping and a grey cat watches.',
+    keywords: ['wet floor', 'mop', 'bucket', 'slipping', 'grey cat'],
+    prompts: [
+      'What happens to the man when he walks across the freshly mopped floor?',
+      'Have you ever slipped or fallen in a funny way at home?',
+    ],
+    howTo: {
+      steps: [
+        "A woman is cleaning a wet floor *with* a mop.",
+        "A man walks *past* her *with* a cup *in* his hand.",
+        "He slips *on* the wet tiles and falls *down*.",
+        "He tries to stand *up*, slips again, and looks {surprised}.",
+        "A grey cat runs *away* *across* the room.",
+      ],
+      useful: ["slip on", "fall down", "run away"],
+    },
+  },
+  {
+    // source: 02_mishka.kittycat_Df5NyEUIWRL.mp4 (IG saved 2026-11-21)
+    id: 'cat-pommel-horse',
+    ai: true,
+    src: '/videos/cat-pommel-horse.mp4',
+    poster: '/videos/cat-pommel-horse.jpg',
+    seconds: 14,
+    sound: true,
+    alt: 'A grey-and-white cat does a gymnastics routine and handstand on a pommel horse in a stadium, then lands on the mat with its arms raised.',
+    keywords: ['pommel horse', 'handstand', 'gymnastics mat', 'stadium', 'arms raised'],
+    prompts: [
+      'What gymnastics moves does the cat perform in the stadium?',
+      'Which Olympic sport do you enjoy watching the most?',
+    ],
+    howTo: {
+      steps: [
+        "A grey-and-white cat is *in* a big sports stadium.",
+        "It jumps *onto* a pommel horse and spins *around*.",
+        "It holds a handstand *up* *in* the air.",
+        "Then it jumps *down* *onto* the blue mat.",
+        "It raises both arms *up* and looks {proud} and {happy}.",
+      ],
+      useful: ["jump onto", "spin around", "raise arms up"],
+    },
+  },
+  {
+    // source: 03_chiquichanca_Df2j2PDphbq.mp4 (IG saved 2026-11-21)
+    id: 'dog-cat-agave-plant',
+    src: '/videos/dog-cat-agave-plant.mp4',
+    poster: '/videos/dog-cat-agave-plant.jpg',
+    seconds: 53,
+    sound: true,
+    alt: 'A small cat hides inside a large spiky agave plant while a tall grey dog circles it and jumps up trying to reach it.',
+    keywords: ['spiky plant', 'grey dog', 'hiding cat', 'jumping up', 'tree trunk'],
+    prompts: [
+      'Why does the dog have trouble reaching the cat?',
+      'How do cats and dogs usually react when they meet each other?',
+    ],
+    howTo: {
+      steps: [
+        "A small cat is hiding *inside* a big spiky plant.",
+        "A tall grey dog walks *around* the plant and looks *at* it.",
+        "The dog jumps *up* *near* the sharp leaves.",
+        "The cat stays {safe} and {calm} *between* the leaves.",
+      ],
+      useful: ["hide inside", "walk around", "jump up"],
+    },
+  },
+  {
+    // source: 04_ivan93ivan93_DfZX6k0xmbb.mp4 (IG saved 2026-11-21)
+    id: 'boy-runs-slips-car',
+    src: '/videos/boy-runs-slips-car.mp4',
+    poster: '/videos/boy-runs-slips-car.jpg',
+    seconds: 11,
+    sound: true,
+    alt: 'A boy in a winter jacket and backpack runs towards a parked car, trips and falls on the road, then gets up laughing at the window.',
+    keywords: ['winter jacket', 'backpack', 'car window', 'falling down', 'laughing'],
+    prompts: [
+      'How does the boy react right after he falls on the road?',
+      'Do you usually laugh or feel embarrassed when you trip in public?',
+    ],
+    howTo: {
+      steps: [
+        "A boy *with* a backpack is running *towards* a car.",
+        "Suddenly, he trips and falls *down* *on* the road.",
+        "He stands *up* quickly and runs *to* the car window.",
+        "He laughs loudly and looks {happy} and {funny}.",
+      ],
+      useful: ["run towards", "fall down", "stand up"],
+    },
+  },
+  {
+    // source: 05_seumas326_Df-mEg0thrM.mp4 (IG saved 2026-11-21)
+    id: 'squirrel-passes-owl',
+    src: '/videos/squirrel-passes-owl.mp4',
+    poster: '/videos/squirrel-passes-owl.jpg',
+    seconds: 13,
+    sound: true,
+    alt: 'A red squirrel climbs up a pine tree right past a perched owl, and the owl watches it closely without moving.',
+    keywords: ['owl', 'red squirrel', 'tree trunk', 'pine branches', 'watching'],
+    prompts: [
+      'What does the owl do while the squirrel climbs right past it?',
+      'What wild animals can you see near where you live?',
+    ],
+    howTo: {
+      steps: [
+        "A brown owl is sitting *on* a branch *in* a pine tree.",
+        "A small red squirrel climbs *up* the tree trunk *past* the owl.",
+        "The owl turns its head and looks *at* the squirrel.",
+        "The owl stays {still} and {calm}, and the squirrel runs *away*.",
+      ],
+      useful: ["sit on a branch", "climb up", "turn its head"],
+    },
+  },
+  {
+    // source: 06_pokeys__world_Df5iN96hjO-.mp4 (IG saved 2026-11-21)
+    id: 'cat-hat-hammer',
+    ai: true,
+    src: '/videos/cat-hat-hammer.mp4',
+    poster: '/videos/cat-hat-hammer.jpg',
+    seconds: 22,
+    sound: true,
+    alt: 'A spotted cat wearing a small brown hat stands upright outdoors, giggling as it swings a wooden hammer against a low wall.',
+    keywords: ['brown hat', 'wooden hammer', 'standing upright', 'stone wall', 'spotted cat'],
+    prompts: [
+      'What is the cat wearing and what is it doing with the hammer?',
+      'Have you ever tried fixing something around the house yourself?',
+    ],
+    howTo: {
+      steps: [
+        "A spotted cat *in* a brown hat stands *on* two legs.",
+        "It holds a wooden hammer *in* its paw *outside*.",
+        "It hits a low stone wall *with* the hammer.",
+        "The cat laughs and looks {silly} and {happy}.",
+      ],
+      useful: ["stand on two legs", "hold a hammer", "hit a wall"],
+    },
+  },
+  {
+    // source: 07_creative.dhara_Df2Bo_3ulPo.mp4 (IG saved 2026-11-21)
+    id: 'cats-making-noodles',
+    ai: true,
+    src: '/videos/cats-making-noodles.mp4',
+    poster: '/videos/cats-making-noodles.jpg',
+    seconds: 56,
+    sound: true,
+    alt: 'Two cats in a village courtyard knead dough, chop vegetables, slice noodles, ladle hot soup, and eat together with chopsticks at a wooden table.',
+    keywords: ['kneading dough', 'soup ladle', 'noodle bowls', 'chopsticks', 'wooden table'],
+    prompts: [
+      'Walk through the steps the two cats follow to make their noodle soup.',
+      'What is a homemade dish you love cooking or eating with family?',
+    ],
+    howTo: {
+      steps: [
+        "Two cats are cooking *outside* *at* a wooden table.",
+        "First, one cat mixes dough while the other cuts vegetables.",
+        "Next, they slice noodles *into* a pot *of* hot soup.",
+        "Then they pour the soup *into* two bowls.",
+        "Finally, they sit *at* the table and eat *with* chopsticks, looking {happy}.",
+      ],
+      useful: ["at a wooden table", "pour into", "eat with chopsticks"],
+    },
+  },
+  {
+    // source: 08_yeon_._doo_Dfg7kjsMFxj.mp4 (IG saved 2026-11-21)
+    id: 'cat-drops-phone-sea',
+    ai: true,
+    src: '/videos/cat-drops-phone-sea.mp4',
+    poster: '/videos/cat-drops-phone-sea.jpg',
+    seconds: 14,
+    sound: true,
+    alt: 'A cat in grey shorts takes a selfie with a small fish by the sea, accidentally drops its phone into the water, and dives in after it.',
+    keywords: ['grey shorts', 'smartphone', 'small fish', 'blue sea', 'diving in'],
+    prompts: [
+      'What goes wrong while the cat is taking a selfie by the sea?',
+      'Have you ever dropped your phone somewhere unlucky?',
+    ],
+    howTo: {
+      steps: [
+        "A cat *in* grey shorts stands *by* the blue sea.",
+        "It holds a phone *in* one paw and a small fish *in* the other.",
+        "By mistake, it drops the phone *into* the water.",
+        "The cat looks {shocked} and jumps *into* the sea *after* it.",
+      ],
+      useful: ["by the sea", "drop into", "jump in after"],
+    },
+  },
+  {
+    // source: 09_cat.hoochoo_Deo1fqhS5Bz.mp4 (IG saved 2026-11-21)
+    id: 'cat-money-breakdance',
+    ai: true,
+    src: '/videos/cat-money-breakdance.mp4',
+    poster: '/videos/cat-money-breakdance.jpg',
+    seconds: 12,
+    sound: true,
+    alt: 'A black-and-white cat reaches for a banknote on a park path, misses it when a hand grabs it away, and spins into a breakdance.',
+    keywords: ['banknote', 'park path', 'reaching out', 'spinning', 'green trees'],
+    prompts: [
+      'What does the cat do right after the hand snatches the money?',
+      'What would you do if you found a banknote lying on the street?',
+    ],
+    howTo: {
+      steps: [
+        "A green banknote is lying *on* a path *in* a park.",
+        "A black-and-white cat walks *up* and reaches *for* it.",
+        "A person's hand pulls the money *away*.",
+        "The cat starts spinning *on* the ground and looks {cool} and {funny}.",
+      ],
+      useful: ["reach for", "pull away", "spin on the ground"],
+    },
+  },
+  {
+    // source: 10_yougatos_DfSRbCNR2Mr.mp4 (IG saved 2026-11-21)
+    id: 'cat-too-much-pepper',
+    ai: true,
+    src: '/videos/cat-too-much-pepper.mp4',
+    poster: '/videos/cat-too-much-pepper.jpg',
+    seconds: 15,
+    sound: true,
+    alt: 'One cat serves a fried egg while an orange cat buries it in black pepper with a big grinder, so the chef cat hits it with the frying pan.',
+    keywords: ['fried egg', 'frying pan', 'pepper grinder', 'white plate', 'kitchen counter'],
+    prompts: [
+      'Why does the chef cat get annoyed with the orange cat?',
+      'Have you ever accidentally put too much salt or spice in your food?',
+    ],
+    howTo: {
+      steps: [
+        "One cat puts a fried egg *onto* a white plate.",
+        "An orange cat adds a little pepper *from* a small shaker.",
+        "Then it takes a huge grinder and covers the egg *in* black pepper.",
+        "The chef cat gets {angry} and taps it *with* the frying pan.",
+      ],
+      useful: ["put onto a plate", "cover in pepper", "get angry"],
+    },
+  },
+  {
+    // source: 11_businka_yoshi_i_oks_Df4gqx0hfdk.mp4 (IG saved 2026-11-21)
+    id: 'white-cat-hiding-brick',
+    ai: true,
+    src: '/videos/white-cat-hiding-brick.mp4',
+    poster: '/videos/white-cat-hiding-brick.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'A white cat walks upright past a silver sports car on a wet road and turns away to reveal it is hiding a red brick behind its back.',
+    keywords: ['white cat', 'sports car', 'wet road', 'red brick', 'behind its back'],
+    prompts: [
+      'What surprise do we see when the white cat turns around?',
+      'Why do you think the cat was carrying a brick behind its back?',
+    ],
+    howTo: {
+      steps: [
+        "A white cat is walking *along* a wet road *on* two legs.",
+        "A silver sports car drives *past* the cat.",
+        "The cat turns *around* and walks *away*.",
+        "We see a red brick *behind* its back, and it looks {sneaky}.",
+      ],
+      useful: ["walk along", "drive past", "behind its back"],
+    },
+  },
+  {
+    // source: 12_doubinglife_DetzGpCFXOT.mp4 (IG saved 2026-11-21)
+    id: 'cat-robber-washes-window',
+    ai: true,
+    src: '/videos/cat-robber-washes-window.mp4',
+    poster: '/videos/cat-robber-washes-window.jpg',
+    seconds: 11,
+    sound: true,
+    alt: 'A masked cat holds a knife at a car window, but when the cat inside shows a silver toy gun, the robber quickly starts washing the glass.',
+    keywords: ['black mask', 'car window', 'washing glass', 'sponge', 'toy gun'],
+    prompts: [
+      'Why does the masked cat suddenly change what it is doing?',
+      'What makes this twist so funny?',
+    ],
+    howTo: {
+      steps: [
+        "One cat is sitting *inside* a car.",
+        "A cat *in* a black mask appears *at* the window *with* a knife.",
+        "The cat *inside* holds *up* a silver toy gun.",
+        "The masked cat looks {scared} and quickly starts washing the window *with* a sponge.",
+      ],
+      useful: ["inside a car", "at the window", "wash the window"],
+    },
+  },
+  {
+    // source: 13_businka_yoshi_i_oks_DeRh8kiBWwp.mp4 (IG saved 2026-11-21)
+    id: 'cat-angry-sponge-gift',
+    ai: true,
+    src: '/videos/cat-angry-sponge-gift.mp4',
+    poster: '/videos/cat-angry-sponge-gift.jpg',
+    seconds: 15,
+    sound: true,
+    alt: 'A white cat opens a white box on a kitchen counter, finds a kitchen sponge inside, hisses angrily, and leaves.',
+    keywords: ['white box', 'dish sponge', 'hissing', 'kitchen sink', 'marble counter'],
+    prompts: [
+      'How does the cat’s mood change after it opens the box?',
+      'What is the funniest or worst gift you have ever received?',
+    ],
+    howTo: {
+      steps: [
+        "A white cat climbs *up* *to* a kitchen counter.",
+        "It opens a white box *with* its paws.",
+        "Inside the box, there is only a yellow-and-green sponge.",
+        "The cat looks very {angry}, hisses loudly, and walks *away*.",
+      ],
+      useful: ["climb up", "inside the box", "walk away"],
+    },
+  },
+  {
+    // source: 14_neuti_hous_DetdkadPPtr.mp4 (IG saved 2026-11-21)
+    id: 'cat-plugging-wall-socket',
+    ai: true,
+    src: '/videos/cat-plugging-wall-socket.mp4',
+    poster: '/videos/cat-plugging-wall-socket.jpg',
+    seconds: 21,
+    sound: true,
+    alt: 'A ginger cat hides behind a red curtain, nervously tries to plug a black cord into a wall socket, and keeps peeking out to check.',
+    keywords: ['red curtain', 'wall socket', 'power plug', 'black cord', 'peeking out'],
+    prompts: [
+      'Why is the cat hiding behind the curtain while trying to plug in the cord?',
+      'Are there any everyday tasks that always make you a little nervous?',
+    ],
+    howTo: {
+      steps: [
+        "A ginger cat is hiding *behind* a red curtain.",
+        "It reaches its paw *out* *towards* a wall socket.",
+        "It tries to push a black plug *into* the socket.",
+        "Then it pulls back and peeks *around* the curtain, looking {nervous}.",
+      ],
+      useful: ["behind a curtain", "reach out", "peek around"],
+    },
+  },
+  {
+    // source: 15_jessydancingcat_Dfk6p6UAga3.mp4 (IG saved 2026-11-21)
+    id: 'cat-cleaning-skyscraper-window',
+    ai: true,
+    src: '/videos/cat-cleaning-skyscraper-window.mp4',
+    poster: '/videos/cat-cleaning-skyscraper-window.jpg',
+    seconds: 15,
+    sound: true,
+    alt: 'A black-and-white cat cleaning a high skyscraper window slips and dangles off the ledge, then climbs back up and keeps wiping the glass.',
+    keywords: ['skyscraper', 'window ledge', 'yellow sponge', 'blue bucket', 'climbing up'],
+    prompts: [
+      'What scary moment happens while the cat is cleaning the high window?',
+      'Would you ever be brave enough to work high up on a tall building?',
+    ],
+    howTo: {
+      steps: [
+        "A black-and-white cat stands *on* a narrow ledge *high* *above* a city.",
+        "It is wiping a window *with* a yellow sponge.",
+        "Suddenly, it slips *off* the ledge and hangs *by* its paws.",
+        "It climbs *back* *up*, looks {brave}, and keeps cleaning the glass.",
+      ],
+      useful: ["high above", "slip off", "climb back up"],
+    },
+  },
+  {
+    // source: 16_mochi_meow_o_Dfjp1WhRH91.mp4 (IG saved 2026-11-21)
+    id: 'kitten-cola-mint-prank',
+    ai: true,
+    src: '/videos/kitten-cola-mint-prank.mp4',
+    poster: '/videos/kitten-cola-mint-prank.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'A white kitten pours cola and drops a mint into a sleeping ginger kitten’s mouth on a sofa, causing a tall fountain of foam to shoot out.',
+    keywords: ['sofa', 'cola bottle', 'mint sweets', 'foam fountain', 'sleeping kitten'],
+    prompts: [
+      'What prank does the white kitten play on its sleeping friend?',
+      'Did you ever try the cola-and-mint experiment when you were younger?',
+    ],
+    howTo: {
+      steps: [
+        "A ginger kitten is sleeping *on* a soft sofa.",
+        "A white kitten pours cola *into* its open mouth.",
+        "Then it drops a mint sweet *in*.",
+        "A big fountain *of* foam shoots *up*, and the ginger kitten wakes *up* looking {shocked}.",
+      ],
+      useful: ["pour into", "shoot up", "wake up"],
+    },
+  },
+  {
+    // source: 17_mpminds__DficSzZNy7J.mp4 (IG saved 2026-11-21)
+    id: 'kittens-park-photoshoot',
+    ai: true,
+    src: '/videos/kittens-park-photoshoot.mp4',
+    poster: '/videos/kittens-park-photoshoot.jpg',
+    seconds: 30,
+    sound: true,
+    alt: 'In a city park, a ginger kitten takes photos of a white kitten in a pink scarf and beret, who checks the phone, dislikes the shots, and walks off.',
+    keywords: ['pink scarf', 'pink beret', 'taking photos', 'city park', 'green grass'],
+    prompts: [
+      'Why does the white kitten get frustrated during the photoshoot?',
+      'Do you usually like how your photos turn out when friends take them?',
+    ],
+    howTo: {
+      steps: [
+        "Two kittens are *on* the green grass *in* a city park.",
+        "The white kitten poses *in* a pink scarf and hat.",
+        "The ginger kitten takes photos *with* a phone.",
+        "The white kitten checks the screen, looks {annoyed}, and walks *away*.",
+      ],
+      useful: ["in a park", "take photos", "walk away"],
+    },
+  },
+  {
+    // source: 18_lily__duduu_De9tSxQzhbo.mp4 (IG saved 2026-11-21)
+    id: 'guinea-pig-foam-can',
+    ai: true,
+    src: '/videos/guinea-pig-foam-can.mp4',
+    poster: '/videos/guinea-pig-foam-can.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'A guinea pig holding a spray can accidentally blasts white foam into its own face and falls flat on its back while another guinea pig watches.',
+    keywords: ['guinea pig', 'spray can', 'white foam', 'falling backwards', 'grey wall'],
+    prompts: [
+      'What happens when the guinea pig presses the spray can?',
+      'How does the second guinea pig react to the accident?',
+    ],
+    howTo: {
+      steps: [
+        "A small guinea pig stands *next to* a grey wall.",
+        "It holds a spray can *in* front *of* its face.",
+        "White foam sprays *out* *onto* its nose.",
+        "It falls *backwards* *onto* the floor while another guinea pig watches, looking {surprised}.",
+      ],
+      useful: ["next to a wall", "spray out", "fall backwards"],
+    },
+  },
+  {
+    // source: 19_billi_community_DfkhgBMmffJ.mp4 (IG saved 2026-11-21)
+    id: 'orange-cat-gym-barbell',
+    ai: true,
+    src: '/videos/orange-cat-gym-barbell.mp4',
+    poster: '/videos/orange-cat-gym-barbell.jpg',
+    seconds: 15,
+    sound: true,
+    alt: 'A chubby orange cat in a gym swings its legs while hanging from a barbell, then drops to the floor and stands with its paws on its hips.',
+    keywords: ['barbell', 'gym mirror', 'hanging on', 'orange cat', 'paws on hips'],
+    prompts: [
+      'What happens when the orange cat tries to use the barbell?',
+      'Do you prefer exercising at a gym or outdoors?',
+    ],
+    howTo: {
+      steps: [
+        "A big orange cat is standing *inside* a gym.",
+        "It grabs a heavy barbell *with* both paws.",
+        "It hangs *from* the bar and swings its legs *in* the air.",
+        "Then it drops *down* *to* the floor and stands looking {proud}.",
+      ],
+      useful: ["inside a gym", "hang from", "drop down"],
+    },
+  },
+  {
+    // source: 20_oscar_beingoscar_Ddj_qGkpgGT.mp4 (IG saved 2026-11-21)
+    id: 'giant-cat-eiffel-tower',
+    ai: true,
+    src: '/videos/giant-cat-eiffel-tower.mp4',
+    poster: '/videos/giant-cat-eiffel-tower.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'A giant fluffy white cat climbs the Eiffel Tower in Paris while tourists run below and helicopters fly around it.',
+    keywords: ['giant cat', 'iron tower', 'helicopters', 'running tourists', 'city view'],
+    prompts: [
+      'What movie scene does this giant cat on the tower remind you of?',
+      'What is a famous landmark you would love to visit one day?',
+    ],
+    howTo: {
+      steps: [
+        "A giant white cat is climbing *up* a tall iron tower *in* Paris.",
+        "People are running *away* *on* the street *below*.",
+        "Small helicopters fly *around* the cat *in* the sky.",
+        "The cat reaches *out* its big paw and looks {curious}.",
+      ],
+      useful: ["climb up", "run away", "fly around"],
+    },
+  },
+  {
+    // source: 21_ginny_mel_world_De1V3qMvMLy.mp4 (IG saved 2026-11-21)
+    id: 'cats-scooter-wave-crash',
+    ai: true,
+    src: '/videos/cats-scooter-wave-crash.mp4',
+    poster: '/videos/cats-scooter-wave-crash.jpg',
+    seconds: 10,
+    sound: true,
+    alt: 'Two cats riding a red scooter wave cheerfully at a passing car, lose control, and crash onto the grass beside the road.',
+    keywords: ['red scooter', 'waving paws', 'wooden fence', 'grass verge', 'car windscreen'],
+    prompts: [
+      'Why do the two cats crash their scooter?',
+      'Have you ever been distracted while riding a bike or walking?',
+    ],
+    howTo: {
+      steps: [
+        "Two cats are riding a red scooter *down* a quiet street.",
+        "The white cat *in* front lifts both paws to wave *at* a car.",
+        "Because it lets go, the scooter turns *off* the road.",
+        "They crash *onto* the grass *beside* a fence and look {surprised}.",
+      ],
+      useful: ["ride a scooter", "wave at", "crash onto"],
+    },
+  },
+  {
+    // source: 22_yeon_._doo_Dfa7muMMP0I.mp4 (IG saved 2026-11-21)
+    id: 'cat-mirror-bath-towel',
+    ai: true,
+    src: '/videos/cat-mirror-bath-towel.mp4',
+    poster: '/videos/cat-mirror-bath-towel.jpg',
+    seconds: 9,
+    sound: true,
+    alt: 'A cat tries to pour a green cup of water over its reflection in a bathroom mirror, gets splashed, and wipes its face with a hanging towel.',
+    keywords: ['bathroom mirror', 'green cup', 'green basin', 'hanging towel', 'splashing water'],
+    prompts: [
+      'What happens when the cat pours water onto the mirror?',
+      'How do pets usually react when they see themselves in a mirror?',
+    ],
+    howTo: {
+      steps: [
+        "A cat sits *in front of* a mirror *in* a bathroom.",
+        "It pours water *from* a green cup *onto* the glass.",
+        "The water splashes *back* *onto* the cat's head.",
+        "The cat looks {surprised} and wipes its face *with* a dark towel.",
+      ],
+      useful: ["in front of", "pour water", "wipe its face"],
+    },
+  },
 ];
 
 // Which clips a topic gets lives in topicVideos.js, which
