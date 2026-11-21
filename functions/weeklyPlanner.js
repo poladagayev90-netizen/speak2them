@@ -113,6 +113,11 @@ function pairAllowed(a, b, blocked) {
   if (a.uid === b.uid) return false;
   if (blocked.has(pairKey(a.uid, b.uid))) return false;
   if (!!a.minor !== !!b.minor) return false;
+  // newcomerHold.js: someone waiting for their teacher session (`hold`) or a
+  // test account (`test`) meets only a newcomer host (`host`), and a test
+  // account also another test account. Same rule as pairVerdict.
+  if ((a.hold && !b.host) || (b.hold && !a.host)) return false;
+  if (!!a.test !== !!b.test && !a.host && !b.host) return false;
   // Reliability (Phase 5): someone who keeps missing confirmed practices is
   // never a newcomer's first experience of the app.
   if ((a.limited && b.newcomer) || (b.limited && a.newcomer)) return false;

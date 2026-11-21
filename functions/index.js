@@ -26,6 +26,7 @@ const reportLanguage = require("./reportLanguage");
 const autoRoster = require("./autoRoster");
 const accountHealth = require("./accountHealth");
 const newcomersLib = require("./newcomers");
+const newcomerHold = require("./newcomerHold");
 const agentPacket = require("./agent/packet");
 const agentValidate = require("./agent/validate");
 const agentGemini = require("./agent/gemini");
@@ -276,6 +277,57 @@ async function refreshAccessSummary(db, uid) {
 // away; setEnforce: the switch that makes the limits real; summary: where one
 // learner stands. Payments through Google Play will call the same grant core
 // (packagesLib.grantPackage) from a receipt check — not written yet.
+// The admin takes someone out of upcoming practice (suspend, hold, test flag):
+// their confirmed bookings from now on and their pending proposals are
+// cancelled, and only the PARTNER is told — as a platform cancel («SpeakLab»),
+// which never counts against them. `keep(peerUid)` (may be async) spares the
+// ones that should stay, e.g. a hold keeps its booking with the host.
+async function cancelUpcomingFor(db, uid, callerUid, { keep = null } = {}) {
+  let cancelledBookings = 0;
+  let cancelledOffers = 0;
+  const nowMs = Date.now();
+  const bSnap = await db.collection("bookings")
+    .where("participants", "array-contains", uid)
+    .where("startMs", ">=", nowMs)
+    .orderBy("startMs")
+    .limit(100)
+    .get();
+  for (const d of bSnap.docs) {
+    const b = d.data() || {};
+    const slot = b.status === "confirmed" ? parseSlotId(String(b.slotId || "")) : null;
+    if (!slot) continue;
+    const peer = (b.participants || []).find((p) => p !== uid);
+    if (keep && peer && await keep(peer)) continue;
+    try {
+      const r = await cancelSlotPairCore(db, { slot, slotId: slot.slotId, studentUid: uid, callerUid, isAdminCaller: true });
+      cancelledBookings += 1;
+      await sendPushToUser(db, r.peerId, {
+        key: "slot_match_cancelled", vars: { at: slot.startMs, byName: "SpeakLab" },
+        type: "slot_match_cancelled", url: "/",
+      }).catch(() => null);
+    } catch (e) {
+      console.warn("[cancelUpcomingFor] booking", d.id, e.message);
+    }
+  }
+  const oSnap = await db.collection("matchOffers").where("participants", "array-contains", uid).get();
+  for (const d of oSnap.docs) {
+    const o = d.data() || {};
+    if (o.status !== "pending") continue;
+    const peer = (o.participants || []).find((p) => p !== uid);
+    if (keep && peer && await keep(peer)) continue;
+    await d.ref.update({ status: "cancelled", closedAt: admin.firestore.FieldValue.serverTimestamp() });
+    cancelledOffers += 1;
+    const waiting = Object.entries(o.responses || {}).filter(([k, v]) => k !== uid && v === "accepted").map(([k]) => k);
+    await Promise.all(waiting.map((u) => sendPushToUser(db, u, {
+      key: "match_offer_withdrawn", vars: { at: o.startMs }, type: "match_offer", url: "/",
+    }))).catch(() => null);
+  }
+  // The partners were let down by the platform: the next minute's refill
+  // looks for them first.
+  if (cancelledBookings || cancelledOffers) await requestRefill(db).catch(() => null);
+  return { cancelledBookings, cancelledOffers };
+}
+
 exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
@@ -370,45 +422,49 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
         suspension: on ? { atMs: Date.now(), by: decoded.uid, reason } : del,
         history: admin.firestore.FieldValue.arrayUnion({ action, atMs: Date.now(), by: decoded.uid, ...(reason ? { reason } : {}) }),
       }, { merge: true });
-      let cancelledBookings = 0;
-      let cancelledOffers = 0;
-      if (on) {
-        const nowMs = Date.now();
-        const bSnap = await db.collection("bookings")
-          .where("participants", "array-contains", uid)
-          .where("startMs", ">=", nowMs)
-          .orderBy("startMs")
-          .limit(100)
-          .get();
-        for (const d of bSnap.docs) {
-          const b = d.data() || {};
-          const slot = b.status === "confirmed" ? parseSlotId(String(b.slotId || "")) : null;
-          if (!slot) continue;
-          try {
-            const r = await cancelSlotPairCore(db, { slot, slotId: slot.slotId, studentUid: uid, callerUid: decoded.uid, isAdminCaller: true });
-            cancelledBookings += 1;
-            // Only the partner is told; the suspended account gets nothing.
-            await sendPushToUser(db, r.peerId, {
-              key: "slot_match_cancelled", vars: { at: slot.startMs, byName: "SpeakLab" },
-              type: "slot_match_cancelled", url: "/",
-            }).catch(() => null);
-          } catch (e) {
-            console.warn("[adminAccess suspend] booking", d.id, e.message);
-          }
-        }
-        const oSnap = await db.collection("matchOffers").where("participants", "array-contains", uid).get();
-        for (const d of oSnap.docs) {
-          const o = d.data() || {};
-          if (o.status !== "pending") continue;
-          await d.ref.update({ status: "cancelled", closedAt: admin.firestore.FieldValue.serverTimestamp() });
-          cancelledOffers += 1;
-          const waiting = Object.entries(o.responses || {}).filter(([k, v]) => k !== uid && v === "accepted").map(([k]) => k);
-          await Promise.all(waiting.map((u) => sendPushToUser(db, u, {
-            key: "match_offer_withdrawn", vars: { at: o.startMs }, type: "match_offer", url: "/",
-          }))).catch(() => null);
-        }
-      }
+      const { cancelledBookings, cancelledOffers } = on
+        ? await cancelUpcomingFor(db, uid, decoded.uid)
+        : { cancelledBookings: 0, cancelledOffers: 0 };
       return res.status(200).json({ ok: true, suspended: on, cancelledBookings, cancelledOffers });
+    }
+    // Teacher support first (newcomerHold.js, plan 2026-11-21): `hold` keeps
+    // the learner out of peer pairing until a ≥ 2-min call with a host, the
+    // admin or their own teacher lifts it (reconcileCallStats). Putting it on
+    // cancels the peer practices and proposals they already have — that was
+    // the Khadija case — but never one with the team.
+    if (action === "setHold") {
+      const on = body.on === true;
+      const ref = db.collection("newcomerPath").doc(uid);
+      await ref.set(on
+        ? { hold: true, path: "teacher", state: "waiting_time", setBy: decoded.uid, chosenAt: admin.firestore.FieldValue.serverTimestamp() }
+        : { hold: false, state: "released", releasedBy: "admin", doneAt: admin.firestore.FieldValue.serverTimestamp() },
+      { merge: true });
+      let cancelled = { cancelledBookings: 0, cancelledOffers: 0 };
+      if (on) {
+        const user = userSnap.data() || {};
+        const hostUids = await newcomerHostUids(db);
+        const team = (peer) => newcomerHold.isTeam(peer, { adminUid: ADMIN_UID, hostUids, teacherId: user.teacherId || null });
+        cancelled = await cancelUpcomingFor(db, uid, decoded.uid, { keep: team });
+      }
+      return res.status(200).json({ ok: true, hold: on, ...cancelled });
+    }
+    // Test account: meets only test accounts or the team. Its practices and
+    // proposals with real learners are cancelled when the flag goes on.
+    if (action === "setTest") {
+      const on = body.on === true;
+      if (on && uid === ADMIN_UID) return res.status(400).json({ error: "cannot-flag-admin" });
+      await db.collection("users").doc(uid).set({ testAccount: on ? true : admin.firestore.FieldValue.delete() }, { merge: true });
+      let cancelled = { cancelledBookings: 0, cancelledOffers: 0 };
+      if (on) {
+        const hostUids = await newcomerHostUids(db);
+        const keepPeer = async (peer) => {
+          if (newcomerHold.isTeam(peer, { adminUid: ADMIN_UID, hostUids })) return true;
+          const p = await db.collection("users").doc(peer).get().catch(() => null);
+          return !!(p && p.exists && p.get("testAccount") === true);
+        };
+        cancelled = await cancelUpcomingFor(db, uid, decoded.uid, { keep: keepPeer });
+      }
+      return res.status(200).json({ ok: true, testAccount: on, ...cancelled });
     }
     if (action === "summary") {
       const next = await refreshAccessSummary(db, uid);
@@ -500,7 +556,7 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
       // logunda yazılır, yoxsa "zəng alınmadı" şikayətini araşdırmaq
       // mümkün olmur (2026-09-20-də məhz bu itdi).
       console.warn("[getAgoraToken] pair refused:", decoded.uid, "→", peerUid,
-        JSON.stringify({ blocked: verdict.blocked, avoided: verdict.avoided, ageClash: verdict.ageClash, supervised }));
+        JSON.stringify({ blocked: verdict.blocked, avoided: verdict.avoided, ageClash: verdict.ageClash, held: verdict.held, testClash: verdict.testClash, supervised }));
       res.status(403).json({ error: "pair_refused" });
       return;
     }
@@ -1418,6 +1474,22 @@ async function notifyMissedCall(snap, call) {
   }).catch(() => null);
 }
 
+async function liftHoldsAfterCall(db, participants, callId) {
+  const [x, y] = participants;
+  const hostUids = await newcomerHostUids(db);
+  for (const [me, peer] of [[x, y], [y, x]]) {
+    const ref = db.collection("newcomerPath").doc(me);
+    const snap = await ref.get();
+    if (!snap.exists || snap.get("hold") !== true) continue;
+    const user = await db.collection("users").doc(me).get();
+    if (!newcomerHold.liftsHold({ uid: me, peerUid: peer, user: user.exists ? user.data() : {}, adminUid: ADMIN_UID, hostUids })) continue;
+    await ref.set({
+      hold: false, state: "done", releasedBy: "session", doneCallId: callId,
+      doneAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  }
+}
+
 exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", region: "europe-west4" }, async (event) => {
   const after = event.data?.after;
   if (!after?.exists) return;
@@ -1448,6 +1520,12 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
       console.error("[reconcileCallStats] failed for", uid, e.message);
       failures.push(e);
     }
+  }
+  // The teacher session happened (newcomerHold.js): a held learner who spoke
+  // ≥ 2 min with a host, the admin or their own teacher goes back into
+  // ordinary pairing. Its failure never retries the crediting above.
+  if (joined && trustedCallSeconds(call) >= ATTENDED_MIN_SECONDS) {
+    await liftHoldsAfterCall(db, participants, after.id).catch((e) => console.warn("[reconcileCallStats] hold lift failed:", e.message));
   }
   // One line for the admin's activity view. Its failure never retries the
   // crediting above (the line is a view, the credit is the record).
@@ -3285,6 +3363,18 @@ function levelRank(level) {
   return m ? LEVEL_CODES.indexOf(m[1]) : null;
 }
 
+// The newcomer hosts' uids (appConfig/planner.newcomerHosts), for the hold /
+// test-account rule — cached per instance for a minute, since pairVerdict runs
+// up to 12 times per slot join.
+let hostUidsCache = { at: 0, uids: [] };
+async function newcomerHostUids(db) {
+  if (Date.now() - hostUidsCache.at < 60 * 1000) return hostUidsCache.uids;
+  const snap = await db.collection("appConfig").doc("planner").get().catch(() => null);
+  const uids = newcomersLib.parseHosts(snap && snap.exists ? snap.get("newcomerHosts") : null).map((h) => h.uid);
+  hostUidsCache = { at: Date.now(), uids };
+  return uids;
+}
+
 // `get` is tx.get inside a transaction, or (ref) => ref.get() outside one.
 // `known` may carry user docs the caller has already read, to save reads.
 async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true, checkAge = true } = {}) {
@@ -3296,6 +3386,8 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true,
     avoidBA: users.doc(uidB).collection("avoid").doc(uidA),
     obA: db.collection("onboarding").doc(uidA),
     obB: db.collection("onboarding").doc(uidB),
+    pathA: db.collection("newcomerPath").doc(uidA),
+    pathB: db.collection("newcomerPath").doc(uidB),
     call: db.collection("calls").doc(callIdForPair(uidA, uidB)),
     ...(known[uidA] ? {} : { userA: users.doc(uidA) }),
     ...(known[uidB] ? {} : { userB: users.doc(uidB) }),
@@ -3327,8 +3419,19 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true,
   const call = data(s.call) || {};
   const lastMs = call.matchedAt?.toMillis?.() || call.createdAt?.toMillis?.() || 0;
   const recent = !!lastMs && Date.now() - lastMs < RECENT_PARTNER_MS;
+  // Waiting for a teacher session, or a test account (newcomerHold.js).
+  const { held, testClash } = newcomerHold.peerGuard({
+    uidA, uidB, a, b,
+    holdA: (data(s.pathA) || {}).hold === true,
+    holdB: (data(s.pathB) || {}).hold === true,
+    adminUid: ADMIN_UID,
+    hostUids: await newcomerHostUids(db),
+  });
 
-  return { ok: !blocked && !avoided && !ageClash && !levelClash, recent, blocked, avoided, ageClash, levelClash };
+  return {
+    ok: !blocked && !avoided && !ageClash && !levelClash && !held && !testClash,
+    recent, blocked, avoided, ageClash, levelClash, held, testClash,
+  };
 }
 
 // A SUPERVISED pair is exempt from the minor↔adult rule: the team (the intro
@@ -3403,10 +3506,13 @@ function onlineRelations(db, uid) {
     db.collection("onboarding").doc(uid).get(),
     users.doc(uid).collection("blocked").get(),
     users.doc(uid).collection("avoid").get(),
-  ]).then(([ob, blocked, avoid]) => ({
+    db.collection("newcomerPath").doc(uid).get().catch(() => null),
+  ]).then(([ob, blocked, avoid, path]) => ({
     minor: !!(ob.exists && ob.get("ageBand") === "under18"),
     blocks: new Set(blocked.docs.map((d) => d.id)),
     avoids: new Set(avoid.docs.map((d) => d.id)),
+    // Waiting for their teacher session (newcomerHold.js): not on the list.
+    hold: !!(path && path.exists && path.get("hold") === true),
   }));
   onlineRelationsCache.set(uid, { at: now, promise });
   promise.catch(() => { if (onlineRelationsCache.get(uid)?.promise === promise) onlineRelationsCache.delete(uid); });
@@ -3468,9 +3574,17 @@ exports.onlineNow = onRequest({ secrets: [], invoker: "public" }, async (req, re
 
     // My own side comes from the same per-person cache as everyone else's.
     const mine = await onlineRelations(db, me);
+    // Test accounts see only test accounts (newcomerHold.js); my own flag
+    // from the presence list, or my user doc when I am not on it yet.
+    const meRow = roster.people.find((u) => u.id === me);
+    const meTest = meRow ? meRow.testAccount === true
+      : (await db.collection("users").doc(me).get().catch(() => null))?.get?.("testAccount") === true;
+    // Someone on hold sees nobody — and nobody sees them.
+    if (mine.hold) return res.status(200).json({ on: true, people: [] });
     const people = others
       .filter((u) => !mine.blocks.has(u.id) && !mine.avoids.has(u.id)
-        && !u.blocks.has(me) && !u.avoids.has(me) && u.minor === mine.minor)
+        && !u.blocks.has(me) && !u.avoids.has(me) && u.minor === mine.minor
+        && !u.hold && (u.testAccount === true) === meTest)
       // Free before busy, then whoever was seen most recently.
       .sort((a, b) => (a.status === "busy") - (b.status === "busy")
         || (b.lastSeen?.toMillis?.() || 0) - (a.lastSeen?.toMillis?.() || 0))
@@ -3534,10 +3648,10 @@ exports.canPair = onRequest({ secrets: [], invoker: "public" }, async (req, res)
     // oxumağın yoluna çevrilərdi. Yaş isə zəng EDƏNİN öz profilindəki
     // məlumatdır: onu özünə demək heç nə sızdırmır, gizlətmək isə istifadəçini
     // səbəbsiz bir divarın qarşısında qoyur.
-    const ageOnly = !v.ok && v.ageClash && !v.blocked && !v.avoided && !v.levelClash;
+    const ageOnly = !v.ok && v.ageClash && !v.blocked && !v.avoided && !v.levelClash && !v.held && !v.testClash;
     if (!v.ok) {
       console.warn("[canPair] refused:", decoded.uid, "→", peerUid,
-        JSON.stringify({ blocked: v.blocked, avoided: v.avoided, ageClash: v.ageClash, levelClash: v.levelClash, supervised, direct }));
+        JSON.stringify({ blocked: v.blocked, avoided: v.avoided, ageClash: v.ageClash, levelClash: v.levelClash, held: v.held, testClash: v.testClash, supervised, direct }));
     }
     return res.status(200).json({ ok: v.ok, recent: v.recent, ...(ageOnly ? { reason: "age" } : {}) });
   } catch (e) {
@@ -4788,6 +4902,8 @@ exports.adminProposeMatch = onRequest({ secrets: [], invoker: "public" }, async 
       if (v.blocked) throw slotFail(409, "pair-blocked");
       if (v.avoided) throw slotFail(409, "pair-avoided");
       if (v.ageClash) throw slotFail(409, "pair-age");
+      if (v.held) throw slotFail(409, "pair-held");
+      if (v.testClash) throw slotFail(409, "pair-test");
 
       // One open proposal per person per BLOCK: two open promises for the
       // same hour is the problem this avoids. (It was per day, which stopped
@@ -5307,6 +5423,9 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       legacyToken: !!u.fcmToken,
       joinedAtMs,
       teacherId: u.teacherId || null,
+      // newcomerHold.js: a test account meets only test accounts or a host.
+      // `hold` (waiting for the teacher session) is filled in below.
+      test: u.testAccount === true,
       has: h.count,
       // Said «I'm in» for this week: with appConfig/planner.directBook two
       // such people are booked straight away, nobody waits for a second yes.
@@ -5326,6 +5445,11 @@ async function loadPlannerInputs(db, monday, { nowMs = Date.now(), cfg = PLAN_CO
       cls: h.cls, why: h.why, week: monday, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true }).catch(() => null);
   }));
+
+  // Waiting for their teacher session (newcomerPath.hold): never a peer, only
+  // a host (pairAllowed) — the refill's host step below books them.
+  const pathSnaps = learners.length ? await db.getAll(...learners.map((l) => db.collection("newcomerPath").doc(l.uid))) : [];
+  pathSnaps.forEach((s, i) => { learners[i].hold = s.exists && s.get("hold") === true; });
 
   // Blocks and "don't pair me again", either way — the same lists pairVerdict reads.
   const blocked = new Set();
@@ -5898,7 +6022,9 @@ async function refillThisWeek(db, nowMs) {
   // Newcomers still without a practice this week, no partner found above:
   // a host within the next 72 h (newcomers.js). Only someone in the app in
   // the last two days — a host must not wait for an account that is gone.
-  const hostWaiting = learners.filter((l) => l.newcomer && l.committed && l.has === 0
+  // Someone on hold (waiting for their teacher session, newcomerHold.js) is
+  // a host's newcomer too, whatever their call count — no peer will take them.
+  const hostWaiting = learners.filter((l) => ((l.newcomer && l.committed) || l.hold) && !l.test && l.has === 0
     && !bookedNow.has(l.uid) && !offered.has(l.uid) && newcomersLib.fresh(l.lastSeenMs, nowMs));
   let hosted = 0;
   if (hosts.length && hostWaiting.length) {
