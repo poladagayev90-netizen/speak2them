@@ -30,6 +30,11 @@ browser contexts.
   `button[type=submit]`), then on `/survey` click the skip control (`text=/skip/i`) →
   lands on `/`. Use emails like `testverify.<x>.<ts>@example.com`, name
   `TestVerify<X>` so they're findable for cleanup.
+- **Mark every production test account as a test account right after
+  registering** (admin SDK: `users/{uid}.testAccount = true`, or Admin →
+  Students «Test account»). Without it the refill can book it with a REAL
+  learner within a minute (2026-11-21, the Khadija booking). Two test accounts
+  still pair with each other.
 - Fresh context ⇒ streak modal shows first (`.streak-btn-primary` Start,
   `.streak-btn-secondary` opens journey with `.journey-close` X), then topic
   intro (`text=Open`), then the guided tour (`.guided-tour-next` to walk,

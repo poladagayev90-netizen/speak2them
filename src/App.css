@@ -1782,9 +1782,14 @@ body {
 .dt-modal--focus .dt-header,
 .dt-modal--focus .dt-tabs { display: none; }
 .dt-modal--focus .dt-content { padding-top: calc(var(--safe-area-top, 0px) + 60px); }
-.dt-focus-exit {
+.dt-focus-actions {
   position: absolute; z-index: 5;
   top: calc(var(--safe-area-top, 0px) + var(--s-3)); right: var(--s-4);
+  display: flex; gap: var(--s-2);
+}
+/* Fullscreen is a computer thing; phones keep the sheet as it was. */
+.dt-fs-btn { display: none !important; }
+.dt-focus-exit {
   display: inline-flex; align-items: center; gap: var(--s-2);
   height: 40px; padding: 0 var(--s-4);
   font: inherit; font-size: var(--fs-sm); font-weight: 700;
@@ -2111,6 +2116,11 @@ body {
   flex: none;
   max-height: 60dvh !important;
 }
+/* Focus mode on Videos (2026-11-19): with the header and tabs gone the clip
+   may take more of a phone, and the teacher's «Your clips · Change» line
+   folds away with the rest of the chrome. */
+.dt-modal--focus .dt-video-frame { max-height: 70dvh !important; }
+.dt-modal--focus .tv-picks-bar { display: none; }
 
 .dt-video-frame video {
   width: 100%;
@@ -3006,7 +3016,10 @@ body {
 
   .dt-section--video {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    /* --clip-w (ClipViewer) = the clip's width at full height, so a portrait
+       clip no longer sits in grey bands while the words are squeezed. The
+       1.35fr split is only the first frame, before the clip reports its shape. */
+    grid-template-columns: var(--clip-w, minmax(0, 1.35fr)) minmax(320px, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "clip words"
@@ -3023,23 +3036,47 @@ body {
   .dt-section--video .dt-video-frame {
     grid-area: clip;
     aspect-ratio: auto !important;
-    height: 100% !important;
+    /* --clip-h only when a wide clip hits the width cap: the frame then hugs
+       the clip and sits in the middle of its area instead of showing bands. */
+    height: var(--clip-h, 100%) !important;
+    align-self: center;
     max-height: none !important;
     min-height: 0;
   }
   .dt-section--video .dt-video-nav { grid-area: nav; }
-  .dt-section--video .dt-video-words { grid-area: words; font-size: 20px; }
-  .dt-section--video .dt-video-words p { font-size: 13px !important; }
+  /* The right column is secondary (Polad 2026-11-19, after a real lesson:
+     «the text grew too big, the video is not the main thing»): chips at
+     --fs-sm, questions one step up at --fs-body, compact cards. */
+  .dt-section--video .dt-video-words { grid-area: words; font-size: var(--fs-sm); }
+  .dt-section--video .dt-video-words p { font-size: var(--fs-xs) !important; }
   .dt-section--video .dt-questions-list {
     grid-area: qs;
     min-height: 0;
     overflow-y: auto;
     align-content: start;
   }
-  .dt-section--video .dt-q-text { font-size: 19px; }
-  .dt-section--video .dt-q-num { width: 34px; height: 34px; font-size: 16px; }
-  .dt-section--video .dt-video-footer { grid-area: foot; align-self: center; }
+  .dt-section--video .dt-questions-list { gap: var(--s-2); }
+  .dt-section--video .dt-question-card { padding: var(--s-2) var(--s-3); gap: var(--s-2); border-radius: var(--r-md); }
+  .dt-section--video .dt-q-text { font-size: var(--fs-body); line-height: 1.4; padding-top: 2px; }
+  .dt-section--video .dt-q-num { width: 26px; height: 26px; font-size: var(--fs-xs); }
+  .dt-section--video .dt-video-footer { grid-area: foot; align-self: center; justify-self: end; }
   .dt-section--video .dt-video-footer > * { margin-top: 0 !important; }
+  .dt-section--video .dt-video-footer .ui-btn { width: auto; height: 34px; padding: 0 var(--s-3); font-size: var(--fs-sm); }
+
+  /* Square view: a portrait clip as a 1:1 centre crop (ClipViewer lays it
+     out as 1:1 through --clip-w). «Full frame» on the player turns it off. */
+  .dt-section--video .dt-video-frame--square video { object-fit: cover; }
+  .dt-video-shape {
+    position: absolute; z-index: 2;
+    top: var(--s-3); right: var(--s-3);
+    display: inline-flex; align-items: center; gap: var(--s-1);
+    height: 32px; padding: 0 var(--s-3);
+    border: none; border-radius: var(--r-pill);
+    /* Sits ON the clip, like .dt-video-replay: what is under it is the video. */
+    background: rgba(0, 0, 0, 0.55); color: #fff;
+    font: inherit; font-size: var(--fs-xs); font-weight: 700;
+    cursor: pointer;
+  }
 
   /* Words and idioms: two columns, so twice as many are on the shared screen. */
   .dt-section--list {
@@ -3062,6 +3099,18 @@ body {
   .dt-modal--focus .dt-section--read { max-width: 1000px; }
   .dt-modal--focus .dt-section--read .mt-article p:not(.mt-chip) { font-size: 26px; }
   .dt-modal--focus .dt-section--episode { max-width: 1440px; }
+
+  /* Videos in focus (Polad 2026-11-19, «videoları daha böyük planda»): the
+     clip starts at the top edge and takes the full height; the words column
+     starts below the «Exit focus» pill instead. Text stays compact. */
+  .dt-modal--focus .dt-content:has(> .tv-wrap) { padding-top: var(--s-6); }
+  .dt-modal--focus .dt-section--video .dt-video-words { margin-top: 52px; }
+
+  /* Fullscreen (header button): the whole sheet, so the words stay with the
+     clip; the browser bar and the «sharing this tab» bar go away. */
+  .dt-fs-btn { display: inline-flex !important; }
+  .dt-modal:fullscreen { max-width: none; width: 100vw; height: 100vh; }
+  .dt-modal:fullscreen::backdrop { background: var(--bg-primary); }
 
   /* Reading size on a computer (Polad 2026-11-07: he zoomed the shared sheet
      in to read it). Words and idioms are what the class reads off the shared

@@ -110,6 +110,73 @@ export function PackageMenu({ uid, summary }) {
   );
 }
 
+// Who waits for their teacher session (newcomerPath/{uid}.hold, server-written;
+// functions/newcomerHold.js). uid → true.
+export function useNewcomerHolds() {
+  const [map, setMap] = useState({});
+  useEffect(() => onSnapshot(collection(db, 'newcomerPath'), (snap) => {
+    const next = {};
+    snap.docs.forEach((d) => { if (d.get('hold') === true) next[d.id] = true; });
+    setMap(next);
+  }, () => setMap({})), []);
+  return map;
+}
+
+// «Teacher first» (adminAccess setHold): the learner meets only the team — a
+// newcomer host, the admin or their own teacher — until a ≥ 2-min call with
+// one of them lifts it by itself. Turning it on cancels their practices and
+// proposals with other learners (the partners are told, nothing is held
+// against anyone); a booking with the team stays.
+export function HoldButton({ uid, name, held }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    const ask = held
+      ? `Let ${name || 'this learner'} practise with other learners again (without the teacher session)?`
+      : `Teacher first for ${name || 'this learner'}?\nThey are paired only with you / a host / their teacher until that session happens. Their practices with other learners are cancelled.`;
+    if (!window.confirm(ask)) return;
+    setBusy(true);
+    try {
+      const r = await callAccess({ action: 'setHold', uid, on: !held });
+      if (r.hold) alert(`Teacher first is on. Cancelled: ${r.cancelledBookings} practice(s), ${r.cancelledOffers} proposal(s).`);
+    } catch (e) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button type="button" className={`adm-btn ${held ? 'adm-btn--soft' : ''}`} disabled={busy} onClick={run}>
+      {busy ? '…' : held ? 'End teacher first' : 'Teacher first'}
+    </button>
+  );
+}
+
+// Test account (adminAccess setTest): paired only with other test accounts or
+// the team — never with a real learner (2026-11-21, the Khadija booking).
+export function TestAccountButton({ uid, name, test }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    const ask = test
+      ? `${name || 'This account'} is a real learner, not a test account?`
+      : `Mark ${name || 'this account'} as a TEST account?\nIt will never be paired with a real learner; its practices with real learners are cancelled.`;
+    if (!window.confirm(ask)) return;
+    setBusy(true);
+    try {
+      const r = await callAccess({ action: 'setTest', uid, on: !test });
+      if (r.testAccount) alert(`Marked as test. Cancelled: ${r.cancelledBookings} practice(s), ${r.cancelledOffers} proposal(s).`);
+    } catch (e) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button type="button" className={`adm-btn ${test ? 'adm-btn--soft' : ''}`} disabled={busy} onClick={run}>
+      {busy ? '…' : test ? 'Not a test' : 'Test account'}
+    </button>
+  );
+}
+
 // Suspend / restore an account (adminAccess suspend|unsuspend): the person can
 // no longer sign in, is never paired, and their upcoming practices and open
 // proposals are cancelled (partners are told). Restore lets them back in;

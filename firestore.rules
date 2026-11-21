@@ -70,7 +70,8 @@ service cloud.firestore {
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
-          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt'])
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt',
+          'testAccount'])
         && validRoleOneTimeSet();
     }
 
@@ -114,7 +115,8 @@ service cloud.firestore {
           'teacherId', 'teacherLinkedAt', 'teacherConsentAt', 'ageConfirmedAt',
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
-          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt'])
+          'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt',
+          'testAccount'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
         // The trial clock starts NOW, by the server's clock. Register writes
@@ -835,6 +837,14 @@ service cloud.firestore {
     // consequence and the way back, in planStatus.limit.
     match /reliability/{uid} {
       allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // A newcomer's start path (2026-11-21, docs/plans/2026-11-21_newcomer_paths.md):
+    // `hold: true` keeps them out of peer pairing until their teacher session
+    // has happened (pairVerdict). Server-written only — the learner reads it.
+    match /newcomerPath/{uid} {
+      allow read: if isAdmin() || isOwnDoc(uid);
       allow write: if false;
     }
 

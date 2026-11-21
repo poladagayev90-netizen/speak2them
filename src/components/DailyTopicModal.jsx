@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Maximize2, Minimize2, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
+import { X, Maximize2, Minimize2, Expand, Shrink, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
 import { getContentByIndex, getTodayContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import { plainTopic } from '../utils/topicLabel';
@@ -18,10 +18,12 @@ import SayButton from './ui/SayButton';
 
 // Focus mode: the sheet's header and tab row fold away so Listen or Read
 // fills the screen (Polad 2026-11-18 — on a phone the 3-row tab grid ate the
-// script's room; on a shared laptop screen he wanted only the text). Kept per
-// device; it only takes effect on those two tabs.
+// script's room; on a shared laptop screen he wanted only the text). Videos
+// joined on 2026-11-19 — the clip is what the teacher shares, and the header,
+// tabs and picks line cost it a third of the height. Kept per device; it only
+// takes effect on these tabs.
 const FOCUS_KEY = 'sl.topicFocus';
-const FOCUS_SECTIONS = ['listen', 'read'];
+const FOCUS_SECTIONS = ['listen', 'read', 'videos'];
 function readFocus() {
   try { return localStorage.getItem(FOCUS_KEY) === '1'; } catch (_) { return false; }
 }
@@ -176,6 +178,35 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
   const [focusPref, setFocusPref] = useState(readFocus);
   const focus = focusPref && FOCUS_SECTIONS.includes(activeSection);
   const setFocus = (on) => { setFocusPref(on); saveFocus(on); };
+
+  // Fullscreen (computer; the button is hidden on phones by CSS): the whole
+  // SHEET goes fullscreen, not the <video>, so the words and questions stay
+  // beside the clip — and the browser bar and Chrome's «sharing this tab» bar
+  // leave the shared screen (Polad 2026-11-19, after a real Meet lesson).
+  // Esc is the browser's own way out.
+  const modalRef = useRef(null);
+  const canFullscreen = typeof document !== 'undefined' && !!document.fullscreenEnabled;
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    if (!canFullscreen) return undefined;
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, [canFullscreen]);
+  // Closing the sheet must not leave the page stuck in fullscreen.
+  useEffect(() => {
+    if (open) return undefined;
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    return undefined;
+  }, [open]);
+  useEffect(() => () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  }, []);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else modalRef.current?.requestFullscreen?.().catch(() => {});
+  };
+  const fullscreenLabel = isFullscreen ? 'Leave fullscreen (Esc)' : 'Fullscreen: hide the browser bars';
   const onContentScroll = (e) => {
     const el = e.currentTarget;
     const y = el.scrollTop;
@@ -231,12 +262,19 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
 
   return (
     <div className="dt-overlay" onClick={onClose}>
-      <div className={`dt-modal${compactTabs ? ' dt-modal--compact' : ''}${focus ? ' dt-modal--focus' : ''}`} onClick={e => e.stopPropagation()}>
+      <div ref={modalRef} className={`dt-modal${compactTabs ? ' dt-modal--compact' : ''}${focus ? ' dt-modal--focus' : ''}`} onClick={e => e.stopPropagation()}>
 
         {focus && (
-          <button type="button" className="dt-focus-exit" onClick={() => setFocus(false)} aria-label="Leave focus mode (Esc)">
-            <Minimize2 size={18} /> <span>Exit focus</span>
-          </button>
+          <div className="dt-focus-actions">
+            {canFullscreen && (
+              <button type="button" className="dt-focus-exit dt-fs-btn" onClick={toggleFullscreen} aria-label={fullscreenLabel} title={fullscreenLabel}>
+                {isFullscreen ? <Shrink size={18} /> : <Expand size={18} />}
+              </button>
+            )}
+            <button type="button" className="dt-focus-exit" onClick={() => setFocus(false)} aria-label="Leave focus mode (Esc)">
+              <Minimize2 size={18} /> <span>Exit focus</span>
+            </button>
+          </div>
         )}
 
         {/* Header */}
@@ -246,6 +284,11 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             <h2 className="dt-title">{plainTopic(content.topic)}</h2>
           </div>
           <div className="dt-header-actions">
+            {canFullscreen && (
+              <button type="button" className="dt-close dt-fs-btn" onClick={toggleFullscreen} aria-label={fullscreenLabel} title={fullscreenLabel}>
+                {isFullscreen ? <Shrink size={20} /> : <Expand size={20} />}
+              </button>
+            )}
             {FOCUS_SECTIONS.includes(activeSection) && (
               <button type="button" className="dt-close" onClick={() => setFocus(true)} aria-label="Focus mode: hide the header and tabs" title="Focus mode">
                 <Maximize2 size={20} />

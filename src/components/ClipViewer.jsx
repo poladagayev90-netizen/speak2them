@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { ChevronLeft, ChevronRight, RotateCcw, Sparkles, VideoOff, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RectangleVertical, RotateCcw, Sparkles, Square, VideoOff, Volume2, VolumeX } from 'lucide-react';
 import KeywordChips from './KeywordChips';
 import HowToDescribe from './HowToDescribe';
 
@@ -12,6 +12,17 @@ const SOUND_ALLOWED = !Capacitor.isNativePlatform();
 const SOUND_KEY = 'clipSound';
 const readSound = () => {
   try { return localStorage.getItem(SOUND_KEY) === 'on'; } catch { return false; }
+};
+
+// Square view (computer only, Polad 2026-11-19 after a real Meet lesson: in
+// focus the 9:16 clip was still small next to the words). A portrait clip is
+// shown as a 1:1 centre crop at full height — about 1000×1000 on a 1080p
+// screen — so the clip, not the text, is the main thing on the shared screen.
+// «Full frame» on the player brings back the uncropped clip; the choice is
+// kept per device. Landscape clips are never cropped; phones never crop.
+const SQUARE_KEY = 'sl.clipSquare';
+const readSquare = () => {
+  try { return localStorage.getItem(SQUARE_KEY) !== 'off'; } catch { return true; }
 };
 
 // One clip at a time, with arrows, its words and its two questions. Shared by
@@ -42,9 +53,55 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
   const [soundOn, setSoundOn] = useState(readSound);
   const soundRef = useRef(soundOn);
   soundRef.current = soundOn;
+  const sectionRef = useRef(null);
+  const [clipBox, setClipBox] = useState(null);
+  const [squarePref, setSquarePref] = useState(readSquare);
 
   const clip = clips[i];
   const hasSound = SOUND_ALLOWED && !!clip?.sound;
+  // Only the wide grid crops (clipBox is set only there).
+  const wide = !!clipBox;
+  const portrait = !!ratio && ratio < 1;
+  const square = wide && portrait && squarePref;
+  const layoutRatio = squarePref && portrait ? 1 : ratio;
+  const toggleSquare = () => {
+    const next = !squarePref;
+    setSquarePref(next);
+    try { localStorage.setItem(SQUARE_KEY, next ? 'on' : 'off'); } catch { /* private mode */ }
+  };
+
+  // On a computer (App.css wide grid) the clip's COLUMN is as wide as the clip
+  // is at full height — Polad 2026-11-19: a portrait clip sat in a 1.35fr
+  // column with grey bands either side while the words were squeezed. The
+  // height of the clip's grid area (rows 1–2: the fr row fills the sheet, so
+  // it does not depend on the clip), times the clip's shape, is that width;
+  // it is capped so the words column keeps MIN_TEXT_W. A wide clip that hits
+  // the cap gets its own height too, so it has no bands above and below
+  // either. Only the wide grid reads --clip-w / --clip-h; phones ignore them.
+  // In square view a portrait clip is laid out as 1:1 (layoutRatio).
+  useEffect(() => {
+    const ratio = layoutRatio;
+    const el = sectionRef.current;
+    if (!el || !ratio || typeof ResizeObserver === 'undefined') { setClipBox(null); return undefined; }
+    const MIN_TEXT_W = 380;
+    const measure = () => {
+      const cs = getComputedStyle(el);
+      if (cs.display !== 'grid') { setClipBox(null); return; }
+      const rows = cs.gridTemplateRows.split(' ').map(parseFloat);
+      const rowGap = parseFloat(cs.rowGap) || 0;
+      const colGap = parseFloat(cs.columnGap) || 0;
+      const h = (rows[0] || 0) + (rows[1] || 0) + rowGap;
+      const maxW = el.clientWidth - MIN_TEXT_W - colGap;
+      if (h <= 0 || maxW <= 0) { setClipBox(null); return; }
+      const w = Math.floor(Math.min(h * ratio, maxW));
+      const fitH = Math.floor(w / ratio);
+      setClipBox((prev) => (prev && prev.w === w && prev.h === fitH ? prev : { w, h: fitH, cut: fitH < h - 1 }));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [layoutRatio]);
 
   useEffect(() => { pendingRef.current = null; }, [i]);
 
@@ -116,13 +173,17 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
   };
 
   return (
-    <div className="dt-section dt-section--video">
+    <div
+      ref={sectionRef}
+      className="dt-section dt-section--video"
+      style={clipBox ? { '--clip-w': `${clipBox.w}px`, ...(clipBox.cut ? { '--clip-h': `${clipBox.h}px` } : {}) } : undefined}
+    >
       {/* Clip + arrows + words are one screenful; see .dt-video-fit. */}
       <div className="dt-video-fit">
         {/* The clip's own shape decides the height — until the screen runs out,
             at which point it gives way so the words stay visible. */}
         <div
-          className="dt-video-frame"
+          className={`dt-video-frame${square ? ' dt-video-frame--square' : ''}`}
           style={ratio ? { aspectRatio: String(ratio), height: 'auto', maxHeight: '100%' } : undefined}
         >
           {dead[clip.id] ? (
@@ -152,6 +213,18 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
               {/* A Veo clip looks like a real moment caught on a phone — say it is not. */}
               {clip.ai && (
                 <span className="dt-video-ai"><Sparkles size={12} strokeWidth={2.25} aria-hidden="true" /> AI video</span>
+              )}
+              {wide && portrait && (
+                <button
+                  type="button"
+                  className="dt-video-shape"
+                  onClick={toggleSquare}
+                  aria-label={square ? 'Show the full frame' : 'Show as a square'}
+                >
+                  {square
+                    ? <><RectangleVertical size={16} strokeWidth={2} aria-hidden="true" /> Full frame</>
+                    : <><Square size={16} strokeWidth={2} aria-hidden="true" /> Square</>}
+                </button>
               )}
               <button type="button" className="dt-video-replay" onClick={replay} aria-label="Play again">
                 <RotateCcw size={18} strokeWidth={2} aria-hidden="true" />
@@ -192,7 +265,8 @@ export default function ClipViewer({ clips, index, onIndexChange, footer = null 
           wherever the class meets it. Below the fold on a phone, on purpose:
           the clip and the words come first. */}
       <div className="dt-questions-list">
-        <HowToDescribe key={clip.id} howTo={clip.howTo} />
+        {/* Compact on a computer: the clip is the hero, the text is secondary. */}
+        <HowToDescribe key={clip.id} howTo={clip.howTo} compact={wide} style={wide ? { padding: 0 } : undefined} />
         {(clip.prompts || []).map((q, n) => (
           <div key={q} className="dt-question-card">
             <span className="dt-q-num">{n + 1}</span>
