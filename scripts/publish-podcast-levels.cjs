@@ -60,10 +60,12 @@ function parseCsv(text) {
 
 // One sheet (2026-11-19_vocab_batch_26-30.csv) was written with every data
 // line missing its first and last quote (`26 Dreams…","A1",…,"`). Such a file
-// is mended line by line; well-formed sheets pass through unchanged.
+// is mended line by line; well-formed sheets pass through unchanged. «Broken» = the first data
+// line has an odd number of quotes — a sheet whose first cell is simply unquoted
+// (`26 Dreams & Ambitions,A1,…` — the 2026-11-21 vocab-check rewrite) is well-formed.
 const fixHeader = (text) => {
   const lines = text.split(/\r?\n/);
-  if (!lines[1] || lines[1].startsWith('"')) return text;
+  if (!lines[1] || lines[1].startsWith('"') || (lines[1].match(/"/g) || []).length % 2 === 0) return text;
   return lines.map((l, i) => {
     if (i === 0) return l.endsWith('"') ? l : `${l}"`;
     return /^\d\d /.test(l) ? `"${l}"` : '';
