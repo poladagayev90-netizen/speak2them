@@ -120,3 +120,18 @@
 .mt-online { display: inline-flex; align-items: center; gap: var(--s-2); margin-left: auto; }
 .mt-pair-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 .mt-pair-actions .aa-linkbtn { display: inline-flex; align-items: center; gap: var(--s-1); }
+
+/* Age badge (<18 highlighted with danger tint), PairRow WhatsApp, BestMatches. */
+.mt-age--minor { border-color: var(--danger); color: var(--danger); background: transparent; }
+.mt-side-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-top: 2px; }
+.mt-wa-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--fs-xs); font-weight: 700; color: var(--accent); text-decoration: none;
+}
+.mt-wa-link:hover { text-decoration: underline; }
+.mt-cand-row { display: grid; gap: var(--s-1); padding: var(--s-2) var(--s-3); border-radius: var(--r-md); border: 1px solid var(--border); background: var(--bg-card); }
+.mt-cand-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-top: var(--s-1); }
+.mt-age-warn {
+  margin: 0; padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+  border: 1px solid var(--danger); color: var(--danger); font-size: var(--fs-sm); font-weight: 700;
+}

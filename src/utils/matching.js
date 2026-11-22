@@ -341,7 +341,7 @@ export function attentionOf(p, nowMs = Date.now()) {
 // "3/week · this week: Mon 19–21, Wed 20–22, Sat 11–13 (maybe)".
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const hm = (min) => (min % 60 ? `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}` : String(min / 60));
-export function availabilitySummary(onboarding, monday) {
+export const availabilitySummary = (onboarding, monday) => {
   const ob = onboarding || {};
   const wants = Number(ob.weeklyTarget) || 0;
   const head = wants ? `${wants}/week` : 'no weekly target';
@@ -359,4 +359,88 @@ export function availabilitySummary(onboarding, monday) {
   const kind = r.picked ? 'week' : 'usual';
   const list = rows.map((x) => `${DAY_SHORT[x.day]} ${hm(x.startMin)}–${hm(x.endMin)}${x.maybe ? ' (maybe)' : ''}`).join(', ');
   return { kind, text: `${head} · ${kind === 'week' ? 'this week' : 'usual'}: ${list}` };
+};
+
+// ── Age bands, learner next slots & smart partner suggestions (2026-11-22) ──
+const AGE_LABELS = {
+  under18: '<18',
+  '18-24': '18–24',
+  '25-34': '25–34',
+  '35+': '35+',
+};
+export const ageBandShort = (band) => AGE_LABELS[band] || '';
+export const isMinorBand = (band) => band === 'under18';
+export const ageCompatible = (bandA, bandB) => isMinorBand(bandA) === isMinorBand(bandB);
+
+// Earliest upcoming free slots (spread across distinct days when possible) from
+// a learner's own grid, for offering 2 concrete times in WhatsApp messages.
+export function nextLearnerSlots({ onboarding, monday, pairs = [], uid = null, nowMs = Date.now(), count = 2, excludeSlotId = null }) {
+  if (!onboarding) return [];
+  const g = freeGrid({ onboarding, monday, uid, pairs });
+  if (g.skip) return [];
+  const lead = nowMs + PROPOSE_LEAD_MS;
+  const horizon = nowMs + PROPOSE_HORIZON_DAYS * DAY_MS;
+  const busy = uid ? new Set(pairs.filter((p) => p.a === uid || p.b === uid).map((p) => p.slotId)) : new Set();
+  const candidates = [];
+  for (const row of g.rows) {
+    for (const c of row.cells) {
+      if (c.slotId === excludeSlotId || busy.has(c.slotId)) continue;
+      if (c.state !== 'picked' && c.state !== 'free' && !c.maybe) continue;
+      const startMs = slotStartMs(c.date, c.hour);
+      if (startMs <= lead || startMs > horizon) continue;
+      candidates.push({ slotId: c.slotId, date: c.date, hour: c.hour, startMs, maybe: !!c.maybe });
+    }
+  }
+  candidates.sort((a, b) => Number(a.maybe) - Number(b.maybe) || a.startMs - b.startMs);
+  const picked = [];
+  const usedDays = new Set();
+  for (const c of candidates) {
+    if (usedDays.has(c.date)) continue;
+    picked.push(c.slotId);
+    usedDays.add(c.date);
+    if (picked.length >= count) return picked;
+  }
+  for (const c of candidates) {
+    if (picked.includes(c.slotId)) continue;
+    picked.push(c.slotId);
+    if (picked.length >= count) break;
+  }
+  return picked;
+}
+
+// Best matching partners for one selected person across bookable week blocks.
+// Respects the minor↔adult rule, lists overlapping slots, and can include
+// out-of-week regulars so the admin can invite them in one tap.
+export function suggestPartnersFor({ target, people = [], pairs = [], blocks = [], includeOut = true, limit = 8 }) {
+  if (!target) return [];
+  const bookable = blocks.filter((b) => b.bookable);
+  const targetBaku = target.baku || [];
+  const out = [];
+  for (const p of people) {
+    if (!p || p.id === target.id) continue;
+    if (!includeOut && !p.inWeek) continue;
+    if (!ageCompatible(target.ageBand, p.ageBand)) continue;
+    const sharedSlots = [];
+    for (const blk of bookable) {
+      if (startFitMin(targetBaku, blk) < START_FIT_MIN) continue;
+      if (startFitMin(p.baku || [], blk) < START_FIT_MIN) continue;
+      const busy = busyAround(pairs, blk.startMs);
+      if (busy.has(target.id) || busy.has(p.id)) continue;
+      sharedSlots.push(blk.slotId);
+    }
+    const gap = levelGap(target.level, p.level);
+    const planned = plannedCount(pairs, p.id);
+    const short = Math.max(0, (p.wants || 0) - planned);
+    const sameAge = !!target.ageBand && target.ageBand === p.ageBand;
+    out.push({ ...p, sharedSlots, gap, planned, short, sameAge });
+  }
+  return out
+    .sort((x, y) => (y.sharedSlots.length > 0) - (x.sharedSlots.length > 0)
+      || Number(y.inWeek) - Number(x.inWeek)
+      || ((x.gap ?? 9) - (y.gap ?? 9))
+      || Number(y.sameAge) - Number(x.sameAge)
+      || (y.sharedSlots.length - x.sharedSlots.length)
+      || (y.short - x.short)
+      || ((y.seen || 0) - (x.seen || 0)))
+    .slice(0, limit);
 }

@@ -248,3 +248,46 @@ describe('availabilitySummary', () => {
       .toBe('no weekly target · usual: Mon 19–20:30');
   });
 });
+
+describe('ageBandShort, nextLearnerSlots, suggestPartnersFor', () => {
+  const { ageBandShort, ageCompatible, nextLearnerSlots, suggestPartnersFor } = require('./matching');
+  const MON = '2026-11-23';
+  const NOW = Date.parse('2026-11-22T12:00:00Z');
+  const blocks = weekStarts(MON, NOW);
+
+  test('age labels and minor compatibility', () => {
+    expect(ageBandShort('under18')).toBe('<18');
+    expect(ageBandShort('25-34')).toBe('25–34');
+    expect(ageCompatible('under18', '25-34')).toBe(false);
+    expect(ageCompatible('under18', 'under18')).toBe(true);
+    expect(ageCompatible('18-24', '35+')).toBe(true);
+  });
+
+  test('nextLearnerSlots picks two concrete slots spread across distinct days', () => {
+    const ob = {
+      timeZone: 'Asia/Baku',
+      availability: [
+        { day: 1, startMin: 19 * 60, endMin: 21 * 60 },
+        { day: 3, startMin: 20 * 60, endMin: 21 * 60 },
+      ],
+    };
+    const slots = nextLearnerSlots({ onboarding: ob, monday: MON, nowMs: NOW, count: 2 });
+    expect(slots).toEqual(['2026-11-23-19', '2026-11-25-20']);
+  });
+
+  test('suggestPartnersFor filters out minor/adult clashes and ranks shared hours + level + in-week first', () => {
+    const mon19 = [[1 * 1440 + 19 * 60, 1 * 1440 + 21 * 60]];
+    const target = { id: 't', name: 'Samet', level: 'B1', ageBand: '25-34', baku: mon19 };
+    const people = [
+      target,
+      { id: 'minor', name: 'Kid', level: 'B1', ageBand: 'under18', baku: mon19, inWeek: true, wants: 2 },
+      { id: 'outReg', name: 'Sabina', level: 'B1', ageBand: '25-34', baku: mon19, inWeek: false, wants: 2 },
+      { id: 'inMatch', name: 'Aysel', level: 'B1', ageBand: '25-34', baku: mon19, inWeek: true, wants: 2 },
+      { id: 'noOverlap', name: 'Far', level: 'B1', ageBand: '25-34', baku: [], inWeek: true, wants: 2 },
+    ];
+    const res = suggestPartnersFor({ target, people, pairs: [], blocks, includeOut: true });
+    expect(res.map((r) => r.id)).toEqual(['inMatch', 'outReg', 'noOverlap']);
+    expect(res[0].sharedSlots).toContain('2026-11-23-19');
+    expect(res[1].sharedSlots).toContain('2026-11-23-19');
+  });
+});

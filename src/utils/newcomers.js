@@ -6,8 +6,9 @@
 //
 // The 14-day window and «no first practice» come from `attentionOf`
 // (src/utils/matching.js), so this card and the «Needs attention» count agree.
-import { attentionOf, NEW_WINDOW_MS } from './matching';
+import { attentionOf, NEW_WINDOW_MS, nextLearnerSlots } from './matching';
 import { FIRST_RUN_LANGS } from './firstRunLang';
+import { newcomerGridMessage, waHref } from './adminMessages';
 
 const toMs = (t) => (t && typeof t.toMillis === 'function' ? t.toMillis() : Number(t) || 0);
 
@@ -46,41 +47,23 @@ export function newcomerLang(user = {}) {
   return 'en';
 }
 
-// Two short messages: before the first practice (offer to set it up) and
-// after it. No hour is named and no fear is named — only what they get.
-const MESSAGES = {
-  first: {
-    az: (n) => `Salam${n ? `, ${n}` : ''}! Mən Polad, SpeakLab-dan. İlk məşqini birlikdə quraq: sənin səviyyəndə, sadə suallarla. Bu həftə hansı gün və saat sənə rahatdır?`,
-    tr: (n) => `Merhaba${n ? ` ${n}` : ''}! Ben Polad, SpeakLab'den. İlk pratiğini birlikte ayarlayalım: senin seviyende, basit sorularla. Bu hafta hangi gün ve saat sana uygun?`,
-    ru: (n) => `Привет${n ? `, ${n}` : ''}! Я Полад из SpeakLab. Давай вместе назначим твою первую практику: на твоём уровне, с простыми вопросами. Какой день и время на этой неделе тебе удобны?`,
-    en: (n) => `Hi${n ? ` ${n}` : ''}! I'm Polad from SpeakLab. Let's set up your first practice together: at your level, with simple questions. Which day and time suit you this week?`,
-  },
-  after: {
-    az: (n) => `Salam${n ? `, ${n}` : ''}! Mən Polad, SpeakLab-dan. İlk məşqin necə keçdi? Növbətini nə vaxt edək?`,
-    tr: (n) => `Merhaba${n ? ` ${n}` : ''}! Ben Polad, SpeakLab'den. İlk pratiğin nasıl geçti? Bir sonrakini ne zaman yapalım?`,
-    ru: (n) => `Привет${n ? `, ${n}` : ''}! Я Полад из SpeakLab. Как прошла твоя первая практика? Когда сделаем следующую?`,
-    en: (n) => `Hi${n ? ` ${n}` : ''}! I'm Polad from SpeakLab. How was your first practice? When shall we do the next one?`,
-  },
-};
-
-export function newcomerMessage(lang, name = '', practised = false) {
-  const first = String(name || '').trim().split(/\s+/)[0] || '';
-  const set = practised ? MESSAGES.after : MESSAGES.first;
-  return (set[lang] || set.en)(first);
+export function newcomerMessage(lang, name = '', practised = false, { slots = [], timeZone = 'Asia/Baku' } = {}) {
+  return newcomerGridMessage({ lang, name, practised, slots, timeZone });
 }
 
 // wa.me link with the message filled in; null without a usable number.
 export function newcomerWhatsApp(number, text) {
-  const d = String(number || '').replace(/\D/g, '');
-  if (!d) return null;
-  return `https://wa.me/${d}?text=${encodeURIComponent(text)}`;
+  return waHref(number, text);
 }
 
 // The card's rows, newest joiner first. `users` = every users doc (with uid or
 // id), `onboarding` = Map uid → onboarding doc, `warmups` = Map/Set of uids with
 // a warm-up, `bookedUids` = Set of uids with a loaded booking or proposal.
 // `skip(user)` leaves out the admin and teachers.
-export function newcomerRows({ users = [], onboarding = new Map(), warmups = new Map(), bookedUids = new Set(), now = Date.now(), skip = () => false }) {
+export function newcomerRows({
+  users = [], onboarding = new Map(), warmups = new Map(), bookedUids = new Set(),
+  pairs = [], week = null, now = Date.now(), skip = () => false,
+}) {
   const rows = [];
   for (const u of users) {
     const uid = u.uid || u.id;
@@ -93,10 +76,16 @@ export function newcomerRows({ users = [], onboarding = new Map(), warmups = new
     const lang = newcomerLang(u);
     const name = u.name || u.displayName || '';
     const practised = calls > 0;
+    const slots = week && ob
+      ? nextLearnerSlots({ onboarding: ob, monday: week, pairs, uid, nowMs: now, count: 2 })
+      : [];
+    const timeZone = ob?.timeZone || 'Asia/Baku';
     rows.push({
       uid,
       name: name || uid.slice(0, 6),
       level: u.level || ob?.level || null,
+      ageBand: ob?.ageBand || null,
+      timeZone,
       joinedMs,
       days: Math.max(0, Math.floor((now - joinedMs) / 86400000)),
       seen: toMs(u.lastSeen),
@@ -104,7 +93,8 @@ export function newcomerRows({ users = [], onboarding = new Map(), warmups = new
       reached: steps.filter((s) => s.done).length,
       noFirst: attentionOf({ calls, joinedMs }, now).newNoFirst,
       lang,
-      whatsapp: newcomerWhatsApp(ob?.whatsapp, newcomerMessage(lang, name, practised)),
+      slots,
+      whatsapp: newcomerWhatsApp(ob?.whatsapp, newcomerMessage(lang, name, practised, { slots, timeZone })),
     });
   }
   return rows.sort((a, b) => b.joinedMs - a.joinedMs);

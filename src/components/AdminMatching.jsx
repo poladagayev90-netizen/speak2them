@@ -3,7 +3,7 @@ import {
   arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc, where,
 } from 'firebase/firestore';
 import {
-  ArrowLeftRight, CalendarCheck, CalendarClock, Check, ChevronDown, Clock, MessageCircle, Plus, RotateCcw, Search, Send, Sparkles, Trash2, UserPlus, X,
+  ArrowLeftRight, CalendarCheck, CalendarClock, Check, ChevronDown, Clock, Copy, MessageCircle, Plus, RotateCcw, Search, Send, Sparkles, Trash2, UserPlus, Users, X,
 } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
@@ -13,8 +13,11 @@ import { proposeMatch, cancelOffer, subscribeToWeekPlan, weekPlanAction } from '
 import { cancelSlotMatch } from '../utils/teacher';
 import {
   PROPOSE_HORIZON_DAYS, closedOffers, weekStarts, startFitMin, busyAround, weekPairs, plannedCount, candidatesFor, levelGap, addDays, START_FIT_MIN,
-  freeGrid, attentionOf, ATTENTION,
+  freeGrid, attentionOf, ATTENTION, ageBandShort, isMinorBand, ageCompatible, nextLearnerSlots, suggestPartnersFor,
 } from '../utils/matching';
+import { newcomerLang } from '../utils/newcomers';
+import { matchNotifyMessage, inviteRegularMessage, waHref } from '../utils/adminMessages';
+import { buildAnonMatchingSnapshot } from '../utils/snapshotExport';
 import { isUnlimited } from '../utils/packages';
 import { ApplicantDetail } from './AdminApplicants';
 import { WarmupTag, WarmupFunnel } from './WarmupInsight';
@@ -24,6 +27,7 @@ import { stableOrder } from '../utils/stableOrder';
 import { byLastSeen, lastSeenLabel } from '../utils/presence';
 import { Button, Sheet } from './ui';
 import NewcomersCard from './NewcomersCard';
+import AdminHostSchedule from './AdminHostSchedule';
 import './AdminApplicants.css';
 import './AdminMatching.css';
 
@@ -108,6 +112,8 @@ export default function AdminMatching({ users = [] }) {
   const [selected, setSelected] = useState([]);
   const [change, setChange] = useState(null); // { pair, keepId }
   const [moving, setMoving] = useState(null); // a pair whose time is being changed
+  const [suggestFor, setSuggestFor] = useState(null); // uid for BestMatchesSheet
+  const [copiedSnap, setCopiedSnap] = useState(false);
   const [features, setFeatures] = useState({});
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState('');
@@ -184,6 +190,8 @@ export default function AdminMatching({ users = [] }) {
           name: u.name || u.email || o.id.slice(0, 6),
           email: u.email || '',
           level: u.level || o.level,
+          ageBand: o.ageBand || null,
+          lang: newcomerLang(u),
           timeZone: o.timeZone,
           wants: Number(o.weeklyTarget) || 0,
           availability,
@@ -333,10 +341,23 @@ export default function AdminMatching({ users = [] }) {
   const listCount = people.filter((p) => p.inList).length;
   const shortCount = people.filter((p) => p.inList && p.wants > plannedCount(pairs, p.id)).length;
 
+  const copyAnonSnapshot = async () => {
+    const md = buildAnonMatchingSnapshot({ week, people, pairs, nowMs: now });
+    try {
+      await navigator.clipboard.writeText(md);
+      setCopiedSnap(true);
+      say(true, 'Copied anonymised AI snapshot (aliases & numbers only).');
+      setTimeout(() => setCopiedSnap(false), 2000);
+    } catch {
+      say(false, 'Could not copy snapshot to clipboard.');
+    }
+  };
+
   return (
     <div className="mt">
       <NewcomersCard users={users} onboarding={onboarding} warmups={warmups} pairs={pairs} week={week} now={now}
         skip={skipNewcomer} levelShort={levelShort} />
+      <AdminHostSchedule />
       <div className="mt-top">
         <div className="aa-filters" role="tablist" aria-label="Week">
           {weeks.map((w) => (
@@ -362,6 +383,9 @@ export default function AdminMatching({ users = [] }) {
               {busy === 'resend-all' ? 'Sending…' : `Send all again (${resendable.length})`}
             </Button>
           )}
+          <Button size="sm" variant="ghost" icon={copiedSnap ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} onClick={copyAnonSnapshot}>
+            {copiedSnap ? 'Copied' : 'AI snapshot'}
+          </Button>
           {/* Temporary (Polad 2026-10-06): who is in the app right now, on
               Today and Partners, with a call button. functions onlineNow. */}
           <label className="aa-meta mt-online">
@@ -392,7 +416,7 @@ export default function AdminMatching({ users = [] }) {
               {(
                 <ul className="mt-pair-list">
                   {list.map((p) => (
-                    <PairRow key={p.key} pair={p} personById={personById} busy={busy === p.key}
+                    <PairRow key={p.key} pair={p} personById={personById} week={week} pairs={pairs} now={now} busy={busy === p.key}
                       canEdit={p.kind !== 'held' && p.kind !== 'draft' && !isClosed(p.kind) && p.startMs > now}
                       onMove={() => setMoving(p)}
                       onRemoveDraft={p.kind === 'draft' ? () => removeDraft(p) : null}
@@ -419,6 +443,7 @@ export default function AdminMatching({ users = [] }) {
       {selected.length > 0 && selected.length <= 2 && !planning && (
         <NewPairBar
           onPlan={() => setPlanning(true)}
+          onSuggest={(uid) => setSuggestFor(uid)}
           chosen={selected.map((id) => personById.get(id)).filter(Boolean)}
           blocks={starts} pairs={pairs}
           onClear={() => setSelected([])}
@@ -433,6 +458,16 @@ export default function AdminMatching({ users = [] }) {
           }}
         />
       )}
+
+      <BestMatchesSheet
+        target={suggestFor ? personById.get(suggestFor) : null}
+        people={people} pairs={pairs} blocks={starts}
+        onClose={() => setSuggestFor(null)}
+        onPick={(partnerId) => {
+          setSelected([suggestFor, partnerId]);
+          setSuggestFor(null);
+        }}
+      />
 
       <TimeSheet
         pair={moving} people={people} pairs={pairs} blocks={starts} busy={!!busy}
@@ -541,6 +576,7 @@ function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand,
     : (p.inList ? 'in the list' : 'not in the list');
   const healthWord = HEALTH[p.health?.cls];
   const rel = p.reliability && p.reliability !== 'ok' ? p.reliability : null;
+  const age = ageBandShort(p.ageBand);
   return (
     <li className={`mt-person ${on ? 'is-on' : ''} ${expanded ? 'is-open' : ''}`}>
       <label className="mt-person-main">
@@ -548,6 +584,7 @@ function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand,
         <span className="mt-person-text">
           <span className="aa-name">
             {p.name} <span className="aa-level">{levelShort(p.level)}</span>
+            {age && <span className={`aa-badge ${isMinorBand(p.ageBand) ? 'mt-age--minor' : 'aa-badge--soft'}`}>{age}</span>}
             {p.isNew && <span className="aa-badge aa-badge--soft">new</span>}
           </span>
           <span className={`aa-meta ${p.planned < p.wants ? 'mt-short' : ''}`}>
@@ -680,26 +717,52 @@ function PlanBar({ week, chosen, onClear, onBack, onBooked }) {
 }
 
 // ── Pairs ────────────────────────────────────────────────────────
-function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend, resendFrom, onMove, onRemoveDraft }) {
+function PairRow({ pair, personById, week, pairs, now, busy, canEdit, onChange, onRemove, onResend, resendFrom, onMove, onRemoveDraft }) {
   const hour = Number(pair.slotId.slice(11));
-  const side = (uid, name, level) => {
+  const side = (uid, name, level, peerUid, peerFallbackName) => {
     const p = personById.get(uid);
+    const peer = personById.get(peerUid);
     const local = localAt(hour, p?.timeZone);
+    const age = ageBandShort(p?.ageBand);
+    const altSlots = p?.ob && (pair.kind === 'pending' || isClosed(pair.kind))
+      ? nextLearnerSlots({ onboarding: p.ob, monday: week, pairs, uid, nowMs: now, count: 2, excludeSlotId: pair.slotId })
+      : [];
+    const waUrl = p?.whatsapp
+      ? waHref(p.whatsapp, matchNotifyMessage({
+        kind: pair.kind,
+        lang: p.lang || 'en',
+        name: p.name || name,
+        partnerName: peer?.name || peerFallbackName,
+        slotId: pair.slotId,
+        timeZone: p.timeZone || 'Asia/Baku',
+        accepted: !!pair.accepted[uid],
+        altSlots,
+      }))
+      : null;
     return (
       <span className="mt-side">
         <span className="aa-name">
           {pair.accepted[uid] && pair.kind === 'pending' && <Check size={14} aria-label="said yes" />}
           {firstName(p?.name || name)} <span className="aa-level">{levelShort(p?.level || level)}</span>
+          {age && <span className={`aa-badge ${isMinorBand(p?.ageBand) ? 'mt-age--minor' : 'aa-badge--soft'}`}>{age}</span>}
         </span>
         {local && <span className="aa-meta">{local}</span>}
         {/* Who still has to answer — the admin can nudge them on WhatsApp. */}
         {pair.kind === 'pending' && !pair.accepted[uid] && <span className="aa-meta">not answered yet</span>}
-        {canEdit && (
-          <button type="button" className="aa-linkbtn" disabled={busy} onClick={() => onChange(uid === pair.a ? pair.b : pair.a)}
-            aria-label={`Change ${firstName(p?.name || name)}`}>
-            <ArrowLeftRight size={14} aria-hidden="true" /> Change
-          </button>
-        )}
+        <span className="mt-side-tools">
+          {waUrl && (
+            <a className="mt-wa-link" href={waUrl} target="_blank" rel="noopener noreferrer"
+              aria-label={`WhatsApp ${firstName(p?.name || name)}`}>
+              <MessageCircle size={14} aria-hidden="true" /> WA
+            </a>
+          )}
+          {canEdit && (
+            <button type="button" className="aa-linkbtn" disabled={busy} onClick={() => onChange(uid === pair.a ? pair.b : pair.a)}
+              aria-label={`Change ${firstName(p?.name || name)}`}>
+              <ArrowLeftRight size={14} aria-hidden="true" /> Change
+            </button>
+          )}
+        </span>
       </span>
     );
   };
@@ -714,9 +777,9 @@ function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend
         {gap !== null && gap > 1 && <span className="aa-badge">levels {gap} apart</span>}
       </div>
       <div className="mt-pair-sides">
-        {side(pair.a, pair.nameA, pair.levelA)}
+        {side(pair.a, pair.nameA, pair.levelA, pair.b, pair.nameB)}
         <span className="mt-plus" aria-hidden="true">+</span>
-        {side(pair.b, pair.nameB, pair.levelB)}
+        {side(pair.b, pair.nameB, pair.levelB, pair.a, pair.nameA)}
       </div>
       {/* adminProposeMatch refuses blocks more than nine days ahead. */}
       {onResend && resendFrom > Date.now() && (
@@ -812,23 +875,27 @@ function ChangeSheet({ change, people, pairs, busy, onClose, onPick }) {
         The new pair gets an ordinary proposal — booked when both say yes.
       </p>
       <ul className="mt-cand-list">
-        {list.map((p) => (
-          <li key={p.id}>
-            <button type="button" className="mt-cand" disabled={busy} onClick={() => {
-              if (window.confirm(`${keepName} + ${firstName(p.name)}, ${blockLabel(pair.slotId)} Baku?`)) onPick(p.id);
-            }}>
-              <span className="aa-name">
-                {p.name} <span className="aa-level">{levelShort(p.level)}</span>
-                {!p.inList && <span className="aa-badge">not in the list</span>}
-              </span>
-              <span className="aa-meta">
-                {p.fit >= START_FIT_MIN ? `free ${p.fit} min from then` : 'not free then'}
-                {' · '}{p.planned} of {p.wants || '—'} this week
-                {localAt(hour, p.timeZone) ? ` · ${localAt(hour, p.timeZone)}` : ''}
-              </span>
-            </button>
-          </li>
-        ))}
+        {list.map((p) => {
+          const age = ageBandShort(p.ageBand);
+          return (
+            <li key={p.id}>
+              <button type="button" className="mt-cand" disabled={busy} onClick={() => {
+                if (window.confirm(`${keepName} + ${firstName(p.name)}, ${blockLabel(pair.slotId)} Baku?`)) onPick(p.id);
+              }}>
+                <span className="aa-name">
+                  {p.name} <span className="aa-level">{levelShort(p.level)}</span>
+                  {age && <span className={`aa-badge ${isMinorBand(p.ageBand) ? 'mt-age--minor' : 'aa-badge--soft'}`}>{age}</span>}
+                  {!p.inList && <span className="aa-badge">not in the list</span>}
+                </span>
+                <span className="aa-meta">
+                  {p.fit >= START_FIT_MIN ? `free ${p.fit} min from then` : 'not free then'}
+                  {' · '}{p.planned} of {p.wants || '—'} this week
+                  {localAt(hour, p.timeZone) ? ` · ${localAt(hour, p.timeZone)}` : ''}
+                </span>
+              </button>
+            </li>
+          );
+        })}
         {list.length === 0 && <li className="aa-empty">Nobody else is free in this block.</li>}
       </ul>
       <button type="button" className="aa-linkbtn" onClick={() => setAll((v) => !v)}>
@@ -838,8 +905,70 @@ function ChangeSheet({ change, people, pairs, busy, onClose, onPick }) {
   );
 }
 
+// One person ticked → smart compatible partners (overlapping slots, age-safe,
+// includes out-of-week regulars with 1-tap WhatsApp invite).
+function BestMatchesSheet({ target, people, pairs, blocks, onClose, onPick }) {
+  const [includeOut, setIncludeOut] = useState(true);
+  useEffect(() => setIncludeOut(true), [target?.id]);
+  if (!target) return <Sheet open={false} onClose={onClose} />;
+  const list = suggestPartnersFor({ target, people, pairs, blocks, includeOut, limit: 8 });
+  const targetAge = ageBandShort(target.ageBand);
+  return (
+    <Sheet open onClose={onClose} title={`Best matches for ${firstName(target.name)}`}>
+      <p className="aa-meta">
+        {levelShort(target.level)}{targetAge ? ` · ${targetAge}` : ''} · ranked by shared free hours, close level and same age group.
+      </p>
+      <label className="aa-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <input type="checkbox" className="aa-check" checked={includeOut} onChange={(e) => setIncludeOut(e.target.checked)} />
+        Include people who are «out» this week (invite via WhatsApp)
+      </label>
+      <ul className="mt-cand-list">
+        {list.map((p) => {
+          const age = ageBandShort(p.ageBand);
+          const preview = p.sharedSlots.slice(0, 3).map(blockLabel).join(', ');
+          const wa = p.whatsapp
+            ? waHref(p.whatsapp, inviteRegularMessage({
+              lang: p.lang || 'en',
+              name: p.name,
+              targetName: target.name,
+              targetLevel: levelShort(target.level),
+              slots: p.sharedSlots.slice(0, 2),
+              timeZone: p.timeZone || 'Asia/Baku',
+            }))
+            : null;
+          return (
+            <li key={p.id} className="mt-cand-row">
+              <span className="aa-name">
+                {p.name} <span className="aa-level">{levelShort(p.level)}</span>
+                {age && <span className={`aa-badge ${isMinorBand(p.ageBand) ? 'mt-age--minor' : 'aa-badge--soft'}`}>{age}</span>}
+                {!p.inWeek && <span className="aa-badge">out</span>}
+              </span>
+              <span className="aa-meta">
+                {p.sharedSlots.length > 0
+                  ? `${p.sharedSlots.length} shared hrs: ${preview}`
+                  : 'No overlapping free hours this week'}
+                {' · '}{p.planned}/{p.wants || '—'} this week
+              </span>
+              <span className="mt-cand-actions">
+                <Button size="sm" variant="secondary" onClick={() => onPick(p.id)}>Select pair</Button>
+                {wa && (
+                  <Button as="a" size="sm" variant="ghost" href={wa} target="_blank" rel="noopener noreferrer"
+                    icon={<MessageCircle size={14} aria-hidden="true" />}>
+                    WA invite
+                  </Button>
+                )}
+              </span>
+            </li>
+          );
+        })}
+        {list.length === 0 && <li className="aa-empty">No age-compatible partners found.</li>}
+      </ul>
+    </Sheet>
+  );
+}
+
 // Two people ticked: the week's blocks that fit both, then send.
-function NewPairBar({ chosen, blocks, pairs, onClear, onSend, onPlan }) {
+function NewPairBar({ chosen, blocks, pairs, onClear, onSend, onPlan, onSuggest }) {
   const [slotId, setSlotId] = useState('');
   const [note, setNote] = useState('');
   const [all, setAll] = useState(false);
@@ -851,21 +980,33 @@ function NewPairBar({ chosen, blocks, pairs, onClear, onSend, onPlan }) {
   useEffect(() => { setSlotId(''); setState(null); setAll(false); }, [ids]);
 
   if (chosen.length < 2) {
+    const one = chosen[0];
     return (
       <div className="aa-sticky-bar mt-bar">
-        <span className="aa-sticky-count">{firstName(chosen[0]?.name)} — tick one more for a time, or several for the planner</span>
-        <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
+        <span className="aa-sticky-count">{firstName(one?.name)} — pick one more, or see best matches</span>
+        <span className="mt-actions">
+          {one && onSuggest && (
+            <Button size="sm" variant="secondary" icon={<Users size={15} aria-hidden="true" />} onClick={() => onSuggest(one.id)}>
+              Best matches
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
+        </span>
       </div>
     );
   }
   const [a, b] = chosen;
+  const ageClash = !ageCompatible(a.ageBand, b.ageBand);
   if (!open) {
     return (
       <div className="aa-sticky-bar mt-bar">
-        <span className="aa-sticky-count">{firstName(a.name)} + {firstName(b.name)}</span>
+        <span className="aa-sticky-count">
+          {firstName(a.name)} + {firstName(b.name)}
+          {ageClash ? ' · under-18 / adult clash' : ''}
+        </span>
         <span className="mt-actions">
-          <Button size="sm" icon={<CalendarClock size={16} aria-hidden="true" />} onClick={() => setOpen(true)}>Pick a time</Button>
-          <Button size="sm" variant="secondary" icon={<Sparkles size={16} aria-hidden="true" />} onClick={onPlan}>Let the planner choose</Button>
+          <Button size="sm" icon={<CalendarClock size={16} aria-hidden="true" />} disabled={ageClash} onClick={() => setOpen(true)}>Pick a time</Button>
+          <Button size="sm" variant="secondary" icon={<Sparkles size={16} aria-hidden="true" />} disabled={ageClash} onClick={onPlan}>Let the planner choose</Button>
           <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
         </span>
       </div>
@@ -891,6 +1032,11 @@ function NewPairBar({ chosen, blocks, pairs, onClear, onSend, onPlan }) {
           <Button size="sm" variant="ghost" onClick={onClear}>Clear</Button>
         </span>
       </div>
+      {ageClash && (
+        <p className="mt-age-warn" role="alert">
+          Under-18 and adult learners cannot be paired.
+        </p>
+      )}
       {options.length === 0 ? (
         <p className="aa-empty">{all ? 'No bookable time left this week.' : 'No time this week fits both.'}</p>
       ) : (
@@ -911,7 +1057,7 @@ function NewPairBar({ chosen, blocks, pairs, onClear, onSend, onPlan }) {
       </button>
       <input className="aa-input" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)}
         placeholder="Optional note for both (e.g. topic: Travel)" aria-label="Note" />
-      <Button size="sm" icon={<Send size={16} aria-hidden="true" />} disabled={!slotId || state === 'sending'} onClick={send}>
+      <Button size="sm" icon={<Send size={16} aria-hidden="true" />} disabled={!slotId || ageClash || state === 'sending'} onClick={send}>
         {state === 'sending' ? 'Sending…' : 'Send proposal to both'}
       </Button>
       {state && state !== 'sending' && <p className="aa-error" role="status">{state}</p>}

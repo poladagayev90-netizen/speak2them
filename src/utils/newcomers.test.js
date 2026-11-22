@@ -41,7 +41,7 @@ test('rows: last 14 days only, newest first, skip honoured, wizard-less people i
     { id: 'b', name: 'Bora', createdAt: ts(NOW - 3 * 3600000), callCount: 1, appLanguage: 'tr' },
     { id: 'adm', name: 'Admin', createdAt: ts(NOW - DAY) },
   ];
-  const onboarding = new Map([['a', { whatsapp: '+994501112233', level: 'A2' }]]);
+  const onboarding = new Map([['a', { whatsapp: '+994501112233', level: 'A2', ageBand: '25-34' }]]);
   const rows = newcomerRows({ users, onboarding, now: NOW, skip: (u) => u.id === 'adm' });
   expect(rows.map((r) => r.uid)).toEqual(['b', 'a']);
   const [b, a] = rows;
@@ -51,6 +51,7 @@ test('rows: last 14 days only, newest first, skip honoured, wizard-less people i
   expect(a.days).toBe(2);
   expect(a.noFirst).toBe(true);
   expect(a.level).toBe('A2');
+  expect(a.ageBand).toBe('25-34');
   expect(a.whatsapp).toMatch(/^https:\/\/wa\.me\/994501112233\?text=Salam%2C%20Aysel!/);
   expect(a.reached).toBe(3);
 });

@@ -1,0 +1,23 @@
+/* Admin → Matching → First-match host hours. Tokens only (src/index.css). */
+.hs { display: grid; gap: var(--s-2); }
+.hs .aa-h { margin: 0; }
+.hs-head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.hs-head-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-3); min-width: 0; }
+.hs-toggle {
+  display: inline-flex; align-items: center; gap: var(--s-1); flex-shrink: 0;
+  font-size: var(--fs-sm); font-weight: 700; color: var(--accent);
+}
+.hs-chev { transition: transform 150ms ease; }
+.hs.is-open .hs-chev { transform: rotate(180deg); }
+.hs-body { display: grid; gap: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--border); }
+.hs-controls { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.hs-field { display: grid; gap: var(--s-1); font-size: var(--fs-xs); font-weight: 700; color: var(--text-secondary); }
+.hs-field select {
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-md);
+  border: 1px solid var(--border); background: var(--bg-input);
+  color: var(--text-primary); font: inherit; font-size: var(--fs-sm); font-weight: 600;
+}
+.hs-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
