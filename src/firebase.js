@@ -41,8 +41,10 @@ try {
 // without production credentials. The variable is never in .env: CRA inlines
 // it at build time, so a production bundle does not even contain this branch.
 if (process.env.REACT_APP_USE_EMULATORS === 'true') {
-  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  // Ports can be moved when another session's emulator already holds the
+  // defaults (REACT_APP_EMU_AUTH_PORT / REACT_APP_EMU_FIRESTORE_PORT).
+  connectAuthEmulator(auth, `http://127.0.0.1:${process.env.REACT_APP_EMU_AUTH_PORT || 9099}`, { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', Number(process.env.REACT_APP_EMU_FIRESTORE_PORT) || 8080);
 }
 
 // The CRA/Workbox service worker already owns scope "/". Registering the

@@ -21,6 +21,8 @@ import CourseCompletionCelebration from '../components/CourseCompletionCelebrati
 import SlotNoticeModal from '../components/SlotNoticeModal';
 import IntroCard from '../components/IntroCard';
 import WarmupCard from '../components/WarmupCard';
+import TeacherPracticeCard from '../components/TeacherPracticeCard';
+import { TODAY_WARMUP_CARD } from '../utils/warmupCall';
 import useWarmupOffer from '../hooks/useWarmupOffer';
 import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
@@ -80,7 +82,8 @@ export default function Home({ user }) {
   const { t: tr, lang } = useFirstRunCopy(user?.guideLanguage);
   const firstDay = isFirstDay(user);
   // Where the warm-up call is offered: the top card, a Get ready row, or nowhere.
-  const warmupOffer = useWarmupOffer(user);
+  // Reads nothing while the Today card is off (TODAY_WARMUP_CARD).
+  const warmupOffer = useWarmupOffer(TODAY_WARMUP_CARD ? user : null);
   const tourSteps = useMemo(() => HOME_TOUR_KEYS.map(({ target, key }) => (
     { target, title: tr(`${key}.title`), content: tr(`${key}.text`) }
   )), [tr]);
@@ -256,7 +259,9 @@ export default function Home({ user }) {
         {/* The one warm-up call before the first real partner — the card
             only for a newcomer who has not put it aside; after «Not now» it
             waits at the top of the AInur tab instead (docs/domain/calls.md). */}
-        <WarmupCard user={user} offer={warmupOffer} />
+        {/* The warm-up card is off (utils/warmupCall.js TODAY_WARMUP_CARD);
+            the teacher card stands in its place. */}
+        {TODAY_WARMUP_CARD ? <WarmupCard user={user} offer={warmupOffer} /> : <TeacherPracticeCard user={user} />}
 
         {/* 0. A proposal waiting for this learner's yes, as the answer card
             itself (2026-11-10: Today showed only «Your next practice» and

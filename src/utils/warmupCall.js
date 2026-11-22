@@ -8,6 +8,12 @@ import { FUNCTIONS_BASE } from '../constants';
 
 export const WARMUP_MAX_ATTEMPTS = 2;
 
+// Today's warm-up CARD is switched off (Polad 2026-11-22: «tətbiqə girəndə
+// görsənməsin») — Today shows TeacherPracticeCard in its place. Nothing is
+// deleted: true brings the card back; the AInur tab keeps offering the
+// warm-up either way.
+export const TODAY_WARMUP_CARD = false;
+
 // WHERE the warm-up is offered (Polad 2026-11-08: «dikilib qalmasın» — it
 // must not sit on top of Today for good):
 //   'card'  — the big card on top of Today. Only a newcomer who has neither
