@@ -60,11 +60,10 @@ export default function BottomNav({ user }) {
       : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)', soft: 'var(--ai-soft)' },
   ];
 
-  // Joining is a full-screen layer: the wizard, then the WhatsApp step. The nav
-  // peeking out under it offered a way round "write to us first".
+  // Joining is a full-screen layer: the wizard, then instant first-match (or legacy /intro).
   // A conversation takes the whole screen (WhatsApp-style, chat.css).
   // The warm-up call is a call: full screen too.
-  if (path === '/onboarding' || path === '/intro' || path === '/warmup' || path.startsWith('/chat/')) return null;
+  if (path === '/onboarding' || path === '/intro' || path === '/first-match' || path === '/warmup' || path.startsWith('/chat/')) return null;
 
   return (
     // No safe-area padding here any more. The bar floats now — .bottom-nav sits

@@ -27,6 +27,8 @@ const autoRoster = require("./autoRoster");
 const accountHealth = require("./accountHealth");
 const newcomersLib = require("./newcomers");
 const newcomerHold = require("./newcomerHold");
+const instantMatchLib = require("./instantMatch");
+const partnerLedgerLib = require("./partnerLedger");
 const agentPacket = require("./agent/packet");
 const agentValidate = require("./agent/validate");
 const agentGemini = require("./agent/gemini");
@@ -368,6 +370,8 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
     const userSnap = await db.collection("users").doc(uid).get();
     if (!userSnap.exists) return res.status(404).json({ error: "no-user" });
     if (action === "grant") {
+      const prevAccessSnap = await db.collection("access").doc(uid).get();
+      const hadPriorPackage = Boolean(prevAccessSnap.exists && prevAccessSnap.get("package"));
       const { state, config } = await accessOf(db, uid, { user: userSnap.data() || {} });
       let pkg;
       try {
@@ -385,6 +389,9 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
         package: record,
         history: admin.firestore.FieldValue.arrayUnion({ ...record, action: "grant", atMs: Date.now() }),
       }, { merge: true });
+      const pkgDef = (config.packages || []).find((p) => p.size === pkg.size) || {};
+      await creditPartnerOnFirstPurchase(db, uid, userSnap.data() || {}, hadPriorPackage, pkgDef.price || 0, decoded.uid)
+        .catch((e) => console.warn("[partnerLedger] credit failed:", uid, e.message));
       const next = await refreshAccessSummary(db, uid);
       return res.status(200).json({ ok: true, access: packagesLib.accessSummary(next) });
     }
@@ -465,6 +472,58 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
         cancelled = await cancelUpcomingFor(db, uid, decoded.uid, { keep: keepPeer });
       }
       return res.status(200).json({ ok: true, testAccount: on, ...cancelled });
+    }
+    if (action === "setVerifiedPartner") {
+      const active = body.active === true;
+      const nowTs = admin.firestore.FieldValue.serverTimestamp();
+      await Promise.all([
+        db.collection("users").doc(uid).set({
+          partnerVerified: active ? true : admin.firestore.FieldValue.delete(),
+        }, { merge: true }),
+        db.collection("partnerLedger").doc(uid).set({
+          uid,
+          active,
+          updatedAt: nowTs,
+          updatedBy: decoded.uid,
+        }, { merge: true }),
+      ]);
+      return res.status(200).json({ ok: true, uid, active });
+    }
+    if (action === "recordPartnerPayout") {
+      const amountAzn = Math.round(Number(body.amountAzn) * 100) / 100;
+      if (!Number.isFinite(amountAzn) || amountAzn <= 0 || amountAzn > 10000) {
+        return res.status(400).json({ error: "bad-amount" });
+      }
+      const note = String(body.note || "").trim().slice(0, 200);
+      const ledgerRef = db.collection("partnerLedger").doc(uid);
+      const entryRef = ledgerRef.collection("entries").doc();
+      const nowMs = Date.now();
+      const result = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(ledgerRef);
+        const cur = snap.exists ? (snap.data() || {}) : {};
+        const prevBalance = Number(cur.balanceAzn) || 0;
+        const prevPaid = Number(cur.totalPaidAzn) || 0;
+        const nextBalance = Math.max(0, Math.round((prevBalance - amountAzn) * 100) / 100);
+        const nextPaid = Math.round((prevPaid + amountAzn) * 100) / 100;
+        tx.set(ledgerRef, {
+          uid,
+          totalPaidAzn: nextPaid,
+          balanceAzn: nextBalance,
+          lastPaidAtMs: nowMs,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: decoded.uid,
+        }, { merge: true });
+        tx.set(entryRef, {
+          kind: "payout",
+          amountAzn,
+          paidAtMs: nowMs,
+          paidBy: decoded.uid,
+          note,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return { balanceAzn: nextBalance, totalPaidAzn: nextPaid };
+      });
+      return res.status(200).json({ ok: true, uid, amountAzn, ...result });
     }
     if (action === "summary") {
       const next = await refreshAccessSummary(db, uid);
@@ -1474,6 +1533,106 @@ async function notifyMissedCall(snap, call) {
   }).catch(() => null);
 }
 
+async function stampFirstPartnerAfterCall(db, participants, callSeconds, callAtMs) {
+  if ((Number(callSeconds) || 0) < partnerLedgerLib.FIRST_PARTNER_MIN_SEC) return;
+  const [x, y] = participants;
+  const hostUids = await newcomerHostUids(db);
+  const activePartners = new Set([ADMIN_UID, ...hostUids]);
+  const [px, py] = await Promise.all([
+    db.collection("partnerLedger").doc(x).get().catch(() => null),
+    db.collection("partnerLedger").doc(y).get().catch(() => null),
+  ]);
+  if (px && px.exists && px.get("active") === true) activePartners.add(x);
+  if (py && py.exists && py.get("active") === true) activePartners.add(y);
+  const activeList = [...activePartners];
+
+  for (const [learnerUid, partnerUid] of [[x, y], [y, x]]) {
+    if (learnerUid === ADMIN_UID || activePartners.has(learnerUid)) continue;
+    if (!activePartners.has(partnerUid)) continue;
+    const learnerRef = db.collection("users").doc(learnerUid);
+    const ledgerRef = db.collection("partnerLedger").doc(partnerUid);
+    const refRef = ledgerRef.collection("referrals").doc(learnerUid);
+    await db.runTransaction(async (tx) => {
+      const lSnap = await tx.get(learnerRef);
+      if (!lSnap.exists) return;
+      const learner = lSnap.data() || {};
+      if (!partnerLedgerLib.shouldStampFirstPartner({
+        learner, partnerUid, callSeconds, activePartnerUids: activeList,
+      })) return;
+      const atMs = Number(callAtMs) || Date.now();
+      tx.set(learnerRef, {
+        firstPartnerUid: partnerUid,
+        firstPartnerAt: admin.firestore.Timestamp.fromMillis(atMs),
+      }, { merge: true });
+      tx.set(refRef, {
+        ...partnerLedgerLib.buildReferralView({
+          learnerName: learner.name || "",
+          callAtMs: atMs,
+          joinedPackage: false,
+        }),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      tx.set(ledgerRef, {
+        uid: partnerUid,
+        referralsCount: admin.firestore.FieldValue.increment(1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+  }
+}
+
+async function creditPartnerOnFirstPurchase(db, learnerUid, userData, hadPriorPackage, priceAzn, grantedBy) {
+  const cfgSnap = await db.collection("appConfig").doc("partners").get().catch(() => null);
+  const partnerConfig = cfgSnap && cfgSnap.exists ? (cfgSnap.data() || {}) : { payoutEnabled: false };
+  const nowMs = Date.now();
+  const verdict = partnerLedgerLib.evaluateFirstPurchaseCredit({
+    user: userData,
+    hadPriorPackage,
+    priceAzn,
+    partnerConfig,
+    nowMs,
+  });
+  if (!verdict.eligible) return;
+
+  const partnerUid = verdict.partnerUid;
+  const ledgerRef = db.collection("partnerLedger").doc(partnerUid);
+  const refRef = ledgerRef.collection("referrals").doc(learnerUid);
+  const entryRef = ledgerRef.collection("entries").doc(`first_${learnerUid}`);
+  await db.runTransaction(async (tx) => {
+    const existing = await tx.get(entryRef);
+    if (existing.exists) return; // idempotent: never credit twice for the same learner
+    tx.set(refRef, {
+      ...partnerLedgerLib.buildReferralView({
+        learnerName: userData.name || "",
+        callAtMs: userData.firstPartnerAt?.toMillis?.() || nowMs,
+        joinedPackage: true,
+        joinedAtMs: nowMs,
+      }),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    tx.set(entryRef, {
+      kind: "credit",
+      learnerFirstName: partnerLedgerLib.firstNameOf(userData.name || ""),
+      sharePct: verdict.sharePct,
+      amountAzn: verdict.amountAzn,
+      pendingAzn: verdict.pendingAzn,
+      status: verdict.status,
+      grantedBy,
+      createdAtMs: nowMs,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.set(ledgerRef, {
+      uid: partnerUid,
+      convertedCount: admin.firestore.FieldValue.increment(1),
+      ...(verdict.amountAzn > 0 ? {
+        totalEarnedAzn: admin.firestore.FieldValue.increment(verdict.amountAzn),
+        balanceAzn: admin.firestore.FieldValue.increment(verdict.amountAzn),
+      } : {}),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  });
+}
+
 async function liftHoldsAfterCall(db, participants, callId) {
   const [x, y] = participants;
   const hostUids = await newcomerHostUids(db);
@@ -1526,6 +1685,10 @@ exports.reconcileCallStats = onDocumentWritten({ document: "calls/{callId}", reg
   // ordinary pairing. Its failure never retries the crediting above.
   if (joined && trustedCallSeconds(call) >= ATTENDED_MIN_SECONDS) {
     await liftHoldsAfterCall(db, participants, after.id).catch((e) => console.warn("[reconcileCallStats] hold lift failed:", e.message));
+  }
+  if (joined && trustedCallSeconds(call) >= partnerLedgerLib.FIRST_PARTNER_MIN_SEC) {
+    await stampFirstPartnerAfterCall(db, participants, trustedCallSeconds(call), callStartMs(call))
+      .catch((e) => console.warn("[reconcileCallStats] firstPartner stamp failed:", e.message));
   }
   // One line for the admin's activity view. Its failure never retries the
   // crediting above (the line is a view, the credit is the record).
@@ -3408,8 +3571,9 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true,
   // one side is the team or the learner's own teacher: the intro call and every
   // lesson a minor has are exactly an adult talking to a minor, supervised and
   // arranged on purpose. Without this a learner under 18 could never be called
-  // by anyone at SpeakLab.
-  const ageClash = checkAge && minor(data(s.obA)) !== minor(data(s.obB));
+  // by anyone at SpeakLab. External adult Verified Partners are NOT supervised
+  // and remain blocked from pairing with under18 learners here.
+  const ageClash = checkAge && !isSupervisedPair(uidA, uidB, a, b) && minor(data(s.obA)) !== minor(data(s.obB));
   let levelClash = false;
   if (checkLevel && (a.partnerLevel === "close" || b.partnerLevel === "close")) {
     const ra = levelRank(a.level);
@@ -5633,6 +5797,296 @@ async function afterDirectBook(db, pair, r) {
     }),
   });
 }
+
+// ── Instant first match right after onboarding (2026-11-22) ────────
+// Nobody should finish onboarding and land on a dead screen.
+// Runs idempotency (returns any existing upcoming confirmed booking) AND host
+// maxPerDay check inside ONE transaction alongside bookPairTx (which runs
+// pairVerdict — including under18). Returns the booked call directly in the
+// HTTP response so the client never waits for syncUpcomingCall.
+async function loadInstantHosts(db, nowMs) {
+  const cfg = await plannerConfig(db);
+  const parsed = instantMatchLib.parseHostConfigs(cfg.newcomerHosts, ADMIN_UID);
+  if (!parsed.length) return { hosts: [], hostBookings: new Map() };
+  const [uSnaps, oSnaps] = await Promise.all([
+    db.getAll(...parsed.map((h) => db.collection("users").doc(h.uid))),
+    db.getAll(...parsed.map((h) => db.collection("onboarding").doc(h.uid))),
+  ]);
+  const hosts = [];
+  const hostBookings = new Map();
+  const horizonEnd = nowMs + (instantMatchLib.HORIZON_DAYS + 1) * 24 * 60 * 60 * 1000;
+  for (let i = 0; i < parsed.length; i += 1) {
+    const h = parsed[i];
+    const uSnap = uSnaps[i];
+    if (!uSnap.exists || uSnap.get("suspended")) continue;
+    const ob = oSnaps[i].exists ? (oSnaps[i].data() || {}) : {};
+    hosts.push({
+      ...h,
+      name: uSnap.get("name") || "",
+      minor: ob.ageBand === "under18",
+      availability: h.hours ? null : (Array.isArray(ob.availability) ? ob.availability : []),
+      busyAvailability: h.hours ? [] : (Array.isArray(ob.busyAvailability) ? ob.busyAvailability : []),
+      timeZone: h.hours ? "Asia/Baku" : (ob.timeZone || "Asia/Baku"),
+    });
+    const bSnap = await db.collection("bookings")
+      .where("participants", "array-contains", h.uid)
+      .where("status", "==", "confirmed")
+      .get();
+    const list = bSnap.docs
+      .map((d) => d.data() || {})
+      .filter((b) => Number(b.endMs) > nowMs && Number(b.startMs) < horizonEnd)
+      .map((b) => ({ date: b.date, startMs: Number(b.startMs) || 0 }));
+    hostBookings.set(h.uid, list);
+  }
+  return { hosts, hostBookings };
+}
+
+function serializeInstantBooking(b, learnerUid, hostInfo) {
+  const peerUid = (b.participants || []).find((p) => p !== learnerUid) || hostInfo?.uid || null;
+  const pres = instantMatchLib.hostPresentation({
+    uid: peerUid,
+    name: (b.names || {})[peerUid] || hostInfo?.name || "",
+    isFounder: hostInfo?.isFounder === true,
+    adminUid: ADMIN_UID,
+    label: hostInfo?.label || null,
+  });
+  return {
+    bookingId: b.id || b.bookingId || null,
+    slotId: b.slotId,
+    startMs: Number(b.startMs) || 0,
+    endMs: Number(b.endMs) || 0,
+    callId: b.callId || (peerUid ? bookingsLib.callIdForPair(learnerUid, peerUid) : null),
+    hostUid: peerUid,
+    ...pres,
+  };
+}
+
+exports.matchNewcomerNow = onRequest({ secrets: [], invoker: "public" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "POST") return res.status(405).json({ error: "method-not-allowed" });
+
+  let decoded;
+  try {
+    decoded = await verifyAuth(req);
+  } catch {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+
+  const uid = decoded.uid;
+  const db = admin.firestore();
+  const body = req.body || {};
+  const action = body.action === "pick" ? "pick" : "auto";
+  const nowMs = Date.now();
+
+  try {
+    await enforceRateLimit(uid, "matchNewcomerNow", 20, 60 * 60 * 1000);
+    const [uSnap, obSnap] = await Promise.all([
+      db.collection("users").doc(uid).get(),
+      db.collection("onboarding").doc(uid).get(),
+    ]);
+    if (!uSnap.exists) return res.status(404).json({ error: "no-user" });
+    const u = uSnap.data() || {};
+    const ob = obSnap.exists ? (obSnap.data() || {}) : {};
+    const { hosts, hostBookings } = await loadInstantHosts(db, nowMs);
+    const hostByUid = new Map(hosts.map((h) => [h.uid, h]));
+
+    const plan = instantMatchLib.planInstantMatch({
+      learner: {
+        uid,
+        minor: ob.ageBand === "under18",
+        availability: ob.availability,
+        maybeAvailability: ob.maybeAvailability,
+        busyAvailability: ob.busyAvailability,
+        timeZone: ob.timeZone || "Asia/Baku",
+        teacherId: u.teacherId || null,
+      },
+      hosts,
+      hostBookings,
+      nowMs,
+      adminUid: ADMIN_UID,
+    });
+
+    // Determine ordered candidates to try inside ONE transaction.
+    let candidates = [];
+    if (action === "pick") {
+      const slotId = String(body.slotId || "").trim();
+      const hostUid = String(body.hostUid || "").trim();
+      const slot = parseSlotId(slotId);
+      const host = hostByUid.get(hostUid);
+      if (!slot || !host || slot.startMs <= nowMs + 30 * 60 * 1000) {
+        return res.status(400).json({ error: "invalid-slot" });
+      }
+      candidates = [{ slotId, startMs: slot.startMs, hostUid, ...instantMatchLib.hostPresentation({ ...host, adminUid: ADMIN_UID }) }];
+    } else {
+      candidates = plan.candidates.slice(0, 6);
+    }
+
+    // Attempt idempotency check + host maxPerDay check + booking inside ONE transaction.
+    const tryBook = async (cand) => {
+      const slot = cand ? parseSlotId(cand.slotId) : null;
+      const host = cand ? hostByUid.get(cand.hostUid) : null;
+      return db.runTransaction(async (tx) => {
+        const myConfirmed = await tx.get(
+          db.collection("bookings")
+            .where("participants", "array-contains", uid)
+            .where("status", "==", "confirmed"),
+        );
+        const upcoming = myConfirmed.docs
+          .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+          .filter((b) => Number(b.endMs) > nowMs)
+          .sort((a, b) => (Number(a.startMs) || 0) - (Number(b.startMs) || 0));
+
+        // Idempotent: auto mode returns the learner's existing upcoming booking immediately.
+        if (action === "auto" && upcoming.length) {
+          const ex = upcoming[0];
+          const exPeer = (ex.participants || []).find((p) => p !== uid);
+          return {
+            status: "booked",
+            alreadyBooked: true,
+            booking: serializeInstantBooking(ex, uid, hostByUid.get(exPeer)),
+          };
+        }
+
+        if (!slot || !host) return { status: "pick" };
+
+        // Read learner + host docs, host's same-day bookings and overlaps in the SAME transaction.
+        const [aSnap, bSnap, hostDay, hostNear] = await Promise.all([
+          tx.get(db.collection("users").doc(uid)),
+          tx.get(db.collection("users").doc(host.uid)),
+          bookingsLib.sameDayBookingsTx(tx, db, host.uid, slot),
+          bookingsLib.overlappingBookingsTx(tx, db, host.uid, slot),
+        ]);
+        if (!aSnap.exists || !bSnap.exists) return { retry: "user-gone" };
+
+        // If rescheduling an existing instant welcome call via `pick`, close the old one atomically.
+        const replacing = action === "pick"
+          ? upcoming.find((b) => b.source === "team_intro" && b.marker && b.marker.instant === true && b.slotId !== slot.slotId)
+          : null;
+        if (action === "pick" && upcoming.length && !replacing) {
+          const ex = upcoming[0];
+          const exPeer = (ex.participants || []).find((p) => p !== uid);
+          return {
+            status: "booked",
+            alreadyBooked: true,
+            booking: serializeInstantBooking(ex, uid, hostByUid.get(exPeer)),
+          };
+        }
+
+        const effectiveHostDay = replacing
+          ? hostDay.filter((d) => d.id !== replacing.id)
+          : hostDay;
+        const effectiveHostNear = replacing
+          ? hostNear.filter((d) => d.id !== replacing.id)
+          : hostNear;
+        if (effectiveHostDay.length >= (host.maxPerDay || instantMatchLib.DEFAULT_MAX_PER_DAY)) {
+          return { retry: "host-full" };
+        }
+        if (effectiveHostNear.length > 0) return { retry: "host-busy" };
+
+        const a = aSnap.data() || {};
+        const b = bSnap.data() || {};
+        const planWeek = bakuWeekKey(slot.startMs);
+        const booked = await bookPairTx(db, tx, {
+          uidA: uid,
+          uidB: host.uid,
+          a,
+          b,
+          slot,
+          now: nowMs,
+          marker: { planWeek, planned: true, host: host.uid, team: true, instant: true },
+          source: "team_intro",
+          oneADay: false,
+          replaceInBlock: false,
+        });
+
+        if (replacing) {
+          const oldPeer = (replacing.participants || []).find((p) => p !== uid);
+          const oldSlot = parseSlotId(replacing.slotId);
+          if (oldPeer && oldSlot) {
+            bookingsLib.closeBookingTx(tx, db, {
+              slot: oldSlot, uidA: uid, uidB: oldPeer, status: "moved",
+              extra: { movedBy: uid, movedTo: slot.slotId }, nowMs,
+            });
+            tx.delete(db.collection("practiceSlots").doc(oldSlot.slotId).collection("members").doc(uid));
+            tx.delete(db.collection("practiceSlots").doc(oldSlot.slotId).collection("members").doc(oldPeer));
+          }
+        }
+
+        const bookingId = bookingsLib.bookingIdFor(slot.slotId, uid, host.uid);
+        return {
+          status: "booked",
+          alreadyBooked: booked.alreadyPaired === true,
+          slot,
+          released: booked.released || [],
+          nameA: a.name || "",
+          nameB: b.name || "",
+          hostUid: host.uid,
+          booking: serializeInstantBooking({
+            id: bookingId,
+            slotId: slot.slotId,
+            startMs: slot.startMs,
+            endMs: slot.endMs,
+            participants: [uid, host.uid],
+            names: { [uid]: a.name || "", [host.uid]: b.name || "" },
+            callId: booked.callId,
+          }, uid, host),
+        };
+      });
+    };
+
+    // Always run at least once so idempotency returns any existing booking even on Tier 3.
+    let outcome = null;
+    if (!candidates.length) {
+      outcome = await tryBook(null);
+    } else {
+      for (const cand of candidates) {
+        try {
+          const r = await tryBook(cand);
+          if (r.status === "booked") { outcome = r; break; }
+        } catch (e) {
+          if (e.httpStatus === 409) continue; // slot raced or pairVerdict refused — try next
+          throw e;
+        }
+      }
+    }
+
+    if (outcome && outcome.status === "booked") {
+      if (!outcome.alreadyBooked && outcome.slot) {
+        await afterDirectBook(db, { a: uid, b: outcome.hostUid }, {
+          slot: outcome.slot,
+          released: outcome.released,
+          nameA: outcome.nameA,
+          nameB: outcome.nameB,
+        }).catch((e) => console.warn("[matchNewcomerNow] push failed:", e.message));
+      }
+      const alternatives = plan.alternatives
+        .filter((x) => x.slotId !== outcome.booking.slotId
+          && Math.abs(x.startMs - outcome.booking.startMs) >= 2 * 60 * 60 * 1000)
+        .slice(0, 3);
+      return res.status(200).json({
+        ok: true,
+        status: "booked",
+        tier: plan.tier,
+        alreadyBooked: !!outcome.alreadyBooked,
+        booking: outcome.booking,
+        alternatives,
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      status: "pick",
+      tier: plan.tier,
+      booking: null,
+      alternatives: plan.alternatives.slice(0, 3),
+    });
+  } catch (e) {
+    const status = e.httpStatus || 500;
+    if (status === 500) console.error("[matchNewcomerNow]", uid, e);
+    return res.status(status).json({ error: status === 500 ? "internal" : e.message });
+  }
+});
 
 const directPair = (cfg, p) => cfg.directBook === true && !!p.committedA && !!p.committedB;
 

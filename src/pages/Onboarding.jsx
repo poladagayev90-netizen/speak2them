@@ -378,11 +378,16 @@ export default function Onboarding({ user }) {
         onboardedAt: serverTimestamp(),
       }, { merge: true });
       try { sessionStorage.removeItem(draftKey(uid)); } catch { /* ignore */ }
-      // Joining ends with a pointer to the team's WhatsApp — the same
-      // full-screen layer, so it reads as the last step, not as an ad. It is
-      // not a gate: "Continue to the app" is right there. Learners who are
-      // exempt (already practising, have a teacher) go straight home.
-      navigate(location.state?.returnTo || (needsIntro(user) ? '/intro' : '/'), { replace: true });
+      // Newcomers go straight to the instant first-match reveal (2026-11-22),
+      // replacing the old forced /intro WhatsApp screen. WhatsApp stays
+      // mandatory above; learners already practising or editing return home.
+      if (location.state?.returnTo) {
+        navigate(location.state.returnTo, { replace: true });
+      } else if (needsIntro(user)) {
+        navigate('/first-match', { replace: true, state: { timeZone } });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (e) {
       setError(t('ob.errSave'));
       setSaving(false);

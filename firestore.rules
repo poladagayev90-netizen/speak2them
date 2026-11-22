@@ -53,6 +53,11 @@ service cloud.firestore {
     // gözləyir" uydurula bilərdi. `slotNoticePending` isə QƏSDƏN siyahıda
     // DEYİL — nəzakətli xatırlatmanı bağlamaq üçün client onu silməlidir və ən
     // pis halda istifadəçi öz xatırlatmasını gizlədir (təhlükəsizlik təsiri yox).
+    // firstPartnerUid / firstPartnerAt / partnerVerified are strictly
+    // server-only (reconcileCallStats stamps immutable firstPartnerUid +
+    // firstPartnerAt after a >=5-min first call with a Verified Partner / host;
+    // adminAccess setVerifiedPartner toggles partnerVerified). Clients must
+    // neither forge them on create nor mutate or clear them on update.
     function validRoleOneTimeSet() {
       return (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
           || (!('role' in resource.data) && request.resource.data.role in ['student', 'teacher']))
@@ -71,7 +76,7 @@ service cloud.firestore {
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
           'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt',
-          'testAccount'])
+          'testAccount', 'firstPartnerUid', 'firstPartnerAt', 'partnerVerified'])
         && validRoleOneTimeSet();
     }
 
@@ -116,7 +121,7 @@ service cloud.firestore {
           'isAdult', 'completedSessions', 'aiPracticeSeconds', 'aiPracticeSessions', 'aiPracticeWeek', 'aiPracticeWeekSeconds', 'lastPracticeAt',
           'teacherVerified', 'tutorProfile', 'tutorStudentCount', 'tutorMinutesCoached',
           'practiceSlotIds', 'recurringSlots', 'upcomingCall', 'missedSlots', 'introDoneAt', 'suspended', 'suspendedAt',
-          'testAccount'])
+          'testAccount', 'firstPartnerUid', 'firstPartnerAt', 'partnerVerified'])
         // A newly created doc may only self-declare the trial mode, never course.
         && (!request.resource.data.keys().hasAny(['mode']) || request.resource.data.mode == 'trial')
         // The trial clock starts NOW, by the server's clock. Register writes
@@ -983,6 +988,48 @@ service cloud.firestore {
         && request.resource.data.days is map
         && request.resource.data.days.size() <= 200;
       allow delete: if false;
+    }
+
+    // Verified Partner ledger (functions/partnerLedger.js). Written exclusively
+    // by Cloud Functions (Admin SDK: reconcileCallStats and adminAccess); no
+    // client writes so attribution and balances stay auditable.
+    // - `partnerLedger/{partnerUid}` (aggregate owed/paid summary) and
+    //   `referrals/{learnerUid}` ({ firstName, callAtMs, joinedPackage,
+    //   joinedAtMs } — never phone, email, package size, or payment amount)
+    //   are readable by the partner and the admin.
+    // - `entries/{entryId}` holds the admin's per-learner credit and payout
+    //   accounting log (with amounts tied to `first_{learnerUid}`), so it is
+    //   admin-only to prevent inferring a specific learner's package or payment.
+    match /partnerLedger/{partnerUid} {
+      allow read: if isOwnDoc(partnerUid) || isAdmin();
+      allow write: if false;
+
+      match /referrals/{learnerUid} {
+        allow read: if isOwnDoc(partnerUid) || isAdmin();
+        allow write: if false;
+      }
+
+      match /entries/{entryId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // Private admin notes on learners for matching context (never readable or
+    // writable by non-admin users). Allows { note, updatedAt, updatedBy } and
+    // future admin fields while bounding payload size on create/update.
+    function validAdminNote() {
+      let d = request.resource.data;
+      return d.size() <= 20
+        && (!('note' in d) || d.note == null || (d.note is string && d.note.size() <= 5000))
+        && (!('updatedBy' in d) || d.updatedBy == null || (d.updatedBy is string && d.updatedBy.size() <= 128))
+        && (!('updatedAt' in d) || d.updatedAt == null || d.updatedAt is timestamp || d.updatedAt is int
+          || (d.updatedAt is string && d.updatedAt.size() <= 40));
+    }
+
+    match /adminNotes/{uid} {
+      allow read, delete: if isAdmin();
+      allow create, update: if isAdmin() && validAdminNote();
     }
 
     // DİQQƏT: slotRuns üçün də QƏSDƏN match bloku yoxdur — onlar yalnız

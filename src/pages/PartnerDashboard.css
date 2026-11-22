@@ -1,0 +1,212 @@
+/* /partner — SpeakLab Verified Partner dashboard.
+   Plum design system: single purple family, --glass-lift, no glow. */
+
+.pt-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--s-4) var(--s-4) calc(120px + var(--safe-area-bottom, 0px));
+  background: var(--bg-primary);
+  min-height: 100%;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+}
+
+.pt-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+
+.pt-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -8px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+}
+.pt-back:focus-visible { outline: 2px solid var(--accent-ring); }
+
+.pt-top-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pt-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-lift);
+  padding: var(--s-4);
+  margin-bottom: var(--s-3);
+}
+
+.pt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.pt-hero-sub {
+  margin: var(--s-3) 0 var(--s-4);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+
+.pt-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+}
+
+.pt-ledger-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-2);
+  margin: var(--s-3) 0;
+}
+
+.pt-stat-val {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.pt-stat-val small {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.pt-stat-lbl {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pt-sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+
+.pt-sec-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pt-sec-count {
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pt-note {
+  margin: var(--s-2) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+
+.pt-empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+
+.pt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+}
+.pt-row:first-child { border-top: none; padding-top: 2px; }
+.pt-row:last-child { padding-bottom: 0; }
+
+.pt-row-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pt-name {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pt-date {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.pt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+.pt-status.is-joined {
+  background: var(--accent-soft);
+  color: var(--accent);
+}

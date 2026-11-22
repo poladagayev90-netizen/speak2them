@@ -56,8 +56,10 @@ const Feedback = React.lazy(() => import('./pages/Feedback'));
 const DailyHub = React.lazy(() => import('./pages/DailyHub'));
 const Onboarding = React.lazy(() => import('./pages/Onboarding'));
 const IntroBooking = React.lazy(() => import('./pages/IntroBooking'));
+const FirstMatchReveal = React.lazy(() => import('./components/firstRun/FirstMatchReveal'));
 const PlacementTest = React.lazy(() => import('./pages/PlacementTest'));
 const Packages = React.lazy(() => import('./pages/Packages'));
+const PartnerDashboard = React.lazy(() => import('./pages/PartnerDashboard'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const Ranking = React.lazy(importRanking);
 const Plan = React.lazy(importPlan);
@@ -101,8 +103,8 @@ const LIVE_USER_FIELDS = [
   // Set when a newcomer taps "Write to us on WhatsApp"; lifts the /intro redirect.
   'introWhatsAppAt',
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
-  // Admin təsdiq edən kimi Tutor nişanı reload olmadan görünsün.
-  'teacherVerified',
+  // Admin təsdiq edən kimi Tutor və Verified Partner nişanları reload olmadan görünsün.
+  'teacherVerified', 'partnerVerified',
   'preferredLanguage',
   // The warm-up card (useWarmupOffer) reads these: «Not now» and the first
   // real call must move it off Today at once, not after a reload (QA 2026-11-12).
@@ -220,6 +222,8 @@ function AppShell({ user }) {
           {/* Old links (and Register on a stale bundle) still point here. */}
           <Route path="/survey" element={<Navigate to="/onboarding" replace />} />
           <Route path="/intro" element={user ? <IntroBooking user={user} /> : <Navigate to="/login" />} />
+          <Route path="/first-match" element={user ? <FirstMatchReveal user={user} /> : <Navigate to="/login" />} />
+          <Route path="/partner" element={user ? <PartnerDashboard user={user} /> : <Navigate to="/login" />} />
           <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />

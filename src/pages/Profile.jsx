@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Moon, Sun, Bell, Volume2, VolumeX, Radio, BookMarked, Flame, BarChart3,
   Shield, Trash2, LogOut, Pencil, ChevronRight, Signal, Mail, RotateCcw, Trophy,
-  LineChart, Smartphone, ArrowLeft, Fish, MessageSquare, Share2, MonitorPlay,
+  LineChart, Smartphone, ArrowLeft, Fish, MessageSquare, Share2, MonitorPlay, BadgeCheck,
 } from 'lucide-react';
 import { shareApp } from '../utils/shareApp';
 import Card from '../components/ui/Card';
@@ -523,13 +523,20 @@ export default function Profile({ user }) {
       {/* ÖYRƏNMƏ */}
       {sectionLabel('Learning')}
       <div style={listCard}>
+        {(user.partnerVerified === true || isAdminUser(user)) && row({
+          icon: BadgeCheck,
+          label: 'Verified Partner',
+          value: 'Newcomers you welcomed',
+          onClick: () => navigate('/partner'),
+          notLast: true,
+        })}
         {/* Packages (utils/packages.js): shown once there is something to
             show — never during the free practices, and never as a popup. */}
         {showPlanEntry(packages.view, packages.config, isAdminUser(user)) && row({
           icon: Fish,
           label: 'Your plan',
           value: packages.view.kind === 'package' ? `${packages.view.remaining} of ${packages.view.total} practices left`
-            : packages.view.kind === 'none' ? 'Choose a package'
+            : packages.view.kind === 'none' ? (Capacitor.isNativePlatform() ? 'Free practices used' : 'Choose a package')
             : packages.view.kind === 'trial' ? `${packages.view.remaining} free left`
             : 'Unlimited',
           onClick: () => navigate('/packages'),
