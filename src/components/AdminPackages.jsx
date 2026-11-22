@@ -71,7 +71,7 @@ export function BillingSwitch() {
           {config.enforce
             ? 'Planned practice needs a free practice (3) or a package.'
             : 'Counted and shown only — nobody is refused.'}
-          {' '}{config.packages.map((p) => `${p.size}=${p.price}`).join(' · ')} {config.currency}
+          {' '}{config.packages.map((p) => (p.locked ? `${p.size}=locked` : `${p.size}=${p.price}`)).join(' · ')} {config.currency}
         </p>
       </div>
       <button type="button" className={`adm-btn ${config.enforce ? 'adm-btn--danger' : ''}`} disabled={busy} onClick={flip}>
@@ -104,7 +104,7 @@ export function PackageMenu({ uid, summary }) {
   return (
     <select className="adm-btn adm-select" defaultValue="" disabled={busy} onChange={onChange} aria-label="Package">
       <option value="">{busy ? '…' : 'Package'}</option>
-      {config.packages.map((p) => <option key={p.size} value={p.size}>Give {p.size}</option>)}
+      {config.packages.filter((p) => !p.locked).map((p) => <option key={p.size} value={p.size}>Give {p.size}</option>)}
       {summary && summary.kind === 'package' && <option value="revoke">Remove package</option>}
     </select>
   );

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { doc, getDoc } from 'firebase/firestore';
-import { ArrowLeft, CalendarCheck, RotateCcw, PhoneCall, Check, MessageCircle } from 'lucide-react';
+import { ArrowLeft, CalendarCheck, RotateCcw, PhoneCall, Check, MessageCircle, Lock } from 'lucide-react';
 import { db } from '../firebase';
 import usePackages from '../hooks/usePackages';
 import HeroParade, { heroClockStyle } from '../components/plan/HeroFx';
@@ -16,9 +17,11 @@ import './Packages.css';
 
 // /packages — what a learner's planned practice runs on (functions/packages.js).
 // Never opened by the app on its own: Profile shows the way in once the free
-// month is over or a package is held (utils/packages.js showPlanEntry).
-// Paying through Google Play comes later; until then "Get it" opens WhatsApp
-// with the choice written out, and the admin sets the package up.
+// practices are used or a package is held (utils/packages.js showPlanEntry).
+// Google Play anti-steering: inside the Android native app, NO package prices,
+// NO package cards, and NO external buy/checkout links are shown — only the
+// neutral account status ("Your plan · N practices left") and rules. Sales stay
+// on speaklab.me and web.
 
 // One creature per size, growing with the package.
 const CREATURES = [
@@ -57,7 +60,7 @@ function UseRing({ used, reserved, total }) {
   );
 }
 
-function Hero({ view }) {
+function Hero({ view, isNative }) {
   const clock = useMemo(heroClockStyle, []);
   let kicker; let big; let unit; let line;
   if (view.kind === 'package') {
@@ -79,7 +82,9 @@ function Hero({ view }) {
     kicker = 'Your free practices are used';
     big = null;
     unit = null;
-    line = 'Pick a package and your planned practices carry on, with a partner at your level every week.';
+    line = isNative
+      ? 'Your free planned practices are used. Calls with friends and AInur stay free.'
+      : 'Pick a package and your planned practices carry on, with a partner at your level every week.';
   }
   const share = view.kind === 'package' && view.total
     ? Math.min(100, Math.round(((view.used + view.reserved) / view.total) * 100)) : null;
@@ -128,6 +133,7 @@ export default function Packages({ user }) {
   const [params] = useSearchParams();
   const { config, view: liveView, loading } = usePackages(user);
   const isAdmin = isAdminUser(user);
+  const isNative = Capacitor.isNativePlatform();
   const view = (isAdmin && PREVIEWS[params.get('preview')]) || liveView;
   const [weeklyTarget, setWeeklyTarget] = useState(null);
   const [picked, setPicked] = useState(null);
@@ -140,8 +146,9 @@ export default function Packages({ user }) {
   }, [user?.uid]);
 
   const packages = config.packages;
+  const openPackages = packages.filter((p) => !p.locked);
   const fits = fitsWeek(packages, weeklyTarget || 2);
-  const chosen = packages.find((p) => p.size === (picked || fits)) || packages[0];
+  const chosen = openPackages.find((p) => p.size === (picked || fits)) || openPackages[0] || null;
   const isRenewal = view.kind === 'package';
 
   return (
@@ -153,11 +160,11 @@ export default function Packages({ user }) {
         <h2 className="pk-top-title">Your plan</h2>
       </header>
 
-      {loading && !params.get('preview') ? <div className="pk-skeleton" aria-hidden="true" /> : <Hero view={view} />}
+      {loading && !params.get('preview') ? <div className="pk-skeleton" aria-hidden="true" /> : <Hero view={view} isNative={isNative} />}
 
       {view.kind === 'package' && <ThisPeriod view={view} />}
 
-      {view.kind !== 'unlimited' && (
+      {!isNative && view.kind !== 'unlimited' && (
         <>
           <div className="pk-section-head">
             <h3>{isRenewal ? 'Add a package' : 'Packages'}</h3>
@@ -167,42 +174,64 @@ export default function Packages({ user }) {
           <div className="pk-grid" role="radiogroup" aria-label="Packages">
             {packages.map((p, i) => {
               const { Svg, width, name } = CREATURES[Math.min(i, CREATURES.length - 1)];
-              const on = p.size === chosen.size;
+              const locked = p.locked === true;
+              const on = !locked && chosen && p.size === chosen.size;
+              const unitCost = perPractice(p);
               return (
                 <button
                   key={p.size}
                   type="button"
                   role="radio"
                   aria-checked={on}
-                  className={`pk-pack${on ? ' is-on' : ''}`}
-                  onClick={() => setPicked(p.size)}
+                  disabled={locked}
+                  aria-disabled={locked || undefined}
+                  className={`pk-pack${on ? ' is-on' : ''}${locked ? ' is-locked' : ''}`}
+                  onClick={() => { if (!locked) setPicked(p.size); }}
                 >
-                  {p.size === fits && <span className="pk-fits">Fits your week</span>}
+                  {!locked && p.size === fits && <span className="pk-fits">Fits your week</span>}
+                  {locked && (
+                    <span className="pk-locked-tag">
+                      <Lock size={11} strokeWidth={2.5} aria-hidden="true" /> Coming soon
+                    </span>
+                  )}
                   <span className={`pk-creature pk-creature--${name.toLowerCase()}`} aria-hidden="true">
                     <span className="pk-creature-bob"><Svg width={width} eye="var(--pk-sea)" /></span>
                   </span>
                   <span className="pk-pack-size">{p.size}</span>
                   <span className="pk-pack-unit">practices · ≈ {perWeekOf(p.size)} a week</span>
-                  <span className="pk-pack-price">
-                    {formatPrice(p.price)} <small>{config.currency}</small>
-                  </span>
-                  <span className="pk-pack-per">{formatPrice(perPractice(p))} {config.currency} a practice</span>
-                  <span className="pk-pack-check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
+                  {locked ? (
+                    <>
+                      <span className="pk-pack-price pk-pack-price--locked">Locked</span>
+                      <span className="pk-pack-per">Opening soon</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="pk-pack-price">
+                        {formatPrice(p.price)} <small>{config.currency}</small>
+                      </span>
+                      <span className="pk-pack-per">{formatPrice(unitCost)} {config.currency} a practice</span>
+                      <span className="pk-pack-check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
+                    </>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          <a
-            className="pk-cta"
-            href={whatsappLink(packageMessage({ name: user?.name, size: chosen.size, price: chosen.price, currency: config.currency }))}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <MessageCircle size={18} aria-hidden="true" />
-            Get {chosen.size} practices · {formatPrice(chosen.price)} {config.currency}
-          </a>
-          <p className="pk-cta-note">The team sets it up for you on WhatsApp. Paying in the app through Google Play is coming.</p>
+          {chosen && (
+            <>
+              <a
+                className="pk-cta"
+                href={whatsappLink(packageMessage({ name: user?.name, size: chosen.size, price: chosen.price, currency: config.currency }))}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle size={18} aria-hidden="true" />
+                Get {chosen.size} practices · {formatPrice(chosen.price)} {config.currency}
+              </a>
+              <p className="pk-cta-note">Packages are arranged on speaklab.me and set up by the team.</p>
+            </>
+          )}
         </>
       )}
 

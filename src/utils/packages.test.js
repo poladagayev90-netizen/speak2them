@@ -7,9 +7,13 @@ const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.parse('2026-10-21T12:00:00+04:00');
 const cfg = billingConfig({});
 
-test('defaults: switched off, 8/12/16/20 for 6/8/10/12', () => {
+test('defaults: switched off, 4=6, 8=10, 12 locked with hidden price', () => {
   expect(cfg.enforce).toBe(false);
-  expect(cfg.packages.map((p) => [p.size, p.price])).toEqual([[8, 6], [12, 8], [16, 10], [20, 12]]);
+  expect(cfg.packages.map((p) => [p.size, p.price, !!p.locked])).toEqual([
+    [4, 6, false],
+    [8, 10, false],
+    [12, null, true],
+  ]);
 });
 
 test('unlimited mirrors the server', () => {
@@ -41,11 +45,13 @@ test('the plan entry stays hidden during the free weeks', () => {
   expect(outOfPractices({ kind: 'package', remaining: 0 }, cfg)).toBe(false);
 });
 
-test('the package that fits the chosen week', () => {
+test('the package that fits the chosen week (skips locked packages)', () => {
+  expect(fitsWeek(cfg.packages, 1)).toBe(4);
   expect(fitsWeek(cfg.packages, 2)).toBe(8);
-  expect(fitsWeek(cfg.packages, 3)).toBe(12);
-  expect(fitsWeek(cfg.packages, 5)).toBe(20);
-  expect(fitsWeek(cfg.packages, 9)).toBe(20);
-  expect(formatPrice(perPractice({ size: 8, price: 6 }))).toBe('0.75');
-  expect(formatPrice(12)).toBe('12');
+  expect(fitsWeek(cfg.packages, 3)).toBe(8);
+  expect(fitsWeek(cfg.packages, 5)).toBe(8);
+  expect(formatPrice(perPractice({ size: 4, price: 6 }))).toBe('1.50');
+  expect(formatPrice(perPractice({ size: 8, price: 10 }))).toBe('1.25');
+  expect(perPractice({ size: 12, price: null, locked: true })).toBeNull();
+  expect(formatPrice(10)).toBe('10');
 });

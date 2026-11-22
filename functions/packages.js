@@ -17,10 +17,9 @@ const WEEK_MS = 7 * DAY_MS;
 const BAKU_OFFSET_MS = 4 * 60 * 60 * 1000;
 
 const DEFAULT_PACKAGES = [
-  { size: 8, price: 6, productId: 'practice_8' },
-  { size: 12, price: 8, productId: 'practice_12' },
-  { size: 16, price: 10, productId: 'practice_16' },
-  { size: 20, price: 12, productId: 'practice_20' },
+  { size: 4, price: 6, productId: 'practice_4' },
+  { size: 8, price: 10, productId: 'practice_8' },
+  { size: 12, price: null, locked: true, productId: 'practice_12' },
 ];
 
 const msOf = (v) => {
@@ -38,7 +37,10 @@ function billingConfig(raw = {}) {
   const r = raw || {};
   const packages = Array.isArray(r.packages) && r.packages.length
     ? r.packages.filter((p) => Number(p.size) > 0).map((p) => ({
-      size: Number(p.size), price: Number(p.price) || 0, productId: p.productId || `practice_${p.size}`,
+      size: Number(p.size),
+      price: p.locked === true ? null : (Number(p.price) || 0),
+      ...(p.locked === true ? { locked: true } : {}),
+      productId: p.productId || `practice_${p.size}`,
     }))
     : DEFAULT_PACKAGES;
   return {
@@ -174,7 +176,8 @@ function canBookAt(state, startMs) {
 function grantPackage({ size, nowMs = Date.now(), config, previous = null, source = 'admin', ref = null }) {
   const cfg = config || billingConfig();
   const n = Number(size);
-  if (!cfg.packages.some((p) => p.size === n)) throw new Error('unknown-package');
+  const found = cfg.packages.find((p) => p.size === n);
+  if (!found || found.locked === true) throw new Error('unknown-package');
   let carriedIn = 0;
   if (previous && previous.kind === 'package') {
     if (nowMs < previous.periodEndMs) carriedIn = previous.remaining;

@@ -78,7 +78,7 @@
 .pk-section-head p { margin: 4px 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--text-secondary); }
 
 .pk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
-@media (min-width: 900px) { .pk-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 900px) { .pk-grid { grid-template-columns: repeat(3, 1fr); } }
 
 .pk-pack {
   --pk-sea: var(--bg-card);
@@ -99,6 +99,18 @@
 .pk-pack:active { transform: scale(.985); }
 .pk-pack:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 2px; }
 .pk-pack.is-on { border-color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent) inset, var(--glass-lift); }
+.pk-pack.is-locked { opacity: .68; cursor: not-allowed; }
+.pk-pack.is-locked:hover { border-color: var(--border); }
+.pk-pack.is-locked:active { transform: none; }
+.pk-locked-tag {
+  position: absolute; top: -9px; right: 10px; z-index: 1;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: var(--r-pill);
+  background: var(--accent-soft); color: var(--accent);
+  border: 1px solid var(--border);
+  font-size: var(--fs-xs); font-weight: 800; letter-spacing: .02em;
+}
+.pk-pack-price--locked { color: var(--text-muted); font-size: var(--fs-body); }
 
 /* The creature's pool: a soft tile of the one purple, the animal in --accent. */
 .pk-creature {

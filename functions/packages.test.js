@@ -102,21 +102,25 @@ test('an expired package is none; a Pro learner is never counted', () => {
 
 test('renewing: everything left moves over early, only refunds after the end', () => {
   const running = { kind: 'package', remaining: 5, returned: 3, periodEndMs: NOW + DAY };
-  assert.strictEqual(P.grantPackage({ size: 12, nowMs: NOW, config: cfg, previous: running }).carriedIn, 5);
+  assert.strictEqual(P.grantPackage({ size: 8, nowMs: NOW, config: cfg, previous: running }).carriedIn, 5);
   const ended = { kind: 'package', remaining: 5, returned: 3, periodEndMs: NOW - DAY };
-  assert.strictEqual(P.grantPackage({ size: 12, nowMs: NOW, config: cfg, previous: ended }).carriedIn, 3);
+  assert.strictEqual(P.grantPackage({ size: 8, nowMs: NOW, config: cfg, previous: ended }).carriedIn, 3);
   const many = { kind: 'package', remaining: 9, returned: 7, periodEndMs: NOW - DAY };
-  assert.strictEqual(P.grantPackage({ size: 8, nowMs: NOW, config: cfg, previous: many }).carriedIn, 4);
+  assert.strictEqual(P.grantPackage({ size: 4, nowMs: NOW, config: cfg, previous: many }).carriedIn, 4);
   const long = { kind: 'package', remaining: 5, returned: 3, periodEndMs: NOW - 60 * DAY };
-  assert.strictEqual(P.grantPackage({ size: 8, nowMs: NOW, config: cfg, previous: long }).carriedIn, 0);
-  const g = P.grantPackage({ size: 16, nowMs: NOW, config: cfg });
+  assert.strictEqual(P.grantPackage({ size: 4, nowMs: NOW, config: cfg, previous: long }).carriedIn, 0);
+  const g = P.grantPackage({ size: 8, nowMs: NOW, config: cfg });
   assert.strictEqual(g.endsMs - g.startsMs, 30 * DAY);
+  assert.throws(() => P.grantPackage({ size: 12, nowMs: NOW, config: cfg }), /unknown-package/); // locked
   assert.throws(() => P.grantPackage({ size: 7, nowMs: NOW, config: cfg }), /unknown-package/);
 });
 
-test('config defaults: switched off, 6/8/10/12 AZN', () => {
+test('config defaults: switched off, 4=6 AZN, 8=10 AZN, 12 locked (price hidden)', () => {
   assert.strictEqual(cfg.enforce, false);
-  assert.deepStrictEqual(cfg.packages.map((p) => [p.size, p.price]), [[8, 6], [12, 8], [16, 10], [20, 12]]);
+  assert.deepStrictEqual(
+    cfg.packages.map((p) => [p.size, p.price, !!p.locked]),
+    [[4, 6, false], [8, 10, false], [12, null, true]],
+  );
   assert.strictEqual(P.billingConfig({ carryMax: 0 }).carryMax, 0);
 });
 

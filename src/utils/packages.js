@@ -7,10 +7,9 @@ import { ADMIN_UID } from '../constants';
 
 
 export const DEFAULT_PACKAGES = [
-  { size: 8, price: 6, productId: 'practice_8' },
-  { size: 12, price: 8, productId: 'practice_12' },
-  { size: 16, price: 10, productId: 'practice_16' },
-  { size: 20, price: 12, productId: 'practice_20' },
+  { size: 4, price: 6, productId: 'practice_4' },
+  { size: 8, price: 10, productId: 'practice_8' },
+  { size: 12, price: null, locked: true, productId: 'practice_12' },
 ];
 
 const msOf = (v) => {
@@ -25,7 +24,10 @@ export function billingConfig(raw = {}) {
   const r = raw || {};
   const packages = Array.isArray(r.packages) && r.packages.length
     ? r.packages.filter((p) => Number(p.size) > 0).map((p) => ({
-      size: Number(p.size), price: Number(p.price) || 0, productId: p.productId || `practice_${p.size}`,
+      size: Number(p.size),
+      price: p.locked === true ? null : (Number(p.price) || 0),
+      ...(p.locked === true ? { locked: true } : {}),
+      productId: p.productId || `practice_${p.size}`,
     }))
     : DEFAULT_PACKAGES;
   return {
@@ -85,17 +87,17 @@ export function outOfPractices(view, config) {
   return !!(config && config.enforce && view && (view.kind === 'none' || (view.kind === 'package' && view.remaining <= 0)));
 }
 
-export const perPractice = (p) => (p.size ? p.price / p.size : 0);
+export const perPractice = (p) => (p && p.size && p.price != null && !p.locked ? p.price / p.size : null);
 
-export const formatPrice = (n) => (Math.round(n * 100) / 100).toFixed(Number.isInteger(n) ? 0 : 2);
+export const formatPrice = (n) => (n == null || !Number.isFinite(n) ? '' : (Math.round(n * 100) / 100).toFixed(Number.isInteger(n) ? 0 : 2));
 
 // Roughly how many a week a month's package gives.
-export const perWeekOf = (size) => Math.round(size / 4);
+export const perWeekOf = (size) => Math.max(1, Math.round(size / 4));
 
-// The package that fits the week the learner chose in onboarding.
+// The unlocked package that fits the week the learner chose in onboarding.
 export function fitsWeek(packages, weeklyTarget) {
   const want = Math.max(1, Number(weeklyTarget) || 0) * 4;
-  const list = [...(packages || [])].sort((a, b) => a.size - b.size);
+  const list = [...(packages || [])].filter((p) => !p.locked).sort((a, b) => a.size - b.size);
   if (!list.length) return null;
   return (list.find((p) => p.size >= want) || list[list.length - 1]).size;
 }
