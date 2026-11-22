@@ -72,15 +72,17 @@ export function weekGoal({ onboarding, weekKey, limitTarget = null }) {
 export function planHeadline({
   uid, bookings, offers, planStatus, onboarding, attended = 0, weekKey, now = Date.now(), autoMode = false,
 }) {
+  // An upcoming confirmed booking ALWAYS takes the hero card — even for admins
+  // or teachers who have no learner onboarding document.
+  const next = upcomingBookings(bookings, now)[0] || null;
+  if (next) return { kind: 'next', booking: next, ...peerOf(next, uid), joinable: canJoin(next, now) };
+
   const ob = onboarding || null;
   const asked = Math.max(0, Number(ob?.weeklyTarget) || 0);
   // Under a limit the week's goal is what the plan can actually give.
   const limited = !!planStatus?.limit?.active;
   const hasTimes = Array.isArray(ob?.availability) && ob.availability.length > 0;
   if (!ob || !hasTimes || !asked || !ob.charterAcceptedAt) return { kind: 'setup' };
-
-  const next = upcomingBookings(bookings, now)[0] || null;
-  if (next) return { kind: 'next', booking: next, ...peerOf(next, uid), joinable: canJoin(next, now) };
 
   const open = openOffers(offers, uid, now);
   if (open.length) return { kind: 'answer', count: open.length };

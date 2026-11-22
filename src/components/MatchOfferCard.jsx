@@ -34,7 +34,6 @@ function OfferItem({ offer, uid }) {
   const mine = (offer.responses || {})[uid];
   const isA = offer.userA === uid;
   const peerName = (isA ? offer.nameB : offer.nameA) || 'your partner';
-  const peerLevel = isA ? offer.levelB : offer.levelA;
   const { day, time } = localBlockLabel(Number(offer.startMs));
   const [start, end] = time.split('–');
   const initial = String(peerName).charAt(0).toUpperCase();
@@ -85,7 +84,6 @@ function OfferItem({ offer, uid }) {
       <div className="mo-person">
         <span className="mo-avatar mo-avatar--hero" aria-hidden="true">{initial}</span>
         <span className="mo-person-name">{peerName}</span>
-        {peerLevel && <span className="pl-level">{String(peerLevel).slice(0, 2)}</span>}
       </div>
       {offer.note && <p className="mo-note">{offer.note}</p>}
 

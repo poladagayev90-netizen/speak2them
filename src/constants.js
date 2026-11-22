@@ -1,10 +1,13 @@
 export const ADMIN_UID = '6Djehd9KB8dTZUgVwVJfLoPI5dF3';
+// Polad's primary account (poladagayev90@gmail.com) — hosts first-match calls.
+export const FOUNDER_HOST_UID = 'TjfuOekZHIcxIG5QuLcHUwYkz053';
+export const ADMIN_UIDS = [ADMIN_UID, FOUNDER_HOST_UID];
 // A second admin account (Polad 2026-10-07) is recognised by its VERIFIED
 // e-mail — the same list as firestore.rules isAdmin() and functions/index.js
 // ADMIN_EMAILS. ADMIN_UID stays the admin IDENTITY (the admin's own students,
 // pushes, unlimited practice); this decides who may open the admin tools.
 export const ADMIN_EMAILS = ['poladagayev90@gmail.com', 'agayevpoli7@gmail.com'];
-export const isAdminUser = (user) => !!user && (user.uid === ADMIN_UID
+export const isAdminUser = (user) => !!user && (ADMIN_UIDS.includes(user.uid)
   || (user.emailVerified === true && ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())));
 
 // REACT_APP_FUNCTIONS_BASE exists only for local emulator builds (see firebase.js).

@@ -1,4 +1,4 @@
-import { ADMIN_UID } from '../constants';
+import { ADMIN_UIDS } from '../constants';
 
 // Practice packages — the display half of functions/packages.js (keep the
 // two in step). The server derives the balance from bookings and writes a
@@ -43,7 +43,7 @@ export function billingConfig(raw = {}) {
 // The same exemptions as the server's isUnlimited.
 export function isUnlimited(user, nowMs = Date.now()) {
   const u = user || {};
-  if ((u.uid || u.id) === ADMIN_UID) return true;
+  if (ADMIN_UIDS.includes(u.uid || u.id)) return true;
   if (u.isPremium === true) return true;
   if (['pending', 'accepted', 'active'].includes(u.cohortStatus)) return true;
   if (msOf(u.freeAccessUntil) > nowMs) return true;

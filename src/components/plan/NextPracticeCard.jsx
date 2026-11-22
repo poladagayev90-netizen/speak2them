@@ -100,7 +100,6 @@ export default function NextPracticeCard({ uid, headline, now, limit, noPractice
         <p className="pl-when">{whenText(lang, b.startMs, now)}</p>
         <p className="pl-with">
           {t('next.with')} <b>{h.peerName}</b>
-          {h.peerLevel && <span className="pl-level">{String(h.peerLevel).slice(0, 2)}</span>}
         </p>
         <div className="pl-actions">
           {h.joinable && (

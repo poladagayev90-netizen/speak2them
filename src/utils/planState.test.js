@@ -7,10 +7,12 @@ const booking = (startMs, over = {}) => ({ status: 'confirmed', startMs, partici
 const offer = (startMs, over = {}) => ({ startMs, responses: { me: 'pending', zed: 'pending' }, ...over });
 const base = { uid: 'me', bookings: [], offers: [], planStatus: null, onboarding: ob, attended: 0, weekKey: '2026-10-05', now };
 
-test('no plan set up (no times, no target, or no charter) asks to set it up', () => {
+test('no plan set up (no times, no target, or no charter) asks to set it up — unless a booking exists', () => {
   expect(planHeadline({ ...base, onboarding: null }).kind).toBe('setup');
   expect(planHeadline({ ...base, onboarding: { ...ob, availability: [] } }).kind).toBe('setup');
   expect(planHeadline({ ...base, onboarding: { ...ob, charterAcceptedAt: null } }).kind).toBe('setup');
+  // Admins and teachers have no onboarding doc, yet still see their booked practice in the hero card.
+  expect(planHeadline({ ...base, onboarding: null, bookings: [booking(now + 4 * H)] }).kind).toBe('next');
 });
 
 test('the nearest booking wins, even over open proposals', () => {

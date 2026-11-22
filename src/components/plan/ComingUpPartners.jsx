@@ -25,12 +25,12 @@ export default function ComingUpPartners({ uid }) {
       <p className="ui-section-label" style={{ margin: 0 }}>Coming up</p>
       <ul className="pl-cu-list">
         {coming.map((b) => {
-          const { peerUid, peerName, peerLevel } = peerOf(b, uid);
+          const { peerUid, peerName } = peerOf(b, uid);
           return (
             <li key={b.id} className="pl-cu-row">
               <span className="pl-ticket-avatar" aria-hidden="true">{String(peerName || '?').charAt(0).toUpperCase()}</span>
               <span className="pl-cu-main">
-                <b>{peerName}</b>{peerLevel && <span className="pl-level">{String(peerLevel).slice(0, 2)}</span>}
+                <b>{peerName}</b>
                 <span className="pl-cu-when">{comingUpLabel(b.startMs, now)}</span>
               </span>
               <span className="pl-cu-actions">

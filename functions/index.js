@@ -112,6 +112,9 @@ const AGORA_APP_ID = defineString("AGORA_APP_ID", {
 const GROQ_CHAT_MODEL = "openai/gpt-oss-20b";
 
 const ADMIN_UID = "6Djehd9KB8dTZUgVwVJfLoPI5dF3";
+// Polad's primary account (poladagayev90@gmail.com) — hosts first-match calls.
+const FOUNDER_HOST_UID = "TjfuOekZHIcxIG5QuLcHUwYkz053";
+const ADMIN_UIDS = [ADMIN_UID, FOUNDER_HOST_UID];
 // Ops xəbərdarlıqlarının getdiyi əsas qutu (ADMIN_UID sənədindəki e-poçt
 // başqa hesaba aiddir, ona görə açıq yazılır).
 const OPS_ALERT_EMAIL = "poladagayev90@gmail.com";
@@ -459,7 +462,7 @@ exports.adminAccess = onRequest({ secrets: [], invoker: "public" }, async (req, 
     // proposals with real learners are cancelled when the flag goes on.
     if (action === "setTest") {
       const on = body.on === true;
-      if (on && uid === ADMIN_UID) return res.status(400).json({ error: "cannot-flag-admin" });
+      if (on && ADMIN_UIDS.includes(uid)) return res.status(400).json({ error: "cannot-flag-admin" });
       await db.collection("users").doc(uid).set({ testAccount: on ? true : admin.firestore.FieldValue.delete() }, { merge: true });
       let cancelled = { cancelledBookings: 0, cancelledOffers: 0 };
       if (on) {
@@ -1537,7 +1540,7 @@ async function stampFirstPartnerAfterCall(db, participants, callSeconds, callAtM
   if ((Number(callSeconds) || 0) < partnerLedgerLib.FIRST_PARTNER_MIN_SEC) return;
   const [x, y] = participants;
   const hostUids = await newcomerHostUids(db);
-  const activePartners = new Set([ADMIN_UID, ...hostUids]);
+  const activePartners = new Set([...ADMIN_UIDS, ...hostUids]);
   const [px, py] = await Promise.all([
     db.collection("partnerLedger").doc(x).get().catch(() => null),
     db.collection("partnerLedger").doc(y).get().catch(() => null),
@@ -1547,7 +1550,7 @@ async function stampFirstPartnerAfterCall(db, participants, callSeconds, callAtM
   const activeList = [...activePartners];
 
   for (const [learnerUid, partnerUid] of [[x, y], [y, x]]) {
-    if (learnerUid === ADMIN_UID || activePartners.has(learnerUid)) continue;
+    if (ADMIN_UIDS.includes(learnerUid) || activePartners.has(learnerUid)) continue;
     if (!activePartners.has(partnerUid)) continue;
     const learnerRef = db.collection("users").doc(learnerUid);
     const ledgerRef = db.collection("partnerLedger").doc(partnerUid);
@@ -3607,7 +3610,7 @@ async function pairVerdict(db, get, uidA, uidB, { known = {}, checkLevel = true,
 // own students, not everyone's. getAgoraToken and canPair both use this, so
 // the pre-check and the real gate can never disagree again.
 function isSupervisedPair(uidA, uidB, a, b) {
-  return uidA === ADMIN_UID || uidB === ADMIN_UID
+  return ADMIN_UIDS.includes(uidA) || ADMIN_UIDS.includes(uidB)
     || (a || {}).teacherId === uidB || (b || {}).teacherId === uidA;
 }
 
@@ -5806,7 +5809,7 @@ async function afterDirectBook(db, pair, r) {
 // HTTP response so the client never waits for syncUpcomingCall.
 async function loadInstantHosts(db, nowMs) {
   const cfg = await plannerConfig(db);
-  const parsed = instantMatchLib.parseHostConfigs(cfg.newcomerHosts, ADMIN_UID);
+  const parsed = instantMatchLib.parseHostConfigs(cfg.newcomerHosts, ADMIN_UID, ADMIN_UIDS);
   if (!parsed.length) return { hosts: [], hostBookings: new Map() };
   const [uSnaps, oSnaps] = await Promise.all([
     db.getAll(...parsed.map((h) => db.collection("users").doc(h.uid))),
@@ -5848,6 +5851,7 @@ function serializeInstantBooking(b, learnerUid, hostInfo) {
     name: (b.names || {})[peerUid] || hostInfo?.name || "",
     isFounder: hostInfo?.isFounder === true,
     adminUid: ADMIN_UID,
+    adminUids: ADMIN_UIDS,
     label: hostInfo?.label || null,
   });
   return {
@@ -5905,6 +5909,7 @@ exports.matchNewcomerNow = onRequest({ secrets: [], invoker: "public" }, async (
       hostBookings,
       nowMs,
       adminUid: ADMIN_UID,
+      adminUids: ADMIN_UIDS,
     });
 
     // Determine ordered candidates to try inside ONE transaction.
@@ -5917,7 +5922,7 @@ exports.matchNewcomerNow = onRequest({ secrets: [], invoker: "public" }, async (
       if (!slot || !host || slot.startMs <= nowMs + 30 * 60 * 1000) {
         return res.status(400).json({ error: "invalid-slot" });
       }
-      candidates = [{ slotId, startMs: slot.startMs, hostUid, ...instantMatchLib.hostPresentation({ ...host, adminUid: ADMIN_UID }) }];
+      candidates = [{ slotId, startMs: slot.startMs, hostUid, ...instantMatchLib.hostPresentation({ ...host, adminUid: ADMIN_UID, adminUids: ADMIN_UIDS }) }];
     } else {
       candidates = plan.candidates.slice(0, 6);
     }
@@ -5985,7 +5990,15 @@ exports.matchNewcomerNow = onRequest({ secrets: [], invoker: "public" }, async (
         if (effectiveHostNear.length > 0) return { retry: "host-busy" };
 
         const a = aSnap.data() || {};
-        const b = bSnap.data() || {};
+        const rawB = bSnap.data() || {};
+        const hostPres = instantMatchLib.hostPresentation({
+          ...host,
+          name: rawB.name || host.name || "",
+          adminUid: ADMIN_UID,
+          adminUids: ADMIN_UIDS,
+        });
+        // Team/first-match host shows clean first name (never "teacher") and no level badge.
+        const b = { ...rawB, name: hostPres.hostName, level: null };
         const planWeek = bakuWeekKey(slot.startMs);
         const booked = await bookPairTx(db, tx, {
           uidA: uid,

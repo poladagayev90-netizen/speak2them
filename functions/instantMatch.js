@@ -26,9 +26,16 @@ const clampInt = (v, min, max, fallback) => {
   return Number.isFinite(n) && n >= min && n <= max ? n : fallback;
 };
 
+const isAdminUid = (uid, adminUid = null, adminUids = null) => {
+  if (!uid) return false;
+  if (adminUid && uid === adminUid) return true;
+  if (Array.isArray(adminUids) && adminUids.includes(uid)) return true;
+  return false;
+};
+
 // Parse appConfig/planner.newcomerHosts entries cleanly.
 // Backward-compatible with string uids and { uid, hours } objects.
-function parseHostConfigs(raw, adminUid = null) {
+function parseHostConfigs(raw, adminUid = null, adminUids = null) {
   if (!Array.isArray(raw)) return [];
   const out = [];
   const seen = new Set();
@@ -38,7 +45,7 @@ function parseHostConfigs(raw, adminUid = null) {
     seen.add(uid);
     const obj = typeof e === 'object' && e ? e : {};
     const hours = obj.hours ? parseHours(obj.hours) : null;
-    const isFounder = obj.isFounder === true || (!!adminUid && uid === adminUid);
+    const isFounder = obj.isFounder === true || isAdminUid(uid, adminUid, adminUids);
     out.push({
       uid,
       hours,
@@ -54,8 +61,8 @@ function parseHostConfigs(raw, adminUid = null) {
 
 // Honest host presentation: Polad is always "Polad · SpeakLab team", never a
 // fake student profile; other hosts are "<First name> · Verified Partner".
-function hostPresentation({ uid, name = '', isFounder = false, adminUid = null, label = null }) {
-  const founder = isFounder || (!!adminUid && uid === adminUid);
+function hostPresentation({ uid, name = '', isFounder = false, adminUid = null, adminUids = null, label = null }) {
+  const founder = isFounder || isAdminUid(uid, adminUid, adminUids);
   if (founder) {
     return {
       hostName: 'Polad',
@@ -133,7 +140,7 @@ function openHostSlots(host, dates, bookings, nowMs) {
 //     candidates: [{ slotId, startMs, hostUid, hostName, hostBadge, hostLabel, isFounder }],
 //     alternatives: [...] (up to 3 distinct slots for "Pick another time" / Tier 3 pick)
 //   }
-function planInstantMatch({ learner, hosts = [], hostBookings = new Map(), nowMs = Date.now(), adminUid = null }) {
+function planInstantMatch({ learner, hosts = [], hostBookings = new Map(), nowMs = Date.now(), adminUid = null, adminUids = null }) {
   if (!learner || !hosts.length) return { tier: 0, candidates: [], alternatives: [] };
   const dates = upcomingBakuDates(nowMs, HORIZON_DAYS);
 
@@ -144,7 +151,7 @@ function planInstantMatch({ learner, hosts = [], hostBookings = new Map(), nowMs
     if (!h || !h.uid || h.uid === learner.uid) return false;
     if (learner.teacherId && learner.teacherId === h.uid) return false;
     if (learner.minor) {
-      const supervised = h.isFounder || (!!adminUid && h.uid === adminUid);
+      const supervised = h.isFounder || isAdminUid(h.uid, adminUid, adminUids);
       if (!supervised && !h.minor) return false;
     }
     return true;
@@ -154,7 +161,7 @@ function planInstantMatch({ learner, hosts = [], hostBookings = new Map(), nowMs
   const hostSlotPool = [];
   for (const h of eligibleHosts) {
     const bks = hostBookings.get(h.uid) || [];
-    for (const s of openHostSlots({ ...h, adminUid }, dates, bks, nowMs)) {
+    for (const s of openHostSlots({ ...h, adminUid, adminUids }, dates, bks, nowMs)) {
       hostSlotPool.push(s);
     }
   }

@@ -30,7 +30,7 @@ export default function BookingRow({ booking, uid, now, autoOpen = null, onboard
   const [more, setMore] = useState(!!autoOpen);
   const [notice, setNotice] = useState(null);
   const [askWhy, setAskWhy] = useState(null);
-  const { peerUid, peerName, peerLevel } = peerOf(booking, uid);
+  const { peerUid, peerName } = peerOf(booking, uid);
   const ref = useRef(null);
   useEffect(() => {
     if (autoOpen && ref.current?.scrollIntoView) ref.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -75,7 +75,6 @@ export default function BookingRow({ booking, uid, now, autoOpen = null, onboard
       <p className="pl-ticket-person">
         <span className="pl-ticket-avatar" aria-hidden="true">{String(peerName || '?').charAt(0).toUpperCase()}</span>
         <b>{peerName}</b>
-        {peerLevel && <span className="pl-level">{String(peerLevel).slice(0, 2)}</span>}
       </p>
       <div className="pl-actions">
         {joinable && (

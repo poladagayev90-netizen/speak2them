@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
-import { CalendarClock, Check, ChevronDown } from 'lucide-react';
+import { CalendarClock, Check, CheckCircle2, ChevronDown } from 'lucide-react';
 import { db } from '../firebase';
-import { ADMIN_UID } from '../constants';
+import { ADMIN_UID, ADMIN_UIDS, FOUNDER_HOST_UID } from '../constants';
 import { Button } from './ui';
 import TimeGrid from './plan/TimeGrid';
 import './AdminHostSchedule.css';
@@ -44,8 +44,14 @@ function setToHoursMap(cellSet) {
 }
 
 // Admin → Matching: Polad's free Baku hours for automatic first-match booking
-// (appConfig/planner.newcomerHosts). Keeps any other configured Verified
-// Partners intact while updating the admin host entry + caps.
+// (appConfig/planner.newcomerHosts). Stored under FOUNDER_HOST_UID
+// (poladagayev90@gmail.com — primary account), while keeping other configured
+// Verified Partners intact.
+const isFounderEntry = (e) => {
+  const uid = typeof e === 'string' ? e : (e && e.uid);
+  return !!uid && (ADMIN_UIDS.includes(uid) || (typeof e === 'object' && e.isFounder === true));
+};
+
 export default function AdminHostSchedule() {
   const [open, setOpen] = useState(false);
   const [rawHosts, setRawHosts] = useState([]);
@@ -53,13 +59,20 @@ export default function AdminHostSchedule() {
   const [maxPerDay, setMaxPerDay] = useState(2);
   const [minLeadHours, setMinLeadHours] = useState(2);
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [status, setStatus] = useState(null); // { ok, text }
+  const savedTimer = useRef(null);
+
+  useEffect(() => () => { if (savedTimer.current) clearTimeout(savedTimer.current); }, []);
 
   useEffect(() => onSnapshot(doc(db, 'appConfig', 'planner'), (snap) => {
     const d = snap.exists() ? (snap.data() || {}) : {};
     const list = Array.isArray(d.newcomerHosts) ? d.newcomerHosts : [];
     setRawHosts(list);
-    const mine = list.find((e) => (typeof e === 'string' ? e === ADMIN_UID : e && e.uid === ADMIN_UID));
+    // Prefer primary account (poladagayev90), fall back to legacy ADMIN_UID so
+    // previously saved hours stay visible and migrate cleanly on Save.
+    const mine = list.find((e) => (typeof e === 'string' ? e === FOUNDER_HOST_UID : e && e.uid === FOUNDER_HOST_UID))
+      || list.find((e) => (typeof e === 'string' ? e === ADMIN_UID : e && e.uid === ADMIN_UID));
     if (mine && typeof mine === 'object') {
       setCells(entryToSet(mine.hours));
       if (Number(mine.maxPerDay) > 0) setMaxPerDay(Math.min(6, Math.max(1, Number(mine.maxPerDay))));
@@ -71,12 +84,13 @@ export default function AdminHostSchedule() {
 
   const totalHours = cells.size;
   const otherHostsCount = useMemo(
-    () => rawHosts.filter((e) => (typeof e === 'string' ? e !== ADMIN_UID : e && e.uid && e.uid !== ADMIN_UID)).length,
+    () => rawHosts.filter((e) => !isFounderEntry(e) && !!(typeof e === 'string' ? e : e?.uid)).length,
     [rawHosts],
   );
 
   const toggle = (wd, h) => {
     setStatus(null);
+    setJustSaved(false);
     setCells((prev) => {
       const next = new Set(prev);
       const k = `${wd}-${h}`;
@@ -88,11 +102,12 @@ export default function AdminHostSchedule() {
   const save = async () => {
     setSaving(true);
     setStatus(null);
+    setJustSaved(false);
     try {
-      const others = rawHosts.filter((e) => (typeof e === 'string' ? e !== ADMIN_UID : e && e.uid && e.uid !== ADMIN_UID));
+      const others = rawHosts.filter((e) => !isFounderEntry(e) && !!(typeof e === 'string' ? e : e?.uid));
       const hours = setToHoursMap(cells);
       const adminEntry = {
-        uid: ADMIN_UID,
+        uid: FOUNDER_HOST_UID,
         hours,
         maxPerDay: Math.min(6, Math.max(1, Number(maxPerDay) || 2)),
         minLeadHours: Math.min(12, Math.max(1, Number(minLeadHours) || 2)),
@@ -104,7 +119,15 @@ export default function AdminHostSchedule() {
         newcomerHosts,
         hostScheduleUpdatedAt: serverTimestamp(),
       }, { merge: true });
-      setStatus({ ok: true, text: `Saved ${totalHours} Baku hours · max ${adminEntry.maxPerDay}/day · ${adminEntry.minLeadHours}h notice.` });
+      setJustSaved(true);
+      setStatus({
+        ok: true,
+        text: totalHours > 0
+          ? `Saved ${totalHours} Baku hrs · max ${adminEntry.maxPerDay}/day · ${adminEntry.minLeadHours}h notice (poladagayev90).`
+          : 'Cleared your host hours.',
+      });
+      if (savedTimer.current) clearTimeout(savedTimer.current);
+      savedTimer.current = setTimeout(() => setJustSaved(false), 3000);
     } catch (e) {
       setStatus({ ok: false, text: 'Could not save host hours. Try again.' });
     }
@@ -160,15 +183,20 @@ export default function AdminHostSchedule() {
           />
           <div className="hs-foot">
             <Button size="sm" icon={<Check size={16} aria-hidden="true" />} disabled={saving} onClick={save}>
-              {saving ? 'Saving…' : 'Save host hours'}
+              {saving ? 'Saving…' : justSaved ? 'Saved!' : 'Save host hours'}
             </Button>
             {totalHours > 0 && (
-              <Button size="sm" variant="ghost" disabled={saving} onClick={() => setCells(new Set())}>
+              <Button size="sm" variant="ghost" disabled={saving} onClick={() => { setStatus(null); setJustSaved(false); setCells(new Set()); }}>
                 Clear all
               </Button>
             )}
           </div>
-          {status && <p className={status.ok ? 'aa-ok' : 'aa-error'} role="status">{status.text}</p>}
+          {status && (
+            <p className={`hs-status ${status.ok ? 'hs-status--ok' : 'hs-status--err'}`} role="status" aria-live="polite">
+              {status.ok && <CheckCircle2 size={15} strokeWidth={2.3} aria-hidden="true" />}
+              <span>{status.text}</span>
+            </p>
+          )}
         </div>
       )}
     </section>

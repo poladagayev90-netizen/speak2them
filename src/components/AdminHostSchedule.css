@@ -21,3 +21,20 @@
   color: var(--text-primary); font: inherit; font-size: var(--fs-sm); font-weight: 600;
 }
 .hs-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.hs-status {
+  margin: 0;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm); font-weight: 700; line-height: 1.35;
+}
+.hs-status--ok {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-ring);
+}
+.hs-status--err {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
