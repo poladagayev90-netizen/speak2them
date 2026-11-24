@@ -93,6 +93,23 @@ const en = {
   'topic.fallback': 'Today’s topic',
   'topic.ctaFull': 'Listen, read, words and questions',
   'topic.ctaShort': 'Words, idioms and questions',
+
+  'mo.yourPartner': 'your partner',
+  'mo.wantsTo': '{name} wants to practise',
+  'mo.confirmedAlready': '{name} already confirmed',
+  'mo.until': 'Until {end} · your time',
+  'mo.yesBtn': 'Yes, I’ll be there',
+  'mo.saving': 'Saving…',
+  'mo.cantMakeIt': 'Can’t make it',
+  'mo.bookedOnceBoth': 'Booked once you both say yes.',
+  'mo.waiting': 'You said yes · booked once {name} says yes too',
+  'mo.reasonIntro': 'What gets in the way? Only the SpeakLab team sees this.',
+  'mo.reason.notFree': 'Not free then',
+  'mo.reason.another': 'Rather another time',
+  'mo.reason.off': 'Taking this week off',
+  'mo.send': 'Send',
+  'mo.sending': 'Sending…',
+  'mo.back': 'Back',
 };
 
 const az = {
@@ -171,6 +188,23 @@ const az = {
   'topic.fallback': 'Günün mövzusu',
   'topic.ctaFull': 'Dinlə, oxu, sözlər və suallar',
   'topic.ctaShort': 'Sözlər, idiomlar və suallar',
+
+  'mo.yourPartner': 'tərəf-müqabiliniz',
+  'mo.wantsTo': '{name} ilə praktika təklifi',
+  'mo.confirmedAlready': '{name} artıq təsdiqləyib',
+  'mo.until': '{end} qədər · sizin saatınızla',
+  'mo.yesBtn': 'Bəli, qoşulacağam',
+  'mo.saving': 'Saxlanılır…',
+  'mo.cantMakeIt': 'Uyğun deyil',
+  'mo.bookedOnceBoth': 'Hər ikiniz təsdiqləyəndə praktika bərkidilir.',
+  'mo.waiting': 'Siz təsdiqlədiniz · {name} də təsdiqləyəndə bərkidiləcək',
+  'mo.reasonIntro': 'Nə mane olur? Bunu yalnız SpeakLab komandası görür.',
+  'mo.reason.notFree': 'Həmin saat boş deyiləm',
+  'mo.reason.another': 'Başqa vaxt olsa yaxşıdır',
+  'mo.reason.off': 'Bu həftə fasilə verirəm',
+  'mo.send': 'Göndər',
+  'mo.sending': 'Göndərilir…',
+  'mo.back': 'Geri',
 };
 
 const tr = {
@@ -246,6 +280,23 @@ const tr = {
   'topic.fallback': 'Günün konusu',
   'topic.ctaFull': 'Dinle, oku, kelimeler ve sorular',
   'topic.ctaShort': 'Kelimeler, deyimler ve sorular',
+
+  'mo.yourPartner': 'partneriniz',
+  'mo.wantsTo': '{name} ile pratik önerisi',
+  'mo.confirmedAlready': '{name} şimdiden onayladı',
+  'mo.until': '{end} bitiş · kendi saatinizle',
+  'mo.yesBtn': 'Evet, katılacağım',
+  'mo.saving': 'Kaydediliyor…',
+  'mo.cantMakeIt': 'Katılamıyorum',
+  'mo.bookedOnceBoth': 'İkiniz de onayladığınızda pratik kesinleşir.',
+  'mo.waiting': 'Onayladınız · {name} de onaylayınca kesinleşecek',
+  'mo.reasonIntro': 'Engel olan nedir? Bunu yalnızca SpeakLab ekibi görür.',
+  'mo.reason.notFree': 'O saatte uygun değilim',
+  'mo.reason.another': 'Başka bir saati tercih ederim',
+  'mo.reason.off': 'Bu hafta ara veriyorum',
+  'mo.send': 'Gönder',
+  'mo.sending': 'Gönderiliyor…',
+  'mo.back': 'Geri',
 };
 
 const ru = {
@@ -321,6 +372,23 @@ const ru = {
   'topic.fallback': 'Тема дня',
   'topic.ctaFull': 'Слушать, читать, слова и вопросы',
   'topic.ctaShort': 'Слова, идиомы и вопросы',
+
+  'mo.yourPartner': 'партнёр',
+  'mo.wantsTo': 'Предложение практики с {name}',
+  'mo.confirmedAlready': '{name} уже подтвердил(а)',
+  'mo.until': 'До {end} · ваше время',
+  'mo.yesBtn': 'Да, буду на звонке',
+  'mo.saving': 'Сохраняем…',
+  'mo.cantMakeIt': 'Не получится',
+  'mo.bookedOnceBoth': 'Закрепится, когда вы оба подтвердите.',
+  'mo.waiting': 'Вы подтвердили · закрепится, когда {name} тоже подтвердит',
+  'mo.reasonIntro': 'Что мешает? Это видит только команда SpeakLab.',
+  'mo.reason.notFree': 'Занят(а) в это время',
+  'mo.reason.another': 'Удобнее другое время',
+  'mo.reason.off': 'Беру паузу на эту неделю',
+  'mo.send': 'Отправить',
+  'mo.sending': 'Отправляем…',
+  'mo.back': 'Назад',
 };
 
 export const PRACTICE_COPY = { en, az, tr, ru };

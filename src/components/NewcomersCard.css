@@ -32,6 +32,25 @@
 .nc-step.is-done { background: var(--coral-soft); border-color: var(--coral); }
 .nc-next { font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
 .nc-nowa { font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); }
+.nc-tools { display: grid; gap: 6px; justify-items: end; }
+.nc-tools-main,
+.nc-acad-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-content: flex-end; }
+.nc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nc-pill:hover { border-color: var(--accent); color: var(--accent); }
 .nc-more { justify-self: start; }
 .nc-sr {
   position: absolute; width: 1px; height: 1px; overflow: hidden;

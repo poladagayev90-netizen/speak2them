@@ -4,27 +4,33 @@ import { Button } from './ui';
 import {
   subscribeToMyOffers, respondToOffer, localBlockLabel, DECLINE_REASONS,
 } from '../utils/matchOffers';
+import { LEVELS } from '../utils/onboarding';
+import { practiceText } from '../data/practiceCopy';
 import HeroParade, { heroClockStyle } from './plan/HeroFx';
 import './plan/plan.css';
 import './MatchOfferCard.css';
 
+const REASON_COPY_KEY = {
+  'not-free': 'mo.reason.notFree',
+  'prefer-another': 'mo.reason.another',
+  'week-off': 'mo.reason.off',
+};
+
 // A practice the SpeakLab team proposed. It is a QUESTION, not a booking: the
-// call exists only once both people confirm, and the card says so plainly —
-// that sentence is what keeps a "yes" from turning into a broken promise when
-// the other person cannot make it.
-//
-// Declining is one tap plus an optional reason. The reason goes to the team
-// only; the partner is never told who said no.
-export default function MatchOfferCard({ uid }) {
+// call exists only once both people confirm, and the card surfaces the real
+// partner's CEFR level (when non-null; founder host stays badge-free) and
+// whether the partner already accepted in Firestore.
+export default function MatchOfferCard({ uid, lang = 'en' }) {
   const [offers, setOffers] = useState([]);
   useEffect(() => subscribeToMyOffers(uid, setOffers), [uid]);
 
   const live = offers.filter((o) => Number(o.startMs) > Date.now());
   if (!live.length) return null;
-  return live.map((o) => <OfferItem key={o.id} offer={o} uid={uid} />);
+  return live.map((o) => <OfferItem key={o.id} offer={o} uid={uid} lang={lang} />);
 }
 
-function OfferItem({ offer, uid }) {
+function OfferItem({ offer, uid, lang }) {
+  const t = (key, vars) => practiceText(lang, key, vars);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [declining, setDeclining] = useState(false);
@@ -33,8 +39,15 @@ function OfferItem({ offer, uid }) {
 
   const mine = (offer.responses || {})[uid];
   const isA = offer.userA === uid;
-  const peerName = (isA ? offer.nameB : offer.nameA) || 'your partner';
-  const { day, time } = localBlockLabel(Number(offer.startMs));
+  const peerUid = isA ? offer.userB : offer.userA;
+  const peerName = (isA ? offer.nameB : offer.nameA) || t('mo.yourPartner');
+  // Real CEFR level from the offer document; founder host carries null (stays badge-free).
+  const rawLevel = isA ? offer.levelB : offer.levelA;
+  const peerLevel = rawLevel
+    ? (LEVELS.find((l) => l.value === rawLevel)?.short || String(rawLevel).trim().slice(0, 6))
+    : null;
+  const otherAccepted = Boolean(peerUid && (offer.responses || {})[peerUid] === 'accepted');
+  const { day, time } = localBlockLabel(Number(offer.startMs), lang);
   const [start, end] = time.split('–');
   const initial = String(peerName).charAt(0).toUpperCase();
 
@@ -44,14 +57,12 @@ function OfferItem({ offer, uid }) {
     const res = await respondToOffer(offer.id, accept, accept ? undefined : reason);
     setBusy('');
     if (!res.ok) setError(res.errorText);
-    // Success needs no local state: the live query drops a closed offer and
-    // a confirmed one reappears as the upcoming-call card.
   };
 
   // Said yes, the partner has not yet: a quiet card — nothing to do but wait.
   if (mine === 'accepted') {
     return (
-      <section className="mo mo--waiting" aria-live="polite" aria-label={`Waiting for ${peerName}`}>
+      <section className="mo mo--waiting" aria-live="polite" aria-label={t('mo.waiting', { name: peerName })}>
         <span className="mo-avatar" aria-hidden="true">
           {initial}
           <span className="mo-avatar-check"><Check size={11} strokeWidth={3} /></span>
@@ -60,30 +71,33 @@ function OfferItem({ offer, uid }) {
           <p className="mo-wait-when">{day} · {start}</p>
           <p className="mo-wait-text">
             <span className="mo-pulse" aria-hidden="true" />
-            <span>You said yes · booked once <b>{peerName}</b> says yes too</span>
+            <span>{t('mo.waiting', { name: peerName })}</span>
           </p>
         </div>
       </section>
     );
   }
 
-  // Needs an answer: the same living card as Today's next practice, because
-  // it is the one thing on the page that asks something of you.
   return (
-    <section className="pl-card pl-card--hero mo-ask" style={clock} aria-label={`Practice proposal with ${peerName}`}>
+    <section className="pl-card pl-card--hero mo-ask" style={clock} aria-label={t('mo.wantsTo', { name: peerName })}>
       <HeroParade />
-      {/* Says up front that this is a QUESTION, not a booking — on Today it
-          sits above «Your next practice», which only a two-yes booking gets. */}
-      <p className="pl-kicker"><CalendarQuestion size={16} aria-hidden="true" /> {peerName} wants to practise</p>
+      <p className="pl-kicker"><CalendarQuestion size={16} aria-hidden="true" /> {t('mo.wantsTo', { name: peerName })}</p>
       <p className="pl-when mo-ask-when">
         {day}
         <span className="mo-ask-time">{start}</span>
       </p>
-      <p className="mo-ask-range">Until {end} · your time</p>
+      <p className="mo-ask-range">{t('mo.until', { end })}</p>
 
       <div className="mo-person">
         <span className="mo-avatar mo-avatar--hero" aria-hidden="true">{initial}</span>
         <span className="mo-person-name">{peerName}</span>
+        {peerLevel && <span className="mo-level">{peerLevel}</span>}
+        {otherAccepted && (
+          <span className="mo-confirmed">
+            <Check size={12} strokeWidth={3} aria-hidden="true" />
+            {t('mo.confirmedAlready', { name: peerName })}
+          </span>
+        )}
       </div>
       {offer.note && <p className="mo-note">{offer.note}</p>}
 
@@ -93,17 +107,17 @@ function OfferItem({ offer, uid }) {
         <>
           <div className="pl-actions">
             <Button onClick={() => respond(true)} disabled={!!busy}>
-              {busy === 'yes' ? 'Saving…' : 'Yes, I’ll be there'}
+              {busy === 'yes' ? t('mo.saving') : t('mo.yesBtn')}
             </Button>
             <Button variant="ghost" onClick={() => setDeclining(true)} disabled={!!busy}>
-              Can’t make it
+              {t('mo.cantMakeIt')}
             </Button>
           </div>
-          <p className="mo-fine">Booked once you both say yes.</p>
+          <p className="mo-fine">{t('mo.bookedOnceBoth')}</p>
         </>
       ) : (
         <div className="mo-decline">
-          <p className="mo-fine">What gets in the way? Only the SpeakLab team sees this.</p>
+          <p className="mo-fine">{t('mo.reasonIntro')}</p>
           <div className="mo-reasons" role="radiogroup" aria-label="Reason">
             {DECLINE_REASONS.map((r) => (
               <button
@@ -114,15 +128,15 @@ function OfferItem({ offer, uid }) {
                 className={`mo-reason ${reason === r.value ? 'is-on' : ''}`}
                 onClick={() => setReason(r.value)}
               >
-                {r.label}
+                {REASON_COPY_KEY[r.value] ? t(REASON_COPY_KEY[r.value]) : r.label}
               </button>
             ))}
           </div>
           <div className="pl-actions">
             <Button onClick={() => respond(false)} disabled={!!busy}>
-              {busy === 'no' ? 'Sending…' : 'Send'}
+              {busy === 'no' ? t('mo.sending') : t('mo.send')}
             </Button>
-            <Button variant="ghost" onClick={() => setDeclining(false)} disabled={!!busy}>Back</Button>
+            <Button variant="ghost" onClick={() => setDeclining(false)} disabled={!!busy}>{t('mo.back')}</Button>
           </div>
         </div>
       )}

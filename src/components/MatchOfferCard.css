@@ -19,8 +19,28 @@
   color: var(--text-on-accent); opacity: .82;
   font-variant-numeric: tabular-nums;
 }
-.mo-person { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
+.mo-person { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
 .mo-person-name { font-size: var(--fs-body); font-weight: 800; color: var(--text-on-accent); }
+.mo-level {
+  padding: 2px 7px;
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in srgb, var(--text-on-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--text-on-accent) 16%, transparent);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  color: var(--text-on-accent);
+}
+.mo-confirmed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  background: var(--text-on-accent);
+  color: var(--accent-strong);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
 .mo-note {
   margin: 0; padding: var(--s-2) var(--s-3);
   border-radius: var(--r-md);

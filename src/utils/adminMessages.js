@@ -1,12 +1,15 @@
-// Admin → Matching WhatsApp messages (2026-11-22).
-// Pure helpers so every language (az/tr/ru/en) and local-timezone conversion is
-// unit-tested. Never names a fear ("hazırsınız?", "qorxma") or an exam word
-// ("yoxla", "imtahan") — uses respectful «Siz» address across all languages,
-// and call notifications ask only whether the scheduled/proposed time works
-// (no alternative hours suggested).
+// Admin → Matching WhatsApp & IG DM messages (2026-11-22; outreach v2 2026-11-24).
+// Pure helpers so every language (az/tr/ru/en), timezone conversion, and trust
+// signal is unit-tested.
+// Rules:
+// - Formal «Siz / Вы» address across all languages.
+// - Never names a fear ("hazır?", "qorxma", "ready?") or exam word ("yoxla", "imtahan").
+// - Call notifications ask only whether the scheduled/proposed time works (no alt hours).
+// - Partner-confirmed wording ONLY appears when `partnerAccepted === true` from Firestore.
 
 import { offsetVsBaku } from './timezone';
 import { FIRST_RUN_LANGS } from './firstRunLang';
+import { ACADEMY_CHAPTERS, academyChapterUrl } from './academyLink';
 
 const DAY_NAMES = {
   az: ['Bazar', 'Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə', 'Cümə axşamı', 'Cümə', 'Şənbə'],
@@ -50,14 +53,17 @@ export function formatTwoSlots(slots, timeZone, lang = 'en') {
   return `${labels[0]} ${OR_WORD[l]} ${labels[1]}`;
 }
 
-// Direct WhatsApp message from a PairRow card (matching console).
-// Always in the learner's own language and local time, polite «Siz» address,
-// asking only whether the time works (never suggesting alternative hours).
+// Template (a): Direct match/booking notification from a real Firestore pair.
+// Polite «Siz / Вы», shows partner's CEFR level when known (`partnerLevel` non-null),
+// explicitly notes confirmation ONLY when `partnerAccepted === true`, and never
+// suggests alternative hours.
 export function matchNotifyMessage({
   kind = 'pending',
   lang = 'en',
   name = '',
   partnerName = '',
+  partnerLevel = '',
+  partnerAccepted = false,
   slotId = '',
   timeZone = 'Asia/Baku',
   accepted = false,
@@ -65,24 +71,35 @@ export function matchNotifyMessage({
   const l = pickLang(lang);
   const me = firstName(name);
   const peer = firstName(partnerName);
+  const lvl = partnerLevel ? ` (${partnerLevel})` : '';
   const when = formatSlotLocal(slotId, timeZone, l);
 
   if (kind === 'booked') {
     const map = {
-      az: () => `Salam${me ? `, ${me}` : ''}! ${when} üçün ${peer || 'tərəf-müqabiliniz'} ilə SpeakLab praktikanız planlaşdırılıb. Bu saat sizin üçün uyğundurmu? (5 dəqiqə qalmış tətbiqdə Join düyməsi açılacaq.)`,
-      tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} için ${peer || 'partneriniz'} ile SpeakLab pratiğiniz planlandı. Bu saat sizin için uygun mu? (5 dakika kala uygulamada Join butonu açılacak.)`,
-      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Ваша практика в SpeakLab с ${peer || 'партнёром'} запланирована на ${when}. Это время вам подходит? (За 5 минут до начала в приложении откроется кнопка Join.)`,
-      en: () => `Hi${me ? ` ${me}` : ''}! Your SpeakLab practice with ${peer || 'your partner'} is scheduled for ${when}. Does this time work for you? (The Join button opens in the app 5 minutes before.)`,
+      az: () => `Salam${me ? `, ${me}` : ''}! ${when} üçün ${peer || 'tərəf-müqabiliniz'}${lvl} ilə SpeakLab praktikanız planlaşdırılıb. Bu saat sizin üçün uyğundurmu? (5 dəqiqə qalmış tətbiqdə Join düyməsi açılacaq.)`,
+      tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} için ${peer || 'partneriniz'}${lvl} ile SpeakLab pratiğiniz planlandı. Bu saat sizin için uygun mu? (5 dakika kala uygulamada Join butonu açılacak.)`,
+      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Ваша практика в SpeakLab на ${when} с ${peer || 'партнёром'}${lvl} запланирована. Это время вам подходит? (За 5 минут до начала в приложении откроется кнопка Join.)`,
+      en: () => `Hi${me ? ` ${me}` : ''}! Your SpeakLab practice with ${peer || 'your partner'}${lvl} is scheduled for ${when}. Does this time work for you? (The Join button opens in the app 5 minutes before.)`,
     };
     return map[l]();
   }
 
   if (kind === 'pending' && !accepted) {
+    if (partnerAccepted && peer) {
+      const confirmedMap = {
+        az: () => `Salam${me ? `, ${me}` : ''}! ${peer}${lvl} ${when} üçün sizinlə praktikanı artıq təsdiqləyib — siz də tətbiqdə təsdiqləsəniz yeriniz bərkidiləcək. Bu saat sizin üçün uyğundurmu?`,
+        tr: () => `Merhaba${me ? ` ${me}` : ''}! ${peer}${lvl} ${when} için sizinle pratiği şimdiden onayladı — siz de uygulamada onaylarsanız yeriniz kesinleşecektir. Bu saat sizin için uygun mu?`,
+        ru: () => `Здравствуйте${me ? `, ${me}` : ''}! ${peer}${lvl} уже подтвердил(а) практику с вами на ${when} — подтвердите в приложении, чтобы закрепить время. Это время вам подходит?`,
+        en: () => `Hi${me ? ` ${me}` : ''}! ${peer}${lvl} already confirmed a SpeakLab practice with you for ${when} — confirm in the app to lock it in. Does this time work for you?`,
+      };
+      return confirmedMap[l]();
+    }
+
     const map = {
-      az: () => `Salam${me ? `, ${me}` : ''}! SpeakLab-da ${when} üçün ${peer || 'uyğun tərəf-müqabil'} ilə praktika təklifi göndərilib — tətbiqdə təsdiqləsəniz yeriniz bərkidiləcək. Bu saat sizin üçün uyğundurmu?`,
-      tr: () => `Merhaba${me ? ` ${me}` : ''}! SpeakLab'de ${when} için ${peer || 'uygun bir partner'} ile pratik önerisi gönderildi — uygulamada onaylarsanız yeriniz kesinleşecektir. Bu saat sizin için uygun mu?`,
-      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! В SpeakLab вам отправлено предложение на практику ${when} с ${peer || 'партнёром'} — подтвердите в приложении, чтобы закрепить время. Это время вам подходит?`,
-      en: () => `Hi${me ? ` ${me}` : ''}! A SpeakLab practice proposal with ${peer || 'a partner'} was sent for ${when} — please confirm in the app to lock it in. Does this time work for you?`,
+      az: () => `Salam${me ? `, ${me}` : ''}! SpeakLab-da ${when} üçün ${peer || 'uyğun tərəf-müqabil'}${lvl} ilə praktika təklifi göndərilib — tətbiqdə təsdiqləsəniz yeriniz bərkidiləcək. Bu saat sizin üçün uyğundurmu?`,
+      tr: () => `Merhaba${me ? ` ${me}` : ''}! SpeakLab'de ${when} için ${peer || 'uygun bir partner'}${lvl} ile pratik önerisi gönderildi — uygulamada onaylarsanız yeriniz kesinleşecektir. Bu saat sizin için uygun mu?`,
+      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! В SpeakLab вам отправлено предложение на практику ${when} с ${peer || 'партнёром'}${lvl} — подтвердите в приложении, чтобы закрепить время. Это время вам подходит?`,
+      en: () => `Hi${me ? ` ${me}` : ''}! A SpeakLab practice proposal with ${peer || 'a partner'}${lvl} was sent for ${when} — please confirm in the app to lock it in. Does this time work for you?`,
     };
     return map[l]();
   }
@@ -93,6 +110,35 @@ export function matchNotifyMessage({
     tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} pratiği için yazıyoruz — bu saat sizin için uygun mu?`,
     ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Пишем по поводу практики на ${when} — это время вам подходит?`,
     en: () => `Hi${me ? ` ${me}` : ''}! Following up on your ${when} practice — does this time work for you?`,
+  };
+  return map[l]();
+}
+
+// Template (b): Zero-pressure soft pause check for silent users. Polite «Siz / Вы»,
+// never uses fear/pressure words («hazır», «ready», «qorxma», «imtahan»).
+export function softPauseCheckMessage({ lang = 'en', name = '' } = {}) {
+  const l = pickLang(lang);
+  const me = firstName(name);
+  const map = {
+    az: () => `Salam${me ? `, ${me}` : ''}! SpeakLab praktikalarında iştirak etmək istəyirsiniz? Bu həftə vaxtınız yoxdursa, sizin üçün zəng təyin olunmasını müvəqqəti dayandıra bilərik — istədiyiniz vaxt yenidən aktivləşdirmək mümkündür.`,
+    tr: () => `Merhaba${me ? ` ${me}` : ''}! SpeakLab pratiklerine katılmak ister misiniz? Bu hafta vaktiniz yoksa sizin için görüşme planlamasını geçici olarak durdurabiliriz — istediğiniz zaman yeniden başlatabilirsiniz.`,
+    ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Хотите участвовать в практиках SpeakLab? Если на этой неделе нет времени, мы можем временно приостановить подбор звонков для вас — возобновить можно в любой момент.`,
+    en: () => `Hi${me ? ` ${me}` : ''}! Would you like to join SpeakLab practices? If this week does not suit you, we can pause call scheduling for you anytime — just let us know when you want to resume.`,
+  };
+  return map[l]();
+}
+
+// Template (c): Shareable SpeakLab Academy chapter guide (public speaklab.me URL).
+export function academyGuideMessage({ lang = 'en', name = '', chapterKey = 'install' } = {}) {
+  const l = pickLang(lang);
+  const me = firstName(name);
+  const target = ACADEMY_CHAPTERS[chapterKey] || ACADEMY_CHAPTERS.install;
+  const url = academyChapterUrl(target.course, target.chapter, l);
+  const map = {
+    az: () => `Salam${me ? `, ${me}` : ''}! SpeakLab-dan rahat istifadə etmək üçün qısa video bələdçiyə buradan baxa bilərsiniz: ${url}`,
+    tr: () => `Merhaba${me ? ` ${me}` : ''}! SpeakLab'i kolayca kullanmak için kısa video rehberimizi buradan izleyebilirsiniz: ${url}`,
+    ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Посмотреть короткую видеоинструкцию по SpeakLab можно здесь: ${url}`,
+    en: () => `Hi${me ? ` ${me}` : ''}! You can watch our short video guide to SpeakLab here: ${url}`,
   };
   return map[l]();
 }

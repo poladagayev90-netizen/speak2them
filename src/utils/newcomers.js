@@ -80,6 +80,7 @@ export function newcomerRows({
       ? nextLearnerSlots({ onboarding: ob, monday: week, pairs, uid, nowMs: now, count: 2 })
       : [];
     const timeZone = ob?.timeZone || 'Asia/Baku';
+    const message = newcomerMessage(lang, name, practised, { slots, timeZone });
     rows.push({
       uid,
       name: name || uid.slice(0, 6),
@@ -94,7 +95,9 @@ export function newcomerRows({
       noFirst: attentionOf({ calls, joinedMs }, now).newNoFirst,
       lang,
       slots,
-      whatsapp: newcomerWhatsApp(ob?.whatsapp, newcomerMessage(lang, name, practised, { slots, timeZone })),
+      rawWhatsapp: ob?.whatsapp || '',
+      message,
+      whatsapp: newcomerWhatsApp(ob?.whatsapp, message),
     });
   }
   return rows.sort((a, b) => b.joinedMs - a.joinedMs);

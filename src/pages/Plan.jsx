@@ -22,6 +22,7 @@ import { respondToOffer } from '../utils/matchOffers';
 import { WEEK_DAYS, formatMinutes, cityOf, totalHours } from '../utils/timezone';
 import { labelOf, WEEKLY_TARGETS } from '../utils/onboarding';
 import { isGuestUser } from '../utils/guest';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import GuestPromptCard from '../components/GuestPromptCard';
 import '../components/plan/plan.css';
 
@@ -46,6 +47,7 @@ export default function Plan({ user }) {
 }
 
 function PlanInner({ user }) {
+  const { lang } = useFirstRunCopy(user?.guideLanguage);
   const navigate = useNavigate();
   const { state: navState } = useLocation();
   const uid = user?.uid;
@@ -131,7 +133,7 @@ function PlanInner({ user }) {
         {/* Outside the section: after "Confirm all" the section is gone, and
             the result still has to be read. */}
         {msg && <p className="pl-notice" role="status">{msg}</p>}
-        <MatchOfferCard uid={uid} />
+        <MatchOfferCard uid={uid} lang={lang} />
 
         {/* The week as a calendar: what is booked, and the days you want. */}
         {ob && ob.charterAcceptedAt && (ob.availability || []).length > 0 && (

@@ -16,7 +16,10 @@ import {
   freeGrid, attentionOf, ATTENTION, ageBandShort, isMinorBand, ageCompatible, suggestPartnersFor,
 } from '../utils/matching';
 import { newcomerLang } from '../utils/newcomers';
-import { matchNotifyMessage, inviteRegularMessage, waHref } from '../utils/adminMessages';
+import { ACADEMY_CHAPTERS } from '../utils/academyLink';
+import {
+  matchNotifyMessage, softPauseCheckMessage, academyGuideMessage, inviteRegularMessage, waHref,
+} from '../utils/adminMessages';
 import { buildAnonMatchingSnapshot } from '../utils/snapshotExport';
 import { isUnlimited } from '../utils/packages';
 import { ApplicantDetail } from './AdminApplicants';
@@ -83,6 +86,120 @@ const KIND = {
   failed: 'could not be booked',
 };
 const isClosed = (kind) => kind === 'expired' || kind === 'declined' || kind === 'failed';
+
+async function copyOutreachText(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* fallback below */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+// Reusable 1-click outreach template composer for PairRow and PersonRow.
+// Template (a) Match notice ONLY appears when backed by a real live Firestore
+// pending or booked pair (never fabricated for unbooked learners).
+function OutreachTray({ uid, person, activePair = null, personById }) {
+  const realPair = activePair && (activePair.kind === 'pending' || activePair.kind === 'booked') ? activePair : null;
+  const [tpl, setTpl] = useState(realPair ? 'match' : 'pause');
+  const [chapterKey, setChapterKey] = useState('install');
+  const [copied, setCopied] = useState(false);
+
+  const lang = person?.lang || 'en';
+  const name = person?.name || '';
+  const tz = person?.timeZone || 'Asia/Baku';
+
+  let text = '';
+  if (tpl === 'match' && realPair) {
+    const isA = realPair.a === uid;
+    const peerUid = isA ? realPair.b : realPair.a;
+    const peer = personById?.get(peerUid);
+    const peerRawLevel = peer?.level || (isA ? realPair.levelB : realPair.levelA) || '';
+    const peerName = peer?.name || (isA ? realPair.nameB : realPair.nameA) || '';
+    text = matchNotifyMessage({
+      kind: realPair.kind,
+      lang,
+      name,
+      partnerName: peerName,
+      partnerLevel: peerRawLevel ? levelShort(peerRawLevel) : '',
+      partnerAccepted: !!realPair.accepted?.[peerUid],
+      slotId: realPair.slotId,
+      timeZone: tz,
+      accepted: !!realPair.accepted?.[uid],
+    });
+  } else if (tpl === 'academy') {
+    text = academyGuideMessage({ lang, name, chapterKey });
+  } else {
+    text = softPauseCheckMessage({ lang, name });
+  }
+
+  const waUrl = person?.whatsapp ? waHref(person.whatsapp, text) : null;
+
+  const handleCopy = async () => {
+    if (await copyOutreachText(text)) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    }
+  };
+
+  return (
+    <div className="mt-tpl-tray">
+      <div className="mt-tpl-tabs">
+        {realPair && (
+          <button type="button" className={`mt-tpl-tab${tpl === 'match' ? ' is-on' : ''}`} onClick={() => setTpl('match')}>
+            Match
+          </button>
+        )}
+        <button type="button" className={`mt-tpl-tab${tpl === 'pause' ? ' is-on' : ''}`} onClick={() => setTpl('pause')}>
+          Pause check
+        </button>
+        <button type="button" className={`mt-tpl-tab${tpl === 'academy' ? ' is-on' : ''}`} onClick={() => setTpl('academy')}>
+          Academy link
+        </button>
+      </div>
+      {tpl === 'academy' && (
+        <div className="mt-tpl-tabs">
+          {Object.entries(ACADEMY_CHAPTERS).map(([key, info]) => (
+            <button
+              key={key}
+              type="button"
+              className={`mt-tpl-tab${chapterKey === key ? ' is-on' : ''}`}
+              onClick={() => setChapterKey(key)}
+            >
+              {info.shortLabel}
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="mt-tpl-preview">{text}</p>
+      <div className="mt-tpl-foot">
+        <button type="button" className="mt-copy-btn" onClick={handleCopy}>
+          {copied ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+        {waUrl && (
+          <a className="mt-wa-link" href={waUrl} target="_blank" rel="noopener noreferrer">
+            <MessageCircle size={14} aria-hidden="true" /> Open WA
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminMatching({ users = [] }) {
   // A clock that moves once a minute, so what can still be proposed stays true.
@@ -558,7 +675,7 @@ function PeoplePanel({ week, people, pairs, selected, onToggle, onAdd, busy, aut
       </div>
       <ul className="mt-people-list">
         {ordered.map((p) => (
-          <PersonRow key={p.id} p={p} week={week} pairs={pairs} autoMode={autoMode}
+          <PersonRow key={p.id} p={p} week={week} pairs={pairs} autoMode={autoMode} personById={personById}
             on={selected.includes(p.id)} expanded={open === p.id}
             onToggle={() => onToggle(p.id)} onExpand={() => setOpen((x) => (x === p.id ? null : p.id))}
             onAdd={() => onAdd(p)} adding={busy === `list:${p.id}`} />
@@ -569,8 +686,13 @@ function PeoplePanel({ week, people, pairs, selected, onToggle, onAdd, busy, aut
   );
 }
 
-function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand, onAdd, adding }) {
+function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand, onAdd, adding, personById }) {
+  const [tplOpen, setTplOpen] = useState(false);
   const wa = whatsAppLink(p.whatsapp, p.name);
+  const realPair = useMemo(
+    () => (pairs || []).find((pr) => (pr.kind === 'pending' || pr.kind === 'booked') && (pr.a === p.id || pr.b === p.id)) || null,
+    [pairs, p.id],
+  );
   const verdict = autoMode
     ? (p.why ? `${p.inWeek ? 'in' : 'out'} · ${WHY[p.why] || p.why}` : 'not checked yet')
     : (p.inList ? 'in the list' : 'not in the list');
@@ -607,11 +729,20 @@ function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand,
             <MessageCircle size={16} aria-hidden="true" />
           </a>
         )}
+        <button
+          type="button"
+          className={`mt-tpl-toggle${tplOpen ? ' is-on' : ''}`}
+          aria-expanded={tplOpen}
+          onClick={() => setTplOpen((v) => !v)}
+        >
+          Templates
+        </button>
         <button type="button" className="aa-icon-btn" aria-expanded={expanded}
           aria-label={expanded ? `Hide ${p.name}'s answers` : `Show ${p.name}'s answers`} onClick={onExpand}>
           <ChevronDown size={16} className="aa-chev" aria-hidden="true" />
         </button>
       </span>
+      {tplOpen && <OutreachTray uid={p.id} person={p} activePair={realPair} personById={personById} />}
       <FreeGrid person={p} week={week} pairs={pairs} />
       {!autoMode && !p.inList && (
         <button type="button" className="aa-linkbtn mt-add" disabled={adding} onClick={onAdd}>
@@ -718,23 +849,29 @@ function PlanBar({ week, chosen, onClear, onBack, onBooked }) {
 
 // ── Pairs ────────────────────────────────────────────────────────
 function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend, resendFrom, onMove, onRemoveDraft }) {
+  const [copiedUid, setCopiedUid] = useState(null);
+  const [tplUid, setTplUid] = useState(null);
   const hour = Number(pair.slotId.slice(11));
-  const side = (uid, name, level, peerUid, peerFallbackName) => {
+  const side = (uid, name, level, peerUid, peerFallbackName, peerFallbackLevel) => {
     const p = personById.get(uid);
     const peer = personById.get(peerUid);
     const local = localAt(hour, p?.timeZone);
     const age = ageBandShort(p?.ageBand);
-    const waUrl = p?.whatsapp
-      ? waHref(p.whatsapp, matchNotifyMessage({
-        kind: pair.kind,
-        lang: p.lang || 'en',
-        name: p.name || name,
-        partnerName: peer?.name || peerFallbackName,
-        slotId: pair.slotId,
-        timeZone: p.timeZone || 'Asia/Baku',
-        accepted: !!pair.accepted[uid],
-      }))
-      : null;
+    const peerRawLevel = peer?.level || peerFallbackLevel || '';
+    const msg = matchNotifyMessage({
+      kind: pair.kind,
+      lang: p?.lang || 'en',
+      name: p?.name || name,
+      partnerName: peer?.name || peerFallbackName,
+      partnerLevel: peerRawLevel ? levelShort(peerRawLevel) : '',
+      partnerAccepted: !!pair.accepted?.[peerUid],
+      slotId: pair.slotId,
+      timeZone: p?.timeZone || 'Asia/Baku',
+      accepted: !!pair.accepted[uid],
+    });
+    const waUrl = p?.whatsapp ? waHref(p.whatsapp, msg) : null;
+    const isCopied = copiedUid === uid;
+    const isTplOpen = tplUid === uid;
     return (
       <span className="mt-side">
         <span className="aa-name">
@@ -743,7 +880,7 @@ function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend
           {age && <span className={`aa-badge ${isMinorBand(p?.ageBand) ? 'mt-age--minor' : 'aa-badge--soft'}`}>{age}</span>}
         </span>
         {local && <span className="aa-meta">{local}</span>}
-        {/* Who still has to answer — the admin can nudge them on WhatsApp. */}
+        {/* Who still has to answer — the admin can nudge them on WhatsApp or IG DM. */}
         {pair.kind === 'pending' && !pair.accepted[uid] && <span className="aa-meta">not answered yet</span>}
         <span className="mt-side-tools">
           {waUrl && (
@@ -752,6 +889,28 @@ function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend
               <MessageCircle size={14} aria-hidden="true" /> WA
             </a>
           )}
+          <button
+            type="button"
+            className="mt-copy-btn"
+            aria-label={`Copy message for ${firstName(p?.name || name)}`}
+            onClick={async () => {
+              if (await copyOutreachText(msg)) {
+                setCopiedUid(uid);
+                setTimeout(() => setCopiedUid((c) => (c === uid ? null : c)), 1800);
+              }
+            }}
+          >
+            {isCopied ? <Check size={12} aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
+            {isCopied ? 'Copied' : 'Copy'}
+          </button>
+          <button
+            type="button"
+            className={`mt-tpl-toggle${isTplOpen ? ' is-on' : ''}`}
+            aria-expanded={isTplOpen}
+            onClick={() => setTplUid((v) => (v === uid ? null : uid))}
+          >
+            Templates
+          </button>
           {canEdit && (
             <button type="button" className="aa-linkbtn" disabled={busy} onClick={() => onChange(uid === pair.a ? pair.b : pair.a)}
               aria-label={`Change ${firstName(p?.name || name)}`}>
@@ -763,6 +922,7 @@ function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend
     );
   };
   const gap = levelGap(personById.get(pair.a)?.level || pair.levelA, personById.get(pair.b)?.level || pair.levelB);
+  const tplPerson = tplUid ? (personById.get(tplUid) || { name: tplUid === pair.a ? pair.nameA : pair.nameB, lang: 'en', timeZone: 'Asia/Baku' }) : null;
   return (
     <li className={`mt-pair is-${pair.kind}`}>
       <div className="mt-pair-head">
@@ -773,10 +933,11 @@ function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend
         {gap !== null && gap > 1 && <span className="aa-badge">levels {gap} apart</span>}
       </div>
       <div className="mt-pair-sides">
-        {side(pair.a, pair.nameA, pair.levelA, pair.b, pair.nameB)}
+        {side(pair.a, pair.nameA, pair.levelA, pair.b, pair.nameB, pair.levelB)}
         <span className="mt-plus" aria-hidden="true">+</span>
-        {side(pair.b, pair.nameB, pair.levelB, pair.a, pair.nameA)}
+        {side(pair.b, pair.nameB, pair.levelB, pair.a, pair.nameA, pair.levelA)}
       </div>
+      {tplUid && <OutreachTray uid={tplUid} person={tplPerson} activePair={pair} personById={personById} />}
       {/* adminProposeMatch refuses blocks more than nine days ahead. */}
       {onResend && resendFrom > Date.now() && (
         <span className="aa-meta">Can be sent again from {new Date(resendFrom).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>

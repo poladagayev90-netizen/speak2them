@@ -184,7 +184,7 @@ export default function Home({ user }) {
   useEffect(() => {
     if (isGuest || !uid) return undefined;
     if (firstDay && !tourCompleted) return undefined;
-    if (streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || mine?.slotNoticePending) return undefined;
+    if (hasOpenOffers || streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || mine?.slotNoticePending) return undefined;
     if (!shouldShowAcademyPopup(user)) return undefined;
     let alive = true;
     checkRemoteAcademyOpened(user.uid).then((alreadyOpened) => {
@@ -194,7 +194,7 @@ export default function Home({ user }) {
       markAcademyPopupShown(user.uid);
     });
     return () => { alive = false; };
-  }, [isGuest, uid, firstDay, tourCompleted, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
+  }, [isGuest, uid, firstDay, tourCompleted, hasOpenOffers, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
 
   const closeStreakModal = () => {
     setStreakModalOpen(false);
@@ -208,6 +208,7 @@ export default function Home({ user }) {
   const autoMode = useAutoMode(!isGuest);
   const headline = isGuest ? { kind: 'guest' } : planHeadline({ uid, ...plan, autoMode });
   const booked = isGuest ? [] : upcomingBookings(plan.bookings, plan.now);
+  const hasOpenOffers = !isGuest && openOffers(plan.offers, uid, plan.now).length > 0;
   // This week's goal: the days picked for it, else the usual number.
   const target = isGuest ? 0 : weekGoal({
     onboarding: plan.onboarding, weekKey: plan.weekKey,
@@ -238,7 +239,7 @@ export default function Home({ user }) {
           disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen || academyPopupOpen}
         />
       )}
-      {!isGuest && showTopicIntro && todayTopic && (
+      {!isGuest && showTopicIntro && todayTopic && !hasOpenOffers && (
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
             <h3 className="topic-intro-label">Today’s topic</h3>
@@ -299,7 +300,7 @@ export default function Home({ user }) {
                 itself (2026-11-10: Today showed only «Your next practice» and
                 the question sat on Plan below the week grid — Polad could not
                 find it). «Your next practice» is a two-yes booking only. */}
-            <MatchOfferCard uid={user.uid} />
+            <MatchOfferCard uid={user.uid} lang={lang} />
 
             {/* 1. The next practice, or what is happening instead. */}
             {/* A teacher (or the admin) is not a learner: no "set up your plan".
@@ -436,7 +437,7 @@ export default function Home({ user }) {
             suppressed={streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || academyPopupOpen}
           />
           <AcademyPopupModal
-            open={academyPopupOpen}
+            open={academyPopupOpen && !hasOpenOffers}
             user={user}
             onClose={() => setAcademyPopupOpen(false)}
           />
