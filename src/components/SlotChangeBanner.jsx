@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Clock, MessageCircle } from 'lucide-react';
 import { parseSlotId, dayLabel, hourLabel, respondSlotChange } from '../utils/practiceSlots';
-import { MessageCircle } from 'lucide-react';
+import { practiceText } from '../data/practiceCopy';
 
-// Partnyorun vaxt dəyişikliyi təklifi.
-//
-// Rədd etmək TƏHLÜKƏSİZDİR: "yox" desən köhnə randevu olduğu kimi qalır, zəng
-// itmir. Bu, rədd etməyi asanlaşdırır — əks halda insanlar uyğun olmayan vaxta
-// razılıq verib sonra gəlmirlər.
-//
-// Uzun müzakirə üçün çat: "Yazışın" düyməsi birbaşa həmin söhbətə aparır, ona
-// görə banner uzun izahlarla yüklənmir.
-export default function SlotChangeBanner({ request, onDone }) {
+// Partner's time-change request. Declining keeps the original booked slot safe.
+export default function SlotChangeBanner({ request, onDone, lang = 'en' }) {
+  const pt = (k, v) => practiceText(lang, k, v);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -20,7 +15,8 @@ export default function SlotChangeBanner({ request, onDone }) {
 
   const from = parseSlotId(request.fromSlotId);
   const to = parseSlotId(request.toSlotId);
-  const label = (s) => (s ? `${dayLabel(s.date)} ${hourLabel(s.date, s.hour)}` : '—');
+  const label = (s) => (s ? `${dayLabel(s.date, Date.now(), lang)} ${hourLabel(s.date, s.hour)}` : '—');
+  const who = request.proposerName || pt('mo.yourPartner');
 
   const respond = async (accept) => {
     setBusy(accept ? 'yes' : 'no');
@@ -37,17 +33,16 @@ export default function SlotChangeBanner({ request, onDone }) {
       border: '1px solid var(--warning)', borderRadius: '16px',
       padding: '16px', marginBottom: '12px',
     }}>
-      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
-        🕘 Time change request
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
+        <Clock size={16} aria-hidden="true" />
+        <span>{pt('scb.title')}</span>
       </div>
       <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '12px' }}>
-        <b style={{ color: 'var(--text-primary)' }}>{request.proposerName || 'Partnyorunuz'}</b>{' '}
-        call <b style={{ color: 'var(--text-primary)' }}>{label(from)}</b> from{' '}
-        <b style={{ color: 'var(--text-primary)' }}>{label(to)}</b> to. If you decline, the original time stands.
+        {pt('scb.body', { name: who, from: label(from), to: label(to) })}
       </div>
 
       {error && (
-        <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '10px' }}> {error}</div>
+        <div style={{ fontSize: '13px', color: 'var(--danger)', marginBottom: '10px' }}>{error}</div>
       )}
 
       <div style={{ display: 'flex', gap: '8px' }}>
@@ -62,7 +57,7 @@ export default function SlotChangeBanner({ request, onDone }) {
             cursor: busy ? 'default' : 'pointer',
           }}
         >
-          {busy === 'yes' ? '...' : 'Accept'}
+          {busy === 'yes' ? '...' : pt('scb.accept')}
         </button>
         <button
           type="button"
@@ -75,11 +70,12 @@ export default function SlotChangeBanner({ request, onDone }) {
             cursor: busy ? 'default' : 'pointer',
           }}
         >
-          {busy === 'no' ? '...' : 'Not available'}
+          {busy === 'no' ? '...' : pt('scb.decline')}
         </button>
         <button
           type="button"
           onClick={() => navigate(`/chat/${request.proposerUid}`)}
+          aria-label={pt('bk.message')}
           style={{
             padding: '11px 14px', borderRadius: '11px',
             border: '1px solid var(--border)', background: 'transparent',

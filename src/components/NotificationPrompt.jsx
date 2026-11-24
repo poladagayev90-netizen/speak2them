@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { pushPermission, askPush } from '../utils/pushOptIn';
+import { practiceText } from '../data/practiceCopy';
 
 const DISMISS_KEY = 'notifPromptDismissed';
 
@@ -9,7 +10,8 @@ const DISMISS_KEY = 'notifPromptDismissed';
 // everywhere — so the actual request lives behind this button, never on load.
 // Getting installed is InstallGate's job; this only handles enabling
 // notifications once the app can actually receive them.
-export default function NotificationPrompt({ user }) {
+export default function NotificationPrompt({ user, lang = 'en' }) {
+  const pt = (k) => practiceText(lang, k);
   const [mode, setMode] = useState('hidden'); // 'hidden' | 'ask'
   const [busy, setBusy] = useState(false);
 
@@ -60,10 +62,10 @@ export default function NotificationPrompt({ user }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
-          Turn on notifications
+          {pt('np.title')}
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600, lineHeight: 1.4 }}>
-          Know when a partner calls and when your report is ready.
+          {pt('np.sub')}
         </div>
       </div>
       <button
@@ -76,11 +78,11 @@ export default function NotificationPrompt({ user }) {
           cursor: busy ? 'default' : 'pointer', whiteSpace: 'nowrap',
         }}
       >
-        {busy ? '...' : 'Open'}
+        {busy ? '...' : pt('np.open')}
       </button>
       <button
         onClick={dismiss}
-        aria-label="Close"
+        aria-label={pt('np.close')}
         style={{
           flexShrink: 0, border: 'none', background: 'none',
           color: 'var(--text-secondary)', cursor: 'pointer', padding: 4,

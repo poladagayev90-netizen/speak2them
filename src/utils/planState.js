@@ -11,6 +11,7 @@
 //     a question, not a debt.
 
 import { autoIn, checkinFor, dayNames, MAX_A_WEEK, weekAnswer } from './myWeek';
+import { practiceText } from '../data/practiceCopy';
 
 export const BLOCK_MS = 2 * 60 * 60 * 1000;
 export const JOIN_OPENS_MS = 5 * 60 * 1000;
@@ -118,19 +119,19 @@ export function planHeadline({
 
 // "Today 20:00" / "Tomorrow 18:00" / "Wednesday 20:00", in the VIEWER's own
 // clock — a learner in Istanbul reads the hour on their own phone.
-export function whenLabel(startMs, now = Date.now()) {
+export function whenLabel(startMs, now = Date.now(), lang = 'en') {
   const d = new Date(Number(startMs));
   const same = (a, b) => a.toDateString() === b.toDateString();
-  const day = same(d, new Date(now)) ? 'Today'
-    : same(d, new Date(now + 86400000)) ? 'Tomorrow'
-      : d.toLocaleDateString('en-GB', { weekday: 'long' });
+  const day = same(d, new Date(now)) ? practiceText(lang, 'today')
+    : same(d, new Date(now + 86400000)) ? practiceText(lang, 'tomorrow')
+      : practiceText(lang, `wdayLong.${d.getDay()}`);
   return `${day} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 }
 
 // Bookings grouped by the learner's calendar day, for the Plan timeline
 // (a day column and a NOW line, as on a tutor's schedule). Input is already
 // the upcoming, sorted list from upcomingBookings().
-export function bookingDays(bookings, now = Date.now()) {
+export function bookingDays(bookings, now = Date.now(), lang = 'en') {
   const days = [];
   for (const b of bookings || []) {
     const d = new Date(Number(b.startMs));
@@ -139,7 +140,7 @@ export function bookingDays(bookings, now = Date.now()) {
     if (!day || day.key !== key) {
       day = {
         key,
-        dow: d.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase(),
+        dow: practiceText(lang, `wday.${d.getDay()}`).toUpperCase(),
         date: d.getDate(),
         month: d.toLocaleDateString('en-GB', { month: 'long' }),
         isToday: key === new Date(now).toDateString(),
@@ -153,25 +154,25 @@ export function bookingDays(bookings, now = Date.now()) {
 }
 
 // "Tomorrow, 2 Oct · 21:00" — the short line for the Today "Coming up" list.
-export function comingUpLabel(startMs, now = Date.now()) {
+export function comingUpLabel(startMs, now = Date.now(), lang = 'en') {
   const d = new Date(Number(startMs));
   const same = (a, b) => a.toDateString() === b.toDateString();
   const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-  const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  const day = same(d, new Date(now)) ? 'Today'
-    : same(d, new Date(now + 86400000)) ? 'Tomorrow'
-      : d.toLocaleDateString('en-GB', { weekday: 'long' });
+  const date = `${d.getDate()} ${practiceText(lang, `mon.${d.getMonth()}`)}`;
+  const day = same(d, new Date(now)) ? practiceText(lang, 'today')
+    : same(d, new Date(now + 86400000)) ? practiceText(lang, 'tomorrow')
+      : practiceText(lang, `wdayLong.${d.getDay()}`);
   return `${day}, ${date} · ${time}`;
 }
 
-export function countdownLabel(startMs, now = Date.now()) {
+export function countdownLabel(startMs, now = Date.now(), lang = 'en') {
   const diff = Number(startMs) - now;
-  if (diff <= 0) return 'Now';
+  if (diff <= 0) return practiceText(lang, 'count.now');
   const min = Math.floor(diff / 60000);
   const d = Math.floor(min / 1440); const h = Math.floor((min % 1440) / 60); const m = min % 60;
-  if (d > 0) return `in ${d}d ${h}h`;
-  if (h > 0) return `in ${h}h ${m}m`;
-  return `in ${m}m`;
+  if (d > 0) return practiceText(lang, 'count.dh', { d, h });
+  if (h > 0) return practiceText(lang, 'count.hm', { h, m });
+  return practiceText(lang, 'count.m', { m });
 }
 
 // The same navigation state the old "Join the call" used (useLiveLobby).

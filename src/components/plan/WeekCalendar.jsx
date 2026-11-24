@@ -7,6 +7,7 @@ import {
   addDaysKey, autoIn, calendarDays, cellsToHours, hourAhead, MAX_A_WEEK, weekAnswer, weekCells,
 } from '../../utils/myWeek';
 import { cellsToRanges, rangesToCells } from '../../utils/timezone';
+import { practiceText } from '../../data/practiceCopy';
 import './plan.css';
 
 // «Your week» at the top of the Plan tab (Polad 2026-10-06: an open calendar
@@ -26,7 +27,8 @@ const span = (hs) => (hs.length === 1 ? hh(hs[0]) : `${String(hs[0]).padStart(2,
 const sameSet = (a, b) => a.size === b.size && [...a].every((k) => b.has(k));
 const ALL_HOURS = Array.from({ length: 17 }, (_, i) => i + 7);
 
-export default function WeekCalendar({ uid, onboarding, bookings, offers, access, verdict = null, weekKey, now }) {
+export default function WeekCalendar({ uid, onboarding, bookings, offers, access, verdict = null, weekKey, now, lang = 'en' }) {
+  const pt = (k, v) => practiceText(lang, k, v);
   const [which, setWhich] = useState(() => {
     // At the weekend the useful week is the next one.
     const wd = new Date(now + 4 * 3600000).getUTCDay();
@@ -55,7 +57,7 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   const start = Date.parse(`${monday}T00:00:00+04:00`);
   const inWeek = (list) => (list || []).filter((x) => Number(x.startMs) >= start && Number(x.startMs) < start + 7 * 86400000);
   const myOffers = inWeek(offers).filter((o) => (o.responses || {})[uid] !== 'declined');
-  const days = calendarDays({ monday, onboarding, bookings: inWeek(bookings), offers: myOffers, cells: shown, now });
+  const days = calendarDays({ monday, onboarding, bookings: inWeek(bookings), offers: myOffers, cells: shown, now, lang });
   const byWd = new Map(days.map((d) => [d.wd, d]));
   const fixed = days.filter((d) => d.state === 'booked' || d.state === 'offered');
   const picked = days.filter((d) => d.state === 'picked');
@@ -120,7 +122,7 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
       }
       setCells(null);
     } catch {
-      setMsg('Could not save. Check your connection and try again.');
+      setMsg(pt('wk.saveError'));
     }
     setBusy(false);
   };
@@ -129,11 +131,11 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   const names = [...fixed, ...picked].sort((a, b) => a.date.localeCompare(b.date))
     .map((d) => `${d.dow} ${d.state === 'picked' ? span(d.hours) : hhmm((d.booking || d.offer).startMs)}`);
   let status;
-  if (answer && !answer.in && !dirty) status = 'You are taking this week off.';
-  else if (!total) status = open ? 'Tap a day or the hours you are free this week.' : 'No time left this week.';
-  else if (saved && !dirty) status = `You're in · ${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
-  else if (auto && !dirty) status = `Your usual times · ${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
-  else status = `${names.join(' · ')} · ${count} ${count === 1 ? 'practice' : 'practices'}`;
+  if (answer && !answer.in && !dirty) status = pt('wk.off');
+  else if (!total) status = open ? pt('wk.tapHint') : pt('wk.noTimeLeft');
+  else if (saved && !dirty) status = `${pt('wk.youreIn')} · ${names.join(' · ')} · ${pt('wk.practices', { n: count })}`;
+  else if (auto && !dirty) status = `${pt('wk.usualTimes')} · ${names.join(' · ')} · ${pt('wk.practices', { n: count })}`;
+  else status = `${names.join(' · ')} · ${pt('wk.practices', { n: count })}`;
   const capped = total > MAX_A_WEEK && !usualOnly;
   // Picked hours that are Never in the usual week: said plainly, not refused.
   const neverPicked = [...shown].filter((k) => never.has(k) && byWd.get(Number(k.split('-')[0]))?.state === 'picked')
@@ -141,7 +143,7 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
 
   const columns = days.map((d) => ({
     key: d.wd,
-    label: d.isToday ? 'Today' : d.dow,
+    label: d.isToday && lang === 'en' ? pt('today') : d.dow,
     sub: d.num,
     disabled: d.state === 'past' || d.state === 'booked' || d.state === 'offered',
   }));
@@ -174,11 +176,11 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
           picked: `picked, ${d.hours ? span(d.hours) : ''}`, free: 'free, not picked', none: 'no usual free time', past: 'past',
         }[d.state]}`}
       >
-        <span className="wk-dow">{d.isToday ? 'Today' : d.dow}</span>
+        <span className="wk-dow">{d.isToday && lang === 'en' ? pt('today') : d.dow}</span>
         <span className="wk-num">{d.num}</span>
         <span className="wk-mark" aria-hidden="true">
           {d.state === 'booked' && hhmm(d.booking.startMs)}
-          {d.state === 'offered' && 'Reply'}
+          {d.state === 'offered' && pt('wk.reply')}
           {d.state === 'picked' && <Check size={13} strokeWidth={3} />}
         </span>
       </button>
@@ -186,11 +188,11 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
   };
 
   return (
-    <section className="pl-card wk" aria-label="Your week">
+    <section className="pl-card wk" aria-label={pt('wk.title')}>
       <div className="wk-head">
-        <p className="wk-title">Your week</p>
-        <div className="wk-seg" role="tablist" aria-label="Which week">
-          {[['this', 'This week'], ['next', 'Next week']].map(([k, label]) => (
+        <p className="wk-title">{pt('wk.title')}</p>
+        <div className="wk-seg" role="tablist" aria-label={pt('wk.title')}>
+          {[['this', pt('wk.thisWeek')], ['next', pt('wk.nextWeek')]].map(([k, label]) => (
             <button key={k} type="button" role="tab" aria-selected={which === k}
               className={`wk-seg-btn${which === k ? ' is-on' : ''}`} onClick={() => setWhich(k)}>{label}</button>
           ))}
@@ -202,7 +204,7 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
           <TimeGrid
             compact
             head={dayButton}
-            ariaLabel="Your hours this week"
+            ariaLabel={pt('wk.title')}
             columns={columns}
             hours={hours}
             cell={cell}
@@ -210,34 +212,34 @@ export default function WeekCalendar({ uid, onboarding, bookings, offers, access
           />
           {open && (
             <button type="button" className="wk-more" onClick={() => setAllHours((v) => !v)}>
-              {allHours ? 'Fewer hours' : 'All hours'}
+              {allHours ? pt('wk.fewerHours') : pt('wk.allHours')}
             </button>
           )}
         </div>
       )}
 
       <p className="wk-status" role="status">{status}</p>
-      {capped && <p className="pl-hint">Up to {MAX_A_WEEK} practices a week — one a day.</p>}
+      {capped && <p className="pl-hint">{pt('wk.capped', { max: MAX_A_WEEK })}</p>}
       {neverPicked.length > 0 && (
-        <p className="pl-hint">{neverPicked.join(', ')} {neverPicked.length === 1 ? 'is' : 'are'} Never in your usual week, so no practice is planned then. Change it in Free times below.</p>
+        <p className="pl-hint">{pt('wk.neverHint', { list: neverPicked.join(', ') })}</p>
       )}
       {msg && <p className="pl-hint">{msg}</p>}
 
       {dirty && shown.size > 0 && (
         <label className="pl-switch pl-text wk-every">
           <input type="checkbox" checked={everyWeek} onChange={(e) => setEveryWeek(e.target.checked)} />
-          Use these times every week
+          {pt('wk.everyWeek')}
         </label>
       )}
 
       <div className="wk-actions">
         {(dirty || (!saved && !auto)) && open && count > 0 && (
           <Button onClick={() => save(false)} disabled={busy || picked.length === 0}>
-            {busy ? 'Saving…' : `${!saved && !auto && !dirty ? "I'm in" : 'Save this week'} · ${count} ${count === 1 ? 'practice' : 'practices'}`}
+            {busy ? pt('saving') : `${!saved && !auto && !dirty ? pt('wk.imIn') : pt('wk.saveWeek')} · ${pt('wk.practices', { n: count })}`}
           </Button>
         )}
         {!(answer && !answer.in) && (saved || auto) && !dirty && (
-          <Button variant="ghost" onClick={() => save(true)} disabled={busy}>Take the week off</Button>
+          <Button variant="ghost" onClick={() => save(true)} disabled={busy}>{pt('wk.takeOff')}</Button>
         )}
       </div>
     </section>

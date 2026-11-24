@@ -6,9 +6,13 @@ const EVENT = 'sl:firstRunLang';
 
 // The first run's language + its words. Every screen of the first run uses
 // this, so a pick on one screen changes the others too (same tab).
-// `userLang` = users.guideLanguage (a sign-up on another device).
+// `userLang` = users.guideLanguage (a sign-up on another device or async profile load).
 export default function useFirstRunCopy(userLang) {
   const [lang, setLangState] = useState(() => resolveFirstRunLang(userLang));
+
+  useEffect(() => {
+    setLangState(resolveFirstRunLang(userLang));
+  }, [userLang]);
 
   useEffect(() => {
     const onChange = (e) => setLangState(e.detail);

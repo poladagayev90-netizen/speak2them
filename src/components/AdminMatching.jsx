@@ -522,7 +522,7 @@ export default function AdminMatching({ users = [] }) {
 
       <div className={`mt-grid is-${view}`}>
         <PeoplePanel
-          week={week} people={people} pairs={pairs} selected={selected} autoMode={autoMode} now={now}
+          week={week} people={people} personById={personById} pairs={pairs} selected={selected} autoMode={autoMode} now={now}
           onToggle={toggleSelect} onAdd={addToList} busy={busy}
         />
         <section className="mt-pairs" aria-label="Pairs">
@@ -610,7 +610,7 @@ const WHY = {
 };
 const HEALTH = { sleeping: 'sleeping', ghost: 'ghost', suspicious: 'flagged' };
 
-function PeoplePanel({ week, people, pairs, selected, onToggle, onAdd, busy, autoMode, now }) {
+function PeoplePanel({ week, people, personById, pairs, selected, onToggle, onAdd, busy, autoMode, now }) {
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('All');
   const [only, setOnly] = useState('list'); // list | short | all

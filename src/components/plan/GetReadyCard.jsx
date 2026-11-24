@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Bot, GraduationCap, ChevronRight } from 'lucide-react';
 import { nextLesson } from '../../utils/lessonMap';
 import { subscribeToLessonProgress } from '../../utils/lessonProgress';
+import useFirstRunCopy from '../../hooks/useFirstRunCopy';
+import { practiceText } from '../../data/practiceCopy';
 import './plan.css';
 
 // Get ready: a picture session with AInur and the next lesson on HOW to keep
@@ -10,29 +12,32 @@ import './plan.css';
 // ready (and inside Profile → Support). The day's topic has its own picture
 // card (TopicCard) above this one. The one warm-up CALL waits in the AInur
 // tab (AinurHub), so Today never carries it twice.
-export default function GetReadyCard({ user }) {
+export default function GetReadyCard({ user, lang: propLang = null }) {
+  const { lang: hookLang } = useFirstRunCopy(user?.guideLanguage);
+  const lang = propLang || hookLang;
+  const pt = (k) => practiceText(lang, k);
   const navigate = useNavigate();
   const [progress, setProgress] = useState(null);
   useEffect(() => subscribeToLessonProgress(user?.uid, setProgress), [user?.uid]);
   const lesson = nextLesson(progress);
 
   return (
-    <section id="tour-get-ready" className="pl-card" aria-label="Get ready">
-      <p className="ui-section-label" style={{ margin: 0 }}>Get ready</p>
+    <section id="tour-get-ready" className="pl-card" aria-label={pt('ready.title')}>
+      <p className="ui-section-label" style={{ margin: 0 }}>{pt('ready.title')}</p>
       <div className="pl-rows">
         <button type="button" className="pl-row" onClick={() => navigate(user?.isGuest ? '/ai-chat' : '/practice')}>
           <span className="pl-row-icon pl-row-icon--ai" aria-hidden="true"><Bot size={18} /></span>
           <span className="pl-row-main">
-            <p className="pl-row-title">Describe pictures with AInur</p>
-            <p className="pl-row-sub">Five photos on today's topic, any time</p>
+            <p className="pl-row-title">{pt('ready.ainurTitle')}</p>
+            <p className="pl-row-sub">{pt('ready.ainurSub')}</p>
           </span>
           <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
         </button>
         <button type="button" className="pl-row" onClick={() => navigate(lesson ? `/lessons/${lesson.id}` : '/lessons')}>
           <span className="pl-row-icon" aria-hidden="true"><GraduationCap size={18} /></span>
           <span className="pl-row-main">
-            <p className="pl-row-title">{lesson ? lesson.title : 'Lessons'}</p>
-            <p className="pl-row-sub">{lesson ? 'Next lesson · a few minutes' : 'How to keep a conversation going'}</p>
+            <p className="pl-row-title">{lesson ? lesson.title : pt('ready.lessons')}</p>
+            <p className="pl-row-sub">{lesson ? pt('ready.nextLesson') : pt('ready.lessonsSub')}</p>
           </span>
           <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
         </button>

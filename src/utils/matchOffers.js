@@ -2,6 +2,7 @@ import { collection, doc, query, where, orderBy, limit, onSnapshot, setDoc } fro
 import { db } from '../firebase';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
+import { practiceText } from '../data/practiceCopy';
 
 // Admin pair proposals — client side.
 //
@@ -141,16 +142,18 @@ export function setPlannerConfig(patch) {
 // "Today 21:00–23:00" / "Tomorrow …" / "Wed 21:00–23:00" in the VIEWER's own
 // clock. Blocks are defined in Baku time, but a learner in Istanbul must read
 // the hour on their own phone.
-export function localBlockLabel(startMs, durationMs = 2 * 60 * 60 * 1000) {
+export function localBlockLabel(startMs, langOrDur = 'en', durationMs = 2 * 60 * 60 * 1000) {
+  const lang = typeof langOrDur === 'string' ? langOrDur : 'en';
+  const dur = typeof langOrDur === 'number' ? langOrDur : durationMs;
   const start = new Date(startMs);
-  const end = new Date(startMs + durationMs);
+  const end = new Date(startMs + dur);
   const t = { hour: '2-digit', minute: '2-digit', hour12: false };
   const today = new Date();
   const tomorrow = new Date(today.getTime() + 86400000);
   const same = (a, b) => a.toDateString() === b.toDateString();
-  const day = same(start, today) ? 'Today'
-    : same(start, tomorrow) ? 'Tomorrow'
-      : start.toLocaleDateString('en-GB', { weekday: 'long' });
+  const day = same(start, today) ? practiceText(lang, 'today')
+    : same(start, tomorrow) ? practiceText(lang, 'tomorrow')
+      : practiceText(lang, `wdayLong.${start.getDay()}`);
   return { day, time: `${start.toLocaleTimeString([], t)}–${end.toLocaleTimeString([], t)}` };
 }
 

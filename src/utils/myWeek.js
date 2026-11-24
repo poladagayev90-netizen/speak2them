@@ -9,6 +9,7 @@
 // their saved free times.
 
 import { rangesToCells } from './timezone';
+import { practiceText } from '../data/practiceCopy';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BAKU_MS = 4 * 60 * 60 * 1000;
@@ -20,15 +21,16 @@ export const bakuWeekKey = (ms) => {
   return d.toISOString().slice(0, 10);
 };
 
-// Mon…Sun of the week starting `monday`.
-export function weekDays(monday) {
+// Mon…Sun of the week starting `monday` (Option A localized short forms when `lang` is set).
+export function weekDays(monday, lang = 'en') {
   return Array.from({ length: 7 }, (_, i) => {
     const date = addDaysKey(monday, i);
     const d = new Date(`${date}T12:00:00`);
+    const wd = d.getDay();
     return {
       date,
-      wd: d.getDay(),
-      dow: d.toLocaleDateString('en-GB', { weekday: 'short' }),
+      wd,
+      dow: practiceText(lang, `wday.${wd}`),
       num: d.getDate(),
     };
   });
@@ -102,13 +104,13 @@ const localKey = (ms) => {
 //   state: past | booked | offered | picked | free | none
 //   `cells` (grid hours, "wd-h") — a day counts as picked when one of its
 //   hours is still ahead; without cells, `picked` days are used as before.
-export function calendarDays({ monday, onboarding, bookings = [], offers = [], picked = null, cells = null, now = Date.now() }) {
+export function calendarDays({ monday, onboarding, bookings = [], offers = [], picked = null, cells = null, now = Date.now(), lang = 'en' }) {
   const today = localKey(now);
   const free = freeWeekdays(onboarding && onboarding.availability);
   const usual = rangesToCells((onboarding && onboarding.availability) || []);
   const chosen = new Set(picked || []);
   const hoursOf = (set, wd) => [...set].filter((k) => Number(k.split('-')[0]) === wd).map((k) => Number(k.split('-')[1]));
-  return weekDays(monday).map((d) => {
+  return weekDays(monday, lang).map((d) => {
     const booking = bookings.find((b) => b.status === 'confirmed' && localKey(Number(b.startMs)) === d.date);
     const offer = offers.find((o) => localKey(Number(o.startMs)) === d.date && Number(o.startMs) > now);
     let state;

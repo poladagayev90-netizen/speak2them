@@ -18,6 +18,8 @@ import './materials/materials.css';
 import useMeaningLang from './materials/useMeaningLang';
 import { LangSwitch } from './materials/TermText';
 import SayButton from './ui/SayButton';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { practiceText } from '../data/practiceCopy';
 
 // Focus mode: the sheet's header and tab row fold away so Listen or Read
 // fills the screen (Polad 2026-11-18 — on a phone the 3-row tab grid ate the
@@ -161,6 +163,8 @@ function DailyQuiz({ content, onFinish }) {
 // `topicIndex` shows that topic instead of today's (a lesson's topic sheet on
 // /class/:id — the same sheet the teacher shares in the lesson).
 export default function DailyTopicModal({ open, onClose, user, topicIndex = null, todayIndex = null, onSelectTopic = null }) {
+  const { lang } = useFirstRunCopy(user?.guideLanguage);
+  const pt = (k, v) => practiceText(lang, k, v);
   const isGuest = isGuestUser(user);
   const [selectedTopicIndex, setSelectedTopicIndex] = useState(topicIndex);
   const [content, setContent] = useState(null);
@@ -277,8 +281,8 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
   const upcomingList = useMemo(() => (
     baseTodayIndex < 0
       ? []
-      : upcomingTopics({ currentIndex: baseTodayIndex, total: weeklyContent.length, count: 6, config: sessionConfig })
-  ), [baseTodayIndex, sessionConfig]);
+      : upcomingTopics({ currentIndex: baseTodayIndex, total: weeklyContent.length, count: 6, config: sessionConfig, lang })
+  ), [baseTodayIndex, sessionConfig, lang]);
 
   const selectSection = (sec) => {
     if (sec === 'pictures' || sec === 'videos') setLastDescribeMode(sec);
@@ -549,7 +553,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                   className="dt-next-item dt-next-item--today"
                   onClick={() => switchTopic(null)}
                 >
-                  <span className="dt-next-meta">Today · Day {weeklyContent[baseTodayIndex]?.day}</span>
+                  <span className="dt-next-meta">{pt('today')} · {pt('topic.day', { day: weeklyContent[baseTodayIndex]?.day })}</span>
                   <span className="dt-next-title">{plainTopic(weeklyContent[baseTodayIndex]?.topic)}</span>
                   <ChevronRight size={18} className="dt-next-arrow" aria-hidden="true" />
                 </button>
@@ -564,7 +568,7 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
                     className={`dt-next-item${isCurrent ? ' is-current' : ''}`}
                     onClick={() => switchTopic(item.index)}
                   >
-                    <span className="dt-next-meta">{item.label} · Day {itemTopic?.day}</span>
+                    <span className="dt-next-meta">{item.label} · {pt('topic.day', { day: itemTopic?.day })}</span>
                     <span className="dt-next-title">{plainTopic(itemTopic?.topic)}</span>
                     <ChevronRight size={18} className="dt-next-arrow" aria-hidden="true" />
                   </button>

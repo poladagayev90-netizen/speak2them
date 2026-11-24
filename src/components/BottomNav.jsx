@@ -7,8 +7,12 @@ import { openOffers } from '../utils/planState';
 import { isAdminUser } from '../constants';
 import { adminGroupOf } from '../utils/adminNav';
 import { isGuestUser } from '../utils/guest';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { practiceText } from '../data/practiceCopy';
 
 export default function BottomNav({ user }) {
+  const { lang } = useFirstRunCopy(user?.guideLanguage);
+  const pt = (k) => practiceText(lang, k);
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -54,12 +58,12 @@ export default function BottomNav({ user }) {
     { icon: GraduationCap,  label: 'Students', route: '/teacher', active: path === '/teacher' || path.startsWith('/teacher/student/') },
     { icon: Shield,         label: 'Admin',    route: '/admin?tab=premium', active: adminGroup === 'admin' },
   ] : [
-    { icon: Home,          label: 'Today',    route: '/' },
-    { icon: CalendarDays,  label: 'Plan',     route: '/plan', badge: toAnswer, invite: true, tourId: 'tour-plan-tab' },
-    { icon: MessageCircle, label: 'Partners', route: '/chats', badge: unread, tourId: 'tour-partners-tab' },
+    { icon: Home,          label: pt('nav.today'),    route: '/' },
+    { icon: CalendarDays,  label: pt('nav.plan'),     route: '/plan', badge: toAnswer, invite: true, tourId: 'tour-plan-tab' },
+    { icon: MessageCircle, label: pt('nav.partners'), route: '/chats', badge: unread, tourId: 'tour-partners-tab' },
     { icon: FlaskConical,  label: 'Lab',      route: '/lab', tourId: 'tour-lab-tab' },
     isTeacher
-      ? { icon: LayoutDashboard, label: 'Dashboard', route: '/teacher' }
+      ? { icon: LayoutDashboard, label: pt('nav.dashboard'), route: '/teacher' }
       // The lighter purple, not the deep one: colour says who you are talking
       // to, and this tab is the AI one. Every other tab leads to people.
       : { icon: Bot, label: 'AInur', route: '/ai-chat', tourId: 'tour-ai-chat', accent: 'var(--ai)', soft: 'var(--ai-soft)' },

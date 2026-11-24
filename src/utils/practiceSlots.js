@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { authedFetch } from '../api';
 import { FUNCTIONS_BASE } from '../constants';
 import { bakuDateStr } from './sessionSchedule';
+import { practiceText } from '../data/practiceCopy';
 
 // Praktika slotları — koordinasiya modelinin client tərəfi.
 //
@@ -71,23 +72,23 @@ export function currentBlockSlotId(nowMs = Date.now()) {
 // Təqvim zolağı üçün: gün adının qısası + ayın günü. Beş sütun 320px ekranda
 // tam ada yer vermir ("Wednesday" sütuna sığmır), rəqəm isə "hansı tarix?"
 // sualına birbaşa cavab verir.
-export function dayChip(dateStr, nowMs = Date.now()) {
+export function dayChip(dateStr, nowMs = Date.now(), lang = 'en') {
   const [y, m, d] = dateStr.split('-').map(Number);
-  const SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   const isToday = dateStr === bakuDateStr(nowMs);
   return {
-    weekday: isToday ? 'Today' : SHORT[new Date(Date.UTC(y, m - 1, d)).getUTCDay()],
+    weekday: isToday ? practiceText(lang, 'today') : practiceText(lang, `wday.${wd}`),
     day: String(d),
     isToday,
   };
 }
 
-export function dayLabel(dateStr, nowMs = Date.now()) {
-  if (dateStr === bakuDateStr(nowMs)) return 'Today';
-  if (dateStr === bakuDateStr(nowMs + DAY_MS)) return 'Tomorrow';
+export function dayLabel(dateStr, nowMs = Date.now(), lang = 'en') {
+  if (dateStr === bakuDateStr(nowMs)) return practiceText(lang, 'today');
+  if (dateStr === bakuDateStr(nowMs + DAY_MS)) return practiceText(lang, 'tomorrow');
   const [y, m, d] = dateStr.split('-').map(Number);
-  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return DAY_NAMES[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  return practiceText(lang, `wdayLong.${wd}`);
 }
 
 export const hourLabel = (dateStr, hour) => {

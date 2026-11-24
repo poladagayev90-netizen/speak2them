@@ -132,6 +132,7 @@ export function TopicCardDeck({ todayTopic, todayIndex = -1, lang = 'en', isGues
       total: weeklyContent.length,
       count: 4,
       config,
+      lang,
     });
     for (const item of next) {
       const t = weeklyContent[item.index];

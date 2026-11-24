@@ -16,6 +16,16 @@ test('vars, plurals and the English fallback', () => {
   expect(practiceText('ru', 'checkin.text', { days: 'Пн', n: 5 })).toMatch(/5 практик,/);
 });
 
+test('localized short weekdays (Option A) and BottomNav labels exist across 4 languages', () => {
+  expect(practiceText('az', 'wday.1')).toBe('B.e');
+  expect(practiceText('tr', 'wday.1')).toBe('Pzt');
+  expect(practiceText('ru', 'wday.1')).toBe('Пн');
+  expect(practiceText('az', 'nav.today')).toBe('Bu gün');
+  expect(practiceText('az', 'nav.partners')).toBe('Partnyorlar');
+  expect(practiceText('az', 'home.academyTitle')).toBe('Academy');
+  expect(practiceText('az', 'home.academySub')).toBe('Video bələdçilər');
+});
+
 test('day names follow Monday-first order, Sunday last', () => {
   expect(practiceDayNames('en', [0, 1, 3])).toBe('Mon, Wed, Sun');
   expect(practiceDayNames('az', [1, 0])).toBe('Bazar ertəsi, Bazar');
@@ -24,7 +34,9 @@ test('day names follow Monday-first order, Sunday last', () => {
 test('no copy names a clock hour', () => {
   for (const table of Object.values(PRACTICE_COPY)) {
     for (const v of Object.values(table)) {
-      const s = typeof v === 'function' ? v({ n: 2, days: 'x', missed: 1, left: 1, usual: 2 }) : v;
+      const s = typeof v === 'function'
+        ? v({ n: 2, days: 'x', missed: 1, left: 1, usual: 2, count: 2, label: '2', booked: 1, list: 'x' })
+        : v;
       expect(s).not.toMatch(/\d{1,2}:\d{2}/);
     }
   }

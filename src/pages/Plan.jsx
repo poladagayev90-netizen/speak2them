@@ -23,6 +23,7 @@ import { WEEK_DAYS, formatMinutes, cityOf, totalHours } from '../utils/timezone'
 import { labelOf, WEEKLY_TARGETS } from '../utils/onboarding';
 import { isGuestUser } from '../utils/guest';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { practiceText } from '../data/practiceCopy';
 import GuestPromptCard from '../components/GuestPromptCard';
 import '../components/plan/plan.css';
 
@@ -48,6 +49,7 @@ export default function Plan({ user }) {
 
 function PlanInner({ user }) {
   const { lang } = useFirstRunCopy(user?.guideLanguage);
+  const pt = (k, v) => practiceText(lang, k, v);
   const navigate = useNavigate();
   const { state: navState } = useLocation();
   const uid = user?.uid;
@@ -81,7 +83,7 @@ function PlanInner({ user }) {
   const freeDays = useMemo(() => {
     const ranges = ob?.availability || [];
     const perDay = WEEK_DAYS.map((d) => ({
-      short: d.short,
+      short: practiceText(lang, `wday.${d.day}`),
       text: ranges.filter((r) => r.day === d.day)
         .map((r) => `${formatMinutes(r.startMin)}–${formatMinutes(r.endMin)}`).join(', '),
     }));
@@ -92,7 +94,7 @@ function PlanInner({ user }) {
       else groups.push({ from: d.short, to: d.short, text: d.text, contiguous: !!d.text });
     }
     return groups.filter((g) => g.text).map((g) => `${g.from === g.to ? g.from : `${g.from}–${g.to}`} ${g.text}`);
-  }, [ob]);
+  }, [ob, lang]);
 
   const confirmAll = async () => {
     setConfirming(true);
@@ -103,7 +105,7 @@ function PlanInner({ user }) {
       if (!res.ok) failed += 1;
     }
     setConfirming(false);
-    setMsg(failed ? `${open.length - failed} confirmed, ${failed} could not be confirmed.` : 'All confirmed. Each is booked once your partner says yes too.');
+    setMsg(failed ? pt('plan.confirmedPartial', { ok: open.length - failed, fail: failed }) : pt('plan.confirmedAll'));
   };
 
   const editTimes = () => navigate('/onboarding', { state: { jumpTo: 'availability', returnTo: '/plan' } });
@@ -111,21 +113,21 @@ function PlanInner({ user }) {
   return (
     <div className="home-page">
       <div className="home-header">
-        <div className="home-logo">Your plan</div>
+        <div className="home-logo">{pt('plan.title')}</div>
       </div>
       <div className="home-body" style={{ paddingBottom: '100px' }}>
-        <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
-        <MissReasonCard uid={uid} onboarding={ob} now={plan.now} />
+        <SlotChangeBanner request={slotChange} lang={lang} onDone={() => setSlotChange(null)} />
+        <MissReasonCard uid={uid} onboarding={ob} now={plan.now} lang={lang} />
 
         {/* Questions first: «Needs your answer» used to sit below the week
             grid, out of sight on a phone (Polad 2026-11-10 could not find it). */}
         {open.length > 0 && (
           <div className="pl-section" style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-2)', marginTop: 'var(--s-2)' }}>
-            <p className="ui-section-label" style={{ margin: 0 }}>Needs your answer</p>
+            <p className="ui-section-label" style={{ margin: 0 }}>{pt('plan.needsAnswer')}</p>
             {open.length > 1 && (
               <Button size="sm" variant="secondary" style={{ marginLeft: 'auto' }} icon={<CheckCheck size={16} aria-hidden="true" />}
                 onClick={confirmAll} disabled={confirming}>
-                {confirming ? 'Confirming…' : `Confirm all ${open.length}`}
+                {confirming ? pt('plan.confirming') : pt('plan.confirmAll', { n: open.length })}
               </Button>
             )}
           </div>
@@ -138,7 +140,7 @@ function PlanInner({ user }) {
         {/* The week as a calendar: what is booked, and the days you want. */}
         {ob && ob.charterAcceptedAt && (ob.availability || []).length > 0 && (
           <WeekCalendar uid={uid} onboarding={ob} bookings={plan.bookings} offers={plan.offers}
-            access={plan.planStatus?.access} verdict={plan.planStatus?.auto} weekKey={plan.weekKey} now={plan.now} />
+            access={plan.planStatus?.access} verdict={plan.planStatus?.auto} weekKey={plan.weekKey} now={plan.now} lang={lang} />
         )}
 
         {/* The status card only when there is nothing booked or to answer —
@@ -146,35 +148,35 @@ function PlanInner({ user }) {
         {/* A teacher (or the admin) is not a learner: no "set up your plan" —
             Today already hides it; here it was the only card a new teacher saw. */}
         {teacherDesk && headline.kind === 'setup' && !schedule.length && !plan.loading && (
-          <section className="pl-card" aria-label="Your lessons">
-            <p className="pl-title">Lessons you teach appear here</p>
-            <p className="pl-text">Plan a student's lessons from your dashboard and they show up in this schedule.</p>
+          <section className="pl-card" aria-label={pt('plan.teacherTitle')}>
+            <p className="pl-title">{pt('plan.teacherTitle')}</p>
+            <p className="pl-text">{pt('plan.teacherSub')}</p>
             <div className="pl-actions">
-              <Button variant="secondary" onClick={() => navigate(isAdminUser(user) ? '/admin' : '/teacher')}>Open the dashboard</Button>
+              <Button variant="secondary" onClick={() => navigate(isAdminUser(user) ? '/admin' : '/teacher')}>{pt('plan.openDash')}</Button>
             </div>
           </section>
         )}
         {!booked.length && !open.length && !plan.loading && !(teacherDesk && headline.kind === 'setup') && (PLAN_CARD_KINDS.has(headline.kind) || plan.planStatus?.limit?.active || noPractices) && (
-          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} hasPartners={(user?.callCount || 0) > 0} />
+          <NextPracticeCard uid={uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={ob} hasPartners={(user?.callCount || 0) > 0} lang={lang} />
         )}
 
         {schedule.length > 0 && (
           <>
-            <p className="ui-section-label pl-section">Booked</p>
+            <p className="ui-section-label pl-section">{pt('plan.booked')}</p>
             {/* A schedule, not a list: a day column on the left and a NOW line
                 on top, so "how far away is it" reads before the details. */}
-            <section className="pl-timeline" aria-label="Booked practices">
-              <div className="pl-now" aria-hidden="true"><span>Now</span></div>
-              {bookingDays(schedule, plan.now).map((day) => (
+            <section className="pl-timeline" aria-label={pt('plan.booked')}>
+              <div className="pl-now" aria-hidden="true"><span>{pt('plan.now')}</span></div>
+              {bookingDays(schedule, plan.now, lang).map((day) => (
                 <div key={day.key} className={`pl-day ${day.isToday ? 'is-today' : ''}`}>
                   <div className="pl-day-col">
-                    <span className="pl-day-dow">{day.isToday ? 'TODAY' : day.dow}</span>
+                    <span className="pl-day-dow">{day.isToday ? pt('plan.todayCaps') : day.dow}</span>
                     <span className="pl-day-num">{day.date}</span>
                   </div>
                   <div className="pl-day-items">
                     {day.items.map((b) => (b.kind === 'lesson'
-                      ? <LessonRow key={b.id} lesson={b} now={plan.now} />
-                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} onboarding={ob} autoOpen={navState?.openBooking === b.id ? (navState.openTime ? 'time' : 'more') : null} />))}
+                      ? <LessonRow key={b.id} lesson={b} now={plan.now} lang={lang} />
+                      : <BookingRow key={b.id} booking={b} uid={uid} now={plan.now} lang={lang} onboarding={ob} autoOpen={navState?.openBooking === b.id ? (navState.openTime ? 'time' : 'more') : null} />))}
                   </div>
                 </div>
               ))}
@@ -183,22 +185,22 @@ function PlanInner({ user }) {
         )}
 
         {Number(ob?.weeklyTarget) > 0 && (
-          <ThisWeekCard uid={uid} target={weekGoal({ onboarding: ob, weekKey: plan.weekKey, limitTarget: plan.planStatus?.limit?.active ? plan.planStatus.limit.target : null })} attended={plan.attended} bookings={thisWeek} showList={false} now={plan.now} />
+          <ThisWeekCard uid={uid} target={weekGoal({ onboarding: ob, weekKey: plan.weekKey, limitTarget: plan.planStatus?.limit?.active ? plan.planStatus.limit.target : null })} attended={plan.attended} bookings={thisWeek} showList={false} now={plan.now} lang={lang} />
         )}
 
         {ob && (
-          <section className="pl-card" aria-label="What your plan is built from">
-            <p className="ui-section-label" style={{ margin: 0 }}>Your plan is built from</p>
+          <section className="pl-card" aria-label={pt('plan.builtFrom')}>
+            <p className="ui-section-label" style={{ margin: 0 }}>{pt('plan.builtFrom')}</p>
             <div className="pl-rows">
               <button type="button" className="pl-row" onClick={editTimes}>
                 <span className="pl-row-icon pl-row-icon--plain" aria-hidden="true"><CalendarDays size={18} /></span>
                 <span className="pl-row-main">
-                  <p className="pl-row-title">Free times · {totalHours(ob.availability || [])} h a week</p>
-                  <p className="pl-row-sub pl-row-sub--wrap">{freeDays.join(' · ') || 'None yet'} {ob.timeZone ? `(${cityOf(ob.timeZone)} time)` : ''}</p>
+                  <p className="pl-row-title">{pt('plan.freeTimes', { h: totalHours(ob.availability || []) })}</p>
+                  <p className="pl-row-sub pl-row-sub--wrap">{freeDays.join(' · ') || pt('plan.noneYet')} {ob.timeZone ? pt('plan.cityTime', { city: cityOf(ob.timeZone) }) : ''}</p>
                   {((ob.maybeAvailability || []).length > 0 || (ob.busyAvailability || []).length > 0) && (
                     <p className="pl-row-sub pl-row-sub--wrap">
-                      {[(ob.maybeAvailability || []).length && `${totalHours(ob.maybeAvailability)} h maybe`,
-                        (ob.busyAvailability || []).length && `${totalHours(ob.busyAvailability)} h never`].filter(Boolean).join(' · ')}
+                      {[(ob.maybeAvailability || []).length && pt('plan.maybe', { h: totalHours(ob.maybeAvailability) }),
+                        (ob.busyAvailability || []).length && pt('plan.never', { h: totalHours(ob.busyAvailability) })].filter(Boolean).join(' · ')}
                     </p>
                   )}
                 </span>
@@ -207,16 +209,16 @@ function PlanInner({ user }) {
               <button type="button" className="pl-row" onClick={() => navigate('/onboarding', { state: { jumpTo: 'target', returnTo: '/plan' } })}>
                 <span className="pl-row-icon pl-row-icon--plain" aria-hidden="true"><CheckCheck size={18} /></span>
                 <span className="pl-row-main">
-                  <p className="pl-row-title">{labelOf(WEEKLY_TARGETS, ob.weeklyTarget)} {Number(ob.weeklyTarget) === 1 ? 'practice' : 'practices'} a week</p>
-                  <p className="pl-row-sub">The number you said you can keep</p>
+                  <p className="pl-row-title">{pt('plan.weeklyTarget', { count: Number(ob.weeklyTarget) || 0, label: labelOf(WEEKLY_TARGETS, ob.weeklyTarget) })}</p>
+                  <p className="pl-row-sub">{pt('plan.targetSub')}</p>
                 </span>
                 <Pencil size={16} className="pl-row-end" aria-hidden="true" />
               </button>
               <button type="button" className="pl-row" onClick={() => navigate('/onboarding', { state: { jumpTo: 'phone', returnTo: '/plan' } })}>
                 <span className="pl-row-icon pl-row-icon--plain" aria-hidden="true"><MessageCircle size={18} /></span>
                 <span className="pl-row-main">
-                  <p className="pl-row-title">WhatsApp · {ob.whatsapp || 'not added'}</p>
-                  <p className="pl-row-sub">Only the SpeakLab team sees it</p>
+                  <p className="pl-row-title">WhatsApp · {ob.whatsapp || pt('plan.waNotAdded')}</p>
+                  <p className="pl-row-sub">{pt('plan.waSub')}</p>
                 </span>
                 <Pencil size={16} className="pl-row-end" aria-hidden="true" />
               </button>
@@ -225,9 +227,9 @@ function PlanInner({ user }) {
               <input
                 type="checkbox"
                 checked={ob.planPaused === true}
-                onChange={(e) => setPlanPaused(uid, e.target.checked).catch(() => setMsg('Could not save. Check your connection.'))}
+                onChange={(e) => setPlanPaused(uid, e.target.checked).catch(() => setMsg(pt('saveError')))}
               />
-              Pause my plan — no new practices until I switch it back
+              {pt('plan.pauseLabel')}
             </label>
           </section>
         )}
@@ -237,8 +239,8 @@ function PlanInner({ user }) {
           <button type="button" className="pl-row" onClick={() => navigate('/chats')}>
             <span className="pl-row-icon" aria-hidden="true"><UsersRound size={18} /></span>
             <span className="pl-row-main">
-              <p className="pl-row-title">Want to talk now?</p>
-              <p className="pl-row-sub">Message or call a past partner</p>
+              <p className="pl-row-title">{pt('plan.talkNow')}</p>
+              <p className="pl-row-sub">{pt('plan.talkNowSub')}</p>
             </span>
             <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
           </button>

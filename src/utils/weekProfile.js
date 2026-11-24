@@ -1,5 +1,6 @@
 import { isAdminUser } from '../constants';
-import { cellsToRanges, rangesToCells, tzOffsetMinutes, WEEK_DAYS } from './timezone';
+import { practiceText } from '../data/practiceCopy';
+import { cellsToRanges, rangesToCells, tzOffsetMinutes } from './timezone';
 
 // The general week profile (Faza 3, 2026-10-07): the onboarding grid paints
 // three kinds of hour, in the learner's OWN time.
@@ -53,8 +54,8 @@ export function ownTimeOfSlot(slotId, timeZone = 'Asia/Baku') {
   return { day: own.getUTCDay(), hour: own.getUTCHours() };
 }
 
-export const dayHourLabel = ({ day, hour }) =>
-  `${(WEEK_DAYS.find((d) => d.day === day) || {}).short || ''} ${String(hour).padStart(2, '0')}:00`;
+export const dayHourLabel = ({ day, hour }, lang = 'en') =>
+  `${practiceText(lang, `wday.${day}`)} ${String(hour).padStart(2, '0')}:00`;
 
 // «Mark Tue 20:00 as Never» after a miss: the new ranges for the onboarding
 // doc. The free list keeps the hour when it is the only one left — the rules

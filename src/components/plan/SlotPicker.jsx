@@ -9,7 +9,7 @@ import './plan.css';
 // list of buttons the old picker would have grown to eighty-odd, so the day
 // comes first and only its hours show. Hours are in the device's own clock,
 // like every time a learner reads; the slot id stays Baku time.
-export default function SlotPicker({ nowMs = Date.now(), excludeSlotId = null, days = 9, busySlotId = '', disabled = false, onPick }) {
+export default function SlotPicker({ nowMs = Date.now(), excludeSlotId = null, days = 9, busySlotId = '', disabled = false, lang = 'en', onPick }) {
   const blocks = useMemo(() => upcomingBlocks(nowMs, excludeSlotId, days), [nowMs, excludeSlotId, days]);
   const dates = useMemo(() => [...new Set(blocks.map((b) => b.date))], [blocks]);
   // Start on the day of the practice being moved, when it is still ahead.
@@ -22,7 +22,7 @@ export default function SlotPicker({ nowMs = Date.now(), excludeSlotId = null, d
     <div className="pl-pick">
       <div className="pl-pick-days" role="tablist" aria-label="Day">
         {dates.map((d) => {
-          const chip = dayChip(d, nowMs);
+          const chip = dayChip(d, nowMs, lang);
           return (
             <button key={d} type="button" role="tab" aria-selected={d === date}
               className={`pl-pick-day ${d === date ? 'is-on' : ''}`} onClick={() => setDate(d)}>

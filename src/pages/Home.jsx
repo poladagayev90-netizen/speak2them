@@ -17,6 +17,7 @@ import { isAdminUser } from '../constants';
 import { subscribeToUnreadTotal } from '../utils/chat';
 import GuidedTour from '../components/GuidedTour';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { practiceText } from '../data/practiceCopy';
 import { isFirstDay } from '../utils/firstRunLang';
 import { openAcademy } from '../utils/academyLink';
 import { shouldShowAcademyPopup, markAcademyPopupShown } from '../utils/academyPopup';
@@ -41,7 +42,7 @@ import useMyLessons, { useTeachingLessons } from '../hooks/useMyLessons';
 import { lessonItems, teachingItems, mergeSchedule, PLATFORM_LABEL } from '../utils/tutorLessons';
 import { plainTopic } from '../utils/topicLabel';
 import { subscribeToMySlots, subscribeToSlotChange } from '../utils/practiceSlots';
-import { planHeadline, upcomingBookings, peerOf, comingUpLabel, weekGoal } from '../utils/planState';
+import { planHeadline, openOffers, upcomingBookings, peerOf, comingUpLabel, weekGoal } from '../utils/planState';
 import AvatarImage from '../components/ui/AvatarImage';
 import '../components/ui/ui.css';
 import '../components/plan/plan.css';
@@ -82,6 +83,7 @@ export default function Home({ user }) {
   // the plan card, the usual-week card and the topic card's chrome follow the
   // learner's first-run language, Profile → App language changes it.
   const { t: tr, lang } = useFirstRunCopy(user?.guideLanguage);
+  const pt = (k, v) => practiceText(lang, k, v);
   const firstDay = !isGuest && isFirstDay(user);
   const tourSteps = useMemo(() => HOME_TOUR_KEYS.map(({ target, key }) => (
     { target, title: tr(`${key}.title`), content: tr(`${key}.text`) }
@@ -181,6 +183,8 @@ export default function Home({ user }) {
     try { return localStorage.getItem(`speak2them:guided-tour:${uid}:tourDone_home_v4`) === 'true'; } catch { return false; }
   }, [uid, user?.tourDone_home_v4]);
 
+  const hasOpenOffers = !isGuest && openOffers(plan.offers, uid, plan.now).length > 0;
+
   useEffect(() => {
     if (isGuest || !uid) return undefined;
     if (firstDay && !tourCompleted) return undefined;
@@ -208,7 +212,6 @@ export default function Home({ user }) {
   const autoMode = useAutoMode(!isGuest);
   const headline = isGuest ? { kind: 'guest' } : planHeadline({ uid, ...plan, autoMode });
   const booked = isGuest ? [] : upcomingBookings(plan.bookings, plan.now);
-  const hasOpenOffers = !isGuest && openOffers(plan.offers, uid, plan.now).length > 0;
   // This week's goal: the days picked for it, else the usual number.
   const target = isGuest ? 0 : weekGoal({
     onboarding: plan.onboarding, weekKey: plan.weekKey,
@@ -242,20 +245,20 @@ export default function Home({ user }) {
       {!isGuest && showTopicIntro && todayTopic && !hasOpenOffers && (
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
-            <h3 className="topic-intro-label">Today’s topic</h3>
+            <h3 className="topic-intro-label">{pt('home.topicIntroTitle')}</h3>
             <h1 className="topic-intro-title">{plainTopic(todayTopic.topic)}</h1>
             <p className="topic-intro-desc">
-              Look through the words, idioms and questions to get ready.
+              {pt('home.topicIntroDesc')}
             </p>
             <div className="topic-intro-actions">
               <button
                 className="topic-intro-btn-primary"
                 onClick={() => { setShowTopicIntro(false); setDailyTopicOpen(true); }}
               >
-                <BookOpen size={18} /> Start learning
+                <BookOpen size={18} /> {pt('home.startLearning')}
               </button>
               <button className="topic-intro-btn-secondary" onClick={() => setShowTopicIntro(false)}>
-                Open
+                {pt('home.open')}
               </button>
             </div>
           </div>
@@ -291,10 +294,10 @@ export default function Home({ user }) {
             {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
 
             {/* An unanswered question belongs at the top of the screen. */}
-            <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
+            <SlotChangeBanner request={slotChange} lang={lang} onDone={() => setSlotChange(null)} />
             {/* Up here, not at the bottom (2026-11-17, Polad: nobody scrolled to
                 it). Shows only until the permission is answered or dismissed. */}
-            <NotificationPrompt user={user} />
+            <NotificationPrompt user={user} lang={lang} />
 
             {/* 0. A proposal waiting for this learner's yes, as the answer card
                 itself (2026-11-10: Today showed only «Your next practice» and
@@ -309,7 +312,7 @@ export default function Home({ user }) {
 
             {/* «What happened?» after the learner's own miss or cancel, and —
                 once — the general week profile for those already practising. */}
-            <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
+            <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} lang={lang} />
             {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} lang={lang} />}
           </>
         )}
@@ -332,10 +335,10 @@ export default function Home({ user }) {
             tutor's "Next lessons" list: who and when at a glance, a lesson one
             tap from its materials, the whole schedule one tap away. */}
         {!isGuest && comingUp.length > 0 && (
-          <section className="pl-card pl-coming" aria-label="Coming up">
+          <section className="pl-card pl-coming" aria-label={pt('home.comingUp')}>
             <div className="pl-coming-head">
-              <p className="ui-section-label" style={{ margin: 0 }}>Coming up</p>
-              <button type="button" className="pl-coming-all" onClick={() => navigate('/plan')}>See all</button>
+              <p className="ui-section-label" style={{ margin: 0 }}>{pt('home.comingUp')}</p>
+              <button type="button" className="pl-coming-all" onClick={() => navigate('/plan')}>{pt('home.seeAll')}</button>
             </div>
             {comingUp.map((b) => {
               if (b.kind === 'lesson') {
@@ -344,8 +347,8 @@ export default function Home({ user }) {
                   <button key={b.id} type="button" className="pl-row pl-row--lesson" onClick={() => navigate(`/class/${b.id}`)}>
                     <span className="pl-coming-avatar pl-coming-avatar--lesson" aria-hidden="true"><BookOpen size={18} /></span>
                     <span className="pl-row-main">
-                      <p className="pl-row-title">Lesson {b.number}{topic ? ` · ${plainTopic(topic.topic)}` : ''}</p>
-                      <p className="pl-row-sub">{b.teaching ? `${b.studentName} · ` : ''}{comingUpLabel(b.startMs, plan.now)} · {PLATFORM_LABEL[b.platform] || 'Preply'}</p>
+                      <p className="pl-row-title">{pt('home.lessonNum', { n: b.number })}{topic ? ` · ${plainTopic(topic.topic)}` : ''}</p>
+                      <p className="pl-row-sub">{b.teaching ? `${b.studentName} · ` : ''}{comingUpLabel(b.startMs, plan.now, lang)} · {PLATFORM_LABEL[b.platform] || 'Preply'}</p>
                     </span>
                     <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
                   </button>
@@ -357,7 +360,7 @@ export default function Home({ user }) {
                   <span className="pl-coming-avatar" aria-hidden="true">{peerName.charAt(0).toUpperCase()}</span>
                   <span className="pl-row-main">
                     <p className="pl-row-title">{peerName}</p>
-                    <p className="pl-row-sub">{comingUpLabel(b.startMs, plan.now)}</p>
+                    <p className="pl-row-sub">{comingUpLabel(b.startMs, plan.now, lang)}</p>
                   </span>
                   <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
                 </button>
@@ -380,8 +383,8 @@ export default function Home({ user }) {
               <ChevronRight size={16} className="pl-row-end" aria-hidden="true" />
             </span>
             <span className="pl-quick-main">
-              <p className="pl-row-title">Leaderboard</p>
-              <p className="pl-row-sub">Weekly club</p>
+              <p className="pl-row-title">{pt('home.leaderboard')}</p>
+              <p className="pl-row-sub">{pt('home.weeklyClub')}</p>
             </span>
           </button>
           <button
@@ -395,15 +398,15 @@ export default function Home({ user }) {
               <ChevronRight size={16} className="pl-row-end" aria-hidden="true" />
             </span>
             <span className="pl-quick-main">
-              <p className="pl-row-title">Academy</p>
-              <p className="pl-row-sub">Video guides</p>
+              <p className="pl-row-title">{pt('home.academyTitle')}</p>
+              <p className="pl-row-sub">{pt('home.academySub')}</p>
             </span>
           </button>
         </div>
 
         {/* 3. Preparation — below the practice it prepares you for. The
             topic is a picture card so Today is not only text. */}
-        <GetReadyCard user={user} />
+        <GetReadyCard user={user} lang={lang} />
 
         {/* 4. The week in one line. */}
         {!isGuest && target > 0 && (
@@ -414,6 +417,7 @@ export default function Home({ user }) {
             bookings={booked.filter((b) => b.weekKey === plan.weekKey)}
             skipFirst={headline.kind === 'next'}
             now={plan.now}
+            lang={lang}
           />
         )}
 
