@@ -66,6 +66,7 @@ const Ranking = React.lazy(importRanking);
 const Plan = React.lazy(importPlan);
 const History = React.lazy(() => import('./pages/History'));
 const Progress = React.lazy(() => import('./pages/Progress'));
+const Academy = React.lazy(() => import('./pages/Academy'));
 const Lessons = React.lazy(() => import('./pages/Lessons'));
 const Teach = React.lazy(() => import('./pages/Teach'));
 const Lesson = React.lazy(() => import('./pages/Lesson'));
@@ -106,7 +107,7 @@ const LIVE_USER_FIELDS = [
   'role', 'teacherId', 'teacherEligible', 'completedSessions',
   // Admin təsdiq edən kimi Tutor və Verified Partner nişanları reload olmadan görünsün.
   'teacherVerified', 'partnerVerified',
-  'preferredLanguage',
+  'preferredLanguage', 'guideLanguage',
   // The warm-up card (useWarmupOffer) reads these: «Not now» and the first
   // real call must move it off Today at once, not after a reload (QA 2026-11-12).
   'warmupDismissedAt', 'callCount',
@@ -297,6 +298,9 @@ function AppShell({ user }) {
           <Route path="/teach" element={authedOnly(<Teach />)} />
           <Route path="/lessons" element={user ? <Lessons user={user} /> : <Navigate to="/login" />} />
           <Route path="/lessons/:lessonId" element={user ? <Lesson user={user} /> : <Navigate to="/login" />} />
+          <Route path="/academy" element={user ? <Academy user={user} /> : <Navigate to="/login" />} />
+          <Route path="/academy/:seriesId" element={user ? <Academy user={user} /> : <Navigate to="/login" />} />
+          <Route path="/academy/:seriesId/:chapterId" element={user ? <Academy user={user} /> : <Navigate to="/login" />} />
           <Route path="/admin" element={!isGuest && isAdminUser(user) ? <Admin user={user} /> : <Navigate to="/" />} />
         </Routes>
       </Suspense>

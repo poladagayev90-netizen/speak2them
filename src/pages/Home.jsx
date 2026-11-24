@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronRight, MessageCircle, FlaskConical, Trophy, MonitorPlay, ExternalLink } from 'lucide-react';
+import { BookOpen, ChevronRight, MessageCircle, FlaskConical, Trophy, MonitorPlay } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -20,6 +20,7 @@ import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { isFirstDay } from '../utils/firstRunLang';
 import { openAcademy } from '../utils/academyLink';
 import { shouldShowAcademyPopup, markAcademyPopupShown } from '../utils/academyPopup';
+import { checkRemoteAcademyOpened } from '../utils/academyProgress';
 import { isGuestUser } from '../utils/guest';
 import CourseProgressCard from '../components/CourseProgressCard';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
@@ -181,13 +182,19 @@ export default function Home({ user }) {
   }, [uid, user?.tourDone_home_v4]);
 
   useEffect(() => {
-    if (isGuest) return;
-    if (firstDay && !tourCompleted) return;
-    if (streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || mine?.slotNoticePending) return;
-    if (!shouldShowAcademyPopup(user)) return;
-    setAcademyPopupOpen(true);
-    markAcademyPopupShown(user.uid);
-  }, [isGuest, firstDay, tourCompleted, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
+    if (isGuest || !uid) return undefined;
+    if (firstDay && !tourCompleted) return undefined;
+    if (streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || mine?.slotNoticePending) return undefined;
+    if (!shouldShowAcademyPopup(user)) return undefined;
+    let alive = true;
+    checkRemoteAcademyOpened(user.uid).then((alreadyOpened) => {
+      if (!alive || alreadyOpened) return;
+      if (!shouldShowAcademyPopup(user)) return;
+      setAcademyPopupOpen(true);
+      markAcademyPopupShown(user.uid);
+    });
+    return () => { alive = false; };
+  }, [isGuest, uid, firstDay, tourCompleted, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
 
   const closeStreakModal = () => {
     setStreakModalOpen(false);
@@ -380,11 +387,11 @@ export default function Home({ user }) {
             id="tour-academy"
             type="button"
             className="pl-quick-tile"
-            onClick={() => openAcademy(uid)}
+            onClick={() => openAcademy(navigate, uid)}
           >
             <span className="pl-quick-top">
               <span className="pl-row-icon" aria-hidden="true"><MonitorPlay size={18} /></span>
-              <ExternalLink size={16} className="pl-row-end" aria-hidden="true" />
+              <ChevronRight size={16} className="pl-row-end" aria-hidden="true" />
             </span>
             <span className="pl-quick-main">
               <p className="pl-row-title">Academy</p>

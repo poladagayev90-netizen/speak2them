@@ -68,7 +68,15 @@ export default function BottomNav({ user }) {
   // Joining is a full-screen layer: the wizard, then instant first-match (or legacy /intro).
   // A conversation takes the whole screen (WhatsApp-style, chat.css).
   // The warm-up call is a call: full screen too.
-  if (path === '/onboarding' || path === '/intro' || path === '/first-match' || path === '/warmup' || path.startsWith('/chat/')) return null;
+  // Academy player is full-screen on mobile so portrait guides stay large and unobstructed.
+  if (
+    path === '/onboarding'
+    || path === '/intro'
+    || path === '/first-match'
+    || path === '/warmup'
+    || path.startsWith('/chat/')
+    || /^\/academy\/[^/]+\/[^/]+/.test(path)
+  ) return null;
 
   return (
     // No safe-area padding here any more. The bar floats now — .bottom-nav sits

@@ -976,6 +976,29 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Video guide (Academy) progress per learner:
+    // { uid, openedAt, chapters, last, updatedAt }.
+    // Mirrors lessonProgress/{uid}: client-written and safe because nothing in
+    // the app grants access, minutes, badges, or unlocks from it. Read by the
+    // owner and the admin; `chapters` and `last` are size-capped so the doc
+    // cannot be used as unbounded storage.
+    function isValidAcademyProgress(uid) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid', 'openedAt', 'chapters', 'last', 'updatedAt'])
+        && 'uid' in d
+        && d.uid == uid
+        && (!('openedAt' in d) || d.openedAt is int || d.openedAt is timestamp)
+        && (!('chapters' in d) || (d.chapters is map && d.chapters.size() <= 200))
+        && (!('last' in d) || (d.last is string && d.last.size() <= 64))
+        && (!('updatedAt' in d) || d.updatedAt is timestamp || d.updatedAt is int);
+    }
+
+    match /academyProgress/{uid} {
+      allow read: if isOwnDoc(uid) || isAdmin();
+      allow create, update: if isOwnDoc(uid) && isValidAcademyProgress(uid);
+      allow delete: if false;
+    }
+
     // A teacher's own describe clips per topic (src/utils/teacherClipPicks.js).
     // Client-written like lessonProgress and safe for the same reason: nothing
     // is granted by it — the clips are public files, this only orders the

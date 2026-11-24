@@ -1,5 +1,6 @@
 import React from 'react';
-import { MonitorPlay, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MonitorPlay, Play } from 'lucide-react';
 import Button from './ui/Button';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { openAcademy } from '../utils/academyLink';
@@ -7,11 +8,12 @@ import { openAcademy } from '../utils/academyLink';
 // Polite newcomer popup pointing to SpeakLab Academy (up to 3 shows, 1x/day,
 // dismissed permanently once opened). Uses the app's Plum modal overlay.
 export default function AcademyPopupModal({ open, user, onClose }) {
+  const navigate = useNavigate();
   const { t, lang } = useFirstRunCopy(user?.guideLanguage);
   if (!open) return null;
 
   const handleOpen = () => {
-    openAcademy(user?.uid);
+    openAcademy(navigate, user?.uid);
     onClose();
   };
 
@@ -37,7 +39,7 @@ export default function AcademyPopupModal({ open, user, onClose }) {
             variant="primary"
             size="lg"
             full
-            icon={<ExternalLink size={18} aria-hidden="true" />}
+            icon={<Play size={18} aria-hidden="true" />}
             onClick={handleOpen}
           >
             {t('acad.pop.open')}

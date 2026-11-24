@@ -196,7 +196,7 @@ function GuestProfile({ user }) {
 
       {sectionLabel('Support')}
       <div style={listCard}>
-        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides · opens speaklab.me', onClick: () => openAcademy(null), notLast: true })}
+        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides', onClick: () => openAcademy(navigate, null), notLast: true })}
         {row({ icon: Shield, label: 'Privacy Policy', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
         {row({ icon: LogOut, label: t('guest.exit'), onClick: () => goAuth('/register'), right: null })}
       </div>
@@ -841,9 +841,8 @@ function ProfileInner({ user }) {
           docs/domain/app-screens.md «Help & feedback / Share SpeakLab». */}
       {sectionLabel('Support')}
       <div style={listCard}>
-        {/* The video guides (docs/domain/app-screens.md «SpeakLab Academy»).
-            Also a row in Today → Get ready. They live on speaklab.me (utils/academyLink.js). */}
-        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides · opens speaklab.me', onClick: () => openAcademy(user?.uid), notLast: true })}
+        {/* The video guides (in-app /academy player backed by speaklab.me catalogue). */}
+        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides', onClick: () => openAcademy(navigate, user?.uid), notLast: true })}
         {row({ icon: MessageSquare, label: 'Help & feedback', value: 'A problem, an idea or a question', onClick: () => navigate('/feedback', { state: { from: '/profile' } }), notLast: true })}
         {row({ icon: Share2, label: 'Share SpeakLab', value: 'Invite a friend to practise', onClick: handleShare })}
       </div>
