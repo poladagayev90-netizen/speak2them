@@ -447,7 +447,7 @@ const az = {
   'bk.whyOldTime': 'Əvvəlki saat niyə uyğun gəlmədi? Bunu yalnız SpeakLab komandası görür.',
 
   'lr.open': 'Aç',
-  'lr.prepare': 'Hazırlaş',
+  'lr.prepare': 'Hazırlaşın',
   'lr.join': 'Qoşul',
 
   'cal.add': 'Təqvimə əlavə et',

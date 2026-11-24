@@ -184,9 +184,14 @@ export default function Home({ user }) {
   }, [uid, user?.tourDone_home_v4]);
 
   const hasOpenOffers = !isGuest && openOffers(plan.offers, uid, plan.now).length > 0;
+  // Until the plan has loaded, `offers` is empty and an open proposal looks
+  // absent — a popup opened in that gap would cover the answer card (and the
+  // Academy popup would be marked shown while the offer then hides it).
+  const offersUnknown = !isGuest && plan.loading;
 
   useEffect(() => {
     if (isGuest || !uid) return undefined;
+    if (offersUnknown) return undefined;
     if (firstDay && !tourCompleted) return undefined;
     if (hasOpenOffers || streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || mine?.slotNoticePending) return undefined;
     if (!shouldShowAcademyPopup(user)) return undefined;
@@ -198,7 +203,7 @@ export default function Home({ user }) {
       markAcademyPopupShown(user.uid);
     });
     return () => { alive = false; };
-  }, [isGuest, uid, firstDay, tourCompleted, hasOpenOffers, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
+  }, [isGuest, uid, offersUnknown, firstDay, tourCompleted, hasOpenOffers, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
 
   const closeStreakModal = () => {
     setStreakModalOpen(false);
@@ -242,7 +247,7 @@ export default function Home({ user }) {
           disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen || academyPopupOpen}
         />
       )}
-      {!isGuest && showTopicIntro && todayTopic && !hasOpenOffers && (
+      {!isGuest && showTopicIntro && todayTopic && !hasOpenOffers && !offersUnknown && (
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
             <h3 className="topic-intro-label">{pt('home.topicIntroTitle')}</h3>

@@ -675,7 +675,7 @@ function PeoplePanel({ week, people, personById, pairs, selected, onToggle, onAd
       </div>
       <ul className="mt-people-list">
         {ordered.map((p) => (
-          <PersonRow key={p.id} p={p} week={week} pairs={pairs} autoMode={autoMode} personById={personById}
+          <PersonRow key={p.id} p={p} week={week} pairs={pairs} autoMode={autoMode} personById={personById} now={now}
             on={selected.includes(p.id)} expanded={open === p.id}
             onToggle={() => onToggle(p.id)} onExpand={() => setOpen((x) => (x === p.id ? null : p.id))}
             onAdd={() => onAdd(p)} adding={busy === `list:${p.id}`} />
@@ -686,12 +686,17 @@ function PeoplePanel({ week, people, personById, pairs, selected, onToggle, onAd
   );
 }
 
-function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand, onAdd, adding, personById }) {
+function PersonRow({ p, week, pairs, autoMode, on, expanded, onToggle, onExpand, onAdd, adding, personById, now }) {
   const [tplOpen, setTplOpen] = useState(false);
   const wa = whatsAppLink(p.whatsapp, p.name);
+  // The nearest pair still ahead. weekPairs also returns this week's past
+  // `confirmed` bookings (only `done` becomes `held`), and a «Match» message
+  // about a call that already happened would be a false claim.
   const realPair = useMemo(
-    () => (pairs || []).find((pr) => (pr.kind === 'pending' || pr.kind === 'booked') && (pr.a === p.id || pr.b === p.id)) || null,
-    [pairs, p.id],
+    () => (pairs || []).find((pr) => (pr.kind === 'pending' || pr.kind === 'booked')
+      && Number(pr.startMs) > now
+      && (pr.a === p.id || pr.b === p.id)) || null,
+    [pairs, p.id, now],
   );
   const verdict = autoMode
     ? (p.why ? `${p.inWeek ? 'in' : 'out'} · ${WHY[p.why] || p.why}` : 'not checked yet')
