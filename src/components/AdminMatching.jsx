@@ -13,7 +13,7 @@ import { proposeMatch, cancelOffer, subscribeToWeekPlan, weekPlanAction } from '
 import { cancelSlotMatch } from '../utils/teacher';
 import {
   PROPOSE_HORIZON_DAYS, closedOffers, weekStarts, startFitMin, busyAround, weekPairs, plannedCount, candidatesFor, levelGap, addDays, START_FIT_MIN,
-  freeGrid, attentionOf, ATTENTION, ageBandShort, isMinorBand, ageCompatible, nextLearnerSlots, suggestPartnersFor,
+  freeGrid, attentionOf, ATTENTION, ageBandShort, isMinorBand, ageCompatible, suggestPartnersFor,
 } from '../utils/matching';
 import { newcomerLang } from '../utils/newcomers';
 import { matchNotifyMessage, inviteRegularMessage, waHref } from '../utils/adminMessages';
@@ -416,7 +416,7 @@ export default function AdminMatching({ users = [] }) {
               {(
                 <ul className="mt-pair-list">
                   {list.map((p) => (
-                    <PairRow key={p.key} pair={p} personById={personById} week={week} pairs={pairs} now={now} busy={busy === p.key}
+                    <PairRow key={p.key} pair={p} personById={personById} busy={busy === p.key}
                       canEdit={p.kind !== 'held' && p.kind !== 'draft' && !isClosed(p.kind) && p.startMs > now}
                       onMove={() => setMoving(p)}
                       onRemoveDraft={p.kind === 'draft' ? () => removeDraft(p) : null}
@@ -717,16 +717,13 @@ function PlanBar({ week, chosen, onClear, onBack, onBooked }) {
 }
 
 // ── Pairs ────────────────────────────────────────────────────────
-function PairRow({ pair, personById, week, pairs, now, busy, canEdit, onChange, onRemove, onResend, resendFrom, onMove, onRemoveDraft }) {
+function PairRow({ pair, personById, busy, canEdit, onChange, onRemove, onResend, resendFrom, onMove, onRemoveDraft }) {
   const hour = Number(pair.slotId.slice(11));
   const side = (uid, name, level, peerUid, peerFallbackName) => {
     const p = personById.get(uid);
     const peer = personById.get(peerUid);
     const local = localAt(hour, p?.timeZone);
     const age = ageBandShort(p?.ageBand);
-    const altSlots = p?.ob && (pair.kind === 'pending' || isClosed(pair.kind))
-      ? nextLearnerSlots({ onboarding: p.ob, monday: week, pairs, uid, nowMs: now, count: 2, excludeSlotId: pair.slotId })
-      : [];
     const waUrl = p?.whatsapp
       ? waHref(p.whatsapp, matchNotifyMessage({
         kind: pair.kind,
@@ -736,7 +733,6 @@ function PairRow({ pair, personById, week, pairs, now, busy, canEdit, onChange, 
         slotId: pair.slotId,
         timeZone: p.timeZone || 'Asia/Baku',
         accepted: !!pair.accepted[uid],
-        altSlots,
       }))
       : null;
     return (

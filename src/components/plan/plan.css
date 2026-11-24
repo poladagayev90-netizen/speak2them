@@ -572,3 +572,40 @@
 .wp-card-main { flex: 1; min-width: 0; }
 .wp-card-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
 .mr-inline { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--border); }
+
+/* Today: shared 2-column quick row for Leaderboard + SpeakLab Academy. */
+.pl-quick-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.pl-quick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  width: 100%;
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--glass-lift);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.pl-quick-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pl-quick-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--s-2);
+}
+.pl-quick-main { width: 100%; min-width: 0; }
+.pl-quick-tile .pl-row-title { font-size: var(--fs-body); }
+.pl-quick-tile .pl-row-sub { font-size: var(--fs-xs); white-space: normal; }
+

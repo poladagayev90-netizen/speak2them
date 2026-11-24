@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
@@ -27,6 +27,7 @@ import Logo from './components/Logo';
 import { Mic } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 import { beforeSendAnalytics } from './utils/webAnalytics';
+import { GuestContext, buildGuestUser, isGuestUser, readGuestFlag, setGuestFlag } from './utils/guest';
 
 // Import thunks are kept separate from React.lazy so the bottom-nav tabs can
 // be preloaded on idle (see the preload effect in App) — without this, the
@@ -109,6 +110,9 @@ const LIVE_USER_FIELDS = [
   // The warm-up card (useWarmupOffer) reads these: «Not now» and the first
   // real call must move it off Today at once, not after a reload (QA 2026-11-12).
   'warmupDismissedAt', 'callCount',
+  // Set when the Home guided tour completes so the Academy newcomer popup
+  // waits until the tour finishes without needing a page reload.
+  'tourDone_home_v4',
 ];
 
 const fieldValue = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : v);
@@ -131,6 +135,7 @@ const PageFallback = () => (
 
 function AppShell({ user }) {
   const location = useLocation();
+  const isGuest = isGuestUser(user);
   // Baseline handler for Android's back button: it consumes nothing, so the
   // hook falls through to history and, at the root, minimises instead of
   // letting Android close the app. Screens that need their own behaviour —
@@ -160,7 +165,7 @@ function AppShell({ user }) {
   // bilər. Bu cüt yoxlama auth yarışını da bağlayır: Register-in setDoc-u
   // App-ın ilk getDoc-undan gec çatanda müəllim əvvəl /onboarding-ə düşür, rol
   // LIVE_USER_FIELDS onSnapshot-u ilə gələn kimi oradan /teacher-ə atılır.
-  const isTeacherUser = user?.role === 'teacher' || isAdminUser(user);
+  const isTeacherUser = !isGuest && (user?.role === 'teacher' || isAdminUser(user));
   // Register-in yazdığı birdəfəlik açar (bax /register route-undakı şərh).
   let postRegRole = null;
   try { postRegRole = sessionStorage.getItem('slk_postreg_role'); } catch { /* private mode */ }
@@ -182,7 +187,7 @@ function AppShell({ user }) {
   // qalırdı və hər açılışda (Dashboard daxil) onu register-ə oxşayan /join
   // ekranına atırdı. Müəllim heç vaxt şagird kimi qoşulmur — kodu silirik.
   if (isTeacherUser && getPendingJoinCode()) clearPendingJoinCode();
-  const pendingJoin = user && !user.teacherId && !isTeacherUser && !location.pathname.startsWith('/join')
+  const pendingJoin = user && !isGuest && !user.teacherId && !isTeacherUser && !location.pathname.startsWith('/join')
     ? getPendingJoinCode()
     : '';
   // `surveyDone` ŞƏRTİ QƏSDƏN YOXDUR. Əvvəl qoşulma sorğunun bitməsini
@@ -199,32 +204,35 @@ function AppShell({ user }) {
   // needsOnboarding() is version-based, so learners who signed up on the old
   // one-page survey are walked through the wizard once too.
   const homeElement = user
-    ? (needsOnboarding(user) ? <Navigate to="/onboarding" replace />
-      // A newcomer writes to the team on WhatsApp first (utils/intro.js).
-      : mustWriteWhatsApp(user) ? <Navigate to="/intro" replace />
-        // Joined through a friend's practice link: once the wizard and the
-        // WhatsApp step are done, carry on to that friend's chat.
-        : getPendingPeer() ? <InviteRedirect user={user} uid={getPendingPeer()} />
-          : <Home user={user} />)
+    ? (isGuest ? <Home user={user} />
+      : needsOnboarding(user) ? <Navigate to="/onboarding" replace />
+        // A newcomer writes to the team on WhatsApp first (utils/intro.js).
+        : mustWriteWhatsApp(user) ? <Navigate to="/intro" replace />
+          // Joined through a friend's practice link: once the wizard and the
+          // WhatsApp step are done, carry on to that friend's chat.
+          : getPendingPeer() ? <InviteRedirect user={user} uid={getPendingPeer()} />
+            : <Home user={user} />)
     : <Navigate to="/register" />;
+
+  const authedOnly = (el, fallback = '/login') => (user && !isGuest ? el : <Navigate to={isGuest ? '/register' : fallback} replace />);
 
   return (
     <AppLayout user={user}>
-      {user && <GlobalCallListener user={user} />}
+      {user && !isGuest && <GlobalCallListener user={user} />}
       <Suspense fallback={<PageFallback />}>
         <Routes>
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+          <Route path="/login" element={(!user || isGuest) ? <Login /> : <Navigate to="/" />} />
           {/* Redirect hədəfi rol-agahdır: qeydiyyat zamanı Register sessionStorage-ə
               rolu yazır; auth yarışında bu route-un stale Navigate effekti bizim
               /teacher naviqasiyasından sonra işləsə belə, eyni hədəfə gedir. */}
-          <Route path="/register" element={!user ? <Register /> : <Navigate to={(isTeacherUser || postRegRole === 'teacher') ? '/teacher' : '/'} replace />} />
-          <Route path="/onboarding" element={user ? (isTeacherUser ? <Navigate to="/teacher" /> : <Onboarding user={user} />) : <Navigate to="/login" />} />
+          <Route path="/register" element={(!user || isGuest) ? <Register /> : <Navigate to={(isTeacherUser || postRegRole === 'teacher') ? '/teacher' : '/'} replace />} />
+          <Route path="/onboarding" element={authedOnly(isTeacherUser ? <Navigate to="/teacher" /> : <Onboarding user={user} />)} />
           {/* Old links (and Register on a stale bundle) still point here. */}
           <Route path="/survey" element={<Navigate to="/onboarding" replace />} />
-          <Route path="/intro" element={user ? <IntroBooking user={user} /> : <Navigate to="/login" />} />
-          <Route path="/first-match" element={user ? <FirstMatchReveal user={user} /> : <Navigate to="/login" />} />
-          <Route path="/partner" element={user ? <PartnerDashboard user={user} /> : <Navigate to="/login" />} />
-          <Route path="/placement" element={user ? <PlacementTest user={user} /> : <Navigate to="/login" />} />
+          <Route path="/intro" element={authedOnly(<IntroBooking user={user} />)} />
+          <Route path="/first-match" element={authedOnly(<FirstMatchReveal user={user} />)} />
+          <Route path="/partner" element={authedOnly(<PartnerDashboard user={user} />)} />
+          <Route path="/placement" element={authedOnly(<PlacementTest user={user} />)} />
           <Route path="/" element={homeElement} />
           <Route path="/chats" element={user ? <Chats user={user} /> : <Navigate to="/login" />} />
           {/* BEFORE the :peerId route, and it has to be. AInur is not a user
@@ -233,48 +241,48 @@ function AppShell({ user }) {
           {/* "Practise with me" link. A learner who still has the wizard or the
               WhatsApp step ahead goes home first; the link waits (see the
               effect above and homeElement). */}
-          <Route path="/p/:uid" element={!user ? <Navigate to="/register" replace />
+          <Route path="/p/:uid" element={(!user || isGuest) ? <Navigate to="/register" replace />
             : (needsOnboarding(user) || mustWriteWhatsApp(user)) ? <Navigate to="/" replace />
               : <InviteRedirect user={user} uid={readPeerFromPath(location.pathname)} />} />
-          <Route path="/chat/ainur" element={user ? <AinurChat user={user} /> : <Navigate to="/login" />} />
-          <Route path="/chat/:peerId" element={user ? <Chat user={user} /> : <Navigate to="/login" />} />
+          <Route path="/chat/ainur" element={authedOnly(<AinurChat user={user} />)} />
+          <Route path="/chat/:peerId" element={authedOnly(<Chat user={user} />)} />
           <Route path="/ai-chat" element={user ? <AinurHub user={user} /> : <Navigate to="/login" />} />
           {/* A guided AInur session. Full-screen like a call, so it sits
               outside the tab set rather than inside it. */}
-          <Route path="/practice" element={user ? <AiActivity user={user} /> : <Navigate to="/login" />} />
-          <Route path="/warmup" element={user ? <WarmupCall user={user} /> : <Navigate to="/login" />} />
-          <Route path="/homework/:id" element={user ? <Homework user={user} /> : <Navigate to="/login" />} />
-          <Route path="/class/:lessonId" element={user ? <ClassLesson user={user} /> : <Navigate to="/login" />} />
+          <Route path="/practice" element={authedOnly(<AiActivity user={user} />)} />
+          <Route path="/warmup" element={authedOnly(<WarmupCall user={user} />)} />
+          <Route path="/homework/:id" element={authedOnly(<Homework user={user} />)} />
+          <Route path="/class/:lessonId" element={authedOnly(<ClassLesson user={user} />)} />
           <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-          <Route path="/feedback" element={user ? <Feedback user={user} /> : <Navigate to="/login" />} />
-          <Route path="/user/:uid" element={user ? <UserProfile user={user} /> : <Navigate to="/login" />} />
+          <Route path="/feedback" element={authedOnly(<Feedback user={user} />)} />
+          <Route path="/user/:uid" element={authedOnly(<UserProfile user={user} />)} />
           <Route path="/daily" element={user ? <DailyHub /> : <Navigate to="/login" />} />
-          <Route path="/puzzle" element={user ? <DailyPuzzle user={user} /> : <Navigate to="/login" />} />
-          <Route path="/redeem" element={user ? <Redeem user={user} /> : <Navigate to="/login" />} />
+          <Route path="/puzzle" element={authedOnly(<DailyPuzzle user={user} />)} />
+          <Route path="/redeem" element={authedOnly(<Redeem user={user} />)} />
           {/* Dəvət linki: hesabı olmayan biri açanda kod saxlanılır və
               qeydiyyatdan sonra axın qaldığı yerdən davam edir. */}
-          <Route path="/join" element={user ? <JoinTeacher user={user} /> : <Navigate to="/register" />} />
+          <Route path="/join" element={authedOnly(<JoinTeacher user={user} />, '/register')} />
           {/* Qeydiyyat yarışı: Register navigate('/teacher') çağıranda App-ın
               user state-i hələ boş ola bilir (onAuthStateChanged zənciri
               bitməyib) və köhnə guard /login→/ bounce-u yaradırdı. Firebase-in
               auth.currentUser-i sinxron dolu olur — auth VAR, state gecikirsə
               yönləndirmə yox, loader göstəririk. */}
-          <Route path="/teacher" element={user ? <TeacherUnlock user={user} /> : (auth.currentUser ? <PageFallback /> : <Navigate to="/login" />)} />
+          <Route path="/teacher" element={(user && !isGuest) ? <TeacherUnlock user={user} /> : (auth.currentUser ? <PageFallback /> : <Navigate to={isGuest ? '/register' : '/login'} />)} />
           {/* Şagird detalı yalnız müəllim üçündür — qeyri-müəllim Lobby-yə. */}
-          <Route path="/teacher/student/:studentId" element={user ? (isTeacherUser ? <TeacherStudent user={user} /> : <Navigate to="/" />) : <Navigate to="/login" />} />
+          <Route path="/teacher/student/:studentId" element={authedOnly(isTeacherUser ? <TeacherStudent user={user} /> : <Navigate to="/" />)} />
           {/* The whole describe-video deck. Teachers (and the admin) only, and
               web only — the page checks canBrowseAllVideos itself, so the deck
               data stays out of the main bundle. */}
-          <Route path="/teacher/videos" element={user ? <VideoLibrary user={user} /> : <Navigate to="/login" />} />
+          <Route path="/teacher/videos" element={authedOnly(<VideoLibrary user={user} />)} />
           <Route path="/premium" element={<Navigate to="/packages" replace />} />
           <Route path="/upgrade" element={<Navigate to="/packages" replace />} />
-          <Route path="/packages" element={user ? <Packages user={user} /> : <Navigate to="/login" />} />
+          <Route path="/packages" element={authedOnly(<Packages user={user} />)} />
           <Route path="/ranking" element={user ? <Ranking user={user} /> : <Navigate to="/login" />} />
           <Route path="/plan" element={user ? <Plan user={user} /> : <Navigate to="/login" />} />
           {/* The Live tab (random search, slot board) is gone: practice is
               planned now. Old links and pushes land on the plan instead. */}
           <Route path="/live" element={<Navigate to="/plan" replace />} />
-          <Route path="/history" element={user ? <History user={user} /> : <Navigate to="/login" />} />
+          <Route path="/history" element={authedOnly(<History user={user} />)} />
           {/* History = "what happened in that call"; Progress = "am I getting
               better". Separate routes because they answer separate questions. */}
           <Route path="/lab" element={user ? <Progress user={user} /> : <Navigate to="/login" />} />
@@ -286,10 +294,10 @@ function AppShell({ user }) {
               map rather than leaving the section. */}
           {/* Lesson mode: today's topic as a deck, for a teacher sharing a
               screen. Full-screen like a call, so it sits outside the tab set. */}
-          <Route path="/teach" element={user ? <Teach /> : <Navigate to="/login" />} />
+          <Route path="/teach" element={authedOnly(<Teach />)} />
           <Route path="/lessons" element={user ? <Lessons user={user} /> : <Navigate to="/login" />} />
           <Route path="/lessons/:lessonId" element={user ? <Lesson user={user} /> : <Navigate to="/login" />} />
-          <Route path="/admin" element={isAdminUser(user) ? <Admin user={user} /> : <Navigate to="/" />} />
+          <Route path="/admin" element={!isGuest && isAdminUser(user) ? <Admin user={user} /> : <Navigate to="/" />} />
         </Routes>
       </Suspense>
     </AppLayout>
@@ -299,10 +307,24 @@ function AppShell({ user }) {
 
 function App() {
   const [user, setUser] = useState(null);
+  const [guestMode, setGuestMode] = useState(readGuestFlag);
   const [loading, setLoading] = useState(true);
   // Held only to re-render the tree when the global cycle advances (nightly),
   // so the topic updates live; the value itself is read via the shared cache.
   const [, setCycle] = useState(null);
+
+  const enterGuest = useCallback(() => {
+    setGuestFlag(true);
+    setGuestMode(true);
+  }, []);
+
+  const exitGuest = useCallback(() => {
+    setGuestFlag(false);
+    setGuestMode(false);
+  }, []);
+
+  const guestCtx = useMemo(() => ({ enterGuest, exitGuest }), [enterGuest, exitGuest]);
+  const effectiveUser = useMemo(() => user || (guestMode ? buildGuestUser() : null), [user, guestMode]);
 
   useEffect(() => {
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
@@ -359,9 +381,12 @@ function App() {
     return () => clearTimeout(t);
   }, [loading]);
 
-  // Subscribe once to the server-driven topic cycle (appConfig/cycle). This
-  // warms the shared cache used by getTodayIndex()/getTodayContent() app-wide.
-  useEffect(() => subscribeToCycle(setCycle), []);
+  // Subscribe once to the server-driven topic cycle (appConfig/cycle) when a real
+  // user is signed in. Guests fall back to the deterministic local calendar formula.
+  useEffect(() => {
+    if (!user) return undefined;
+    return subscribeToCycle(setCycle);
+  }, [user]);
 
   useEffect(() => {
     let heartbeatInterval = null;
@@ -385,6 +410,8 @@ function App() {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       cleanupPresence();
       if (currentUser) {
+        setGuestFlag(false);
+        setGuestMode(false);
         const uid = currentUser.uid;
         const userRef = doc(db, 'users', uid);
         const userSnap = await getDoc(userRef);
@@ -604,21 +631,21 @@ function App() {
     );
   }
   return (
-    <>
+    <GuestContext.Provider value={guestCtx}>
       <ErrorBoundary>
         {Capacitor.isNativePlatform() ? (
           <HashRouter>
-            <AppShell user={user} />
+            <AppShell user={effectiveUser} />
           </HashRouter>
         ) : (
           <BrowserRouter>
-            <AppShell user={user} />
+            <AppShell user={effectiveUser} />
           </BrowserRouter>
         )}
       </ErrorBoundary>
       {/* Web visits only (cookieless) — never inside the Android app. */}
       {!Capacitor.isNativePlatform() && <Analytics beforeSend={beforeSendAnalytics} />}
-    </>
+    </GuestContext.Provider>
   );
 }
 

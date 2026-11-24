@@ -3,6 +3,8 @@ import { Trophy } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import HomeRanking from '../components/HomeRanking';
+import { isGuestUser } from '../utils/guest';
+import GuestPromptCard from '../components/GuestPromptCard';
 
 // Module-level cache: switching to the Ranking tab remounts this page, and
 // without the cache every visit re-fetched and re-parsed the whole list on
@@ -10,7 +12,14 @@ import HomeRanking from '../components/HomeRanking';
 const CACHE_TTL_MS = 120000;
 let usersCache = { users: null, ts: 0 };
 
-export default function Ranking({ user }) {  const [allUsers, setAllUsers] = useState(usersCache.users || []);
+export default function Ranking({ user }) {
+  if (isGuestUser(user)) {
+    return <GuestPromptCard variant="page" section="board" guideLanguage={user?.guideLanguage} />;
+  }
+  return <RankingInner user={user} />;
+}
+
+function RankingInner({ user }) {  const [allUsers, setAllUsers] = useState(usersCache.users || []);
   const [loading, setLoading] = useState(!usersCache.users);
   const [tab, setTab] = useState('weekly');
 

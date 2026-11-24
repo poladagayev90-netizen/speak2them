@@ -1,22 +1,35 @@
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// Which lessons a learner has read: lessonProgress/{uid}.
+// Which lessons a learner has read: lessonProgress/{uid} (or localStorage when
+// exploring as a guest without an account).
 //
 // WRITTEN BY THE CLIENT, unlike attendance or introDoneAt, and that is safe
 // because nothing in the app is granted by it — no minutes, no unlocked call,
 // no badge. It records what somebody has read, for their own map. If it were
 // server-written every card turn would cost a function call for a tick mark.
 //
-// Course progress elsewhere in the app is DERIVED (cycleTick − startTick) and
-// deliberately not stored per user. This cannot be derived from anything: only
-// the learner knows they have read a page, so it is stored — one document, one
-// map, one write per lesson.
-//
 // Shape: { uid, completed: { [lessonId]: ms }, lastLessonId, updatedAt }.
 
+const GUEST_LESSONS_KEY = 'sl.guestLessons';
+const GUEST_LESSONS_EVENT = 'sl:guestLessons';
+
+function readGuestLessons() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(GUEST_LESSONS_KEY) || 'null');
+    return raw && typeof raw === 'object' ? raw : { completed: {} };
+  } catch {
+    return { completed: {} };
+  }
+}
+
 export function subscribeToLessonProgress(uid, cb) {
-  if (!uid) { cb(null); return () => {}; }
+  if (!uid) {
+    cb(readGuestLessons());
+    const onUpdate = () => cb(readGuestLessons());
+    window.addEventListener(GUEST_LESSONS_EVENT, onUpdate);
+    return () => window.removeEventListener(GUEST_LESSONS_EVENT, onUpdate);
+  }
   return onSnapshot(
     doc(db, 'lessonProgress', uid),
     (snap) => cb(snap.exists() ? snap.data() : null),
@@ -29,7 +42,21 @@ export function subscribeToLessonProgress(uid, cb) {
 // a serverTimestamp() sentinel cannot live inside a map value that rules also
 // have to validate, and nothing depends on this clock being honest.
 export async function markLessonDone(uid, lessonId) {
-  if (!uid || !lessonId) return { ok: false };
+  if (!lessonId) return { ok: false };
+  if (!uid) {
+    try {
+      const cur = readGuestLessons();
+      const next = {
+        completed: { ...(cur.completed || {}), [lessonId]: Date.now() },
+        lastLessonId: lessonId,
+      };
+      localStorage.setItem(GUEST_LESSONS_KEY, JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent(GUEST_LESSONS_EVENT));
+      return { ok: true };
+    } catch {
+      return { ok: false };
+    }
+  }
   try {
     await setDoc(doc(db, 'lessonProgress', uid), {
       uid,

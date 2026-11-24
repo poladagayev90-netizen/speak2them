@@ -6,29 +6,34 @@ import { subscribeToMyOffers } from '../utils/matchOffers';
 import { openOffers } from '../utils/planState';
 import { isAdminUser } from '../constants';
 import { adminGroupOf } from '../utils/adminNav';
+import { isGuestUser } from '../utils/guest';
 
 export default function BottomNav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
+  const isGuest = isGuestUser(user);
 
   // Müəllim üçün AInur tabı Dashboard ilə əvəzlənir: müəllimin əsas işi
   // şagirdləri izləməkdir, AI məşqi yox. `role` LIVE_USER_FIELDS-dədir,
   // ona görə rol dəyişəndə nav reload olmadan yenilənir.
-  const isTeacher = user?.role === 'teacher';
+  const isTeacher = !isGuest && user?.role === 'teacher';
   // Oxunmamış mesaj nişanı — bildiriş gəlməsə belə (icazə verilməyib, telefon
   // susdurulub) istifadəçi tətbiqi açanda yeni mesajı DƏRHAL görməlidir.
   const [unread, setUnread] = useState(0);
   useEffect(() => {
-    if (!user?.uid) return undefined;
+    if (!user?.uid || isGuest) { setUnread(0); return undefined; }
     return subscribeToUnreadTotal(user.uid, setUnread);
-  }, [user?.uid]);
+  }, [user?.uid, isGuest]);
   // Proposals waiting for this learner's yes. The Live tab and its "people
   // searching right now" badge are gone: practice is planned now, and the
   // most time-critical thing the app has to say is "a practice needs your
   // answer", visible from every screen.
   const [offers, setOffers] = useState([]);
-  useEffect(() => subscribeToMyOffers(user?.uid, setOffers), [user?.uid]);
+  useEffect(() => {
+    if (!user?.uid || isGuest) { setOffers([]); return undefined; }
+    return subscribeToMyOffers(user.uid, setOffers);
+  }, [user?.uid, isGuest]);
   const toAnswer = openOffers(offers, user?.uid).length;
   // Today (what now) · Plan (the week) · Partners (the people you talk to,
   // chats included) · Lab (am I getting better) · AInur. Profile is the avatar

@@ -6,6 +6,7 @@ import { lessonAfter, isLessonDone } from '../utils/lessonMap';
 import { subscribeToLessonProgress, markLessonDone } from '../utils/lessonProgress';
 import { getFeedbackLanguage } from '../utils/feedbackLanguage';
 import Button from '../components/ui/Button';
+import { isGuestUser } from '../utils/guest';
 import './Lessons.css';
 import '../components/ui/ui.css';
 
@@ -175,7 +176,7 @@ export default function Lesson({ user }) {
             variant={mod.practice.to === '/practice' ? 'ai' : 'secondary'}
             size="md"
             full
-            onClick={() => finish(mod.practice.to)}
+            onClick={() => finish(isGuestUser(user) && mod.practice.to === '/practice' ? '/ai-chat' : mod.practice.to)}
           >
             {mod.practice.label}
           </Button>

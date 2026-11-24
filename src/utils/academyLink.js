@@ -1,4 +1,5 @@
 import { getFeedbackLanguage } from './feedbackLanguage';
+import { markAcademyOpened } from './academyPopup';
 
 // SpeakLab Academy — the video guides to the app — lives on speaklab.me, NOT
 // in the app (Polad 2026-11-22: «yük appa düşməsin», the APK stays well under
@@ -13,6 +14,8 @@ export function academyUrl(lang = getFeedbackLanguage()) {
 
 // A new tab on the web; on Android the WebView hands `_blank` to the system
 // browser — the same way LessonRow and the WhatsApp links leave the app.
-export function openAcademy() {
+// Passing `uid` marks Academy as opened so the newcomer popup stops appearing.
+export function openAcademy(uid = null) {
+  if (uid && typeof uid === 'string') markAcademyOpened(uid);
   window.open(academyUrl(), '_blank', 'noopener,noreferrer');
 }

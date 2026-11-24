@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Image as ImageIcon, Video as VideoIcon, ChevronRight, Lock, Mic } from 'lucide-react';
 import { getTodayContent } from '../data/weeklyContent';
@@ -9,6 +9,7 @@ import LessonHint from '../components/LessonHint';
 import useWarmupOffer from '../hooks/useWarmupOffer';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { WARMUP_AVATAR } from '../utils/warmupCall';
+import { GuestContext, isGuestUser } from '../utils/guest';
 import '../components/ai/ai.css';
 import './WarmupCall.css';
 import { VIDEOS_ENABLED } from '../utils/fetchTopicVideos';
@@ -55,12 +56,23 @@ const SOON = [
 
 export default function AinurHub({ user }) {
   const navigate = useNavigate();
+  const isGuest = isGuestUser(user);
+  const { exitGuest } = useContext(GuestContext);
   const content = useMemo(() => getTodayContent(), []);
   // The one warm-up CALL (Gemini Live, in a call room) — this tab is where it
   // waits once the newcomer pressed «Not now» on Today (Polad 2026-11-08:
   // «sonra AInur panelində yer ala bilər»). Gone after the first real call.
   const warmupOffer = useWarmupOffer(user);
   const { t } = useFirstRunCopy(user?.guideLanguage);
+
+  const openActivity = (to) => {
+    if (isGuest) {
+      exitGuest();
+      navigate('/register');
+      return;
+    }
+    navigate(to);
+  };
 
   return (
     <div style={{ padding: 'var(--s-4)', paddingBottom: '120px' }}>
@@ -81,6 +93,22 @@ export default function AinurHub({ user }) {
           </p>
         </div>
       </div>
+
+      {isGuest && (
+        <Card tone="ai" style={{ marginBottom: 'var(--s-5)' }}>
+          <p className="ui-section-label" style={{ marginTop: 0 }}>{t('guest.badge')}</p>
+          <p style={{ margin: 0, fontSize: 'var(--fs-h2)', fontWeight: 700, color: 'var(--text-primary)' }}>
+            {t('guest.ainurTitle')}
+          </p>
+          <p style={{ margin: '6px 0 var(--s-4)', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 'var(--lh-body)' }}>
+            {t('guest.ainurSub')}
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--s-2)' }}>
+            <Button variant="ai" onClick={() => { exitGuest(); navigate('/register'); }}>{t('guest.signup')}</Button>
+            <Button variant="secondary" onClick={() => { exitGuest(); navigate('/login'); }}>{t('guest.signin')}</Button>
+          </div>
+        </Card>
+      )}
 
       {warmupOffer && (
         <Card tone="ai" className="wu-card" style={{ marginBottom: 'var(--s-5)' }}>
@@ -106,7 +134,7 @@ export default function AinurHub({ user }) {
             key={a.id}
             tone="ai"
             padding="none"
-            onClick={() => navigate(a.to)}
+            onClick={() => openActivity(a.to)}
             style={{ marginBottom: 'var(--s-3)', display: 'flex', alignItems: 'stretch', overflow: 'hidden' }}
           >
             {/* The illustration slot. A flat tinted block reads as deliberate at

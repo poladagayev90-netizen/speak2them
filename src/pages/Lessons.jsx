@@ -8,6 +8,7 @@ import {
 import { subscribeToLessonProgress } from '../utils/lessonProgress';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import { isGuestUser } from '../utils/guest';
 import './Lessons.css';
 import '../components/ui/ui.css';
 
@@ -122,7 +123,7 @@ export default function Lessons({ user }) {
               variant={mod.practice.to === '/practice' ? 'ai' : 'primary'}
               size="md"
               full
-              onClick={() => navigate(mod.practice.to)}
+              onClick={() => navigate(isGuestUser(user) && mod.practice.to === '/practice' ? '/ai-chat' : mod.practice.to)}
               style={{ marginTop: 'var(--s-2)' }}
             >
               {mod.practice.label}

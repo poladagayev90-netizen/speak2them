@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, signInWithGoogle } from '../firebase';
@@ -10,6 +10,7 @@ import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { languageFields } from '../utils/firstRunLang';
 import FirstRunLangPicker from '../components/firstRun/FirstRunLangPicker';
 import OpenInBrowser, { useInAppBrowser } from '../components/firstRun/OpenInBrowser';
+import { GuestContext } from '../utils/guest';
 
 export default function Register() {
   // Müəllimin dəvət linki ilə gəlmişiksə rol SEÇİLMİR — dəvət olunan adam
@@ -32,6 +33,7 @@ export default function Register() {
   // pick is written on the users doc so the wizard keeps it on another device.
   const { lang, setLang, t } = useFirstRunCopy();
   const inApp = useInAppBrowser();
+  const { enterGuest } = useContext(GuestContext);
 
   // Müəllim seçən üçün əlavə sahələr: teacherEligible dərhal true (3-sessiya
   // qapısı bu axında yoxdur), surveyDone true (şagird sorğusu müəllimə aid
@@ -278,6 +280,15 @@ export default function Register() {
         <p className="auth-footer">
           {t('reg.haveAccount')} <Link to="/login">{t('reg.signIn')}</Link>
         </p>
+
+        <button
+          type="button"
+          className="auth-guest"
+          onClick={() => { enterGuest(); navigate('/'); }}
+          disabled={loading}
+        >
+          {t('guest.enter')}
+        </button>
       </div>
     </div>
   );

@@ -51,7 +51,6 @@ import { debateTopics } from '../data/debateTopics';
 import { guessQuestions } from '../data/guessQuestions';
 import { GUESS_ROUND_SECONDS } from '../utils/guessGame';
 import PostCallQuizModal from '../components/PostCallQuizModal';
-import CallRoadmap from '../components/CallRoadmap';
 import CallConnecting, { CONNECT_SLOW_AFTER_MS } from '../components/CallConnecting';
 import CallInsights from '../components/CallInsights';
 import { Capacitor } from '@capacitor/core';
@@ -222,7 +221,6 @@ export default function Chat({ user }) {
   const [incomingCallData, setIncomingCallData] = useState(null);
   const [newBadge, setNewBadge] = useState(null);
   const [callTranslations, setCallTranslations] = useState([]);
-  const [showRoadmap, setShowRoadmap] = useState(false);
   // The in-call tour starts only after 30 s of call (see the GuidedTour below).
   const [tourReady, setTourReady] = useState(false);
   // True when the recording never made it into the queue, so no result is coming.
@@ -585,20 +583,6 @@ export default function Chat({ user }) {
           { arrivedAt: serverTimestamp() },
           { merge: true },
         ).catch((e) => console.warn('[Chat] arrivedAt not written:', e.message));
-      }
-      // The "how to start" roadmap is only useful for newcomers. Show it for a
-      // user's first few calls, then never again — surfacing it on every call
-      // is just noise for experienced users. Counter is per-device (localStorage).
-      try {
-        const ROADMAP_MAX_SHOWS = 3;
-        const seen = parseInt(localStorage.getItem('callRoadmapShows_v1') || '0', 10) || 0;
-        if (seen < ROADMAP_MAX_SHOWS) {
-          setShowRoadmap(true);
-          localStorage.setItem('callRoadmapShows_v1', String(seen + 1));
-        }
-      } catch (e) {
-        // localStorage unavailable (private mode) — fall back to showing it.
-        setShowRoadmap(true);
       }
       
       // [PROMOTION MVP] Disabled all background speech transcription
@@ -1214,7 +1198,6 @@ export default function Chat({ user }) {
     setTalkStarted(false);
     setConnectingSince(null);
     recordingOnRef.current = false;
-    setShowRoadmap(false);
     joinedRef.current = false;
     ringtoneRef.current?.pause();
 
@@ -1783,12 +1766,8 @@ export default function Chat({ user }) {
           top of EVERYTHING -- including the "Next picture" / "Next topic"
           button at the bottom of every in-call activity panel. Tapping the
           primary action meant tapping the globe instead. While a panel owns the
-          screen the widget stands down; closing the panel brings it back.
-          The roadmap is in that list for the same reason and it was NOT: the
-          globe sat on the roadmap's Skip button, so the first thing a learner
-          does on their first call — dismiss the roadmap — opened the
-          translator over everything instead. */}
-      {inCall && !stageOpen && !showRoadmap && (
+          screen the widget stands down; closing the panel brings it back. */}
+      {inCall && !stageOpen && (
         <div id="tour-translate">
           <TranslateWidget 
             userId={user.uid} 
@@ -1799,12 +1778,10 @@ export default function Chat({ user }) {
         </div>
       )}
 
-      {/* Wait for the roadmap: on a first call both would fire at once and the
-          tour's overlay sat on top, blocking every tap on the roadmap. */}
-      {/* And wait 30 s into the call (QA 2026-11-12 O7): at connect the tour
+      {/* Wait 30 s into the call (QA 2026-11-12 O7): at connect the tour
           dimmed the whole screen before the two learners had said hello.
           Never over an open activity stage either — its target is hidden. */}
-      {inCall && <GuidedTour user={user} steps={CHAT_TOUR_STEPS} tourKey="tourDone_chat" disabled={showRoadmap || !tourReady || stageOpen} />}
+      {inCall && <GuidedTour user={user} steps={CHAT_TOUR_STEPS} tourKey="tourDone_chat" disabled={!tourReady || stageOpen} />}
 
       {inCall && imageStage?.active && content && (
         <CallImageStage
@@ -1985,15 +1962,6 @@ export default function Chat({ user }) {
               'guessStage.active': false,
             }).catch((e) => console.error('[Chat] guessStage close failed:', e));
           }}
-        />
-      )}
-
-      {inCall && !connecting && showRoadmap && !activityOpen && (
-        <CallRoadmap
-          content={content}
-          user={user}
-          onStart={() => setShowRoadmap(false)}
-          onOpenDaily={() => { setShowRoadmap(false); setShowDaily(true); }}
         />
       )}
 

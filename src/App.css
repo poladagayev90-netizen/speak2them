@@ -229,6 +229,28 @@ body {
   font-weight: 600;
 }
 
+.auth-guest {
+  display: block;
+  width: 100%;
+  margin-top: var(--s-3);
+  padding: 11px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.auth-guest:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
 /* Sign-in / sign-up on a computer (Polad 2026-11-10: "/register still looks
    zoomed in, the bottom is cut off"). The ≥1024px reading sizes in index.css
    (body 18) are for Today and the topic sheet; a form wants the phone sizes
@@ -1292,191 +1314,6 @@ body {
   padding: 12px 16px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
-}
-
-/* In-call conversation roadmap — above the call screen (1000) and the daily
-   panel (1001), below the post-call overlays (9999). */
-.call-roadmap {
-  position: fixed;
-  inset: 0;
-  z-index: 1002;
-  background: var(--bg-primary);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(20px + var(--safe-area-top, 0px)) 16px calc(20px + var(--safe-area-bottom, 0px));
-  overflow-y: auto;
-}
-
-/* Glass card on a fixed dark PLUM surface regardless of the app theme — it
-   always sits over the in-call screen, which is dark in both themes. The
-   literals below are the dark-theme plum tokens written out, deliberately:
-   this panel must not flip to white when a learner is in light mode. */
-.call-roadmap-card {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  max-height: 100%;
-  overflow-y: auto;
-  background: rgba(30, 25, 64, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 22px;
-  padding: 26px 20px 22px;
-  text-align: center;
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.call-roadmap-skip {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #c8c2e4;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.call-roadmap-skip:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #f4f2fc;
-}
-
-.call-roadmap-label {
-  color: #b6a6ff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin: 0 0 6px;
-}
-
-.call-roadmap-title {
-  color: #f4f2fc;
-  font-size: 21px;
-  font-weight: 800;
-  line-height: 1.25;
-  margin: 0 0 14px;
-}
-
-.call-roadmap-topic-pill {
-  display: inline-block;
-  max-width: 100%;
-  background: rgba(182, 166, 255, 0.16);
-  border: 1px solid rgba(182, 166, 255, 0.40);
-  color: #ded4ff;
-  font-size: 13px;
-  padding: 7px 16px;
-  border-radius: 999px;
-  margin: 0 0 18px;
-}
-
-.call-roadmap-topic-pill b { color: #f4f2fc; }
-
-.call-roadmap-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  text-align: left;
-}
-
-/* Each step is its own glass card with a numbered disc, laid out top-to-bottom
-   for a clear reading flow. */
-.call-roadmap-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 14px 14px;
-}
-
-.call-roadmap-step-num {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #b6a6ff;
-  color: #171331;
-  font-size: 14px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.call-roadmap-step-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.call-roadmap-step-label {
-  color: #f4f2fc;
-  font-size: 14.5px;
-  font-weight: 700;
-  margin: 2px 0 4px;
-}
-
-.call-roadmap-step-text {
-  color: #c8c2e4;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.call-roadmap-questions {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.call-roadmap-question {
-  background: rgba(182, 166, 255, 0.14);
-  border-left: 2px solid #b6a6ff;
-  color: #ded4ff;
-  font-size: 12.5px;
-  line-height: 1.4;
-  padding: 7px 10px;
-  border-radius: 8px;
-  margin: 0;
-}
-
-.call-roadmap-start {
-  width: 100%;
-  margin-top: 20px;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
-  background: #b6a6ff;
-  color: #171331;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.call-roadmap-privacy { margin: var(--s-4) 0 0; text-align: center; }
-
-.call-roadmap-more {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  color: #b6a6ff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: underline;
 }
 
 .dp-tab {

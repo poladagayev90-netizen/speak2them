@@ -12,6 +12,8 @@ import OnlineNow from '../components/OnlineNow';
 import ComingUpPartners from '../components/plan/ComingUpPartners';
 import useOnlineNow from '../hooks/useOnlineNow';
 import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } from '../utils/chat';
+import { isGuestUser } from '../utils/guest';
+import GuestPromptCard from '../components/GuestPromptCard';
 
 // Söhbətlər siyahısı.
 //
@@ -20,6 +22,13 @@ import { subscribeToChats, unreadFor, chatTimeLabel, AINUR_PEER, isAinurId } fro
 // girmək kifayət edirdi ki, siyahıda "Hələ mesaj yoxdur" kabus sətri yaransın.
 // Nəticədə kimsə sənə yazanda bunu bilməyin yolu yox idi.
 export default function Chats({ user }) {
+  if (isGuestUser(user)) {
+    return <GuestPromptCard variant="page" section="partners" guideLanguage={user?.guideLanguage} />;
+  }
+  return <ChatsInner user={user} />;
+}
+
+function ChatsInner({ user }) {
   const [chats, setChats] = useState(null); // null = yüklənir
   const [blockedIds, setBlockedIds] = useState(() => new Set());
   const [favIds, setFavIds] = useState(() => new Set());

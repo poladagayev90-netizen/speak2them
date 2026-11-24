@@ -11,7 +11,7 @@ import { warmupOffer } from '../utils/warmupCall';
 // anything; everyone else costs no Firestore read.
 export default function useWarmupOffer(user) {
   const admin = isAdminUser(user);
-  const candidate = !!user && (admin || (!(Number(user.callCount) > 0) && user.role !== 'teacher'));
+  const candidate = !!user && !user.isGuest && Boolean(user.uid) && (admin || (!(Number(user.callCount) > 0) && user.role !== 'teacher'));
   const [config, setConfig] = useState(undefined);
   const [record, setRecord] = useState(undefined);
 

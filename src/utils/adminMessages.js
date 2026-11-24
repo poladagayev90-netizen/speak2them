@@ -1,7 +1,9 @@
 // Admin → Matching WhatsApp messages (2026-11-22).
 // Pure helpers so every language (az/tr/ru/en) and local-timezone conversion is
 // unit-tested. Never names a fear ("hazırsınız?", "qorxma") or an exam word
-// ("yoxla", "imtahan") — only concrete times from the learner's own grid.
+// ("yoxla", "imtahan") — uses respectful «Siz» address across all languages,
+// and call notifications ask only whether the scheduled/proposed time works
+// (no alternative hours suggested).
 
 import { offsetVsBaku } from './timezone';
 import { FIRST_RUN_LANGS } from './firstRunLang';
@@ -49,8 +51,8 @@ export function formatTwoSlots(slots, timeZone, lang = 'en') {
 }
 
 // Direct WhatsApp message from a PairRow card (matching console).
-// Always in the learner's own language and local time; optional 2 concrete
-// alternative times from their own grid when reminding/rescheduling.
+// Always in the learner's own language and local time, polite «Siz» address,
+// asking only whether the time works (never suggesting alternative hours).
 export function matchNotifyMessage({
   kind = 'pending',
   lang = 'en',
@@ -59,52 +61,38 @@ export function matchNotifyMessage({
   slotId = '',
   timeZone = 'Asia/Baku',
   accepted = false,
-  altSlots = [],
 }) {
   const l = pickLang(lang);
   const me = firstName(name);
   const peer = firstName(partnerName);
   const when = formatSlotLocal(slotId, timeZone, l);
-  const alts = formatTwoSlots(altSlots, timeZone, l);
 
   if (kind === 'booked') {
     const map = {
-      az: () => `Salam${me ? `, ${me}` : ''}! ${when} üçün ${peer || 'tərəf-müqabilin'} ilə SpeakLab praktikan bərkidilib. 5 dəqiqə qalmış tətbiqdə Join düyməsi açılacaq.`,
-      tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} için ${peer || 'partnerin'} ile SpeakLab pratiğin onaylandı. 5 dakika kala uygulamada Join butonu açılacak.`,
-      ru: () => `Привет${me ? `, ${me}` : ''}! Твоя практика в SpeakLab с ${peer || 'партнёром'} назначена на ${when}. За 5 минут до начала в приложении откроется кнопка Join.`,
-      en: () => `Hi${me ? ` ${me}` : ''}! Your SpeakLab practice with ${peer || 'your partner'} is booked for ${when}. The Join button opens in the app 5 minutes before.`,
+      az: () => `Salam${me ? `, ${me}` : ''}! ${when} üçün ${peer || 'tərəf-müqabiliniz'} ilə SpeakLab praktikanız planlaşdırılıb. Bu saat sizin üçün uyğundurmu? (5 dəqiqə qalmış tətbiqdə Join düyməsi açılacaq.)`,
+      tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} için ${peer || 'partneriniz'} ile SpeakLab pratiğiniz planlandı. Bu saat sizin için uygun mu? (5 dakika kala uygulamada Join butonu açılacak.)`,
+      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Ваша практика в SpeakLab с ${peer || 'партнёром'} запланирована на ${when}. Это время вам подходит? (За 5 минут до начала в приложении откроется кнопка Join.)`,
+      en: () => `Hi${me ? ` ${me}` : ''}! Your SpeakLab practice with ${peer || 'your partner'} is scheduled for ${when}. Does this time work for you? (The Join button opens in the app 5 minutes before.)`,
     };
     return map[l]();
   }
 
   if (kind === 'pending' && !accepted) {
-    const altLine = {
-      az: alts ? ` Bu vaxt alınmasa, cədvəlindən ${alts} uyğundurmu?` : '',
-      tr: alts ? ` Bu saat uymazsa programından ${alts} uygun mu?` : '',
-      ru: alts ? ` Если не подходит, подойдёт ${alts}?` : '',
-      en: alts ? ` If not, would ${alts} work instead?` : '',
-    };
     const map = {
-      az: () => `Salam${me ? `, ${me}` : ''}! SpeakLab-da ${when} üçün ${peer || 'uyğun tərəf-müqabil'} ilə praktika təklifi göndərilib — tətbiqdə təsdiqləsən yerin bərkidilər.${altLine.az}`,
-      tr: () => `Merhaba${me ? ` ${me}` : ''}! SpeakLab'de ${when} için ${peer || 'uygun bir partner'} ile pratik önerisi gönderildi — uygulamada onaylarsan yerin kesinleşir.${altLine.tr}`,
-      ru: () => `Привет${me ? `, ${me}` : ''}! В SpeakLab тебя ждёт предложение на практику ${when} с ${peer || 'партнёром'} — подтверди в приложении, чтобы закрепить время.${altLine.ru}`,
-      en: () => `Hi${me ? ` ${me}` : ''}! A SpeakLab practice with ${peer || 'a partner'} is waiting for your confirmation for ${when} — tap Yes in the app to lock it in.${altLine.en}`,
+      az: () => `Salam${me ? `, ${me}` : ''}! SpeakLab-da ${when} üçün ${peer || 'uyğun tərəf-müqabil'} ilə praktika təklifi göndərilib — tətbiqdə təsdiqləsəniz yeriniz bərkidiləcək. Bu saat sizin üçün uyğundurmu?`,
+      tr: () => `Merhaba${me ? ` ${me}` : ''}! SpeakLab'de ${when} için ${peer || 'uygun bir partner'} ile pratik önerisi gönderildi — uygulamada onaylarsanız yeriniz kesinleşecektir. Bu saat sizin için uygun mu?`,
+      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! В SpeakLab вам отправлено предложение на практику ${when} с ${peer || 'партнёром'} — подтвердите в приложении, чтобы закрепить время. Это время вам подходит?`,
+      en: () => `Hi${me ? ` ${me}` : ''}! A SpeakLab practice proposal with ${peer || 'a partner'} was sent for ${when} — please confirm in the app to lock it in. Does this time work for you?`,
     };
     return map[l]();
   }
 
   // Accepted pending (waiting on the other side) or expired/declined follow-up.
-  const altLine = {
-    az: alts ? ` Cədvəlindən ${alts} — hansını bağlayaq?` : ' Tətbiqdə Plan bölməsindən yeni saat seçə bilərsən.',
-    tr: alts ? ` Programından ${alts} — hangisini ayarlayalım?` : ' Uygulamadaki Plan sekmesinden yeni bir saat seçebilirsin.',
-    ru: alts ? ` Из твоего расписания: ${alts} — какое время закрепим?` : ' Выбери удобное время во вкладке Plan в приложении.',
-    en: alts ? ` From your schedule: ${alts} — which one shall we lock in?` : ' Pick another time in the Plan tab whenever suits you.',
-  };
   const map = {
-    az: () => `Salam${me ? `, ${me}` : ''}! ${when} üçün praktikanı yeniləyək.${altLine.az}`,
-    tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} pratiğini yeniden ayarlayalım.${altLine.tr}`,
-    ru: () => `Привет${me ? `, ${me}` : ''}! Давай подберём время вместо ${when}.${altLine.ru}`,
-    en: () => `Hi${me ? ` ${me}` : ''}! Let's set a fresh time instead of ${when}.${altLine.en}`,
+    az: () => `Salam${me ? `, ${me}` : ''}! ${when} üçün olan praktika ilə bağlı yazırıq — bu saat sizin üçün uyğundurmu?`,
+    tr: () => `Merhaba${me ? ` ${me}` : ''}! ${when} pratiği için yazıyoruz — bu saat sizin için uygun mu?`,
+    ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Пишем по поводу практики на ${when} — это время вам подходит?`,
+    en: () => `Hi${me ? ` ${me}` : ''}! Following up on your ${when} practice — does this time work for you?`,
   };
   return map[l]();
 }
@@ -124,9 +112,9 @@ export function inviteRegularMessage({
   const lvl = targetLevel ? ` (${targetLevel})` : '';
   const choice = formatTwoSlots(slots, timeZone, l);
   const map = {
-    az: () => `Salam${me ? `, ${me}` : ''}! Mən Polad, SpeakLab-dan. Bu həftə ${target || 'yeni iştirakçı'}${lvl} ilə 15 dəqiqəlik praktika etmək istəyərsən?${choice ? ` ${choice} — hansı rahatdır?` : ' Hansı saat sənə rahat olar?'}`,
-    tr: () => `Merhaba${me ? ` ${me}` : ''}! Ben Polad, SpeakLab'den. Bu hafta ${target || 'yeni bir üyemiz'}${lvl} ile 15 dakikalık pratik yapmak ister misin?${choice ? ` ${choice} — hangisi uygun?` : ' Hangi saat sana uyar?'}`,
-    ru: () => `Привет${me ? `, ${me}` : ''}! Я Полад из SpeakLab. Сможешь провести 15-минутную практику на этой неделе с ${target || 'новым участником'}${lvl}?${choice ? ` ${choice} — что удобнее?` : ' Какое время подойдёт?'}`,
+    az: () => `Salam${me ? `, ${me}` : ''}! Mən Polad, SpeakLab-dan. Bu həftə ${target || 'yeni iştirakçı'}${lvl} ilə 15 dəqiqəlik praktika etmək istəyərsiniz?${choice ? ` ${choice} — hansı sizə uyğundur?` : ' Hansı saat sizə uyğun olar?'}`,
+    tr: () => `Merhaba${me ? ` ${me}` : ''}! Ben Polad, SpeakLab'den. Bu hafta ${target || 'yeni bir üyemiz'}${lvl} ile 15 dakikalık pratik yapmak ister misiniz?${choice ? ` ${choice} — hangisi sizin için uygun?` : ' Hangi saat size uygun olur?'}`,
+    ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Я Полад из SpeakLab. Сможете провести 15-минутную практику на этой неделе с ${target || 'новым участником'}${lvl}?${choice ? ` ${choice} — что вам удобнее?` : ' Какое время вам подойдёт?'}`,
     en: () => `Hi${me ? ` ${me}` : ''}! Polad from SpeakLab here. Could you join a 15-min practice this week with ${target || 'a learner'}${lvl}?${choice ? ` ${choice} — which works for you?` : ' What time suits you?'}`,
   };
   return map[l]();
@@ -139,17 +127,17 @@ export function newcomerGridMessage({ lang = 'en', name = '', slots = [], timeZo
   const choice = formatTwoSlots(slots, timeZone, l);
   if (practised) {
     const after = {
-      az: () => `Salam${me ? `, ${me}` : ''}! Mən Polad, SpeakLab-dan. İlk məşqin necə keçdi?${choice ? ` Növbəti üçün ${choice} — hansını bağlayaq?` : ' Növbətini nə vaxt edək?'}`,
-      tr: () => `Merhaba${me ? ` ${me}` : ''}! Ben Polad, SpeakLab'den. İlk pratiğin nasıl geçti?${choice ? ` Bir sonraki için ${choice} — hangisini ayarlayalım?` : ' Bir sonrakini ne zaman yapalım?'}`,
-      ru: () => `Привет${me ? `, ${me}` : ''}! Я Полад из SpeakLab. Как прошла твоя первая практика?${choice ? ` Для следующей подойдёт ${choice}?` : ' Когда сделаем следующую?'}`,
+      az: () => `Salam${me ? `, ${me}` : ''}! Mən Polad, SpeakLab-dan. İlk məşqiniz necə keçdi?${choice ? ` Növbəti üçün ${choice} — hansı uyğundur?` : ' Növbətini nə vaxt edək?'}`,
+      tr: () => `Merhaba${me ? ` ${me}` : ''}! Ben Polad, SpeakLab'den. İlk pratiğiniz nasıl geçti?${choice ? ` Bir sonraki için ${choice} — hangisi uygun?` : ' Bir sonrakini ne zaman yapalım?'}`,
+      ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Я Полад из SpeakLab. Как прошла ваша первая практика?${choice ? ` Для следующей подойдёт ${choice}?` : ' Когда сделаем следующую?'}`,
       en: () => `Hi${me ? ` ${me}` : ''}! I'm Polad from SpeakLab. How was your first practice?${choice ? ` For the next one, ${choice} — which suits you?` : ' When shall we do the next one?'}`,
     };
     return after[l]();
   }
   const first = {
-    az: () => `Salam${me ? `, ${me}` : ''}! Mən Polad, SpeakLab-dan. İlk 10 dəqiqəlik söhbətini səviyyənə uyğun sadə suallarla birlikdə başladaq.${choice ? ` Cədvəlindən ${choice} — hansı rahatdır?` : ' Bu həftə hansı gün və saat sənə rahatdır?'}`,
-    tr: () => `Merhaba${me ? ` ${me}` : ''}! Ben Polad, SpeakLab'den. İlk 10 dakikalık pratiğini seviyene uygun basit sorularla birlikte başlatalım.${choice ? ` Programından ${choice} — hangisi uygun?` : ' Bu hafta hangi gün ve saat sana uygun?'}`,
-    ru: () => `Привет${me ? `, ${me}` : ''}! Я Полад из SpeakLab. Давай начнём твою первую 10-минутную практику на твоём уровне с простыми вопросами.${choice ? ` Из твоего расписания: ${choice} — что удобнее?` : ' Какой день и время на этой неделе тебе удобны?'}`,
+    az: () => `Salam${me ? `, ${me}` : ''}! Mən Polad, SpeakLab-dan. İlk 10 dəqiqəlik söhbətinizi səviyyənizə uyğun sadə suallarla birlikdə başladaq.${choice ? ` Cədvəlinizdən ${choice} — hansı uyğundur?` : ' Bu həftə hansı gün və saat sizə uyğundur?'}`,
+    tr: () => `Merhaba${me ? ` ${me}` : ''}! Ben Polad, SpeakLab'den. İlk 10 dakikalık pratiğinizi seviyenize uygun basit sorularla birlikte başlatalım.${choice ? ` Programınızdan ${choice} — hangisi uygun?` : ' Bu hafta hangi gün ve saat size uygun?'}`,
+    ru: () => `Здравствуйте${me ? `, ${me}` : ''}! Я Полад из SpeakLab. Давайте начнём вашу первую 10-минутную практику на вашем уровне с простыми вопросами.${choice ? ` Из вашего расписания: ${choice} — что удобнее?` : ' Какой день и время на этой неделе вам удобны?'}`,
     en: () => `Hi${me ? ` ${me}` : ''}! I'm Polad from SpeakLab. Let's start your first 10-minute practice at your level with simple questions.${choice ? ` From your schedule: ${choice} — which works better?` : ' Which day and time suit you this week?'}`,
   };
   return first[l]();

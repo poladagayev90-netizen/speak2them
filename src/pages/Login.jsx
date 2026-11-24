@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, signInWithGoogle } from '../firebase';
@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
 import OpenInBrowser, { useInAppBrowser } from '../components/firstRun/OpenInBrowser';
 import { firstRunText } from '../data/firstRunCopy';
+import { GuestContext } from '../utils/guest';
 
 // Sign-in is English (it is not part of the first run); the in-app-browser
 // card borrows the English first-run strings.
@@ -49,6 +50,7 @@ export default function Login() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
+  const { enterGuest } = useContext(GuestContext);
 
   const normalizedEmail = email.trim().toLowerCase();
 
@@ -201,6 +203,15 @@ export default function Login() {
         <p className="auth-footer">
           No account? <Link to="/register">Register for free</Link>
         </p>
+
+        <button
+          type="button"
+          className="auth-guest"
+          onClick={() => { enterGuest(); navigate('/'); }}
+          disabled={loading}
+        >
+          Continue as guest
+        </button>
       </div>
     </div>
   );

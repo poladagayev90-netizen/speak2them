@@ -21,6 +21,8 @@ import { planHeadline, openOffers, upcomingBookings, bookingDays, weekGoal } fro
 import { respondToOffer } from '../utils/matchOffers';
 import { WEEK_DAYS, formatMinutes, cityOf, totalHours } from '../utils/timezone';
 import { labelOf, WEEKLY_TARGETS } from '../utils/onboarding';
+import { isGuestUser } from '../utils/guest';
+import GuestPromptCard from '../components/GuestPromptCard';
 import '../components/plan/plan.css';
 
 // Kinds of Today's card worth repeating here: the ones the week calendar does
@@ -37,6 +39,13 @@ const PLAN_CARD_KINDS = new Set(['setup', 'paused', 'no_match']);
 // plan: your free times and the pause switch. It replaced the Live tab: the
 // product no longer asks people to find a partner who happens to be online.
 export default function Plan({ user }) {
+  if (isGuestUser(user)) {
+    return <GuestPromptCard variant="page" section="plan" guideLanguage={user?.guideLanguage} />;
+  }
+  return <PlanInner user={user} />;
+}
+
+function PlanInner({ user }) {
   const navigate = useNavigate();
   const { state: navState } = useLocation();
   const uid = user?.uid;

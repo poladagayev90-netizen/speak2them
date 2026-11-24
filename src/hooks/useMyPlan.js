@@ -75,10 +75,13 @@ export function addFreeBlock(uid, onboarding, block) {
 
 // Whether the autopilot is on (appConfig/planner.rosterMode) — the check-in
 // questions only make sense when the learner's answer decides.
-export function useAutoMode() {
+export function useAutoMode(enabled = true) {
   const [auto, setAuto] = useState(false);
-  useEffect(() => onSnapshot(doc(db, 'appConfig', 'planner'),
-    (s) => setAuto(s.exists() && s.get('rosterMode') === 'auto'), () => setAuto(false)), []);
+  useEffect(() => {
+    if (!enabled) { setAuto(false); return undefined; }
+    return onSnapshot(doc(db, 'appConfig', 'planner'),
+      (s) => setAuto(s.exists() && s.get('rosterMode') === 'auto'), () => setAuto(false));
+  }, [enabled]);
   return auto;
 }
 
@@ -99,7 +102,7 @@ export default function useMyPlan(uid) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    if (!uid) return undefined;
+    if (!uid) { setOnboarding(null); return undefined; }
     return onSnapshot(doc(db, 'onboarding', uid),
       (s) => setOnboarding(s.exists() ? s.data() : null),
       () => setOnboarding(null));

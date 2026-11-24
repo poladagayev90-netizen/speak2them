@@ -1,5 +1,5 @@
 import { totalPracticeMinutes } from '../utils/practiceStats';
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db, auth, enableNotifications, signOutEverywhere } from '../firebase';
@@ -31,12 +31,183 @@ import { showPlanEntry } from '../utils/packages';
 import { Capacitor } from '@capacitor/core';
 import { APP_VERSION } from '../version';
 import { openAcademy } from '../utils/academyLink';
+import useFirstRunCopy from '../hooks/useFirstRunCopy';
+import { GuestContext, isGuestUser } from '../utils/guest';
 
 
 const LEVELS = ['A1 – Beginner', 'A2 – Elementary', 'B1 – Intermediate',
                 'B2 – Upper-Intermediate', 'C1 – Advanced', 'C2 – Proficient'];
 
 export default function Profile({ user }) {
+  if (isGuestUser(user)) return <GuestProfile user={user} />;
+  return <ProfileInner user={user} />;
+}
+
+function GuestProfile({ user }) {
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+  const { exitGuest } = useContext(GuestContext);
+  const { t, lang: appLang, setLang: setAppLang } = useFirstRunCopy(user?.guideLanguage);
+  const [feedbackLang, setFeedbackLang] = useState(getReportLanguage);
+  const [sfx, setSfx] = useState(sfxEnabled);
+
+  const changeLanguage = (code) => {
+    if (code === feedbackLang) return;
+    setFeedbackLang(setFeedbackLanguage(code));
+  };
+
+  const divider = '1px solid var(--border)';
+  const listCard = { background: 'var(--bg-card)', borderRadius: '16px', overflow: 'hidden', marginBottom: '16px' };
+  const sectionLabel = (label) => (
+    <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', margin: '18px 6px 8px' }}>{label}</div>
+  );
+  const row = ({ icon: Icon, label, value, right, onClick, notLast }) => (
+    <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 16px', cursor: onClick ? 'pointer' : 'default', borderBottom: notLast ? divider : 'none' }}
+    >
+      <div style={{ width: '34px', height: '34px', borderRadius: 'var(--r-md)', background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--accent)' }}>
+        {React.isValidElement(Icon) ? Icon : <Icon size={18} strokeWidth={1.75} aria-hidden="true" />}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ color: 'var(--text-primary)', fontSize: '15px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+        {value && <div style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>}
+      </div>
+      {right !== undefined ? right : (onClick ? <ChevronRight size={18} strokeWidth={1.75} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : null)}
+    </div>
+  );
+
+  const goAuth = (path) => {
+    exitGuest();
+    navigate(path);
+  };
+
+  return (
+    <div className="profile-page" style={{ backgroundColor: 'var(--bg-primary)', padding: '16px', paddingBottom: '120px' }}>
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        aria-label="Back to Today"
+        style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', padding: 0, marginBottom: 'var(--s-3)', cursor: 'pointer' }}
+      >
+        <ArrowLeft size={22} />
+      </button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-4)', marginBottom: 'var(--s-4)' }}>
+        <div style={{
+          width: '64px', height: '64px', borderRadius: 'var(--r-pill)', flexShrink: 0,
+          background: 'var(--peer)', color: 'var(--text-on-accent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '26px', fontWeight: 700,
+        }}>
+          G
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 style={{ fontSize: 'var(--fs-h1)', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('guest.badge')}</h2>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>{t('guest.profileSub')}</p>
+        </div>
+      </div>
+
+      <Card tone="peer" padding="md" style={{ marginBottom: 'var(--s-4)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
+          <Button variant="primary" full onClick={() => goAuth('/register')}>{t('guest.signup')}</Button>
+          <Button variant="secondary" full onClick={() => goAuth('/login')}>{t('guest.signin')}</Button>
+        </div>
+      </Card>
+
+      {sectionLabel('App language')}
+      <div style={{ ...listCard, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', padding: '10px' }}>
+        {FIRST_RUN_LANGS.map((code) => {
+          const active = appLang === code;
+          return (
+            <button
+              key={code}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setAppLang(code)}
+              style={{
+                padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
+                border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+                background: active ? 'var(--accent-soft)' : 'transparent',
+                color: 'var(--text-primary)', fontSize: '14px', fontWeight: active ? 800 : 600,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              {FIRST_RUN_LANG_NAMES[code]}
+              {active && <span style={{ color: 'var(--accent)' }}>✓</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {sectionLabel('Feedback language')}
+      <div style={{ ...listCard, display: 'flex', gap: '8px', padding: '10px' }}>
+        {FEEDBACK_LANGUAGES.map((lng) => {
+          const active = feedbackLang === lng.code;
+          return (
+            <button
+              key={lng.code}
+              type="button"
+              onClick={() => changeLanguage(lng.code)}
+              style={{
+                flex: 1, padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
+                border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+                background: active ? 'var(--accent-soft)' : 'transparent',
+                color: 'var(--text-primary)', fontSize: '14px', fontWeight: active ? 800 : 600,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              {lng.label}
+              {active && <span style={{ color: 'var(--accent)' }}>✓</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {sectionLabel('Settings')}
+      <div style={listCard}>
+        {row({
+          icon: isDark ? <Moon size={17} /> : <Sun size={17} />,
+          label: isDark ? 'Dark mode' : 'Light mode',
+          onClick: toggleTheme,
+          right: <span className={`theme-switch ${isDark ? 'dark' : 'light'}`} aria-hidden="true" style={{ display: 'inline-block', flexShrink: 0 }}><span className="theme-switch-thumb"></span></span>,
+          notLast: true,
+        })}
+        {row({
+          icon: sfx ? <Volume2 size={17} /> : <VolumeX size={17} />,
+          label: 'Sound effects',
+          onClick: () => {
+            const next = !sfx;
+            setSfxEnabled(next);
+            setSfx(next);
+            if (next) sfxPop();
+          },
+          right: (
+            <span style={{ fontSize: '13px', fontWeight: 700, flexShrink: 0, color: sfx ? 'var(--accent)' : 'var(--text-muted)' }}>
+              {sfx ? 'On' : 'Off'}
+            </span>
+          ),
+        })}
+      </div>
+
+      {sectionLabel('Support')}
+      <div style={listCard}>
+        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides · opens speaklab.me', onClick: () => openAcademy(null), notLast: true })}
+        {row({ icon: Shield, label: 'Privacy Policy', onClick: () => window.open('/privacy.html', '_blank'), notLast: true })}
+        {row({ icon: LogOut, label: t('guest.exit'), onClick: () => goAuth('/register'), right: null })}
+      </div>
+      <p style={{ textAlign: 'center', fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', margin: 'var(--s-3) 0 0' }}>
+        SpeakLab {APP_VERSION} · {Capacitor.isNativePlatform() ? 'Android app' : 'web'}
+      </p>
+    </div>
+  );
+}
+
+function ProfileInner({ user }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
   const packages = usePackages(user);
@@ -672,7 +843,7 @@ export default function Profile({ user }) {
       <div style={listCard}>
         {/* The video guides (docs/domain/app-screens.md «SpeakLab Academy»).
             Also a row in Today → Get ready. They live on speaklab.me (utils/academyLink.js). */}
-        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides · opens speaklab.me', onClick: openAcademy, notLast: true })}
+        {row({ icon: MonitorPlay, label: 'SpeakLab Academy', value: 'Video guides · opens speaklab.me', onClick: () => openAcademy(user?.uid), notLast: true })}
         {row({ icon: MessageSquare, label: 'Help & feedback', value: 'A problem, an idea or a question', onClick: () => navigate('/feedback', { state: { from: '/profile' } }), notLast: true })}
         {row({ icon: Share2, label: 'Share SpeakLab', value: 'Invite a friend to practise', onClick: handleShare })}
       </div>

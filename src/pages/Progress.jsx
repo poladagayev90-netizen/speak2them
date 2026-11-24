@@ -24,6 +24,8 @@ import { minutesPerSession, wpmPerSession, wordsOverTime, cefrIndex, defaultSess
 import { Tile, Bars, Line, Ladder, ScoreRing } from '../components/lab/LabBits';
 import LabSession from '../components/lab/LabSession';
 import LabPicker from '../components/lab/LabPicker';
+import { isGuestUser } from '../utils/guest';
+import GuestPromptCard from '../components/GuestPromptCard';
 import '../styles/progress.css';
 
 // The progress room.
@@ -48,6 +50,13 @@ import '../styles/progress.css';
 // still showed the old report list). The rules already let them read the
 // learner's insights and analyses.
 export default function Progress({ user, learnerUid }) {
+  if (!learnerUid && isGuestUser(user)) {
+    return <GuestPromptCard variant="page" section="lab" guideLanguage={user?.guideLanguage} />;
+  }
+  return <ProgressInner user={user} learnerUid={learnerUid} />;
+}
+
+function ProgressInner({ user, learnerUid }) {
   const navigate = useNavigate();
   const uid = learnerUid || user?.uid;
   const viewing = !!learnerUid && learnerUid !== user?.uid;

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, ChevronRight, MessageCircle, FlaskConical, Trophy } from 'lucide-react';
+import { BookOpen, ChevronRight, MessageCircle, FlaskConical, Trophy, MonitorPlay, ExternalLink } from 'lucide-react';
 import TeacherInviteBanner from '../components/TeacherInviteBanner';
 import DailyTopicModal from '../components/DailyTopicModal';
 import NotificationPrompt from '../components/NotificationPrompt';
@@ -10,12 +10,17 @@ import { getStreakInfo } from '../utils/streak';
 import { getTodayContent, weeklyContent } from '../data/weeklyContent';
 import { subscribeToCycle } from '../utils/cycle';
 import AnalysisReadyModal from '../components/AnalysisReadyModal';
+import AcademyPopupModal from '../components/AcademyPopupModal';
+import GuestPromptCard from '../components/GuestPromptCard';
 import Logo from '../components/Logo';
 import { isAdminUser } from '../constants';
 import { subscribeToUnreadTotal } from '../utils/chat';
 import GuidedTour from '../components/GuidedTour';
 import useFirstRunCopy from '../hooks/useFirstRunCopy';
 import { isFirstDay } from '../utils/firstRunLang';
+import { openAcademy } from '../utils/academyLink';
+import { shouldShowAcademyPopup, markAcademyPopupShown } from '../utils/academyPopup';
+import { isGuestUser } from '../utils/guest';
 import CourseProgressCard from '../components/CourseProgressCard';
 import CourseCompletionCelebration from '../components/CourseCompletionCelebration';
 import SlotNoticeModal from '../components/SlotNoticeModal';
@@ -71,11 +76,13 @@ const HOME_TOUR_KEYS = [
 export default function Home({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isGuest = isGuestUser(user);
+  const uid = isGuest ? null : user.uid;
   // `lang` also dresses the practice-path cards below (data/practiceCopy.js):
   // the plan card, the usual-week card and the topic card's chrome follow the
   // learner's first-run language, Profile → App language changes it.
   const { t: tr, lang } = useFirstRunCopy(user?.guideLanguage);
-  const firstDay = isFirstDay(user);
+  const firstDay = !isGuest && isFirstDay(user);
   const tourSteps = useMemo(() => HOME_TOUR_KEYS.map(({ target, key }) => (
     { target, title: tr(`${key}.title`), content: tr(`${key}.text`) }
   )), [tr]);
@@ -84,20 +91,26 @@ export default function Home({ user }) {
   }), [tr]);
 
   // The week: bookings, proposals, plan status, onboarding answers.
-  const plan = useMyPlan(user.uid);
+  const plan = useMyPlan(uid);
   // Packages: a quiet line on the card, only when the switch is on and nothing is left.
-  const { config: billing } = useBillingConfig();
-  const noPractices = outOfPractices(packageView({ user, summary: plan.planStatus?.access, config: billing }), billing);
+  const { config: billing } = useBillingConfig(!isGuest);
+  const noPractices = !isGuest && outOfPractices(packageView({ user, summary: plan.planStatus?.access, config: billing }), billing);
   // Individual lessons (Preply / Meet) sit in the same "Coming up" list.
-  const myLessons = useMyLessons(user.uid);
+  const myLessons = useMyLessons(uid);
   // A teacher (or the admin) also sees the lessons they teach.
-  const teaching = useTeachingLessons(user.uid, user.role === 'teacher' || isAdminUser(user));
+  const teaching = useTeachingLessons(uid, !isGuest && (user.role === 'teacher' || isAdminUser(user)));
   // The polite no-show notice and a partner's "change the time?" request
   // still live on the old slot documents.
   const [mine, setMine] = useState(null);
   const [slotChange, setSlotChange] = useState(null);
-  useEffect(() => subscribeToMySlots(user.uid, setMine), [user.uid]);
-  useEffect(() => subscribeToSlotChange(user.uid, setSlotChange), [user.uid]);
+  useEffect(() => {
+    if (!uid) return undefined;
+    return subscribeToMySlots(uid, setMine);
+  }, [uid]);
+  useEffect(() => {
+    if (!uid) return undefined;
+    return subscribeToSlotChange(uid, setSlotChange);
+  }, [uid]);
 
   const [dailyTopicOpen, setDailyTopicOpen] = useState(false);
   // null = today's topic; a number = one of the next topics, opened ahead.
@@ -106,8 +119,9 @@ export default function Home({ user }) {
   const [todayTopic, setTodayTopic] = useState(null);
   const [streakModalOpen, setStreakModalOpen] = useState(false);
   const [journeyOpen, setJourneyOpen] = useState(false);
+  const [academyPopupOpen, setAcademyPopupOpen] = useState(false);
   const [pendingTopicIntro, setPendingTopicIntro] = useState(false);
-  const [streakInfo] = useState(() => getStreakInfo(user));
+  const [streakInfo] = useState(() => (isGuest ? { count: 0, alive: false, doneToday: false } : getStreakInfo(user)));
 
   // The daily-question push deep-links to /?daily=1 — open the topic modal and
   // strip the param so a refresh or back does not reopen it.
@@ -123,18 +137,25 @@ export default function Home({ user }) {
   // getTodayContent() falls back to the local calendar formula and the intro
   // modal announces a different topic than the banner. Subscribing keeps every
   // surface on one truth.
-  useEffect(() => subscribeToCycle(() => setTodayTopic(getTodayContent())), []);
+  useEffect(() => {
+    if (isGuest) {
+      setTodayTopic(getTodayContent());
+      return undefined;
+    }
+    return subscribeToCycle(() => setTodayTopic(getTodayContent()));
+  }, [isGuest]);
 
   useEffect(() => {
+    if (isGuest || !uid) return;
     const todayDateStr = new Date().toDateString();
 
-    const topicKey = `lastTopicIntroDate_v2_${user.uid}`;
+    const topicKey = `lastTopicIntroDate_v2_${uid}`;
     const topicDue = localStorage.getItem(topicKey) !== todayDateStr;
     if (topicDue) localStorage.setItem(topicKey, todayDateStr);
 
     // The streak celebration takes the stage first; the topic intro waits until
     // it closes so two full-screen modals never stack.
-    const streakKey = `streak_modal_shown_${todayDateStr}_${user.uid}`;
+    const streakKey = `streak_modal_shown_${todayDateStr}_${uid}`;
     const streakDue = localStorage.getItem(streakKey) !== '1';
 
     // The first day: neither pop-up — the newcomer has just come through the
@@ -152,7 +173,22 @@ export default function Home({ user }) {
     } else if (topicDue) {
       setShowTopicIntro(true);
     }
-  }, [user.uid, firstDay]);
+  }, [isGuest, uid, firstDay]);
+
+  const tourCompleted = useMemo(() => {
+    if (!uid) return false;
+    if (user?.tourDone_home_v4 === true) return true;
+    try { return localStorage.getItem(`speak2them:guided-tour:${uid}:tourDone_home_v4`) === 'true'; } catch { return false; }
+  }, [uid, user?.tourDone_home_v4]);
+
+  useEffect(() => {
+    if (isGuest) return;
+    if (firstDay && !tourCompleted) return;
+    if (streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || mine?.slotNoticePending) return;
+    if (!shouldShowAcademyPopup(user)) return;
+    setAcademyPopupOpen(true);
+    markAcademyPopupShown(user.uid);
+  }, [isGuest, firstDay, tourCompleted, user, streakModalOpen, showTopicIntro, dailyTopicOpen, journeyOpen, mine?.slotNoticePending]);
 
   const closeStreakModal = () => {
     setStreakModalOpen(false);
@@ -163,17 +199,17 @@ export default function Home({ user }) {
     if (pendingTopicIntro) { setShowTopicIntro(true); setPendingTopicIntro(false); }
   };
 
-  const autoMode = useAutoMode();
-  const headline = planHeadline({ uid: user.uid, ...plan, autoMode });
-  const booked = upcomingBookings(plan.bookings, plan.now);
+  const autoMode = useAutoMode(!isGuest);
+  const headline = isGuest ? { kind: 'guest' } : planHeadline({ uid, ...plan, autoMode });
+  const booked = isGuest ? [] : upcomingBookings(plan.bookings, plan.now);
   // This week's goal: the days picked for it, else the usual number.
-  const target = weekGoal({
+  const target = isGuest ? 0 : weekGoal({
     onboarding: plan.onboarding, weekKey: plan.weekKey,
     limitTarget: plan.planStatus?.limit?.active ? plan.planStatus.limit.target : null,
   });
   // The hero already names the nearest booking; the list starts after it.
   // Lessons join it in time order, each going straight to its materials.
-  const lessons = mergeSchedule(
+  const lessons = isGuest ? [] : mergeSchedule(
     myLessons.active ? lessonItems(myLessons.lessons, plan.now) : [],
     teachingItems(teaching, plan.now),
   );
@@ -187,14 +223,16 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
-      <GuidedTour
-        user={user}
-        steps={tourSteps}
-        labels={tourLabels}
-        tourKey="tourDone_home_v4"
-        disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen}
-      />
-      {showTopicIntro && todayTopic && (
+      {!isGuest && (
+        <GuidedTour
+          user={user}
+          steps={tourSteps}
+          labels={tourLabels}
+          tourKey="tourDone_home_v4"
+          disabled={showTopicIntro || dailyTopicOpen || streakModalOpen || journeyOpen || academyPopupOpen}
+        />
+      )}
+      {!isGuest && showTopicIntro && todayTopic && (
         <div className="topic-intro-overlay">
           <div className="topic-intro-modal">
             <h3 className="topic-intro-label">Today’s topic</h3>
@@ -225,44 +263,49 @@ export default function Home({ user }) {
             admin shield beside it. */}
         <div className="home-header-right">
           {/* The admin's nav holds the panel; Partners and Lab live here. */}
-          {isAdminUser(user) && <AdminHeaderLinks uid={user.uid} />}
+          {!isGuest && isAdminUser(user) && <AdminHeaderLinks uid={user.uid} />}
           <button type="button" className="home-avatar" onClick={() => navigate('/profile')} aria-label="Profile">
             {(user.name || '?').charAt(0).toUpperCase()}
-            <AvatarImage src={user.photo} />
+            {!isGuest && <AvatarImage src={user.photo} />}
           </button>
         </div>
       </div>
 
       <div className="home-body">
-        <TeacherInviteBanner user={user} />
-        <CourseCompletionCelebration user={user} />
+        {isGuest ? (
+          <GuestPromptCard variant="hero" guideLanguage={user.guideLanguage} />
+        ) : (
+          <>
+            <TeacherInviteBanner user={user} />
+            <CourseCompletionCelebration user={user} />
 
-        {/* A polite nudge, never a punishment. The community is small; banning
-            people for a missed slot would empty it. */}
-        {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
+            {/* A polite nudge, never a punishment. The community is small; banning
+                people for a missed slot would empty it. */}
+            {mine?.slotNoticePending && <SlotNoticeModal uid={user.uid} />}
 
+            {/* An unanswered question belongs at the top of the screen. */}
+            <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
+            {/* Up here, not at the bottom (2026-11-17, Polad: nobody scrolled to
+                it). Shows only until the permission is answered or dismissed. */}
+            <NotificationPrompt user={user} />
 
-        {/* An unanswered question belongs at the top of the screen. */}
-        <SlotChangeBanner request={slotChange} onDone={() => setSlotChange(null)} />
-        {/* Up here, not at the bottom (2026-11-17, Polad: nobody scrolled to
-            it). Shows only until the permission is answered or dismissed. */}
-        <NotificationPrompt user={user} />
+            {/* 0. A proposal waiting for this learner's yes, as the answer card
+                itself (2026-11-10: Today showed only «Your next practice» and
+                the question sat on Plan below the week grid — Polad could not
+                find it). «Your next practice» is a two-yes booking only. */}
+            <MatchOfferCard uid={user.uid} />
 
-        {/* 0. A proposal waiting for this learner's yes, as the answer card
-            itself (2026-11-10: Today showed only «Your next practice» and
-            the question sat on Plan below the week grid — Polad could not
-            find it). «Your next practice» is a two-yes booking only. */}
-        <MatchOfferCard uid={user.uid} />
+            {/* 1. The next practice, or what is happening instead. */}
+            {/* A teacher (or the admin) is not a learner: no "set up your plan".
+                «N need your answer» is not repeated: the cards above ARE that. */}
+            {!plan.loading && headline.kind !== 'answer' && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} lang={lang} />}
 
-        {/* 1. The next practice, or what is happening instead. */}
-        {/* A teacher (or the admin) is not a learner: no "set up your plan".
-            «N need your answer» is not repeated: the cards above ARE that. */}
-        {!plan.loading && headline.kind !== 'answer' && !(headline.kind === 'setup' && (user.role === 'teacher' || isAdminUser(user))) && <NextPracticeCard uid={user.uid} headline={headline} now={plan.now} limit={plan.planStatus?.limit} noPractices={noPractices} onboarding={plan.onboarding} hasPartners={(user.callCount || 0) > 0} lang={lang} />}
-
-        {/* «What happened?» after the learner's own miss or cancel, and —
-            once — the general week profile for those already practising. */}
-        <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
-        {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} lang={lang} />}
+            {/* «What happened?» after the learner's own miss or cancel, and —
+                once — the general week profile for those already practising. */}
+            <MissReasonCard uid={user.uid} onboarding={plan.onboarding} now={plan.now} />
+            {!plan.loading && <WeekProfileCard user={user} onboarding={plan.onboarding} lang={lang} />}
+          </>
+        )}
 
         {/* Today's materials, right under the plan (Polad 2026-10-06: "they
             look good and they ARE the class"). Online now is on Partners only. */}
@@ -273,14 +316,14 @@ export default function Home({ user }) {
             onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }}
           />
         )}
-        {isAdminUser(user) && (
+        {!isGuest && isAdminUser(user) && (
           <ReadyTopics onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }} />
         )}
 
         {/* 2b. The next few booked practices and individual lessons, as a
             tutor's "Next lessons" list: who and when at a glance, a lesson one
             tap from its materials, the whole schedule one tap away. */}
-        {comingUp.length > 0 && (
+        {!isGuest && comingUp.length > 0 && (
           <section className="pl-card pl-coming" aria-label="Coming up">
             <div className="pl-coming-head">
               <p className="ui-section-label" style={{ margin: 0 }}>Coming up</p>
@@ -315,26 +358,47 @@ export default function Home({ user }) {
           </section>
         )}
 
-        {/* The leaderboard, one tap from Today (it used to live only inside
-            Profile, where a newcomer never found it). Above «Get ready»
-            since 2026-11-11 (Polad). */}
-        <section id="tour-leaderboard" className="pl-card">
-          <button type="button" className="pl-row" onClick={() => navigate('/ranking')}>
-            <span className="pl-row-icon" aria-hidden="true"><Trophy size={18} /></span>
-            <span className="pl-row-main">
-              <p className="pl-row-title">Leaderboard</p>
-              <p className="pl-row-sub">Who practised most this week</p>
+        {/* Leaderboard and SpeakLab Academy share one row above Get ready so
+            newcomers notice the video guides right away. */}
+        <div className="pl-quick-row">
+          <button
+            id="tour-leaderboard"
+            type="button"
+            className="pl-quick-tile"
+            onClick={() => navigate('/ranking')}
+          >
+            <span className="pl-quick-top">
+              <span className="pl-row-icon" aria-hidden="true"><Trophy size={18} /></span>
+              <ChevronRight size={16} className="pl-row-end" aria-hidden="true" />
             </span>
-            <ChevronRight size={18} className="pl-row-end" aria-hidden="true" />
+            <span className="pl-quick-main">
+              <p className="pl-row-title">Leaderboard</p>
+              <p className="pl-row-sub">Weekly club</p>
+            </span>
           </button>
-        </section>
+          <button
+            id="tour-academy"
+            type="button"
+            className="pl-quick-tile"
+            onClick={() => openAcademy(uid)}
+          >
+            <span className="pl-quick-top">
+              <span className="pl-row-icon" aria-hidden="true"><MonitorPlay size={18} /></span>
+              <ExternalLink size={16} className="pl-row-end" aria-hidden="true" />
+            </span>
+            <span className="pl-quick-main">
+              <p className="pl-row-title">Academy</p>
+              <p className="pl-row-sub">Video guides</p>
+            </span>
+          </button>
+        </div>
 
         {/* 3. Preparation — below the practice it prepares you for. The
             topic is a picture card so Today is not only text. */}
         <GetReadyCard user={user} />
 
         {/* 4. The week in one line. */}
-        {target > 0 && (
+        {!isGuest && target > 0 && (
           <ThisWeekCard
             uid={user.uid}
             target={target}
@@ -347,21 +411,30 @@ export default function Home({ user }) {
 
         {/* Course standing sits BELOW the actions: a status note must never
             push the things you can actually do down the screen. */}
-        <CourseProgressCard user={user} />
+        {!isGuest && <CourseProgressCard user={user} />}
       </div>
 
       <DailyTopicModal open={dailyTopicOpen} onClose={() => { setDailyTopicOpen(false); setDailyTopicIndex(null); }} user={user} topicIndex={dailyTopicIndex} />
-      <AnalysisReadyModal
-        user={user}
-        suppressed={streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen}
-      />
-      <StreakModal
-        open={streakModalOpen}
-        streakInfo={streakInfo}
-        onClose={closeStreakModal}
-        onOpenJourney={() => { setStreakModalOpen(false); setJourneyOpen(true); }}
-      />
-      <StreakJourney open={journeyOpen} streakInfo={streakInfo} onClose={closeJourney} />
+      {!isGuest && (
+        <>
+          <AnalysisReadyModal
+            user={user}
+            suppressed={streakModalOpen || showTopicIntro || dailyTopicOpen || journeyOpen || academyPopupOpen}
+          />
+          <AcademyPopupModal
+            open={academyPopupOpen}
+            user={user}
+            onClose={() => setAcademyPopupOpen(false)}
+          />
+          <StreakModal
+            open={streakModalOpen}
+            streakInfo={streakInfo}
+            onClose={closeStreakModal}
+            onOpenJourney={() => { setStreakModalOpen(false); setJourneyOpen(true); }}
+          />
+          <StreakJourney open={journeyOpen} streakInfo={streakInfo} onClose={closeJourney} />
+        </>
+      )}
     </div>
   );
 }
