@@ -28,8 +28,7 @@ import SlotChangeBanner from '../components/SlotChangeBanner';
 import NextPracticeCard from '../components/plan/NextPracticeCard';
 import MatchOfferCard from '../components/MatchOfferCard';
 import GetReadyCard from '../components/plan/GetReadyCard';
-import TopicCard from '../components/plan/TopicCard';
-import NextTopics from '../components/plan/NextTopics';
+import { TopicCardDeck } from '../components/plan/TopicCard';
 import ReadyTopics from '../components/plan/ReadyTopics';
 import ThisWeekCard from '../components/plan/ThisWeekCard';
 import MissReasonCard from '../components/plan/MissReason';
@@ -308,14 +307,15 @@ export default function Home({ user }) {
         )}
 
         {/* Today's materials, right under the plan (Polad 2026-10-06: "they
-            look good and they ARE the class"). Online now is on Partners only. */}
-        <TopicCard topic={todayTopic} lang={lang} onOpen={() => { setDailyTopicIndex(null); setDailyTopicOpen(true); }} />
-        {todayTopic && (
-          <NextTopics
-            todayIndex={weeklyContent.indexOf(todayTopic)}
-            onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }}
-          />
-        )}
+            look good and they ARE the class"). Swipe left to preview upcoming
+            topics so Leaderboard + Academy stay above the phone fold. */}
+        <TopicCardDeck
+          todayTopic={todayTopic}
+          todayIndex={todayTopic ? weeklyContent.indexOf(todayTopic) : -1}
+          lang={lang}
+          isGuest={isGuest}
+          onOpen={(idx) => { setDailyTopicIndex(idx); setDailyTopicOpen(true); }}
+        />
         {!isGuest && isAdminUser(user) && (
           <ReadyTopics onOpen={(i) => { setDailyTopicIndex(i); setDailyTopicOpen(true); }} />
         )}
@@ -414,7 +414,14 @@ export default function Home({ user }) {
         {!isGuest && <CourseProgressCard user={user} />}
       </div>
 
-      <DailyTopicModal open={dailyTopicOpen} onClose={() => { setDailyTopicOpen(false); setDailyTopicIndex(null); }} user={user} topicIndex={dailyTopicIndex} />
+      <DailyTopicModal
+        open={dailyTopicOpen}
+        onClose={() => { setDailyTopicOpen(false); setDailyTopicIndex(null); }}
+        user={user}
+        topicIndex={dailyTopicIndex}
+        todayIndex={todayTopic ? weeklyContent.indexOf(todayTopic) : -1}
+        onSelectTopic={(idx) => setDailyTopicIndex(idx)}
+      />
       {!isGuest && (
         <>
           <AnalysisReadyModal

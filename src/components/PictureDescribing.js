@@ -9,7 +9,7 @@ import DescribeFrames from './DescribeFrames';
 // teacher shares, App.css `.pd-*` in the wide-screen block) gets the same
 // layout as the topic videos: the picture fills the left, the words, starters
 // and questions sit beside it at reading size, ‹ 1 / 12 › below the picture.
-export default function PictureDescribing({ topic, day, imageKeywords, manualImageUrls, onClose }) {
+export default function PictureDescribing({ topic, day, imageKeywords, manualImageUrls, onClose, inline = false }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,6 +17,7 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
 
   useEffect(() => {
     setLoading(true);
+    setCurrentIndex(0);
     fetchTopicImages(day, imageKeywords, manualImageUrls).then((imgs) => {
       setImages(imgs);
       setLoading(false);
@@ -53,17 +54,19 @@ export default function PictureDescribing({ topic, day, imageKeywords, manualIma
   };
 
   return (
-    <div className="pd" onClick={e => e.stopPropagation()}>
-      <div className="pd-header">
-        <div className="pd-heading">
-          {day && <span className="dt-badge pd-badge">Day {day}</span>}
-          <div>
-            <p className="pd-kicker">Describe the picture</p>
-            <p className="pd-title">{topic}</p>
+    <div className={`pd${inline ? ' pd--inline' : ''}`} onClick={e => e.stopPropagation()}>
+      {!inline && (
+        <div className="pd-header">
+          <div className="pd-heading">
+            {day && <span className="dt-badge pd-badge">Day {day}</span>}
+            <div>
+              <p className="pd-kicker">Describe the picture</p>
+              <p className="pd-title">{topic}</p>
+            </div>
           </div>
+          <button type="button" className="pd-close" onClick={onClose} aria-label="Close"><X size={20} strokeWidth={1.75} /></button>
         </div>
-        <button type="button" className="pd-close" onClick={onClose} aria-label="Close"><X size={20} strokeWidth={1.75} /></button>
-      </div>
+      )}
 
       {loading ? (
         <div className="pd-message"><p>Loading pictures...</p></div>

@@ -1618,6 +1618,7 @@ body {
 .dt-modal { position: relative; }
 .dt-modal--focus .dt-header,
 .dt-modal--focus .dt-tabs { display: none; }
+.dt-modal--focus .dt-describe-switch { display: none; }
 .dt-modal--focus .dt-content { padding-top: calc(var(--safe-area-top, 0px) + 60px); }
 .dt-focus-actions {
   position: absolute; z-index: 5;
@@ -1689,8 +1690,17 @@ body {
 /* Folded tabs (DailyTopicModal `compactTabs`, phones only): once the sheet is
    scrolled, the three rows become ONE row of equal chips that scrolls
    sideways — ~44px instead of ~170px — with the active chip centred. Every
-   chip is the same width (3.6 per screen, so the next one peeks out). */
+   chip is the same width (3.6 per screen, so the next one peeks out).
+   Expanded mobile grid unifies Pictures + Videos into `Describe` to save a row;
+   scrolled compact strip keeps Pictures and Videos separate for 1-tap access. */
 @media not all and (min-width: 900px) and (min-aspect-ratio: 5/4) {
+  .dt-modal:not(.dt-modal--compact) .dt-tab {
+    font-size: var(--fs-sm);
+    gap: 5px;
+    padding: 0 6px;
+  }
+  .dt-modal:not(.dt-modal--compact) .dt-tab--split { display: none; }
+  .dt-modal--compact .dt-tab--describe { display: none; }
   .dt-modal--compact .dt-tabs {
     flex-wrap: nowrap;
     justify-content: flex-start;
@@ -1709,6 +1719,81 @@ body {
   }
   .dt-modal--compact .dt-tab svg { display: none; }
 }
+
+/* Mobile Describe sub-toggle (Pictures | Videos) and Next topics list inside modal. */
+.dt-describe-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+.dt-describe-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.dt-describe-btn.active {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.dt-describe-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dt-next-list { gap: 10px; }
+.dt-next-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "meta arrow" "title arrow";
+  align-items: center;
+  gap: 2px 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--glass-lift);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.dt-next-item.is-current,
+.dt-next-item--today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.dt-next-meta {
+  grid-area: meta;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.dt-next-title {
+  grid-area: title;
+  font-size: var(--fs-body);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.dt-next-arrow {
+  grid-area: arrow;
+  color: var(--text-muted);
+}
+.dt-next-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Scrollable Content */
 .dt-content {
@@ -2836,6 +2921,30 @@ body {
 }
 .pd-words { padding: 12px 20px 8px; }
 
+/* Inline PictureDescribing inside DailyTopicModal (no extra "View pictures" tap). */
+.pd--inline {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  background: transparent;
+}
+.pd--inline .pd-body { flex: none; }
+.pd--inline .pd-stage {
+  flex: none;
+  aspect-ratio: 4 / 3;
+  max-height: 44dvh;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.pd--inline .pd-dots { padding: 10px 0; }
+.pd--inline .pd-side {
+  max-height: none;
+  overflow: visible;
+  padding-bottom: 8px;
+  border-top: none;
+}
+.pd--inline .pd-words { padding: 6px 0 8px; }
+
 /* Topic sheet on a computer screen (Polad, 2026-09-30): the sheet is what a
    teacher SHARES in a lesson, and on a laptop it was a 480px phone column in
    the middle of the screen — the clip small, the words at the bottom edge, the
@@ -2849,6 +2958,7 @@ body {
   .dt-title { font-size: 28px; }
   .dt-tabs { flex-wrap: nowrap; padding: 0 28px 14px; }
   .dt-tab { flex: 1 1 0; min-width: 0; height: 46px; padding: 0 10px; font-size: 16px; }
+  .dt-tab--describe, .dt-describe-switch { display: none; }
   .dt-content { padding: 20px 28px; }
 
   .dt-section--video {
@@ -2986,6 +3096,10 @@ body {
   /* DescribeFrames sizes itself in px for the phone; on the shared screen the
      starters and questions are read from across a call, so scale them up. */
   .pd-side > div:last-child { padding: 0 !important; zoom: 1.35; }
+  .pd--inline { align-items: stretch; height: 100%; }
+  .pd--inline .pd-body { width: 100%; height: 100%; padding: 0; }
+  .pd--inline .pd-stage { aspect-ratio: auto; max-height: none; min-height: 360px; }
+  .pd--inline .pd-side { overflow-y: auto; }
 }
 
 /* ─── In-call activity card (StageCard.jsx) ────────────────────────────

@@ -1,9 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { BookOpen, ChevronRight } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { BookOpen, ChevronRight, ChevronsRight } from 'lucide-react';
+import { weeklyContent } from '../../data/weeklyContent';
 import { plainTopic } from '../../utils/topicLabel';
 import { hasMaterials } from '../../utils/topicMaterialsLoader';
 import { practiceText } from '../../data/practiceCopy';
+import { upcomingTopics } from '../../utils/topicQueue';
+import { DEFAULT_SESSION_CONFIG, subscribeToSessionConfig } from '../../utils/sessionSchedule';
 import './plan.css';
+
+const SWIPE_HINT_KEY = 'sl.topicSwipeHint_v1';
+const SWIPE_HINT_MAX_SHOWS = 3;
+let hintSessionBumped = false;
+
+function initSwipeHint() {
+  try {
+    const raw = localStorage.getItem(SWIPE_HINT_KEY);
+    if (raw === 'done') return false;
+    const count = Number(raw) || 0;
+    if (count >= SWIPE_HINT_MAX_SHOWS) return false;
+    if (!hintSessionBumped) {
+      localStorage.setItem(SWIPE_HINT_KEY, String(count + 1));
+      hintSessionBumped = true;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function dismissSwipeHint() {
+  try { localStorage.setItem(SWIPE_HINT_KEY, 'done'); } catch { /* private mode */ }
+}
 
 // Today's topic as a picture, not a line of text. Polad (2026-09-30): the app
 // "reads like a wall of text" and the daily topic should look different from
@@ -70,5 +97,123 @@ export default function TopicCard({ topic, onOpen, kicker = null, cta = null, le
         <span className="pl-topic-cta">{cta || (hasMaterials(day) ? t('topic.ctaFull') : t('topic.ctaShort'))} <ChevronRight size={16} aria-hidden="true" /></span>
       </span>
     </button>
+  );
+}
+
+// Swipeable deck for Today: today's topic first, then the next four topics on
+// horizontal scroll-snap cards (Polad 2026-11-24: removes the separate Next
+// Topics row so Leaderboard + Academy stay above the phone fold).
+export function TopicCardDeck({ todayTopic, todayIndex = -1, lang = 'en', isGuest = false, onOpen }) {
+  const [config, setConfig] = useState(DEFAULT_SESSION_CONFIG);
+  const [active, setActive] = useState(0);
+  const [showHint, setShowHint] = useState(() => initSwipeHint());
+  const deckRef = useRef(null);
+
+  useEffect(() => {
+    if (isGuest) {
+      setConfig(DEFAULT_SESSION_CONFIG);
+      return undefined;
+    }
+    return subscribeToSessionConfig(setConfig);
+  }, [isGuest]);
+
+  const slides = useMemo(() => {
+    if (!todayTopic) return [];
+    const base = [{
+      key: 'today',
+      topic: todayTopic,
+      topicIndex: null,
+      kicker: null,
+      aria: plainTopic(todayTopic.topic) || practiceText(lang, 'today'),
+    }];
+    if (todayIndex < 0) return base;
+    const next = upcomingTopics({
+      currentIndex: todayIndex,
+      total: weeklyContent.length,
+      count: 4,
+      config,
+    });
+    for (const item of next) {
+      const t = weeklyContent[item.index];
+      if (!t) continue;
+      base.push({
+        key: item.dateStr,
+        topic: t,
+        topicIndex: item.index,
+        kicker: `${item.label} · ${practiceText(lang, 'topic.day', { day: t.day })}`,
+        aria: `${item.label}: ${plainTopic(t.topic)}`,
+      });
+    }
+    return base;
+  }, [todayTopic, todayIndex, config, lang]);
+
+  const handleScroll = () => {
+    const el = deckRef.current;
+    if (!el || !el.clientWidth) return;
+    const idx = Math.max(0, Math.min(slides.length - 1, Math.round(el.scrollLeft / el.clientWidth)));
+    if (idx !== active) {
+      setActive(idx);
+      if (idx > 0 && showHint) {
+        setShowHint(false);
+        dismissSwipeHint();
+      }
+    }
+  };
+
+  const jumpTo = (idx) => {
+    const el = deckRef.current;
+    if (!el) return;
+    el.scrollTo({ left: idx * el.clientWidth, behavior: 'smooth' });
+    setActive(idx);
+    if (idx > 0 && showHint) {
+      setShowHint(false);
+      dismissSwipeHint();
+    }
+  };
+
+  if (!slides.length) {
+    return <TopicCard topic={todayTopic} lang={lang} onOpen={() => onOpen(null)} />;
+  }
+
+  return (
+    <div className="pl-topic-deck-wrap">
+      <div
+        ref={deckRef}
+        className="pl-topic-deck"
+        onScroll={handleScroll}
+        aria-label="Practice topics"
+      >
+        {slides.map((s) => (
+          <div key={s.key} className="pl-topic-slide">
+            <TopicCard
+              topic={s.topic}
+              kicker={s.kicker}
+              lang={lang}
+              onOpen={() => onOpen(s.topicIndex)}
+            />
+          </div>
+        ))}
+      </div>
+      {showHint && slides.length > 1 && active === 0 && (
+        <span className="pl-topic-swipe-hint" aria-hidden="true">
+          <ChevronsRight size={16} strokeWidth={2.4} />
+        </span>
+      )}
+      {slides.length > 1 && (
+        <div className="pl-topic-dots" role="tablist" aria-label="Topic slides">
+          {slides.map((s, i) => (
+            <button
+              key={s.key}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              aria-label={s.aria}
+              className={`pl-topic-dot${i === active ? ' is-on' : ''}`}
+              onClick={() => jumpTo(i)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

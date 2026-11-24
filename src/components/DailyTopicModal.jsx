@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Maximize2, Minimize2, Expand, Shrink, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ImageIcon, Video as VideoIcon, Headphones, BookOpenText } from 'lucide-react';
-import { getContentByIndex, getTodayContent } from '../data/weeklyContent';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { X, Maximize2, Minimize2, Expand, Shrink, BookOpen, MessageCircle, Lightbulb, Brain, ChevronDown, ChevronUp, ChevronRight, ImageIcon, Images, Video as VideoIcon, Headphones, BookOpenText, CalendarDays } from 'lucide-react';
+import { getContentByIndex, getTodayContent, weeklyContent } from '../data/weeklyContent';
 import { localMeaning } from '../utils/feedbackLanguage';
 import { plainTopic } from '../utils/topicLabel';
+import { upcomingTopics } from '../utils/topicQueue';
+import { DEFAULT_SESSION_CONFIG, subscribeToSessionConfig } from '../utils/sessionSchedule';
+import { isGuestUser } from '../utils/guest';
 import PictureDescribing from './PictureDescribing';
 import TopicVideos from './TopicVideos';
 import { VIDEOS_ENABLED, canBrowseAllVideos } from '../utils/fetchTopicVideos';
@@ -23,7 +26,7 @@ import SayButton from './ui/SayButton';
 // tabs and picks line cost it a third of the height. Kept per device; it only
 // takes effect on these tabs.
 const FOCUS_KEY = 'sl.topicFocus';
-const FOCUS_SECTIONS = ['listen', 'read', 'videos'];
+const FOCUS_SECTIONS = ['listen', 'read', 'videos', 'pictures'];
 function readFocus() {
   try { return localStorage.getItem(FOCUS_KEY) === '1'; } catch (_) { return false; }
 }
@@ -157,16 +160,19 @@ function DailyQuiz({ content, onFinish }) {
 
 // `topicIndex` shows that topic instead of today's (a lesson's topic sheet on
 // /class/:id — the same sheet the teacher shares in the lesson).
-export default function DailyTopicModal({ open, onClose, user, topicIndex = null }) {
+export default function DailyTopicModal({ open, onClose, user, topicIndex = null, todayIndex = null, onSelectTopic = null }) {
+  const isGuest = isGuestUser(user);
+  const [selectedTopicIndex, setSelectedTopicIndex] = useState(topicIndex);
   const [content, setContent] = useState(null);
+  const [sessionConfig, setSessionConfig] = useState(DEFAULT_SESSION_CONFIG);
   // The L1 line under each word follows the same AZ / TR / EN choice as the
   // word cards (useMeaningLang). EN = no L1 line (QA 2026-11-12 O1).
   const [meaningLang] = useMeaningLang();
   const l1 = (item) => (meaningLang === 'en' ? '' : localMeaning(item, meaningLang));
   const [activeSection, setActiveSection] = useState('vocabulary');
+  const [lastDescribeMode, setLastDescribeMode] = useState('pictures');
   const [difficulty, setDifficulty] = useState('easy');
   const [expandedVocab, setExpandedVocab] = useState(null);
-  const [showPictureDescribing, setShowPictureDescribing] = useState(false);
   const [materials, setMaterials] = useState(null);
   const contentRef = useRef(null);
   const tabsRef = useRef(null);
@@ -236,17 +242,60 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
   useEffect(() => {
     if (!compactTabs || !tabsRef.current) return;
     const row = tabsRef.current;
-    const active = row.querySelector('.dt-tab.active');
+    const active = Array.from(row.querySelectorAll('.dt-tab.active')).find((el) => el.offsetWidth > 0);
     if (active) row.scrollLeft = active.offsetLeft - (row.clientWidth - active.offsetWidth) / 2;
   }, [compactTabs, activeSection]);
 
   useEffect(() => {
+    if (!open) return undefined;
+    if (isGuest) {
+      setSessionConfig(DEFAULT_SESSION_CONFIG);
+      return undefined;
+    }
+    return subscribeToSessionConfig(setSessionConfig);
+  }, [open, isGuest]);
+
+  useEffect(() => {
     if (open) {
-      setContent(Number.isInteger(topicIndex) ? getContentByIndex(topicIndex) : getTodayContent());
+      setSelectedTopicIndex(topicIndex);
       setActiveSection('vocabulary');
       setExpandedVocab(null);
     }
   }, [open, topicIndex]);
+
+  useEffect(() => {
+    if (open) {
+      setContent(Number.isInteger(selectedTopicIndex) ? getContentByIndex(selectedTopicIndex) : getTodayContent());
+    }
+  }, [open, selectedTopicIndex]);
+
+  const baseTodayIndex = useMemo(() => {
+    if (Number.isInteger(todayIndex) && todayIndex >= 0) return todayIndex;
+    return weeklyContent.indexOf(getTodayContent());
+  }, [todayIndex]);
+
+  const upcomingList = useMemo(() => (
+    baseTodayIndex < 0
+      ? []
+      : upcomingTopics({ currentIndex: baseTodayIndex, total: weeklyContent.length, count: 6, config: sessionConfig })
+  ), [baseTodayIndex, sessionConfig]);
+
+  const selectSection = (sec) => {
+    if (sec === 'pictures' || sec === 'videos') setLastDescribeMode(sec);
+    setActiveSection(sec);
+  };
+
+  const openDescribe = () => {
+    setActiveSection(VIDEOS_ENABLED ? lastDescribeMode : 'pictures');
+  };
+
+  const switchTopic = (idx) => {
+    setSelectedTopicIndex(idx);
+    if (typeof onSelectTopic === 'function') onSelectTopic(idx);
+    setActiveSection('vocabulary');
+    setExpandedVocab(null);
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  };
 
   // Listening + reading exist for some topics only; their tabs appear when they do.
   useEffect(() => {
@@ -343,17 +392,31 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             <Brain size={16} /> Quiz
           </button>
           <button
-            className={`dt-tab ${activeSection === 'pictures' ? 'active' : ''}`}
-            onClick={() => setActiveSection('pictures')}
+            className={`dt-tab dt-tab--describe ${activeSection === 'pictures' || activeSection === 'videos' ? 'active' : ''}`}
+            onClick={openDescribe}
+          >
+            <Images size={16} /> Describe
+          </button>
+          <button
+            className={`dt-tab dt-tab--split ${activeSection === 'pictures' ? 'active' : ''}`}
+            onClick={() => selectSection('pictures')}
           >
             <ImageIcon size={16} /> Pictures
           </button>
           {VIDEOS_ENABLED && (
             <button
-              className={`dt-tab ${activeSection === 'videos' ? 'active' : ''}`}
-              onClick={() => setActiveSection('videos')}
+              className={`dt-tab dt-tab--split ${activeSection === 'videos' ? 'active' : ''}`}
+              onClick={() => selectSection('videos')}
             >
               <VideoIcon size={16} /> Videos
+            </button>
+          )}
+          {upcomingList.length > 0 && (
+            <button
+              className={`dt-tab ${activeSection === 'next' ? 'active' : ''}`}
+              onClick={() => selectSection('next')}
+            >
+              <CalendarDays size={16} /> Next topics
             </button>
           )}
         </div>
@@ -442,39 +505,76 @@ export default function DailyTopicModal({ open, onClose, user, topicIndex = null
             </div>
           )}
 
+          {(activeSection === 'pictures' || activeSection === 'videos') && VIDEOS_ENABLED && (
+            <div className="dt-describe-switch" role="tablist" aria-label="Describe mode">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeSection === 'pictures'}
+                className={`dt-describe-btn${activeSection === 'pictures' ? ' active' : ''}`}
+                onClick={() => selectSection('pictures')}
+              >
+                <ImageIcon size={15} aria-hidden="true" /> Pictures
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeSection === 'videos'}
+                className={`dt-describe-btn${activeSection === 'videos' ? ' active' : ''}`}
+                onClick={() => selectSection('videos')}
+              >
+                <VideoIcon size={15} aria-hidden="true" /> Videos
+              </button>
+            </div>
+          )}
+
           {VIDEOS_ENABLED && activeSection === 'videos' && <TopicVideos day={content.day} showLibrary={canBrowseAllVideos(user)} uid={user?.uid} />}
 
           {activeSection === 'pictures' && (
-            <div className="dt-section dt-section--narrow" style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ marginBottom: 12, color: 'var(--text-muted)' }}><ImageIcon size={40} strokeWidth={1.5} /></div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
-                Pictures for this topic, to build your speaking
-              </p>
-              <button
-                onClick={() => setShowPictureDescribing(true)}
-                style={{
-                  padding: '12px 24px', borderRadius: 14, border: 'none',
-                  background: 'var(--accent)', color: 'var(--text-on-accent)',
-                  fontSize: 15, fontWeight: 700, cursor: 'pointer'
-                }}
-              >
-                View pictures
-              </button>
+            <PictureDescribing
+              inline
+              topic={content.topic}
+              day={content.day}
+              imageKeywords={content.imageKeywords}
+              manualImageUrls={content.manualImageUrls}
+              onClose={onClose}
+            />
+          )}
+
+          {activeSection === 'next' && (
+            <div className="dt-section dt-section--narrow dt-next-list">
+              {Number.isInteger(selectedTopicIndex) && baseTodayIndex >= 0 && selectedTopicIndex !== baseTodayIndex && (
+                <button
+                  type="button"
+                  className="dt-next-item dt-next-item--today"
+                  onClick={() => switchTopic(null)}
+                >
+                  <span className="dt-next-meta">Today · Day {weeklyContent[baseTodayIndex]?.day}</span>
+                  <span className="dt-next-title">{plainTopic(weeklyContent[baseTodayIndex]?.topic)}</span>
+                  <ChevronRight size={18} className="dt-next-arrow" aria-hidden="true" />
+                </button>
+              )}
+              {upcomingList.map((item) => {
+                const itemTopic = weeklyContent[item.index];
+                const isCurrent = selectedTopicIndex === item.index;
+                return (
+                  <button
+                    key={item.dateStr}
+                    type="button"
+                    className={`dt-next-item${isCurrent ? ' is-current' : ''}`}
+                    onClick={() => switchTopic(item.index)}
+                  >
+                    <span className="dt-next-meta">{item.label} · Day {itemTopic?.day}</span>
+                    <span className="dt-next-title">{plainTopic(itemTopic?.topic)}</span>
+                    <ChevronRight size={18} className="dt-next-arrow" aria-hidden="true" />
+                  </button>
+                );
+              })}
             </div>
           )}
 
         </div>
       </div>
-
-      {showPictureDescribing && (
-        <PictureDescribing
-          topic={content.topic}
-          day={content.day}
-          imageKeywords={content.imageKeywords}
-          manualImageUrls={content.manualImageUrls}
-          onClose={() => setShowPictureDescribing(false)}
-        />
-      )}
     </div>
   );
 }

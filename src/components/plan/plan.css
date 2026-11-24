@@ -609,3 +609,73 @@
 .pl-quick-tile .pl-row-title { font-size: var(--fs-body); }
 .pl-quick-tile .pl-row-sub { font-size: var(--fs-xs); white-space: normal; }
 
+/* Swipeable Today topic card deck (today + upcoming topics). */
+.pl-topic-deck-wrap {
+  position: relative;
+  margin-bottom: var(--s-3);
+}
+.pl-topic-deck {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-xl);
+}
+.pl-topic-deck::-webkit-scrollbar { display: none; }
+.pl-topic-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.pl-topic-deck .pl-topic {
+  margin-bottom: 0;
+}
+.pl-topic-swipe-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  display: grid;
+  place-items: center;
+  background: rgba(24, 21, 35, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #fff;
+  pointer-events: none;
+  animation: pl-swipe-nudge 1.8s ease-in-out infinite;
+}
+@keyframes pl-swipe-nudge {
+  0%, 100% { transform: translate(0, -50%); opacity: 0.72; }
+  50% { transform: translate(4px, -50%); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-topic-swipe-hint { animation: none; }
+}
+.pl-topic-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.pl-topic-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--border);
+  cursor: pointer;
+  transition: width 0.18s ease, background-color 0.18s ease;
+}
+.pl-topic-dot.is-on {
+  width: 18px;
+  background: var(--accent);
+}
+.pl-topic-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+
