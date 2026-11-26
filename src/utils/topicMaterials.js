@@ -155,19 +155,78 @@ export function onlyWords(terms, words) {
   return terms.filter((t) => keep.has(t.key));
 }
 
+// The forms a word takes in a script. The ending rule alone (s/es/ed/d/ing)
+// missed most of the levelled word lists (audit 2026-11-26: "looked around",
+// "picked it up", "grew up", "woke me up" were chips in Words but never marked
+// in the script): phrasal verbs are inflected on the VERB, not the end, and the
+// common verbs are irregular. Only the verbs/nouns of the A1–B1 lists are here.
+const IRREGULAR = {
+  be: ['was', 'were', 'been', 'is', 'are', 'am'], begin: ['began', 'begun'], break: ['broke', 'broken'],
+  bring: ['brought'], build: ['built'], buy: ['bought'], catch: ['caught'], choose: ['chose', 'chosen'],
+  come: ['came'], do: ['did', 'done', 'does'], drink: ['drank', 'drunk'], drive: ['drove', 'driven'],
+  eat: ['ate', 'eaten'], fall: ['fell', 'fallen'], feel: ['felt'], find: ['found'], fly: ['flew', 'flown'],
+  forget: ['forgot', 'forgotten'], freeze: ['froze', 'frozen'], get: ['got', 'gotten'], give: ['gave', 'given'],
+  go: ['went', 'gone', 'goes'], grow: ['grew', 'grown'], hang: ['hung'], have: ['had', 'has'], hear: ['heard'],
+  hold: ['held'], keep: ['kept'], know: ['knew', 'known'], leave: ['left'], lend: ['lent'], lose: ['lost'],
+  make: ['made'], meet: ['met'], pay: ['paid'], ride: ['rode', 'ridden'], ring: ['rang', 'rung'], run: ['ran'],
+  say: ['said'], see: ['saw', 'seen'], sell: ['sold'], send: ['sent'], shine: ['shone'], sing: ['sang', 'sung'],
+  sit: ['sat'], sleep: ['slept'], speak: ['spoke', 'spoken'], spend: ['spent'], stand: ['stood'],
+  swim: ['swam', 'swum'], take: ['took', 'taken'], teach: ['taught'], tell: ['told'], think: ['thought'],
+  throw: ['threw', 'thrown'], wake: ['woke', 'woken'], wear: ['wore', 'worn'], win: ['won'], write: ['wrote', 'written'],
+  child: ['children'], person: ['people'], man: ['men'], woman: ['women'], foot: ['feet'], tooth: ['teeth'],
+  knife: ['knives'], life: ['lives'], wife: ['wives'], leaf: ['leaves'],
+};
+// Between a verb and its particle: "picked it up", "wake me up", "turn it down".
+const OBJECT_PRONOUN = '(?:it|me|you|him|her|us|them|this|that)';
+
+function wordForms(w) {
+  const alts = [`${esc(w)}(?:s|es|ed|d|ing)?`];
+  if (/e$/.test(w)) alts.push(`${esc(w.slice(0, -1))}ing`); // dance → dancing
+  if (/[^aeiou]y$/.test(w)) alts.push(`${esc(w.slice(0, -1))}(?:ies|ied)`); // carry → carried
+  if (w.length <= 4 && /[^aeiou][aeiou][^aeiouwxy]$/.test(w)) alts.push(`${esc(w)}${w.slice(-1)}(?:ed|ing|er)`); // chop → chopped
+  if (Object.prototype.hasOwnProperty.call(IRREGULAR, w)) IRREGULAR[w].forEach((f) => alts.push(esc(f)));
+  return `(?:${alts.join('|')})`;
+}
+
+// One term → its pattern. Multi-word terms inflect the first word ("costs an arm
+// and a leg", "looking forward to"); a two-word phrasal verb may take an object
+// pronoun before its particle. Chunks («Can I pay by card?») are fixed phrases.
+function termPattern(t) {
+  const words = t.key.split(/\s+/).filter(Boolean);
+  if (t.kind === 'chunk') return `${words.map(esc).join('\\s+')}`;
+  if (words.length === 1) return wordForms(words[0]);
+  const [head, ...rest] = words;
+  const gap = t.kind === 'phrasal' && rest.length === 1 ? `(?:\\s+${OBJECT_PRONOUN})?` : '';
+  return `${wordForms(head)}${gap}\\s+${rest.map(esc).join('\\s+')}(?:s|es|ed|d|ing)?`;
+}
+
+// The regex for a term list, built once per list (the lists are memoised in
+// the components; a line re-renders on every timeupdate while it plays).
+const reCache = new WeakMap();
+function termsRegex(terms) {
+  let re = reCache.get(terms);
+  if (!re) {
+    re = new RegExp(`\\b(?:${terms.map((t) => `(${termPattern(t)})`).join('|')})\\b`, 'gi');
+    reCache.set(terms, re);
+  }
+  re.lastIndex = 0;
+  return re;
+}
+
 // Splits `text` into [{ text, term? }] pieces; pieces with a term are the
 // matches. Pure, so the highlighter is the same on phone and in the teacher view.
+// Each term is its own group, so a match maps back to its term whatever form it took.
 export function splitByTerms(text, terms) {
   const src = String(text || '');
   if (!terms?.length || !src) return [{ text: src }];
-  const re = new RegExp(`\\b(${terms.map((t) => esc(t.key)).join('|')})(?:s|es|ed|d|ing)?\\b`, 'gi');
-  const byKey = new Map(terms.map((t) => [t.key, t]));
+  const re = termsRegex(terms);
   const out = [];
   let last = 0;
   let m;
   while ((m = re.exec(src))) {
     if (m.index > last) out.push({ text: src.slice(last, m.index) });
-    out.push({ text: m[0], term: byKey.get(m[1].toLowerCase()) });
+    const g = m.findIndex((x, i) => i > 0 && x !== undefined);
+    out.push({ text: m[0], term: terms[g - 1] });
     last = m.index + m[0].length;
   }
   if (last < src.length) out.push({ text: src.slice(last) });

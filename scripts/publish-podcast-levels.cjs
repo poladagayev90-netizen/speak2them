@@ -4,6 +4,11 @@
 //   node scripts/publish-podcast-levels.cjs [NN ...] [--src <dir>]           DRY RUN (default)
 //   node scripts/publish-podcast-levels.cjs [NN ...] [--src <dir>] --upload  uploads + writes data
 //   node scripts/publish-podcast-levels.cjs [NN ...] [--src <dir>] --local-audio
+//   node scripts/publish-podcast-levels.cjs [NN ...] [--src <dir>] --data-only   rewrites the data
+//       (words, meanings, lines) of levels whose mp3 is already in Storage (sha in published.json); no upload.
+//
+// Word meanings: the sheets give az; content/materials/levels-glosses.json gives [az, tr, en] per item
+// and wins (see withGlosses). The run lists every level that still has words without TR/EN.
 //
 // Reads, under --src (default: this repo):
 //   content/materials/NN/levels/<L>/script.json   lines [{s, t}]
@@ -37,7 +42,7 @@ const argv = process.argv.slice(2);
 const flag = (f) => argv.includes(f);
 const srcIdx = argv.indexOf('--src');
 const SRC_ROOT = srcIdx >= 0 ? path.resolve(argv[srcIdx + 1]) : ROOT;
-const MODE = flag('--upload') ? 'upload' : flag('--local-audio') ? 'local' : 'dry';
+const MODE = flag('--upload') ? 'upload' : flag('--local-audio') ? 'local' : flag('--data-only') ? 'data' : 'dry';
 const MATERIALS = path.join(SRC_ROOT, 'content/materials');
 const REVIEWS = path.join(SRC_ROOT, 'docs/reviews');
 
@@ -97,6 +102,37 @@ function loadWords() {
     }
   }
   return byTopic;
+}
+
+// The sheets carry an AZ gloss only, and some glosses had the wrong sense for
+// the episode (audit 2026-11-26: «jam» = mürəbbə in the traffic episode, «work out»
+// = idman etmək where a plan is worked out). So the AZ/TR switch on the word card
+// changed nothing and some meanings misled. content/materials/levels-glosses.json
+// holds [az, tr, en] per item, written against each script; it wins over the sheet.
+const GLOSSES = (() => {
+  for (const p of [path.join(ROOT, 'content/materials/levels-glosses.json'), path.join(MATERIALS, 'levels-glosses.json')]) {
+    if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
+  }
+  return {};
+})();
+const wordKey = (s) => String(s || '').toLowerCase().replace(/[.!?…]+$/, '').trim();
+
+function withGlosses(nn, level, list) {
+  const g = GLOSSES[nn]?.[level] || {};
+  const seen = new Set();
+  const out = [];
+  for (const w of list) {
+    // «Fingers crossed!» and «Fingers crossed.» were both in one sheet: one chip, not two.
+    const k = wordKey(w.phrase);
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    const hit = g[w.phrase] || g[Object.keys(g).find((x) => wordKey(x) === k)];
+    if (hit) {
+      const [az, tr, en] = hit;
+      out.push({ ...w, ...(az && { az }), ...(tr && { tr }), ...(en && { en }) });
+    } else out.push(w);
+  }
+  return out;
 }
 
 // ── episodes ────────────────────────────────────────────────────────────────
@@ -161,7 +197,7 @@ async function upload(token, object, buf, contentType) {
   const token = MODE === 'upload' ? await accessToken() : null;
   let count = 0;
   let bytes = 0;
-  console.log(`${MODE === 'dry' ? 'DRY RUN — nothing is uploaded or written' : MODE === 'upload' ? 'UPLOAD' : 'LOCAL AUDIO (do not commit the output)'}; source ${SRC_ROOT}`);
+  console.log(`${MODE === 'dry' ? 'DRY RUN — nothing is uploaded or written' : MODE === 'upload' ? 'UPLOAD' : MODE === 'data' ? 'DATA ONLY — no upload; rewrites the data of levels already in Storage' : 'LOCAL AUDIO (do not commit the output)'}; source ${SRC_ROOT}`);
 
   for (const nn of topics) {
     const lockPath = path.join(MATERIALS, nn, 'levels', 'published.json');
@@ -186,6 +222,9 @@ async function upload(token, object, buf, contentType) {
           count += 1; bytes += buf.length;
           notes.push(`${level}: uploaded (${Math.round(buf.length / 1024)} KB)`);
         } else notes.push(`${level}: unchanged`);
+      } else if (MODE === 'data') {
+        // Only levels whose exact mp3 is already in Storage; nothing is uploaded.
+        notes.push(`${level}: ${fresh ? 'data rewritten' : 'skip (this mp3 is not in Storage yet — needs --upload)'}`);
       } else {
         const dest = path.join(ROOT, 'public/staged-levels', nn);
         fs.mkdirSync(dest, { recursive: true });
@@ -193,8 +232,10 @@ async function upload(token, object, buf, contentType) {
         audio = `/staged-levels/${nn}/${level}.mp3`;
         notes.push(`${level}: local audio`);
       }
-      const w = words[nn]?.[level] || [];
+      const w = withGlosses(nn, level, words[nn]?.[level] || []);
       if (!w.length) notes.push(`${level}: no word list found`);
+      const noTr = w.filter((x) => !x.tr || !x.en).length;
+      if (noTr) notes.push(`${level}: ${noTr} words without TR/EN (levels-glosses.json)`);
       if (audio) out[level] = { ...ep.data, audio, words: w };
     }
     console.log(`${nn}  ${notes.join(' · ')}`);
@@ -205,5 +246,5 @@ async function upload(token, object, buf, contentType) {
       fs.writeFileSync(path.join(OUT, `${nn}.json`), JSON.stringify(out) + '\n');
     }
   }
-  if (MODE !== 'local') console.log(`${MODE === 'dry' ? 'would upload' : 'uploaded'}: ${count} files, ${(bytes / 1048576).toFixed(1)} MB`);
+  if (MODE === 'dry' || MODE === 'upload') console.log(`${MODE === 'dry' ? 'would upload' : 'uploaded'}: ${count} files, ${(bytes / 1048576).toFixed(1)} MB`);
 })().catch((e) => { console.error(e.message); process.exit(1); });

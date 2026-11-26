@@ -186,4 +186,31 @@ describe('podcast levels', () => {
     const parts = splitByTerms('So, can I pay by card? Yes.', t);
     expect(parts.find((p) => p.term)?.text).toBe('can I pay by card');
   });
+
+  // Audit 2026-11-26: these were chips in Words but never marked in the script.
+  test('phrasal verbs match on the inflected verb, irregular forms and an object pronoun', () => {
+    const t = levelTerms([
+      { phrase: 'look around', kind: 'phrasal' }, { phrase: 'pick up', kind: 'phrasal' }, { phrase: 'grow up', kind: 'phrasal' },
+      { phrase: 'wake up', kind: 'phrasal' }, { phrase: 'carry on', kind: 'phrasal' }, { phrase: 'chop', kind: 'word' },
+      { phrase: 'win', kind: 'word' }, { phrase: 'dance', kind: 'word' }, { phrase: 'cost an arm and a leg', kind: 'idiom' },
+    ]);
+    const hits = (s) => splitByTerms(s, t).filter((p) => p.term).map((p) => [p.text, p.term.phrase]);
+    expect(hits('I looked around. Then I picked it up.')).toEqual([['looked around', 'look around'], ['picked it up', 'pick up']]);
+    expect(hits('I grew up here. It wakes me up. A dog wakes up.')).toEqual([['grew up', 'grow up'], ['wakes me up', 'wake up'], ['wakes up', 'wake up']]);
+    expect(hits('He carried on. I chopped it. We won! Dancing is fun. It costs an arm and a leg.')).toEqual([
+      ['carried on', 'carry on'], ['chopped', 'chop'], ['won', 'win'], ['Dancing', 'dance'], ['costs an arm and a leg', 'cost an arm and a leg'],
+    ]);
+  });
+
+  test('an object pronoun is allowed only inside a two-word phrasal verb, and chunks stay fixed', () => {
+    const t = levelTerms([{ phrase: 'put up with', kind: 'phrasal' }, { phrase: 'Good luck!', kind: 'chunk' }, { phrase: 'pick up', kind: 'phrasal' }]);
+    expect(splitByTerms('I put it up with tape.', t).some((p) => p.term?.phrase === 'put up with')).toBe(false);
+    expect(splitByTerms('Goods luck', t).some((p) => p.term)).toBe(false);
+    expect(splitByTerms('Pick the box up.', t).some((p) => p.term)).toBe(false); // a noun object is not guessed
+  });
+
+  test('a term named like an Object property does not break the pattern', () => {
+    const t = levelTerms([{ phrase: 'constructor', kind: 'word' }]);
+    expect(splitByTerms('The constructor came.', t).find((p) => p.term)?.text).toBe('constructor');
+  });
 });
