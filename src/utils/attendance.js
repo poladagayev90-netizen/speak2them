@@ -38,6 +38,18 @@ export function subscribeToRecentAttendance(cb, sinceMs) {
   return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), () => cb([]));
 }
 
+// Closed bookings since `sinceMs`, newest first, with who came and how late
+// (`arrival`, `outcome` — functions/arrivals.js). Admin-only read; the filter
+// on status is done here so the query needs no composite index.
+export function subscribeToClosedBookings(cb, sinceMs) {
+  const q = query(collection(db, 'bookings'), where('startMs', '>=', sinceMs), orderBy('startMs', 'desc'), limit(400));
+  return onSnapshot(
+    q,
+    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((b) => b.status === 'done')),
+    () => cb([]),
+  );
+}
+
 // Per-learner summary over the last four weeks, from the raw events.
 export function summarize(events, now = Date.now()) {
   const weeks = [0, 1, 2, 3].map((i) => weekKeyOf(now - i * 7 * 86400000)); // this week first

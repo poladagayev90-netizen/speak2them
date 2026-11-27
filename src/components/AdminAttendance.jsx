@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, limit, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp, ShieldAlert, RotateCcw, MessageSquareText } from 'lucide-react';
+import { MessageCircle, AlertTriangle, Moon, TrendingDown, Info, Flag, ThumbsUp, ShieldAlert, RotateCcw, MessageSquareText, Clock } from 'lucide-react';
 import { db } from '../firebase';
 import { ADMIN_UID } from '../constants';
-import { subscribeToRecentAttendance, summarize } from '../utils/attendance';
+import { subscribeToRecentAttendance, subscribeToClosedBookings, summarize } from '../utils/attendance';
+import { arrivalStatus, arrivalLabel, lateCounts } from '../utils/arrivalStatus';
 import { weekPlanAction } from '../utils/matchOffers';
 import { REASON_LABEL } from '../utils/missReasons';
 import './AdminAttendance.css';
@@ -19,6 +20,10 @@ import './AdminAttendance.css';
 // hence the chat button on every row.
 
 const DAY = 86400000;
+const CALLS_PAGE = 20;
+const callWhen = (startMs) => new Date(startMs).toLocaleString('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Baku',
+});
 const TAG_LABEL = { on_time: 'On time', let_me_speak: 'Lets others speak', respectful: 'Respectful', prepared: 'Prepared' };
 // Reliability (Phase 5, functions/reliability.js): only confirmed practices
 // count. "limited" = the weekly plan gives one practice a week and no
@@ -78,6 +83,15 @@ export default function AdminAttendance({ users }) {
   }, [reasons, now]);
 
   useEffect(() => subscribeToRecentAttendance(setEvents, now - 35 * DAY), [now]);
+  // Every closed planned call: who came, on time or how late (functions/arrivals.js).
+  const [calls, setCalls] = useState([]);
+  const [callsShown, setCallsShown] = useState(CALLS_PAGE);
+  useEffect(() => subscribeToClosedBookings(setCalls, now - 28 * DAY), [now]);
+  const lateByUid = useMemo(() => lateCounts(calls), [calls]);
+  const nameOf = useMemo(() => {
+    const m = new Map((users || []).map((u) => [u.uid || u.id, u.name || u.email || '']));
+    return (b, uid) => (b.names || {})[uid] || m.get(uid) || uid.slice(0, 6);
+  }, [users]);
   useEffect(() => onSnapshot(collection(db, 'onboarding'), (snap) => {
     setOnboarding(Object.fromEntries(snap.docs.map((d) => [d.id, d.data()])));
   }, () => {}), []);
@@ -175,6 +189,36 @@ export default function AdminAttendance({ users }) {
         It is shown, but it never counts against the learner.
       </p>
 
+      <section className="at-calls" aria-label="Planned calls, last 4 weeks">
+        <h3 className="at-h at-h-plain"><Clock size={16} /> Planned calls — who came</h3>
+        <p className="at-note">
+          <Info size={14} /> Measured from the call’s start. “~” = the app’s own note (a rejoin can move it), not the server clock.
+          A partner who did not come is never the other person’s miss.
+        </p>
+        <ul className="at-calls-list">
+          {calls.slice(0, callsShown).map((b) => (
+            <li key={b.id} className="at-call">
+              <span className="at-call-when">{callWhen(b.startMs)}</span>
+              {(b.participants || []).map((uid) => {
+                const st = arrivalStatus(b, uid);
+                return (
+                  <span key={uid} className="at-call-side">
+                    <b>{nameOf(b, uid)}</b>
+                    <span className={`at-chip is-${st.kind}`}>{arrivalLabel(st)}</span>
+                  </span>
+                );
+              })}
+            </li>
+          ))}
+          {calls.length === 0 && <li className="at-muted">No planned calls closed in the last 4 weeks.</li>}
+        </ul>
+        {calls.length > callsShown && (
+          <button type="button" className="at-resolve" onClick={() => setCallsShown((n) => n + CALLS_PAGE)}>
+            Show more ({calls.length - callsShown})
+          </button>
+        )}
+      </section>
+
       <label className="at-toggle">
         <input type="checkbox" checked={onlyFlagged} onChange={(e) => setOnlyFlagged(e.target.checked)} /> Only learners with a flag
       </label>
@@ -209,6 +253,7 @@ export default function AdminAttendance({ users }) {
               <div className="at-chips">
                 {s.noShow > 0 && <span className="at-chip is-bad">No-show {s.noShow}</span>}
                 {s.lateCancel > 0 && <span className="at-chip is-bad">Late cancel {s.lateCancel}</span>}
+                {lateByUid.get(u.uid) > 0 && <span className="at-chip is-late">Came late {lateByUid.get(u.uid)}</span>}
                 {s.cancelled > 0 && <span className="at-chip">Cancelled in time {s.cancelled}</span>}
                 {s.platformMissed > 0 && <span className="at-chip is-platform">Platform missed {s.platformMissed}</span>}
                 {Object.entries(praiseByUid.get(u.uid) || {}).map(([tag, n]) => (

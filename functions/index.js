@@ -8,6 +8,7 @@ const admin = require("firebase-admin");
 const userStatsLib = require("./userStats");
 const { ensurePostCallChat } = require("./postCallChat");
 const bookingsLib = require("./bookings");
+const arrivalsLib = require("./arrivals");
 const { truncatedError, badJsonError, classifyLlmError } = require("./llmErrors");
 const weeklyPlanner = require("./weeklyPlanner");
 const reliabilityLib = require("./reliability");
@@ -640,6 +641,11 @@ exports.getAgoraToken = onRequest({ secrets: [AGORA_APP_CERTIFICATE] }, async (r
   } catch (e) {
     console.warn("[getAgoraToken] join log failed:", e.message);
   }
+  // First arrival at a booked practice, by the server clock (arrivals.js).
+  // agoraJoins above is overwritten on every rejoin; this keeps the FIRST
+  // token per booking, which is what "on time / N min late" is measured from.
+  await recordBookingArrival(db, decoded.uid, parts[0])
+    .catch((e) => console.warn("[getAgoraToken] arrival not recorded:", e.message));
 
   const role = RtcRole.PUBLISHER;
   const expireTime = 3600;
@@ -3466,6 +3472,31 @@ async function recordAttendance(db, id, uid, outcome, atMs, extra = {}, { onlyIf
   });
 }
 const callIdForPair = (a, b) => `call_${[a, b].sort().join("_")}`;
+
+// bookingArrivals/{bookingId}: { [uid]: Timestamp } — the first voice token a
+// person took for that booking (server-only; rules catch-all). A separate
+// collection, not a field on the booking: a booking write fires
+// syncUpcomingCall, and this is written on a call's hot path. Reads 0–3
+// booking docs per token; a direct call with no booking writes nothing.
+async function recordBookingArrival(db, uid, peerUid, nowMs = Date.now()) {
+  if (!uid || !peerUid) return;
+  const dates = [...new Set([bakuDateStr(nowMs - DAY_MS), bakuDateStr(nowMs), bakuDateStr(nowMs + DAY_MS)])];
+  const slotIds = arrivalsLib.candidateSlotIds(nowMs, { dates, hours: SLOT_BLOCK_HOURS, parseSlotId });
+  if (!slotIds.length) return;
+  const ids = slotIds.map((s) => bookingsLib.bookingIdFor(s, uid, peerUid));
+  const snaps = await Promise.all(ids.map((id) => db.collection("bookings").doc(id).get()));
+  const booking = snaps.find((s) => s.exists && s.get("status") === "confirmed");
+  if (!booking) return;
+  const ref = db.collection("bookingArrivals").doc(booking.id);
+  await db.runTransaction(async (tx) => {
+    const cur = await tx.get(ref);
+    if (cur.exists && cur.get(uid)) return; // first arrival only
+    tx.set(ref, {
+      [uid]: admin.firestore.FieldValue.serverTimestamp(),
+      startMs: booking.get("startMs") || null,
+    }, { merge: true });
+  });
+}
 
 // ── Reliability (scheduled practice, Phase 5) ────────────────────
 // Recomputed from the learner's attendance whenever a confirmed practice
@@ -7490,15 +7521,38 @@ exports.practiceSlotTick = onSchedule(
               if (cd.status === "ended" && trustedCallSeconds(cd) >= ATTENDED_MIN_SECONDS
                 && startedMs >= slot.startMs - 30 * 60000) held.add(m.callId);
             }
+            // When each side first came, and how late (arrivals.js): the
+            // server's first voice token for this booking, else the app's
+            // arrivedAt. Someone with a server token but no arrivedAt (the
+            // app's write failed) has come too.
+            const serverArrivals = new Map();
+            for (const m of members) {
+              if (!m.pairedWith) continue;
+              const bookingId = bookingsLib.bookingIdFor(doc.id, m.id, m.pairedWith);
+              if (serverArrivals.has(bookingId)) continue;
+              const a = await db.collection("bookingArrivals").doc(bookingId).get().catch(() => null);
+              serverArrivals.set(bookingId, a && a.exists ? (a.data() || {}) : {});
+            }
+            const arrival = {};
+            for (const m of members) {
+              const fromServer = m.pairedWith
+                ? serverArrivals.get(bookingsLib.bookingIdFor(doc.id, m.id, m.pairedWith))?.[m.id] : null;
+              arrival[m.id] = arrivalsLib.arrivalFor({
+                serverAt: fromServer, clientAt: m.arrivedAt, startMs: slot.startMs, endMs: slot.endMs,
+              });
+            }
+            const came = (m) => !!(m && (m.arrivedAt || arrival[m.id]));
             const outcomes = {};
             for (const m of members) {
               if (m.callId && held.has(m.callId)) { outcomes[m.id] = "attended"; continue; }
               const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
-              const outcome = !m.arrivedAt ? "no_show" : (peer && !peer.arrivedAt ? "partner_no_show" : null);
+              const outcome = !came(m) ? "no_show" : (peer && !came(peer) ? "partner_no_show" : null);
               outcomes[m.id] = outcome || "arrived";
               if (outcome) {
+                const a = arrival[m.id];
                 await recordAttendance(db, `${doc.id}_${m.id}`, m.id, outcome, slot.startMs,
-                  { slotId: doc.id, peerUid: m.pairedWith || null, callId: m.callId || null, ...(m.team ? { team: true } : {}) });
+                  { slotId: doc.id, peerUid: m.pairedWith || null, callId: m.callId || null, ...(m.team ? { team: true } : {}),
+                    ...(a ? { arrivedAtMs: a.atMs, lateMin: a.lateMin, arrivalSource: a.source } : {}) });
               }
             }
             // The booking closes with how each side did. Writing it also
@@ -7513,7 +7567,11 @@ exports.practiceSlotTick = onSchedule(
               await db.runTransaction(async (tx) => {
                 bookingsLib.closeBookingTx(tx, db, {
                   slot, uidA: m.id, uidB: m.pairedWith, status: "done",
-                  extra: { outcome: { [m.id]: outcomes[m.id] || null, [m.pairedWith]: outcomes[m.pairedWith] || null } },
+                  extra: {
+                    outcome: { [m.id]: outcomes[m.id] || null, [m.pairedWith]: outcomes[m.pairedWith] || null },
+                    arrival: arrivalsLib.bookingArrivalMap(
+                      [m.id, m.pairedWith], arrival, outcomes),
+                  },
                 });
               }).catch((e) => console.warn("[SlotTick] booking close failed:", bookingId, e.message));
             }
@@ -7528,7 +7586,7 @@ exports.practiceSlotTick = onSchedule(
             }
             for (const m of members) {
               const peer = m.pairedWith ? byId.get(m.pairedWith) : null;
-              const nobodyCame = !m.arrivedAt && (!peer || !peer.arrivedAt);
+              const nobodyCame = !came(m) && !came(peer);
               if (nobodyCame) {
                 await sendPushToUser(db, m.id, {
                   key: "slot_missed",
